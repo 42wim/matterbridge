@@ -3,7 +3,9 @@
 Simple bridge between mattermost and IRC. Uses the in/outgoing webhooks.  
 Relays public channel messages between mattermost and IRC.  
 
-Work in progress. 
+Work in progress.  
+
+Requires mattermost build from master (or 1.2.0 when released).
 
 ## binaries
 Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/tag/v0.1)
