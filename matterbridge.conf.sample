@@ -1,0 +1,11 @@
+[IRC]
+server="irc.freenode.net"
+port=6667
+UseTLS=false
+SkipTLSVerify=true
+nick="matterbot"
+channel="#matterbridge"
+
+[mattermost]
+url="http://yourdomain/hooks/yourhookkey"
+port=9999

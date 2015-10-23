@@ -51,7 +51,6 @@ type Config struct {
 // New Mattermost client.
 func New(url string, config Config) *Client {
 	c := &Client{url: url, In: make(chan IMessage), Out: make(chan OMessage), Config: config}
-	log.Println(config.Port)
 	if c.Port == 0 {
 		c.Port = 9999
 	}

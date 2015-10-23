@@ -1,0 +1,56 @@
+package main
+
+import (
+	"crypto/tls"
+	"github.com/42wim/matterbridge/matterhook"
+	"github.com/thoj/go-ircevent"
+	"log"
+	"strconv"
+	"time"
+)
+
+type Bridge struct {
+	i *irc.Connection
+	m *matterhook.Client
+	*Config
+}
+
+func NewBridge(name string, config *Config) *Bridge {
+	b := &Bridge{}
+	b.Config = config
+	b.m = matterhook.New(b.Config.Mattermost.URL, matterhook.Config{Port: b.Config.Mattermost.Port})
+	b.i = b.createIRC(name)
+	go b.handleMatter()
+	return b
+}
+
+func (b *Bridge) createIRC(name string) *irc.Connection {
+	i := irc.IRC(b.Config.IRC.Nick, b.Config.IRC.Nick)
+	i.UseTLS = b.Config.IRC.UseTLS
+	i.TLSConfig = &tls.Config{InsecureSkipVerify: b.Config.IRC.SkipTLSVerify}
+	i.Connect(b.Config.IRC.Server + ":" + strconv.Itoa(b.Config.IRC.Port))
+	time.Sleep(time.Second)
+	log.Println("Joining", b.Config.IRC.Channel, "as", b.Config.IRC.Nick)
+	i.Join(b.Config.IRC.Channel)
+	i.AddCallback("PRIVMSG", b.handlePrivMsg)
+	return i
+}
+
+func (b *Bridge) handlePrivMsg(event *irc.Event) {
+	matterMessage := matterhook.OMessage{}
+	matterMessage.Text = event.Message()
+	matterMessage.UserName = "irc-" + event.Nick
+	b.m.Send(matterMessage)
+}
+
+func (b *Bridge) handleMatter() {
+	for {
+		message := b.m.Receive()
+		b.i.Privmsg(b.Config.IRC.Channel, message.UserName+": "+message.Text)
+	}
+}
+
+func main() {
+	NewBridge("matterbot", NewConfig("matterbridge.conf"))
+	select {}
+}
