@@ -5,6 +5,9 @@ Relays public channel messages between mattermost and IRC.
 
 Work in progress. 
 
+## binaries
+Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/tag/v0.1)
+
 ## building
 Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH] (https://golang.org/doc/code.html#GOPATH)
 
