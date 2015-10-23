@@ -1,3 +1,4 @@
+//Package matterhook provides interaction with mattermost incoming/outgoing webhooks
 package matterhook
 
 import (
