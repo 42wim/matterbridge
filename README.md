@@ -1,7 +1,7 @@
 # matterbridge
 
-Simple bridge between mattermost and IRC. Uses the in/outgoing webhooks.
-Relays public channel messages between mattermost and IRC.
+Simple bridge between mattermost and IRC. Uses the in/outgoing webhooks.  
+Relays public channel messages between mattermost and IRC.  
 
 Work in progress. 
 
@@ -21,9 +21,9 @@ matterbridge
 ```
 
 ## running
-1) Copy the matterbridge.conf.sample to matterbridge.conf in the same directory as the matterbridge binary.
-2) Edit matterbridge.conf with the settings for your environment. See below for more config information.
-3) Now you can run matterbridge.
+1) Copy the matterbridge.conf.sample to matterbridge.conf in the same directory as the matterbridge binary.  
+2) Edit matterbridge.conf with the settings for your environment. See below for more config information.  
+3) Now you can run matterbridge.  
 
 Matterbridge will:
 * start a webserver listening on the port specified in the configuration.
@@ -57,13 +57,13 @@ port=9999
 You'll have to configure the incoming en outgoing webhooks. 
 
 * incoming webhooks
-Go to "account settings" - integrations - "incoming webhooks".
-Choose a channel at "Add a new incoming webhook", this will create a webhook URL right below.
-This URL should be set in the matterbridge.conf in the [mattermost] section (see above)
+Go to "account settings" - integrations - "incoming webhooks".  
+Choose a channel at "Add a new incoming webhook", this will create a webhook URL right below.  
+This URL should be set in the matterbridge.conf in the [mattermost] section (see above)  
 
 * outgoing webhooks
-Go to "account settings" - integrations - "outgoing webhooks".
-Choose a channel (the same as the one from incoming webhooks) and fill in the address and port of the server matterbridge will run on.
+Go to "account settings" - integrations - "outgoing webhooks".  
+Choose a channel (the same as the one from incoming webhooks) and fill in the address and port of the server matterbridge will run on.  
 
 e.g. http://192.168.1.1:9999 (9999 is the port specified in [mattermost] section of matterbridge.conf)
 
