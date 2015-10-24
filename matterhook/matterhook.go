@@ -71,6 +71,11 @@ func (c *Client) StartServer() {
 
 // ServeHTTP implementation.
 func (c *Client) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		log.Println("invalid " + r.Method + " connection from " + r.RemoteAddr)
+		http.NotFound(w, r)
+		return
+	}
 	msg := IMessage{}
 	err := r.ParseForm()
 	if err != nil {
@@ -83,6 +88,11 @@ func (c *Client) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err = decoder.Decode(&msg, r.PostForm)
 	if err != nil {
 		log.Println(err)
+		http.NotFound(w, r)
+		return
+	}
+	if msg.Token == "" {
+		log.Println("no token from " + r.RemoteAddr)
 		http.NotFound(w, r)
 		return
 	}
