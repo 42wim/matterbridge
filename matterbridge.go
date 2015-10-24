@@ -39,6 +39,7 @@ func (b *Bridge) createIRC(name string) *irc.Connection {
 		i.AddCallback("JOIN", b.handleJoinPart)
 		i.AddCallback("PART", b.handleJoinPart)
 	}
+	i.AddCallback("353", b.handleOther)
 	return i
 }
 
@@ -59,9 +60,24 @@ func (b *Bridge) handleJoinPart(event *irc.Event) {
 	b.m.Send(matterMessage)
 }
 
+func (b *Bridge) handleOther(event *irc.Event) {
+	matterMessage := matterhook.OMessage{}
+	switch event.Code {
+	case "353":
+		matterMessage.UserName = b.Config.IRC.Nick
+		matterMessage.Text = event.Message() + " currently on IRC"
+	}
+	b.m.Send(matterMessage)
+}
+
 func (b *Bridge) handleMatter() {
 	for {
 		message := b.m.Receive()
+		switch message.Text {
+		case "!users":
+			log.Println("received !users from", message.UserName)
+			b.i.SendRaw("NAMES " + b.Config.IRC.Channel)
+		}
 		b.i.Privmsg(b.Config.IRC.Channel, message.UserName+": "+message.Text)
 	}
 }
