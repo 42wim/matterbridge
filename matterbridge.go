@@ -20,7 +20,8 @@ func NewBridge(name string, config *Config) *Bridge {
 	b := &Bridge{}
 	b.Config = config
 	b.m = matterhook.New(b.Config.Mattermost.URL,
-		matterhook.Config{Port: b.Config.Mattermost.Port, Token: b.Config.Mattermost.Token})
+		matterhook.Config{Port: b.Config.Mattermost.Port, Token: b.Config.Mattermost.Token,
+			InsecureSkipVerify: b.Config.Mattermost.SkipTLSVerify})
 	b.i = b.createIRC(name)
 	go b.handleMatter()
 	return b
@@ -68,7 +69,11 @@ func (b *Bridge) Send(nick string, message string) error {
 	matterMessage := matterhook.OMessage{IconURL: b.Config.Mattermost.IconURL}
 	matterMessage.UserName = nick
 	matterMessage.Text = message
-	b.m.Send(matterMessage)
+	err := b.m.Send(matterMessage)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 	return nil
 }
 

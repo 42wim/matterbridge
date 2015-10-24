@@ -59,7 +59,8 @@ port=9999
 showjoinpart=true #show irc users joining and parting
 #the token you get from the outgoing webhook in mattermost. If empty no token check will be done.
 token=yourtokenfrommattermost
-
+#disable certificate checking (selfsigned certificates)
+#SkipTLSVerify=true
 ```
 
 ### mattermost

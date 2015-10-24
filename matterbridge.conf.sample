@@ -12,3 +12,4 @@ port=9999
 showjoinpart=true
 #token=yourtokenfrommattermost
 IconURL="http://youricon.png"
+#SkipTLSVerify=true
