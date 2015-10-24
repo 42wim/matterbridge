@@ -45,8 +45,10 @@ type Client struct {
 	Config
 }
 
+// Config for client.
 type Config struct {
-	Port int
+	Port  int    // Port to listen on.
+	Token string // Only allow this token from Mattermost. (Allow everything when empty)
 }
 
 // New Mattermost client.
@@ -95,6 +97,13 @@ func (c *Client) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Println("no token from " + r.RemoteAddr)
 		http.NotFound(w, r)
 		return
+	}
+	if c.Token != "" {
+		if msg.Token != c.Token {
+			log.Println("invalid token " + msg.Token + " from " + r.RemoteAddr)
+			http.NotFound(w, r)
+			return
+		}
 	}
 	c.In <- msg
 }

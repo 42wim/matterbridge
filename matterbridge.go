@@ -19,7 +19,8 @@ type Bridge struct {
 func NewBridge(name string, config *Config) *Bridge {
 	b := &Bridge{}
 	b.Config = config
-	b.m = matterhook.New(b.Config.Mattermost.URL, matterhook.Config{Port: b.Config.Mattermost.Port})
+	b.m = matterhook.New(b.Config.Mattermost.URL,
+		matterhook.Config{Port: b.Config.Mattermost.Port, Token: b.Config.Mattermost.Token})
 	b.i = b.createIRC(name)
 	go b.handleMatter()
 	return b
