@@ -9,3 +9,4 @@ channel="#matterbridge"
 [mattermost]
 url="http://yourdomain/hooks/yourhookkey"
 port=9999
+showjoinpart=true

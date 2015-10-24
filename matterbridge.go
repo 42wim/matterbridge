@@ -6,6 +6,7 @@ import (
 	"github.com/thoj/go-ircevent"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -33,13 +34,28 @@ func (b *Bridge) createIRC(name string) *irc.Connection {
 	log.Println("Joining", b.Config.IRC.Channel, "as", b.Config.IRC.Nick)
 	i.Join(b.Config.IRC.Channel)
 	i.AddCallback("PRIVMSG", b.handlePrivMsg)
+	i.AddCallback("CTCP_ACTION", b.handlePrivMsg)
+	if b.Config.Mattermost.ShowJoinPart {
+		i.AddCallback("JOIN", b.handleJoinPart)
+		i.AddCallback("PART", b.handleJoinPart)
+	}
 	return i
 }
 
 func (b *Bridge) handlePrivMsg(event *irc.Event) {
 	matterMessage := matterhook.OMessage{}
-	matterMessage.Text = event.Message()
+	if event.Code == "CTCP_ACTION" {
+		matterMessage.Text = event.Nick + " "
+	}
+	matterMessage.Text += event.Message()
 	matterMessage.UserName = "irc-" + event.Nick
+	b.m.Send(matterMessage)
+}
+
+func (b *Bridge) handleJoinPart(event *irc.Event) {
+	matterMessage := matterhook.OMessage{}
+	matterMessage.Text = "irc-" + event.Nick + " " + strings.ToLower(event.Code) + "s " + event.Message()
+	matterMessage.UserName = b.Config.IRC.Nick
 	b.m.Send(matterMessage)
 }
 

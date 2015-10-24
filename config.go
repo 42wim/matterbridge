@@ -16,8 +16,9 @@ type Config struct {
 		Channel       string
 	}
 	Mattermost struct {
-		URL  string
-		Port int
+		URL          string
+		Port         int
+		ShowJoinPart bool
 	}
 }
 

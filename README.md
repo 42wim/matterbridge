@@ -56,6 +56,7 @@ channel="#matterbridge"
 url="http://mattermost.yourdomain.com/hooks/incomingwebhookkey"  
 #port the bridge webserver will listen on
 port=9999
+showjoinpart=true #show irc users joining and parting
 ```
 
 ### mattermost
