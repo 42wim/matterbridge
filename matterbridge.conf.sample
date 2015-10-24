@@ -11,3 +11,4 @@ url="http://yourdomain/hooks/yourhookkey"
 port=9999
 showjoinpart=true
 #token=yourtokenfrommattermost
+IconURL="http://youricon.png"

@@ -20,6 +20,7 @@ type Config struct {
 		Port         int
 		ShowJoinPart bool
 		Token        string
+		IconURL      string
 	}
 }
 

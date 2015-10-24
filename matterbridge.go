@@ -45,30 +45,31 @@ func (b *Bridge) createIRC(name string) *irc.Connection {
 }
 
 func (b *Bridge) handlePrivMsg(event *irc.Event) {
-	matterMessage := matterhook.OMessage{}
+	msg := ""
 	if event.Code == "CTCP_ACTION" {
-		matterMessage.Text = event.Nick + " "
+		msg = event.Nick + " "
 	}
-	matterMessage.Text += event.Message()
-	matterMessage.UserName = "irc-" + event.Nick
-	b.m.Send(matterMessage)
+	msg += event.Message()
+	b.Send("irc-"+event.Nick, msg)
 }
 
 func (b *Bridge) handleJoinPart(event *irc.Event) {
-	matterMessage := matterhook.OMessage{}
-	matterMessage.Text = "irc-" + event.Nick + " " + strings.ToLower(event.Code) + "s " + event.Message()
-	matterMessage.UserName = b.Config.IRC.Nick
-	b.m.Send(matterMessage)
+	b.Send(b.Config.IRC.Nick, "irc-"+event.Nick+" "+strings.ToLower(event.Code)+"s "+event.Message())
 }
 
 func (b *Bridge) handleOther(event *irc.Event) {
-	matterMessage := matterhook.OMessage{}
 	switch event.Code {
 	case "353":
-		matterMessage.UserName = b.Config.IRC.Nick
-		matterMessage.Text = event.Message() + " currently on IRC"
+		b.Send(b.Config.IRC.Nick, event.Message()+" currently on IRC")
 	}
+}
+
+func (b *Bridge) Send(nick string, message string) error {
+	matterMessage := matterhook.OMessage{IconURL: b.Config.Mattermost.IconURL}
+	matterMessage.UserName = nick
+	matterMessage.Text = message
 	b.m.Send(matterMessage)
+	return nil
 }
 
 func (b *Bridge) handleMatter() {
