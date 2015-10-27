@@ -88,7 +88,7 @@ func (b *Bridge) handleMatter() {
 			b.i.SendRaw("NAMES " + b.Config.IRC.Channel)
 		case "!gif":
 			message.Text = b.giphyRandom(strings.Fields(strings.Replace(message.Text, "!gif ", "", 1)))
-			b.Send(b.Config.IRC.Nick, "![img]("+message.Text+")")
+			b.Send(b.Config.IRC.Nick, message.Text)
 		}
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
