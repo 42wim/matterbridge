@@ -85,7 +85,10 @@ func (b *Bridge) handleMatter() {
 			log.Println("received !users from", message.UserName)
 			b.i.SendRaw("NAMES " + b.Config.IRC.Channel)
 		}
-		b.i.Privmsg(b.Config.IRC.Channel, message.UserName+": "+message.Text)
+		texts := strings.Split(message.Text, "\n")
+		for _, text := range texts {
+			b.i.Privmsg(b.Config.IRC.Channel, message.UserName+": "+text)
+		}
 	}
 }
 
