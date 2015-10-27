@@ -13,3 +13,6 @@ showjoinpart=true
 #token=yourtokenfrommattermost
 IconURL="http://youricon.png"
 #SkipTLSVerify=true
+
+[general]
+GiphyAPIKey=dc6zaTOxFJmzC

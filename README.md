@@ -61,6 +61,10 @@ showjoinpart=true #show irc users joining and parting
 token=yourtokenfrommattermost
 #disable certificate checking (selfsigned certificates)
 #SkipTLSVerify=true
+
+[general]
+#request your API key on https://github.com/giphy/GiphyAPI. This is a public beta key
+GiphyApiKey="dc6zaTOxFJmzC"
 ```
 
 ### mattermost

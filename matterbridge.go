@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"github.com/42wim/matterbridge/matterhook"
+	"github.com/peterhellberg/giphy"
 	"github.com/thoj/go-ircevent"
 	"log"
 	"strconv"
@@ -80,16 +81,32 @@ func (b *Bridge) Send(nick string, message string) error {
 func (b *Bridge) handleMatter() {
 	for {
 		message := b.m.Receive()
-		switch message.Text {
+		cmd := strings.Fields(message.Text)[0]
+		switch cmd {
 		case "!users":
 			log.Println("received !users from", message.UserName)
 			b.i.SendRaw("NAMES " + b.Config.IRC.Channel)
+		case "!gif":
+			message.Text = b.giphyRandom(strings.Fields(strings.Replace(message.Text, "!gif ", "", 1)))
+			b.Send(b.Config.IRC.Nick, "![img]("+message.Text+")")
 		}
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
 			b.i.Privmsg(b.Config.IRC.Channel, message.UserName+": "+text)
 		}
 	}
+}
+
+func (b *Bridge) giphyRandom(query []string) string {
+	g := giphy.DefaultClient
+	if b.Config.General.GiphyAPIKey != "" {
+		g.APIKey = b.Config.General.GiphyAPIKey
+	}
+	res, err := g.Random(query)
+	if err != nil {
+		return "error"
+	}
+	return res.Data.FixedHeightDownsampledURL
 }
 
 func main() {

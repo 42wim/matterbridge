@@ -23,6 +23,9 @@ type Config struct {
 		IconURL       string
 		SkipTLSVerify bool
 	}
+	General struct {
+		GiphyAPIKey string
+	}
 }
 
 func NewConfig(cfgfile string) *Config {
