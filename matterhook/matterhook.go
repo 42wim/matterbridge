@@ -40,7 +40,7 @@ type IMessage struct {
 
 // Client for Mattermost.
 type Client struct {
-	url        string
+	Url        string // URL for incoming webhooks on mattermost.
 	In         chan IMessage
 	Out        chan OMessage
 	httpclient *http.Client
@@ -52,11 +52,12 @@ type Config struct {
 	Port               int    // Port to listen on.
 	Token              string // Only allow this token from Mattermost. (Allow everything when empty)
 	InsecureSkipVerify bool   // disable certificate checking
+	DisableServer      bool   // Do not start server for outgoing webhooks from Mattermost.
 }
 
 // New Mattermost client.
 func New(url string, config Config) *Client {
-	c := &Client{url: url, In: make(chan IMessage), Out: make(chan OMessage), Config: config}
+	c := &Client{Url: url, In: make(chan IMessage), Out: make(chan OMessage), Config: config}
 	if c.Port == 0 {
 		c.Port = 9999
 	}
@@ -64,8 +65,9 @@ func New(url string, config Config) *Client {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: config.InsecureSkipVerify},
 	}
 	c.httpclient = &http.Client{Transport: tr}
-
-	go c.StartServer()
+	if !c.DisableServer {
+		go c.StartServer()
+	}
 	return c
 }
 
@@ -132,7 +134,7 @@ func (c *Client) Send(msg OMessage) error {
 	if err != nil {
 		return err
 	}
-	resp, err := c.httpclient.Post(c.url, "application/json", bytes.NewReader(buf))
+	resp, err := c.httpclient.Post(c.Url, "application/json", bytes.NewReader(buf))
 	if err != nil {
 		return err
 	}
