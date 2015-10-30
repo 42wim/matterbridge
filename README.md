@@ -15,7 +15,7 @@ Make sure you have [Go](https://golang.org/doc/install) properly installed, incl
 
 ```
 cd $GOPATH
-go get https://github.com/42wim/matterbridge
+go get github.com/42wim/matterbridge
 ```
 
 You should now have matterbridge binary in the bin directory:
