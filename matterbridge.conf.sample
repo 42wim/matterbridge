@@ -5,6 +5,8 @@ UseTLS=false
 SkipTLSVerify=true
 nick="matterbot"
 channel="#matterbridge"
+password=""
+SendMUserName=true
 
 [mattermost]
 url="http://yourdomain/hooks/yourhookkey"
@@ -13,6 +15,7 @@ showjoinpart=true
 #token=yourtokenfrommattermost
 IconURL="http://youricon.png"
 #SkipTLSVerify=true
+IrcNickPrefix="irc-"
 
 [general]
 GiphyAPIKey=dc6zaTOxFJmzC

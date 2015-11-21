@@ -13,7 +13,9 @@ type Config struct {
 		Server        string
 		Port          int
 		Nick          string
+		Password      string
 		Channel       string
+		SendMUserName bool
 	}
 	Mattermost struct {
 		URL           string
@@ -22,6 +24,7 @@ type Config struct {
 		Token         string
 		IconURL       string
 		SkipTLSVerify bool
+		IrcNickPrefix string
 	}
 	General struct {
 		GiphyAPIKey string
