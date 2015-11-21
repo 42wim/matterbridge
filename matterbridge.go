@@ -31,6 +31,7 @@ func NewBridge(name string, config *Config) *Bridge {
 func (b *Bridge) createIRC(name string) *irc.Connection {
 	i := irc.IRC(b.Config.IRC.Nick, b.Config.IRC.Nick)
 	i.UseTLS = b.Config.IRC.UseTLS
+	if b.Config.IRC.Password != "" { i.Password = b.Config.IRC.Password }
 	i.TLSConfig = &tls.Config{InsecureSkipVerify: b.Config.IRC.SkipTLSVerify}
 	i.Connect(b.Config.IRC.Server + ":" + strconv.Itoa(b.Config.IRC.Port))
 	time.Sleep(time.Second)
@@ -52,11 +53,11 @@ func (b *Bridge) handlePrivMsg(event *irc.Event) {
 		msg = event.Nick + " "
 	}
 	msg += event.Message()
-	b.Send("irc-"+event.Nick, msg)
+	b.Send(b.Config.Mattermost.IrcNickPrefix+event.Nick, msg)
 }
 
 func (b *Bridge) handleJoinPart(event *irc.Event) {
-	b.Send(b.Config.IRC.Nick, "irc-"+event.Nick+" "+strings.ToLower(event.Code)+"s "+event.Message())
+	b.Send(b.Config.IRC.Nick, b.Config.Mattermost.IrcNickPrefix+event.Nick+" "+strings.ToLower(event.Code)+"s "+event.Message())
 }
 
 func (b *Bridge) handleOther(event *irc.Event) {
@@ -92,7 +93,11 @@ func (b *Bridge) handleMatter() {
 		}
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
-			b.i.Privmsg(b.Config.IRC.Channel, message.UserName+": "+text)
+			if (b.Config.IRC.SendMUserName) {
+				b.i.Privmsg(b.Config.IRC.Channel, message.UserName+": "+text)
+			} else {
+				b.i.Privmsg(b.Config.IRC.Channel, text)
+			}
 		}
 	}
 }
