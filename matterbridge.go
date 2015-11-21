@@ -53,7 +53,7 @@ func (b *Bridge) handlePrivMsg(event *irc.Event) {
 		msg = event.Nick + " "
 	}
 	msg += event.Message()
-	b.Send(b.Config.Mattermost.IrcNickPrefix+event.Nick, msg)
+	b.Send(b.Config.Mattermost.IrcNickPrefix+event.Nick, "PRIV: "+msg)
 }
 
 func (b *Bridge) handleJoinPart(event *irc.Event) {
@@ -90,6 +90,11 @@ func (b *Bridge) handleMatter() {
 		case "!gif":
 			message.Text = b.giphyRandom(strings.Fields(strings.Replace(message.Text, "!gif ", "", 1)))
 			b.Send(b.Config.IRC.Nick, message.Text)
+		case "!priv":
+			who := strings.Fields(message.Text)[1]
+			msg := strings.Fields(message.Text)[2:]
+			b.i.Privmsg(who, strings.Join(msg, " "))
+			continue
 		}
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
