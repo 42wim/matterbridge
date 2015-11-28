@@ -56,7 +56,7 @@ func (b *Bridge) handlePrivMsg(event *irc.Event) {
 }
 
 func (b *Bridge) handleJoinPart(event *irc.Event) {
-	b.Send(b.Config.IRC.Nick, "irc-"+event.Nick+" "+strings.ToLower(event.Code)+"s "+event.Message())
+	b.SendType(b.Config.IRC.Nick, "irc-"+event.Nick+" "+strings.ToLower(event.Code)+"s "+event.Message(), "join_leave")
 }
 
 func (b *Bridge) handleOther(event *irc.Event) {
@@ -67,9 +67,14 @@ func (b *Bridge) handleOther(event *irc.Event) {
 }
 
 func (b *Bridge) Send(nick string, message string) error {
+	return b.SendType(nick, message, "")
+}
+
+func (b *Bridge) SendType(nick string, message string, mtype string) error {
 	matterMessage := matterhook.OMessage{IconURL: b.Config.Mattermost.IconURL}
 	matterMessage.UserName = nick
 	matterMessage.Text = message
+	matterMessage.Type = mtype
 	err := b.m.Send(matterMessage)
 	if err != nil {
 		log.Println(err)
