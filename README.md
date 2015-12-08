@@ -3,12 +3,10 @@
 Simple bridge between mattermost and IRC. Uses the in/outgoing webhooks.  
 Relays public channel messages between mattermost and IRC.  
 
-Work in progress.  
-
-Requires mattermost build from master (or 1.2.0 when released).
+Requires mattermost 1.2.0+
 
 ## binaries
-Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/tag/v0.1)
+Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/tag/v0.2)
 
 ## building
 Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH] (https://golang.org/doc/code.html#GOPATH)
