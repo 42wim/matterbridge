@@ -54,6 +54,8 @@ channel="#matterbridge"
 url="http://mattermost.yourdomain.com/hooks/incomingwebhookkey"  
 #port the bridge webserver will listen on
 port=9999
+#address the webserver will bind to
+BindAddress="0.0.0.0"
 showjoinpart=true #show irc users joining and parting
 #the token you get from the outgoing webhook in mattermost. If empty no token check will be done.
 token=yourtokenfrommattermost

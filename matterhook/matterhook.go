@@ -52,6 +52,7 @@ type Client struct {
 // Config for client.
 type Config struct {
 	Port               int    // Port to listen on.
+	BindAddress        string // Address to listen on
 	Token              string // Only allow this token from Mattermost. (Allow everything when empty)
 	InsecureSkipVerify bool   // disable certificate checking
 	DisableServer      bool   // Do not start server for outgoing webhooks from Mattermost.
@@ -63,6 +64,7 @@ func New(url string, config Config) *Client {
 	if c.Port == 0 {
 		c.Port = 9999
 	}
+	c.BindAddress += ":"
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: config.InsecureSkipVerify},
 	}
@@ -77,8 +79,8 @@ func New(url string, config Config) *Client {
 func (c *Client) StartServer() {
 	mux := http.NewServeMux()
 	mux.Handle("/", c)
-	log.Printf("Listening on http://0.0.0.0:%v...\n", c.Port)
-	if err := http.ListenAndServe((":" + strconv.Itoa(c.Port)), mux); err != nil {
+	log.Printf("Listening on http://%v:%v...\n", c.BindAddress, c.Port)
+	if err := http.ListenAndServe((c.BindAddress + strconv.Itoa(c.Port)), mux); err != nil {
 		log.Fatal(err)
 	}
 }
