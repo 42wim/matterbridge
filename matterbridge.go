@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"flag"
 	"github.com/42wim/matterbridge/matterhook"
 	"github.com/peterhellberg/giphy"
 	"github.com/thoj/go-ircevent"
@@ -116,6 +117,8 @@ func (b *Bridge) giphyRandom(query []string) string {
 }
 
 func main() {
-	NewBridge("matterbot", NewConfig("matterbridge.conf"))
+	flagConfig := flag.String("conf", "matterbridge.conf", "config file")
+	flag.Parse()
+	NewBridge("matterbot", NewConfig(*flagConfig))
 	select {}
 }
