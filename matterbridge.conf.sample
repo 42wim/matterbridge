@@ -10,10 +10,22 @@ channel="#matterbridge"
 url="http://yourdomain/hooks/yourhookkey"
 port=9999
 showjoinpart=true
-#token=yourtokenfrommattermost
+#remove token when using multiple channels!
+token=yourtokenfrommattermost
 IconURL="http://youricon.png"
 #SkipTLSVerify=true
 #BindAddress="0.0.0.0"
 
 [general]
 GiphyAPIKey=dc6zaTOxFJmzC
+
+#multiple channel config
+#token you can find in your outgoing webhook
+[Token "outgoingwebhooktoken1"] 
+IRCChannel="#off-topic"
+MMChannel="off-topic"
+
+[Token "outgoingwebhooktoken2"]
+IRCChannel="#testing"
+MMChannel="testing"
+

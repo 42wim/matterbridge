@@ -25,6 +25,10 @@ type Config struct {
 		BindAddress   string
 		Channel       string
 	}
+	Token map[string]*struct {
+		IRCChannel string
+		MMChannel  string
+	}
 	General struct {
 		GiphyAPIKey string
 	}

@@ -26,7 +26,12 @@ matterbridge
 ## running
 1) Copy the matterbridge.conf.sample to matterbridge.conf in the same directory as the matterbridge binary.  
 2) Edit matterbridge.conf with the settings for your environment. See below for more config information.  
-3) Now you can run matterbridge.  
+3) Now you can run matterbridge. 
+
+```
+Usage of matterbridge:
+  -conf="matterbridge.conf": config file
+```
 
 Matterbridge will:
 * start a webserver listening on the port specified in the configuration.
@@ -35,7 +40,7 @@ Matterbridge will:
 
 ## config
 ### matterbridge
-matterbridge looks for matterbridge.conf in current directory.
+matterbridge looks for matterbridge.conf in current directory. (use -conf to specify another file)
 
 Look at matterbridge.conf.sample for an example
 
@@ -58,9 +63,20 @@ port=9999
 BindAddress="0.0.0.0"
 showjoinpart=true #show irc users joining and parting
 #the token you get from the outgoing webhook in mattermost. If empty no token check will be done.
+#if you use multiple IRC channel (see below, this must be empty!)
 token=yourtokenfrommattermost
 #disable certificate checking (selfsigned certificates)
 #SkipTLSVerify=true
+
+#multiple channel config
+#token you can find in your outgoing webhook
+[Token "outgoingwebhooktoken1"] 
+IRCChannel="#off-topic"
+MMChannel="off-topic"
+
+[Token "outgoingwebhooktoken2"]
+IRCChannel="#testing"
+MMChannel="testing"
 
 [general]
 #request your API key on https://github.com/giphy/GiphyAPI. This is a public beta key
