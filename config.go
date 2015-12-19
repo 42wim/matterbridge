@@ -23,6 +23,7 @@ type Config struct {
 		IconURL       string
 		SkipTLSVerify bool
 		BindAddress   string
+		Channel       string
 	}
 	General struct {
 		GiphyAPIKey string

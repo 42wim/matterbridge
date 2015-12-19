@@ -54,26 +54,28 @@ func (b *Bridge) handlePrivMsg(event *irc.Event) {
 		msg = event.Nick + " "
 	}
 	msg += event.Message()
-	b.Send("irc-"+event.Nick, msg)
+	b.Send("irc-"+event.Nick, msg, b.Config.Mattermost.Channel)
 }
 
 func (b *Bridge) handleJoinPart(event *irc.Event) {
-	b.SendType(b.Config.IRC.Nick, "irc-"+event.Nick+" "+strings.ToLower(event.Code)+"s "+event.Message(), "join_leave")
+	b.SendType(b.Config.IRC.Nick, "irc-"+event.Nick+" "+strings.ToLower(event.Code)+"s "+event.Message(),
+		b.Config.Mattermost.Channel, "join_leave")
 }
 
 func (b *Bridge) handleOther(event *irc.Event) {
 	switch event.Code {
 	case "353":
-		b.Send(b.Config.IRC.Nick, event.Message()+" currently on IRC")
+		b.Send(b.Config.IRC.Nick, event.Message()+" currently on IRC", b.Config.Mattermost.Channel)
 	}
 }
 
-func (b *Bridge) Send(nick string, message string) error {
-	return b.SendType(nick, message, "")
+func (b *Bridge) Send(nick string, message string, channel string) error {
+	return b.SendType(nick, message, channel, "")
 }
 
-func (b *Bridge) SendType(nick string, message string, mtype string) error {
+func (b *Bridge) SendType(nick string, message string, channel string, mtype string) error {
 	matterMessage := matterhook.OMessage{IconURL: b.Config.Mattermost.IconURL}
+	matterMessage.Channel = channel
 	matterMessage.UserName = nick
 	matterMessage.Text = message
 	matterMessage.Type = mtype
@@ -95,7 +97,7 @@ func (b *Bridge) handleMatter() {
 			b.i.SendRaw("NAMES " + b.Config.IRC.Channel)
 		case "!gif":
 			message.Text = b.giphyRandom(strings.Fields(strings.Replace(message.Text, "!gif ", "", 1)))
-			b.Send(b.Config.IRC.Nick, message.Text)
+			b.Send(b.Config.IRC.Nick, message.Text, b.Config.Mattermost.Channel)
 		}
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
