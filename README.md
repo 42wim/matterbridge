@@ -5,6 +5,8 @@ Relays public channel messages between mattermost and IRC.
 
 Requires mattermost 1.2.0+
 
+There is also [matterbridge-plus] (https://github.com/42wim/matterbridge-plus) which uses the mattermost API and needs a dedicated user (bot). But requires no incoming/outgoing webhook setup. 
+
 ## binaries
 Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/tag/v0.2)
 
