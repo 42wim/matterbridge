@@ -13,6 +13,7 @@ type Config struct {
 		Server        string
 		Port          int
 		Nick          string
+		Password      string
 		Channel       string
 	}
 	Mattermost struct {

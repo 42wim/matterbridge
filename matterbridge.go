@@ -41,6 +41,9 @@ func (b *Bridge) createIRC(name string) *irc.Connection {
 	i := irc.IRC(b.Config.IRC.Nick, b.Config.IRC.Nick)
 	i.UseTLS = b.Config.IRC.UseTLS
 	i.TLSConfig = &tls.Config{InsecureSkipVerify: b.Config.IRC.SkipTLSVerify}
+	if b.Config.IRC.Password != "" {
+		i.Password = b.Config.IRC.Password
+	}
 	i.Connect(b.Config.IRC.Server + ":" + strconv.Itoa(b.Config.IRC.Port))
 	time.Sleep(time.Second)
 	log.Println("Joining", b.Config.IRC.Channel, "as", b.Config.IRC.Nick)
