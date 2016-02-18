@@ -5,6 +5,7 @@ UseTLS=false
 SkipTLSVerify=true
 nick="matterbot"
 channel="#matterbridge"
+UseSlackCircumfix=false
 
 [mattermost]
 url="http://yourdomain/hooks/yourhookkey"

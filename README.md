@@ -55,6 +55,7 @@ UseTLS=false
 SkipTLSVerify=true
 nick="matterbot"
 channel="#matterbridge"
+UseSlackCircumfix=false
 
 [mattermost]
 #url is your incoming webhook url (account settings - integrations - incoming webhooks)

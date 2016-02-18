@@ -103,8 +103,13 @@ func (b *Bridge) SendType(nick string, message string, channel string, mtype str
 }
 
 func (b *Bridge) handleMatter() {
+	var username string
 	for {
 		message := b.m.Receive()
+		username = message.UserName + ": "
+		if b.Config.IRC.UseSlackCircumfix {
+			username = "<" + message.UserName + "> "
+		}
 		cmd := strings.Fields(message.Text)[0]
 		switch cmd {
 		case "!users":
@@ -116,7 +121,7 @@ func (b *Bridge) handleMatter() {
 		}
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
-			b.i.Privmsg(b.getIRCChannel(message.Token), message.UserName+": "+text)
+			b.i.Privmsg(b.getIRCChannel(message.Token), username+text)
 		}
 	}
 }
