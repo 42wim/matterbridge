@@ -6,9 +6,6 @@ SkipTLSVerify=true
 nick="matterbot"
 channel="#matterbridge"
 UseSlackCircumfix=false
-PrefixMessagesWithNick=false
-NickFormatter=plain
-NicksPerRow=4
 
 [mattermost]
 url="http://yourdomain/hooks/yourhookkey"
@@ -19,6 +16,9 @@ token=yourtokenfrommattermost
 IconURL="http://youricon.png"
 #SkipTLSVerify=true
 #BindAddress="0.0.0.0"
+PrefixMessagesWithNick=false
+NickFormatter=plain
+NicksPerRow=4
 
 [general]
 GiphyAPIKey=dc6zaTOxFJmzC

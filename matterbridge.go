@@ -108,11 +108,11 @@ func plainformatter (nicks string, nicksPerRow int) string {
 }
 
 func (b *Bridge) formatnicks (nicks string) string {
-	switch (b.Config.IRC.NickFormatter) {
+	switch (b.Config.Mattermost.NickFormatter) {
 	case "table":
-		return tableformatter(nicks, b.Config.IRC.NicksPerRow)
+		return tableformatter(nicks, b.Config.Mattermost.NicksPerRow)
 	default:
-		return plainformatter(nicks, b.Config.IRC.NicksPerRow)
+		return plainformatter(nicks, b.Config.Mattermost.NicksPerRow)
 	}
 }
 
@@ -136,7 +136,7 @@ func (b *Bridge) SendType(nick string, message string, channel string, mtype str
 	matterMessage.Channel = channel
 	matterMessage.UserName = nick
 	matterMessage.Type = mtype
-	if (b.Config.IRC.PrefixMessagesWithNick) {
+	if (b.Config.Mattermost.PrefixMessagesWithNick) {
 		matterMessage.Text = nick + ": " + message
 	} else {
 		matterMessage.Text = message
