@@ -83,7 +83,7 @@ func tableformatter (nicks_s string, nicksPerRow int) string {
 		nicksPerRow = 4
 	}
 	for i := 0; i < 2; i++ {
-		for j := 1; j <= nicksPerRow; j++ {
+		for j := 1; j <= nicksPerRow && j <= len(nicks); j++ {
 			if i == 0 {
 				result += "|"
 			} else {
