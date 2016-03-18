@@ -58,7 +58,7 @@ func (b *Bridge) createIRC(name string) *irc.Connection {
 		i.AddCallback("JOIN", b.handleJoinPart)
 		i.AddCallback("PART", b.handleJoinPart)
 	}
-	//i.AddCallback("353", b.handleOther)
+	i.AddCallback("*", b.handleOther)
 	return i
 }
 
@@ -76,11 +76,53 @@ func (b *Bridge) handleJoinPart(event *irc.Event) {
 	//b.SendType(b.Config.IRC.Nick, "irc-"+event.Nick+" "+strings.ToLower(event.Code)+"s "+event.Message(), b.getMMChannel(event.Arguments[0]), "join_leave")
 }
 
+func tableformatter (nicks_s string, nicksPerRow int) string {
+	nicks := strings.Split(nicks_s, " ")
+	result := "|IRC users"
+	if nicksPerRow < 1 {
+		nicksPerRow = 4
+	}
+	for i := 0; i < 2; i++ {
+		for j := 1; j <= nicksPerRow && j <= len(nicks); j++ {
+			if i == 0 {
+				result += "|"
+			} else {
+				result += ":-|"
+			}
+		}
+		result += "\r\n|"
+	}
+	result += nicks[0] + "|"
+	for i := 1; i < len(nicks); i++ {
+		if i % nicksPerRow == 0 {
+			result += "\r\n|" + nicks[i] + "|"
+		} else {
+			result += nicks[i] + "|"
+		}
+	}
+	return result
+}
+
+func plainformatter (nicks string, nicksPerRow int) string {
+	return nicks + " currently on IRC"
+}
+
+func (b *Bridge) formatnicks (nicks string) string {
+	switch (b.Config.Mattermost.NickFormatter) {
+	case "table":
+		return tableformatter(nicks, b.Config.Mattermost.NicksPerRow)
+	default:
+		return plainformatter(nicks, b.Config.Mattermost.NicksPerRow)
+	}
+}
+
 func (b *Bridge) handleOther(event *irc.Event) {
 	switch event.Code {
 	case "353":
 		log.Println("handleOther", b.getMMChannel(event.Arguments[0]))
-		b.Send(b.Config.IRC.Nick, event.Message()+" currently on IRC", b.getMMChannel(event.Arguments[0]))
+		b.Send(b.Config.IRC.Nick, b.formatnicks(event.Message()), b.getMMChannel(event.Arguments[0]))
+	default:
+		log.Printf("got unknown event: %+v\n", event);
 	}
 }
 
@@ -88,13 +130,32 @@ func (b *Bridge) Send(nick string, message string, channel string) error {
 	return b.SendType(nick, message, channel, "")
 }
 
+func IsMarkup(message string) bool {
+	switch (message[0]) {
+	case '|': fallthrough
+	case '#': fallthrough
+	case '_': fallthrough
+	case '*': fallthrough
+	case '~': fallthrough
+	case '-': fallthrough
+	case ':': fallthrough
+	case '>': fallthrough
+	case '=': return true
+	}
+	return false
+}
+
 func (b *Bridge) SendType(nick string, message string, channel string, mtype string) error {
 	matterMessage := matterhook.OMessage{IconURL: b.Config.Mattermost.IconURL}
 	matterMessage.Channel = channel
 	matterMessage.UserName = nick
 	matterMessage.Type = mtype
-	if (b.Config.IRC.PrefixMessagesWithNick) {
-		matterMessage.Text = nick + ": " + message
+	if b.Config.Mattermost.PrefixMessagesWithNick {
+		if IsMarkup(message) {
+			matterMessage.Text = nick + ":\n\n" + message
+		} else {
+			matterMessage.Text = nick + ": " + message
+		}
 	} else {
 		matterMessage.Text = message
 	}
@@ -119,9 +180,11 @@ func (b *Bridge) handleMatter() {
 		case "!users":
 			log.Println("received !users from", message.UserName)
 			b.i.SendRaw("NAMES " + b.getIRCChannel(message.Token))
+			return
 		case "!gif":
 			message.Text = b.giphyRandom(strings.Fields(strings.Replace(message.Text, "!gif ", "", 1)))
 			b.Send(b.Config.IRC.Nick, message.Text, b.getIRCChannel(message.Token))
+			return
 		}
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {

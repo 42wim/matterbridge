@@ -8,25 +8,27 @@ import (
 
 type Config struct {
 	IRC struct {
-		UseTLS                 bool
-		SkipTLSVerify          bool
-		Server                 string
-		Port                   int
-		Nick                   string
-		Password               string
-		Channel                string
-		UseSlackCircumfix      bool
-		PrefixMessagesWithNick bool
+		UseTLS            bool
+		SkipTLSVerify     bool
+		Server            string
+		Port              int
+		Nick              string
+		Password          string
+		Channel           string
+		UseSlackCircumfix bool
 	}
 	Mattermost struct {
-		URL           string
-		Port          int
-		ShowJoinPart  bool
-		Token         string
-		IconURL       string
-		SkipTLSVerify bool
-		BindAddress   string
-		Channel       string
+		URL                    string
+		Port                   int
+		ShowJoinPart           bool
+		Token                  string
+		IconURL                string
+		SkipTLSVerify          bool
+		BindAddress            string
+		Channel                string
+		PrefixMessagesWithNick bool
+		NicksPerRow            int
+		NickFormatter          string
 	}
 	Token map[string]*struct {
 		IRCChannel string
