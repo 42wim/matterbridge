@@ -121,7 +121,6 @@ func (b *Bridge) handleOther(event *irc.Event) {
 	case "353":
 		log.Println("handleOther", b.getMMChannel(event.Arguments[0]))
 		b.Send(b.Config.IRC.Nick, b.formatnicks(event.Message()), b.getMMChannel(event.Arguments[0]))
-		break
 	default:
 		log.Printf("got unknown event: %+v\n", event);
 	}
