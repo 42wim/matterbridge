@@ -7,6 +7,8 @@ nick="matterbot"
 channel="#matterbridge"
 UseSlackCircumfix=false
 PrefixMessagesWithNick=false
+NickFormatter=plain
+NicksPerRow=4
 
 [mattermost]
 url="http://yourdomain/hooks/yourhookkey"

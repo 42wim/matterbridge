@@ -17,6 +17,8 @@ type Config struct {
 		Channel                string
 		UseSlackCircumfix      bool
 		PrefixMessagesWithNick bool
+		NicksPerRow            int
+		NickFormatter          string
 	}
 	Mattermost struct {
 		URL           string
