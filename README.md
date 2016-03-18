@@ -58,6 +58,10 @@ channel="#matterbridge"
 UseSlackCircumfix=false
 #whether to prefix messages from IRC to mattermost with the sender's nick. Useful if username overrides for incoming webhooks isn't enabled on the mattermost server
 PrefixMessagesWithNick=false
+#how to format the list of IRC nicks when displayed in mattermost. Possible options are "table" and "plain"
+NickFormatter=plain
+#how many nicks to list per row for formatters that support this
+NicksPerRow=4
 
 [mattermost]
 #url is your incoming webhook url (account settings - integrations - incoming webhooks)
