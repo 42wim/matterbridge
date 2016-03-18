@@ -56,6 +56,8 @@ SkipTLSVerify=true
 nick="matterbot"
 channel="#matterbridge"
 UseSlackCircumfix=false
+#whether to prefix messages from IRC to mattermost with the sender's nick. Useful if username overrides for incoming webhooks isn't enabled on the mattermost server
+PrefixMessagesWithNick=false
 
 [mattermost]
 #url is your incoming webhook url (account settings - integrations - incoming webhooks)

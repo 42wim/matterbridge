@@ -92,8 +92,12 @@ func (b *Bridge) SendType(nick string, message string, channel string, mtype str
 	matterMessage := matterhook.OMessage{IconURL: b.Config.Mattermost.IconURL}
 	matterMessage.Channel = channel
 	matterMessage.UserName = nick
-	matterMessage.Text = message
 	matterMessage.Type = mtype
+	if (b.Config.IRC.PrefixMessagesWithNick) {
+		matterMessage.Text = nick + ": " + message
+	} else {
+		matterMessage.Text = message
+	}
 	err := b.m.Send(matterMessage)
 	if err != nil {
 		log.Println(err)
