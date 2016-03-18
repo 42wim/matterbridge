@@ -131,13 +131,32 @@ func (b *Bridge) Send(nick string, message string, channel string) error {
 	return b.SendType(nick, message, channel, "")
 }
 
+func IsMarkup(message string) bool {
+	switch (message[0]) {
+	case '|': fallthrough
+	case '#': fallthrough
+	case '_': fallthrough
+	case '*': fallthrough
+	case '~': fallthrough
+	case '-': fallthrough
+	case ':': fallthrough
+	case '>': fallthrough
+	case '=': return true
+	}
+	return false
+}
+
 func (b *Bridge) SendType(nick string, message string, channel string, mtype string) error {
 	matterMessage := matterhook.OMessage{IconURL: b.Config.Mattermost.IconURL}
 	matterMessage.Channel = channel
 	matterMessage.UserName = nick
 	matterMessage.Type = mtype
-	if (b.Config.Mattermost.PrefixMessagesWithNick) {
-		matterMessage.Text = nick + ": " + message
+	if b.Config.Mattermost.PrefixMessagesWithNick {
+		if IsMarkup(message) {
+			matterMessage.Text = nick + ":\n\n" + message
+		} else {
+			matterMessage.Text = nick + ": " + message
+		}
 	} else {
 		matterMessage.Text = message
 	}
