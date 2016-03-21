@@ -16,6 +16,8 @@ type Config struct {
 		Password          string
 		Channel           string
 		UseSlackCircumfix bool
+		NickServNick      string
+		NickServPassword  string
 	}
 	Mattermost struct {
 		URL                    string
