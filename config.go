@@ -1,9 +1,9 @@
 package main
 
 import (
+	log "github.com/Sirupsen/logrus"
 	"gopkg.in/gcfg.v1"
 	"io/ioutil"
-	"log"
 )
 
 type Config struct {

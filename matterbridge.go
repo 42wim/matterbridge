@@ -4,9 +4,9 @@ import (
 	"crypto/tls"
 	"flag"
 	"github.com/42wim/matterbridge/matterhook"
+	log "github.com/Sirupsen/logrus"
 	"github.com/peterhellberg/giphy"
 	"github.com/thoj/go-ircevent"
-	"log"
 	"strconv"
 	"strings"
 )
@@ -58,10 +58,10 @@ func (b *Bridge) handleNewConnection(event *irc.Event) {
 
 func (b *Bridge) setupChannels() {
 	i := b.i
-	log.Println("Joining", b.Config.IRC.Channel, "as", b.ircNick)
+	log.Info("Joining ", b.Config.IRC.Channel, " as ", b.ircNick)
 	i.Join(b.Config.IRC.Channel)
 	for _, val := range b.Config.Token {
-		log.Println("Joining", val.IRCChannel, "as", b.ircNick)
+		log.Info("Joining ", val.IRCChannel, " as ", b.ircNick)
 		i.Join(val.IRCChannel)
 	}
 	i.AddCallback("PRIVMSG", b.handlePrivMsg)
@@ -83,16 +83,15 @@ func (b *Bridge) handlePrivMsg(event *irc.Event) {
 
 func (b *Bridge) handleJoinPart(event *irc.Event) {
 	b.Send(b.ircNick, "irc-"+event.Nick+" "+strings.ToLower(event.Code)+"s "+event.Message(), b.getMMChannel(event.Arguments[0]))
-	//b.SendType(b.ircNick, "irc-"+event.Nick+" "+strings.ToLower(event.Code)+"s "+event.Message(), b.getMMChannel(event.Arguments[0]), "join_leave")
 }
 
 func (b *Bridge) handleNotice(event *irc.Event) {
-	if (strings.Contains(event.Message(), "This nickname is registered")) {
-		b.i.Privmsg(b.Config.IRC.NickServNick, "IDENTIFY " + b.Config.IRC.NickServPassword)
+	if strings.Contains(event.Message(), "This nickname is registered") {
+		b.i.Privmsg(b.Config.IRC.NickServNick, "IDENTIFY "+b.Config.IRC.NickServPassword)
 	}
 }
 
-func tableformatter (nicks_s string, nicksPerRow int) string {
+func tableformatter(nicks_s string, nicksPerRow int) string {
 	nicks := strings.Split(nicks_s, " ")
 	result := "|IRC users"
 	if nicksPerRow < 1 {
@@ -110,7 +109,7 @@ func tableformatter (nicks_s string, nicksPerRow int) string {
 	}
 	result += nicks[0] + "|"
 	for i := 1; i < len(nicks); i++ {
-		if i % nicksPerRow == 0 {
+		if i%nicksPerRow == 0 {
 			result += "\r\n|" + nicks[i] + "|"
 		} else {
 			result += nicks[i] + "|"
@@ -119,12 +118,12 @@ func tableformatter (nicks_s string, nicksPerRow int) string {
 	return result
 }
 
-func plainformatter (nicks string, nicksPerRow int) string {
+func plainformatter(nicks string, nicksPerRow int) string {
 	return nicks + " currently on IRC"
 }
 
-func (b *Bridge) formatnicks (nicks string) string {
-	switch (b.Config.Mattermost.NickFormatter) {
+func (b *Bridge) formatnicks(nicks string) string {
+	switch b.Config.Mattermost.NickFormatter {
 	case "table":
 		return tableformatter(nicks, b.Config.Mattermost.NicksPerRow)
 	default:
@@ -137,15 +136,15 @@ func (b *Bridge) handleOther(event *irc.Event) {
 	case "001":
 		b.handleNewConnection(event)
 	case "353":
-		log.Println("handleOther", b.getMMChannel(event.Arguments[0]))
+		log.Debug("handleOther ", b.getMMChannel(event.Arguments[0]))
 		b.Send(b.ircNick, b.formatnicks(event.Message()), b.getMMChannel(event.Arguments[0]))
 	case "NOTICE":
 		b.handleNotice(event)
 	default:
-		log.Printf("UNKNOWN EVENT: %+v\n", event);
+		log.Debugf("UNKNOWN EVENT: %+v", event)
 		return
 	}
-	log.Printf("%+v\n", event);
+	log.Debugf("%+v", event)
 }
 
 func (b *Bridge) Send(nick string, message string, channel string) error {
@@ -153,16 +152,25 @@ func (b *Bridge) Send(nick string, message string, channel string) error {
 }
 
 func IsMarkup(message string) bool {
-	switch (message[0]) {
-	case '|': fallthrough
-	case '#': fallthrough
-	case '_': fallthrough
-	case '*': fallthrough
-	case '~': fallthrough
-	case '-': fallthrough
-	case ':': fallthrough
-	case '>': fallthrough
-	case '=': return true
+	switch message[0] {
+	case '|':
+		fallthrough
+	case '#':
+		fallthrough
+	case '_':
+		fallthrough
+	case '*':
+		fallthrough
+	case '~':
+		fallthrough
+	case '-':
+		fallthrough
+	case ':':
+		fallthrough
+	case '>':
+		fallthrough
+	case '=':
+		return true
 	}
 	return false
 }
@@ -183,7 +191,7 @@ func (b *Bridge) SendType(nick string, message string, channel string, mtype str
 	}
 	err := b.m.Send(matterMessage)
 	if err != nil {
-		log.Println(err)
+		log.Info(err)
 		return err
 	}
 	return nil
@@ -200,7 +208,7 @@ func (b *Bridge) handleMatter() {
 		cmd := strings.Fields(message.Text)[0]
 		switch cmd {
 		case "!users":
-			log.Println("received !users from", message.UserName)
+			log.Info("received !users from ", message.UserName)
 			b.i.SendRaw("NAMES " + b.getIRCChannel(message.Token))
 			return
 		case "!gif":
@@ -244,9 +252,18 @@ func (b *Bridge) getIRCChannel(token string) string {
 	return ircchannel
 }
 
+func init() {
+	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
+}
+
 func main() {
 	flagConfig := flag.String("conf", "matterbridge.conf", "config file")
+	flagDebug := flag.Bool("debug", false, "enable debug")
 	flag.Parse()
+	if *flagDebug {
+		log.Info("enabling debug")
+		log.SetLevel(log.DebugLevel)
+	}
 	NewBridge("matterbot", NewConfig(*flagConfig))
 	select {}
 }
