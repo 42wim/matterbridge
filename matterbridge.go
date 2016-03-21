@@ -9,20 +9,21 @@ import (
 	"log"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type Bridge struct {
-	i    *irc.Connection
-	m    *matterhook.Client
-	cmap map[string]string
+	i       *irc.Connection
+	m       *matterhook.Client
+	cmap    map[string]string
 	*Config
+	ircnick string
 }
 
 func NewBridge(name string, config *Config) *Bridge {
 	b := &Bridge{}
 	b.Config = config
 	b.cmap = make(map[string]string)
+	b.ircnick = b.Config.IRC.Nick
 	if len(b.Config.Token) > 0 {
 		for _, val := range b.Config.Token {
 			b.cmap[val.IRCChannel] = val.MMChannel
@@ -44,12 +45,22 @@ func (b *Bridge) createIRC(name string) *irc.Connection {
 	if b.Config.IRC.Password != "" {
 		i.Password = b.Config.IRC.Password
 	}
+	i.AddCallback("*", b.handleOther)
 	i.Connect(b.Config.IRC.Server + ":" + strconv.Itoa(b.Config.IRC.Port))
-	time.Sleep(time.Second)
-	log.Println("Joining", b.Config.IRC.Channel, "as", b.Config.IRC.Nick)
+	return i
+}
+
+func (b *Bridge) handleNewConnection(event *irc.Event) {
+	b.ircnick = event.Arguments[0]
+	b.setupChannels()
+}
+
+func (b *Bridge) setupChannels() {
+	i := b.i
+	log.Println("Joining", b.Config.IRC.Channel, "as", b.ircnick)
 	i.Join(b.Config.IRC.Channel)
 	for _, val := range b.Config.Token {
-		log.Println("Joining", val.IRCChannel, "as", b.Config.IRC.Nick)
+		log.Println("Joining", val.IRCChannel, "as", b.ircnick)
 		i.Join(val.IRCChannel)
 	}
 	i.AddCallback("PRIVMSG", b.handlePrivMsg)
@@ -58,8 +69,6 @@ func (b *Bridge) createIRC(name string) *irc.Connection {
 		i.AddCallback("JOIN", b.handleJoinPart)
 		i.AddCallback("PART", b.handleJoinPart)
 	}
-	i.AddCallback("*", b.handleOther)
-	return i
 }
 
 func (b *Bridge) handlePrivMsg(event *irc.Event) {
@@ -72,8 +81,8 @@ func (b *Bridge) handlePrivMsg(event *irc.Event) {
 }
 
 func (b *Bridge) handleJoinPart(event *irc.Event) {
-	b.Send(b.Config.IRC.Nick, "irc-"+event.Nick+" "+strings.ToLower(event.Code)+"s "+event.Message(), b.getMMChannel(event.Arguments[0]))
-	//b.SendType(b.Config.IRC.Nick, "irc-"+event.Nick+" "+strings.ToLower(event.Code)+"s "+event.Message(), b.getMMChannel(event.Arguments[0]), "join_leave")
+	b.Send(b.ircnick, "irc-"+event.Nick+" "+strings.ToLower(event.Code)+"s "+event.Message(), b.getMMChannel(event.Arguments[0]))
+	//b.SendType(b.ircnick, "irc-"+event.Nick+" "+strings.ToLower(event.Code)+"s "+event.Message(), b.getMMChannel(event.Arguments[0]), "join_leave")
 }
 
 func tableformatter (nicks_s string, nicksPerRow int) string {
@@ -118,9 +127,11 @@ func (b *Bridge) formatnicks (nicks string) string {
 
 func (b *Bridge) handleOther(event *irc.Event) {
 	switch event.Code {
+	case "001":
+		b.handleNewConnection(event)
 	case "353":
 		log.Println("handleOther", b.getMMChannel(event.Arguments[0]))
-		b.Send(b.Config.IRC.Nick, b.formatnicks(event.Message()), b.getMMChannel(event.Arguments[0]))
+		b.Send(b.ircnick, b.formatnicks(event.Message()), b.getMMChannel(event.Arguments[0]))
 	default:
 		log.Printf("got unknown event: %+v\n", event);
 	}
@@ -183,7 +194,7 @@ func (b *Bridge) handleMatter() {
 			return
 		case "!gif":
 			message.Text = b.giphyRandom(strings.Fields(strings.Replace(message.Text, "!gif ", "", 1)))
-			b.Send(b.Config.IRC.Nick, message.Text, b.getIRCChannel(message.Token))
+			b.Send(b.ircnick, message.Text, b.getIRCChannel(message.Token))
 			return
 		}
 		texts := strings.Split(message.Text, "\n")
