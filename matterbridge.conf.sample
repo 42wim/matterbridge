@@ -19,6 +19,8 @@ IconURL="http://youricon.png"
 PrefixMessagesWithNick=false
 NickFormatter=plain
 NicksPerRow=4
+#NickServNick="nickserv"
+#NickServPassword="secret"
 
 [general]
 GiphyAPIKey=dc6zaTOxFJmzC

@@ -76,6 +76,10 @@ PrefixMessagesWithNick=false
 NickFormatter=plain
 #how many nicks to list per row for formatters that support this
 NicksPerRow=4
+#Freenode nickserv
+NickServNick="nickserv"
+#Password for nickserv
+NickServPassword="secret"
 
 #multiple channel config
 #token you can find in your outgoing webhook
