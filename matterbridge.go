@@ -27,7 +27,6 @@ func NewBridge(name string, config *Config) *Bridge {
 	b.Config = config
 	b.cmap = make(map[string]string)
 	b.ircNick = b.Config.IRC.Nick
-	b.names = make([]string, 0, 10000)
 	if len(b.Config.Token) > 0 {
 		for _, val := range b.Config.Token {
 			b.cmap[val.IRCChannel] = val.MMChannel
@@ -140,7 +139,7 @@ func (b *Bridge) storeNames(event *irc.Event) {
 func (b *Bridge) endNames(event *irc.Event) {
 	sort.Strings(b.names)
 	b.Send(b.ircNick, b.formatnicks(b.names), b.getMMChannel(event.Arguments[0]))
-	b.names = make([]string, 0, 10000)
+	b.names = nil
 }
 
 func (b *Bridge) handleOther(event *irc.Event) {
