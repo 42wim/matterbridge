@@ -9,6 +9,7 @@ import (
 	"github.com/thoj/go-ircevent"
 	"strconv"
 	"strings"
+	"sort"
 )
 
 type Bridge struct {
@@ -17,6 +18,7 @@ type Bridge struct {
 	cmap        map[string]string
 	ircNick     string
 	ircNickPass string
+	names       []string
 	*Config
 }
 
@@ -25,6 +27,7 @@ func NewBridge(name string, config *Config) *Bridge {
 	b.Config = config
 	b.cmap = make(map[string]string)
 	b.ircNick = b.Config.IRC.Nick
+	b.names = make([]string, 0, 10000)
 	if len(b.Config.Token) > 0 {
 		for _, val := range b.Config.Token {
 			b.cmap[val.IRCChannel] = val.MMChannel
@@ -91,8 +94,7 @@ func (b *Bridge) handleNotice(event *irc.Event) {
 	}
 }
 
-func tableformatter(nicks_s string, nicksPerRow int) string {
-	nicks := strings.Split(nicks_s, " ")
+func tableformatter(nicks []string, nicksPerRow int) string {
 	result := "|IRC users"
 	if nicksPerRow < 1 {
 		nicksPerRow = 4
@@ -118,11 +120,11 @@ func tableformatter(nicks_s string, nicksPerRow int) string {
 	return result
 }
 
-func plainformatter(nicks string, nicksPerRow int) string {
-	return nicks + " currently on IRC"
+func plainformatter(nicks []string, nicksPerRow int) string {
+	return strings.Join(nicks, ", ") + " currently on IRC"
 }
 
-func (b *Bridge) formatnicks(nicks string) string {
+func (b *Bridge) formatnicks(nicks []string) string {
 	switch b.Config.Mattermost.NickFormatter {
 	case "table":
 		return tableformatter(nicks, b.Config.Mattermost.NicksPerRow)
@@ -131,13 +133,24 @@ func (b *Bridge) formatnicks(nicks string) string {
 	}
 }
 
+func (b *Bridge) storeNames(event *irc.Event) {
+	b.names = append(b.names, strings.Split(event.Message(), " ")...)
+}
+
+func (b *Bridge) endNames(event *irc.Event) {
+	sort.Strings(b.names)
+	b.Send(b.ircNick, b.formatnicks(b.names), b.getMMChannel(event.Arguments[0]))
+	b.names = make([]string, 0, 10000)
+}
+
 func (b *Bridge) handleOther(event *irc.Event) {
 	switch event.Code {
 	case "001":
 		b.handleNewConnection(event)
+	case "366":
+		b.endNames(event)
 	case "353":
-		log.Debug("handleOther ", b.getMMChannel(event.Arguments[0]))
-		b.Send(b.ircNick, b.formatnicks(event.Message()), b.getMMChannel(event.Arguments[0]))
+		b.storeNames(event)
 	case "NOTICE":
 		b.handleNotice(event)
 	default:
@@ -218,7 +231,9 @@ func (b *Bridge) handleMatter() {
 		}
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
-			b.i.Privmsg(b.getIRCChannel(message.Token), username+text)
+			channel := b.getIRCChannel(message.Token)
+			log.Debug("Sending message from " + message.UserName + " to " + channel)
+			b.i.Privmsg(channel, username+text)
 		}
 	}
 }
