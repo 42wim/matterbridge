@@ -21,13 +21,6 @@ const (
 
 	SERVICE_GITLAB = "gitlab"
 	SERVICE_GOOGLE = "google"
-
-	WEBSERVER_MODE_REGULAR  = "regular"
-	WEBSERVER_MODE_GZIP     = "gzip"
-	WEBSERVER_MODE_DISABLED = "disabled"
-
-	GENERIC_NOTIFICATION = "generic"
-	FULL_NOTIFICATION    = "full"
 )
 
 type ServiceSettings struct {
@@ -46,7 +39,6 @@ type ServiceSettings struct {
 	EnableDeveloper                   *bool
 	EnableSecurityFixAlert            *bool
 	EnableInsecureOutgoingConnections *bool
-	EnableMultifactorAuthentication   *bool
 	AllowCorsFrom                     *string
 	SessionLengthWebInDays            *int
 	SessionLengthMobileInDays         *int
@@ -54,7 +46,6 @@ type ServiceSettings struct {
 	SessionCacheInMinutes             *int
 	WebsocketSecurePort               *int
 	WebsocketPort                     *int
-	WebserverMode                     *string
 }
 
 type SSOSettings struct {
@@ -125,7 +116,6 @@ type EmailSettings struct {
 	PasswordResetSalt        string
 	SendPushNotifications    *bool
 	PushNotificationServer   *string
-	PushNotificationContents *string
 }
 
 type RateLimitSettings struct {
@@ -162,16 +152,12 @@ type TeamSettings struct {
 
 type LdapSettings struct {
 	// Basic
-	Enable             *bool
-	LdapServer         *string
-	LdapPort           *int
-	ConnectionSecurity *string
-	BaseDN             *string
-	BindUsername       *string
-	BindPassword       *string
-
-	// Filtering
-	UserFilter *string
+	Enable       *bool
+	LdapServer   *string
+	LdapPort     *int
+	BaseDN       *string
+	BindUsername *string
+	BindPassword *string
 
 	// User Mapping
 	FirstNameAttribute *string
@@ -181,30 +167,22 @@ type LdapSettings struct {
 	IdAttribute        *string
 
 	// Advanced
-	SkipCertificateVerification *bool
-	QueryTimeout                *int
-}
-
-type ComplianceSettings struct {
-	Enable      *bool
-	Directory   *string
-	EnableDaily *bool
+	QueryTimeout *int
 }
 
 type Config struct {
-	ServiceSettings    ServiceSettings
-	TeamSettings       TeamSettings
-	SqlSettings        SqlSettings
-	LogSettings        LogSettings
-	FileSettings       FileSettings
-	EmailSettings      EmailSettings
-	RateLimitSettings  RateLimitSettings
-	PrivacySettings    PrivacySettings
-	SupportSettings    SupportSettings
-	GitLabSettings     SSOSettings
-	GoogleSettings     SSOSettings
-	LdapSettings       LdapSettings
-	ComplianceSettings ComplianceSettings
+	ServiceSettings   ServiceSettings
+	TeamSettings      TeamSettings
+	SqlSettings       SqlSettings
+	LogSettings       LogSettings
+	FileSettings      FileSettings
+	EmailSettings     EmailSettings
+	RateLimitSettings RateLimitSettings
+	PrivacySettings   PrivacySettings
+	SupportSettings   SupportSettings
+	GitLabSettings    SSOSettings
+	GoogleSettings    SSOSettings
+	LdapSettings      LdapSettings
 }
 
 func (o *Config) ToJson() string {
@@ -281,11 +259,6 @@ func (o *Config) SetDefaults() {
 		*o.ServiceSettings.EnableInsecureOutgoingConnections = false
 	}
 
-	if o.ServiceSettings.EnableMultifactorAuthentication == nil {
-		o.ServiceSettings.EnableMultifactorAuthentication = new(bool)
-		*o.ServiceSettings.EnableMultifactorAuthentication = false
-	}
-
 	if o.TeamSettings.RestrictTeamNames == nil {
 		o.TeamSettings.RestrictTeamNames = new(bool)
 		*o.TeamSettings.RestrictTeamNames = true
@@ -319,11 +292,6 @@ func (o *Config) SetDefaults() {
 	if o.EmailSettings.PushNotificationServer == nil {
 		o.EmailSettings.PushNotificationServer = new(string)
 		*o.EmailSettings.PushNotificationServer = ""
-	}
-
-	if o.EmailSettings.PushNotificationContents == nil {
-		o.EmailSettings.PushNotificationContents = new(string)
-		*o.EmailSettings.PushNotificationContents = GENERIC_NOTIFICATION
 	}
 
 	if o.SupportSettings.TermsOfServiceLink == nil {
@@ -371,11 +339,6 @@ func (o *Config) SetDefaults() {
 		*o.LdapSettings.Enable = false
 	}
 
-	if o.LdapSettings.UserFilter == nil {
-		o.LdapSettings.UserFilter = new(string)
-		*o.LdapSettings.UserFilter = ""
-	}
-
 	if o.ServiceSettings.SessionLengthWebInDays == nil {
 		o.ServiceSettings.SessionLengthWebInDays = new(int)
 		*o.ServiceSettings.SessionLengthWebInDays = 30
@@ -419,36 +382,6 @@ func (o *Config) SetDefaults() {
 	if o.ServiceSettings.AllowCorsFrom == nil {
 		o.ServiceSettings.AllowCorsFrom = new(string)
 		*o.ServiceSettings.AllowCorsFrom = ""
-	}
-
-	if o.ServiceSettings.WebserverMode == nil {
-		o.ServiceSettings.WebserverMode = new(string)
-		*o.ServiceSettings.WebserverMode = "regular"
-	}
-
-	if o.ComplianceSettings.Enable == nil {
-		o.ComplianceSettings.Enable = new(bool)
-		*o.ComplianceSettings.Enable = false
-	}
-
-	if o.ComplianceSettings.Directory == nil {
-		o.ComplianceSettings.Directory = new(string)
-		*o.ComplianceSettings.Directory = "./data/"
-	}
-
-	if o.ComplianceSettings.EnableDaily == nil {
-		o.ComplianceSettings.EnableDaily = new(bool)
-		*o.ComplianceSettings.EnableDaily = false
-	}
-
-	if o.LdapSettings.ConnectionSecurity == nil {
-		o.LdapSettings.ConnectionSecurity = new(string)
-		*o.LdapSettings.ConnectionSecurity = ""
-	}
-
-	if o.LdapSettings.SkipCertificateVerification == nil {
-		o.LdapSettings.SkipCertificateVerification = new(bool)
-		*o.LdapSettings.SkipCertificateVerification = false
 	}
 }
 
@@ -536,10 +469,6 @@ func (o *Config) IsValid() *AppError {
 
 	if o.RateLimitSettings.PerSec <= 0 {
 		return NewLocAppError("Config.IsValid", "model.config.is_valid.rate_sec.app_error", nil, "")
-	}
-
-	if !(*o.LdapSettings.ConnectionSecurity == CONN_SECURITY_NONE || *o.LdapSettings.ConnectionSecurity == CONN_SECURITY_TLS || *o.LdapSettings.ConnectionSecurity == CONN_SECURITY_STARTTLS) {
-		return NewLocAppError("Config.IsValid", "model.config.is_valid.ldap_security.app_error", nil, "")
 	}
 
 	return nil

@@ -16,19 +16,21 @@ import (
 )
 
 const (
-	HEADER_REQUEST_ID         = "X-Request-ID"
-	HEADER_VERSION_ID         = "X-Version-ID"
-	HEADER_ETAG_SERVER        = "ETag"
-	HEADER_ETAG_CLIENT        = "If-None-Match"
-	HEADER_FORWARDED          = "X-Forwarded-For"
-	HEADER_REAL_IP            = "X-Real-IP"
-	HEADER_FORWARDED_PROTO    = "X-Forwarded-Proto"
-	HEADER_TOKEN              = "token"
-	HEADER_BEARER             = "BEARER"
-	HEADER_AUTH               = "Authorization"
-	HEADER_REQUESTED_WITH     = "X-Requested-With"
-	HEADER_REQUESTED_WITH_XML = "XMLHttpRequest"
-	API_URL_SUFFIX            = "/api/v1"
+	HEADER_REQUEST_ID             = "X-Request-ID"
+	HEADER_VERSION_ID             = "X-Version-ID"
+	HEADER_ETAG_SERVER            = "ETag"
+	HEADER_ETAG_CLIENT            = "If-None-Match"
+	HEADER_FORWARDED              = "X-Forwarded-For"
+	HEADER_REAL_IP                = "X-Real-IP"
+	HEADER_FORWARDED_PROTO        = "X-Forwarded-Proto"
+	HEADER_TOKEN                  = "token"
+	HEADER_BEARER                 = "BEARER"
+	HEADER_AUTH                   = "Authorization"
+	HEADER_MM_SESSION_TOKEN_INDEX = "X-MM-TokenIndex"
+	SESSION_TOKEN_INDEX           = "session_token_index"
+	HEADER_REQUESTED_WITH         = "X-Requested-With"
+	HEADER_REQUESTED_WITH_XML     = "XMLHttpRequest"
+	API_URL_SUFFIX                = "/api/v1"
 )
 
 type Result struct {
@@ -179,6 +181,29 @@ func (c *Client) FindTeamByName(name string, allServers bool) (*Result, *AppErro
 	}
 }
 
+func (c *Client) FindTeams(email string) (*Result, *AppError) {
+	m := make(map[string]string)
+	m["email"] = email
+	if r, err := c.DoApiPost("/teams/find_teams", MapToJson(m)); err != nil {
+		return nil, err
+	} else {
+
+		return &Result{r.Header.Get(HEADER_REQUEST_ID),
+			r.Header.Get(HEADER_ETAG_SERVER), TeamMapFromJson(r.Body)}, nil
+	}
+}
+
+func (c *Client) FindTeamsSendEmail(email string) (*Result, *AppError) {
+	m := make(map[string]string)
+	m["email"] = email
+	if r, err := c.DoApiPost("/teams/email_teams", MapToJson(m)); err != nil {
+		return nil, err
+	} else {
+		return &Result{r.Header.Get(HEADER_REQUEST_ID),
+			r.Header.Get(HEADER_ETAG_SERVER), ArrayFromJson(r.Body)}, nil
+	}
+}
+
 func (c *Client) InviteMembers(invites *Invites) (*Result, *AppError) {
 	if r, err := c.DoApiPost("/teams/invite_members", invites.ToJson()); err != nil {
 		return nil, err
@@ -303,42 +328,6 @@ func (c *Client) Logout() (*Result, *AppError) {
 	}
 }
 
-func (c *Client) CheckMfa(method, teamName, loginId string) (*Result, *AppError) {
-	m := make(map[string]string)
-	m["method"] = method
-	m["team_name"] = teamName
-	m["login_id"] = loginId
-
-	if r, err := c.DoApiPost("/users/mfa", MapToJson(m)); err != nil {
-		return nil, err
-	} else {
-		return &Result{r.Header.Get(HEADER_REQUEST_ID),
-			r.Header.Get(HEADER_ETAG_SERVER), MapFromJson(r.Body)}, nil
-	}
-}
-
-func (c *Client) GenerateMfaQrCode() (*Result, *AppError) {
-	if r, err := c.DoApiGet("/users/generate_mfa_qr", "", ""); err != nil {
-		return nil, err
-	} else {
-		return &Result{r.Header.Get(HEADER_REQUEST_ID),
-			r.Header.Get(HEADER_ETAG_SERVER), r.Body}, nil
-	}
-}
-
-func (c *Client) UpdateMfa(activate bool, token string) (*Result, *AppError) {
-	m := make(map[string]interface{})
-	m["activate"] = activate
-	m["token"] = token
-
-	if r, err := c.DoApiPost("/users/update_mfa", StringInterfaceToJson(m)); err != nil {
-		return nil, err
-	} else {
-		return &Result{r.Header.Get(HEADER_REQUEST_ID),
-			r.Header.Get(HEADER_ETAG_SERVER), MapFromJson(r.Body)}, nil
-	}
-}
-
 func (c *Client) SetOAuthToken(token string) {
 	c.AuthToken = token
 	c.AuthType = HEADER_TOKEN
@@ -370,8 +359,8 @@ func (c *Client) GetSessions(id string) (*Result, *AppError) {
 	}
 }
 
-func (c *Client) EmailToOAuth(m map[string]string) (*Result, *AppError) {
-	if r, err := c.DoApiPost("/users/claim/email_to_sso", MapToJson(m)); err != nil {
+func (c *Client) SwitchToSSO(m map[string]string) (*Result, *AppError) {
+	if r, err := c.DoApiPost("/users/switch_to_sso", MapToJson(m)); err != nil {
 		return nil, err
 	} else {
 		return &Result{r.Header.Get(HEADER_REQUEST_ID),
@@ -379,26 +368,8 @@ func (c *Client) EmailToOAuth(m map[string]string) (*Result, *AppError) {
 	}
 }
 
-func (c *Client) OAuthToEmail(m map[string]string) (*Result, *AppError) {
-	if r, err := c.DoApiPost("/users/claim/oauth_to_email", MapToJson(m)); err != nil {
-		return nil, err
-	} else {
-		return &Result{r.Header.Get(HEADER_REQUEST_ID),
-			r.Header.Get(HEADER_ETAG_SERVER), MapFromJson(r.Body)}, nil
-	}
-}
-
-func (c *Client) LDAPToEmail(m map[string]string) (*Result, *AppError) {
-	if r, err := c.DoApiPost("/users/claim/ldap_to_email", MapToJson(m)); err != nil {
-		return nil, err
-	} else {
-		return &Result{r.Header.Get(HEADER_REQUEST_ID),
-			r.Header.Get(HEADER_ETAG_SERVER), MapFromJson(r.Body)}, nil
-	}
-}
-
-func (c *Client) EmailToLDAP(m map[string]string) (*Result, *AppError) {
-	if r, err := c.DoApiPost("/users/claim/ldap_to_email", MapToJson(m)); err != nil {
+func (c *Client) SwitchToEmail(m map[string]string) (*Result, *AppError) {
+	if r, err := c.DoApiPost("/users/switch_to_email", MapToJson(m)); err != nil {
 		return nil, err
 	} else {
 		return &Result{r.Header.Get(HEADER_REQUEST_ID),
@@ -524,42 +495,6 @@ func (c *Client) TestEmail(config *Config) (*Result, *AppError) {
 	} else {
 		return &Result{r.Header.Get(HEADER_REQUEST_ID),
 			r.Header.Get(HEADER_ETAG_SERVER), MapFromJson(r.Body)}, nil
-	}
-}
-
-func (c *Client) GetComplianceReports() (*Result, *AppError) {
-	if r, err := c.DoApiGet("/admin/compliance_reports", "", ""); err != nil {
-		return nil, err
-	} else {
-		return &Result{r.Header.Get(HEADER_REQUEST_ID),
-			r.Header.Get(HEADER_ETAG_SERVER), CompliancesFromJson(r.Body)}, nil
-	}
-}
-
-func (c *Client) SaveComplianceReport(job *Compliance) (*Result, *AppError) {
-	if r, err := c.DoApiPost("/admin/save_compliance_report", job.ToJson()); err != nil {
-		return nil, err
-	} else {
-		return &Result{r.Header.Get(HEADER_REQUEST_ID),
-			r.Header.Get(HEADER_ETAG_SERVER), ComplianceFromJson(r.Body)}, nil
-	}
-}
-
-func (c *Client) DownloadComplianceReport(id string) (*Result, *AppError) {
-	var rq *http.Request
-	rq, _ = http.NewRequest("GET", c.ApiUrl+"/admin/download_compliance_report/"+id, nil)
-
-	if len(c.AuthToken) > 0 {
-		rq.Header.Set(HEADER_AUTH, "BEARER "+c.AuthToken)
-	}
-
-	if rp, err := c.HttpClient.Do(rq); err != nil {
-		return nil, NewLocAppError("/admin/download_compliance_report", "model.client.connecting.app_error", nil, err.Error())
-	} else if rp.StatusCode >= 300 {
-		return nil, AppErrorFromJson(rp.Body)
-	} else {
-		return &Result{rp.Header.Get(HEADER_REQUEST_ID),
-			rp.Header.Get(HEADER_ETAG_SERVER), rp.Body}, nil
 	}
 }
 
@@ -1005,7 +940,7 @@ func (c *Client) AllowOAuth(rspType, clientId, redirect, scope, state string) (*
 }
 
 func (c *Client) GetAccessToken(data url.Values) (*Result, *AppError) {
-	if r, err := c.DoApiPost("/oauth/access_token", data.Encode()); err != nil {
+	if r, err := c.DoPost("/oauth/access_token", data.Encode(), "application/x-www-form-urlencoded"); err != nil {
 		return nil, err
 	} else {
 		return &Result{r.Header.Get(HEADER_REQUEST_ID),
@@ -1123,22 +1058,4 @@ func (c *Client) RegenOutgoingWebhookToken(data map[string]string) (*Result, *Ap
 func (c *Client) MockSession(sessionToken string) {
 	c.AuthToken = sessionToken
 	c.AuthType = HEADER_BEARER
-}
-
-func (c *Client) GetClientLicenceConfig() (*Result, *AppError) {
-	if r, err := c.DoApiGet("/license/client_config", "", ""); err != nil {
-		return nil, err
-	} else {
-		return &Result{r.Header.Get(HEADER_REQUEST_ID),
-			r.Header.Get(HEADER_ETAG_SERVER), MapFromJson(r.Body)}, nil
-	}
-}
-
-func (c *Client) GetMeLoggedIn() (*Result, *AppError) {
-	if r, err := c.DoApiGet("/users/me_logged_in", "", ""); err != nil {
-		return nil, err
-	} else {
-		return &Result{r.Header.Get(HEADER_REQUEST_ID),
-			r.Header.Get(HEADER_ETAG_SERVER), MapFromJson(r.Body)}, nil
-	}
 }

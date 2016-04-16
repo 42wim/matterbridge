@@ -232,12 +232,3 @@ func (o *Team) Sanitize() {
 	o.Email = ""
 	o.AllowedDomains = ""
 }
-
-func (o *Team) SanitizeForNotLoggedIn() {
-	o.Email = ""
-	o.AllowedDomains = ""
-	o.CompanyName = ""
-	if !o.AllowOpenInvite {
-		o.InviteId = ""
-	}
-}

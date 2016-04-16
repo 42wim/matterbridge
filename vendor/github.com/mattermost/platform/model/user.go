@@ -15,19 +15,17 @@ import (
 )
 
 const (
-	ROLE_TEAM_ADMIN            = "admin"
-	ROLE_SYSTEM_ADMIN          = "system_admin"
-	USER_AWAY_TIMEOUT          = 5 * 60 * 1000 // 5 minutes
-	USER_OFFLINE_TIMEOUT       = 1 * 60 * 1000 // 1 minute
-	USER_OFFLINE               = "offline"
-	USER_AWAY                  = "away"
-	USER_ONLINE                = "online"
-	USER_NOTIFY_ALL            = "all"
-	USER_NOTIFY_MENTION        = "mention"
-	USER_NOTIFY_NONE           = "none"
-	DEFAULT_LOCALE             = "en"
-	USER_AUTH_SERVICE_EMAIL    = "email"
-	USER_AUTH_SERVICE_USERNAME = "username"
+	ROLE_TEAM_ADMIN      = "admin"
+	ROLE_SYSTEM_ADMIN    = "system_admin"
+	USER_AWAY_TIMEOUT    = 5 * 60 * 1000 // 5 minutes
+	USER_OFFLINE_TIMEOUT = 1 * 60 * 1000 // 1 minute
+	USER_OFFLINE         = "offline"
+	USER_AWAY            = "away"
+	USER_ONLINE          = "online"
+	USER_NOTIFY_ALL      = "all"
+	USER_NOTIFY_MENTION  = "mention"
+	USER_NOTIFY_NONE     = "none"
+	DEFAULT_LOCALE       = "en"
 )
 
 type User struct {
@@ -56,8 +54,6 @@ type User struct {
 	LastPictureUpdate  int64     `json:"last_picture_update,omitempty"`
 	FailedAttempts     int       `json:"failed_attempts,omitempty"`
 	Locale             string    `json:"locale"`
-	MfaActive          bool      `json:"mfa_active,omitempty"`
-	MfaSecret          string    `json:"mfa_secret,omitempty"`
 }
 
 // IsValid validates the user and returns an error if it isn't configured
@@ -143,8 +139,6 @@ func (u *User) PreSave() {
 	u.UpdateAt = u.CreateAt
 
 	u.LastPasswordUpdate = u.CreateAt
-
-	u.MfaActive = false
 
 	if u.Locale == "" {
 		u.Locale = DEFAULT_LOCALE
@@ -352,14 +346,7 @@ func IsInRole(userRoles string, inRole string) bool {
 }
 
 func (u *User) IsSSOUser() bool {
-	if len(u.AuthData) != 0 && len(u.AuthService) != 0 && u.AuthService != USER_AUTH_SERVICE_LDAP {
-		return true
-	}
-	return false
-}
-
-func (u *User) IsLDAPUser() bool {
-	if u.AuthService == USER_AUTH_SERVICE_LDAP {
+	if len(u.AuthData) != 0 && len(u.AuthService) != 0 {
 		return true
 	}
 	return false
