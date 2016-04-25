@@ -11,7 +11,7 @@ There is also [matterbridge-plus] (https://github.com/42wim/matterbridge-plus) w
 Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/tag/v0.3)
 
 ## building
-Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH] (https://golang.org/doc/code.html#GOPATH)
+Go 1.6+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH] (https://golang.org/doc/code.html#GOPATH)
 
 ```
 cd $GOPATH
