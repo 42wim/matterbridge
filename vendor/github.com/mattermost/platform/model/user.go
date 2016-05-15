@@ -15,17 +15,19 @@ import (
 )
 
 const (
-	ROLE_TEAM_ADMIN      = "admin"
-	ROLE_SYSTEM_ADMIN    = "system_admin"
-	USER_AWAY_TIMEOUT    = 5 * 60 * 1000 // 5 minutes
-	USER_OFFLINE_TIMEOUT = 1 * 60 * 1000 // 1 minute
-	USER_OFFLINE         = "offline"
-	USER_AWAY            = "away"
-	USER_ONLINE          = "online"
-	USER_NOTIFY_ALL      = "all"
-	USER_NOTIFY_MENTION  = "mention"
-	USER_NOTIFY_NONE     = "none"
-	DEFAULT_LOCALE       = "en"
+	ROLE_SYSTEM_ADMIN          = "system_admin"
+	USER_AWAY_TIMEOUT          = 5 * 60 * 1000 // 5 minutes
+	USER_OFFLINE_TIMEOUT       = 1 * 60 * 1000 // 1 minute
+	USER_OFFLINE               = "offline"
+	USER_AWAY                  = "away"
+	USER_ONLINE                = "online"
+	USER_NOTIFY_ALL            = "all"
+	USER_NOTIFY_MENTION        = "mention"
+	USER_NOTIFY_NONE           = "none"
+	DEFAULT_LOCALE             = "en"
+	USER_AUTH_SERVICE_EMAIL    = "email"
+	USER_AUTH_SERVICE_USERNAME = "username"
+	MIN_PASSWORD_LENGTH        = 5
 )
 
 type User struct {
@@ -33,10 +35,9 @@ type User struct {
 	CreateAt           int64     `json:"create_at,omitempty"`
 	UpdateAt           int64     `json:"update_at,omitempty"`
 	DeleteAt           int64     `json:"delete_at"`
-	TeamId             string    `json:"team_id"`
 	Username           string    `json:"username"`
 	Password           string    `json:"password,omitempty"`
-	AuthData           string    `json:"auth_data,omitempty"`
+	AuthData           *string   `json:"auth_data,omitempty"`
 	AuthService        string    `json:"auth_service"`
 	Email              string    `json:"email"`
 	EmailVerified      bool      `json:"email_verified,omitempty"`
@@ -54,6 +55,8 @@ type User struct {
 	LastPictureUpdate  int64     `json:"last_picture_update,omitempty"`
 	FailedAttempts     int       `json:"failed_attempts,omitempty"`
 	Locale             string    `json:"locale"`
+	MfaActive          bool      `json:"mfa_active,omitempty"`
+	MfaSecret          string    `json:"mfa_secret,omitempty"`
 }
 
 // IsValid validates the user and returns an error if it isn't configured
@@ -70,10 +73,6 @@ func (u *User) IsValid() *AppError {
 
 	if u.UpdateAt == 0 {
 		return NewLocAppError("User.IsValid", "model.user.is_valid.update_at.app_error", nil, "user_id="+u.Id)
-	}
-
-	if len(u.TeamId) != 26 {
-		return NewLocAppError("User.IsValid", "model.user.is_valid.team_id.app_error", nil, "")
 	}
 
 	if !IsValidUsername(u.Username) {
@@ -100,15 +99,15 @@ func (u *User) IsValid() *AppError {
 		return NewLocAppError("User.IsValid", "model.user.is_valid.pwd.app_error", nil, "user_id="+u.Id)
 	}
 
-	if len(u.AuthData) > 128 {
+	if u.AuthData != nil && len(*u.AuthData) > 128 {
 		return NewLocAppError("User.IsValid", "model.user.is_valid.auth_data.app_error", nil, "user_id="+u.Id)
 	}
 
-	if len(u.AuthData) > 0 && len(u.AuthService) == 0 {
+	if u.AuthData != nil && len(*u.AuthData) > 0 && len(u.AuthService) == 0 {
 		return NewLocAppError("User.IsValid", "model.user.is_valid.auth_data_type.app_error", nil, "user_id="+u.Id)
 	}
 
-	if len(u.Password) > 0 && len(u.AuthData) > 0 {
+	if len(u.Password) > 0 && u.AuthData != nil && len(*u.AuthData) > 0 {
 		return NewLocAppError("User.IsValid", "model.user.is_valid.auth_data_pwd.app_error", nil, "user_id="+u.Id)
 	}
 
@@ -131,6 +130,10 @@ func (u *User) PreSave() {
 		u.Username = NewId()
 	}
 
+	if u.AuthData != nil && *u.AuthData == "" {
+		u.AuthData = nil
+	}
+
 	u.Username = strings.ToLower(u.Username)
 	u.Email = strings.ToLower(u.Email)
 	u.Locale = strings.ToLower(u.Locale)
@@ -139,6 +142,8 @@ func (u *User) PreSave() {
 	u.UpdateAt = u.CreateAt
 
 	u.LastPasswordUpdate = u.CreateAt
+
+	u.MfaActive = false
 
 	if u.Locale == "" {
 		u.Locale = DEFAULT_LOCALE
@@ -164,6 +169,10 @@ func (u *User) PreUpdate() {
 	u.Locale = strings.ToLower(u.Locale)
 	u.UpdateAt = GetMillis()
 
+	if u.AuthData != nil && *u.AuthData == "" {
+		u.AuthData = nil
+	}
+
 	if u.NotifyProps == nil || len(u.NotifyProps) == 0 {
 		u.SetDefaultNotifications()
 	} else if _, ok := u.NotifyProps["mention_keys"]; ok {
@@ -185,13 +194,28 @@ func (u *User) SetDefaultNotifications() {
 	u.NotifyProps["desktop"] = USER_NOTIFY_ALL
 	u.NotifyProps["desktop_sound"] = "true"
 	u.NotifyProps["mention_keys"] = u.Username + ",@" + u.Username
-	u.NotifyProps["first_name"] = "false"
 	u.NotifyProps["all"] = "true"
 	u.NotifyProps["channel"] = "true"
-	splitName := strings.Split(u.Nickname, " ")
-	if len(splitName) > 0 && splitName[0] != "" {
+
+	if u.FirstName == "" {
+		u.NotifyProps["first_name"] = "false"
+	} else {
 		u.NotifyProps["first_name"] = "true"
-		u.NotifyProps["mention_keys"] += "," + splitName[0]
+	}
+}
+
+func (user *User) UpdateMentionKeysFromUsername(oldUsername string) {
+	nonUsernameKeys := []string{}
+	splitKeys := strings.Split(user.NotifyProps["mention_keys"], ",")
+	for _, key := range splitKeys {
+		if key != oldUsername && key != "@"+oldUsername {
+			nonUsernameKeys = append(nonUsernameKeys, key)
+		}
+	}
+
+	user.NotifyProps["mention_keys"] = user.Username + ",@" + user.Username
+	if len(nonUsernameKeys) > 0 {
+		user.NotifyProps["mention_keys"] += "," + strings.Join(nonUsernameKeys, ",")
 	}
 }
 
@@ -221,7 +245,9 @@ func (u *User) IsAway() bool {
 // Remove any private data from the user object
 func (u *User) Sanitize(options map[string]bool) {
 	u.Password = ""
-	u.AuthData = ""
+	u.AuthData = new(string)
+	*u.AuthData = ""
+	u.MfaSecret = ""
 
 	if len(options) != 0 && !options["email"] {
 		u.Email = ""
@@ -238,8 +264,11 @@ func (u *User) Sanitize(options map[string]bool) {
 func (u *User) ClearNonProfileFields() {
 	u.UpdateAt = 0
 	u.Password = ""
-	u.AuthData = ""
+	u.AuthData = new(string)
+	*u.AuthData = ""
 	u.AuthService = ""
+	u.MfaActive = false
+	u.MfaSecret = ""
 	u.EmailVerified = false
 	u.LastPingAt = 0
 	u.AllowMarketing = false
@@ -295,7 +324,7 @@ func (u *User) GetDisplayName() string {
 	}
 }
 
-func IsValidRoles(userRoles string) bool {
+func IsValidUserRoles(userRoles string) bool {
 
 	roles := strings.Split(userRoles, " ")
 
@@ -310,10 +339,6 @@ func IsValidRoles(userRoles string) bool {
 
 func isValidRole(role string) bool {
 	if role == "" {
-		return true
-	}
-
-	if role == ROLE_TEAM_ADMIN {
 		return true
 	}
 
@@ -345,8 +370,15 @@ func IsInRole(userRoles string, inRole string) bool {
 	return false
 }
 
-func (u *User) IsSSOUser() bool {
-	if len(u.AuthData) != 0 && len(u.AuthService) != 0 {
+func (u *User) IsOAuthUser() bool {
+	if u.AuthService == USER_AUTH_SERVICE_GITLAB {
+		return true
+	}
+	return false
+}
+
+func (u *User) IsLDAPUser() bool {
+	if u.AuthService == USER_AUTH_SERVICE_LDAP {
 		return true
 	}
 	return false
@@ -354,7 +386,8 @@ func (u *User) IsSSOUser() bool {
 
 func (u *User) PreExport() {
 	u.Password = ""
-	u.AuthData = ""
+	u.AuthData = new(string)
+	*u.AuthData = ""
 	u.LastActivityAt = 0
 	u.LastPingAt = 0
 	u.LastPasswordUpdate = 0
@@ -407,7 +440,7 @@ func HashPassword(password string) string {
 // ComparePassword compares the hash
 func ComparePassword(hash string, password string) bool {
 
-	if len(password) == 0 {
+	if len(password) == 0 || len(hash) == 0 {
 		return false
 	}
 

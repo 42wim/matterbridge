@@ -20,6 +20,8 @@ type OutgoingWebhook struct {
 	TeamId       string      `json:"team_id"`
 	TriggerWords StringArray `json:"trigger_words"`
 	CallbackURLs StringArray `json:"callback_urls"`
+	DisplayName  string      `json:"display_name"`
+	Description  string      `json:"description"`
 }
 
 func (o *OutgoingWebhook) ToJson() string {
@@ -96,6 +98,14 @@ func (o *OutgoingWebhook) IsValid() *AppError {
 		return NewLocAppError("OutgoingWebhook.IsValid", "model.outgoing_hook.is_valid.words.app_error", nil, "")
 	}
 
+	if len(o.TriggerWords) != 0 {
+		for _, triggerWord := range o.TriggerWords {
+			if len(triggerWord) == 0 {
+				return NewLocAppError("OutgoingWebhook.IsValid", "model.outgoing_hook.is_valid.trigger_words.app_error", nil, "")
+			}
+		}
+	}
+
 	if len(o.CallbackURLs) == 0 || len(fmt.Sprintf("%s", o.CallbackURLs)) > 1024 {
 		return NewLocAppError("OutgoingWebhook.IsValid", "model.outgoing_hook.is_valid.callback.app_error", nil, "")
 	}
@@ -104,6 +114,14 @@ func (o *OutgoingWebhook) IsValid() *AppError {
 		if !IsValidHttpUrl(callback) {
 			return NewLocAppError("OutgoingWebhook.IsValid", "model.outgoing_hook.is_valid.url.app_error", nil, "")
 		}
+	}
+
+	if len(o.DisplayName) > 64 {
+		return NewLocAppError("OutgoingWebhook.IsValid", "model.outgoing_hook.is_valid.display_name.app_error", nil, "")
+	}
+
+	if len(o.Description) > 128 {
+		return NewLocAppError("OutgoingWebhook.IsValid", "model.outgoing_hook.is_valid.description.app_error", nil, "")
 	}
 
 	return nil

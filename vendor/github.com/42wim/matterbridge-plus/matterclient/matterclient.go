@@ -78,7 +78,7 @@ func (m *MMClient) Login() error {
 	var logmsg = "trying login"
 	for {
 		m.log.Debugf(logmsg+" %s %s %s", m.Credentials.Team, m.Credentials.Login, m.Credentials.Server)
-		myinfo, appErr = m.Client.LoginByEmail(m.Credentials.Team, m.Credentials.Login, m.Credentials.Pass)
+		myinfo, appErr = m.Client.Login(m.Credentials.Login, m.Credentials.Pass)
 		if appErr != nil {
 			d := b.Duration()
 			m.log.Debug(appErr.DetailedError)
@@ -99,11 +99,23 @@ func (m *MMClient) Login() error {
 	// reset timer
 	b.Reset()
 	m.User = myinfo.Data.(*model.User)
-	myinfo, _ = m.Client.GetMyTeam("")
-	m.Team = myinfo.Data.(*model.Team)
+
+	teamdata, _ := m.Client.GetAllTeamListings()
+	teams := teamdata.Data.(map[string]*model.Team)
+	for k, v := range teams {
+		if v.Name == m.Credentials.Team {
+			m.Client.SetTeamId(k)
+			m.Team = v
+			m.log.Debug("GetallTeamListings: found id ", k)
+			break
+		}
+	}
+	if m.Team == nil {
+		return errors.New("team not found")
+	}
 
 	// setup websocket connection
-	wsurl := wsScheme + m.Credentials.Server + "/api/v1/websocket"
+	wsurl := wsScheme + m.Credentials.Server + "/api/v3/users/websocket"
 	header := http.Header{}
 	header.Set(model.HEADER_AUTH, "BEARER "+m.Client.AuthToken)
 
@@ -186,7 +198,7 @@ func (m *MMClient) parseActionPost(rmsg *Message) {
 }
 
 func (m *MMClient) UpdateUsers() error {
-	mmusers, _ := m.Client.GetProfiles(m.User.TeamId, "")
+	mmusers, _ := m.Client.GetProfiles(m.Client.GetTeamId(), "")
 	m.Users = mmusers.Data.(map[string]*model.User)
 	return nil
 }
@@ -267,7 +279,7 @@ func (m *MMClient) GetPostsSince(channelId string, time int64) *model.PostList {
 }
 
 func (m *MMClient) SearchPosts(query string) *model.PostList {
-	res, err := m.Client.SearchPosts(query)
+	res, err := m.Client.SearchPosts(query, false)
 	if err != nil {
 		return nil
 	}

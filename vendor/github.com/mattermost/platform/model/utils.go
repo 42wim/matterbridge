@@ -41,12 +41,18 @@ func (er *AppError) Error() string {
 }
 
 func (er *AppError) Translate(T goi18n.TranslateFunc) {
-	if len(er.Message) == 0 {
-		if er.params == nil {
-			er.Message = T(er.Id)
-		} else {
-			er.Message = T(er.Id, er.params)
-		}
+	if er.params == nil {
+		er.Message = T(er.Id)
+	} else {
+		er.Message = T(er.Id, er.params)
+	}
+}
+
+func (er *AppError) SystemMessage(T goi18n.TranslateFunc) string {
+	if er.params == nil {
+		return T(er.Id)
+	} else {
+		return T(er.Id, er.params)
 	}
 }
 
@@ -75,6 +81,7 @@ func NewLocAppError(where string, id string, params map[string]interface{}, deta
 	ap := &AppError{}
 	ap.Id = id
 	ap.params = params
+	ap.Message = id
 	ap.Where = where
 	ap.DetailedError = details
 	ap.StatusCode = 500
@@ -168,6 +175,26 @@ func StringInterfaceFromJson(data io.Reader) map[string]interface{} {
 		return make(map[string]interface{})
 	} else {
 		return objmap
+	}
+}
+
+func StringToJson(s string) string {
+	b, err := json.Marshal(s)
+	if err != nil {
+		return ""
+	} else {
+		return string(b)
+	}
+}
+
+func StringFromJson(data io.Reader) string {
+	decoder := json.NewDecoder(data)
+
+	var s string
+	if err := decoder.Decode(&s); err != nil {
+		return ""
+	} else {
+		return s
 	}
 }
 
@@ -363,6 +390,32 @@ func IsValidHttpUrl(rawUrl string) bool {
 
 	if _, err := url.ParseRequestURI(rawUrl); err != nil {
 		return false
+	}
+
+	return true
+}
+
+func IsValidHttpsUrl(rawUrl string) bool {
+	if strings.Index(rawUrl, "https://") != 0 {
+		return false
+	}
+
+	if _, err := url.ParseRequestURI(rawUrl); err != nil {
+		return false
+	}
+
+	return true
+}
+
+func IsSafeLink(link *string) bool {
+	if link != nil {
+		if IsValidHttpUrl(*link) {
+			return true
+		} else if strings.HasPrefix(*link, "/") {
+			return true
+		} else {
+			return false
+		}
 	}
 
 	return true

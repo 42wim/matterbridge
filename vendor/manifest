@@ -4,7 +4,8 @@
 		{
 			"importpath": "github.com/42wim/matterbridge-plus/bridge",
 			"repository": "https://github.com/42wim/matterbridge-plus",
-			"revision": "3c673e1d48339ab82788ade57394fd1b9bd4c990",
+			"vcs": "git",
+			"revision": "e48ce1d820967506c7ea21539f6c88f7a1377d0f",
 			"branch": "master",
 			"path": "/bridge",
 			"notests": true
@@ -12,7 +13,8 @@
 		{
 			"importpath": "github.com/42wim/matterbridge-plus/matterclient",
 			"repository": "https://github.com/42wim/matterbridge-plus",
-			"revision": "3c673e1d48339ab82788ade57394fd1b9bd4c990",
+			"vcs": "git",
+			"revision": "e48ce1d820967506c7ea21539f6c88f7a1377d0f",
 			"branch": "master",
 			"path": "/matterclient",
 			"notests": true
@@ -20,6 +22,7 @@
 		{
 			"importpath": "github.com/42wim/matterbridge/matterhook",
 			"repository": "https://github.com/42wim/matterbridge",
+			"vcs": "",
 			"revision": "6b18257185b1830bd2eff83fae30bdd2055f78b0",
 			"branch": "master",
 			"path": "/matterhook",
@@ -28,6 +31,7 @@
 		{
 			"importpath": "github.com/Sirupsen/logrus",
 			"repository": "https://github.com/Sirupsen/logrus",
+			"vcs": "",
 			"revision": "4b6ea7319e214d98c938f12692336f7ca9348d6b",
 			"branch": "master",
 			"notests": true
@@ -35,6 +39,7 @@
 		{
 			"importpath": "github.com/alecthomas/log4go",
 			"repository": "https://github.com/alecthomas/log4go",
+			"vcs": "",
 			"revision": "e5dc62318d9bd58682f1dceb53a4b24e8253682f",
 			"branch": "master",
 			"notests": true
@@ -42,6 +47,7 @@
 		{
 			"importpath": "github.com/gorilla/schema",
 			"repository": "https://github.com/gorilla/schema",
+			"vcs": "",
 			"revision": "ddf016c1034e9cfd3eb5b276f626c8f04d765f6f",
 			"branch": "master",
 			"notests": true
@@ -49,6 +55,7 @@
 		{
 			"importpath": "github.com/gorilla/websocket",
 			"repository": "https://github.com/gorilla/websocket",
+			"vcs": "",
 			"revision": "e2e3d8414d0fbae04004f151979f4e27c6747fe7",
 			"branch": "master",
 			"notests": true
@@ -56,6 +63,7 @@
 		{
 			"importpath": "github.com/jpillora/backoff",
 			"repository": "https://github.com/jpillora/backoff",
+			"vcs": "",
 			"revision": "8dc7c274049d8fa405b51f6fbec11db195a977cd",
 			"branch": "master",
 			"notests": true
@@ -63,7 +71,8 @@
 		{
 			"importpath": "github.com/mattermost/platform/einterfaces",
 			"repository": "https://github.com/mattermost/platform",
-			"revision": "8e883ad2f516820942cc0131241268c1ea909ff3",
+			"vcs": "git",
+			"revision": "9d94869cc6a0fb9f051879437c104ccd76094380",
 			"branch": "HEAD",
 			"path": "/einterfaces",
 			"notests": true
@@ -71,7 +80,8 @@
 		{
 			"importpath": "github.com/mattermost/platform/model",
 			"repository": "https://github.com/mattermost/platform",
-			"revision": "8e883ad2f516820942cc0131241268c1ea909ff3",
+			"vcs": "git",
+			"revision": "9d94869cc6a0fb9f051879437c104ccd76094380",
 			"branch": "HEAD",
 			"path": "/model",
 			"notests": true
@@ -79,6 +89,7 @@
 		{
 			"importpath": "github.com/nicksnyder/go-i18n/i18n",
 			"repository": "https://github.com/nicksnyder/go-i18n",
+			"vcs": "",
 			"revision": "37e5c2de3e03e4b82693e3fcb4a6aa2cc4eb07e3",
 			"branch": "master",
 			"path": "/i18n",
@@ -87,6 +98,7 @@
 		{
 			"importpath": "github.com/pborman/uuid",
 			"repository": "https://github.com/pborman/uuid",
+			"vcs": "",
 			"revision": "c55201b036063326c5b1b89ccfe45a184973d073",
 			"branch": "master",
 			"notests": true
@@ -94,6 +106,7 @@
 		{
 			"importpath": "github.com/peterhellberg/giphy",
 			"repository": "https://github.com/peterhellberg/giphy",
+			"vcs": "",
 			"revision": "f9e0363118602c138e4d9dad66c261b15f26d31a",
 			"branch": "master",
 			"notests": true
@@ -101,6 +114,7 @@
 		{
 			"importpath": "github.com/sorcix/irc",
 			"repository": "https://github.com/sorcix/irc",
+			"vcs": "",
 			"revision": "2f0c85e4ec6590c2c6f6ef93b0a86021281ea193",
 			"branch": "master",
 			"notests": true
@@ -108,6 +122,7 @@
 		{
 			"importpath": "github.com/thoj/go-ircevent",
 			"repository": "https://github.com/thoj/go-ircevent",
+			"vcs": "",
 			"revision": "da78ed515c0f0833e7a92c7cc52898176198e2c1",
 			"branch": "master",
 			"notests": true
@@ -115,6 +130,7 @@
 		{
 			"importpath": "golang.org/x/crypto/bcrypt",
 			"repository": "https://go.googlesource.com/crypto",
+			"vcs": "",
 			"revision": "3fbbcd23f1cb824e69491a5930cfeff09b12f4d2",
 			"branch": "master",
 			"path": "/bcrypt",
@@ -123,6 +139,7 @@
 		{
 			"importpath": "golang.org/x/crypto/blowfish",
 			"repository": "https://go.googlesource.com/crypto",
+			"vcs": "",
 			"revision": "3fbbcd23f1cb824e69491a5930cfeff09b12f4d2",
 			"branch": "master",
 			"path": "/blowfish",
@@ -131,6 +148,7 @@
 		{
 			"importpath": "golang.org/x/net/http2/hpack",
 			"repository": "https://go.googlesource.com/net",
+			"vcs": "",
 			"revision": "e45385e9b226f570b1f086bf287b25d3d4117776",
 			"branch": "master",
 			"path": "/http2/hpack",
@@ -139,6 +157,7 @@
 		{
 			"importpath": "gopkg.in/gcfg.v1",
 			"repository": "https://gopkg.in/gcfg.v1",
+			"vcs": "",
 			"revision": "083575c3955c85df16fe9590cceab64d03f5eb6e",
 			"branch": "master",
 			"notests": true
@@ -146,6 +165,7 @@
 		{
 			"importpath": "gopkg.in/yaml.v2",
 			"repository": "https://gopkg.in/yaml.v2",
+			"vcs": "",
 			"revision": "a83829b6f1293c91addabc89d0571c246397bbf4",
 			"branch": "master",
 			"notests": true
