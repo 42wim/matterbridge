@@ -6,6 +6,7 @@ SkipTLSVerify=true
 nick="matterbot"
 channel="#matterbridge"
 UseSlackCircumfix=false
+IgnoreNicks="ircspammer1 ircspammer2"
 
 [mattermost]
 url="http://yourdomain/hooks/yourhookkey"
@@ -21,6 +22,7 @@ NickFormatter=plain
 NicksPerRow=4
 #NickServNick="nickserv"
 #NickServPassword="secret"
+IgnoreNicks="mmbot spammer2"
 
 [general]
 GiphyAPIKey=dc6zaTOxFJmzC

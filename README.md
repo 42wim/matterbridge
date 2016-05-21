@@ -8,7 +8,7 @@ Requires mattermost 1.2.0+
 There is also [matterbridge-plus] (https://github.com/42wim/matterbridge-plus) which uses the mattermost API and needs a dedicated user (bot). But requires no incoming/outgoing webhook setup. 
 
 ## binaries
-Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/tag/v0.4)
+Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/tag/v0.4.1)
 
 ## building
 Go 1.6+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH] (https://golang.org/doc/code.html#GOPATH)
@@ -56,6 +56,8 @@ SkipTLSVerify=true
 nick="matterbot"
 channel="#matterbridge"
 UseSlackCircumfix=false
+#Ignore the messages from these nicks. They will not be sent to mattermost
+IgnoreNicks="ircspammer1 ircspammer2"
 
 [mattermost]
 #url is your incoming webhook url (account settings - integrations - incoming webhooks)
@@ -80,6 +82,8 @@ NicksPerRow=4
 NickServNick="nickserv"
 #Password for nickserv
 NickServPassword="secret"
+#Ignore the messages from these nicks. They will not be sent to irc
+IgnoreNicks="mmbot spammer2"
 
 #multiple channel config
 #token you can find in your outgoing webhook
