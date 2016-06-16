@@ -6,6 +6,8 @@ SkipTLSVerify=true
 nick="matterbot"
 channel="#matterbridge"
 UseSlackCircumfix=false
+#NickServNick="nickserv"
+#NickServPassword="secret"
 IgnoreNicks="ircspammer1 ircspammer2"
 
 [mattermost]
@@ -20,8 +22,6 @@ IconURL="http://youricon.png"
 PrefixMessagesWithNick=false
 NickFormatter=plain
 NicksPerRow=4
-#NickServNick="nickserv"
-#NickServPassword="secret"
 IgnoreNicks="mmbot spammer2"
 
 [general]

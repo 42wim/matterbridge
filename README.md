@@ -56,6 +56,10 @@ SkipTLSVerify=true
 nick="matterbot"
 channel="#matterbridge"
 UseSlackCircumfix=false
+#Freenode nickserv
+NickServNick="nickserv"
+#Password for nickserv
+NickServPassword="secret"
 #Ignore the messages from these nicks. They will not be sent to mattermost
 IgnoreNicks="ircspammer1 ircspammer2"
 
@@ -78,10 +82,6 @@ PrefixMessagesWithNick=false
 NickFormatter=plain
 #how many nicks to list per row for formatters that support this
 NicksPerRow=4
-#Freenode nickserv
-NickServNick="nickserv"
-#Password for nickserv
-NickServPassword="secret"
 #Ignore the messages from these nicks. They will not be sent to irc
 IgnoreNicks="mmbot spammer2"
 
