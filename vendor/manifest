@@ -5,7 +5,7 @@
 			"importpath": "github.com/42wim/matterbridge-plus/bridge",
 			"repository": "https://github.com/42wim/matterbridge-plus",
 			"vcs": "git",
-			"revision": "e48ce1d820967506c7ea21539f6c88f7a1377d0f",
+			"revision": "63c7caabf4b92fa47060cf37beb0ed814cefbaea",
 			"branch": "master",
 			"path": "/bridge",
 			"notests": true
@@ -14,18 +14,9 @@
 			"importpath": "github.com/42wim/matterbridge-plus/matterclient",
 			"repository": "https://github.com/42wim/matterbridge-plus",
 			"vcs": "git",
-			"revision": "e48ce1d820967506c7ea21539f6c88f7a1377d0f",
+			"revision": "63c7caabf4b92fa47060cf37beb0ed814cefbaea",
 			"branch": "master",
 			"path": "/matterclient",
-			"notests": true
-		},
-		{
-			"importpath": "github.com/42wim/matterbridge/matterhook",
-			"repository": "https://github.com/42wim/matterbridge",
-			"vcs": "",
-			"revision": "6b18257185b1830bd2eff83fae30bdd2055f78b0",
-			"branch": "master",
-			"path": "/matterhook",
 			"notests": true
 		},
 		{
@@ -72,8 +63,8 @@
 			"importpath": "github.com/mattermost/platform/einterfaces",
 			"repository": "https://github.com/mattermost/platform",
 			"vcs": "git",
-			"revision": "9d94869cc6a0fb9f051879437c104ccd76094380",
-			"branch": "HEAD",
+			"revision": "974238231b9cdbd39a825ec8e9299fbb0b51f6b8",
+			"branch": "release-3.1",
 			"path": "/einterfaces",
 			"notests": true
 		},
@@ -81,8 +72,8 @@
 			"importpath": "github.com/mattermost/platform/model",
 			"repository": "https://github.com/mattermost/platform",
 			"vcs": "git",
-			"revision": "9d94869cc6a0fb9f051879437c104ccd76094380",
-			"branch": "HEAD",
+			"revision": "974238231b9cdbd39a825ec8e9299fbb0b51f6b8",
+			"branch": "release-3.1",
 			"path": "/model",
 			"notests": true
 		},
@@ -152,6 +143,15 @@
 			"revision": "e45385e9b226f570b1f086bf287b25d3d4117776",
 			"branch": "master",
 			"path": "/http2/hpack",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/net/lex/httplex",
+			"repository": "https://go.googlesource.com/net",
+			"vcs": "git",
+			"revision": "bc3663df0ac92f928d419e31e0d2af22e683a5a2",
+			"branch": "master",
+			"path": "/lex/httplex",
 			"notests": true
 		},
 		{

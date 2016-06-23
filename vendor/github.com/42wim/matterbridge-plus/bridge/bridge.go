@@ -21,15 +21,17 @@ type MMhook struct {
 }
 
 type MMapi struct {
-	mc    *matterclient.MMClient
-	mmMap map[string]string
+	mc            *matterclient.MMClient
+	mmMap         map[string]string
+	mmIgnoreNicks []string
 }
 
 type MMirc struct {
-	i       *irc.Connection
-	ircNick string
-	ircMap  map[string]string
-	names   map[string][]string
+	i              *irc.Connection
+	ircNick        string
+	ircMap         map[string]string
+	names          map[string][]string
+	ircIgnoreNicks []string
 }
 
 type MMMessage struct {
@@ -53,6 +55,8 @@ type FancyLog struct {
 
 var flog FancyLog
 
+const Legacy = "legacy"
+
 func initFLog() {
 	flog.irc = log.WithFields(log.Fields{"module": "irc"})
 	flog.mm = log.WithFields(log.Fields{"module": "mattermost"})
@@ -66,7 +70,9 @@ func NewBridge(name string, config *Config, kind string) *Bridge {
 	b.ircNick = b.Config.IRC.Nick
 	b.ircMap = make(map[string]string)
 	b.MMirc.names = make(map[string][]string)
-	if kind == "legacy" {
+	b.ircIgnoreNicks = strings.Fields(b.Config.IRC.IgnoreNicks)
+	b.mmIgnoreNicks = strings.Fields(b.Config.Mattermost.IgnoreNicks)
+	if kind == Legacy {
 		if len(b.Config.Token) > 0 {
 			for _, val := range b.Config.Token {
 				b.ircMap[val.IRCChannel] = val.MMChannel
@@ -87,10 +93,14 @@ func NewBridge(name string, config *Config, kind string) *Bridge {
 		}
 		b.mc = matterclient.New(b.Config.Mattermost.Login, b.Config.Mattermost.Password,
 			b.Config.Mattermost.Team, b.Config.Mattermost.Server)
+		b.mc.SkipTLSVerify = b.Config.Mattermost.SkipTLSVerify
+		b.mc.NoTLS = b.Config.Mattermost.NoTLS
+		flog.mm.Infof("Trying login %s (team: %s) on %s", b.Config.Mattermost.Login, b.Config.Mattermost.Team, b.Config.Mattermost.Server)
 		err := b.mc.Login()
 		if err != nil {
-			flog.mm.Fatal("can not connect", err)
+			flog.mm.Fatal("Can not connect", err)
 		}
+		flog.mm.Info("Login ok")
 		b.mc.JoinChannel(b.Config.Mattermost.Channel)
 		if len(b.Config.Channel) > 0 {
 			for _, val := range b.Config.Channel {
@@ -99,7 +109,9 @@ func NewBridge(name string, config *Config, kind string) *Bridge {
 		}
 		go b.mc.WsReceiver()
 	}
+	flog.irc.Info("Trying IRC connection")
 	b.i = b.createIRC(name)
+	flog.irc.Info("Connection succeeded")
 	go b.handleMatter()
 	return b
 }
@@ -111,36 +123,50 @@ func (b *Bridge) createIRC(name string) *irc.Connection {
 	if b.Config.IRC.Password != "" {
 		i.Password = b.Config.IRC.Password
 	}
-	i.AddCallback("*", b.handleOther)
+	i.AddCallback(ircm.RPL_WELCOME, b.handleNewConnection)
 	i.Connect(b.Config.IRC.Server + ":" + strconv.Itoa(b.Config.IRC.Port))
 	return i
 }
 
 func (b *Bridge) handleNewConnection(event *irc.Event) {
+	flog.irc.Info("Registering callbacks")
+	i := b.i
 	b.ircNick = event.Arguments[0]
+	i.AddCallback("PRIVMSG", b.handlePrivMsg)
+	i.AddCallback("CTCP_ACTION", b.handlePrivMsg)
+	i.AddCallback(ircm.RPL_ENDOFNAMES, b.endNames)
+	i.AddCallback(ircm.RPL_NAMREPLY, b.storeNames)
+	i.AddCallback(ircm.RPL_TOPICWHOTIME, b.handleTopicWhoTime)
+	i.AddCallback(ircm.NOTICE, b.handleNotice)
+	i.AddCallback(ircm.RPL_MYINFO, func(e *irc.Event) { flog.irc.Infof("%s: %s", e.Code, strings.Join(e.Arguments[1:], " ")) })
+	i.AddCallback("PING", func(e *irc.Event) {
+		i.SendRaw("PONG :" + e.Message())
+		flog.irc.Debugf("PING/PONG")
+	})
+	if b.Config.Mattermost.ShowJoinPart {
+		i.AddCallback("JOIN", b.handleJoinPart)
+		i.AddCallback("PART", b.handleJoinPart)
+	}
+	i.AddCallback("*", b.handleOther)
 	b.setupChannels()
 }
 
 func (b *Bridge) setupChannels() {
 	i := b.i
-	flog.irc.Info("Joining ", b.Config.IRC.Channel, " as ", b.ircNick)
-	i.Join(b.Config.IRC.Channel)
-	if b.kind == "legacy" {
+	if b.Config.IRC.Channel != "" {
+		flog.irc.Infof("Joining %s as %s", b.Config.IRC.Channel, b.ircNick)
+		i.Join(b.Config.IRC.Channel)
+	}
+	if b.kind == Legacy {
 		for _, val := range b.Config.Token {
-			flog.irc.Info("Joining ", val.IRCChannel, " as ", b.ircNick)
+			flog.irc.Infof("Joining %s as %s", val.IRCChannel, b.ircNick)
 			i.Join(val.IRCChannel)
 		}
 	} else {
 		for _, val := range b.Config.Channel {
-			flog.irc.Info("Joining ", val.IRC, " as ", b.ircNick)
+			flog.irc.Infof("Joining %s as %s", val.IRC, b.ircNick)
 			i.Join(val.IRC)
 		}
-	}
-	i.AddCallback("PRIVMSG", b.handlePrivMsg)
-	i.AddCallback("CTCP_ACTION", b.handlePrivMsg)
-	if b.Config.Mattermost.ShowJoinPart {
-		i.AddCallback("JOIN", b.handleJoinPart)
-		i.AddCallback("PART", b.handleJoinPart)
 	}
 }
 
@@ -177,6 +203,9 @@ func (b *Bridge) ircNickFormat(nick string) string {
 }
 
 func (b *Bridge) handlePrivMsg(event *irc.Event) {
+	if b.ignoreMessage(event.Nick, event.Message(), "irc") {
+		return
+	}
 	if b.handleIrcBotCommand(event) {
 		return
 	}
@@ -238,81 +267,21 @@ func (b *Bridge) endNames(event *irc.Event) {
 	b.MMirc.names[channel] = nil
 }
 
-func (b *Bridge) handleTopicWhoTime(event *irc.Event) bool {
+func (b *Bridge) handleTopicWhoTime(event *irc.Event) {
 	parts := strings.Split(event.Arguments[2], "!")
-	t_i, err := strconv.ParseInt(event.Arguments[3], 10, 64)
+	t, err := strconv.ParseInt(event.Arguments[3], 10, 64)
 	if err != nil {
 		flog.irc.Errorf("Invalid time stamp: %s", event.Arguments[3])
-		return false
 	}
 	user := parts[0]
 	if len(parts) > 1 {
 		user += " [" + parts[1] + "]"
 	}
-	flog.irc.Infof("%s: Topic set by %s [%s]", event.Code, user, time.Unix(t_i, 0))
-	return true
+	flog.irc.Infof("%s: Topic set by %s [%s]", event.Code, user, time.Unix(t, 0))
 }
 
 func (b *Bridge) handleOther(event *irc.Event) {
 	flog.irc.Debugf("%#v", event)
-	switch event.Code {
-	case ircm.RPL_WELCOME:
-		b.handleNewConnection(event)
-	case ircm.RPL_ENDOFNAMES:
-		b.endNames(event)
-	case ircm.RPL_NAMREPLY:
-		b.storeNames(event)
-	case ircm.RPL_ISUPPORT:
-		fallthrough
-	case ircm.RPL_LUSEROP:
-		fallthrough
-	case ircm.RPL_LUSERUNKNOWN:
-		fallthrough
-	case ircm.RPL_LUSERCHANNELS:
-		fallthrough
-	case ircm.RPL_MYINFO:
-		flog.irc.Infof("%s: %s", event.Code, strings.Join(event.Arguments[1:], " "))
-	case ircm.RPL_YOURHOST:
-		fallthrough
-	case ircm.RPL_CREATED:
-		fallthrough
-	case ircm.RPL_STATSDLINE:
-		fallthrough
-	case ircm.RPL_LUSERCLIENT:
-		fallthrough
-	case ircm.RPL_LUSERME:
-		fallthrough
-	case ircm.RPL_LOCALUSERS:
-		fallthrough
-	case ircm.RPL_GLOBALUSERS:
-		fallthrough
-	case ircm.RPL_MOTD:
-		flog.irc.Infof("%s: %s", event.Code, event.Message())
-		// flog.irc.Info(event.Message())
-	case ircm.RPL_TOPIC:
-		flog.irc.Infof("%s: Topic for %s: %s", event.Code, event.Arguments[1], event.Message())
-	case ircm.RPL_TOPICWHOTIME:
-		if !b.handleTopicWhoTime(event) {
-			break
-		}
-	case ircm.MODE:
-		flog.irc.Infof("%s: %s %s", event.Code, event.Arguments[1], event.Arguments[0])
-	case ircm.JOIN:
-		fallthrough
-	case ircm.PING:
-		fallthrough
-	case ircm.PONG:
-		flog.irc.Infof("%s: %s", event.Code, event.Message())
-	case ircm.RPL_ENDOFMOTD:
-	case ircm.RPL_MOTDSTART:
-	case ircm.ERR_NICKNAMEINUSE:
-		flog.irc.Warn(event.Message())
-	case ircm.NOTICE:
-		b.handleNotice(event)
-	default:
-		flog.irc.Infof("UNKNOWN EVENT: %#v", event)
-		return
-	}
 }
 
 func (b *Bridge) Send(nick string, message string, channel string) error {
@@ -327,7 +296,7 @@ func (b *Bridge) SendType(nick string, message string, channel string, mtype str
 			message = nick + " " + message
 		}
 	}
-	if b.kind == "legacy" {
+	if b.kind == Legacy {
 		matterMessage := matterhook.OMessage{IconURL: b.Config.Mattermost.IconURL}
 		matterMessage.Channel = channel
 		matterMessage.UserName = nick
@@ -371,24 +340,34 @@ func (b *Bridge) handleMatterClient(mchan chan *MMMessage) {
 }
 
 func (b *Bridge) handleMatter() {
+	flog.mm.Infof("Choosing Mattermost connection type %s", b.kind)
 	mchan := make(chan *MMMessage)
-	if b.kind == "legacy" {
+	if b.kind == Legacy {
 		go b.handleMatterHook(mchan)
 	} else {
 		go b.handleMatterClient(mchan)
 	}
+	flog.mm.Info("Start listening for Mattermost messages")
 	for message := range mchan {
 		var username string
+		if b.ignoreMessage(message.Username, message.Text, "mattermost") {
+			continue
+		}
 		username = message.Username + ": "
 		if b.Config.IRC.RemoteNickFormat != "" {
 			username = strings.Replace(b.Config.IRC.RemoteNickFormat, "{NICK}", message.Username, -1)
 		} else if b.Config.IRC.UseSlackCircumfix {
 			username = "<" + message.Username + "> "
 		}
-		cmd := strings.Fields(message.Text)[0]
+		cmds := strings.Fields(message.Text)
+		// empty message
+		if len(cmds) == 0 {
+			continue
+		}
+		cmd := cmds[0]
 		switch cmd {
 		case "!users":
-			flog.mm.Info("received !users from ", message.Username)
+			flog.mm.Info("Received !users from ", message.Username)
 			b.i.SendRaw("NAMES " + b.getIRCChannel(message.Channel))
 			continue
 		case "!gif":
@@ -425,7 +404,7 @@ func (b *Bridge) getMMChannel(ircChannel string) string {
 }
 
 func (b *Bridge) getIRCChannel(channel string) string {
-	if b.kind == "legacy" {
+	if b.kind == Legacy {
 		ircchannel := b.Config.IRC.Channel
 		_, ok := b.Config.Token[channel]
 		if ok {
@@ -438,4 +417,18 @@ func (b *Bridge) getIRCChannel(channel string) string {
 		ircchannel = b.Config.IRC.Channel
 	}
 	return ircchannel
+}
+
+func (b *Bridge) ignoreMessage(nick string, message string, protocol string) bool {
+	var ignoreNicks = b.mmIgnoreNicks
+	if protocol == "irc" {
+		ignoreNicks = b.ircIgnoreNicks
+	}
+	// should we discard messages ?
+	for _, entry := range ignoreNicks {
+		if nick == entry {
+			return true
+		}
+	}
+	return false
 }

@@ -1,9 +1,12 @@
 package matterclient
 
 import (
+	"crypto/tls"
 	"errors"
 	log "github.com/Sirupsen/logrus"
 	"net/http"
+	"net/http/cookiejar"
+	"net/url"
 	"strings"
 	"time"
 
@@ -13,11 +16,12 @@ import (
 )
 
 type Credentials struct {
-	Login  string
-	Team   string
-	Pass   string
-	Server string
-	NoTLS  bool
+	Login         string
+	Team          string
+	Pass          string
+	Server        string
+	NoTLS         bool
+	SkipTLSVerify bool
 }
 
 type Message struct {
@@ -33,6 +37,8 @@ type MMClient struct {
 	*Credentials
 	Client       *model.Client
 	WsClient     *websocket.Conn
+	WsQuit       bool
+	WsAway       bool
 	Channels     *model.ChannelList
 	MoreChannels *model.ChannelList
 	User         *model.User
@@ -60,6 +66,9 @@ func (m *MMClient) SetLogLevel(level string) {
 }
 
 func (m *MMClient) Login() error {
+	if m.WsQuit {
+		return nil
+	}
 	b := &backoff.Backoff{
 		Min:    time.Second,
 		Max:    5 * time.Minute,
@@ -73,12 +82,25 @@ func (m *MMClient) Login() error {
 	}
 	// login to mattermost
 	m.Client = model.NewClient(uriScheme + m.Credentials.Server)
+	m.Client.HttpClient.Transport = &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: m.SkipTLSVerify}}
 	var myinfo *model.Result
 	var appErr *model.AppError
 	var logmsg = "trying login"
 	for {
-		m.log.Debugf(logmsg+" %s %s %s", m.Credentials.Team, m.Credentials.Login, m.Credentials.Server)
-		myinfo, appErr = m.Client.Login(m.Credentials.Login, m.Credentials.Pass)
+		m.log.Debugf("%s %s %s %s", logmsg, m.Credentials.Team, m.Credentials.Login, m.Credentials.Server)
+		if strings.Contains(m.Credentials.Pass, model.SESSION_COOKIE_TOKEN) {
+			m.log.Debugf(logmsg+" with ", model.SESSION_COOKIE_TOKEN)
+			token := strings.Split(m.Credentials.Pass, model.SESSION_COOKIE_TOKEN+"=")
+			m.Client.HttpClient.Jar = m.createCookieJar(token[1])
+			m.Client.MockSession(token[1])
+			myinfo, appErr = m.Client.GetMe("")
+			if myinfo.Data.(*model.User) == nil {
+				m.log.Errorf("LOGIN TOKEN: %s is invalid", m.Credentials.Pass)
+				return errors.New("invalid " + model.SESSION_COOKIE_TOKEN)
+			}
+		} else {
+			myinfo, appErr = m.Client.Login(m.Credentials.Login, m.Credentials.Pass)
+		}
 		if appErr != nil {
 			d := b.Duration()
 			m.log.Debug(appErr.DetailedError)
@@ -89,7 +111,7 @@ func (m *MMClient) Login() error {
 				}
 				return errors.New(appErr.Message)
 			}
-			m.log.Debug("LOGIN: %s, reconnecting in %s", appErr, d)
+			m.log.Debugf("LOGIN: %s, reconnecting in %s", appErr, d)
 			time.Sleep(d)
 			logmsg = "retrying login"
 			continue
@@ -98,15 +120,16 @@ func (m *MMClient) Login() error {
 	}
 	// reset timer
 	b.Reset()
-	m.User = myinfo.Data.(*model.User)
 
-	teamdata, _ := m.Client.GetAllTeamListings()
-	teams := teamdata.Data.(map[string]*model.Team)
-	for k, v := range teams {
+	initLoad, _ := m.Client.GetInitialLoad()
+	initData := initLoad.Data.(*model.InitialLoad)
+	m.User = initData.User
+	for _, v := range initData.Teams {
+		m.log.Debugf("trying %s (id: %s)", v.Name, v.Id)
 		if v.Name == m.Credentials.Team {
-			m.Client.SetTeamId(k)
+			m.Client.SetTeamId(v.Id)
 			m.Team = v
-			m.log.Debug("GetallTeamListings: found id ", k)
+			m.log.Debugf("GetallTeamListings: found id %s for team %s", v.Id, v.Name)
 			break
 		}
 	}
@@ -119,21 +142,20 @@ func (m *MMClient) Login() error {
 	header := http.Header{}
 	header.Set(model.HEADER_AUTH, "BEARER "+m.Client.AuthToken)
 
-	var WsClient *websocket.Conn
+	m.log.Debug("WsClient: making connection")
 	var err error
 	for {
-		WsClient, _, err = websocket.DefaultDialer.Dial(wsurl, header)
+		wsDialer := &websocket.Dialer{Proxy: http.ProxyFromEnvironment, TLSClientConfig: &tls.Config{InsecureSkipVerify: m.SkipTLSVerify}}
+		m.WsClient, _, err = wsDialer.Dial(wsurl, header)
 		if err != nil {
 			d := b.Duration()
-			log.Printf("WSS: %s, reconnecting in %s", err, d)
+			m.log.Debugf("WSS: %s, reconnecting in %s", err, d)
 			time.Sleep(d)
 			continue
 		}
 		break
 	}
 	b.Reset()
-
-	m.WsClient = WsClient
 
 	// populating users
 	m.UpdateUsers()
@@ -147,17 +169,32 @@ func (m *MMClient) Login() error {
 func (m *MMClient) WsReceiver() {
 	var rmsg model.Message
 	for {
+		if m.WsQuit {
+			m.log.Debug("exiting WsReceiver")
+			return
+		}
 		if err := m.WsClient.ReadJSON(&rmsg); err != nil {
-			log.Println("error:", err)
+			m.log.Error("error:", err)
 			// reconnect
 			m.Login()
 		}
-		//log.Printf("WsReceiver: %#v", rmsg)
+		if rmsg.Action == "ping" {
+			m.handleWsPing()
+			continue
+		}
 		msg := &Message{Raw: &rmsg, Team: m.Credentials.Team}
 		m.parseMessage(msg)
 		m.MessageChan <- msg
 	}
 
+}
+
+func (m *MMClient) handleWsPing() {
+	m.log.Debug("Ws PING")
+	if !m.WsQuit && !m.WsAway {
+		m.log.Debug("Ws PONG")
+		m.WsClient.WriteMessage(websocket.PongMessage, []byte{})
+	}
 }
 
 func (m *MMClient) parseMessage(rmsg *Message) {
@@ -198,7 +235,7 @@ func (m *MMClient) parseActionPost(rmsg *Message) {
 }
 
 func (m *MMClient) UpdateUsers() error {
-	mmusers, _ := m.Client.GetProfiles(m.Client.GetTeamId(), "")
+	mmusers, _ := m.Client.GetProfilesForDirectMessageList(m.Team.Id)
 	m.Users = mmusers.Data.(map[string]*model.User)
 	return nil
 }
@@ -294,29 +331,49 @@ func (m *MMClient) GetPosts(channelId string, limit int) *model.PostList {
 	return res.Data.(*model.PostList)
 }
 
+func (m *MMClient) GetPublicLink(filename string) string {
+	res, err := m.Client.GetPublicLink(filename)
+	if err != nil {
+		return ""
+	}
+	return res.Data.(string)
+}
+
+func (m *MMClient) GetPublicLinks(filenames []string) []string {
+	var output []string
+	for _, f := range filenames {
+		res, err := m.Client.GetPublicLink(f)
+		if err != nil {
+			continue
+		}
+		output = append(output, res.Data.(string))
+	}
+	return output
+}
+
 func (m *MMClient) UpdateChannelHeader(channelId string, header string) {
 	data := make(map[string]string)
 	data["channel_id"] = channelId
 	data["channel_header"] = header
-	log.Printf("updating channelheader %#v, %#v", channelId, header)
+	m.log.Debugf("updating channelheader %#v, %#v", channelId, header)
 	_, err := m.Client.UpdateChannelHeader(data)
 	if err != nil {
-		log.Print(err)
+		log.Error(err)
 	}
 }
 
 func (m *MMClient) UpdateLastViewed(channelId string) {
-	log.Printf("posting lastview %#v", channelId)
+	m.log.Debugf("posting lastview %#v", channelId)
 	_, err := m.Client.UpdateLastViewedAt(channelId)
 	if err != nil {
-		log.Print(err)
+		m.log.Error(err)
 	}
 }
 
 func (m *MMClient) UsernamesInChannel(channelName string) []string {
 	ceiRes, err := m.Client.GetChannelExtraInfo(m.GetChannelId(channelName), 5000, "")
 	if err != nil {
-		log.Errorf("UsernamesInChannel(%s) failed: %s", channelName, err)
+		m.log.Errorf("UsernamesInChannel(%s) failed: %s", channelName, err)
 		return []string{}
 	}
 	extra := ceiRes.Data.(*model.ChannelExtra)
@@ -325,4 +382,60 @@ func (m *MMClient) UsernamesInChannel(channelName string) []string {
 		result = append(result, member.Username)
 	}
 	return result
+}
+
+func (m *MMClient) createCookieJar(token string) *cookiejar.Jar {
+	var cookies []*http.Cookie
+	jar, _ := cookiejar.New(nil)
+	firstCookie := &http.Cookie{
+		Name:   "MMAUTHTOKEN",
+		Value:  token,
+		Path:   "/",
+		Domain: m.Credentials.Server,
+	}
+	cookies = append(cookies, firstCookie)
+	cookieURL, _ := url.Parse("https://" + m.Credentials.Server)
+	jar.SetCookies(cookieURL, cookies)
+	return jar
+}
+
+func (m *MMClient) GetOtherUserDM(channel string) *model.User {
+	m.UpdateUsers()
+	var rcvuser *model.User
+	if strings.Contains(channel, "__") {
+		rcvusers := strings.Split(channel, "__")
+		if rcvusers[0] != m.User.Id {
+			rcvuser = m.Users[rcvusers[0]]
+		} else {
+			rcvuser = m.Users[rcvusers[1]]
+		}
+	}
+	return rcvuser
+}
+
+func (m *MMClient) SendDirectMessage(toUserId string, msg string) {
+	m.log.Debugf("SendDirectMessage to %s, msg %s", toUserId, msg)
+	var channel string
+	// We don't have a DM with this user yet.
+	if m.GetChannelId(toUserId+"__"+m.User.Id) == "" && m.GetChannelId(m.User.Id+"__"+toUserId) == "" {
+		// create DM channel
+		_, err := m.Client.CreateDirectChannel(toUserId)
+		if err != nil {
+			m.log.Debugf("SendDirectMessage to %#v failed: %s", toUserId, err)
+		}
+		// update our channels
+		mmchannels, _ := m.Client.GetChannels("")
+		m.Channels = mmchannels.Data.(*model.ChannelList)
+	}
+
+	// build the channel name
+	if toUserId > m.User.Id {
+		channel = m.User.Id + "__" + toUserId
+	} else {
+		channel = toUserId + "__" + m.User.Id
+	}
+	// build & send the message
+	msg = strings.Replace(msg, "\r", "", -1)
+	post := &model.Post{ChannelId: m.GetChannelId(channel), Message: msg}
+	m.Client.CreatePost(post)
 }
