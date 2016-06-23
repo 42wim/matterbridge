@@ -31,11 +31,11 @@ type IMessage struct {
 	TeamID      string `schema:"team_id"`
 	TeamDomain  string `schema:"team_domain"`
 	ChannelID   string `schema:"channel_id"`
-	ServiceID   string `schema:"service_id"`
 	ChannelName string `schema:"channel_name"`
 	Timestamp   string `schema:"timestamp"`
 	UserID      string `schema:"user_id"`
 	UserName    string `schema:"user_name"`
+	PostId      string `schema:"post_id"`
 	Text        string `schema:"text"`
 	TriggerWord string `schema:"trigger_word"`
 }
