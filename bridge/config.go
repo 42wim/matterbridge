@@ -22,7 +22,6 @@ type Config struct {
 	Mattermost struct {
 		URL                    string
 		ShowJoinPart           bool
-		Token                  string
 		IconURL                string
 		SkipTLSVerify          bool
 		BindAddress            string

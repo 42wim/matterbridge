@@ -79,9 +79,8 @@ func NewBridge(name string, config *Config, kind string) *Bridge {
 	}
 	if kind == Legacy {
 		b.mh = matterhook.New(b.Config.Mattermost.URL,
-			matterhook.Config{Token: b.Config.Mattermost.Token,
-				InsecureSkipVerify: b.Config.Mattermost.SkipTLSVerify,
-				BindAddress:        b.Config.Mattermost.BindAddress})
+			matterhook.Config{InsecureSkipVerify: b.Config.Mattermost.SkipTLSVerify,
+				BindAddress: b.Config.Mattermost.BindAddress})
 	} else {
 		b.mc = matterclient.New(b.Config.Mattermost.Login, b.Config.Mattermost.Password,
 			b.Config.Mattermost.Team, b.Config.Mattermost.Server)
