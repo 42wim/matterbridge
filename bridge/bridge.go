@@ -69,28 +69,20 @@ func NewBridge(name string, config *Config, kind string) *Bridge {
 	b.kind = kind
 	b.ircNick = b.Config.IRC.Nick
 	b.ircMap = make(map[string]string)
+	b.mmMap = make(map[string]string)
 	b.MMirc.names = make(map[string][]string)
 	b.ircIgnoreNicks = strings.Fields(b.Config.IRC.IgnoreNicks)
 	b.mmIgnoreNicks = strings.Fields(b.Config.Mattermost.IgnoreNicks)
+	for _, val := range b.Config.Channel {
+		b.ircMap[val.IRC] = val.Mattermost
+		b.mmMap[val.Mattermost] = val.IRC
+	}
 	if kind == Legacy {
-		if len(b.Config.Token) > 0 {
-			for _, val := range b.Config.Token {
-				b.ircMap[val.IRCChannel] = val.MMChannel
-			}
-		}
-
 		b.mh = matterhook.New(b.Config.Mattermost.URL,
 			matterhook.Config{Port: b.Config.Mattermost.Port, Token: b.Config.Mattermost.Token,
 				InsecureSkipVerify: b.Config.Mattermost.SkipTLSVerify,
 				BindAddress:        b.Config.Mattermost.BindAddress})
 	} else {
-		b.mmMap = make(map[string]string)
-		if len(b.Config.Channel) > 0 {
-			for _, val := range b.Config.Channel {
-				b.ircMap[val.IRC] = val.Mattermost
-				b.mmMap[val.Mattermost] = val.IRC
-			}
-		}
 		b.mc = matterclient.New(b.Config.Mattermost.Login, b.Config.Mattermost.Password,
 			b.Config.Mattermost.Team, b.Config.Mattermost.Server)
 		b.mc.SkipTLSVerify = b.Config.Mattermost.SkipTLSVerify
@@ -102,10 +94,8 @@ func NewBridge(name string, config *Config, kind string) *Bridge {
 		}
 		flog.mm.Info("Login ok")
 		b.mc.JoinChannel(b.Config.Mattermost.Channel)
-		if len(b.Config.Channel) > 0 {
-			for _, val := range b.Config.Channel {
-				b.mc.JoinChannel(val.Mattermost)
-			}
+		for _, val := range b.Config.Channel {
+			b.mc.JoinChannel(val.Mattermost)
 		}
 		go b.mc.WsReceiver()
 	}
@@ -153,20 +143,9 @@ func (b *Bridge) handleNewConnection(event *irc.Event) {
 
 func (b *Bridge) setupChannels() {
 	i := b.i
-	if b.Config.IRC.Channel != "" {
-		flog.irc.Infof("Joining %s as %s", b.Config.IRC.Channel, b.ircNick)
-		i.Join(b.Config.IRC.Channel)
-	}
-	if b.kind == Legacy {
-		for _, val := range b.Config.Token {
-			flog.irc.Infof("Joining %s as %s", val.IRCChannel, b.ircNick)
-			i.Join(val.IRCChannel)
-		}
-	} else {
-		for _, val := range b.Config.Channel {
-			flog.irc.Infof("Joining %s as %s", val.IRC, b.ircNick)
-			i.Join(val.IRC)
-		}
+	for _, val := range b.Config.Channel {
+		flog.irc.Infof("Joining %s as %s", val.IRC, b.ircNick)
+		i.Join(val.IRC)
 	}
 }
 
@@ -203,6 +182,7 @@ func (b *Bridge) ircNickFormat(nick string) string {
 }
 
 func (b *Bridge) handlePrivMsg(event *irc.Event) {
+	flog.irc.Debugf("handlePrivMsg() %s %s", event.Nick, event.Message)
 	if b.ignoreMessage(event.Nick, event.Message(), "irc") {
 		return
 	}
@@ -307,6 +287,7 @@ func (b *Bridge) SendType(nick string, message string, channel string, mtype str
 			flog.mm.Info(err)
 			return err
 		}
+		flog.mm.Debug("->mattermost channel: ", channel, " ", message)
 		return nil
 	}
 	flog.mm.Debug("->mattermost channel: ", channel, " ", message)
@@ -317,10 +298,11 @@ func (b *Bridge) SendType(nick string, message string, channel string, mtype str
 func (b *Bridge) handleMatterHook(mchan chan *MMMessage) {
 	for {
 		message := b.mh.Receive()
+		flog.mm.Debugf("receiving from matterhook %#v", message)
 		m := &MMMessage{}
 		m.Username = message.UserName
 		m.Text = message.Text
-		m.Channel = message.Token
+		m.Channel = message.ChannelName
 		mchan <- m
 	}
 }
@@ -329,11 +311,11 @@ func (b *Bridge) handleMatterClient(mchan chan *MMMessage) {
 	for message := range b.mc.MessageChan {
 		// do not post our own messages back to irc
 		if message.Raw.Action == "posted" && b.mc.User.Username != message.Username {
+			flog.mm.Debugf("receiving from matterclient %#v", message)
 			m := &MMMessage{}
 			m.Username = message.Username
 			m.Channel = message.Channel
 			m.Text = message.Text
-			flog.mm.Debugf("<-mattermost channel: %s %#v %#v", message.Channel, message.Post, message.Raw)
 			mchan <- m
 		}
 	}
@@ -394,30 +376,15 @@ func (b *Bridge) giphyRandom(query []string) string {
 }
 
 func (b *Bridge) getMMChannel(ircChannel string) string {
-	mmchannel, ok := b.ircMap[ircChannel]
-	if !ok {
-		mmchannel = b.Config.Mattermost.Channel
-	}
+	mmChannel := b.ircMap[ircChannel]
 	if b.kind == Legacy {
-		return mmchannel
+		return mmChannel
 	}
-	return b.mc.GetChannelId(mmchannel, "")
+	return b.mc.GetChannelId(mmChannel, "")
 }
 
-func (b *Bridge) getIRCChannel(channel string) string {
-	if b.kind == Legacy {
-		ircchannel := b.Config.IRC.Channel
-		_, ok := b.Config.Token[channel]
-		if ok {
-			ircchannel = b.Config.Token[channel].IRCChannel
-		}
-		return ircchannel
-	}
-	ircchannel, ok := b.mmMap[channel]
-	if !ok {
-		ircchannel = b.Config.IRC.Channel
-	}
-	return ircchannel
+func (b *Bridge) getIRCChannel(mmChannel string) string {
+	return b.mmMap[mmChannel]
 }
 
 func (b *Bridge) ignoreMessage(nick string, message string, protocol string) bool {

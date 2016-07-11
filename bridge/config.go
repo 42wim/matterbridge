@@ -40,10 +40,6 @@ type Config struct {
 		IgnoreNicks            string
 		NoTLS                  bool
 	}
-	Token map[string]*struct {
-		IRCChannel string
-		MMChannel  string
-	}
 	Channel map[string]*struct {
 		IRC        string
 		Mattermost string

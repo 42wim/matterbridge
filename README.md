@@ -51,11 +51,11 @@ Look at matterbridge.conf.sample for an example
 [IRC]
 server="irc.freenode.net"
 port=6667
+#default no TLS connection to irc server
 UseTLS=false
+#do not check the certificate if we use TLS (allows for selfsigned certificates)
 SkipTLSVerify=true
 nick="matterbot"
-channel="#matterbridge"
-UseSlackCircumfix=false
 #Freenode nickserv
 NickServNick="nickserv"
 #Password for nickserv
@@ -71,9 +71,8 @@ port=9999
 #address the webserver will bind to
 BindAddress="0.0.0.0"
 showjoinpart=true #show irc users joining and parting
-#the token you get from the outgoing webhook in mattermost. If empty no token check will be done.
-#if you use multiple IRC channel (see below, this must be empty!)
-token=yourtokenfrommattermost
+#the token you get from the outgoing webhook in mattermost.
+Token="outgoingwebhooktoken1"
 #disable certificate checking (selfsigned certificates)
 #SkipTLSVerify=true
 #whether to prefix messages from IRC to mattermost with the sender's nick. Useful if username overrides for incoming webhooks isn't enabled on the mattermost server
@@ -86,14 +85,13 @@ NicksPerRow=4
 IgnoreNicks="mmbot spammer2"
 
 #multiple channel config
-#token you can find in your outgoing webhook
-[Token "outgoingwebhooktoken1"] 
-IRCChannel="#off-topic"
-MMChannel="off-topic"
+[Channel "channel1"] 
+IRC="#off-topic"
+mattermost="off-topic"
 
-[Token "outgoingwebhooktoken2"]
-IRCChannel="#testing"
-MMChannel="testing"
+[Channel "testchannel"]
+IRC="#testing"
+mattermost="testing"
 
 [general]
 #request your API key on https://github.com/giphy/GiphyAPI. This is a public beta key
