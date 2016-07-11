@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/42wim/matterbridge-plus/bridge"
+	"github.com/42wim/matterbridge/bridge"
 	log "github.com/Sirupsen/logrus"
 )
 
@@ -17,6 +17,7 @@ func main() {
 	flagConfig := flag.String("conf", "matterbridge.conf", "config file")
 	flagDebug := flag.Bool("debug", false, "enable debug")
 	flagVersion := flag.Bool("version", false, "show version")
+	flagPlus := flag.Bool("plus", false, "running using API instead of webhooks")
 	flag.Parse()
 	if *flagVersion {
 		fmt.Println("Version:", Version)
@@ -28,6 +29,10 @@ func main() {
 		log.SetLevel(log.DebugLevel)
 	}
 	fmt.Println("running version", Version)
-	bridge.NewBridge("matterbot", bridge.NewConfig(*flagConfig), "legacy")
+	if *flagPlus {
+		bridge.NewBridge("matterbot", bridge.NewConfig(*flagConfig), "")
+	} else {
+		bridge.NewBridge("matterbot", bridge.NewConfig(*flagConfig), "legacy")
+	}
 	select {}
 }
