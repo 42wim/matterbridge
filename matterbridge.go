@@ -7,7 +7,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-var Version = "0.4.2"
+var Version = "0.5-dev"
 
 func init() {
 	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
