@@ -6,6 +6,9 @@ Simple bridge between mattermost and IRC.
 * Supports multiple mattermost and irc channels.
 * Matterbridge -plus also works with private groups on your mattermost.
 
+This project has now [matterbridge-plus](https://github.com/42wim/matterbridge-plus/) merged in. 
+Breaking changes for matterbridge can be found in [migration](https://github.com/42wim/matterbridge/blob/master/migration.md)
+
 ## Requirements:
 * [Mattermost] (https://github.com/mattermost/platform/) 3.x (stable, not a dev build)
 ### Webhooks version
