@@ -3,24 +3,36 @@
 #IRC section
 ###################################################################
 [IRC]
-#irc server to connect to. REQUIRED
+#irc server to connect to. 
+#REQUIRED
 Server="irc.freenode.net:6667"
 
-#Enable to use TLS connection to your irc server. OPTIONAL (default false)
+#Enable to use TLS connection to your irc server. 
+#OPTIONAL (default false)
 UseTLS=false
 
-#Enable to not verify the certificate on your irc server. OPTIONAL (default false)
+#Enable to not verify the certificate on your irc server. i
 #e.g. when using selfsigned certificates
+#OPTIONAL (default false)
 SkipTLSVerify=true
 
-#Your nick on irc. REQUIRED
+#Your nick on irc. 
+#REQUIRED
 Nick="matterbot"
 
-#If you registered your bot with a service like Nickserv on freenode. OPTIONAL
+#If you registered your bot with a service like Nickserv on freenode. 
+#OPTIONAL
 NickServNick="nickserv"
 NickServPassword="secret"
 
-#Nicks you want to ignore. Messages from those users will not be sent to mattermost. OPTIONAL
+#RemoteNickFormat defines how Mattermost users appear on irc
+#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
+#OPTIONAL (default NICK:)
+RemoteNickFormat="{NICK}: "
+
+#Nicks you want to ignore. 
+#Messages from those users will not be sent to mattermost.
+#OPTIONAL
 IgnoreNicks="ircspammer1 ircspammer2"
 
 ###################################################################
@@ -29,64 +41,88 @@ IgnoreNicks="ircspammer1 ircspammer2"
 
 [mattermost]
 #### Settings for webhook matterbridge.
-#### These settings will not be used when using -plus switch which doesn't use webhooks.
+#### These settings will not be used when using -plus switch which doesn't use 
+#### webhooks.
 
-#Url is your incoming webhook url as specified in mattermost. REQUIRED
+#Url is your incoming webhook url as specified in mattermost. 
 #See account settings - integrations - incoming webhooks on mattermost.
+#REQUIRED
 URL="https://yourdomain/hooks/yourhookkey"
 
-#Address to listen on for outgoing webhook requests from mattermost. REQUIRED
+#Address to listen on for outgoing webhook requests from mattermost.
 #See account settings - integrations - outgoing webhooks on mattermost.
-#This setting will not be used when using -plus switch which doesn't use webhooks
+#This setting will not be used when using -plus switch which doesn't use 
+#webhooks
+#REQUIRED
 BindAddress="0.0.0.0:9999"
 
-#Icon that will be showed in mattermost. OPTIONAL
-#This setting will not be used when using -plus switch which doesn't use webhooks
+#Icon that will be showed in mattermost. 
+#OPTIONAL
 IconURL="http://youricon.png"
 
 #### Settings for matterbridge -plus
 #### Thse settings will only be used when using the -plus switch.
 
-#The mattermost hostname. REQUIRED
+#The mattermost hostname. 
+#REQUIRED
 Server="yourmattermostserver.domain"
 
-#Your team on mattermost. REQUIRED
+#Your team on mattermost. 
+#REQUIRED
 Team="yourteam"
 
-#login/pass of your bot. Use a dedicated user for this and not your own! REQUIRED
+#login/pass of your bot. 
+#Use a dedicated user for this and not your own! 
+#REQUIRED
 Login="yourlogin"
 Password="yourpass"
 
-#https by default. Disable to make a http connection to your mattermost. OPTIONAL (default false)
+#Disable to make a http connection to your mattermost. 
+#OPTIONAL (default false)
 NoTLS=false
 
 #### Shared settings for matterbridge and -plus
 
-#Enable to not verify the certificate on your mattermost server. OPTIONAL (default false)
+#Enable to not verify the certificate on your mattermost server. 
 #e.g. when using selfsigned certificates
+#OPTIONAL (default false)
 SkipTLSVerify=true
 
-#Enable to show IRC joins/parts in mattermost. OPTIONAL (default false)
+#Enable to show IRC joins/parts in mattermost. 
+#OPTIONAL (default false)
 ShowJoinPart=false
 
-#Whether to prefix messages from IRC to mattermost with the sender's nick. OPTIONAL (default false)
-#Useful if username overrides for incoming webhooks isn't enabled on the mattermost server
+#Whether to prefix messages from IRC to mattermost with the sender's nick. 
+#Useful if username overrides for incoming webhooks isn't enabled on the 
+#mattermost server. If you set PrefixMessagesWithNick to true, each message 
+#from IRC to Mattermost will by default be prefixed by "irc-" + nick. You can, 
+#however, modify how the messages appear, by setting (and modifying) RemoteNickFormat 
+#OPTIONAL (default false)
 PrefixMessagesWithNick=false
 
-#how to format the list of IRC nicks when displayed in mattermost. OPTIONAL (default plain)
+#RemoteNickFormat defines how IRC users appear on Mattermost. 
+#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
+#OPTIONAL (default irc-NICK)
+RemoteNickFormat="irc-{NICK}"
+
+#how to format the list of IRC nicks when displayed in mattermost. 
 #Possible options are "table" and "plain"
+#OPTIONAL (default plain)
 NickFormatter=plain
-#How many nicks to list per row for formatters that support this. OPTIONAL (default 4)
+#How many nicks to list per row for formatters that support this. 
+#OPTIONAL (default 4)
 NicksPerRow=4
 
-#Nicks you want to ignore. Messages from those users will not be sent to IRC. OPTIONAL 
+#Nicks you want to ignore. Messages from those users will not be sent to IRC. 
+#OPTIONAL 
 IgnoreNicks="mmbot spammer2"
 
 ###################################################################
 #multiple channel config
 ###################################################################
-#You can specify multiple channels. REQUIRED (at least 1 channel)
+#You can specify multiple channels. 
 #The name is just an identifier for you.
+#REQUIRED (at least 1 channel)
 [Channel "channel1"] 
 #Choose the IRC channel to send mattermost messages to.
 IRC="#off-topic"
@@ -101,5 +137,6 @@ mattermost="testing"
 #general
 ###################################################################
 [general]
-#request your API key on https://github.com/giphy/GiphyAPI. This is a public beta key. OPTIONAL
+#request your API key on https://github.com/giphy/GiphyAPI. This is a public beta key. 
+#OPTIONAL
 GiphyApiKey="dc6zaTOxFJmzC"

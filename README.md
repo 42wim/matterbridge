@@ -1,14 +1,20 @@
 # matterbridge
 
-Simple bridge between mattermost and IRC. Uses the in/outgoing webhooks.  
-Relays public channel messages between mattermost and IRC.  
+Simple bridge between mattermost and IRC. 
 
-Requires mattermost 1.2.0+
+* Relays public channel messages between mattermost and IRC.
+* Supports multiple mattermost and irc channels.
+* Matterbridge -plus also works with private groups on your mattermost.
 
-There is also [matterbridge-plus] (https://github.com/42wim/matterbridge-plus) which uses the mattermost API and needs a dedicated user (bot). But requires no incoming/outgoing webhook setup. 
+## Requirements:
+* [Mattermost] (https://github.com/mattermost/platform/) 3.x (stable, not a dev build)
+### Webhooks version
+* Configured incoming/outgoing [webhooks](https://www.mattermost.org/webhooks/) on your mattermost instance.
+### Plus (API) version
+* A dedicated user(bot) on your mattermost instance.
 
 ## binaries
-Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/tag/v0.4.2)
+Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/tag/v0.5)
 
 ## building
 Go 1.6+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH] (https://golang.org/doc/code.html#GOPATH)
@@ -42,11 +48,6 @@ Usage of ./matterbridge:
         show version
 ```
 
-Matterbridge will:
-* start a webserver listening on the port specified in the configuration.
-* connect to specified irc server and channel.
-* send messages from mattermost to irc and vice versa, messages in mattermost will appear with irc-nick
-
 ## config
 ### matterbridge
 matterbridge looks for matterbridge.conf in current directory. (use -conf to specify another file)
@@ -54,7 +55,8 @@ matterbridge looks for matterbridge.conf in current directory. (use -conf to spe
 Look at [matterbridge.conf.sample] (https://github.com/42wim/matterbridge/blob/master/matterbridge.conf.sample) for an example.
 
 ### mattermost
-You'll have to configure the incoming en outgoing webhooks. 
+#### webhooks version
+You'll have to configure the incoming and outgoing webhooks. 
 
 * incoming webhooks
 Go to "account settings" - integrations - "incoming webhooks".  
@@ -65,5 +67,8 @@ This URL should be set in the matterbridge.conf in the [mattermost] section (see
 Go to "account settings" - integrations - "outgoing webhooks".  
 Choose a channel (the same as the one from incoming webhooks) and fill in the address and port of the server matterbridge will run on.  
 
-e.g. http://192.168.1.1:9999 (9999 is the port specified in [mattermost] section of matterbridge.conf)
+e.g. http://192.168.1.1:9999 (192.168.1.1:9999 is the BindAddress specified in [mattermost] section of matterbridge.conf)
 
+#### plus version
+You'll have to create a new dedicated user on your mattermost instance.
+Specify the login and password in [mattermost] section of matterbridge.conf
