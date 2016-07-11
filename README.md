@@ -51,58 +51,7 @@ Matterbridge will:
 ### matterbridge
 matterbridge looks for matterbridge.conf in current directory. (use -conf to specify another file)
 
-Look at matterbridge.conf.sample for an example
-
-
-```
-[IRC]
-server="irc.freenode.net:6667"
-#default no TLS connection to irc server
-UseTLS=false
-#do not check the certificate if we use TLS (allows for selfsigned certificates)
-SkipTLSVerify=true
-nick="matterbot"
-#Freenode nickserv
-NickServNick="nickserv"
-#Password for nickserv
-NickServPassword="secret"
-#Ignore the messages from these nicks. They will not be sent to mattermost
-IgnoreNicks="ircspammer1 ircspammer2"
-
-[mattermost]
-#url is your incoming webhook url (account settings - integrations - incoming webhooks)
-url="http://mattermost.yourdomain.com/hooks/incomingwebhookkey"  
-#address the webserver (which receives the outgoing webhook from mattermost) will listen on
-#(account settings - integrations - outgoing webhooks)
-BindAddress="0.0.0.0:9999"
-#show irc users joining and parting
-showjoinpart=true 
-#the token you get from the outgoing webhook in mattermost.
-Token="outgoingwebhooktoken1"
-#disable certificate checking (selfsigned certificates)
-#SkipTLSVerify=true
-#whether to prefix messages from IRC to mattermost with the sender's nick. Useful if username overrides for incoming webhooks isn't enabled on the mattermost server
-PrefixMessagesWithNick=false
-#how to format the list of IRC nicks when displayed in mattermost. Possible options are "table" and "plain"
-NickFormatter=plain
-#how many nicks to list per row for formatters that support this
-NicksPerRow=4
-#Ignore the messages from these nicks. They will not be sent to irc
-IgnoreNicks="mmbot spammer2"
-
-#multiple channel config
-[Channel "channel1"] 
-IRC="#off-topic"
-mattermost="off-topic"
-
-[Channel "testchannel"]
-IRC="#testing"
-mattermost="testing"
-
-[general]
-#request your API key on https://github.com/giphy/GiphyAPI. This is a public beta key
-GiphyApiKey="dc6zaTOxFJmzC"
-```
+Look at [matterbridge.conf.sample] (https://github.com/42wim/matterbridge/blob/master/matterbridge.conf.sample) for an example.
 
 ### mattermost
 You'll have to configure the incoming en outgoing webhooks. 

@@ -1,39 +1,105 @@
+#This is configuration for matterbridge.
+###################################################################
+#IRC section
+###################################################################
 [IRC]
-server="irc.freenode.net"
-port=6667
+#irc server to connect to. REQUIRED
+Server="irc.freenode.net:6667"
+
+#Enable to use TLS connection to your irc server. OPTIONAL (default false)
 UseTLS=false
+
+#Enable to not verify the certificate on your irc server. OPTIONAL (default false)
+#e.g. when using selfsigned certificates
 SkipTLSVerify=true
-nick="matterbot"
-channel="#matterbridge"
-UseSlackCircumfix=false
-#NickServNick="nickserv"
-#NickServPassword="secret"
+
+#Your nick on irc. REQUIRED
+Nick="matterbot"
+
+#If you registered your bot with a service like Nickserv on freenode. OPTIONAL
+NickServNick="nickserv"
+NickServPassword="secret"
+
+#Nicks you want to ignore. Messages from those users will not be sent to mattermost. OPTIONAL
 IgnoreNicks="ircspammer1 ircspammer2"
 
+###################################################################
+#mattermost section
+###################################################################
+
 [mattermost]
-url="http://yourdomain/hooks/yourhookkey"
-port=9999
-showjoinpart=true
-#remove token when using multiple channels!
-token=yourtokenfrommattermost
+#### Settings for webhook matterbridge.
+#### These settings will not be used when using -plus switch which doesn't use webhooks.
+
+#Url is your incoming webhook url as specified in mattermost. REQUIRED
+#See account settings - integrations - incoming webhooks on mattermost.
+URL="https://yourdomain/hooks/yourhookkey"
+
+#Address to listen on for outgoing webhook requests from mattermost. REQUIRED
+#See account settings - integrations - outgoing webhooks on mattermost.
+#This setting will not be used when using -plus switch which doesn't use webhooks
+BindAddress="0.0.0.0:9999"
+
+#Icon that will be showed in mattermost. OPTIONAL
+#This setting will not be used when using -plus switch which doesn't use webhooks
 IconURL="http://youricon.png"
-#SkipTLSVerify=true
-#BindAddress="0.0.0.0"
+
+#### Settings for matterbridge -plus
+#### Thse settings will only be used when using the -plus switch.
+
+#The mattermost hostname. REQUIRED
+Server="yourmattermostserver.domain"
+
+#Your team on mattermost. REQUIRED
+Team="yourteam"
+
+#login/pass of your bot. Use a dedicated user for this and not your own! REQUIRED
+Login="yourlogin"
+Password="yourpass"
+
+#https by default. Disable to make a http connection to your mattermost. OPTIONAL (default false)
+NoTLS=false
+
+#### Shared settings for matterbridge and -plus
+
+#Enable to not verify the certificate on your mattermost server. OPTIONAL (default false)
+#e.g. when using selfsigned certificates
+SkipTLSVerify=true
+
+#Enable to show IRC joins/parts in mattermost. OPTIONAL (default false)
+ShowJoinPart=false
+
+#Whether to prefix messages from IRC to mattermost with the sender's nick. OPTIONAL (default false)
+#Useful if username overrides for incoming webhooks isn't enabled on the mattermost server
 PrefixMessagesWithNick=false
+
+#how to format the list of IRC nicks when displayed in mattermost. OPTIONAL (default plain)
+#Possible options are "table" and "plain"
 NickFormatter=plain
+#How many nicks to list per row for formatters that support this. OPTIONAL (default 4)
 NicksPerRow=4
+
+#Nicks you want to ignore. Messages from those users will not be sent to IRC. OPTIONAL 
 IgnoreNicks="mmbot spammer2"
 
-[general]
-GiphyAPIKey=dc6zaTOxFJmzC
-
+###################################################################
 #multiple channel config
-#token you can find in your outgoing webhook
-[Token "outgoingwebhooktoken1"] 
-IRCChannel="#off-topic"
-MMChannel="off-topic"
+###################################################################
+#You can specify multiple channels. REQUIRED (at least 1 channel)
+#The name is just an identifier for you.
+[Channel "channel1"] 
+#Choose the IRC channel to send mattermost messages to.
+IRC="#off-topic"
+#Choose the mattermost channel to send IRC messages to.
+mattermost="off-topic"
 
-[Token "outgoingwebhooktoken2"]
-IRCChannel="#testing"
-MMChannel="testing"
+[Channel "testchannel"]
+IRC="#testing"
+mattermost="testing"
 
+###################################################################
+#general
+###################################################################
+[general]
+#request your API key on https://github.com/giphy/GiphyAPI. This is a public beta key. OPTIONAL
+GiphyApiKey="dc6zaTOxFJmzC"
