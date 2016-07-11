@@ -56,8 +56,7 @@ Look at matterbridge.conf.sample for an example
 
 ```
 [IRC]
-server="irc.freenode.net"
-port=6667
+server="irc.freenode.net:6667"
 #default no TLS connection to irc server
 UseTLS=false
 #do not check the certificate if we use TLS (allows for selfsigned certificates)

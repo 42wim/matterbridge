@@ -114,7 +114,10 @@ func (b *Bridge) createIRC(name string) *irc.Connection {
 		i.Password = b.Config.IRC.Password
 	}
 	i.AddCallback(ircm.RPL_WELCOME, b.handleNewConnection)
-	i.Connect(b.Config.IRC.Server + ":" + strconv.Itoa(b.Config.IRC.Port))
+	err := i.Connect(b.Config.IRC.Server)
+	if err != nil {
+		flog.irc.Fatal(err)
+	}
 	return i
 }
 

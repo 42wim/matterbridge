@@ -11,7 +11,6 @@ type Config struct {
 		UseTLS           bool
 		SkipTLSVerify    bool
 		Server           string
-		Port             int
 		Nick             string
 		Password         string
 		Channel          string
@@ -22,7 +21,6 @@ type Config struct {
 	}
 	Mattermost struct {
 		URL                    string
-		Port                   int
 		ShowJoinPart           bool
 		Token                  string
 		IconURL                string
