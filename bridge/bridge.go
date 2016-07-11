@@ -356,8 +356,6 @@ func (b *Bridge) handleMatter() {
 		username = message.Username + ": "
 		if b.Config.IRC.RemoteNickFormat != "" {
 			username = strings.Replace(b.Config.IRC.RemoteNickFormat, "{NICK}", message.Username, -1)
-		} else if b.Config.IRC.UseSlackCircumfix {
-			username = "<" + message.Username + "> "
 		}
 		cmds := strings.Fields(message.Text)
 		// empty message

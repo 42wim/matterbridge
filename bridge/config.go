@@ -8,18 +8,17 @@ import (
 
 type Config struct {
 	IRC struct {
-		UseTLS            bool
-		SkipTLSVerify     bool
-		Server            string
-		Port              int
-		Nick              string
-		Password          string
-		Channel           string
-		UseSlackCircumfix bool
-		NickServNick      string
-		NickServPassword  string
-		RemoteNickFormat  string
-		IgnoreNicks       string
+		UseTLS           bool
+		SkipTLSVerify    bool
+		Server           string
+		Port             int
+		Nick             string
+		Password         string
+		Channel          string
+		NickServNick     string
+		NickServPassword string
+		RemoteNickFormat string
+		IgnoreNicks      string
 	}
 	Mattermost struct {
 		URL                    string
