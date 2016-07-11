@@ -79,7 +79,7 @@ func NewBridge(name string, config *Config, kind string) *Bridge {
 	}
 	if kind == Legacy {
 		b.mh = matterhook.New(b.Config.Mattermost.URL,
-			matterhook.Config{Port: b.Config.Mattermost.Port, Token: b.Config.Mattermost.Token,
+			matterhook.Config{Token: b.Config.Mattermost.Token,
 				InsecureSkipVerify: b.Config.Mattermost.SkipTLSVerify,
 				BindAddress:        b.Config.Mattermost.BindAddress})
 	} else {
@@ -182,7 +182,7 @@ func (b *Bridge) ircNickFormat(nick string) string {
 }
 
 func (b *Bridge) handlePrivMsg(event *irc.Event) {
-	flog.irc.Debugf("handlePrivMsg() %s %s", event.Nick, event.Message)
+	flog.irc.Debugf("handlePrivMsg() %s %s", event.Nick, event.Message())
 	if b.ignoreMessage(event.Nick, event.Message(), "irc") {
 		return
 	}

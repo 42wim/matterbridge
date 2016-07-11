@@ -31,8 +31,15 @@ matterbridge
 3) Now you can run matterbridge. 
 
 ```
-Usage of matterbridge:
-  -conf="matterbridge.conf": config file
+Usage of ./matterbridge:
+  -conf string
+        config file (default "matterbridge.conf")
+  -debug
+        enable debug
+  -plus
+        running using API instead of webhooks
+  -version
+        show version
 ```
 
 Matterbridge will:
@@ -66,11 +73,11 @@ IgnoreNicks="ircspammer1 ircspammer2"
 [mattermost]
 #url is your incoming webhook url (account settings - integrations - incoming webhooks)
 url="http://mattermost.yourdomain.com/hooks/incomingwebhookkey"  
-#port the bridge webserver will listen on
-port=9999
-#address the webserver will bind to
-BindAddress="0.0.0.0"
-showjoinpart=true #show irc users joining and parting
+#address the webserver (which receives the outgoing webhook from mattermost) will listen on
+#(account settings - integrations - outgoing webhooks)
+BindAddress="0.0.0.0:9999"
+#show irc users joining and parting
+showjoinpart=true 
 #the token you get from the outgoing webhook in mattermost.
 Token="outgoingwebhooktoken1"
 #disable certificate checking (selfsigned certificates)

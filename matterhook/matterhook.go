@@ -10,8 +10,8 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
-	"strconv"
 )
 
 // OMessage for mattermost incoming webhook. (send to mattermost)
@@ -51,7 +51,6 @@ type Client struct {
 
 // Config for client.
 type Config struct {
-	Port               int    // Port to listen on.
 	BindAddress        string // Address to listen on
 	Token              string // Only allow this token from Mattermost. (Allow everything when empty)
 	InsecureSkipVerify bool   // disable certificate checking
@@ -61,10 +60,10 @@ type Config struct {
 // New Mattermost client.
 func New(url string, config Config) *Client {
 	c := &Client{Url: url, In: make(chan IMessage), Out: make(chan OMessage), Config: config}
-	if c.Port == 0 {
-		c.Port = 9999
+	_, _, err := net.SplitHostPort(c.BindAddress)
+	if err != nil {
+		log.Fatalf("incorrect bindaddress %s", c.BindAddress)
 	}
-	c.BindAddress += ":"
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: config.InsecureSkipVerify},
 	}
@@ -79,8 +78,8 @@ func New(url string, config Config) *Client {
 func (c *Client) StartServer() {
 	mux := http.NewServeMux()
 	mux.Handle("/", c)
-	log.Printf("Listening on http://%v:%v...\n", c.BindAddress, c.Port)
-	if err := http.ListenAndServe((c.BindAddress + strconv.Itoa(c.Port)), mux); err != nil {
+	log.Printf("Listening on http://%v...\n", c.BindAddress)
+	if err := http.ListenAndServe(c.BindAddress, mux); err != nil {
 		log.Fatal(err)
 	}
 }
