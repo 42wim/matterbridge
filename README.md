@@ -11,8 +11,10 @@ Breaking changes for matterbridge can be found in [migration](https://github.com
 
 ## Requirements:
 * [Mattermost] (https://github.com/mattermost/platform/) 3.x (stable, not a dev build)
+
 ### Webhooks version
 * Configured incoming/outgoing [webhooks](https://www.mattermost.org/webhooks/) on your mattermost instance.
+
 ### Plus (API) version
 * A dedicated user(bot) on your mattermost instance.
 
