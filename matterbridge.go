@@ -7,7 +7,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-var Version = "0.5-dev"
+var version = "0.5.0-beta1"
 
 func init() {
 	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
@@ -20,7 +20,7 @@ func main() {
 	flagPlus := flag.Bool("plus", false, "running using API instead of webhooks")
 	flag.Parse()
 	if *flagVersion {
-		fmt.Println("Version:", Version)
+		fmt.Println("version:", version)
 		return
 	}
 	flag.Parse()
@@ -28,7 +28,7 @@ func main() {
 		log.Info("enabling debug")
 		log.SetLevel(log.DebugLevel)
 	}
-	fmt.Println("running version", Version)
+	fmt.Println("running version", version)
 	if *flagPlus {
 		bridge.NewBridge("matterbot", bridge.NewConfig(*flagConfig), "")
 	} else {

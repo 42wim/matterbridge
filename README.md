@@ -17,7 +17,7 @@ Breaking changes for matterbridge can be found in [migration](https://github.com
 * A dedicated user(bot) on your mattermost instance.
 
 ## binaries
-Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/tag/v0.5)
+Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/tag/v0.5-beta1)
 
 ## building
 Go 1.6+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH] (https://golang.org/doc/code.html#GOPATH)
