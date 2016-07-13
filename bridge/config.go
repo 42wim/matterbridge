@@ -38,12 +38,22 @@ type Config struct {
 		IgnoreNicks            string
 		NoTLS                  bool
 	}
+	Xmpp struct {
+		Jid      string
+		Password string
+		Server   string
+		Muc      string
+		Nick     string
+	}
 	Channel map[string]*struct {
 		IRC        string
 		Mattermost string
+		Xmpp       string
 	}
 	General struct {
 		GiphyAPIKey string
+		Xmpp        bool
+		Irc         bool
 	}
 }
 

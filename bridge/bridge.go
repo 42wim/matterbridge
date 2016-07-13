@@ -5,6 +5,7 @@ import (
 	"github.com/42wim/matterbridge/matterclient"
 	"github.com/42wim/matterbridge/matterhook"
 	log "github.com/Sirupsen/logrus"
+	"github.com/mattn/go-xmpp"
 	"github.com/peterhellberg/giphy"
 	ircm "github.com/sorcix/irc"
 	"github.com/thoj/go-ircevent"
@@ -26,6 +27,10 @@ type MMapi struct {
 	mmIgnoreNicks []string
 }
 
+type MMxmpp struct {
+	xc      *xmpp.Client
+	xmppMap map[string]string
+}
 type MMirc struct {
 	i              *irc.Connection
 	ircNick        string
@@ -44,13 +49,15 @@ type Bridge struct {
 	MMhook
 	MMapi
 	MMirc
+	MMxmpp
 	*Config
 	kind string
 }
 
 type FancyLog struct {
-	irc *log.Entry
-	mm  *log.Entry
+	irc  *log.Entry
+	mm   *log.Entry
+	xmpp *log.Entry
 }
 
 var flog FancyLog
@@ -60,6 +67,7 @@ const Legacy = "legacy"
 func initFLog() {
 	flog.irc = log.WithFields(log.Fields{"module": "irc"})
 	flog.mm = log.WithFields(log.Fields{"module": "mattermost"})
+	flog.xmpp = log.WithFields(log.Fields{"module": "xmpp"})
 }
 
 func NewBridge(name string, config *Config, kind string) *Bridge {
@@ -67,16 +75,26 @@ func NewBridge(name string, config *Config, kind string) *Bridge {
 	b := &Bridge{}
 	b.Config = config
 	b.kind = kind
-	b.ircNick = b.Config.IRC.Nick
-	b.ircMap = make(map[string]string)
 	b.mmMap = make(map[string]string)
-	b.MMirc.names = make(map[string][]string)
-	b.ircIgnoreNicks = strings.Fields(b.Config.IRC.IgnoreNicks)
-	b.mmIgnoreNicks = strings.Fields(b.Config.Mattermost.IgnoreNicks)
-	for _, val := range b.Config.Channel {
-		b.ircMap[val.IRC] = val.Mattermost
-		b.mmMap[val.Mattermost] = val.IRC
+	if b.Config.General.Irc {
+		b.ircNick = b.Config.IRC.Nick
+		b.ircMap = make(map[string]string)
+		b.MMirc.names = make(map[string][]string)
+		b.ircIgnoreNicks = strings.Fields(b.Config.IRC.IgnoreNicks)
+		b.mmIgnoreNicks = strings.Fields(b.Config.Mattermost.IgnoreNicks)
+		for _, val := range b.Config.Channel {
+			b.ircMap[val.IRC] = val.Mattermost
+			b.mmMap[val.Mattermost] = val.IRC
+		}
 	}
+	if b.Config.General.Xmpp {
+		b.xmppMap = make(map[string]string)
+		for _, val := range b.Config.Channel {
+			b.xmppMap[val.Xmpp] = val.Mattermost
+			b.mmMap[val.Mattermost] = val.Xmpp
+		}
+	}
+
 	if kind == Legacy {
 		b.mh = matterhook.New(b.Config.Mattermost.URL,
 			matterhook.Config{InsecureSkipVerify: b.Config.Mattermost.SkipTLSVerify,
@@ -98,9 +116,25 @@ func NewBridge(name string, config *Config, kind string) *Bridge {
 		}
 		go b.mc.WsReceiver()
 	}
-	flog.irc.Info("Trying IRC connection")
-	b.i = b.createIRC(name)
-	flog.irc.Info("Connection succeeded")
+
+	if b.Config.General.Irc {
+		flog.irc.Info("Trying IRC connection")
+		b.i = b.createIRC(name)
+		flog.irc.Info("Connection succeeded")
+	}
+	if b.Config.General.Xmpp {
+		var err error
+		flog.xmpp.Info("Trying XMPP connection")
+		b.xc, err = b.createXMPP()
+		if err != nil {
+			flog.xmpp.Debugf("%#v", err)
+			panic("xmpp failure")
+		}
+		flog.xmpp.Info("Connection succeeded")
+		b.setupChannels()
+		go b.handleXmpp()
+	}
+
 	go b.handleMatter()
 	return b
 }
@@ -121,6 +155,25 @@ func (b *Bridge) createIRC(name string) *irc.Connection {
 		flog.irc.Fatal(err)
 	}
 	return i
+}
+
+func (b *Bridge) createXMPP() (*xmpp.Client, error) {
+	options := xmpp.Options{
+		Host:                         b.Config.Xmpp.Server,
+		User:                         b.Config.Xmpp.Jid,
+		Password:                     b.Config.Xmpp.Password,
+		NoTLS:                        true,
+		StartTLS:                     true,
+		Debug:                        true,
+		Session:                      true,
+		Status:                       "",
+		StatusMessage:                "",
+		Resource:                     "",
+		InsecureAllowUnencryptedAuth: false,
+	}
+	var err error
+	b.xc, err = options.NewClient()
+	return b.xc, err
 }
 
 func (b *Bridge) handleNewConnection(event *irc.Event) {
@@ -147,11 +200,19 @@ func (b *Bridge) handleNewConnection(event *irc.Event) {
 }
 
 func (b *Bridge) setupChannels() {
-	i := b.i
-	for _, val := range b.Config.Channel {
-		flog.irc.Infof("Joining %s as %s", val.IRC, b.ircNick)
-		i.Join(val.IRC)
+	if b.Config.General.Irc {
+		for _, val := range b.Config.Channel {
+			flog.irc.Infof("Joining %s as %s", val.IRC, b.ircNick)
+			b.i.Join(val.IRC)
+		}
 	}
+	if b.Config.General.Xmpp {
+		for _, val := range b.Config.Channel {
+			flog.xmpp.Infof("Joining %s as %s", val.Xmpp, b.Xmpp.Nick)
+			b.xc.JoinMUCNoHistory(val.Xmpp+"@"+b.Xmpp.Muc, b.Xmpp.Nick)
+		}
+	}
+
 }
 
 func (b *Bridge) handleIrcBotCommand(event *irc.Event) bool {
@@ -340,9 +401,11 @@ func (b *Bridge) handleMatter() {
 		if b.ignoreMessage(message.Username, message.Text, "mattermost") {
 			continue
 		}
-		username = message.Username + ": "
-		if b.Config.IRC.RemoteNickFormat != "" {
-			username = strings.Replace(b.Config.IRC.RemoteNickFormat, "{NICK}", message.Username, -1)
+		if b.Config.General.Irc {
+			username = message.Username + ": "
+			if b.Config.IRC.RemoteNickFormat != "" {
+				username = strings.Replace(b.Config.IRC.RemoteNickFormat, "{NICK}", message.Username, -1)
+			}
 		}
 		cmds := strings.Fields(message.Text)
 		// empty message
@@ -353,17 +416,27 @@ func (b *Bridge) handleMatter() {
 		switch cmd {
 		case "!users":
 			flog.mm.Info("Received !users from ", message.Username)
-			b.i.SendRaw("NAMES " + b.getIRCChannel(message.Channel))
+			if b.Config.General.Irc {
+				b.i.SendRaw("NAMES " + b.getIRCChannel(message.Channel))
+			}
 			continue
 		case "!gif":
 			message.Text = b.giphyRandom(strings.Fields(strings.Replace(message.Text, "!gif ", "", 1)))
-			b.Send(b.ircNick, message.Text, b.getIRCChannel(message.Channel))
+			if b.Config.General.Irc {
+				b.Send(b.ircNick, message.Text, b.getIRCChannel(message.Channel))
+			}
 			continue
 		}
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
 			flog.mm.Debug("Sending message from " + message.Username + " to " + message.Channel)
-			b.i.Privmsg(b.getIRCChannel(message.Channel), username+text)
+			if b.Config.General.Irc {
+				b.i.Privmsg(b.getIRCChannel(message.Channel), username+text)
+			}
+			if b.Config.General.Xmpp {
+				b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: "testje@c.sw.be", Text: username + text})
+
+			}
 		}
 	}
 }
@@ -380,8 +453,14 @@ func (b *Bridge) giphyRandom(query []string) string {
 	return res.Data.FixedHeightDownsampledURL
 }
 
-func (b *Bridge) getMMChannel(ircChannel string) string {
-	mmChannel := b.ircMap[ircChannel]
+func (b *Bridge) getMMChannel(channel string) string {
+	var mmChannel string
+	if b.Config.General.Irc {
+		mmChannel = b.ircMap[channel]
+	}
+	if b.Config.General.Xmpp {
+		mmChannel = b.xmppMap[channel]
+	}
 	if b.kind == Legacy {
 		return mmChannel
 	}
@@ -404,4 +483,42 @@ func (b *Bridge) ignoreMessage(nick string, message string, protocol string) boo
 		}
 	}
 	return false
+}
+
+func (b *Bridge) xmppKeepAlive() {
+	go func() {
+		ticker := time.NewTicker(90 * time.Second)
+		for {
+			select {
+			case <-ticker.C:
+				b.xc.Send(xmpp.Chat{})
+			}
+		}
+	}()
+}
+
+func (b *Bridge) handleXmpp() error {
+	for {
+		m, err := b.xc.Recv()
+		if err != nil {
+			return err
+		}
+		switch v := m.(type) {
+		case xmpp.Chat:
+			var channel, nick string
+			if v.Type == "groupchat" {
+				s := strings.Split(v.Remote, "@")
+				if len(s) == 2 {
+					channel = s[0]
+				}
+				s = strings.Split(s[1], "/")
+				if len(s) == 2 {
+					nick = s[1]
+				}
+				b.Send(nick, v.Text, b.getMMChannel(channel))
+			}
+		case xmpp.Presence:
+			// do nothing
+		}
+	}
 }

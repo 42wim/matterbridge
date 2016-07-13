@@ -42,6 +42,31 @@ RemoteNickFormat="{NICK}: "
 IgnoreNicks="ircspammer1 ircspammer2"
 
 ###################################################################
+#XMPP section
+###################################################################
+[XMPP]
+#xmpp server to connect to. 
+#REQUIRED
+Server="jabber.example.com:5222"
+
+#Jid
+#REQUIRED
+Jid="user@example.com"
+
+#Password
+#REQUIRED
+Password="yourpass"
+
+#MUC
+#REQUIRED
+Muc="conference.jabber.example.com"
+
+#Your nick in the rooms
+#REQUIRED
+Nick="xmppbot"
+
+
+###################################################################
 #mattermost section
 ###################################################################
 
@@ -146,3 +171,8 @@ mattermost="testing"
 #request your API key on https://github.com/giphy/GiphyAPI. This is a public beta key. 
 #OPTIONAL
 GiphyApiKey="dc6zaTOxFJmzC"
+
+#Choose only one protocol to bridge, do not set both to true!
+#REQUIRED
+Irc=true
+Xmpp=false
