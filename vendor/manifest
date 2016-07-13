@@ -78,6 +78,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/mattn/go-xmpp",
+			"repository": "https://github.com/mattn/go-xmpp",
+			"vcs": "git",
+			"revision": "e44d1877bb457f5c3991903e9934a31e55c3a2ad",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/nicksnyder/go-i18n/i18n",
 			"repository": "https://github.com/nicksnyder/go-i18n",
 			"vcs": "",
