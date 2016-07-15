@@ -77,3 +77,15 @@ e.g. http://192.168.1.1:9999 (192.168.1.1:9999 is the BindAddress specified in [
 #### plus version
 You'll have to create a new dedicated user on your mattermost instance.
 Specify the login and password in [mattermost] section of matterbridge.conf
+
+## FAQ
+Please look at [matterbridge.conf.sample] (https://github.com/42wim/matterbridge/blob/master/matterbridge.conf.sample) for more information first. 
+### Mattermost doesn't show the IRC nicks
+If you're running the webhooks version, this can be fixed by either:
+* enabling "override usernames". See [mattermost documentation](http://docs.mattermost.com/developer/webhooks-incoming.html#enabling-incoming-webhooks)
+* setting ```PrefixMessagesWithNick``` to ```true``` in ```mattermost``` section of your matterbridge.conf.
+
+If you're running the plus version you'll need to:
+* setting ```PrefixMessagesWithNick``` to ```true``` in ```mattermost``` section of your matterbridge.conf.
+
+Also look at the ```RemoteNickFormat``` setting.
