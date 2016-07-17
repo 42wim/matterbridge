@@ -60,15 +60,15 @@ type Config struct {
 // New Mattermost client.
 func New(url string, config Config) *Client {
 	c := &Client{Url: url, In: make(chan IMessage), Out: make(chan OMessage), Config: config}
-	_, _, err := net.SplitHostPort(c.BindAddress)
-	if err != nil {
-		log.Fatalf("incorrect bindaddress %s", c.BindAddress)
-	}
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: config.InsecureSkipVerify},
 	}
 	c.httpclient = &http.Client{Transport: tr}
 	if !c.DisableServer {
+		_, _, err := net.SplitHostPort(c.BindAddress)
+		if err != nil {
+			log.Fatalf("incorrect bindaddress %s", c.BindAddress)
+		}
 		go c.StartServer()
 	}
 	return c
