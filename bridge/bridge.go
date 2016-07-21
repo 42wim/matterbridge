@@ -108,6 +108,9 @@ func NewBridge(name string, config *Config, kind string) *Bridge {
 func (b *Bridge) createIRC(name string) *irc.Connection {
 	i := irc.IRC(b.Config.IRC.Nick, b.Config.IRC.Nick)
 	i.UseTLS = b.Config.IRC.UseTLS
+	i.UseSASL = b.Config.IRC.UseSASL
+	i.SASLLogin = b.Config.IRC.NickServNick
+	i.SASLPassword = b.Config.IRC.NickServPassword
 	i.TLSConfig = &tls.Config{InsecureSkipVerify: b.Config.IRC.SkipTLSVerify}
 	if b.Config.IRC.Password != "" {
 		i.Password = b.Config.IRC.Password

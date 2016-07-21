@@ -439,6 +439,25 @@ func (irc *Connection) Connect(server string) error {
 	if len(irc.Password) > 0 {
 		irc.pwrite <- fmt.Sprintf("PASS %s\r\n", irc.Password)
 	}
+
+	resChan := make(chan *SASLResult)
+	if irc.UseSASL {
+		irc.setupSASLCallbacks(resChan)
+		irc.pwrite <- fmt.Sprintf("CAP LS\r\n")
+		// request SASL
+		irc.pwrite <- fmt.Sprintf("CAP REQ :sasl\r\n")
+		// if sasl request doesn't complete in 15 seconds, close chan and timeout
+		select {
+		case res := <-resChan:
+			if res.Failed {
+				close(resChan)
+				return res.Err
+			}
+		case <-time.After(time.Second * 15):
+			close(resChan)
+			return errors.New("SASL setup timed out. This shouldn't happen.")
+		}
+	}
 	irc.pwrite <- fmt.Sprintf("NICK %s\r\n", irc.nick)
 	irc.pwrite <- fmt.Sprintf("USER %s 0.0.0.0 0.0.0.0 :%s\r\n", irc.user, irc.user)
 	return nil
@@ -466,6 +485,7 @@ func IRC(nick, user string) *Connection {
 		KeepAlive:   4 * time.Minute,
 		Timeout:     1 * time.Minute,
 		PingFreq:    15 * time.Minute,
+		SASLMech:    "PLAIN",
 		QuitMessage: "",
 	}
 	irc.setupCallbacks()

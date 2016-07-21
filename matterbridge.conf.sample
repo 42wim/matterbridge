@@ -11,6 +11,11 @@ Server="irc.freenode.net:6667"
 #OPTIONAL (default false)
 UseTLS=false
 
+#Enable SASL (PLAIN) authentication. (freenode requires this from eg AWS hosts)
+#It uses NickServNick and NickServPassword as login and password
+#OPTIONAL (deefault false)
+UseSASL=false
+
 #Enable to not verify the certificate on your irc server. i
 #e.g. when using selfsigned certificates
 #OPTIONAL (default false)
@@ -21,6 +26,7 @@ SkipTLSVerify=true
 Nick="matterbot"
 
 #If you registered your bot with a service like Nickserv on freenode. 
+#Also being used when UseSASL=true
 #OPTIONAL
 NickServNick="nickserv"
 NickServPassword="secret"

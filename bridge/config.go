@@ -9,6 +9,7 @@ import (
 type Config struct {
 	IRC struct {
 		UseTLS           bool
+		UseSASL          bool
 		SkipTLSVerify    bool
 		Server           string
 		Nick             string
