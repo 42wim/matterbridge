@@ -189,8 +189,8 @@ func (m *MMClient) Logout() error {
 }
 
 func (m *MMClient) WsReceiver() {
-	var rmsg model.Message
 	for {
+		var rmsg model.Message
 		if m.WsQuit {
 			m.log.Debug("exiting WsReceiver")
 			return
