@@ -144,11 +144,11 @@ func (m *MMClient) Login() error {
 		return err
 	}
 
-	// set our team id as default route
-	m.Client.SetTeamId(m.Team.Id)
 	if m.Team == nil {
 		return errors.New("team not found")
 	}
+	// set our team id as default route
+	m.Client.SetTeamId(m.Team.Id)
 
 	// setup websocket connection
 	wsurl := wsScheme + m.Credentials.Server + "/api/v3/users/websocket"
