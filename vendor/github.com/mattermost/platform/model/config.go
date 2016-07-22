@@ -6,7 +6,6 @@ package model
 import (
 	"encoding/json"
 	"io"
-	"strings"
 )
 
 const (
@@ -19,6 +18,9 @@ const (
 
 	DATABASE_DRIVER_MYSQL    = "mysql"
 	DATABASE_DRIVER_POSTGRES = "postgres"
+
+	PASSWORD_MAXIMUM_LENGTH = 64
+	PASSWORD_MINIMUM_LENGTH = 5
 
 	SERVICE_GITLAB = "gitlab"
 	SERVICE_GOOGLE = "google"
@@ -33,17 +35,16 @@ const (
 	DIRECT_MESSAGE_ANY  = "any"
 	DIRECT_MESSAGE_TEAM = "team"
 
-	FAKE_SETTING = "********************************"
-)
+	PERMISSIONS_ALL          = "all"
+	PERMISSIONS_TEAM_ADMIN   = "team_admin"
+	PERMISSIONS_SYSTEM_ADMIN = "system_admin"
 
-// should match the values in webapp/i18n/i18n.jsx
-var LOCALES = []string{
-	"en",
-	"es",
-	"fr",
-	"ja",
-	"pt-BR",
-}
+	FAKE_SETTING = "********************************"
+
+	RESTRICT_EMOJI_CREATION_ALL          = "all"
+	RESTRICT_EMOJI_CREATION_ADMIN        = "admin"
+	RESTRICT_EMOJI_CREATION_SYSTEM_ADMIN = "system_admin"
+)
 
 type ServiceSettings struct {
 	ListenAddress                     string
@@ -70,6 +71,8 @@ type ServiceSettings struct {
 	WebsocketSecurePort               *int
 	WebsocketPort                     *int
 	WebserverMode                     *string
+	EnableCustomEmoji                 *bool
+	RestrictCustomEmojiCreation       *string
 }
 
 type SSOSettings struct {
@@ -93,12 +96,21 @@ type SqlSettings struct {
 }
 
 type LogSettings struct {
-	EnableConsole bool
-	ConsoleLevel  string
-	EnableFile    bool
-	FileLevel     string
-	FileFormat    string
-	FileLocation  string
+	EnableConsole          bool
+	ConsoleLevel           string
+	EnableFile             bool
+	FileLevel              string
+	FileFormat             string
+	FileLocation           string
+	EnableWebhookDebugging bool
+}
+
+type PasswordSettings struct {
+	MinimumLength *int
+	Lowercase     *bool
+	Number        *bool
+	Uppercase     *bool
+	Symbol        *bool
 }
 
 type FileSettings struct {
@@ -132,6 +144,7 @@ type EmailSettings struct {
 	RequireEmailVerification bool
 	FeedbackName             string
 	FeedbackEmail            string
+	FeedbackOrganization     *string
 	SMTPUsername             string
 	SMTPPassword             string
 	SMTPServer               string
@@ -167,16 +180,19 @@ type SupportSettings struct {
 }
 
 type TeamSettings struct {
-	SiteName                  string
-	MaxUsersPerTeam           int
-	EnableTeamCreation        bool
-	EnableUserCreation        bool
-	EnableOpenServer          *bool
-	RestrictCreationToDomains string
-	RestrictTeamNames         *bool
-	EnableCustomBrand         *bool
-	CustomBrandText           *string
-	RestrictDirectMessage     *string
+	SiteName                         string
+	MaxUsersPerTeam                  int
+	EnableTeamCreation               bool
+	EnableUserCreation               bool
+	EnableOpenServer                 *bool
+	RestrictCreationToDomains        string
+	RestrictTeamNames                *bool
+	EnableCustomBrand                *bool
+	CustomBrandText                  *string
+	RestrictDirectMessage            *string
+	RestrictTeamInvite               *string
+	RestrictPublicChannelManagement  *string
+	RestrictPrivateChannelManagement *string
 }
 
 type LdapSettings struct {
@@ -206,6 +222,7 @@ type LdapSettings struct {
 	// Advanced
 	SkipCertificateVerification *bool
 	QueryTimeout                *int
+	MaxPageSize                 *int
 
 	// Customization
 	LoginFieldName *string
@@ -223,11 +240,37 @@ type LocalizationSettings struct {
 	AvailableLocales    *string
 }
 
+type SamlSettings struct {
+	// Basic
+	Enable  *bool
+	Verify  *bool
+	Encrypt *bool
+
+	IdpUrl                      *string
+	IdpDescriptorUrl            *string
+	AssertionConsumerServiceURL *string
+
+	IdpCertificateFile    *string
+	PublicCertificateFile *string
+	PrivateKeyFile        *string
+
+	// User Mapping
+	FirstNameAttribute *string
+	LastNameAttribute  *string
+	EmailAttribute     *string
+	UsernameAttribute  *string
+	NicknameAttribute  *string
+	LocaleAttribute    *string
+
+	LoginButtonText *string
+}
+
 type Config struct {
 	ServiceSettings      ServiceSettings
 	TeamSettings         TeamSettings
 	SqlSettings          SqlSettings
 	LogSettings          LogSettings
+	PasswordSettings     PasswordSettings
 	FileSettings         FileSettings
 	EmailSettings        EmailSettings
 	RateLimitSettings    RateLimitSettings
@@ -238,6 +281,7 @@ type Config struct {
 	LdapSettings         LdapSettings
 	ComplianceSettings   ComplianceSettings
 	LocalizationSettings LocalizationSettings
+	SamlSettings         SamlSettings
 }
 
 func (o *Config) ToJson() string {
@@ -324,6 +368,31 @@ func (o *Config) SetDefaults() {
 		*o.ServiceSettings.EnableMultifactorAuthentication = false
 	}
 
+	if o.PasswordSettings.MinimumLength == nil {
+		o.PasswordSettings.MinimumLength = new(int)
+		*o.PasswordSettings.MinimumLength = PASSWORD_MINIMUM_LENGTH
+	}
+
+	if o.PasswordSettings.Lowercase == nil {
+		o.PasswordSettings.Lowercase = new(bool)
+		*o.PasswordSettings.Lowercase = false
+	}
+
+	if o.PasswordSettings.Number == nil {
+		o.PasswordSettings.Number = new(bool)
+		*o.PasswordSettings.Number = false
+	}
+
+	if o.PasswordSettings.Uppercase == nil {
+		o.PasswordSettings.Uppercase = new(bool)
+		*o.PasswordSettings.Uppercase = false
+	}
+
+	if o.PasswordSettings.Symbol == nil {
+		o.PasswordSettings.Symbol = new(bool)
+		*o.PasswordSettings.Symbol = false
+	}
+
 	if o.TeamSettings.RestrictTeamNames == nil {
 		o.TeamSettings.RestrictTeamNames = new(bool)
 		*o.TeamSettings.RestrictTeamNames = true
@@ -347,6 +416,21 @@ func (o *Config) SetDefaults() {
 	if o.TeamSettings.RestrictDirectMessage == nil {
 		o.TeamSettings.RestrictDirectMessage = new(string)
 		*o.TeamSettings.RestrictDirectMessage = DIRECT_MESSAGE_ANY
+	}
+
+	if o.TeamSettings.RestrictTeamInvite == nil {
+		o.TeamSettings.RestrictTeamInvite = new(string)
+		*o.TeamSettings.RestrictTeamInvite = PERMISSIONS_ALL
+	}
+
+	if o.TeamSettings.RestrictPublicChannelManagement == nil {
+		o.TeamSettings.RestrictPublicChannelManagement = new(string)
+		*o.TeamSettings.RestrictPublicChannelManagement = PERMISSIONS_ALL
+	}
+
+	if o.TeamSettings.RestrictPrivateChannelManagement == nil {
+		o.TeamSettings.RestrictPrivateChannelManagement = new(string)
+		*o.TeamSettings.RestrictPrivateChannelManagement = PERMISSIONS_ALL
 	}
 
 	if o.EmailSettings.EnableSignInWithEmail == nil {
@@ -377,6 +461,11 @@ func (o *Config) SetDefaults() {
 	if o.EmailSettings.PushNotificationContents == nil {
 		o.EmailSettings.PushNotificationContents = new(string)
 		*o.EmailSettings.PushNotificationContents = GENERIC_NOTIFICATION
+	}
+
+	if o.EmailSettings.FeedbackOrganization == nil {
+		o.EmailSettings.FeedbackOrganization = new(string)
+		*o.EmailSettings.FeedbackOrganization = ""
 	}
 
 	if !IsSafeLink(o.SupportSettings.TermsOfServiceLink) {
@@ -484,6 +573,11 @@ func (o *Config) SetDefaults() {
 		*o.LdapSettings.EmailAttribute = ""
 	}
 
+	if o.LdapSettings.UsernameAttribute == nil {
+		o.LdapSettings.UsernameAttribute = new(string)
+		*o.LdapSettings.UsernameAttribute = ""
+	}
+
 	if o.LdapSettings.NicknameAttribute == nil {
 		o.LdapSettings.NicknameAttribute = new(string)
 		*o.LdapSettings.NicknameAttribute = ""
@@ -507,6 +601,11 @@ func (o *Config) SetDefaults() {
 	if o.LdapSettings.QueryTimeout == nil {
 		o.LdapSettings.QueryTimeout = new(int)
 		*o.LdapSettings.QueryTimeout = 60
+	}
+
+	if o.LdapSettings.MaxPageSize == nil {
+		o.LdapSettings.MaxPageSize = new(int)
+		*o.LdapSettings.MaxPageSize = 0
 	}
 
 	if o.LdapSettings.LoginFieldName == nil {
@@ -561,7 +660,19 @@ func (o *Config) SetDefaults() {
 
 	if o.ServiceSettings.WebserverMode == nil {
 		o.ServiceSettings.WebserverMode = new(string)
-		*o.ServiceSettings.WebserverMode = "regular"
+		*o.ServiceSettings.WebserverMode = "gzip"
+	} else if *o.ServiceSettings.WebserverMode == "regular" {
+		*o.ServiceSettings.WebserverMode = "gzip"
+	}
+
+	if o.ServiceSettings.EnableCustomEmoji == nil {
+		o.ServiceSettings.EnableCustomEmoji = new(bool)
+		*o.ServiceSettings.EnableCustomEmoji = true
+	}
+
+	if o.ServiceSettings.RestrictCustomEmojiCreation == nil {
+		o.ServiceSettings.RestrictCustomEmojiCreation = new(string)
+		*o.ServiceSettings.RestrictCustomEmojiCreation = RESTRICT_EMOJI_CREATION_ALL
 	}
 
 	if o.ComplianceSettings.Enable == nil {
@@ -591,7 +702,87 @@ func (o *Config) SetDefaults() {
 
 	if o.LocalizationSettings.AvailableLocales == nil {
 		o.LocalizationSettings.AvailableLocales = new(string)
-		*o.LocalizationSettings.AvailableLocales = strings.Join(LOCALES, ",")
+		*o.LocalizationSettings.AvailableLocales = ""
+	}
+
+	if o.SamlSettings.Enable == nil {
+		o.SamlSettings.Enable = new(bool)
+		*o.SamlSettings.Enable = false
+	}
+
+	if o.SamlSettings.Verify == nil {
+		o.SamlSettings.Verify = new(bool)
+		*o.SamlSettings.Verify = false
+	}
+
+	if o.SamlSettings.Encrypt == nil {
+		o.SamlSettings.Encrypt = new(bool)
+		*o.SamlSettings.Encrypt = false
+	}
+
+	if o.SamlSettings.IdpUrl == nil {
+		o.SamlSettings.IdpUrl = new(string)
+		*o.SamlSettings.IdpUrl = ""
+	}
+
+	if o.SamlSettings.IdpDescriptorUrl == nil {
+		o.SamlSettings.IdpDescriptorUrl = new(string)
+		*o.SamlSettings.IdpDescriptorUrl = ""
+	}
+
+	if o.SamlSettings.IdpCertificateFile == nil {
+		o.SamlSettings.IdpCertificateFile = new(string)
+		*o.SamlSettings.IdpCertificateFile = ""
+	}
+
+	if o.SamlSettings.PublicCertificateFile == nil {
+		o.SamlSettings.PublicCertificateFile = new(string)
+		*o.SamlSettings.PublicCertificateFile = ""
+	}
+
+	if o.SamlSettings.PrivateKeyFile == nil {
+		o.SamlSettings.PrivateKeyFile = new(string)
+		*o.SamlSettings.PrivateKeyFile = ""
+	}
+
+	if o.SamlSettings.AssertionConsumerServiceURL == nil {
+		o.SamlSettings.AssertionConsumerServiceURL = new(string)
+		*o.SamlSettings.AssertionConsumerServiceURL = ""
+	}
+
+	if o.SamlSettings.LoginButtonText == nil || *o.SamlSettings.LoginButtonText == "" {
+		o.SamlSettings.LoginButtonText = new(string)
+		*o.SamlSettings.LoginButtonText = USER_AUTH_SERVICE_SAML_TEXT
+	}
+
+	if o.SamlSettings.FirstNameAttribute == nil {
+		o.SamlSettings.FirstNameAttribute = new(string)
+		*o.SamlSettings.FirstNameAttribute = ""
+	}
+
+	if o.SamlSettings.LastNameAttribute == nil {
+		o.SamlSettings.LastNameAttribute = new(string)
+		*o.SamlSettings.LastNameAttribute = ""
+	}
+
+	if o.SamlSettings.EmailAttribute == nil {
+		o.SamlSettings.EmailAttribute = new(string)
+		*o.SamlSettings.EmailAttribute = ""
+	}
+
+	if o.SamlSettings.UsernameAttribute == nil {
+		o.SamlSettings.UsernameAttribute = new(string)
+		*o.SamlSettings.UsernameAttribute = ""
+	}
+
+	if o.SamlSettings.NicknameAttribute == nil {
+		o.SamlSettings.NicknameAttribute = new(string)
+		*o.SamlSettings.NicknameAttribute = ""
+	}
+
+	if o.SamlSettings.LocaleAttribute == nil {
+		o.SamlSettings.LocaleAttribute = new(string)
+		*o.SamlSettings.LocaleAttribute = ""
 	}
 }
 
@@ -695,6 +886,78 @@ func (o *Config) IsValid() *AppError {
 
 	if *o.LdapSettings.SyncIntervalMinutes <= 0 {
 		return NewLocAppError("Config.IsValid", "model.config.is_valid.ldap_sync_interval.app_error", nil, "")
+	}
+
+	if *o.LdapSettings.MaxPageSize < 0 {
+		return NewLocAppError("Config.IsValid", "model.config.is_valid.ldap_max_page_size.app_error", nil, "")
+	}
+
+	if *o.LdapSettings.Enable {
+		if *o.LdapSettings.LdapServer == "" ||
+			*o.LdapSettings.BaseDN == "" ||
+			*o.LdapSettings.BindUsername == "" ||
+			*o.LdapSettings.BindPassword == "" ||
+			*o.LdapSettings.FirstNameAttribute == "" ||
+			*o.LdapSettings.LastNameAttribute == "" ||
+			*o.LdapSettings.EmailAttribute == "" ||
+			*o.LdapSettings.UsernameAttribute == "" ||
+			*o.LdapSettings.IdAttribute == "" {
+			return NewLocAppError("Config.IsValid", "Required LDAP field missing", nil, "")
+		}
+	}
+
+	if *o.SamlSettings.Enable {
+		if len(*o.SamlSettings.IdpUrl) == 0 {
+			return NewLocAppError("Config.IsValid", "model.config.is_valid.saml_idp_url.app_error", nil, "")
+		}
+
+		if len(*o.SamlSettings.IdpDescriptorUrl) == 0 || !IsValidHttpUrl(*o.SamlSettings.IdpDescriptorUrl) {
+			return NewLocAppError("Config.IsValid", "model.config.is_valid.saml_idp_descriptor_url.app_error", nil, "")
+		}
+
+		if len(*o.SamlSettings.IdpCertificateFile) == 0 {
+			return NewLocAppError("Config.IsValid", "model.config.is_valid.saml_idp_cert.app_error", nil, "")
+		}
+
+		if len(*o.SamlSettings.EmailAttribute) == 0 {
+			return NewLocAppError("Config.IsValid", "model.config.is_valid.saml_email_attribute.app_error", nil, "")
+		}
+
+		if len(*o.SamlSettings.UsernameAttribute) == 0 {
+			return NewLocAppError("Config.IsValid", "model.config.is_valid.saml_username_attribute.app_error", nil, "")
+		}
+
+		if len(*o.SamlSettings.FirstNameAttribute) == 0 {
+			return NewLocAppError("Config.IsValid", "model.config.is_valid.saml_first_name_attribute.app_error", nil, "")
+		}
+
+		if len(*o.SamlSettings.LastNameAttribute) == 0 {
+			return NewLocAppError("Config.IsValid", "model.config.is_valid.saml_last_name_attribute.app_error", nil, "")
+		}
+
+		if *o.SamlSettings.Verify {
+			if len(*o.SamlSettings.AssertionConsumerServiceURL) == 0 || !IsValidHttpUrl(*o.SamlSettings.AssertionConsumerServiceURL) {
+				return NewLocAppError("Config.IsValid", "model.config.is_valid.saml_assertion_consumer_service_url.app_error", nil, "")
+			}
+		}
+
+		if *o.SamlSettings.Encrypt {
+			if len(*o.SamlSettings.PrivateKeyFile) == 0 {
+				return NewLocAppError("Config.IsValid", "model.config.is_valid.saml_private_key.app_error", nil, "")
+			}
+
+			if len(*o.SamlSettings.PublicCertificateFile) == 0 {
+				return NewLocAppError("Config.IsValid", "model.config.is_valid.saml_public_cert.app_error", nil, "")
+			}
+		}
+
+		if len(*o.SamlSettings.EmailAttribute) == 0 {
+			return NewLocAppError("Config.IsValid", "model.config.is_valid.saml_email_attribute.app_error", nil, "")
+		}
+	}
+
+	if *o.PasswordSettings.MinimumLength < PASSWORD_MINIMUM_LENGTH || *o.PasswordSettings.MinimumLength > PASSWORD_MAXIMUM_LENGTH {
+		return NewLocAppError("Config.IsValid", "model.config.is_valid.password_length.app_error", map[string]interface{}{"MinLength": PASSWORD_MINIMUM_LENGTH, "MaxLength": PASSWORD_MAXIMUM_LENGTH}, "")
 	}
 
 	return nil

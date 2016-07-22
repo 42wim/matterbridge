@@ -27,7 +27,6 @@ const (
 	DEFAULT_LOCALE             = "en"
 	USER_AUTH_SERVICE_EMAIL    = "email"
 	USER_AUTH_SERVICE_USERNAME = "username"
-	MIN_PASSWORD_LENGTH        = 5
 )
 
 type User struct {
@@ -93,10 +92,6 @@ func (u *User) IsValid() *AppError {
 
 	if utf8.RuneCountInString(u.LastName) > 64 {
 		return NewLocAppError("User.IsValid", "model.user.is_valid.last_name.app_error", nil, "user_id="+u.Id)
-	}
-
-	if len(u.Password) > 128 {
-		return NewLocAppError("User.IsValid", "model.user.is_valid.pwd.app_error", nil, "user_id="+u.Id)
 	}
 
 	if u.AuthData != nil && len(*u.AuthData) > 128 {
@@ -208,7 +203,6 @@ func (u *User) SetDefaultNotifications() {
 	u.NotifyProps["desktop"] = USER_NOTIFY_ALL
 	u.NotifyProps["desktop_sound"] = "true"
 	u.NotifyProps["mention_keys"] = u.Username + ",@" + u.Username
-	u.NotifyProps["all"] = "true"
 	u.NotifyProps["channel"] = "true"
 
 	if u.FirstName == "" {
@@ -244,8 +238,8 @@ func (u *User) ToJson() string {
 }
 
 // Generate a valid strong etag so the browser can cache the results
-func (u *User) Etag() string {
-	return Etag(u.Id, u.UpdateAt)
+func (u *User) Etag(showFullName, showEmail bool) string {
+	return Etag(u.Id, u.UpdateAt, showFullName, showEmail)
 }
 
 func (u *User) IsOffline() bool {
@@ -363,13 +357,13 @@ func isValidRole(role string) bool {
 	return false
 }
 
-// Make sure you acually want to use this function. In context.go there are functions to check permssions
+// Make sure you acually want to use this function. In context.go there are functions to check permissions
 // This function should not be used to check permissions.
 func (u *User) IsInRole(inRole string) bool {
 	return IsInRole(u.Roles, inRole)
 }
 
-// Make sure you acually want to use this function. In context.go there are functions to check permssions
+// Make sure you acually want to use this function. In context.go there are functions to check permissions
 // This function should not be used to check permissions.
 func IsInRole(userRoles string, inRole string) bool {
 	roles := strings.Split(userRoles, " ")
