@@ -534,6 +534,30 @@ func (m *MMClient) GetUser(userId string) *model.User {
 	return m.Users[userId]
 }
 
+func (m *MMClient) GetStatuses() error {
+	_, err := m.Client.GetStatuses([]string{m.User.Id})
+	if err != nil {
+		return errors.New(err.DetailedError)
+	}
+	return nil
+}
+
+func (m *MMClient) StatusLoop() {
+	for {
+		if m.WsQuit {
+			return
+		}
+		if m.WsConnected {
+			err := m.GetStatuses()
+			if err != nil {
+				m.Logout()
+				m.Login()
+			}
+		}
+		time.Sleep(time.Second * 30)
+	}
+}
+
 // initialize user and teams
 func (m *MMClient) initUser() error {
 	m.Lock()
