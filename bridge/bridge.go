@@ -1,63 +1,34 @@
 package bridge
 
 import (
-	"crypto/tls"
-	"github.com/42wim/matterbridge/matterclient"
-	"github.com/42wim/matterbridge/matterhook"
+	//"fmt"
+	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/irc"
+	"github.com/42wim/matterbridge/bridge/mattermost"
+	"github.com/42wim/matterbridge/bridge/xmpp"
 	log "github.com/Sirupsen/logrus"
-	"github.com/mattn/go-xmpp"
-	"github.com/peterhellberg/giphy"
-	ircm "github.com/sorcix/irc"
-	"github.com/thoj/go-ircevent"
-	"regexp"
-	"sort"
-	"strconv"
 	"strings"
-	"time"
 )
 
-//type Bridge struct {
-type MMhook struct {
-	mh *matterhook.Client
-}
-
-type MMapi struct {
-	mc            *matterclient.MMClient
-	mmMap         map[string]string
-	mmIgnoreNicks []string
-}
-
-type MMxmpp struct {
-	xc      *xmpp.Client
-	xmppMap map[string]string
-}
-type MMirc struct {
-	i              *irc.Connection
-	ircNick        string
-	ircMap         map[string]string
-	names          map[string][]string
-	ircIgnoreNicks []string
-}
-
-type MMMessage struct {
-	Text     string
-	Channel  string
-	Username string
-}
-
 type Bridge struct {
-	MMhook
-	MMapi
-	MMirc
-	MMxmpp
-	*Config
-	kind string
+	*config.Config
+	Source      string
+	Bridges     []Bridger
+	kind        string
+	Channels    []map[string]string
+	ignoreNicks map[string][]string
 }
 
 type FancyLog struct {
 	irc  *log.Entry
 	mm   *log.Entry
 	xmpp *log.Entry
+}
+
+type Bridger interface {
+	Send(msg config.Message) error
+	Name() string
+	//Command(cmd string) string
 }
 
 var flog FancyLog
@@ -70,455 +41,82 @@ func initFLog() {
 	flog.xmpp = log.WithFields(log.Fields{"module": "xmpp"})
 }
 
-func NewBridge(name string, config *Config, kind string) *Bridge {
+func NewBridge(name string, cfg *config.Config, kind string) *Bridge {
+	c := make(chan config.Message)
 	initFLog()
 	b := &Bridge{}
-	b.Config = config
-	b.kind = kind
-	b.mmMap = make(map[string]string)
-	if b.Config.General.Irc {
-		b.ircNick = b.Config.IRC.Nick
-		b.ircMap = make(map[string]string)
-		b.MMirc.names = make(map[string][]string)
-		b.ircIgnoreNicks = strings.Fields(b.Config.IRC.IgnoreNicks)
-		b.mmIgnoreNicks = strings.Fields(b.Config.Mattermost.IgnoreNicks)
-		for _, val := range b.Config.Channel {
-			b.ircMap[val.IRC] = val.Mattermost
-			b.mmMap[val.Mattermost] = val.IRC
-		}
+	b.Config = cfg
+	if cfg.General.Irc {
+		b.Bridges = append(b.Bridges, birc.New(cfg, c))
 	}
-	if b.Config.General.Xmpp {
-		b.xmppMap = make(map[string]string)
-		for _, val := range b.Config.Channel {
-			b.xmppMap[val.Xmpp] = val.Mattermost
-			b.mmMap[val.Mattermost] = val.Xmpp
-		}
+	if cfg.General.Mattermost {
+		b.Bridges = append(b.Bridges, bmattermost.New(cfg, c))
 	}
-
-	if kind == Legacy {
-		b.mh = matterhook.New(b.Config.Mattermost.URL,
-			matterhook.Config{InsecureSkipVerify: b.Config.Mattermost.SkipTLSVerify,
-				BindAddress: b.Config.Mattermost.BindAddress})
-	} else {
-		b.mc = matterclient.New(b.Config.Mattermost.Login, b.Config.Mattermost.Password,
-			b.Config.Mattermost.Team, b.Config.Mattermost.Server)
-		b.mc.SkipTLSVerify = b.Config.Mattermost.SkipTLSVerify
-		b.mc.NoTLS = b.Config.Mattermost.NoTLS
-		flog.mm.Infof("Trying login %s (team: %s) on %s", b.Config.Mattermost.Login, b.Config.Mattermost.Team, b.Config.Mattermost.Server)
-		err := b.mc.Login()
-		if err != nil {
-			flog.mm.Fatal("Can not connect", err)
-		}
-		flog.mm.Info("Login ok")
-		b.mc.JoinChannel(b.Config.Mattermost.Channel)
-		for _, val := range b.Config.Channel {
-			b.mc.JoinChannel(val.Mattermost)
-		}
-		go b.mc.WsReceiver()
+	if cfg.General.Xmpp {
+		b.Bridges = append(b.Bridges, bxmpp.New(cfg, c))
 	}
-
-	if b.Config.General.Irc {
-		flog.irc.Info("Trying IRC connection")
-		b.i = b.createIRC(name)
-		flog.irc.Info("Connection succeeded")
-	}
-	if b.Config.General.Xmpp {
-		var err error
-		flog.xmpp.Info("Trying XMPP connection")
-		b.xc, err = b.createXMPP()
-		if err != nil {
-			flog.xmpp.Debugf("%#v", err)
-			panic("xmpp failure")
-		}
-		flog.xmpp.Info("Connection succeeded")
-		b.setupChannels()
-		go b.handleXmpp()
-	}
-
-	go b.handleMatter()
+	b.mapChannels()
+	b.mapIgnores()
+	go b.handleReceive(c)
 	return b
 }
 
-func (b *Bridge) createIRC(name string) *irc.Connection {
-	i := irc.IRC(b.Config.IRC.Nick, b.Config.IRC.Nick)
-	i.UseTLS = b.Config.IRC.UseTLS
-	i.UseSASL = b.Config.IRC.UseSASL
-	i.SASLLogin = b.Config.IRC.NickServNick
-	i.SASLPassword = b.Config.IRC.NickServPassword
-	i.TLSConfig = &tls.Config{InsecureSkipVerify: b.Config.IRC.SkipTLSVerify}
-	if b.Config.IRC.Password != "" {
-		i.Password = b.Config.IRC.Password
-	}
-	i.AddCallback(ircm.RPL_WELCOME, b.handleNewConnection)
-	err := i.Connect(b.Config.IRC.Server)
-	if err != nil {
-		flog.irc.Fatal(err)
-	}
-	return i
-}
-
-func (b *Bridge) createXMPP() (*xmpp.Client, error) {
-	options := xmpp.Options{
-		Host:                         b.Config.Xmpp.Server,
-		User:                         b.Config.Xmpp.Jid,
-		Password:                     b.Config.Xmpp.Password,
-		NoTLS:                        true,
-		StartTLS:                     true,
-		Debug:                        true,
-		Session:                      true,
-		Status:                       "",
-		StatusMessage:                "",
-		Resource:                     "",
-		InsecureAllowUnencryptedAuth: false,
-	}
-	var err error
-	b.xc, err = options.NewClient()
-	return b.xc, err
-}
-
-func (b *Bridge) handleNewConnection(event *irc.Event) {
-	flog.irc.Info("Registering callbacks")
-	i := b.i
-	b.ircNick = event.Arguments[0]
-	i.AddCallback("PRIVMSG", b.handlePrivMsg)
-	i.AddCallback("CTCP_ACTION", b.handlePrivMsg)
-	i.AddCallback(ircm.RPL_ENDOFNAMES, b.endNames)
-	i.AddCallback(ircm.RPL_NAMREPLY, b.storeNames)
-	i.AddCallback(ircm.RPL_TOPICWHOTIME, b.handleTopicWhoTime)
-	i.AddCallback(ircm.NOTICE, b.handleNotice)
-	i.AddCallback(ircm.RPL_MYINFO, func(e *irc.Event) { flog.irc.Infof("%s: %s", e.Code, strings.Join(e.Arguments[1:], " ")) })
-	i.AddCallback("PING", func(e *irc.Event) {
-		i.SendRaw("PONG :" + e.Message())
-		flog.irc.Debugf("PING/PONG")
-	})
-	if b.Config.Mattermost.ShowJoinPart {
-		i.AddCallback("JOIN", b.handleJoinPart)
-		i.AddCallback("PART", b.handleJoinPart)
-	}
-	i.AddCallback("*", b.handleOther)
-	b.setupChannels()
-}
-
-func (b *Bridge) setupChannels() {
-	if b.Config.General.Irc {
-		for _, val := range b.Config.Channel {
-			flog.irc.Infof("Joining %s as %s", val.IRC, b.ircNick)
-			b.i.Join(val.IRC)
+func (b *Bridge) handleReceive(c chan config.Message) {
+	for {
+		select {
+		case msg := <-c:
+			m := b.getChannel(msg.Origin, msg.Channel)
+			if m == nil {
+				continue
+			}
+			for _, br := range b.Bridges {
+				if b.ignoreMessage(msg.Username, msg.Text, msg.Origin) {
+					continue
+				}
+				// do not send to originated bridge
+				if br.Name() != msg.Origin {
+					msg.Channel = m[br.Name()]
+					br.Send(msg)
+				}
+			}
 		}
 	}
-	if b.Config.General.Xmpp {
-		for _, val := range b.Config.Channel {
-			flog.xmpp.Infof("Joining %s as %s", val.Xmpp, b.Xmpp.Nick)
-			b.xc.JoinMUCNoHistory(val.Xmpp+"@"+b.Xmpp.Muc, b.Xmpp.Nick)
-		}
-	}
-
 }
 
-func (b *Bridge) handleIrcBotCommand(event *irc.Event) bool {
-	parts := strings.Fields(event.Message())
-	exp, _ := regexp.Compile("[:,]+$")
-	channel := event.Arguments[0]
-	command := ""
-	if len(parts) == 2 {
-		command = parts[1]
+func (b *Bridge) mapChannels() error {
+	for _, val := range b.Config.Channel {
+		m := make(map[string]string)
+		m["irc"] = val.IRC
+		m["mattermost"] = val.Mattermost
+		m["xmpp"] = val.Xmpp
+		b.Channels = append(b.Channels, m)
 	}
-	if exp.ReplaceAllString(parts[0], "") == b.ircNick {
-		switch command {
-		case "users":
-			usernames := b.mc.UsernamesInChannel(b.getMMChannel(channel))
-			sort.Strings(usernames)
-			b.i.Privmsg(channel, "Users on Mattermost: "+strings.Join(usernames, ", "))
-		default:
-			b.i.Privmsg(channel, "Valid commands are: [users, help]")
-		}
-		return true
-	}
-	return false
-}
-
-func (b *Bridge) ircNickFormat(nick string) string {
-	if nick == b.ircNick {
-		return nick
-	}
-	if b.Config.Mattermost.RemoteNickFormat == nil {
-		return "irc-" + nick
-	}
-	return strings.Replace(*b.Config.Mattermost.RemoteNickFormat, "{NICK}", nick, -1)
-}
-
-func (b *Bridge) handlePrivMsg(event *irc.Event) {
-	flog.irc.Debugf("handlePrivMsg() %s %s", event.Nick, event.Message())
-	if b.ignoreMessage(event.Nick, event.Message(), "irc") {
-		return
-	}
-	if b.handleIrcBotCommand(event) {
-		return
-	}
-	msg := ""
-	if event.Code == "CTCP_ACTION" {
-		msg = event.Nick + " "
-	}
-	msg += event.Message()
-	b.Send(b.ircNickFormat(event.Nick), msg, b.getMMChannel(event.Arguments[0]))
-}
-
-func (b *Bridge) handleJoinPart(event *irc.Event) {
-	b.Send(b.ircNick, b.ircNickFormat(event.Nick)+" "+strings.ToLower(event.Code)+"s "+event.Message(), b.getMMChannel(event.Arguments[0]))
-}
-
-func (b *Bridge) handleNotice(event *irc.Event) {
-	if strings.Contains(event.Message(), "This nickname is registered") {
-		b.i.Privmsg(b.Config.IRC.NickServNick, "IDENTIFY "+b.Config.IRC.NickServPassword)
-	}
-}
-
-func (b *Bridge) nicksPerRow() int {
-	if b.Config.Mattermost.NicksPerRow < 1 {
-		return 4
-	}
-	return b.Config.Mattermost.NicksPerRow
-}
-
-func (b *Bridge) formatnicks(nicks []string, continued bool) string {
-	switch b.Config.Mattermost.NickFormatter {
-	case "table":
-		return tableformatter(nicks, b.nicksPerRow(), continued)
-	default:
-		return plainformatter(nicks, b.nicksPerRow())
-	}
-}
-
-func (b *Bridge) storeNames(event *irc.Event) {
-	channel := event.Arguments[2]
-	b.MMirc.names[channel] = append(
-		b.MMirc.names[channel],
-		strings.Split(strings.TrimSpace(event.Message()), " ")...)
-}
-
-func (b *Bridge) endNames(event *irc.Event) {
-	channel := event.Arguments[1]
-	sort.Strings(b.MMirc.names[channel])
-	maxNamesPerPost := (300 / b.nicksPerRow()) * b.nicksPerRow()
-	continued := false
-	for len(b.MMirc.names[channel]) > maxNamesPerPost {
-		b.Send(
-			b.ircNick,
-			b.formatnicks(b.MMirc.names[channel][0:maxNamesPerPost], continued),
-			b.getMMChannel(channel))
-		b.MMirc.names[channel] = b.MMirc.names[channel][maxNamesPerPost:]
-		continued = true
-	}
-	b.Send(b.ircNick, b.formatnicks(b.MMirc.names[channel], continued), b.getMMChannel(channel))
-	b.MMirc.names[channel] = nil
-}
-
-func (b *Bridge) handleTopicWhoTime(event *irc.Event) {
-	parts := strings.Split(event.Arguments[2], "!")
-	t, err := strconv.ParseInt(event.Arguments[3], 10, 64)
-	if err != nil {
-		flog.irc.Errorf("Invalid time stamp: %s", event.Arguments[3])
-	}
-	user := parts[0]
-	if len(parts) > 1 {
-		user += " [" + parts[1] + "]"
-	}
-	flog.irc.Infof("%s: Topic set by %s [%s]", event.Code, user, time.Unix(t, 0))
-}
-
-func (b *Bridge) handleOther(event *irc.Event) {
-	flog.irc.Debugf("%#v", event)
-}
-
-func (b *Bridge) Send(nick string, message string, channel string) error {
-	return b.SendType(nick, message, channel, "")
-}
-
-func (b *Bridge) SendType(nick string, message string, channel string, mtype string) error {
-	if b.Config.Mattermost.PrefixMessagesWithNick {
-		if IsMarkup(message) {
-			message = nick + "\n\n" + message
-		} else {
-			message = nick + " " + message
-		}
-	}
-	if b.kind == Legacy {
-		matterMessage := matterhook.OMessage{IconURL: b.Config.Mattermost.IconURL}
-		matterMessage.Channel = channel
-		matterMessage.UserName = nick
-		matterMessage.Type = mtype
-		matterMessage.Text = message
-		err := b.mh.Send(matterMessage)
-		if err != nil {
-			flog.mm.Info(err)
-			return err
-		}
-		flog.mm.Debug("->mattermost channel: ", channel, " ", message)
-		return nil
-	}
-	flog.mm.Debug("->mattermost channel: ", channel, " ", message)
-	b.mc.PostMessage(channel, message)
 	return nil
 }
 
-func (b *Bridge) handleMatterHook(mchan chan *MMMessage) {
-	for {
-		message := b.mh.Receive()
-		flog.mm.Debugf("receiving from matterhook %#v", message)
-		m := &MMMessage{}
-		m.Username = message.UserName
-		m.Text = message.Text
-		m.Channel = message.ChannelName
-		mchan <- m
-	}
+func (b *Bridge) mapIgnores() {
+	m := make(map[string][]string)
+	m["irc"] = strings.Fields(b.Config.IRC.IgnoreNicks)
+	m["mattermost"] = strings.Fields(b.Config.Mattermost.IgnoreNicks)
+	m["xmpp"] = strings.Fields(b.Config.Mattermost.IgnoreNicks)
+	b.ignoreNicks = m
 }
 
-func (b *Bridge) handleMatterClient(mchan chan *MMMessage) {
-	for message := range b.mc.MessageChan {
-		// do not post our own messages back to irc
-		if message.Raw.Action == "posted" && b.mc.User.Username != message.Username {
-			flog.mm.Debugf("receiving from matterclient %#v", message)
-			m := &MMMessage{}
-			m.Username = message.Username
-			m.Channel = message.Channel
-			m.Text = message.Text
-			mchan <- m
+func (b *Bridge) getChannel(src, name string) map[string]string {
+	for _, v := range b.Channels {
+		if v[src] == name {
+			return v
 		}
 	}
-}
-
-func (b *Bridge) handleMatter() {
-	flog.mm.Infof("Choosing Mattermost connection type %s", b.kind)
-	mchan := make(chan *MMMessage)
-	if b.kind == Legacy {
-		go b.handleMatterHook(mchan)
-	} else {
-		go b.handleMatterClient(mchan)
-	}
-	flog.mm.Info("Start listening for Mattermost messages")
-	for message := range mchan {
-		var username string
-		if b.ignoreMessage(message.Username, message.Text, "mattermost") {
-			continue
-		}
-		if b.Config.General.Irc {
-			username = message.Username + ": "
-			if b.Config.IRC.RemoteNickFormat != "" {
-				username = strings.Replace(b.Config.IRC.RemoteNickFormat, "{NICK}", message.Username, -1)
-			}
-		}
-		cmds := strings.Fields(message.Text)
-		// empty message
-		if len(cmds) == 0 {
-			continue
-		}
-		cmd := cmds[0]
-		switch cmd {
-		case "!users":
-			flog.mm.Info("Received !users from ", message.Username)
-			if b.Config.General.Irc {
-				b.i.SendRaw("NAMES " + b.getIRCChannel(message.Channel))
-			}
-			continue
-		case "!gif":
-			message.Text = b.giphyRandom(strings.Fields(strings.Replace(message.Text, "!gif ", "", 1)))
-			if b.Config.General.Irc {
-				b.Send(b.ircNick, message.Text, b.getIRCChannel(message.Channel))
-			}
-			continue
-		}
-		texts := strings.Split(message.Text, "\n")
-		for _, text := range texts {
-			flog.mm.Debug("Sending message from " + message.Username + " to " + message.Channel)
-			if b.Config.General.Irc {
-				b.i.Privmsg(b.getIRCChannel(message.Channel), username+text)
-			}
-			if b.Config.General.Xmpp {
-				b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: "testje@c.sw.be", Text: username + text})
-
-			}
-		}
-	}
-}
-
-func (b *Bridge) giphyRandom(query []string) string {
-	g := giphy.DefaultClient
-	if b.Config.General.GiphyAPIKey != "" {
-		g.APIKey = b.Config.General.GiphyAPIKey
-	}
-	res, err := g.Random(query)
-	if err != nil {
-		return "error"
-	}
-	return res.Data.FixedHeightDownsampledURL
-}
-
-func (b *Bridge) getMMChannel(channel string) string {
-	var mmChannel string
-	if b.Config.General.Irc {
-		mmChannel = b.ircMap[channel]
-	}
-	if b.Config.General.Xmpp {
-		mmChannel = b.xmppMap[channel]
-	}
-	if b.kind == Legacy {
-		return mmChannel
-	}
-	return b.mc.GetChannelId(mmChannel, "")
-}
-
-func (b *Bridge) getIRCChannel(mmChannel string) string {
-	return b.mmMap[mmChannel]
+	return nil
 }
 
 func (b *Bridge) ignoreMessage(nick string, message string, protocol string) bool {
-	var ignoreNicks = b.mmIgnoreNicks
-	if protocol == "irc" {
-		ignoreNicks = b.ircIgnoreNicks
-	}
 	// should we discard messages ?
-	for _, entry := range ignoreNicks {
+	for _, entry := range b.ignoreNicks[protocol] {
 		if nick == entry {
 			return true
 		}
 	}
 	return false
-}
-
-func (b *Bridge) xmppKeepAlive() {
-	go func() {
-		ticker := time.NewTicker(90 * time.Second)
-		for {
-			select {
-			case <-ticker.C:
-				b.xc.Send(xmpp.Chat{})
-			}
-		}
-	}()
-}
-
-func (b *Bridge) handleXmpp() error {
-	for {
-		m, err := b.xc.Recv()
-		if err != nil {
-			return err
-		}
-		switch v := m.(type) {
-		case xmpp.Chat:
-			var channel, nick string
-			if v.Type == "groupchat" {
-				s := strings.Split(v.Remote, "@")
-				if len(s) == 2 {
-					channel = s[0]
-				}
-				s = strings.Split(s[1], "/")
-				if len(s) == 2 {
-					nick = s[1]
-				}
-				b.Send(nick, v.Text, b.getMMChannel(channel))
-			}
-		case xmpp.Presence:
-			// do nothing
-		}
-	}
 }

@@ -172,7 +172,11 @@ mattermost="testing"
 #OPTIONAL
 GiphyApiKey="dc6zaTOxFJmzC"
 
-#Choose only one protocol to bridge, do not set both to true!
+#Enabling plus means you'll use the API version instead of the webhooks one
+Plus=false
+
+#Choose protocols to bridge. You need to specify at least two
 #REQUIRED
 Irc=true
 Xmpp=false
+Mattermost=true

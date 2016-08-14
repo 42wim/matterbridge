@@ -152,7 +152,6 @@ func (irc *Connection) writeLoop() {
 			}
 		}
 	}
-	return
 }
 
 // Pings the server if we have not received any messages for 5 minutes

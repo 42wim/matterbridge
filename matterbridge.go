@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/42wim/matterbridge/bridge"
+	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
 )
 
@@ -30,9 +31,9 @@ func main() {
 	}
 	fmt.Println("running version", version)
 	if *flagPlus {
-		bridge.NewBridge("matterbot", bridge.NewConfig(*flagConfig), "")
+		bridge.NewBridge("matterbot", config.NewConfig(*flagConfig), "")
 	} else {
-		bridge.NewBridge("matterbot", bridge.NewConfig(*flagConfig), "legacy")
+		bridge.NewBridge("matterbot", config.NewConfig(*flagConfig), "legacy")
 	}
 	select {}
 }

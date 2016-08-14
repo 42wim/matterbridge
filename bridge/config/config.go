@@ -1,10 +1,17 @@
-package bridge
+package config
 
 import (
 	"gopkg.in/gcfg.v1"
 	"io/ioutil"
 	"log"
 )
+
+type Message struct {
+	Text     string
+	Channel  string
+	Username string
+	Origin   string
+}
 
 type Config struct {
 	IRC struct {
@@ -34,16 +41,17 @@ type Config struct {
 		Team                   string
 		Login                  string
 		Password               string
-		RemoteNickFormat       *string
+		RemoteNickFormat       string
 		IgnoreNicks            string
 		NoTLS                  bool
 	}
 	Xmpp struct {
-		Jid      string
-		Password string
-		Server   string
-		Muc      string
-		Nick     string
+		Jid              string
+		Password         string
+		Server           string
+		Muc              string
+		Nick             string
+		RemoteNickFormat string
 	}
 	Channel map[string]*struct {
 		IRC        string
@@ -54,6 +62,8 @@ type Config struct {
 		GiphyAPIKey string
 		Xmpp        bool
 		Irc         bool
+		Mattermost  bool
+		Plus        bool
 	}
 }
 

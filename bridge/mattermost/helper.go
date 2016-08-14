@@ -1,4 +1,4 @@
-package bridge
+package bmattermost
 
 import (
 	"strings"

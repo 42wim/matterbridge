@@ -33,7 +33,7 @@ func (irc *Connection) RemoveCallback(eventcode string, i int) bool {
 			delete(irc.events[eventcode], i)
 			return true
 		}
-		irc.Log.Printf("Event found, but no callback found at id %s\n", i)
+		irc.Log.Printf("Event found, but no callback found at id %d\n", i)
 		return false
 	}
 
@@ -64,7 +64,7 @@ func (irc *Connection) ReplaceCallback(eventcode string, i int, callback func(*E
 			event[i] = callback
 			return
 		}
-		irc.Log.Printf("Event found, but no callback found at id %s\n", i)
+		irc.Log.Printf("Event found, but no callback found at id %d\n", i)
 	}
 	irc.Log.Printf("Event not found. Use AddCallBack\n")
 }
