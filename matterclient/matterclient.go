@@ -255,7 +255,10 @@ func (m *MMClient) parseActionPost(rmsg *Message) {
 }
 
 func (m *MMClient) UpdateUsers() error {
-	mmusers, _ := m.Client.GetProfilesForDirectMessageList(m.Team.Id)
+	mmusers, err := m.Client.GetProfilesForDirectMessageList(m.Team.Id)
+	if err != nil {
+		return errors.New(err.DetailedError)
+	}
 	m.Lock()
 	m.Users = mmusers.Data.(map[string]*model.User)
 	m.Unlock()
@@ -263,8 +266,14 @@ func (m *MMClient) UpdateUsers() error {
 }
 
 func (m *MMClient) UpdateChannels() error {
-	mmchannels, _ := m.Client.GetChannels("")
-	mmchannels2, _ := m.Client.GetMoreChannels("")
+	mmchannels, err := m.Client.GetChannels("")
+	if err != nil {
+		return errors.New(err.DetailedError)
+	}
+	mmchannels2, err := m.Client.GetMoreChannels("")
+	if err != nil {
+		return errors.New(err.DetailedError)
+	}
 	m.Lock()
 	m.Team.Channels = mmchannels.Data.(*model.ChannelList)
 	m.Team.MoreChannels = mmchannels2.Data.(*model.ChannelList)
