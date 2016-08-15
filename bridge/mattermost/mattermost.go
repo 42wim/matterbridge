@@ -55,6 +55,14 @@ func New(cfg *config.Config, c chan config.Message) *Bmattermost {
 	b.Remote = c
 	b.Plus = cfg.General.Plus
 	b.mmMap = make(map[string]string)
+	return b
+}
+
+func (b *Bmattermost) Command(cmd string) string {
+	return ""
+}
+
+func (b *Bmattermost) Connect() error {
 	if !b.Plus {
 		b.mh = matterhook.New(b.Config.Mattermost.URL,
 			matterhook.Config{InsecureSkipVerify: b.Config.Mattermost.SkipTLSVerify,
@@ -67,7 +75,7 @@ func New(cfg *config.Config, c chan config.Message) *Bmattermost {
 		flog.mm.Infof("Trying login %s (team: %s) on %s", b.Config.Mattermost.Login, b.Config.Mattermost.Team, b.Config.Mattermost.Server)
 		err := b.mc.Login()
 		if err != nil {
-			flog.mm.Fatal("Can not connect", err)
+			return err
 		}
 		flog.mm.Info("Login ok")
 		b.mc.JoinChannel(b.Config.Mattermost.Channel)
@@ -77,11 +85,7 @@ func New(cfg *config.Config, c chan config.Message) *Bmattermost {
 		go b.mc.WsReceiver()
 	}
 	go b.handleMatter()
-	return b
-}
-
-func (b *Bmattermost) Command(cmd string) string {
-	return ""
+	return nil
 }
 
 func (b *Bmattermost) Name() string {

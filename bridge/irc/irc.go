@@ -20,38 +20,27 @@ type Birc struct {
 	names          map[string][]string
 	ircIgnoreNicks []string
 	*config.Config
-	kind   string
 	Remote chan config.Message
 }
 
 type FancyLog struct {
-	irc  *log.Entry
-	mm   *log.Entry
-	xmpp *log.Entry
+	irc *log.Entry
 }
 
 var flog FancyLog
 
-const Legacy = "legacy"
-
 func init() {
 	flog.irc = log.WithFields(log.Fields{"module": "irc"})
-	flog.mm = log.WithFields(log.Fields{"module": "mattermost"})
-	flog.xmpp = log.WithFields(log.Fields{"module": "xmpp"})
 }
 
 func New(config *config.Config, c chan config.Message) *Birc {
 	b := &Birc{}
 	b.Config = config
-	b.kind = "legacy"
 	b.Remote = c
 	b.ircNick = b.Config.IRC.Nick
 	b.ircMap = make(map[string]string)
 	b.names = make(map[string][]string)
 	b.ircIgnoreNicks = strings.Fields(b.Config.IRC.IgnoreNicks)
-	flog.irc.Info("Trying IRC connection")
-	b.i = b.connect()
-	flog.irc.Info("Connection succeeded")
 	return b
 }
 
@@ -61,6 +50,27 @@ func (b *Birc) Command(msg *config.Message) string {
 		b.i.SendRaw("NAMES " + msg.Channel)
 	}
 	return ""
+}
+
+func (b *Birc) Connect() error {
+	flog.irc.Info("Trying IRC connection")
+	i := irc.IRC(b.Config.IRC.Nick, b.Config.IRC.Nick)
+	i.UseTLS = b.Config.IRC.UseTLS
+	i.UseSASL = b.Config.IRC.UseSASL
+	i.SASLLogin = b.Config.IRC.NickServNick
+	i.SASLPassword = b.Config.IRC.NickServPassword
+	i.TLSConfig = &tls.Config{InsecureSkipVerify: b.Config.IRC.SkipTLSVerify}
+	if b.Config.IRC.Password != "" {
+		i.Password = b.Config.IRC.Password
+	}
+	i.AddCallback(ircm.RPL_WELCOME, b.handleNewConnection)
+	err := i.Connect(b.Config.IRC.Server)
+	if err != nil {
+		return err
+	}
+	flog.irc.Info("Connection succeeded")
+	b.i = i
+	return nil
 }
 
 func (b *Birc) Name() string {
@@ -78,24 +88,6 @@ func (b *Birc) Send(msg config.Message) error {
 	username := b.ircNickFormat(msg.Username)
 	b.i.Privmsg(msg.Channel, username+msg.Text)
 	return nil
-}
-
-func (b *Birc) connect() *irc.Connection {
-	i := irc.IRC(b.Config.IRC.Nick, b.Config.IRC.Nick)
-	i.UseTLS = b.Config.IRC.UseTLS
-	i.UseSASL = b.Config.IRC.UseSASL
-	i.SASLLogin = b.Config.IRC.NickServNick
-	i.SASLPassword = b.Config.IRC.NickServPassword
-	i.TLSConfig = &tls.Config{InsecureSkipVerify: b.Config.IRC.SkipTLSVerify}
-	if b.Config.IRC.Password != "" {
-		i.Password = b.Config.IRC.Password
-	}
-	i.AddCallback(ircm.RPL_WELCOME, b.handleNewConnection)
-	err := i.Connect(b.Config.IRC.Server)
-	if err != nil {
-		flog.irc.Fatal(err)
-	}
-	return i
 }
 
 func (b *Birc) endNames(event *irc.Event) {

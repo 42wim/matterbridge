@@ -17,8 +17,6 @@ type Bxmpp struct {
 }
 
 type FancyLog struct {
-	irc  *log.Entry
-	mm   *log.Entry
 	xmpp *log.Entry
 }
 
@@ -31,27 +29,29 @@ type Message struct {
 var flog FancyLog
 
 func init() {
-	flog.irc = log.WithFields(log.Fields{"module": "irc"})
-	flog.mm = log.WithFields(log.Fields{"module": "mattermost"})
 	flog.xmpp = log.WithFields(log.Fields{"module": "xmpp"})
 }
 
 func New(config *config.Config, c chan config.Message) *Bxmpp {
 	b := &Bxmpp{}
 	b.xmppMap = make(map[string]string)
-	var err error
 	b.Config = config
 	b.Remote = c
+	return b
+}
+
+func (b *Bxmpp) Connect() error {
+	var err error
 	flog.xmpp.Info("Trying XMPP connection")
 	b.xc, err = b.createXMPP()
 	if err != nil {
 		flog.xmpp.Debugf("%#v", err)
-		panic("xmpp failure")
+		return err
 	}
 	flog.xmpp.Info("Connection succeeded")
 	b.setupChannels()
 	go b.handleXmpp()
-	return b
+	return nil
 }
 
 func (b *Bxmpp) Name() string {

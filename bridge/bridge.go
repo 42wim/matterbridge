@@ -41,6 +41,9 @@ func NewBridge(cfg *config.Config) error {
 	if len(b.Bridges) < 2 {
 		log.Fatalf("only %d sections enabled. Need at least 2 sections enabled (eg [IRC] and [mattermost]", len(b.Bridges))
 	}
+	for _, br := range b.Bridges {
+		br.Connect()
+	}
 	b.mapChannels()
 	b.mapIgnores()
 	b.handleReceive(c)
