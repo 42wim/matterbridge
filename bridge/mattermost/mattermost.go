@@ -154,8 +154,9 @@ func (b *Bmattermost) handleMatter() {
 func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 	for message := range b.mc.MessageChan {
 		// do not post our own messages back to irc
-		if message.Raw.Action == "posted" && b.mc.User.Username != message.Username {
+		if message.Raw.Event == "posted" && b.mc.User.Username != message.Username {
 			flog.mm.Debugf("receiving from matterclient %#v", message)
+			flog.mm.Debugf("receiving from matterclient %#v", message.Raw)
 			m := &MMMessage{}
 			m.Username = message.Username
 			m.Channel = message.Channel

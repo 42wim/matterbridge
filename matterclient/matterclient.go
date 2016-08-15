@@ -2,6 +2,7 @@ package matterclient
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/cookiejar"
@@ -27,7 +28,7 @@ type Credentials struct {
 }
 
 type Message struct {
-	Raw      *model.Message
+	Raw      *model.WebSocketEvent
 	Post     *model.Post
 	Team     string
 	Channel  string
@@ -49,14 +50,16 @@ type MMClient struct {
 	Team        *Team
 	OtherTeams  []*Team
 	Client      *model.Client
-	WsClient    *websocket.Conn
-	WsQuit      bool
-	WsAway      bool
-	WsConnected bool
 	User        *model.User
 	Users       map[string]*model.User
 	MessageChan chan *Message
 	log         *log.Entry
+	WsClient    *websocket.Conn
+	WsQuit      bool
+	WsAway      bool
+	WsConnected bool
+	WsSequence  int64
+	WsPingChan  chan *model.WebSocketResponse
 }
 
 func New(login, pass, team, server string) *MMClient {
@@ -151,7 +154,7 @@ func (m *MMClient) Login() error {
 	m.Client.SetTeamId(m.Team.Id)
 
 	// setup websocket connection
-	wsurl := wsScheme + m.Credentials.Server + "/api/v3/users/websocket"
+	wsurl := wsScheme + m.Credentials.Server + model.API_URL_SUFFIX + "/users/websocket"
 	header := http.Header{}
 	header.Set(model.HEADER_AUTH, "BEARER "+m.Client.AuthToken)
 
@@ -169,6 +172,8 @@ func (m *MMClient) Login() error {
 	}
 	b.Reset()
 
+	m.WsSequence = 1
+	m.WsPingChan = make(chan *model.WebSocketResponse)
 	// only start to parse WS messages when login is completely done
 	m.WsConnected = true
 
@@ -190,42 +195,43 @@ func (m *MMClient) Logout() error {
 
 func (m *MMClient) WsReceiver() {
 	for {
-		var rmsg model.Message
-		if m.WsQuit {
-			m.log.Debug("exiting WsReceiver")
-			return
-		}
-		if err := m.WsClient.ReadJSON(&rmsg); err != nil {
+		var rawMsg json.RawMessage
+		var err error
+		if _, rawMsg, err = m.WsClient.ReadMessage(); err != nil {
 			m.log.Error("error:", err)
 			// reconnect
 			m.Login()
 		}
-		// we're not fully logged in yet.
+
 		if !m.WsConnected {
 			continue
 		}
-		if rmsg.Action == "ping" {
-			m.handleWsPing()
+		if m.WsQuit {
+			m.log.Debug("exiting WsReceiver")
+			return
+		}
+
+		var event model.WebSocketEvent
+		if err := json.Unmarshal(rawMsg, &event); err == nil && event.IsValid() {
+			m.log.Debugf("WsReceiver: %#v", event)
+			msg := &Message{Raw: &event, Team: m.Credentials.Team}
+			m.parseMessage(msg)
+			m.MessageChan <- msg
 			continue
 		}
-		msg := &Message{Raw: &rmsg, Team: m.Credentials.Team}
-		m.parseMessage(msg)
-		m.MessageChan <- msg
-	}
 
-}
-
-func (m *MMClient) handleWsPing() {
-	m.log.Debug("Ws PING")
-	if !m.WsQuit && !m.WsAway {
-		m.log.Debug("Ws PONG")
-		m.WsClient.WriteMessage(websocket.PongMessage, []byte{})
+		var response model.WebSocketResponse
+		if err := json.Unmarshal(rawMsg, &response); err == nil && response.IsValid() {
+			m.log.Debugf("WsReceiver: %#v", response)
+			m.parseResponse(response)
+			continue
+		}
 	}
 }
 
 func (m *MMClient) parseMessage(rmsg *Message) {
-	switch rmsg.Raw.Action {
-	case model.ACTION_POSTED:
+	switch rmsg.Raw.Event {
+	case model.WEBSOCKET_EVENT_POSTED:
 		m.parseActionPost(rmsg)
 		/*
 			case model.ACTION_USER_REMOVED:
@@ -236,8 +242,17 @@ func (m *MMClient) parseMessage(rmsg *Message) {
 	}
 }
 
+func (m *MMClient) parseResponse(rmsg model.WebSocketResponse) {
+	if rmsg.Data != nil {
+		// ping reply
+		if rmsg.Data["text"].(string) == "pong" {
+			m.WsPingChan <- &rmsg
+		}
+	}
+}
+
 func (m *MMClient) parseActionPost(rmsg *Message) {
-	data := model.PostFromJson(strings.NewReader(rmsg.Raw.Props["post"]))
+	data := model.PostFromJson(strings.NewReader(rmsg.Raw.Data["post"].(string)))
 	// we don't have the user, refresh the userlist
 	if m.GetUser(data.UserId) == nil {
 		m.UpdateUsers()
@@ -246,7 +261,7 @@ func (m *MMClient) parseActionPost(rmsg *Message) {
 	rmsg.Channel = m.GetChannelName(data.ChannelId)
 	rmsg.Team = m.GetTeamName(rmsg.Raw.TeamId)
 	// direct message
-	if data.Type == "D" {
+	if rmsg.Raw.Data["channel_type"] == "D" {
 		rmsg.Channel = m.GetUser(data.UserId).Username
 	}
 	rmsg.Text = data.Message
@@ -543,12 +558,19 @@ func (m *MMClient) GetUser(userId string) *model.User {
 	return m.Users[userId]
 }
 
-func (m *MMClient) GetStatuses() error {
-	_, err := m.Client.GetStatuses([]string{m.User.Id})
+func (m *MMClient) GetStatus(userId string) string {
+	res, err := m.Client.GetStatuses()
 	if err != nil {
-		return errors.New(err.DetailedError)
+		return ""
 	}
-	return nil
+	status := res.Data.(map[string]string)
+	if status[userId] == model.STATUS_AWAY {
+		return "away"
+	}
+	if status[userId] == model.STATUS_ONLINE {
+		return "online"
+	}
+	return "offline"
 }
 
 func (m *MMClient) StatusLoop() {
@@ -557,13 +579,17 @@ func (m *MMClient) StatusLoop() {
 			return
 		}
 		if m.WsConnected {
-			err := m.GetStatuses()
-			if err != nil {
+			m.log.Debug("WS PING")
+			m.sendWSRequest("ping", nil)
+			select {
+			case <-m.WsPingChan:
+				m.log.Debug("WS PONG received")
+			case <-time.After(time.Second * 5):
 				m.Logout()
 				m.Login()
 			}
 		}
-		time.Sleep(time.Second * 30)
+		time.Sleep(time.Second * 60)
 	}
 }
 
@@ -599,5 +625,16 @@ func (m *MMClient) initUser() error {
 			m.Users[k] = v
 		}
 	}
+	return nil
+}
+
+func (m *MMClient) sendWSRequest(action string, data map[string]interface{}) error {
+	req := &model.WebSocketRequest{}
+	req.Seq = m.WsSequence
+	req.Action = action
+	req.Data = data
+	m.WsSequence++
+	m.log.Debugf("sendWsRequest %#v", req)
+	m.WsClient.WriteJSON(req)
 	return nil
 }
