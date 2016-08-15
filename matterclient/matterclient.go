@@ -586,6 +586,7 @@ func (m *MMClient) StatusLoop() {
 				m.log.Debug("WS PONG received")
 			case <-time.After(time.Second * 5):
 				m.Logout()
+				m.WsQuit = false
 				m.Login()
 			}
 		}
