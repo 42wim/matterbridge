@@ -85,8 +85,7 @@ func (b *Birc) Send(msg config.Message) error {
 		b.Command(&msg)
 		return nil
 	}
-	username := b.ircNickFormat(msg.Username)
-	b.i.Privmsg(msg.Channel, username+msg.Text)
+	b.i.Privmsg(msg.Channel, msg.Username+msg.Text)
 	return nil
 }
 
@@ -162,17 +161,6 @@ func (b *Birc) handleTopicWhoTime(event *irc.Event) {
 		user += " [" + parts[1] + "]"
 	}
 	flog.irc.Infof("%s: Topic set by %s [%s]", event.Code, user, time.Unix(t, 0))
-}
-
-func (b *Birc) ircNickFormat(nick string) string {
-	flog.irc.Debug("ircnick", nick)
-	if nick == b.ircNick {
-		return nick
-	}
-	if b.Config.IRC.RemoteNickFormat == "" {
-		return "irc-" + nick
-	}
-	return strings.Replace(b.Config.IRC.RemoteNickFormat, "{NICK}", nick, -1)
 }
 
 func (b *Birc) nicksPerRow() int {

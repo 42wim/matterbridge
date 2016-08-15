@@ -65,7 +65,8 @@ func (b *Bridge) handleReceive(c chan config.Message) {
 				// do not send to originated bridge
 				if br.Name() != msg.Origin {
 					msg.Channel = m[br.Name()]
-					br.Send(msg)
+					msgmod := b.modifyMessage(msg, br.Name())
+					br.Send(msgmod)
 				}
 			}
 		}
@@ -108,4 +109,29 @@ func (b *Bridge) ignoreMessage(nick string, message string, protocol string) boo
 		}
 	}
 	return false
+}
+
+func setNoNickFormat(msg *config.Message) {
+	msg.Username = msg.Origin + "-" + msg.Username + ": "
+}
+
+func setNickFormat(msg *config.Message, format string) {
+	if format == "" {
+		setNoNickFormat(msg)
+		return
+	}
+	msg.Username = strings.Replace(format, "{NICK}", msg.Username, -1)
+	msg.Username = strings.Replace(msg.Username, "{BRIDGE}", msg.Origin, -1)
+}
+
+func (b *Bridge) modifyMessage(msg config.Message, dest string) config.Message {
+	switch dest {
+	case "irc":
+		setNickFormat(&msg, b.Config.IRC.RemoteNickFormat)
+	case "xmpp":
+		setNickFormat(&msg, b.Config.Xmpp.RemoteNickFormat)
+	case "mattermost":
+		setNickFormat(&msg, b.Config.Mattermost.RemoteNickFormat)
+	}
+	return msg
 }

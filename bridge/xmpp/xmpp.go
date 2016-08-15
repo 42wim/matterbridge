@@ -59,11 +59,7 @@ func (b *Bxmpp) Name() string {
 }
 
 func (b *Bxmpp) Send(msg config.Message) error {
-	username := msg.Username + ": "
-	if b.Config.Xmpp.RemoteNickFormat != "" {
-		username = strings.Replace(b.Config.Xmpp.RemoteNickFormat, "{NICK}", msg.Username, -1)
-	}
-	b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.Xmpp.Muc, Text: username + msg.Text})
+	b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.Xmpp.Muc, Text: msg.Username + msg.Text})
 	return nil
 }
 
@@ -126,7 +122,7 @@ func (b *Bxmpp) handleXmpp() error {
 					nick = s[1]
 				}
 				if nick != b.Xmpp.Nick {
-					flog.xmpp.Info("sending message to remote", nick, v.Text, channel)
+					flog.xmpp.Infof("sending message to remote %s %s %s", nick, v.Text, channel)
 					b.Remote <- config.Message{Username: nick, Text: v.Text, Channel: channel, Origin: "xmpp"}
 				}
 			}

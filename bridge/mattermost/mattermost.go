@@ -95,11 +95,7 @@ func (b *Bmattermost) Name() string {
 func (b *Bmattermost) Send(msg config.Message) error {
 	flog.mm.Infof("mattermost send %#v", msg)
 	if msg.Origin != "mattermost" {
-		username := msg.Username + ": "
-		if b.Config.Mattermost.RemoteNickFormat != "" {
-			username = strings.Replace(b.Config.Mattermost.RemoteNickFormat, "{NICK}", msg.Username, -1)
-		}
-		return b.SendType(username, msg.Text, msg.Channel, "")
+		return b.SendType(msg.Username, msg.Text, msg.Channel, "")
 	}
 	return nil
 }
