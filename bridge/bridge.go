@@ -14,46 +14,32 @@ type Bridge struct {
 	*config.Config
 	Source      string
 	Bridges     []Bridger
-	kind        string
 	Channels    []map[string]string
 	ignoreNicks map[string][]string
-}
-
-type FancyLog struct {
-	irc  *log.Entry
-	mm   *log.Entry
-	xmpp *log.Entry
 }
 
 type Bridger interface {
 	Send(msg config.Message) error
 	Name() string
+	Connect() error
 	//Command(cmd string) string
-}
-
-var flog FancyLog
-
-const Legacy = "legacy"
-
-func initFLog() {
-	flog.irc = log.WithFields(log.Fields{"module": "irc"})
-	flog.mm = log.WithFields(log.Fields{"module": "mattermost"})
-	flog.xmpp = log.WithFields(log.Fields{"module": "xmpp"})
 }
 
 func NewBridge(cfg *config.Config) error {
 	c := make(chan config.Message)
-	initFLog()
 	b := &Bridge{}
 	b.Config = cfg
-	if cfg.General.Irc {
+	if cfg.IRC.Enable {
 		b.Bridges = append(b.Bridges, birc.New(cfg, c))
 	}
-	if cfg.General.Mattermost {
+	if cfg.Mattermost.Enable {
 		b.Bridges = append(b.Bridges, bmattermost.New(cfg, c))
 	}
-	if cfg.General.Xmpp {
+	if cfg.Xmpp.Enable {
 		b.Bridges = append(b.Bridges, bxmpp.New(cfg, c))
+	}
+	if len(b.Bridges) < 2 {
+		log.Fatalf("only %d sections enabled. Need at least 2 sections enabled (eg [IRC] and [mattermost]", len(b.Bridges))
 	}
 	b.mapChannels()
 	b.mapIgnores()

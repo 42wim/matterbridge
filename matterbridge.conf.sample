@@ -3,6 +3,9 @@
 #IRC section
 ###################################################################
 [IRC]
+#Enable enables this bridge
+#OPTIONAL (default false)
+Enable=true
 #irc server to connect to. 
 #REQUIRED
 Server="irc.freenode.net:6667"
@@ -45,6 +48,10 @@ IgnoreNicks="ircspammer1 ircspammer2"
 #XMPP section
 ###################################################################
 [XMPP]
+#Enable enables this bridge
+#OPTIONAL (default false)
+Enable=true
+
 #xmpp server to connect to. 
 #REQUIRED
 Server="jabber.example.com:5222"
@@ -71,6 +78,10 @@ Nick="xmppbot"
 ###################################################################
 
 [mattermost]
+#Enable enables this bridge
+#OPTIONAL (default false)
+Enable=true
+
 #### Settings for webhook matterbridge.
 #### These settings will not be used when using -plus switch which doesn't use 
 #### webhooks.
@@ -174,9 +185,3 @@ GiphyApiKey="dc6zaTOxFJmzC"
 
 #Enabling plus means you'll use the API version instead of the webhooks one
 Plus=false
-
-#Choose protocols to bridge. You need to specify at least two
-#REQUIRED
-Irc=true
-Xmpp=false
-Mattermost=true

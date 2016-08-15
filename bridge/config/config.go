@@ -26,6 +26,7 @@ type Config struct {
 		NickServPassword string
 		RemoteNickFormat string
 		IgnoreNicks      string
+		Enable           bool
 	}
 	Mattermost struct {
 		URL                    string
@@ -44,6 +45,7 @@ type Config struct {
 		RemoteNickFormat       string
 		IgnoreNicks            string
 		NoTLS                  bool
+		Enable                 bool
 	}
 	Xmpp struct {
 		Jid              string
@@ -52,6 +54,7 @@ type Config struct {
 		Muc              string
 		Nick             string
 		RemoteNickFormat string
+		Enable           bool
 	}
 	Channel map[string]*struct {
 		IRC        string
