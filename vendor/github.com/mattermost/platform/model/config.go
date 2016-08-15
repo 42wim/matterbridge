@@ -6,6 +6,7 @@ package model
 import (
 	"encoding/json"
 	"io"
+	"net/url"
 )
 
 const (
@@ -22,8 +23,9 @@ const (
 	PASSWORD_MAXIMUM_LENGTH = 64
 	PASSWORD_MINIMUM_LENGTH = 5
 
-	SERVICE_GITLAB = "gitlab"
-	SERVICE_GOOGLE = "google"
+	SERVICE_GITLAB    = "gitlab"
+	SERVICE_GOOGLE    = "google"
+	SERVICE_OFFICE365 = "office365"
 
 	WEBSERVER_MODE_REGULAR  = "regular"
 	WEBSERVER_MODE_GZIP     = "gzip"
@@ -44,9 +46,12 @@ const (
 	RESTRICT_EMOJI_CREATION_ALL          = "all"
 	RESTRICT_EMOJI_CREATION_ADMIN        = "admin"
 	RESTRICT_EMOJI_CREATION_SYSTEM_ADMIN = "system_admin"
+
+	SITENAME_MAX_LENGTH = 30
 )
 
 type ServiceSettings struct {
+	SiteURL                           *string
 	ListenAddress                     string
 	MaximumLoginAttempts              int
 	SegmentDeveloperKey               string
@@ -73,6 +78,12 @@ type ServiceSettings struct {
 	WebserverMode                     *string
 	EnableCustomEmoji                 *bool
 	RestrictCustomEmojiCreation       *string
+}
+
+type ClusterSettings struct {
+	Enable                 *bool
+	InterNodeListenAddress *string
+	InterNodeUrls          []string
 }
 
 type SSOSettings struct {
@@ -189,10 +200,12 @@ type TeamSettings struct {
 	RestrictTeamNames                *bool
 	EnableCustomBrand                *bool
 	CustomBrandText                  *string
+	CustomDescriptionText            *string
 	RestrictDirectMessage            *string
 	RestrictTeamInvite               *string
 	RestrictPublicChannelManagement  *string
 	RestrictPrivateChannelManagement *string
+	UserStatusAwayTimeout            *int64
 }
 
 type LdapSettings struct {
@@ -265,6 +278,12 @@ type SamlSettings struct {
 	LoginButtonText *string
 }
 
+type NativeAppSettings struct {
+	AppDownloadLink        *string
+	AndroidAppDownloadLink *string
+	IosAppDownloadLink     *string
+}
+
 type Config struct {
 	ServiceSettings      ServiceSettings
 	TeamSettings         TeamSettings
@@ -278,10 +297,13 @@ type Config struct {
 	SupportSettings      SupportSettings
 	GitLabSettings       SSOSettings
 	GoogleSettings       SSOSettings
+	Office365Settings    SSOSettings
 	LdapSettings         LdapSettings
 	ComplianceSettings   ComplianceSettings
 	LocalizationSettings LocalizationSettings
 	SamlSettings         SamlSettings
+	NativeAppSettings    NativeAppSettings
+	ClusterSettings      ClusterSettings
 }
 
 func (o *Config) ToJson() string {
@@ -299,6 +321,8 @@ func (o *Config) GetSSOService(service string) *SSOSettings {
 		return &o.GitLabSettings
 	case SERVICE_GOOGLE:
 		return &o.GoogleSettings
+	case SERVICE_OFFICE365:
+		return &o.Office365Settings
 	}
 
 	return nil
@@ -346,6 +370,11 @@ func (o *Config) SetDefaults() {
 
 	if len(o.EmailSettings.PasswordResetSalt) == 0 {
 		o.EmailSettings.PasswordResetSalt = NewRandomString(32)
+	}
+
+	if o.ServiceSettings.SiteURL == nil {
+		o.ServiceSettings.SiteURL = new(string)
+		*o.ServiceSettings.SiteURL = ""
 	}
 
 	if o.ServiceSettings.EnableDeveloper == nil {
@@ -408,6 +437,11 @@ func (o *Config) SetDefaults() {
 		*o.TeamSettings.CustomBrandText = ""
 	}
 
+	if o.TeamSettings.CustomDescriptionText == nil {
+		o.TeamSettings.CustomDescriptionText = new(string)
+		*o.TeamSettings.CustomDescriptionText = ""
+	}
+
 	if o.TeamSettings.EnableOpenServer == nil {
 		o.TeamSettings.EnableOpenServer = new(bool)
 		*o.TeamSettings.EnableOpenServer = false
@@ -431,6 +465,11 @@ func (o *Config) SetDefaults() {
 	if o.TeamSettings.RestrictPrivateChannelManagement == nil {
 		o.TeamSettings.RestrictPrivateChannelManagement = new(string)
 		*o.TeamSettings.RestrictPrivateChannelManagement = PERMISSIONS_ALL
+	}
+
+	if o.TeamSettings.UserStatusAwayTimeout == nil {
+		o.TeamSettings.UserStatusAwayTimeout = new(int64)
+		*o.TeamSettings.UserStatusAwayTimeout = 300
 	}
 
 	if o.EmailSettings.EnableSignInWithEmail == nil {
@@ -474,7 +513,7 @@ func (o *Config) SetDefaults() {
 
 	if o.SupportSettings.TermsOfServiceLink == nil {
 		o.SupportSettings.TermsOfServiceLink = new(string)
-		*o.SupportSettings.TermsOfServiceLink = "/static/help/terms.html"
+		*o.SupportSettings.TermsOfServiceLink = "https://about.mattermost.com/default-terms/"
 	}
 
 	if !IsSafeLink(o.SupportSettings.PrivacyPolicyLink) {
@@ -483,7 +522,7 @@ func (o *Config) SetDefaults() {
 
 	if o.SupportSettings.PrivacyPolicyLink == nil {
 		o.SupportSettings.PrivacyPolicyLink = new(string)
-		*o.SupportSettings.PrivacyPolicyLink = "/static/help/privacy.html"
+		*o.SupportSettings.PrivacyPolicyLink = ""
 	}
 
 	if !IsSafeLink(o.SupportSettings.AboutLink) {
@@ -492,7 +531,7 @@ func (o *Config) SetDefaults() {
 
 	if o.SupportSettings.AboutLink == nil {
 		o.SupportSettings.AboutLink = new(string)
-		*o.SupportSettings.AboutLink = "/static/help/about.html"
+		*o.SupportSettings.AboutLink = ""
 	}
 
 	if !IsSafeLink(o.SupportSettings.HelpLink) {
@@ -501,7 +540,7 @@ func (o *Config) SetDefaults() {
 
 	if o.SupportSettings.HelpLink == nil {
 		o.SupportSettings.HelpLink = new(string)
-		*o.SupportSettings.HelpLink = "/static/help/help.html"
+		*o.SupportSettings.HelpLink = ""
 	}
 
 	if !IsSafeLink(o.SupportSettings.ReportAProblemLink) {
@@ -510,7 +549,7 @@ func (o *Config) SetDefaults() {
 
 	if o.SupportSettings.ReportAProblemLink == nil {
 		o.SupportSettings.ReportAProblemLink = new(string)
-		*o.SupportSettings.ReportAProblemLink = "/static/help/report_problem.html"
+		*o.SupportSettings.ReportAProblemLink = ""
 	}
 
 	if o.SupportSettings.SupportEmail == nil {
@@ -675,6 +714,20 @@ func (o *Config) SetDefaults() {
 		*o.ServiceSettings.RestrictCustomEmojiCreation = RESTRICT_EMOJI_CREATION_ALL
 	}
 
+	if o.ClusterSettings.InterNodeListenAddress == nil {
+		o.ClusterSettings.InterNodeListenAddress = new(string)
+		*o.ClusterSettings.InterNodeListenAddress = ":8075"
+	}
+
+	if o.ClusterSettings.Enable == nil {
+		o.ClusterSettings.Enable = new(bool)
+		*o.ClusterSettings.Enable = false
+	}
+
+	if o.ClusterSettings.InterNodeUrls == nil {
+		o.ClusterSettings.InterNodeUrls = []string{}
+	}
+
 	if o.ComplianceSettings.Enable == nil {
 		o.ComplianceSettings.Enable = new(bool)
 		*o.ComplianceSettings.Enable = false
@@ -784,12 +837,33 @@ func (o *Config) SetDefaults() {
 		o.SamlSettings.LocaleAttribute = new(string)
 		*o.SamlSettings.LocaleAttribute = ""
 	}
+
+	if o.NativeAppSettings.AppDownloadLink == nil {
+		o.NativeAppSettings.AppDownloadLink = new(string)
+		*o.NativeAppSettings.AppDownloadLink = "https://about.mattermost.com/downloads/"
+	}
+
+	if o.NativeAppSettings.AndroidAppDownloadLink == nil {
+		o.NativeAppSettings.AndroidAppDownloadLink = new(string)
+		*o.NativeAppSettings.AndroidAppDownloadLink = "https://about.mattermost.com/mattermost-android-app/"
+	}
+
+	if o.NativeAppSettings.IosAppDownloadLink == nil {
+		o.NativeAppSettings.IosAppDownloadLink = new(string)
+		*o.NativeAppSettings.IosAppDownloadLink = "https://about.mattermost.com/mattermost-ios-app/"
+	}
 }
 
 func (o *Config) IsValid() *AppError {
 
 	if o.ServiceSettings.MaximumLoginAttempts <= 0 {
 		return NewLocAppError("Config.IsValid", "model.config.is_valid.login_attempts.app_error", nil, "")
+	}
+
+	if len(*o.ServiceSettings.SiteURL) != 0 {
+		if _, err := url.ParseRequestURI(*o.ServiceSettings.SiteURL); err != nil {
+			return NewLocAppError("Config.IsValid", "model.config.is_valid.site_url.app_error", nil, "")
+		}
 	}
 
 	if len(o.ServiceSettings.ListenAddress) == 0 {
@@ -893,21 +967,37 @@ func (o *Config) IsValid() *AppError {
 	}
 
 	if *o.LdapSettings.Enable {
-		if *o.LdapSettings.LdapServer == "" ||
-			*o.LdapSettings.BaseDN == "" ||
-			*o.LdapSettings.BindUsername == "" ||
-			*o.LdapSettings.BindPassword == "" ||
-			*o.LdapSettings.FirstNameAttribute == "" ||
-			*o.LdapSettings.LastNameAttribute == "" ||
-			*o.LdapSettings.EmailAttribute == "" ||
-			*o.LdapSettings.UsernameAttribute == "" ||
-			*o.LdapSettings.IdAttribute == "" {
-			return NewLocAppError("Config.IsValid", "Required LDAP field missing", nil, "")
+		if *o.LdapSettings.LdapServer == "" {
+			return NewLocAppError("Config.IsValid", "model.config.is_valid.ldap_server", nil, "")
+		}
+
+		if *o.LdapSettings.BaseDN == "" {
+			return NewLocAppError("Config.IsValid", "model.config.is_valid.ldap_basedn", nil, "")
+		}
+
+		if *o.LdapSettings.FirstNameAttribute == "" {
+			return NewLocAppError("Config.IsValid", "model.config.is_valid.ldap_firstname", nil, "")
+		}
+
+		if *o.LdapSettings.LastNameAttribute == "" {
+			return NewLocAppError("Config.IsValid", "model.config.is_valid.ldap_lastname", nil, "")
+		}
+
+		if *o.LdapSettings.EmailAttribute == "" {
+			return NewLocAppError("Config.IsValid", "model.config.is_valid.ldap_email", nil, "")
+		}
+
+		if *o.LdapSettings.UsernameAttribute == "" {
+			return NewLocAppError("Config.IsValid", "model.config.is_valid.ldap_username", nil, "")
+		}
+
+		if *o.LdapSettings.IdAttribute == "" {
+			return NewLocAppError("Config.IsValid", "model.config.is_valid.ldap_id", nil, "")
 		}
 	}
 
 	if *o.SamlSettings.Enable {
-		if len(*o.SamlSettings.IdpUrl) == 0 {
+		if len(*o.SamlSettings.IdpUrl) == 0 || !IsValidHttpUrl(*o.SamlSettings.IdpUrl) {
 			return NewLocAppError("Config.IsValid", "model.config.is_valid.saml_idp_url.app_error", nil, "")
 		}
 
@@ -958,6 +1048,10 @@ func (o *Config) IsValid() *AppError {
 
 	if *o.PasswordSettings.MinimumLength < PASSWORD_MINIMUM_LENGTH || *o.PasswordSettings.MinimumLength > PASSWORD_MAXIMUM_LENGTH {
 		return NewLocAppError("Config.IsValid", "model.config.is_valid.password_length.app_error", map[string]interface{}{"MinLength": PASSWORD_MINIMUM_LENGTH, "MaxLength": PASSWORD_MAXIMUM_LENGTH}, "")
+	}
+
+	if len(o.TeamSettings.SiteName) > SITENAME_MAX_LENGTH {
+		return NewLocAppError("Config.IsValid", "model.config.is_valid.sitename_length.app_error", map[string]interface{}{"MaxLength": SITENAME_MAX_LENGTH}, "")
 	}
 
 	return nil

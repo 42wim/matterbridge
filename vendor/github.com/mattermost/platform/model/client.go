@@ -20,6 +20,7 @@ import (
 const (
 	HEADER_REQUEST_ID         = "X-Request-ID"
 	HEADER_VERSION_ID         = "X-Version-ID"
+	HEADER_CLUSTER_ID         = "X-Cluster-ID"
 	HEADER_ETAG_SERVER        = "ETag"
 	HEADER_ETAG_CLIENT        = "If-None-Match"
 	HEADER_FORWARDED          = "X-Forwarded-For"
@@ -32,6 +33,7 @@ const (
 	HEADER_REQUESTED_WITH_XML = "XMLHttpRequest"
 	STATUS                    = "status"
 	STATUS_OK                 = "OK"
+	STATUS_FAIL               = "FAIL"
 
 	API_URL_SUFFIX_V1 = "/api/v1"
 	API_URL_SUFFIX_V3 = "/api/v3"
@@ -276,6 +278,9 @@ func (c *Client) GetPing() (map[string]string, *AppError) {
 
 // Team Routes Section
 
+// SignupTeam sends an email with a team sign-up link to the provided address if email
+// verification is enabled, otherwise it returns a map with a "follow_link" entry
+// containing the team sign-up link.
 func (c *Client) SignupTeam(email string, displayName string) (*Result, *AppError) {
 	m := make(map[string]string)
 	m["email"] = email
@@ -289,6 +294,8 @@ func (c *Client) SignupTeam(email string, displayName string) (*Result, *AppErro
 	}
 }
 
+// CreateTeamFromSignup creates a team based on the provided TeamSignup struct. On success
+// it returns the TeamSignup struct.
 func (c *Client) CreateTeamFromSignup(teamSignup *TeamSignup) (*Result, *AppError) {
 	if r, err := c.DoApiPost("/teams/create_from_signup", teamSignup.ToJson()); err != nil {
 		return nil, err
@@ -299,6 +306,8 @@ func (c *Client) CreateTeamFromSignup(teamSignup *TeamSignup) (*Result, *AppErro
 	}
 }
 
+// CreateTeam creates a team based on the provided Team struct. On success it returns
+// the Team struct with the Id, CreateAt and other server-decided fields populated.
 func (c *Client) CreateTeam(team *Team) (*Result, *AppError) {
 	if r, err := c.DoApiPost("/teams/create", team.ToJson()); err != nil {
 		return nil, err
@@ -309,6 +318,7 @@ func (c *Client) CreateTeam(team *Team) (*Result, *AppError) {
 	}
 }
 
+// GetAllTeams returns a map of all teams using team ids as the key.
 func (c *Client) GetAllTeams() (*Result, *AppError) {
 	if r, err := c.DoApiGet("/teams/all", "", ""); err != nil {
 		return nil, err
@@ -319,6 +329,8 @@ func (c *Client) GetAllTeams() (*Result, *AppError) {
 	}
 }
 
+// GetAllTeamListings returns a map of all teams that are available to join
+// using team ids as the key. Must be authenticated.
 func (c *Client) GetAllTeamListings() (*Result, *AppError) {
 	if r, err := c.DoApiGet("/teams/all_team_listings", "", ""); err != nil {
 		return nil, err
@@ -329,6 +341,8 @@ func (c *Client) GetAllTeamListings() (*Result, *AppError) {
 	}
 }
 
+// FindTeamByName returns the strings "true" or "false" depending on if a team
+// with the provided name was found.
 func (c *Client) FindTeamByName(name string) (*Result, *AppError) {
 	m := make(map[string]string)
 	m["name"] = name
@@ -365,6 +379,8 @@ func (c *Client) AddUserToTeam(teamId string, userId string) (*Result, *AppError
 	}
 }
 
+// AddUserToTeamFromInvite adds a user to a team based off data provided in an invite link.
+// Either hash and dataToHash are required or inviteId is required.
 func (c *Client) AddUserToTeamFromInvite(hash, dataToHash, inviteId string) (*Result, *AppError) {
 	data := make(map[string]string)
 	data["hash"] = hash
@@ -409,6 +425,9 @@ func (c *Client) InviteMembers(invites *Invites) (*Result, *AppError) {
 	}
 }
 
+// UpdateTeam updates a team based on the changes in the provided team struct. On success
+// it returns a sanitized version of the updated team. Must be authenticated as a team admin
+// for that team or a system admin.
 func (c *Client) UpdateTeam(team *Team) (*Result, *AppError) {
 	if r, err := c.DoApiPost(c.GetTeamRoute()+"/update", team.ToJson()); err != nil {
 		return nil, err
@@ -419,6 +438,9 @@ func (c *Client) UpdateTeam(team *Team) (*Result, *AppError) {
 	}
 }
 
+// User Routes Section
+
+// CreateUser creates a user in the system based on the provided user struct.
 func (c *Client) CreateUser(user *User, hash string) (*Result, *AppError) {
 	if r, err := c.DoApiPost("/users/create", user.ToJson()); err != nil {
 		return nil, err
@@ -429,6 +451,8 @@ func (c *Client) CreateUser(user *User, hash string) (*Result, *AppError) {
 	}
 }
 
+// CreateUserWithInvite creates a user based on the provided user struct. Either the hash and
+// data strings or the inviteId is required from the invite.
 func (c *Client) CreateUserWithInvite(user *User, hash string, data string, inviteId string) (*Result, *AppError) {
 
 	url := "/users/create?d=" + url.QueryEscape(data) + "&h=" + url.QueryEscape(hash) + "&iid=" + url.QueryEscape(inviteId)
@@ -452,6 +476,7 @@ func (c *Client) CreateUserFromSignup(user *User, data string, hash string) (*Re
 	}
 }
 
+// GetUser returns a user based on a provided user id string. Must be authenticated.
 func (c *Client) GetUser(id string, etag string) (*Result, *AppError) {
 	if r, err := c.DoApiGet("/users/"+id+"/get", "", etag); err != nil {
 		return nil, err
@@ -462,6 +487,7 @@ func (c *Client) GetUser(id string, etag string) (*Result, *AppError) {
 	}
 }
 
+// GetMe returns the current user.
 func (c *Client) GetMe(etag string) (*Result, *AppError) {
 	if r, err := c.DoApiGet("/users/me", "", etag); err != nil {
 		return nil, err
@@ -472,6 +498,8 @@ func (c *Client) GetMe(etag string) (*Result, *AppError) {
 	}
 }
 
+// GetProfilesForDirectMessageList returns a map of users for a team that can be direct
+// messaged, using user id as the key. Must be authenticated.
 func (c *Client) GetProfilesForDirectMessageList(teamId string) (*Result, *AppError) {
 	if r, err := c.DoApiGet("/users/profiles_for_dm_list/"+teamId, "", ""); err != nil {
 		return nil, err
@@ -482,6 +510,8 @@ func (c *Client) GetProfilesForDirectMessageList(teamId string) (*Result, *AppEr
 	}
 }
 
+// GetProfiles returns a map of users for a team using user id as the key. Must
+// be authenticated.
 func (c *Client) GetProfiles(teamId string, etag string) (*Result, *AppError) {
 	if r, err := c.DoApiGet("/users/profiles/"+teamId, "", etag); err != nil {
 		return nil, err
@@ -492,6 +522,8 @@ func (c *Client) GetProfiles(teamId string, etag string) (*Result, *AppError) {
 	}
 }
 
+// GetDirectProfiles gets a map of users that are currently shown in the sidebar,
+// using user id as the key. Must be authenticated.
 func (c *Client) GetDirectProfiles(etag string) (*Result, *AppError) {
 	if r, err := c.DoApiGet("/users/direct_profiles", "", etag); err != nil {
 		return nil, err
@@ -502,6 +534,7 @@ func (c *Client) GetDirectProfiles(etag string) (*Result, *AppError) {
 	}
 }
 
+// LoginById authenticates a user by user id and password.
 func (c *Client) LoginById(id string, password string) (*Result, *AppError) {
 	m := make(map[string]string)
 	m["id"] = id
@@ -509,6 +542,8 @@ func (c *Client) LoginById(id string, password string) (*Result, *AppError) {
 	return c.login(m)
 }
 
+// Login authenticates a user by login id, which can be username, email or some sort
+// of SSO identifier based on configuration, and a password.
 func (c *Client) Login(loginId string, password string) (*Result, *AppError) {
 	m := make(map[string]string)
 	m["login_id"] = loginId
@@ -516,6 +551,7 @@ func (c *Client) Login(loginId string, password string) (*Result, *AppError) {
 	return c.login(m)
 }
 
+// LoginByLdap authenticates a user by LDAP id and password.
 func (c *Client) LoginByLdap(loginId string, password string) (*Result, *AppError) {
 	m := make(map[string]string)
 	m["login_id"] = loginId
@@ -524,6 +560,9 @@ func (c *Client) LoginByLdap(loginId string, password string) (*Result, *AppErro
 	return c.login(m)
 }
 
+// LoginWithDevice authenticates a user by login id (username, email or some sort
+// of SSO identifier based on configuration), password and attaches a device id to
+// the session.
 func (c *Client) LoginWithDevice(loginId string, password string, deviceId string) (*Result, *AppError) {
 	m := make(map[string]string)
 	m["login_id"] = loginId
@@ -550,6 +589,7 @@ func (c *Client) login(m map[string]string) (*Result, *AppError) {
 	}
 }
 
+// Logout terminates the current user's session.
 func (c *Client) Logout() (*Result, *AppError) {
 	if r, err := c.DoApiPost("/users/logout", ""); err != nil {
 		return nil, err
@@ -564,6 +604,9 @@ func (c *Client) Logout() (*Result, *AppError) {
 	}
 }
 
+// CheckMfa returns a map with key "mfa_required" with the string value "true" or "false",
+// indicating whether MFA is required to log the user in, based on a provided login id
+// (username, email or some sort of SSO identifier based on configuration).
 func (c *Client) CheckMfa(loginId string) (*Result, *AppError) {
 	m := make(map[string]string)
 	m["login_id"] = loginId
@@ -577,6 +620,8 @@ func (c *Client) CheckMfa(loginId string) (*Result, *AppError) {
 	}
 }
 
+// GenerateMfaQrCode returns a QR code imagem containing the secret, to be scanned
+// by a multi-factor authentication mobile application. Must be authenticated.
 func (c *Client) GenerateMfaQrCode() (*Result, *AppError) {
 	if r, err := c.DoApiGet("/users/generate_mfa_qr", "", ""); err != nil {
 		return nil, err
@@ -587,6 +632,9 @@ func (c *Client) GenerateMfaQrCode() (*Result, *AppError) {
 	}
 }
 
+// UpdateMfa activates multi-factor authenticates for the current user if activate
+// is true and a valid token is provided. If activate is false, then token is not
+// required and multi-factor authentication is disabled for the current user.
 func (c *Client) UpdateMfa(activate bool, token string) (*Result, *AppError) {
 	m := make(map[string]interface{})
 	m["activate"] = activate
@@ -758,6 +806,15 @@ func (c *Client) GetLogs() (*Result, *AppError) {
 		defer closeBody(r)
 		return &Result{r.Header.Get(HEADER_REQUEST_ID),
 			r.Header.Get(HEADER_ETAG_SERVER), ArrayFromJson(r.Body)}, nil
+	}
+}
+
+func (c *Client) GetClusterStatus() ([]*ClusterInfo, *AppError) {
+	if r, err := c.DoApiGet("/admin/cluster_status", "", ""); err != nil {
+		return nil, err
+	} else {
+		defer closeBody(r)
+		return ClusterInfosFromJson(r.Body), nil
 	}
 }
 
@@ -1181,6 +1238,18 @@ func (c *Client) SearchPosts(terms string, isOrSearch bool) (*Result, *AppError)
 	}
 }
 
+// GetFlaggedPosts will return a post list of posts that have been flagged by the user.
+// The page is set by the integer parameters offset and limit.
+func (c *Client) GetFlaggedPosts(offset int, limit int) (*Result, *AppError) {
+	if r, err := c.DoApiGet(c.GetTeamRoute()+fmt.Sprintf("/posts/flagged/%v/%v", offset, limit), "", ""); err != nil {
+		return nil, err
+	} else {
+		defer closeBody(r)
+		return &Result{r.Header.Get(HEADER_REQUEST_ID),
+			r.Header.Get(HEADER_ETAG_SERVER), PostListFromJson(r.Body)}, nil
+	}
+}
+
 func (c *Client) UploadProfileFile(data []byte, contentType string) (*Result, *AppError) {
 	return c.uploadFile(c.ApiUrl+"/users/newimage", data, contentType)
 }
@@ -1368,8 +1437,9 @@ func (c *Client) AdminResetPassword(userId, newPassword string) (*Result, *AppEr
 	}
 }
 
-func (c *Client) GetStatuses(data []string) (*Result, *AppError) {
-	if r, err := c.DoApiPost("/users/status", ArrayToJson(data)); err != nil {
+// GetStatuses returns a map of string statuses using user id as the key
+func (c *Client) GetStatuses() (*Result, *AppError) {
+	if r, err := c.DoApiGet("/users/status", "", ""); err != nil {
 		return nil, err
 	} else {
 		defer closeBody(r)
@@ -1398,6 +1468,8 @@ func (c *Client) GetTeamMembers(teamId string) (*Result, *AppError) {
 	}
 }
 
+// RegisterApp creates a new OAuth2 app to be used with the OAuth2 Provider. On success
+// it returns the created app. Must be authenticated as a user.
 func (c *Client) RegisterApp(app *OAuthApp) (*Result, *AppError) {
 	if r, err := c.DoApiPost("/oauth/register", app.ToJson()); err != nil {
 		return nil, err
@@ -1408,6 +1480,9 @@ func (c *Client) RegisterApp(app *OAuthApp) (*Result, *AppError) {
 	}
 }
 
+// AllowOAuth allows a new session by an OAuth2 App. On success
+// it returns the url to be redirected back to the app which initiated the oauth2 flow.
+// Must be authenticated as a user.
 func (c *Client) AllowOAuth(rspType, clientId, redirect, scope, state string) (*Result, *AppError) {
 	if r, err := c.DoApiGet("/oauth/allow?response_type="+rspType+"&client_id="+clientId+"&redirect_uri="+url.QueryEscape(redirect)+"&scope="+scope+"&state="+url.QueryEscape(state), "", ""); err != nil {
 		return nil, err
@@ -1418,8 +1493,47 @@ func (c *Client) AllowOAuth(rspType, clientId, redirect, scope, state string) (*
 	}
 }
 
+// GetOAuthAppsByUser returns the OAuth2 Apps registered by the user. On success
+// it returns a list of OAuth2 Apps from the same user or all the registered apps if the user
+// is a System Administrator. Must be authenticated as a user.
+func (c *Client) GetOAuthAppsByUser() (*Result, *AppError) {
+	if r, err := c.DoApiGet("/oauth/list", "", ""); err != nil {
+		return nil, err
+	} else {
+		defer closeBody(r)
+		return &Result{r.Header.Get(HEADER_REQUEST_ID),
+			r.Header.Get(HEADER_ETAG_SERVER), OAuthAppListFromJson(r.Body)}, nil
+	}
+}
+
+// GetOAuthAppInfo lookup an OAuth2 App using the client_id. On success
+// it returns a Sanitized OAuth2 App. Must be authenticated as a user.
+func (c *Client) GetOAuthAppInfo(clientId string) (*Result, *AppError) {
+	if r, err := c.DoApiGet("/oauth/app/"+clientId, "", ""); err != nil {
+		return nil, err
+	} else {
+		defer closeBody(r)
+		return &Result{r.Header.Get(HEADER_REQUEST_ID),
+			r.Header.Get(HEADER_ETAG_SERVER), OAuthAppFromJson(r.Body)}, nil
+	}
+}
+
+// DeleteOAuthApp deletes an OAuth2 app, the app must be deleted by the same user who created it or
+// a System Administrator. On success returs Status OK. Must be authenticated as a user.
+func (c *Client) DeleteOAuthApp(id string) (*Result, *AppError) {
+	data := make(map[string]string)
+	data["id"] = id
+	if r, err := c.DoApiPost("/oauth/delete", MapToJson(data)); err != nil {
+		return nil, err
+	} else {
+		defer closeBody(r)
+		return &Result{r.Header.Get(HEADER_REQUEST_ID),
+			r.Header.Get(HEADER_ETAG_SERVER), MapFromJson(r.Body)}, nil
+	}
+}
+
 func (c *Client) GetAccessToken(data url.Values) (*Result, *AppError) {
-	if r, err := c.DoApiPost("/oauth/access_token", data.Encode()); err != nil {
+	if r, err := c.DoPost("/oauth/access_token", data.Encode(), "application/x-www-form-urlencoded"); err != nil {
 		return nil, err
 	} else {
 		defer closeBody(r)
@@ -1506,6 +1620,16 @@ func (c *Client) GetPreferenceCategory(category string) (*Result, *AppError) {
 		defer closeBody(r)
 		preferences, _ := PreferencesFromJson(r.Body)
 		return &Result{r.Header.Get(HEADER_REQUEST_ID), r.Header.Get(HEADER_ETAG_SERVER), preferences}, nil
+	}
+}
+
+// DeletePreferences deletes a list of preferences owned by the current user. If successful,
+// it will return status=ok. Otherwise, an error will be returned.
+func (c *Client) DeletePreferences(preferences *Preferences) (bool, *AppError) {
+	if r, err := c.DoApiPost("/preferences/delete", preferences.ToJson()); err != nil {
+		return false, err
+	} else {
+		return c.CheckStatusOK(r), nil
 	}
 }
 
@@ -1647,4 +1771,48 @@ func (c *Client) DeleteEmoji(id string) (bool, *AppError) {
 // the given emoji.
 func (c *Client) GetCustomEmojiImageUrl(id string) string {
 	return c.GetEmojiRoute() + "/" + id
+}
+
+// Uploads a x509 base64 Certificate or Private Key file to be used with SAML.
+// data byte array is required and needs to be a Multi-Part with 'certificate' as the field name
+// contentType is also required. Returns nil if succesful, otherwise returns an AppError
+func (c *Client) UploadCertificateFile(data []byte, contentType string) *AppError {
+	url := c.ApiUrl + "/admin/add_certificate"
+	rq, _ := http.NewRequest("POST", url, bytes.NewReader(data))
+	rq.Header.Set("Content-Type", contentType)
+
+	if len(c.AuthToken) > 0 {
+		rq.Header.Set(HEADER_AUTH, "BEARER "+c.AuthToken)
+	}
+
+	if rp, err := c.HttpClient.Do(rq); err != nil {
+		return NewLocAppError(url, "model.client.connecting.app_error", nil, err.Error())
+	} else if rp.StatusCode >= 300 {
+		return AppErrorFromJson(rp.Body)
+	} else {
+		defer closeBody(rp)
+		return nil
+	}
+}
+
+// Removes a x509 base64 Certificate or Private Key file used with SAML.
+// filename is required. Returns nil if successful, otherwise returns an AppError
+func (c *Client) RemoveCertificateFile(filename string) *AppError {
+	if r, err := c.DoApiPost("/admin/remove_certificate", MapToJson(map[string]string{"filename": filename})); err != nil {
+		return err
+	} else {
+		defer closeBody(r)
+		return nil
+	}
+}
+
+// Checks if the x509 base64 Certificates and Private Key files used with SAML exists on the file system.
+// Returns a map[string]interface{} if successful, otherwise returns an AppError. Must be System Admin authenticated.
+func (c *Client) SamlCertificateStatus(filename string) (map[string]interface{}, *AppError) {
+	if r, err := c.DoApiGet("/admin/remove_certificate", "", ""); err != nil {
+		return nil, err
+	} else {
+		defer closeBody(r)
+		return StringInterfaceFromJson(r.Body), nil
+	}
 }
