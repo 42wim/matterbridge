@@ -41,7 +41,7 @@ func initFLog() {
 	flog.xmpp = log.WithFields(log.Fields{"module": "xmpp"})
 }
 
-func NewBridge(name string, cfg *config.Config, kind string) *Bridge {
+func NewBridge(cfg *config.Config) error {
 	c := make(chan config.Message)
 	initFLog()
 	b := &Bridge{}
@@ -57,8 +57,8 @@ func NewBridge(name string, cfg *config.Config, kind string) *Bridge {
 	}
 	b.mapChannels()
 	b.mapIgnores()
-	go b.handleReceive(c)
-	return b
+	b.handleReceive(c)
+	return nil
 }
 
 func (b *Bridge) handleReceive(c chan config.Message) {

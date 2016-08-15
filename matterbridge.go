@@ -8,7 +8,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-var version = "0.5.0-beta2"
+var version = "0.6.0-dev"
 
 func init() {
 	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
@@ -18,7 +18,7 @@ func main() {
 	flagConfig := flag.String("conf", "matterbridge.conf", "config file")
 	flagDebug := flag.Bool("debug", false, "enable debug")
 	flagVersion := flag.Bool("version", false, "show version")
-	flagPlus := flag.Bool("plus", false, "running using API instead of webhooks")
+	flagPlus := flag.Bool("plus", false, "running using API instead of webhooks (deprecated, set Plus flag in [general] config)")
 	flag.Parse()
 	if *flagVersion {
 		fmt.Println("version:", version)
@@ -30,10 +30,12 @@ func main() {
 		log.SetLevel(log.DebugLevel)
 	}
 	fmt.Println("running version", version)
+	cfg := config.NewConfig(*flagConfig)
 	if *flagPlus {
-		bridge.NewBridge("matterbot", config.NewConfig(*flagConfig), "")
-	} else {
-		bridge.NewBridge("matterbot", config.NewConfig(*flagConfig), "legacy")
+		cfg.General.Plus = true
 	}
-	select {}
+	err := bridge.NewBridge(cfg)
+	if err != nil {
+		log.Debugf("starting bridge failed %#v", err)
+	}
 }

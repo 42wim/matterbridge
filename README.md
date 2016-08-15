@@ -8,9 +8,14 @@ Simple bridge between mattermost and IRC.
 
 This project has now [matterbridge-plus](https://github.com/42wim/matterbridge-plus/) merged in. 
 Breaking changes for matterbridge can be found in [migration](https://github.com/42wim/matterbridge/blob/master/migration.md)
+Look at [matterbridge.conf.sample] (https://github.com/42wim/matterbridge/blob/master/matterbridge.conf.sample) for an example.
 
 ## Requirements:
-* [Mattermost] (https://github.com/mattermost/platform/) 3.x (stable, not a dev build)
+* [Mattermost] (https://github.com/mattermost/platform/)
+### Compatibility
+* Matterbridge v0.6.0 (no binaries yet) works with mattermost 3.3.0 and higher [3.3.0 release](https://github.com/mattermost/platform/releases/tag/v3.3.0)
+* Matterbridge v0.5.0 works with mattermost 3.0.0 - 3.2.0 [3.2.0 release](https://github.com/mattermost/platform/releases/tag/v3.2.0)
+
 
 ### Webhooks version
 * Configured incoming/outgoing [webhooks](https://www.mattermost.org/webhooks/) on your mattermost instance.
@@ -19,7 +24,8 @@ Breaking changes for matterbridge can be found in [migration](https://github.com
 * A dedicated user(bot) on your mattermost instance.
 
 ## binaries
-Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/tag/v0.5.0)
+Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/)
+* For use with mattermost 3.0.0-3.2.0 [v0.5.0](https://github.com/42wim/matterircd/releases/tag/v0.5.0)
 
 ## building
 Go 1.6+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH] (https://golang.org/doc/code.html#GOPATH)
@@ -48,7 +54,7 @@ Usage of ./matterbridge:
   -debug
         enable debug
   -plus
-        running using API instead of webhooks
+        running using API instead of webhooks (deprecated, set Plus flag in [general] config)
   -version
         show version
 ```
