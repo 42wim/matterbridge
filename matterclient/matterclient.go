@@ -197,11 +197,6 @@ func (m *MMClient) WsReceiver() {
 	for {
 		var rawMsg json.RawMessage
 		var err error
-		if _, rawMsg, err = m.WsClient.ReadMessage(); err != nil {
-			m.log.Error("error:", err)
-			// reconnect
-			m.Login()
-		}
 
 		if !m.WsConnected {
 			continue
@@ -209,6 +204,12 @@ func (m *MMClient) WsReceiver() {
 		if m.WsQuit {
 			m.log.Debug("exiting WsReceiver")
 			return
+		}
+
+		if _, rawMsg, err = m.WsClient.ReadMessage(); err != nil {
+			m.log.Error("error:", err)
+			// reconnect
+			m.Login()
 		}
 
 		var event model.WebSocketEvent
