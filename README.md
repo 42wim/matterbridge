@@ -15,7 +15,7 @@ Configuration changes since v0.5.0 can be found in [changelog.md] (https://githu
 ## Requirements:
 * [Mattermost] (https://github.com/mattermost/platform/)
 ### Compatibility
-* Matterbridge v0.6.0 (no binaries yet) works with mattermost 3.3.0 and higher [3.3.0 release](https://github.com/mattermost/platform/releases/tag/v3.3.0)
+* Matterbridge v0.6.0 works with mattermost 3.3.0 and higher [3.3.0 release](https://github.com/mattermost/platform/releases/tag/v3.3.0)
 * Matterbridge v0.5.0 works with mattermost 3.0.0 - 3.2.0 [3.2.0 release](https://github.com/mattermost/platform/releases/tag/v3.2.0)
 
 
@@ -27,6 +27,7 @@ Configuration changes since v0.5.0 can be found in [changelog.md] (https://githu
 
 ## binaries
 Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/)
+* For use with mattermost 3.3.0 [v0.6.0-beta1](https://github.com/42wim/matterircd/releases/tag/v0.6.0-beta1)
 * For use with mattermost 3.0.0-3.2.0 [v0.5.0](https://github.com/42wim/matterircd/releases/tag/v0.5.0)
 
 ## building
