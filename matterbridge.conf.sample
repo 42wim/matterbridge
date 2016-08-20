@@ -16,7 +16,7 @@ UseTLS=false
 
 #Enable SASL (PLAIN) authentication. (freenode requires this from eg AWS hosts)
 #It uses NickServNick and NickServPassword as login and password
-#OPTIONAL (deefault false)
+#OPTIONAL (default false)
 UseSASL=false
 
 #Enable to not verify the certificate on your irc server. i
@@ -119,7 +119,7 @@ Team="yourteam"
 Login="yourlogin"
 Password="yourpass"
 
-#Disable to make a http connection to your mattermost. 
+#Enable this to make a http connection (instead of https) to your mattermost. 
 #OPTIONAL (default false)
 NoTLS=false
 
@@ -170,10 +170,13 @@ IgnoreNicks="mmbot spammer2"
 IRC="#off-topic"
 #Choose the mattermost channel to send IRC messages to.
 mattermost="off-topic"
+#Choose the mattermost channel to send IRC messages to.
+xmpp="off-topic"
 
 [Channel "testchannel"]
 IRC="#testing"
 mattermost="testing"
+xmpp="testing"
 
 ###################################################################
 #general

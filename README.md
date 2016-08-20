@@ -10,6 +10,8 @@ This project has now [matterbridge-plus](https://github.com/42wim/matterbridge-p
 Breaking changes for matterbridge can be found in [migration](https://github.com/42wim/matterbridge/blob/master/migration.md)
 Look at [matterbridge.conf.sample] (https://github.com/42wim/matterbridge/blob/master/matterbridge.conf.sample) for an example.
 
+Configuration changes since v0.5.0 can be found in [changelog.md] (https://github.com/42wim/matterbridge/blob/master/changelog.md)
+
 ## Requirements:
 * [Mattermost] (https://github.com/mattermost/platform/)
 ### Compatibility
