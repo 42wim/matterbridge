@@ -129,7 +129,7 @@ func (b *Bmattermost) SendType(nick string, message string, channel string, mtyp
 }
 
 func (b *Bmattermost) handleMatter() {
-	flog.mm.Infof("Choosing Mattermost connection type %s", b.Plus)
+	flog.mm.Infof("Choosing API based Mattermost connection: %t", b.Plus)
 	mchan := make(chan *MMMessage)
 	if b.Plus {
 		go b.handleMatterClient(mchan)
