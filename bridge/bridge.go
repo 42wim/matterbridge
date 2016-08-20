@@ -111,13 +111,9 @@ func (b *Bridge) ignoreMessage(nick string, message string, protocol string) boo
 	return false
 }
 
-func setNoNickFormat(msg *config.Message) {
-	msg.Username = msg.Origin + "-" + msg.Username + ": "
-}
-
 func setNickFormat(msg *config.Message, format string) {
 	if format == "" {
-		setNoNickFormat(msg)
+		msg.Username = msg.Origin + "-" + msg.Username + ": "
 		return
 	}
 	msg.Username = strings.Replace(format, "{NICK}", msg.Username, -1)
