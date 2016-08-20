@@ -6,14 +6,15 @@ Simple bridge between mattermost and IRC.
 * Supports multiple mattermost and irc channels.
 * Matterbridge -plus also works with private groups on your mattermost.
 
-This project has now [matterbridge-plus](https://github.com/42wim/matterbridge-plus/) merged in. 
-Breaking changes for matterbridge can be found in [migration](https://github.com/42wim/matterbridge/blob/master/migration.md)
+This project has now [matterbridge-plus](https://github.com/42wim/matterbridge-plus/) merged in.  
+Breaking changes for matterbridge can be found in [migration](https://github.com/42wim/matterbridge/blob/master/migration.md)  
 Look at [matterbridge.conf.sample] (https://github.com/42wim/matterbridge/blob/master/matterbridge.conf.sample) for an example.
 
 Configuration changes since v0.5.0 can be found in [changelog.md] (https://github.com/42wim/matterbridge/blob/master/changelog.md)
 
 ## Requirements:
 * [Mattermost] (https://github.com/mattermost/platform/)
+
 ### Compatibility
 * Matterbridge v0.6.0 works with mattermost 3.3.0 and higher [3.3.0 release](https://github.com/mattermost/platform/releases/tag/v3.3.0)
 * Matterbridge v0.5.0 works with mattermost 3.0.0 - 3.2.0 [3.2.0 release](https://github.com/mattermost/platform/releases/tag/v3.2.0)
