@@ -54,20 +54,8 @@ func (b *Bridge) handleReceive(c chan config.Message) {
 	for {
 		select {
 		case msg := <-c:
-			m := b.getChannel(msg.Origin, msg.Channel)
-			if m == nil {
-				continue
-			}
 			for _, br := range b.Bridges {
-				if b.ignoreMessage(msg.Username, msg.Text, msg.Origin) {
-					continue
-				}
-				// do not send to originated bridge
-				if br.Name() != msg.Origin {
-					msg.Channel = m[br.Name()]
-					msgmod := b.modifyMessage(msg, br.Name())
-					br.Send(msgmod)
-				}
+				b.handleMessage(msg, br)
 			}
 		}
 	}
@@ -92,19 +80,33 @@ func (b *Bridge) mapIgnores() {
 	b.ignoreNicks = m
 }
 
-func (b *Bridge) getChannel(src, name string) map[string]string {
+func (b *Bridge) getDestChannel(msg *config.Message, dest string) string {
 	for _, v := range b.Channels {
-		if v[src] == name {
-			return v
+		if v[msg.Origin] == msg.Channel {
+			return v[dest]
 		}
 	}
-	return nil
+	return ""
 }
 
-func (b *Bridge) ignoreMessage(nick string, message string, protocol string) bool {
+func (b *Bridge) handleMessage(msg config.Message, dest Bridger) {
+	if b.ignoreMessage(&msg) {
+		return
+	}
+	if dest.Name() != msg.Origin {
+		msg.Channel = b.getDestChannel(&msg, dest.Name())
+		if msg.Channel == "" {
+			return
+		}
+		b.modifyMessage(&msg, dest.Name())
+		dest.Send(msg)
+	}
+}
+
+func (b *Bridge) ignoreMessage(msg *config.Message) bool {
 	// should we discard messages ?
-	for _, entry := range b.ignoreNicks[protocol] {
-		if nick == entry {
+	for _, entry := range b.ignoreNicks[msg.Origin] {
+		if msg.Username == entry {
 			return true
 		}
 	}
@@ -120,14 +122,13 @@ func setNickFormat(msg *config.Message, format string) {
 	msg.Username = strings.Replace(msg.Username, "{BRIDGE}", msg.Origin, -1)
 }
 
-func (b *Bridge) modifyMessage(msg config.Message, dest string) config.Message {
+func (b *Bridge) modifyMessage(msg *config.Message, dest string) {
 	switch dest {
 	case "irc":
-		setNickFormat(&msg, b.Config.IRC.RemoteNickFormat)
+		setNickFormat(msg, b.Config.IRC.RemoteNickFormat)
 	case "xmpp":
-		setNickFormat(&msg, b.Config.Xmpp.RemoteNickFormat)
+		setNickFormat(msg, b.Config.Xmpp.RemoteNickFormat)
 	case "mattermost":
-		setNickFormat(&msg, b.Config.Mattermost.RemoteNickFormat)
+		setNickFormat(msg, b.Config.Mattermost.RemoteNickFormat)
 	}
-	return msg
 }
