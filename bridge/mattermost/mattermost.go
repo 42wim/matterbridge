@@ -138,11 +138,6 @@ func (b *Bmattermost) handleMatter() {
 	}
 	flog.mm.Info("Start listening for Mattermost messages")
 	for message := range mchan {
-		/*
-			if b.ignoreMessage(message.Username, message.Text, "mattermost") {
-				continue
-			}
-		*/
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
 			flog.mm.Debug("Sending message from " + message.Username + " to " + message.Channel)
@@ -176,20 +171,4 @@ func (b *Bmattermost) handleMatterHook(mchan chan *MMMessage) {
 		m.Channel = message.ChannelName
 		mchan <- m
 	}
-}
-
-func (b *Bmattermost) formatnicks(nicks []string, continued bool) string {
-	switch b.Config.Mattermost.NickFormatter {
-	case "table":
-		return tableformatter(nicks, b.nicksPerRow(), continued)
-	default:
-		return plainformatter(nicks, b.nicksPerRow())
-	}
-}
-
-func (b *Bmattermost) nicksPerRow() int {
-	if b.Config.Mattermost.NicksPerRow < 1 {
-		return 4
-	}
-	return b.Config.Mattermost.NicksPerRow
 }
