@@ -523,6 +523,7 @@ func (m *MMClient) GetTeamFromChannel(channelId string) string {
 	var channels []*model.Channel
 	for _, t := range m.OtherTeams {
 		channels = append(channels, t.Channels.Channels...)
+		channels = append(channels, t.MoreChannels.Channels...)
 		for _, c := range channels {
 			if c.Id == channelId {
 				return t.Id
