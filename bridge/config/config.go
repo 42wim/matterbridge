@@ -28,6 +28,14 @@ type Config struct {
 		IgnoreNicks      string
 		Enable           bool
 	}
+	Gitter struct {
+		Enable           bool
+		IgnoreNicks      string
+		Nick             string
+		RemoteNickFormat string
+		Token            string
+	}
+
 	Mattermost struct {
 		URL                    string
 		ShowJoinPart           bool
@@ -48,6 +56,7 @@ type Config struct {
 		Enable                 bool
 	}
 	Xmpp struct {
+		IgnoreNicks      string
 		Jid              string
 		Password         string
 		Server           string
@@ -60,6 +69,7 @@ type Config struct {
 		IRC        string
 		Mattermost string
 		Xmpp       string
+		Gitter     string
 	}
 	General struct {
 		GiphyAPIKey string

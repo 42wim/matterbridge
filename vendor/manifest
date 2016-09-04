@@ -86,6 +86,22 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/mreiferson/go-httpclient",
+			"repository": "https://github.com/mreiferson/go-httpclient",
+			"vcs": "git",
+			"revision": "31f0106b4474f14bc441575c19d3a5fa21aa1f6c",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mrexodia/wray",
+			"repository": "https://github.com/mrexodia/wray",
+			"vcs": "git",
+			"revision": "78a2c1f284ffe6ada7e2dfbd97c644e0d0f23fea",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/nicksnyder/go-i18n/i18n",
 			"repository": "https://github.com/nicksnyder/go-i18n",
 			"vcs": "",
@@ -115,6 +131,14 @@
 			"repository": "https://github.com/sorcix/irc",
 			"vcs": "",
 			"revision": "2f0c85e4ec6590c2c6f6ef93b0a86021281ea193",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/sromku/go-gitter",
+			"repository": "https://github.com/sromku/go-gitter",
+			"vcs": "git",
+			"revision": "932bf9af423ac2da1544cb73540b3b08b1bdb181",
 			"branch": "master",
 			"notests": true
 		},

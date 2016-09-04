@@ -3,6 +3,7 @@ package bridge
 import (
 	//"fmt"
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/gitter"
 	"github.com/42wim/matterbridge/bridge/irc"
 	"github.com/42wim/matterbridge/bridge/mattermost"
 	"github.com/42wim/matterbridge/bridge/xmpp"
@@ -38,6 +39,9 @@ func NewBridge(cfg *config.Config) error {
 	if cfg.Xmpp.Enable {
 		b.Bridges = append(b.Bridges, bxmpp.New(cfg, c))
 	}
+	if cfg.Gitter.Enable {
+		b.Bridges = append(b.Bridges, bgitter.New(cfg, c))
+	}
 	if len(b.Bridges) < 2 {
 		log.Fatalf("only %d sections enabled. Need at least 2 sections enabled (eg [IRC] and [mattermost]", len(b.Bridges))
 	}
@@ -67,6 +71,7 @@ func (b *Bridge) mapChannels() error {
 		m["irc"] = val.IRC
 		m["mattermost"] = val.Mattermost
 		m["xmpp"] = val.Xmpp
+		m["gitter"] = val.Gitter
 		b.Channels = append(b.Channels, m)
 	}
 	return nil
@@ -76,7 +81,8 @@ func (b *Bridge) mapIgnores() {
 	m := make(map[string][]string)
 	m["irc"] = strings.Fields(b.Config.IRC.IgnoreNicks)
 	m["mattermost"] = strings.Fields(b.Config.Mattermost.IgnoreNicks)
-	m["xmpp"] = strings.Fields(b.Config.Mattermost.IgnoreNicks)
+	m["xmpp"] = strings.Fields(b.Config.Xmpp.IgnoreNicks)
+	m["gitter"] = strings.Fields(b.Config.Gitter.IgnoreNicks)
 	b.ignoreNicks = m
 }
 
@@ -126,6 +132,8 @@ func (b *Bridge) modifyMessage(msg *config.Message, dest string) {
 	switch dest {
 	case "irc":
 		setNickFormat(msg, b.Config.IRC.RemoteNickFormat)
+	case "gitter":
+		setNickFormat(msg, b.Config.Gitter.RemoteNickFormat)
 	case "xmpp":
 		setNickFormat(msg, b.Config.Xmpp.RemoteNickFormat)
 	case "mattermost":
