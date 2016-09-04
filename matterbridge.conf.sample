@@ -34,13 +34,14 @@ Nick="matterbot"
 NickServNick="nickserv"
 NickServPassword="secret"
 
-#RemoteNickFormat defines how Mattermost users appear on irc
+#RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
-#OPTIONAL (default NICK:)
-RemoteNickFormat="{NICK}: "
+#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#OPTIONAL (default {BRIDGE}-{NICK})
+RemoteNickFormat="[{BRIDGE}] <{NICK}> 
 
 #Nicks you want to ignore. 
-#Messages from those users will not be sent to mattermost.
+#Messages from those users will not be sent to other bridges.
 #OPTIONAL
 IgnoreNicks="ircspammer1 ircspammer2"
 
@@ -134,18 +135,19 @@ SkipTLSVerify=true
 #OPTIONAL (default false)
 ShowJoinPart=false
 
-#Whether to prefix messages from IRC to mattermost with the sender's nick. 
+#Whether to prefix messages from other bridges to mattermost with the sender's nick. 
 #Useful if username overrides for incoming webhooks isn't enabled on the 
 #mattermost server. If you set PrefixMessagesWithNick to true, each message 
-#from IRC to Mattermost will by default be prefixed by "irc-" + nick. You can, 
+#from bridge to Mattermost will by default be prefixed by "bridge-" + nick. You can, 
 #however, modify how the messages appear, by setting (and modifying) RemoteNickFormat 
 #OPTIONAL (default false)
 PrefixMessagesWithNick=false
 
-#RemoteNickFormat defines how IRC users appear on Mattermost. 
+#RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
-#OPTIONAL (default irc-NICK)
-RemoteNickFormat="irc-{NICK}"
+#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#OPTIONAL (default {BRIDGE}-{NICK})
+RemoteNickFormat="[{BRIDGE}] <{NICK}> 
 
 #how to format the list of IRC nicks when displayed in mattermost. 
 #Possible options are "table" and "plain"
@@ -155,9 +157,33 @@ NickFormatter=plain
 #OPTIONAL (default 4)
 NicksPerRow=4
 
-#Nicks you want to ignore. Messages from those users will not be sent to IRC. 
+#Nicks you want to ignore. Messages from those users will not be bridged.
 #OPTIONAL 
 IgnoreNicks="mmbot spammer2"
+
+###################################################################
+#Gitter section
+#Best to make a dedicated gitter account for the bot.
+###################################################################
+[Gitter]
+#Enable enables this bridge
+#OPTIONAL (default false)
+Enable=true
+
+#Token to connect with Gitter API
+#You can get your token by going to https://developer.gitter.im/docs/welcome and SIGN IN
+#REQUIRED
+Token="Yourtokenhere"
+
+#Nicks you want to ignore. Messages of those users will not be bridged.
+#OPTIONAL 
+IgnoreNicks="spammer1 spammer2"
+
+#RemoteNickFormat defines how remote users appear on this bridge 
+#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
+#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#OPTIONAL (default {BRIDGE}-{NICK})
+RemoteNickFormat="[{BRIDGE}] <{NICK}> 
 
 ###################################################################
 #multiple channel config
@@ -166,17 +192,21 @@ IgnoreNicks="mmbot spammer2"
 #The name is just an identifier for you.
 #REQUIRED (at least 1 channel)
 [Channel "channel1"] 
-#Choose the IRC channel to send mattermost messages to.
+#Choose the IRC channel to send messages to.
 IRC="#off-topic"
-#Choose the mattermost channel to send IRC messages to.
+#Choose the mattermost channel to messages to.
 mattermost="off-topic"
-#Choose the mattermost channel to send IRC messages to.
+#Choose the xmpp channel to send messages to.
 xmpp="off-topic"
+#Choose the Gitter channel to send messages to.
+#Gitter channels are named "user/repo"
+gitter="42wim/matterbridge"
 
 [Channel "testchannel"]
 IRC="#testing"
 mattermost="testing"
 xmpp="testing"
+gitter="user/repo"
 
 ###################################################################
 #general

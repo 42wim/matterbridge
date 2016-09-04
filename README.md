@@ -1,35 +1,40 @@
 # matterbridge
 
-Simple bridge between mattermost and IRC. 
+Simple bridge between mattermost, IRC, XMPP and Gitter
 
-* Relays public channel messages between mattermost and IRC.
-* Supports multiple mattermost and irc channels.
+* Relays public channel messages between mattermost, IRC, XMPP and Gitter. Pick and mix.
+* Supports multiple channels.
 * Matterbridge -plus also works with private groups on your mattermost.
 
-This project has now [matterbridge-plus](https://github.com/42wim/matterbridge-plus/) merged in.  
-Breaking changes for matterbridge can be found in [migration](https://github.com/42wim/matterbridge/blob/master/migration.md)  
-Look at [matterbridge.conf.sample] (https://github.com/42wim/matterbridge/blob/master/matterbridge.conf.sample) for an example.
+Look at [matterbridge.conf.sample] (https://github.com/42wim/matterbridge/blob/master/matterbridge.conf.sample) for documentation and an example.
 
-Configuration changes since v0.5.0 can be found in [changelog.md] (https://github.com/42wim/matterbridge/blob/master/changelog.md)
+## Changelog
+Since v0.6.0-beta support for XMPP and Gitter is added. More details in [changelog.md] (https://github.com/42wim/matterbridge/blob/master/changelog.md)
 
 ## Requirements:
+Accounts to one of the supported bridges
 * [Mattermost] (https://github.com/mattermost/platform/)
-
-### Compatibility
-* Matterbridge v0.6.0 works with mattermost 3.3.0 and higher [3.3.0 release](https://github.com/mattermost/platform/releases/tag/v3.3.0)
-* Matterbridge v0.5.0 works with mattermost 3.0.0 - 3.2.0 [3.2.0 release](https://github.com/mattermost/platform/releases/tag/v3.2.0)
-
-
-### Webhooks version
-* Configured incoming/outgoing [webhooks](https://www.mattermost.org/webhooks/) on your mattermost instance.
-
-### Plus (API) version
-* A dedicated user(bot) on your mattermost instance.
+* [IRC] (http://www.mirc.com/servers.html)
+* [XMPP] (https://jabber.org)
+* [Gitter] (https://gitter.im)
 
 ## binaries
 Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/)
 * For use with mattermost 3.3.0 [v0.6.0-beta1](https://github.com/42wim/matterircd/releases/tag/v0.6.0-beta1)
 * For use with mattermost 3.0.0-3.2.0 [v0.5.0](https://github.com/42wim/matterircd/releases/tag/v0.5.0)
+
+## Compatibility
+### Mattermost 
+* Matterbridge v0.6.0 works with mattermost 3.3.0 and higher [3.3.0 release](https://github.com/mattermost/platform/releases/tag/v3.3.0)
+* Matterbridge v0.5.0 works with mattermost 3.0.0 - 3.2.0 [3.2.0 release](https://github.com/mattermost/platform/releases/tag/v3.2.0)
+
+
+#### Webhooks version
+* Configured incoming/outgoing [webhooks](https://www.mattermost.org/webhooks/) on your mattermost instance.
+
+#### Plus (API) version
+* A dedicated user(bot) on your mattermost instance.
+
 
 ## building
 Go 1.6+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH] (https://golang.org/doc/code.html#GOPATH)
