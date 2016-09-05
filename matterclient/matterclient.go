@@ -185,7 +185,6 @@ func (m *MMClient) Logout() error {
 	m.WsQuit = true
 	m.WsClient.Close()
 	m.WsClient.UnderlyingConn().Close()
-	m.WsClient = nil
 	_, err := m.Client.Logout()
 	if err != nil {
 		return err
@@ -198,12 +197,14 @@ func (m *MMClient) WsReceiver() {
 		var rawMsg json.RawMessage
 		var err error
 
-		if !m.WsConnected {
-			continue
-		}
 		if m.WsQuit {
 			m.log.Debug("exiting WsReceiver")
 			return
+		}
+
+		if !m.WsConnected {
+			time.Sleep(time.Millisecond * 100)
+			continue
 		}
 
 		if _, rawMsg, err = m.WsClient.ReadMessage(); err != nil {
