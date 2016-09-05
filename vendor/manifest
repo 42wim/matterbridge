@@ -111,6 +111,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/nlopes/slack",
+			"repository": "https://github.com/nlopes/slack",
+			"vcs": "git",
+			"revision": "4feee83bb2b31d790977ce727a028c6a542c72c7",
+			"branch": "HEAD",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/pborman/uuid",
 			"repository": "https://github.com/pborman/uuid",
 			"vcs": "",
@@ -184,6 +192,15 @@
 			"revision": "bc3663df0ac92f928d419e31e0d2af22e683a5a2",
 			"branch": "master",
 			"path": "/lex/httplex",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/net/websocket",
+			"repository": "https://go.googlesource.com/net",
+			"vcs": "git",
+			"revision": "1358eff22f0dd0c54fc521042cc607f6ff4b531a",
+			"branch": "master",
+			"path": "/websocket",
 			"notests": true
 		},
 		{

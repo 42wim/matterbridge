@@ -6,6 +6,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/gitter"
 	"github.com/42wim/matterbridge/bridge/irc"
 	"github.com/42wim/matterbridge/bridge/mattermost"
+	"github.com/42wim/matterbridge/bridge/slack"
 	"github.com/42wim/matterbridge/bridge/xmpp"
 	log "github.com/Sirupsen/logrus"
 	"strings"
@@ -42,6 +43,9 @@ func NewBridge(cfg *config.Config) error {
 	if cfg.Gitter.Enable {
 		b.Bridges = append(b.Bridges, bgitter.New(cfg, c))
 	}
+	if cfg.Slack.Enable {
+		b.Bridges = append(b.Bridges, bslack.New(cfg, c))
+	}
 	if len(b.Bridges) < 2 {
 		log.Fatalf("only %d sections enabled. Need at least 2 sections enabled (eg [IRC] and [mattermost]", len(b.Bridges))
 	}
@@ -72,6 +76,7 @@ func (b *Bridge) mapChannels() error {
 		m["mattermost"] = val.Mattermost
 		m["xmpp"] = val.Xmpp
 		m["gitter"] = val.Gitter
+		m["slack"] = val.Slack
 		b.Channels = append(b.Channels, m)
 	}
 	return nil
@@ -83,6 +88,7 @@ func (b *Bridge) mapIgnores() {
 	m["mattermost"] = strings.Fields(b.Config.Mattermost.IgnoreNicks)
 	m["xmpp"] = strings.Fields(b.Config.Xmpp.IgnoreNicks)
 	m["gitter"] = strings.Fields(b.Config.Gitter.IgnoreNicks)
+	m["slack"] = strings.Fields(b.Config.Slack.IgnoreNicks)
 	b.ignoreNicks = m
 }
 
@@ -105,6 +111,7 @@ func (b *Bridge) handleMessage(msg config.Message, dest Bridger) {
 			return
 		}
 		b.modifyMessage(&msg, dest.Name())
+		log.Debugf("sending %#v from %s to %s", msg, msg.Origin, dest.Name())
 		dest.Send(msg)
 	}
 }
@@ -138,5 +145,7 @@ func (b *Bridge) modifyMessage(msg *config.Message, dest string) {
 		setNickFormat(msg, b.Config.Xmpp.RemoteNickFormat)
 	case "mattermost":
 		setNickFormat(msg, b.Config.Mattermost.RemoteNickFormat)
+	case "slack":
+		setNickFormat(msg, b.Config.Slack.RemoteNickFormat)
 	}
 }

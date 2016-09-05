@@ -35,7 +35,6 @@ type Config struct {
 		RemoteNickFormat string
 		Token            string
 	}
-
 	Mattermost struct {
 		URL                    string
 		ShowJoinPart           bool
@@ -55,6 +54,19 @@ type Config struct {
 		NoTLS                  bool
 		Enable                 bool
 	}
+	Slack struct {
+		BindAddress            string
+		Enable                 bool
+		IconURL                string
+		IgnoreNicks            string
+		NickFormatter          string
+		NicksPerRow            int
+		PrefixMessagesWithNick bool
+		RemoteNickFormat       string
+		Token                  string
+		URL                    string
+		UseAPI                 bool
+	}
 	Xmpp struct {
 		IgnoreNicks      string
 		Jid              string
@@ -70,6 +82,7 @@ type Config struct {
 		Mattermost string
 		Xmpp       string
 		Gitter     string
+		Slack      string
 	}
 	General struct {
 		GiphyAPIKey string

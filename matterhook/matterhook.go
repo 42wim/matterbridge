@@ -27,6 +27,8 @@ type OMessage struct {
 
 // IMessage for mattermost outgoing webhook. (received from mattermost)
 type IMessage struct {
+	BotID       string `schema:"bot_id"`
+	BotName     string `schema:"bot_name"`
 	Token       string `schema:"token"`
 	TeamID      string `schema:"team_id"`
 	TeamDomain  string `schema:"team_domain"`
@@ -36,6 +38,8 @@ type IMessage struct {
 	UserID      string `schema:"user_id"`
 	UserName    string `schema:"user_name"`
 	PostId      string `schema:"post_id"`
+	RawText     string `schema:"raw_text"`
+	ServiceId   string `schema:"service_id"`
 	Text        string `schema:"text"`
 	TriggerWord string `schema:"trigger_word"`
 }
