@@ -1,6 +1,12 @@
+# v0.6.0
+## New features
+* Slack support added.  See matterbridge.conf.sample for more information
+## Bugfix
+* Fix 100% CPU bug on incorrect closed connections
+
 # v0.6.0-beta2
 ## New features
-* Gitter support added. See matterbridge.conf.sample for more information
+* Gitter support added.  See matterbridge.conf.sample for more information
 
 # v0.6.0-beta1
 ## Breaking changes from 0.5 to 0.6
