@@ -19,10 +19,12 @@ const (
 	WEBSOCKET_EVENT_NEW_USER           = "new_user"
 	WEBSOCKET_EVENT_LEAVE_TEAM         = "leave_team"
 	WEBSOCKET_EVENT_USER_ADDED         = "user_added"
+	WEBSOCKET_EVENT_USER_UPDATED       = "user_updated"
 	WEBSOCKET_EVENT_USER_REMOVED       = "user_removed"
 	WEBSOCKET_EVENT_PREFERENCE_CHANGED = "preference_changed"
 	WEBSOCKET_EVENT_EPHEMERAL_MESSAGE  = "ephemeral_message"
 	WEBSOCKET_EVENT_STATUS_CHANGE      = "status_change"
+	WEBSOCKET_EVENT_HELLO              = "hello"
 )
 
 type WebSocketMessage interface {

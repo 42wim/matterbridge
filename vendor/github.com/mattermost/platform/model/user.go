@@ -48,6 +48,7 @@ type User struct {
 	Locale             string    `json:"locale"`
 	MfaActive          bool      `json:"mfa_active,omitempty"`
 	MfaSecret          string    `json:"mfa_secret,omitempty"`
+	LastActivityAt     int64     `db:"-" json:"last_activity_at,omitempty"`
 }
 
 // IsValid validates the user and returns an error if it isn't configured
@@ -235,7 +236,6 @@ func (u *User) Sanitize(options map[string]bool) {
 }
 
 func (u *User) ClearNonProfileFields() {
-	u.UpdateAt = 0
 	u.Password = ""
 	u.AuthData = new(string)
 	*u.AuthData = ""
@@ -249,6 +249,12 @@ func (u *User) ClearNonProfileFields() {
 	u.LastPasswordUpdate = 0
 	u.LastPictureUpdate = 0
 	u.FailedAttempts = 0
+}
+
+func (u *User) SanitizeProfile(options map[string]bool) {
+	u.ClearNonProfileFields()
+
+	u.Sanitize(options)
 }
 
 func (u *User) MakeNonNil() {
@@ -293,6 +299,24 @@ func (u *User) GetDisplayName() string {
 	} else {
 		return u.Username
 	}
+}
+
+func (u *User) GetDisplayNameForPreference(nameFormat string) string {
+	displayName := u.Username
+
+	if nameFormat == PREFERENCE_VALUE_DISPLAY_NAME_NICKNAME {
+		if u.Nickname != "" {
+			displayName = u.Nickname
+		} else if fullName := u.GetFullName(); fullName != "" {
+			displayName = fullName
+		}
+	} else if nameFormat == PREFERENCE_VALUE_DISPLAY_NAME_FULL {
+		if fullName := u.GetFullName(); fullName != "" {
+			displayName = fullName
+		}
+	}
+
+	return displayName
 }
 
 func IsValidUserRoles(userRoles string) bool {

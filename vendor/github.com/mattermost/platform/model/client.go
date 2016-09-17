@@ -35,6 +35,8 @@ const (
 	STATUS_OK                 = "OK"
 	STATUS_FAIL               = "FAIL"
 
+	CLIENT_DIR = "webapp/dist"
+
 	API_URL_SUFFIX_V1 = "/api/v1"
 	API_URL_SUFFIX_V3 = "/api/v3"
 	API_URL_SUFFIX    = API_URL_SUFFIX_V3
@@ -818,6 +820,17 @@ func (c *Client) GetClusterStatus() ([]*ClusterInfo, *AppError) {
 	}
 }
 
+// GetRecentlyActiveUsers returns a map of users including lastActivityAt using user id as the key
+func (c *Client) GetRecentlyActiveUsers(teamId string) (*Result, *AppError) {
+	if r, err := c.DoApiGet("/admin/recently_active_users/"+teamId, "", ""); err != nil {
+		return nil, err
+	} else {
+		defer closeBody(r)
+		return &Result{r.Header.Get(HEADER_REQUEST_ID),
+			r.Header.Get(HEADER_ETAG_SERVER), UserMapFromJson(r.Body)}, nil
+	}
+}
+
 func (c *Client) GetAllAudits() (*Result, *AppError) {
 	if r, err := c.DoApiGet("/admin/audits", "", ""); err != nil {
 		return nil, err
@@ -877,6 +890,19 @@ func (c *Client) RecycleDatabaseConnection() (bool, *AppError) {
 
 func (c *Client) TestEmail(config *Config) (*Result, *AppError) {
 	if r, err := c.DoApiPost("/admin/test_email", config.ToJson()); err != nil {
+		return nil, err
+	} else {
+		defer closeBody(r)
+		return &Result{r.Header.Get(HEADER_REQUEST_ID),
+			r.Header.Get(HEADER_ETAG_SERVER), MapFromJson(r.Body)}, nil
+	}
+}
+
+// TestLdap will run a connection test on the current LDAP settings.
+// It will return the standard OK response if settings work. Otherwise
+// it will return an appropriate error.
+func (c *Client) TestLdap(config *Config) (*Result, *AppError) {
+	if r, err := c.DoApiPost("/admin/ldap_test", config.ToJson()); err != nil {
 		return nil, err
 	} else {
 		defer closeBody(r)
@@ -1125,8 +1151,13 @@ func (c *Client) RemoveChannelMember(id, user_id string) (*Result, *AppError) {
 	}
 }
 
-func (c *Client) UpdateLastViewedAt(channelId string) (*Result, *AppError) {
-	if r, err := c.DoApiPost(c.GetChannelRoute(channelId)+"/update_last_viewed_at", ""); err != nil {
+// UpdateLastViewedAt will mark a channel as read.
+// The channelId indicates the channel to mark as read. If active is true, push notifications
+// will be cleared if there are unread messages. The default for active is true.
+func (c *Client) UpdateLastViewedAt(channelId string, active bool) (*Result, *AppError) {
+	data := make(map[string]interface{})
+	data["active"] = active
+	if r, err := c.DoApiPost(c.GetChannelRoute(channelId)+"/update_last_viewed_at", StringInterfaceToJson(data)); err != nil {
 		return nil, err
 	} else {
 		defer closeBody(r)
@@ -1448,6 +1479,21 @@ func (c *Client) GetStatuses() (*Result, *AppError) {
 	}
 }
 
+// SetActiveChannel sets the the channel id the user is currently viewing.
+// The channelId key is required but the value can be blank. Returns standard
+// response.
+func (c *Client) SetActiveChannel(channelId string) (*Result, *AppError) {
+	data := map[string]string{}
+	data["channel_id"] = channelId
+	if r, err := c.DoApiPost("/users/status/set_active_channel", MapToJson(data)); err != nil {
+		return nil, err
+	} else {
+		defer closeBody(r)
+		return &Result{r.Header.Get(HEADER_REQUEST_ID),
+			r.Header.Get(HEADER_ETAG_SERVER), MapFromJson(r.Body)}, nil
+	}
+}
+
 func (c *Client) GetMyTeam(etag string) (*Result, *AppError) {
 	if r, err := c.DoApiGet(c.GetTeamRoute()+"/me", "", etag); err != nil {
 		return nil, err
@@ -1529,6 +1575,42 @@ func (c *Client) DeleteOAuthApp(id string) (*Result, *AppError) {
 		defer closeBody(r)
 		return &Result{r.Header.Get(HEADER_REQUEST_ID),
 			r.Header.Get(HEADER_ETAG_SERVER), MapFromJson(r.Body)}, nil
+	}
+}
+
+// GetOAuthAuthorizedApps returns the OAuth2 Apps authorized by the user. On success
+// it returns a list of sanitized OAuth2 Authorized Apps by the user.
+func (c *Client) GetOAuthAuthorizedApps() (*Result, *AppError) {
+	if r, err := c.DoApiGet("/oauth/authorized", "", ""); err != nil {
+		return nil, err
+	} else {
+		defer closeBody(r)
+		return &Result{r.Header.Get(HEADER_REQUEST_ID),
+			r.Header.Get(HEADER_ETAG_SERVER), OAuthAppListFromJson(r.Body)}, nil
+	}
+}
+
+// OAuthDeauthorizeApp deauthorize a user an OAuth 2.0 app. On success
+// it returns status OK or an AppError on fail.
+func (c *Client) OAuthDeauthorizeApp(clientId string) *AppError {
+	if r, err := c.DoApiPost("/oauth/"+clientId+"/deauthorize", ""); err != nil {
+		return err
+	} else {
+		defer closeBody(r)
+		return nil
+	}
+}
+
+// RegenerateOAuthAppSecret generates a new OAuth App Client Secret. On success
+// it returns an OAuth2 App. Must be authenticated as a user and the same user who
+// registered the app or a System Admin.
+func (c *Client) RegenerateOAuthAppSecret(clientId string) (*Result, *AppError) {
+	if r, err := c.DoApiPost("/oauth/"+clientId+"/regen_secret", ""); err != nil {
+		return nil, err
+	} else {
+		defer closeBody(r)
+		return &Result{r.Header.Get(HEADER_REQUEST_ID),
+			r.Header.Get(HEADER_ETAG_SERVER), OAuthAppFromJson(r.Body)}, nil
 	}
 }
 
