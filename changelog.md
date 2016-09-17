@@ -1,4 +1,4 @@
-# v0.6.0
+# v0.6.1
 ## New features
 * Slack support added.  See matterbridge.conf.sample for more information
 ## Bugfix

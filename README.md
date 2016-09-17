@@ -9,7 +9,7 @@ Simple bridge between mattermost, IRC, XMPP and Gitter
 Look at [matterbridge.conf.sample] (https://github.com/42wim/matterbridge/blob/master/matterbridge.conf.sample) for documentation and an example.
 
 ## Changelog
-Since v0.6.0 support for XMPP, Gitter and Slack is added. More details in [changelog.md] (https://github.com/42wim/matterbridge/blob/master/changelog.md)
+Since v0.6.1 support for XMPP, Gitter and Slack is added. More details in [changelog.md] (https://github.com/42wim/matterbridge/blob/master/changelog.md)
 
 ## Requirements:
 Accounts to one of the supported bridges
@@ -20,12 +20,12 @@ Accounts to one of the supported bridges
 
 ## binaries
 Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/)
-* For use with mattermost 3.3.0+ [v0.6.0](https://github.com/42wim/matterircd/releases/tag/v0.6.0)
+* For use with mattermost 3.3.0+ [v0.6.1](https://github.com/42wim/matterircd/releases/tag/v0.6.1)
 * For use with mattermost 3.0.0-3.2.0 [v0.5.0](https://github.com/42wim/matterircd/releases/tag/v0.5.0)
 
 ## Compatibility
 ### Mattermost 
-* Matterbridge v0.6.0 works with mattermost 3.3.0 and higher [3.3.0 release](https://github.com/mattermost/platform/releases/tag/v3.3.0)
+* Matterbridge v0.6.1 works with mattermost 3.3.0 and higher [3.3.0 release](https://github.com/mattermost/platform/releases/tag/v3.3.0)
 * Matterbridge v0.5.0 works with mattermost 3.0.0 - 3.2.0 [3.2.0 release](https://github.com/mattermost/platform/releases/tag/v3.2.0)
 
 
