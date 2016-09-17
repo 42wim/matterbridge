@@ -422,7 +422,7 @@ func (m *MMClient) UpdateChannelHeader(channelId string, header string) {
 
 func (m *MMClient) UpdateLastViewed(channelId string) {
 	m.log.Debugf("posting lastview %#v", channelId)
-	_, err := m.Client.UpdateLastViewedAt(channelId)
+	_, err := m.Client.UpdateLastViewedAt(channelId, true)
 	if err != nil {
 		m.log.Error(err)
 	}
