@@ -1,0 +1,32 @@
+[irc]
+    [irc.freenode]
+    Server="irc.freenode.net:6667"
+    Nick="matterbot"
+
+[mattermost]
+    [mattermost.work]
+    useAPI=true
+    Server="yourmattermostserver.domain"
+    Team="yourteam"
+    Login="yourlogin"
+    Password="yourpass"
+    PrefixMessagesWithNick=true
+
+[[gateway]]
+name="gateway1"
+enable=true
+    [[gateway.in]]
+    account="irc.freenode"
+    channel="#testing"
+
+    [[gateway.in]]
+    account="mattermost.work"
+    channel="off-topic"
+
+    [[gateway.out]]
+    account="irc.freenode"
+    channel="#testing"
+
+    [[gateway.out]]
+    account="mattermost.work"
+    channel="off-topic"

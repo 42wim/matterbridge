@@ -1,3 +1,12 @@
+# v0.7-dev
+## Breaking config changes from 0.6 to 0.7
+Matterbridge now uses TOML configuration (https://github.com/toml-lang/toml)
+See matterbridge.toml.sample for an example
+
+## New features
+* Allow for bridging the same type of bridge, which means you can eg bridge between multiple mattermosts.
+* The bridge is now a gateway which has support multiple in and out bridges. (and supports multiple gateways).
+
 # v0.6.1
 ## New features
 * Slack support added.  See matterbridge.conf.sample for more information
