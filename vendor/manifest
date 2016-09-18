@@ -20,6 +20,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/BurntSushi/toml",
+			"repository": "https://github.com/BurntSushi/toml",
+			"vcs": "git",
+			"revision": "99064174e013895bbd9b025c31100bd1d9b590ca",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/Sirupsen/logrus",
 			"repository": "https://github.com/Sirupsen/logrus",
 			"vcs": "",
@@ -201,14 +209,6 @@
 			"revision": "1358eff22f0dd0c54fc521042cc607f6ff4b531a",
 			"branch": "master",
 			"path": "/websocket",
-			"notests": true
-		},
-		{
-			"importpath": "gopkg.in/gcfg.v1",
-			"repository": "https://gopkg.in/gcfg.v1",
-			"vcs": "",
-			"revision": "083575c3955c85df16fe9590cceab64d03f5eb6e",
-			"branch": "master",
 			"notests": true
 		},
 		{

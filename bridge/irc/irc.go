@@ -12,35 +12,32 @@ import (
 	"time"
 )
 
-//type Bridge struct {
 type Birc struct {
-	i              *irc.Connection
-	ircNick        string
-	ircMap         map[string]string
-	names          map[string][]string
-	ircIgnoreNicks []string
-	*config.Config
-	Remote chan config.Message
+	i        *irc.Connection
+	ircNick  string
+	name     string
+	names    map[string][]string
+	Config   *config.Protocol
+	origin   string
+	protocol string
+	Remote   chan config.Message
 }
 
-type FancyLog struct {
-	irc *log.Entry
-}
-
-var flog FancyLog
+var flog *log.Entry
+var protocol = "irc"
 
 func init() {
-	flog.irc = log.WithFields(log.Fields{"module": "irc"})
+	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(config *config.Config, c chan config.Message) *Birc {
+func New(config config.Protocol, origin string, c chan config.Message) *Birc {
 	b := &Birc{}
-	b.Config = config
+	b.Config = &config
 	b.Remote = c
-	b.ircNick = b.Config.IRC.Nick
-	b.ircMap = make(map[string]string)
+	b.protocol = protocol
+	b.ircNick = b.Config.Nick
+	b.origin = origin
 	b.names = make(map[string][]string)
-	b.ircIgnoreNicks = strings.Fields(b.Config.IRC.IgnoreNicks)
 	return b
 }
 
@@ -53,32 +50,49 @@ func (b *Birc) Command(msg *config.Message) string {
 }
 
 func (b *Birc) Connect() error {
-	flog.irc.Info("Trying IRC connection")
-	i := irc.IRC(b.Config.IRC.Nick, b.Config.IRC.Nick)
-	i.UseTLS = b.Config.IRC.UseTLS
-	i.UseSASL = b.Config.IRC.UseSASL
-	i.SASLLogin = b.Config.IRC.NickServNick
-	i.SASLPassword = b.Config.IRC.NickServPassword
-	i.TLSConfig = &tls.Config{InsecureSkipVerify: b.Config.IRC.SkipTLSVerify}
-	if b.Config.IRC.Password != "" {
-		i.Password = b.Config.IRC.Password
+	flog.Info("Trying IRC connection")
+	i := irc.IRC(b.Config.Nick, b.Config.Nick)
+	i.UseTLS = b.Config.UseTLS
+	i.UseSASL = b.Config.UseSASL
+	i.SASLLogin = b.Config.NickServNick
+	i.SASLPassword = b.Config.NickServPassword
+	i.TLSConfig = &tls.Config{InsecureSkipVerify: b.Config.SkipTLSVerify}
+	if b.Config.Password != "" {
+		i.Password = b.Config.Password
 	}
 	i.AddCallback(ircm.RPL_WELCOME, b.handleNewConnection)
-	err := i.Connect(b.Config.IRC.Server)
+	err := i.Connect(b.Config.Server)
 	if err != nil {
 		return err
 	}
-	flog.irc.Info("Connection succeeded")
+	flog.Info("Connection succeeded")
 	b.i = i
 	return nil
 }
 
+func (b *Birc) FullOrigin() string {
+	return b.protocol + "." + b.origin
+}
+
+func (b *Birc) JoinChannel(channel string) error {
+	b.i.Join(channel)
+	return nil
+}
+
 func (b *Birc) Name() string {
-	return "irc"
+	return b.protocol + "." + b.origin
+}
+
+func (b *Birc) Protocol() string {
+	return b.protocol
+}
+
+func (b *Birc) Origin() string {
+	return b.origin
 }
 
 func (b *Birc) Send(msg config.Message) error {
-	if msg.Origin == "irc" {
+	if msg.FullOrigin == b.FullOrigin() {
 		return nil
 	}
 	if strings.HasPrefix(msg.Text, "!") {
@@ -95,16 +109,18 @@ func (b *Birc) endNames(event *irc.Event) {
 	maxNamesPerPost := (300 / b.nicksPerRow()) * b.nicksPerRow()
 	continued := false
 	for len(b.names[channel]) > maxNamesPerPost {
-		b.Remote <- config.Message{Username: b.ircNick, Text: b.formatnicks(b.names[channel][0:maxNamesPerPost], continued), Channel: channel, Origin: "irc"}
+		b.Remote <- config.Message{Username: b.ircNick, Text: b.formatnicks(b.names[channel][0:maxNamesPerPost], continued),
+			Channel: channel, Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
 		b.names[channel] = b.names[channel][maxNamesPerPost:]
 		continued = true
 	}
-	b.Remote <- config.Message{Username: b.ircNick, Text: b.formatnicks(b.names[channel], continued), Channel: channel, Origin: "irc"}
+	b.Remote <- config.Message{Username: b.ircNick, Text: b.formatnicks(b.names[channel], continued), Channel: channel,
+		Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
 	b.names[channel] = nil
 }
 
 func (b *Birc) handleNewConnection(event *irc.Event) {
-	flog.irc.Info("Registering callbacks")
+	flog.Info("Registering callbacks")
 	i := b.i
 	b.ircNick = event.Arguments[0]
 	i.AddCallback("PRIVMSG", b.handlePrivMsg)
@@ -113,68 +129,55 @@ func (b *Birc) handleNewConnection(event *irc.Event) {
 	i.AddCallback(ircm.RPL_ENDOFNAMES, b.endNames)
 	i.AddCallback(ircm.RPL_NAMREPLY, b.storeNames)
 	i.AddCallback(ircm.NOTICE, b.handleNotice)
-	i.AddCallback(ircm.RPL_MYINFO, func(e *irc.Event) { flog.irc.Infof("%s: %s", e.Code, strings.Join(e.Arguments[1:], " ")) })
+	i.AddCallback(ircm.RPL_MYINFO, func(e *irc.Event) { flog.Infof("%s: %s", e.Code, strings.Join(e.Arguments[1:], " ")) })
 	i.AddCallback("PING", func(e *irc.Event) {
 		i.SendRaw("PONG :" + e.Message())
-		flog.irc.Debugf("PING/PONG")
+		flog.Debugf("PING/PONG")
 	})
-	if b.Config.Mattermost.ShowJoinPart {
-		i.AddCallback("JOIN", b.handleJoinPart)
-		i.AddCallback("PART", b.handleJoinPart)
-	}
 	i.AddCallback("*", b.handleOther)
-	b.setupChannels()
-}
-
-func (b *Birc) handleJoinPart(event *irc.Event) {
-	//b.Send(b.ircNick, b.ircNickFormat(event.Nick)+" "+strings.ToLower(event.Code)+"s "+event.Message(), b.getMMChannel(event.Arguments[0]))
 }
 
 func (b *Birc) handleNotice(event *irc.Event) {
 	if strings.Contains(event.Message(), "This nickname is registered") {
-		b.i.Privmsg(b.Config.IRC.NickServNick, "IDENTIFY "+b.Config.IRC.NickServPassword)
+		b.i.Privmsg(b.Config.NickServNick, "IDENTIFY "+b.Config.NickServPassword)
 	}
 }
 
 func (b *Birc) handleOther(event *irc.Event) {
-	flog.irc.Debugf("%#v", event)
+	flog.Debugf("%#v", event)
 }
 
 func (b *Birc) handlePrivMsg(event *irc.Event) {
-	flog.irc.Debugf("handlePrivMsg() %s %s", event.Nick, event.Message())
+	flog.Debugf("handlePrivMsg() %s %s", event.Nick, event.Message())
 	msg := ""
 	if event.Code == "CTCP_ACTION" {
 		msg = event.Nick + " "
 	}
 	msg += event.Message()
-	b.Remote <- config.Message{Username: event.Nick, Text: msg, Channel: event.Arguments[0], Origin: "irc"}
+	b.Remote <- config.Message{Username: event.Nick, Text: msg, Channel: event.Arguments[0], Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
 }
 
 func (b *Birc) handleTopicWhoTime(event *irc.Event) {
 	parts := strings.Split(event.Arguments[2], "!")
 	t, err := strconv.ParseInt(event.Arguments[3], 10, 64)
 	if err != nil {
-		flog.irc.Errorf("Invalid time stamp: %s", event.Arguments[3])
+		flog.Errorf("Invalid time stamp: %s", event.Arguments[3])
 	}
 	user := parts[0]
 	if len(parts) > 1 {
 		user += " [" + parts[1] + "]"
 	}
-	flog.irc.Infof("%s: Topic set by %s [%s]", event.Code, user, time.Unix(t, 0))
+	flog.Infof("%s: Topic set by %s [%s]", event.Code, user, time.Unix(t, 0))
 }
 
 func (b *Birc) nicksPerRow() int {
-	if b.Config.Mattermost.NicksPerRow < 1 {
-		return 4
-	}
-	return b.Config.Mattermost.NicksPerRow
-}
-
-func (b *Birc) setupChannels() {
-	for _, val := range b.Config.Channel {
-		flog.irc.Infof("Joining %s as %s", val.IRC, b.ircNick)
-		b.i.Join(val.IRC)
-	}
+	return 4
+	/*
+		if b.Config.Mattermost.NicksPerRow < 1 {
+			return 4
+		}
+		return b.Config.Mattermost.NicksPerRow
+	*/
 }
 
 func (b *Birc) storeNames(event *irc.Event) {
@@ -185,10 +188,13 @@ func (b *Birc) storeNames(event *irc.Event) {
 }
 
 func (b *Birc) formatnicks(nicks []string, continued bool) string {
-	switch b.Config.Mattermost.NickFormatter {
-	case "table":
-		return tableformatter(nicks, b.nicksPerRow(), continued)
-	default:
-		return plainformatter(nicks, b.nicksPerRow())
-	}
+	return plainformatter(nicks, b.nicksPerRow())
+	/*
+		switch b.Config.Mattermost.NickFormatter {
+		case "table":
+			return tableformatter(nicks, b.nicksPerRow(), continued)
+		default:
+			return plainformatter(nicks, b.nicksPerRow())
+		}
+	*/
 }

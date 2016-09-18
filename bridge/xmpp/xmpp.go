@@ -10,64 +10,75 @@ import (
 )
 
 type Bxmpp struct {
-	xc      *xmpp.Client
-	xmppMap map[string]string
-	*config.Config
-	Remote chan config.Message
+	xc       *xmpp.Client
+	xmppMap  map[string]string
+	Config   *config.Protocol
+	origin   string
+	protocol string
+	Remote   chan config.Message
 }
 
-type FancyLog struct {
-	xmpp *log.Entry
-}
-
-type Message struct {
-	Text     string
-	Channel  string
-	Username string
-}
-
-var flog FancyLog
+var flog *log.Entry
+var protocol = "xmpp"
 
 func init() {
-	flog.xmpp = log.WithFields(log.Fields{"module": "xmpp"})
+	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(config *config.Config, c chan config.Message) *Bxmpp {
+func New(config config.Protocol, origin string, c chan config.Message) *Bxmpp {
 	b := &Bxmpp{}
 	b.xmppMap = make(map[string]string)
-	b.Config = config
+	b.Config = &config
+	b.protocol = protocol
+	b.origin = origin
 	b.Remote = c
 	return b
 }
 
 func (b *Bxmpp) Connect() error {
 	var err error
-	flog.xmpp.Info("Trying XMPP connection")
+	flog.Info("Trying XMPP connection")
 	b.xc, err = b.createXMPP()
 	if err != nil {
-		flog.xmpp.Debugf("%#v", err)
+		flog.Debugf("%#v", err)
 		return err
 	}
-	flog.xmpp.Info("Connection succeeded")
-	b.setupChannels()
+	flog.Info("Connection succeeded")
 	go b.handleXmpp()
 	return nil
 }
 
+func (b *Bxmpp) FullOrigin() string {
+	return b.protocol + "." + b.origin
+}
+
+func (b *Bxmpp) JoinChannel(channel string) error {
+	b.xc.JoinMUCNoHistory(channel+"@"+b.Config.Muc, b.Config.Nick)
+	return nil
+}
+
 func (b *Bxmpp) Name() string {
-	return "xmpp"
+	return b.protocol + "." + b.origin
+}
+
+func (b *Bxmpp) Protocol() string {
+	return b.protocol
+}
+
+func (b *Bxmpp) Origin() string {
+	return b.origin
 }
 
 func (b *Bxmpp) Send(msg config.Message) error {
-	b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.Xmpp.Muc, Text: msg.Username + msg.Text})
+	b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.Config.Muc, Text: msg.Username + msg.Text})
 	return nil
 }
 
 func (b *Bxmpp) createXMPP() (*xmpp.Client, error) {
 	options := xmpp.Options{
-		Host:     b.Config.Xmpp.Server,
-		User:     b.Config.Xmpp.Jid,
-		Password: b.Config.Xmpp.Password,
+		Host:     b.Config.Server,
+		User:     b.Config.Jid,
+		Password: b.Config.Password,
 		NoTLS:    true,
 		StartTLS: true,
 		//StartTLS:      false,
@@ -82,13 +93,6 @@ func (b *Bxmpp) createXMPP() (*xmpp.Client, error) {
 	var err error
 	b.xc, err = options.NewClient()
 	return b.xc, err
-}
-
-func (b *Bxmpp) setupChannels() {
-	for _, val := range b.Config.Channel {
-		flog.xmpp.Infof("Joining %s as %s", val.Xmpp, b.Xmpp.Nick)
-		b.xc.JoinMUCNoHistory(val.Xmpp+"@"+b.Xmpp.Muc, b.Xmpp.Nick)
-	}
 }
 
 func (b *Bxmpp) xmppKeepAlive() {
@@ -121,9 +125,9 @@ func (b *Bxmpp) handleXmpp() error {
 				if len(s) == 2 {
 					nick = s[1]
 				}
-				if nick != b.Xmpp.Nick {
-					flog.xmpp.Infof("sending message to remote %s %s %s", nick, v.Text, channel)
-					b.Remote <- config.Message{Username: nick, Text: v.Text, Channel: channel, Origin: "xmpp"}
+				if nick != b.Config.Nick {
+					flog.Infof("sending message to remote %s %s %s", nick, v.Text, channel)
+					b.Remote <- config.Message{Username: nick, Text: v.Text, Channel: channel, Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
 				}
 			}
 		case xmpp.Presence:

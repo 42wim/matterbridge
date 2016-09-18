@@ -8,48 +8,91 @@ import (
 )
 
 type Bgitter struct {
-	c *gitter.Gitter
-	*config.Config
-	Remote chan config.Message
-	Rooms  []gitter.Room
-}
-
-type Message struct {
-	Text     string
-	Channel  string
-	Username string
+	c        *gitter.Gitter
+	Config   *config.Protocol
+	Remote   chan config.Message
+	protocol string
+	origin   string
+	Rooms    []gitter.Room
 }
 
 var flog *log.Entry
+var protocol = "gitter"
 
 func init() {
-	flog = log.WithFields(log.Fields{"module": "gitter"})
+	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(config *config.Config, c chan config.Message) *Bgitter {
+func New(config config.Protocol, origin string, c chan config.Message) *Bgitter {
 	b := &Bgitter{}
-	b.Config = config
+	b.Config = &config
 	b.Remote = c
+	b.protocol = protocol
+	b.origin = origin
 	return b
 }
 
 func (b *Bgitter) Connect() error {
 	var err error
-	flog.Info("Trying Gitter connection")
-	b.c = gitter.New(b.Config.Gitter.Token)
+	flog.Info("Trying " + b.protocol + " connection")
+	b.c = gitter.New(b.Config.Token)
 	_, err = b.c.GetUser()
 	if err != nil {
 		flog.Debugf("%#v", err)
 		return err
 	}
 	flog.Info("Connection succeeded")
-	b.setupChannels()
-	go b.handleGitter()
+	//b.setupChannels()
+	b.Rooms, _ = b.c.GetRooms()
+	//go b.handleGitter()
+	return nil
+}
+
+func (b *Bgitter) FullOrigin() string {
+	return b.protocol + "." + b.origin
+}
+
+func (b *Bgitter) JoinChannel(channel string) error {
+	_, err := b.c.JoinRoom(channel)
+	if err != nil {
+		return err
+	}
+	room := channel
+	roomID := b.getRoomID(room)
+	if roomID == "" {
+		return nil
+	}
+	stream := b.c.Stream(roomID)
+	go b.c.Listen(stream)
+
+	go func(stream *gitter.Stream, room string) {
+		for {
+			event := <-stream.Event
+			switch ev := event.Data.(type) {
+			case *gitter.MessageReceived:
+				// check for ZWSP to see if it's not an echo
+				if !strings.HasSuffix(ev.Message.Text, "​") {
+					b.Remote <- config.Message{Username: ev.Message.From.Username, Text: ev.Message.Text, Channel: room,
+						Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
+				}
+			case *gitter.GitterConnectionClosed:
+				flog.Errorf("connection with gitter closed for room %s", room)
+			}
+		}
+	}(stream, room)
 	return nil
 }
 
 func (b *Bgitter) Name() string {
-	return "gitter"
+	return b.protocol + "." + b.origin
+}
+
+func (b *Bgitter) Protocol() string {
+	return b.protocol
+}
+
+func (b *Bgitter) Origin() string {
+	return b.origin
 }
 
 func (b *Bgitter) Send(msg config.Message) error {
@@ -71,6 +114,7 @@ func (b *Bgitter) getRoomID(channel string) string {
 	return ""
 }
 
+/*
 func (b *Bgitter) handleGitter() {
 	for _, val := range b.Config.Channel {
 		room := val.Gitter
@@ -88,7 +132,8 @@ func (b *Bgitter) handleGitter() {
 				case *gitter.MessageReceived:
 					// check for ZWSP to see if it's not an echo
 					if !strings.HasSuffix(ev.Message.Text, "​") {
-						b.Remote <- config.Message{Username: ev.Message.From.Username, Text: ev.Message.Text, Channel: room, Origin: "gitter"}
+						b.Remote <- config.Message{Username: ev.Message.From.Username, Text: ev.Message.Text, Channel: room,
+							Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
 					}
 				case *gitter.GitterConnectionClosed:
 					flog.Errorf("connection with gitter closed for room %s", room)
@@ -97,14 +142,4 @@ func (b *Bgitter) handleGitter() {
 		}(stream, room)
 	}
 }
-
-func (b *Bgitter) setupChannels() {
-	b.Rooms, _ = b.c.GetRooms()
-	for _, val := range b.Config.Channel {
-		flog.Infof("Joining %s as %s", val.Gitter, b.Gitter.Nick)
-		_, err := b.c.JoinRoom(val.Gitter)
-		if err != nil {
-			log.Errorf("Joining %s failed", val.Gitter)
-		}
-	}
-}
+*/

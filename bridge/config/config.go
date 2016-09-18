@@ -1,107 +1,73 @@
 package config
 
 import (
-	"gopkg.in/gcfg.v1"
-	"io/ioutil"
+	"github.com/BurntSushi/toml"
 	"log"
 )
 
 type Message struct {
-	Text     string
-	Channel  string
-	Username string
-	Origin   string
+	Text       string
+	Channel    string
+	Username   string
+	Origin     string
+	FullOrigin string
+	Protocol   string
+}
+
+type Protocol struct {
+	BindAddress            string // mattermost, slack
+	IconURL                string // mattermost, slack
+	IgnoreNicks            string // all protocols
+	Jid                    string // xmpp
+	Login                  string // mattermost
+	Muc                    string // xmpp
+	Name                   string // all protocols
+	Nick                   string // all protocols
+	NickFormatter          string // mattermost, slack
+	NickServNick           string // IRC
+	NickServPassword       string // IRC
+	NicksPerRow            int    // mattermost, slack
+	NoTLS                  bool   // mattermost
+	Password               string // IRC,mattermost,XMPP
+	PrefixMessagesWithNick bool   // mattemost, slack
+	Protocol               string //all protocols
+	RemoteNickFormat       string // all protocols
+	Server                 string // IRC,mattermost,XMPP
+	ShowJoinPart           bool   // all protocols
+	SkipTLSVerify          bool   // IRC, mattermost
+	Team                   string // mattermost
+	Token                  string // gitter, slack
+	URL                    string // mattermost, slack
+	UseAPI                 bool   // mattermost, slack
+	UseSASL                bool   // IRC
+	UseTLS                 bool   // IRC
+}
+
+type Bridge struct {
+	Account string
+	Channel string
+}
+
+type Gateway struct {
+	Name   string
+	Enable bool
+	In     []Bridge
+	Out    []Bridge
 }
 
 type Config struct {
-	IRC struct {
-		UseTLS           bool
-		UseSASL          bool
-		SkipTLSVerify    bool
-		Server           string
-		Nick             string
-		Password         string
-		Channel          string
-		NickServNick     string
-		NickServPassword string
-		RemoteNickFormat string
-		IgnoreNicks      string
-		Enable           bool
-	}
-	Gitter struct {
-		Enable           bool
-		IgnoreNicks      string
-		Nick             string
-		RemoteNickFormat string
-		Token            string
-	}
-	Mattermost struct {
-		URL                    string
-		ShowJoinPart           bool
-		IconURL                string
-		SkipTLSVerify          bool
-		BindAddress            string
-		Channel                string
-		PrefixMessagesWithNick bool
-		NicksPerRow            int
-		NickFormatter          string
-		Server                 string
-		Team                   string
-		Login                  string
-		Password               string
-		RemoteNickFormat       string
-		IgnoreNicks            string
-		NoTLS                  bool
-		Enable                 bool
-	}
-	Slack struct {
-		BindAddress            string
-		Enable                 bool
-		IconURL                string
-		IgnoreNicks            string
-		NickFormatter          string
-		NicksPerRow            int
-		PrefixMessagesWithNick bool
-		RemoteNickFormat       string
-		Token                  string
-		URL                    string
-		UseAPI                 bool
-	}
-	Xmpp struct {
-		IgnoreNicks      string
-		Jid              string
-		Password         string
-		Server           string
-		Muc              string
-		Nick             string
-		RemoteNickFormat string
-		Enable           bool
-	}
-	Channel map[string]*struct {
-		IRC        string
-		Mattermost string
-		Xmpp       string
-		Gitter     string
-		Slack      string
-	}
-	General struct {
-		GiphyAPIKey string
-		Xmpp        bool
-		Irc         bool
-		Mattermost  bool
-		Plus        bool
-	}
+	IRC        map[string]Protocol
+	Mattermost map[string]Protocol
+	Slack      map[string]Protocol
+	Gitter     map[string]Protocol
+	Xmpp       map[string]Protocol
+	Gateway    []Gateway
 }
 
 func NewConfig(cfgfile string) *Config {
 	var cfg Config
-	content, err := ioutil.ReadFile(cfgfile)
-	if err != nil {
+	if _, err := toml.DecodeFile("matterbridge.toml", &cfg); err != nil {
 		log.Fatal(err)
-	}
-	err = gcfg.ReadStringInto(&cfg, string(content))
-	if err != nil {
-		log.Fatal("Failed to parse "+cfgfile+":", err)
 	}
 	return &cfg
 }
