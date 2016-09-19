@@ -601,7 +601,6 @@ func (m *MMClient) StatusLoop() {
 func (m *MMClient) initUser() error {
 	m.Lock()
 	defer m.Unlock()
-	m.log.Debug("initUser()")
 	initLoad, err := m.Client.GetInitialLoad()
 	if err != nil {
 		return err
@@ -610,7 +609,7 @@ func (m *MMClient) initUser() error {
 	m.User = initData.User
 	// we only load all team data on initial login.
 	// all other updates are for channels from our (primary) team only.
-	m.log.Debug("initUser(): loading all team data")
+	//m.log.Debug("initUser(): loading all team data")
 	for _, v := range initData.Teams {
 		m.Client.SetTeamId(v.Id)
 		mmusers, _ := m.Client.GetProfiles(v.Id, "")

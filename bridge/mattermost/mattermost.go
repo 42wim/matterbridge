@@ -28,23 +28,17 @@ type Bmattermost struct {
 	MMhook
 	MMapi
 	Config   *config.Protocol
-	Plus     bool
 	Remote   chan config.Message
 	name     string
 	origin   string
 	protocol string
 }
 
-type FancyLog struct {
-	mm *log.Entry
-}
-
-var flog FancyLog
-
-const Legacy = "legacy"
+var flog *log.Entry
+var protocol = "mattermost"
 
 func init() {
-	flog.mm = log.WithFields(log.Fields{"module": "mattermost"})
+	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
 func New(cfg config.Protocol, origin string, c chan config.Message) *Bmattermost {
@@ -54,7 +48,6 @@ func New(cfg config.Protocol, origin string, c chan config.Message) *Bmattermost
 	b.Remote = c
 	b.protocol = "mattermost"
 	b.name = cfg.Name
-	b.Plus = cfg.UseAPI
 	b.mmMap = make(map[string]string)
 	return b
 }
@@ -64,7 +57,8 @@ func (b *Bmattermost) Command(cmd string) string {
 }
 
 func (b *Bmattermost) Connect() error {
-	if !b.Plus {
+	if !b.Config.UseAPI {
+		flog.Info("Connecting webhooks")
 		b.mh = matterhook.New(b.Config.URL,
 			matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
 				BindAddress: b.Config.BindAddress})
@@ -73,18 +67,12 @@ func (b *Bmattermost) Connect() error {
 			b.Config.Team, b.Config.Server)
 		b.mc.SkipTLSVerify = b.Config.SkipTLSVerify
 		b.mc.NoTLS = b.Config.NoTLS
-		flog.mm.Infof("Trying login %s (team: %s) on %s", b.Config.Login, b.Config.Team, b.Config.Server)
+		flog.Infof("Connecting %s (team: %s) on %s", b.Config.Login, b.Config.Team, b.Config.Server)
 		err := b.mc.Login()
 		if err != nil {
 			return err
 		}
-		flog.mm.Info("Login ok")
-		/*
-			b.mc.JoinChannel(b.Config.Channel)
-			for _, val := range b.Config.Channel {
-				b.mc.JoinChannel(val.Mattermost)
-			}
-		*/
+		flog.Info("Connection succeeded")
 		go b.mc.WsReceiver()
 	}
 	go b.handleMatter()
@@ -112,8 +100,8 @@ func (b *Bmattermost) Protocol() string {
 }
 
 func (b *Bmattermost) Send(msg config.Message) error {
-	flog.mm.Infof("mattermost send %#v", msg)
-	if msg.Origin != b.origin {
+	flog.Debugf("Receiving %#v", msg)
+	if msg.FullOrigin != b.FullOrigin() {
 		return b.SendType(msg.Username, msg.Text, msg.Channel, "")
 	}
 	return nil
@@ -128,7 +116,7 @@ func (b *Bmattermost) SendType(nick string, message string, channel string, mtyp
 		message = nick + " " + message
 		//}
 	}
-	if !b.Plus {
+	if !b.Config.UseAPI {
 		matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL}
 		matterMessage.Channel = channel
 		matterMessage.UserName = nick
@@ -136,30 +124,27 @@ func (b *Bmattermost) SendType(nick string, message string, channel string, mtyp
 		matterMessage.Text = message
 		err := b.mh.Send(matterMessage)
 		if err != nil {
-			flog.mm.Info(err)
+			flog.Info(err)
 			return err
 		}
-		flog.mm.Debug("->mattermost channel: ", channel, " ", message)
 		return nil
 	}
-	flog.mm.Debug("->mattermost channel plus: ", channel, " ", message)
 	b.mc.PostMessage(b.mc.GetChannelId(channel, ""), message)
 	return nil
 }
 
 func (b *Bmattermost) handleMatter() {
-	flog.mm.Infof("Choosing API based Mattermost connection: %t", b.Plus)
+	flog.Debugf("Choosing API based Mattermost connection: %t", b.Config.UseAPI)
 	mchan := make(chan *MMMessage)
-	if b.Plus {
+	if b.Config.UseAPI {
 		go b.handleMatterClient(mchan)
 	} else {
 		go b.handleMatterHook(mchan)
 	}
-	flog.mm.Info("Start listening for Mattermost messages")
 	for message := range mchan {
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
-			flog.mm.Debug("Sending message from " + message.Username + " to " + message.Channel)
+			flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.FullOrigin())
 			b.Remote <- config.Message{Text: text, Username: message.Username, Channel: message.Channel, Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
 		}
 	}
@@ -169,8 +154,7 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 	for message := range b.mc.MessageChan {
 		// do not post our own messages back to irc
 		if message.Raw.Event == "posted" && b.mc.User.Username != message.Username {
-			flog.mm.Debugf("receiving from matterclient %#v", message)
-			flog.mm.Debugf("receiving from matterclient %#v", message.Raw)
+			flog.Debugf("Receiving from matterclient %#v", message)
 			m := &MMMessage{}
 			m.Username = message.Username
 			m.Channel = message.Channel
@@ -183,7 +167,7 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 func (b *Bmattermost) handleMatterHook(mchan chan *MMMessage) {
 	for {
 		message := b.mh.Receive()
-		flog.mm.Debugf("receiving from matterhook %#v", message)
+		flog.Debugf("Receiving from matterhook %#v", message)
 		m := &MMMessage{}
 		m.Username = message.UserName
 		m.Text = message.Text
