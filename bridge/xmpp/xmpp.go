@@ -37,7 +37,7 @@ func New(config config.Protocol, origin string, c chan config.Message) *Bxmpp {
 
 func (b *Bxmpp) Connect() error {
 	var err error
-	flog.Info("Trying XMPP connection")
+	flog.Infof("Connecting %s", b.Config.Server)
 	b.xc, err = b.createXMPP()
 	if err != nil {
 		flog.Debugf("%#v", err)
@@ -70,6 +70,7 @@ func (b *Bxmpp) Origin() string {
 }
 
 func (b *Bxmpp) Send(msg config.Message) error {
+	flog.Debugf("Receiving %#v", msg)
 	b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.Config.Muc, Text: msg.Username + msg.Text})
 	return nil
 }
@@ -126,7 +127,7 @@ func (b *Bxmpp) handleXmpp() error {
 					nick = s[1]
 				}
 				if nick != b.Config.Nick {
-					flog.Infof("sending message to remote %s %s %s", nick, v.Text, channel)
+					flog.Debugf("Sending message from %s on %s to gateway", nick, b.FullOrigin())
 					b.Remote <- config.Message{Username: nick, Text: v.Text, Channel: channel, Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
 				}
 			}
