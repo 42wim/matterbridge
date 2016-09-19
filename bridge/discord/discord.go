@@ -34,7 +34,7 @@ func New(config config.Protocol, origin string, c chan config.Message) *bdiscord
 
 func (b *bdiscord) Connect() error {
 	var err error
-	flog.Info("Trying " + b.protocol + " connection")
+	flog.Info("Connecting")
 	b.c, err = discordgo.New(b.Config.Token)
 	if err != nil {
 		flog.Debugf("%#v", err)
@@ -91,6 +91,7 @@ func (b *bdiscord) Origin() string {
 }
 
 func (b *bdiscord) Send(msg config.Message) error {
+	flog.Debugf("Receiving %#v", msg)
 	channelID := b.getChannelID(msg.Channel)
 	if channelID == "" {
 		flog.Errorf("Could not find channelID for %v", msg.Channel)
@@ -105,6 +106,7 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	if m.Author.Username == b.Nick {
 		return
 	}
+	flog.Debugf("Sending message from %s on %s to gateway", m.Author.Username, b.FullOrigin())
 	b.Remote <- config.Message{Username: m.Author.Username, Text: m.Content, Channel: b.getChannelName(m.ChannelID),
 		Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
 }
