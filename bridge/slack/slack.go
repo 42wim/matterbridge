@@ -16,9 +16,8 @@ type MMMessage struct {
 }
 
 type Bslack struct {
-	mh *matterhook.Client
-	sc *slack.Client
-	//	MMapi
+	mh       *matterhook.Client
+	sc       *slack.Client
 	Config   *config.Protocol
 	rtm      *slack.RTM
 	Plus     bool
@@ -41,7 +40,7 @@ func New(config config.Protocol, origin string, c chan config.Message) *Bslack {
 	b.Remote = c
 	b.protocol = protocol
 	b.origin = origin
-	b.Plus = config.UseAPI
+	b.Config.UseAPI = config.UseAPI
 	return b
 }
 
@@ -50,19 +49,14 @@ func (b *Bslack) Command(cmd string) string {
 }
 
 func (b *Bslack) Connect() error {
-	if !b.Plus {
+	flog.Info("Connecting")
+	if !b.Config.UseAPI {
 		b.mh = matterhook.New(b.Config.URL,
 			matterhook.Config{BindAddress: b.Config.BindAddress})
 	} else {
 		b.sc = slack.New(b.Config.Token)
-		flog.Infof("Trying login on slack with Token")
-		/*
-			if err != nil {
-				return err
-			}
-		*/
-		flog.Info("Login ok")
 	}
+	flog.Info("Connection succeeded")
 	b.rtm = b.sc.NewRTM()
 	go b.rtm.ManageConnection()
 	go b.handleSlack()
@@ -76,7 +70,6 @@ func (b *Bslack) FullOrigin() string {
 func (b *Bslack) JoinChannel(channel string) error {
 	schannel := b.getChannelByName(channel)
 	if schannel != nil && !schannel.IsMember {
-		flog.Infof("Joining %s", channel)
 		b.sc.JoinChannel(schannel.ID)
 	}
 	return nil
@@ -95,8 +88,8 @@ func (b *Bslack) Origin() string {
 }
 
 func (b *Bslack) Send(msg config.Message) error {
-	flog.Infof("slack send %#v", msg)
-	if msg.Origin != "slack" {
+	flog.Debugf("Receiving %#v", msg)
+	if msg.FullOrigin != b.FullOrigin() {
 		return b.SendType(msg.Username, msg.Text, msg.Channel, "")
 	}
 	return nil
@@ -106,7 +99,7 @@ func (b *Bslack) SendType(nick string, message string, channel string, mtype str
 	if b.Config.PrefixMessagesWithNick {
 		message = nick + " " + message
 	}
-	if !b.Plus {
+	if !b.Config.UseAPI {
 		matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL}
 		matterMessage.Channel = channel
 		matterMessage.UserName = nick
@@ -117,10 +110,8 @@ func (b *Bslack) SendType(nick string, message string, channel string, mtype str
 			flog.Info(err)
 			return err
 		}
-		flog.Debug("->slack channel: ", channel, " ", message)
 		return nil
 	}
-	flog.Debugf("sent to slack channel API: %s %s", channel, message)
 	newmsg := b.rtm.NewOutgoingMessage(message, b.getChannelByName(channel).ID)
 	b.rtm.SendMessage(newmsg)
 	return nil
@@ -139,19 +130,19 @@ func (b *Bslack) getChannelByName(name string) *slack.Channel {
 }
 
 func (b *Bslack) handleSlack() {
-	flog.Infof("Choosing API based slack connection: %t", b.Plus)
+	flog.Debugf("Choosing API based slack connection: %t", b.Config.UseAPI)
 	mchan := make(chan *MMMessage)
-	if b.Plus {
+	if b.Config.UseAPI {
 		go b.handleSlackClient(mchan)
 	} else {
 		go b.handleMatterHook(mchan)
 	}
 	time.Sleep(time.Second)
-	flog.Info("Start listening for Slack messages")
+	flog.Debug("Start listening for Slack messages")
 	for message := range mchan {
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
-			flog.Debug("Sending message from " + message.Username + " to " + message.Channel)
+			flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.FullOrigin())
 			b.Remote <- config.Message{Text: text, Username: message.Username, Channel: message.Channel, Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
 		}
 	}
@@ -161,7 +152,7 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 	for msg := range b.rtm.IncomingEvents {
 		switch ev := msg.Data.(type) {
 		case *slack.MessageEvent:
-			flog.Debugf("%#v", ev)
+			flog.Debugf("Receiving from slackclient %#v", ev)
 			channel, err := b.rtm.GetChannelInfo(ev.Channel)
 			if err != nil {
 				continue
@@ -189,7 +180,7 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 func (b *Bslack) handleMatterHook(mchan chan *MMMessage) {
 	for {
 		message := b.mh.Receive()
-		flog.Debugf("receiving from slack %#v", message)
+		flog.Debugf("receiving from matterhook (slack) %#v", message)
 		m := &MMMessage{}
 		m.Username = message.UserName
 		m.Text = message.Text
