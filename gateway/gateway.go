@@ -23,15 +23,27 @@ func New(cfg *config.Config, gateway *config.Gateway) error {
 	gw.Name = gateway.Name
 	gw.Config = cfg
 	gw.MyConfig = gateway
-	for _, br := range gateway.In {
+	exists := make(map[string]bool)
+	for _, br := range append(gateway.In, gateway.Out...) {
+		if exists[br.Account+br.Channel] {
+			continue
+		}
+		log.Infof("Starting bridge: %s channel: %s", br.Account, br.Channel)
 		gw.Bridges = append(gw.Bridges, bridge.New(cfg, &br, c))
+		exists[br.Account+br.Channel] = true
 	}
 	gw.mapChannels()
 	gw.mapIgnores()
+	exists = make(map[string]bool)
 	for _, br := range gw.Bridges {
 		br.Connect()
-		for _, channel := range gw.ChannelsOut[br.FullOrigin()] {
+		for _, channel := range append(gw.ChannelsOut[br.FullOrigin()], gw.ChannelsIn[br.FullOrigin()]...) {
+			if exists[br.FullOrigin()+channel] {
+				continue
+			}
+			log.Infof("%s: joining %s", br.FullOrigin(), channel)
 			br.JoinChannel(channel)
+			exists[br.FullOrigin()+channel] = true
 		}
 	}
 	gw.handleReceive(c)
@@ -85,7 +97,6 @@ func (gw *Gateway) handleMessage(msg config.Message, dest bridge.Bridge) {
 	for _, channel := range channels {
 		// do not send the message to the bridge we come from if also the channel is the same
 		if msg.FullOrigin == dest.FullOrigin() && msg.Channel == channel {
-			log.Debug("continue", msg.Protocol, msg.Origin, dest.Protocol(), dest.Origin())
 			continue
 		}
 		msg.Channel = channel
