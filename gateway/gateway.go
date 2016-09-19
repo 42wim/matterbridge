@@ -105,7 +105,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest bridge.Bridge) {
 			return
 		}
 		gw.modifyMessage(&msg, dest)
-		log.Debugf("sending %#v from %s to %s", msg, msg.Origin, dest.Origin())
+		log.Debugf("Sending %#v from %s to %s", msg, msg.FullOrigin, dest.FullOrigin())
 		dest.Send(msg)
 	}
 }

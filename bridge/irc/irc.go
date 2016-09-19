@@ -91,6 +91,7 @@ func (b *Birc) Origin() string {
 }
 
 func (b *Birc) Send(msg config.Message) error {
+	flog.Debugf("Receiving %#v", msg)
 	if msg.FullOrigin == b.FullOrigin() {
 		return nil
 	}
