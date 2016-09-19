@@ -34,7 +34,7 @@ func New(config config.Protocol, origin string, c chan config.Message) *Bgitter 
 
 func (b *Bgitter) Connect() error {
 	var err error
-	flog.Info("Trying " + b.protocol + " connection")
+	flog.Info("Connecting")
 	b.c = gitter.New(b.Config.Token)
 	_, err = b.c.GetUser()
 	if err != nil {
@@ -42,9 +42,7 @@ func (b *Bgitter) Connect() error {
 		return err
 	}
 	flog.Info("Connection succeeded")
-	//b.setupChannels()
 	b.Rooms, _ = b.c.GetRooms()
-	//go b.handleGitter()
 	return nil
 }
 
@@ -72,6 +70,7 @@ func (b *Bgitter) JoinChannel(channel string) error {
 			case *gitter.MessageReceived:
 				// check for ZWSP to see if it's not an echo
 				if !strings.HasSuffix(ev.Message.Text, "​") {
+					flog.Debugf("Sending message from %s on %s to gateway", ev.Message.From.Username, b.FullOrigin())
 					b.Remote <- config.Message{Username: ev.Message.From.Username, Text: ev.Message.Text, Channel: room,
 						Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
 				}
@@ -96,6 +95,7 @@ func (b *Bgitter) Origin() string {
 }
 
 func (b *Bgitter) Send(msg config.Message) error {
+	flog.Debugf("Receiving %#v", msg)
 	roomID := b.getRoomID(msg.Channel)
 	if roomID == "" {
 		flog.Errorf("Could not find roomID for %v", msg.Channel)
@@ -113,33 +113,3 @@ func (b *Bgitter) getRoomID(channel string) string {
 	}
 	return ""
 }
-
-/*
-func (b *Bgitter) handleGitter() {
-	for _, val := range b.Config.Channel {
-		room := val.Gitter
-		roomID := b.getRoomID(room)
-		if roomID == "" {
-			continue
-		}
-		stream := b.c.Stream(roomID)
-		go b.c.Listen(stream)
-
-		go func(stream *gitter.Stream, room string) {
-			for {
-				event := <-stream.Event
-				switch ev := event.Data.(type) {
-				case *gitter.MessageReceived:
-					// check for ZWSP to see if it's not an echo
-					if !strings.HasSuffix(ev.Message.Text, "​") {
-						b.Remote <- config.Message{Username: ev.Message.From.Username, Text: ev.Message.Text, Channel: room,
-							Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
-					}
-				case *gitter.GitterConnectionClosed:
-					flog.Errorf("connection with gitter closed for room %s", room)
-				}
-			}
-		}(stream, room)
-	}
-}
-*/
