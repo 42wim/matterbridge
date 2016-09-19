@@ -14,8 +14,7 @@ import (
 
 type Birc struct {
 	i        *irc.Connection
-	ircNick  string
-	name     string
+	Nick     string
 	names    map[string][]string
 	Config   *config.Protocol
 	origin   string
@@ -33,11 +32,11 @@ func init() {
 func New(config config.Protocol, origin string, c chan config.Message) *Birc {
 	b := &Birc{}
 	b.Config = &config
+	b.Nick = b.Config.Nick
 	b.Remote = c
-	b.protocol = protocol
-	b.ircNick = b.Config.Nick
-	b.origin = origin
 	b.names = make(map[string][]string)
+	b.origin = origin
+	b.protocol = protocol
 	return b
 }
 
@@ -50,7 +49,7 @@ func (b *Birc) Command(msg *config.Message) string {
 }
 
 func (b *Birc) Connect() error {
-	flog.Info("Trying IRC connection")
+	flog.Infof("Connecting %s", b.Config.Server)
 	i := irc.IRC(b.Config.Nick, b.Config.Nick)
 	i.UseTLS = b.Config.UseTLS
 	i.UseSASL = b.Config.UseSASL
@@ -109,27 +108,27 @@ func (b *Birc) endNames(event *irc.Event) {
 	maxNamesPerPost := (300 / b.nicksPerRow()) * b.nicksPerRow()
 	continued := false
 	for len(b.names[channel]) > maxNamesPerPost {
-		b.Remote <- config.Message{Username: b.ircNick, Text: b.formatnicks(b.names[channel][0:maxNamesPerPost], continued),
+		b.Remote <- config.Message{Username: b.Nick, Text: b.formatnicks(b.names[channel][0:maxNamesPerPost], continued),
 			Channel: channel, Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
 		b.names[channel] = b.names[channel][maxNamesPerPost:]
 		continued = true
 	}
-	b.Remote <- config.Message{Username: b.ircNick, Text: b.formatnicks(b.names[channel], continued), Channel: channel,
+	b.Remote <- config.Message{Username: b.Nick, Text: b.formatnicks(b.names[channel], continued), Channel: channel,
 		Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
 	b.names[channel] = nil
 }
 
 func (b *Birc) handleNewConnection(event *irc.Event) {
-	flog.Info("Registering callbacks")
+	flog.Debug("Registering callbacks")
 	i := b.i
-	b.ircNick = event.Arguments[0]
+	b.Nick = event.Arguments[0]
 	i.AddCallback("PRIVMSG", b.handlePrivMsg)
 	i.AddCallback("CTCP_ACTION", b.handlePrivMsg)
 	i.AddCallback(ircm.RPL_TOPICWHOTIME, b.handleTopicWhoTime)
 	i.AddCallback(ircm.RPL_ENDOFNAMES, b.endNames)
 	i.AddCallback(ircm.RPL_NAMREPLY, b.storeNames)
 	i.AddCallback(ircm.NOTICE, b.handleNotice)
-	i.AddCallback(ircm.RPL_MYINFO, func(e *irc.Event) { flog.Infof("%s: %s", e.Code, strings.Join(e.Arguments[1:], " ")) })
+	//i.AddCallback(ircm.RPL_MYINFO, func(e *irc.Event) { flog.Infof("%s: %s", e.Code, strings.Join(e.Arguments[1:], " ")) })
 	i.AddCallback("PING", func(e *irc.Event) {
 		i.SendRaw("PONG :" + e.Message())
 		flog.Debugf("PING/PONG")
@@ -144,7 +143,11 @@ func (b *Birc) handleNotice(event *irc.Event) {
 }
 
 func (b *Birc) handleOther(event *irc.Event) {
-	flog.Debugf("%#v", event)
+	switch event.Code {
+	case "372", "375", "376", "250", "251", "252", "253", "254", "255", "265", "266", "002", "003", "004", "005":
+		return
+	}
+	flog.Debugf("%#v", event.Raw)
 }
 
 func (b *Birc) handlePrivMsg(event *irc.Event) {
@@ -154,6 +157,7 @@ func (b *Birc) handlePrivMsg(event *irc.Event) {
 		msg = event.Nick + " "
 	}
 	msg += event.Message()
+	flog.Debugf("Sending message from %s on %s to gateway", event.Arguments[0], b.FullOrigin())
 	b.Remote <- config.Message{Username: event.Nick, Text: msg, Channel: event.Arguments[0], Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
 }
 
@@ -167,7 +171,7 @@ func (b *Birc) handleTopicWhoTime(event *irc.Event) {
 	if len(parts) > 1 {
 		user += " [" + parts[1] + "]"
 	}
-	flog.Infof("%s: Topic set by %s [%s]", event.Code, user, time.Unix(t, 0))
+	flog.Debugf("%s: Topic set by %s [%s]", event.Code, user, time.Unix(t, 0))
 }
 
 func (b *Birc) nicksPerRow() int {
