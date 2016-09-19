@@ -6,6 +6,7 @@ See matterbridge.toml.sample for an example
 ## New features
 * Allow for bridging the same type of bridge, which means you can eg bridge between multiple mattermosts.
 * The bridge is now a gateway which has support multiple in and out bridges. (and supports multiple gateways).
+* Discord support added. See matterbridge.toml.sample for more information
 
 # v0.6.1
 ## New features

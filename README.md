@@ -3,9 +3,9 @@
 :warning: Look at [README-0.6.md] (https://github.com/42wim/matterbridge/blob/master/README-0.6.md) for the documentation of the current stable. 
 The information below is about the develop version.
 
-Simple bridge between mattermost, IRC, XMPP, Gitter and Slack
+Simple bridge between mattermost, IRC, XMPP, Gitter, Slack and Discord
 
-* Relays public channel messages between multiple mattermost, IRC, XMPP, Gitter and Slack. Pick and mix.
+* Relays public channel messages between multiple mattermost, IRC, XMPP, Gitter, Slack and Discord. Pick and mix.
 * Supports multiple channels.
 * Matterbridge can also work with private groups on your mattermost.
 * Allow for bridging the same bridges, which means you can eg bridge between multiple mattermosts.
@@ -24,6 +24,7 @@ Accounts to one of the supported bridges
 * [XMPP] (https://jabber.org)
 * [Gitter] (https://gitter.im)
 * [Slack] (https://slack.com)
+* [Discord] (https://discordapp.com)
 
 ## Docker
 Create your matterbridge.toml file locally eg in ```/tmp/matterbridge.toml```

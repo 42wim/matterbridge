@@ -16,6 +16,7 @@ type Message struct {
 
 type Protocol struct {
 	BindAddress            string // mattermost, slack
+	Guild                  string // discord
 	IconURL                string // mattermost, slack
 	IgnoreNicks            string // all protocols
 	Jid                    string // xmpp
@@ -32,11 +33,11 @@ type Protocol struct {
 	PrefixMessagesWithNick bool   // mattemost, slack
 	Protocol               string //all protocols
 	RemoteNickFormat       string // all protocols
-	Server                 string // IRC,mattermost,XMPP
+	Server                 string // IRC,mattermost,XMPP,discord
 	ShowJoinPart           bool   // all protocols
 	SkipTLSVerify          bool   // IRC, mattermost
 	Team                   string // mattermost
-	Token                  string // gitter, slack
+	Token                  string // gitter, slack, discord
 	URL                    string // mattermost, slack
 	UseAPI                 bool   // mattermost, slack
 	UseSASL                bool   // IRC
@@ -61,6 +62,7 @@ type Config struct {
 	Slack      map[string]Protocol
 	Gitter     map[string]Protocol
 	Xmpp       map[string]Protocol
+	Discord    map[string]Protocol
 	Gateway    []Gateway
 }
 

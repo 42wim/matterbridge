@@ -131,5 +131,7 @@ func (gw *Gateway) modifyMessage(msg *config.Message, dest bridge.Bridge) {
 		setNickFormat(msg, gw.Config.Mattermost[dest.Origin()].RemoteNickFormat)
 	case "slack":
 		setNickFormat(msg, gw.Config.Slack[dest.Origin()].RemoteNickFormat)
+	case "discord":
+		setNickFormat(msg, gw.Config.Discord[dest.Origin()].RemoteNickFormat)
 	}
 }

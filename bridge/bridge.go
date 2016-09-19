@@ -2,6 +2,7 @@ package bridge
 
 import (
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/discord"
 	"github.com/42wim/matterbridge/bridge/gitter"
 	"github.com/42wim/matterbridge/bridge/irc"
 	"github.com/42wim/matterbridge/bridge/mattermost"
@@ -35,6 +36,8 @@ func New(cfg *config.Config, bridge *config.Bridge, c chan config.Message) Bridg
 		return bslack.New(cfg.Slack[name], name, c)
 	case "xmpp":
 		return bxmpp.New(cfg.Xmpp[name], name, c)
+	case "discord":
+		return bdiscord.New(cfg.Discord[name], name, c)
 	}
 	return nil
 }

@@ -262,6 +262,35 @@ NicksPerRow=4
 #OPTIONAL 
 IgnoreNicks="mmbot spammer2"
 
+###################################################################
+#discord section
+###################################################################
+[discord]
+
+#You can configure multiple servers "[discord.name]" or "[discord.name2]"
+#In this example we use [discord.game]
+#REQUIRED
+[discord.game]
+#Token to connect with Discord API
+#You can get your token by following the instructions on 
+#https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token
+#REQUIRED
+Token="Yourtokenhere"
+
+#REQUIRED
+Guild="yourguildname"
+
+#Nicks you want to ignore. Messages of those users will not be bridged.
+#OPTIONAL 
+IgnoreNicks="spammer1 spammer2"
+
+#RemoteNickFormat defines how remote users appear on this bridge 
+#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
+#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
+#OPTIONAL (default {BRIDGE}-{NICK})
+RemoteNickFormat="[{BRIDGE}] <{NICK}> 
+
 
 ###################################################################
 #Gateway configuration
