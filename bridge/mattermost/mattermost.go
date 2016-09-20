@@ -84,7 +84,11 @@ func (b *Bmattermost) FullOrigin() string {
 }
 
 func (b *Bmattermost) JoinChannel(channel string) error {
-	return b.mc.JoinChannel(channel)
+	// we can only join channels using the API
+	if b.Config.UseAPI {
+		return b.mc.JoinChannel(channel)
+	}
+	return nil
 }
 
 func (b *Bmattermost) Name() string {

@@ -68,9 +68,13 @@ func (b *Bslack) FullOrigin() string {
 }
 
 func (b *Bslack) JoinChannel(channel string) error {
-	schannel := b.getChannelByName(channel)
-	if schannel != nil && !schannel.IsMember {
-		b.sc.JoinChannel(schannel.ID)
+	// we can only join channels using the API
+	if b.Config.UseAPI {
+		schannel := b.getChannelByName(channel)
+		if schannel != nil && !schannel.IsMember {
+			_, err := b.sc.JoinChannel(schannel.ID)
+			return err
+		}
 	}
 	return nil
 }
