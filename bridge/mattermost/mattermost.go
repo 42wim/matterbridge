@@ -163,6 +163,11 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 			m.Username = message.Username
 			m.Channel = message.Channel
 			m.Text = message.Text
+			if len(message.Post.Filenames) > 0 {
+				for _, link := range b.mc.GetPublicLinks(message.Post.Filenames) {
+					m.Text = m.Text + "\n" + link
+				}
+			}
 			mchan <- m
 		}
 	}
