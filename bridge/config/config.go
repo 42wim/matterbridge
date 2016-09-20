@@ -68,7 +68,7 @@ type Config struct {
 
 func NewConfig(cfgfile string) *Config {
 	var cfg Config
-	if _, err := toml.DecodeFile("matterbridge.toml", &cfg); err != nil {
+	if _, err := toml.DecodeFile(cfgfile, &cfg); err != nil {
 		log.Fatal(err)
 	}
 	return &cfg
