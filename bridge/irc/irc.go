@@ -100,7 +100,9 @@ func (b *Birc) Send(msg config.Message) error {
 		b.Command(&msg)
 		return nil
 	}
-	b.i.Privmsg(msg.Channel, msg.Username+msg.Text)
+	for _, text := range strings.Split(msg.Text, "\n") {
+		b.i.Privmsg(msg.Channel, msg.Username+text)
+	}
 	return nil
 }
 
