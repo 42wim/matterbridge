@@ -5,7 +5,6 @@ import (
 	"github.com/42wim/matterbridge/matterclient"
 	"github.com/42wim/matterbridge/matterhook"
 	log "github.com/Sirupsen/logrus"
-	"strings"
 )
 
 type MMhook struct {
@@ -146,11 +145,8 @@ func (b *Bmattermost) handleMatter() {
 		go b.handleMatterHook(mchan)
 	}
 	for message := range mchan {
-		texts := strings.Split(message.Text, "\n")
-		for _, text := range texts {
-			flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.FullOrigin())
-			b.Remote <- config.Message{Text: text, Username: message.Username, Channel: message.Channel, Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
-		}
+		flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.FullOrigin())
+		b.Remote <- config.Message{Text: message.Text, Username: message.Username, Channel: message.Channel, Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
 	}
 }
 
