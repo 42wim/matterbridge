@@ -56,14 +56,22 @@ type Gateway struct {
 	Out    []Bridge
 }
 
+type SameChannelGateway struct {
+	Name     string
+	Enable   bool
+	Channels []string
+	Accounts []string
+}
+
 type Config struct {
-	IRC        map[string]Protocol
-	Mattermost map[string]Protocol
-	Slack      map[string]Protocol
-	Gitter     map[string]Protocol
-	Xmpp       map[string]Protocol
-	Discord    map[string]Protocol
-	Gateway    []Gateway
+	IRC                map[string]Protocol
+	Mattermost         map[string]Protocol
+	Slack              map[string]Protocol
+	Gitter             map[string]Protocol
+	Xmpp               map[string]Protocol
+	Discord            map[string]Protocol
+	Gateway            []Gateway
+	SameChannelGateway []SameChannelGateway
 }
 
 func NewConfig(cfgfile string) *Config {
