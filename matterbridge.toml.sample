@@ -42,7 +42,7 @@ NickServPassword="secret"
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL (default {BRIDGE}-{NICK})
-RemoteNickFormat="[{BRIDGE}] <{NICK}> 
+RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Nicks you want to ignore. 
 #Messages from those users will not be sent to other bridges.
@@ -156,7 +156,7 @@ PrefixMessagesWithNick=false
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL (default {BRIDGE}-{NICK})
-RemoteNickFormat="[{BRIDGE}] <{NICK}> 
+RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #how to format the list of IRC nicks when displayed in mattermost. 
 #Possible options are "table" and "plain"
@@ -195,7 +195,7 @@ IgnoreNicks="spammer1 spammer2"
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL (default {BRIDGE}-{NICK})
-RemoteNickFormat="[{BRIDGE}] <{NICK}> 
+RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 ###################################################################
 #slack section
@@ -248,7 +248,7 @@ PrefixMessagesWithNick=false
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
 #OPTIONAL (default {BRIDGE}-{NICK})
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
-RemoteNickFormat="[{BRIDGE}] <{NICK}> 
+RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #how to format the list of IRC nicks when displayed in slack
 #Possible options are "table" and "plain"
@@ -289,7 +289,7 @@ IgnoreNicks="spammer1 spammer2"
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL (default {BRIDGE}-{NICK})
-RemoteNickFormat="[{BRIDGE}] <{NICK}> 
+RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 
 ###################################################################
