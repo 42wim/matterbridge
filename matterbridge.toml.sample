@@ -161,7 +161,7 @@ RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 #how to format the list of IRC nicks when displayed in mattermost. 
 #Possible options are "table" and "plain"
 #OPTIONAL (default plain)
-NickFormatter=plain
+NickFormatter="plain"
 #How many nicks to list per row for formatters that support this. 
 #OPTIONAL (default 4)
 NicksPerRow=4
@@ -253,7 +253,7 @@ RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 #how to format the list of IRC nicks when displayed in slack
 #Possible options are "table" and "plain"
 #OPTIONAL (default plain)
-NickFormatter=plain
+NickFormatter="plain"
 #How many nicks to list per row for formatters that support this. 
 #OPTIONAL (default 4)
 NicksPerRow=4
