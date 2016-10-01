@@ -52,6 +52,9 @@ func (b *Birc) Command(msg *config.Message) string {
 func (b *Birc) Connect() error {
 	flog.Infof("Connecting %s", b.Config.Server)
 	i := irc.IRC(b.Config.Nick, b.Config.Nick)
+	if log.GetLevel() == log.DebugLevel {
+		i.Debug = true
+	}
 	i.UseTLS = b.Config.UseTLS
 	i.UseSASL = b.Config.UseSASL
 	i.SASLLogin = b.Config.NickServNick
@@ -66,6 +69,7 @@ func (b *Birc) Connect() error {
 		return err
 	}
 	flog.Info("Connection succeeded")
+	i.Debug = false
 	b.i = i
 	return nil
 }
