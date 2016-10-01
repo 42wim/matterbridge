@@ -36,7 +36,10 @@ func New(cfg *config.Config, gateway *config.Gateway) error {
 	gw.mapIgnores()
 	exists = make(map[string]bool)
 	for _, br := range gw.Bridges {
-		br.Connect()
+		err := br.Connect()
+		if err != nil {
+			log.Fatalf("Bridge %s failed to start. Exiting", br.FullOrigin())
+		}
 		for _, channel := range append(gw.ChannelsOut[br.FullOrigin()], gw.ChannelsIn[br.FullOrigin()]...) {
 			if exists[br.FullOrigin()+channel] {
 				continue
