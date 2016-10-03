@@ -38,7 +38,7 @@ func New(cfg *config.Config, gateway *config.Gateway) error {
 	for _, br := range gw.Bridges {
 		err := br.Connect()
 		if err != nil {
-			log.Fatalf("Bridge %s failed to start. Exiting", br.FullOrigin())
+			log.Fatalf("Bridge %s failed to start: %v", br.FullOrigin(), err)
 		}
 		for _, channel := range append(gw.ChannelsOut[br.FullOrigin()], gw.ChannelsIn[br.FullOrigin()]...) {
 			if exists[br.FullOrigin()+channel] {

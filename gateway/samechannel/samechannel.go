@@ -29,7 +29,10 @@ func New(cfg *config.Config, gateway *config.SameChannelGateway) error {
 		gw.Bridges = append(gw.Bridges, bridge.New(cfg, &br, c))
 	}
 	for _, br := range gw.Bridges {
-		br.Connect()
+		err := br.Connect()
+		if err != nil {
+			log.Fatalf("Bridge %s failed to start: %v", br.FullOrigin(), err)
+		}
 		for _, channel := range gw.Channels {
 			log.Infof("%s: joining %s", br.FullOrigin(), channel)
 			br.JoinChannel(channel)
