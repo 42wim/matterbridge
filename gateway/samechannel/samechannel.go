@@ -60,7 +60,10 @@ func (gw *SameChannelGateway) handleMessage(msg config.Message, dest bridge.Brid
 	}
 	gw.modifyMessage(&msg, dest)
 	log.Debugf("Sending %#v from %s to %s", msg, msg.FullOrigin, dest.FullOrigin())
-	dest.Send(msg)
+	err := dest.Send(msg)
+	if err != nil {
+		log.Error(err)
+	}
 }
 
 func setNickFormat(msg *config.Message, format string) {

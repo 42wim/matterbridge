@@ -1,6 +1,7 @@
 package bslack
 
 import (
+	"fmt"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/matterhook"
 	log "github.com/Sirupsen/logrus"
@@ -115,21 +116,25 @@ func (b *Bslack) SendType(nick string, message string, channel string, mtype str
 		}
 		return nil
 	}
-	newmsg := b.rtm.NewOutgoingMessage(message, b.getChannelByName(channel).ID)
+	schannel, err := b.getChannelByName(channel)
+	if err != nil {
+		return err
+	}
+	newmsg := b.rtm.NewOutgoingMessage(message, schannel.ID)
 	b.rtm.SendMessage(newmsg)
 	return nil
 }
 
-func (b *Bslack) getChannelByName(name string) *slack.Channel {
+func (b *Bslack) getChannelByName(name string) (*slack.Channel, error) {
 	if b.channels == nil {
-		return nil
+		return nil, fmt.Errorf("%s: channel %s not found (no channels found)", b.FullOrigin(), name)
 	}
 	for _, channel := range b.channels {
 		if channel.Name == name {
-			return &channel
+			return &channel, nil
 		}
 	}
-	return nil
+	return nil, fmt.Errorf("%s: channel %s not found", b.FullOrigin(), name)
 }
 
 func (b *Bslack) handleSlack() {

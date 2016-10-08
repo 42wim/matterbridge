@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"fmt"
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
@@ -109,7 +110,10 @@ func (gw *Gateway) handleMessage(msg config.Message, dest bridge.Bridge) {
 		}
 		gw.modifyMessage(&msg, dest)
 		log.Debugf("Sending %#v from %s to %s", msg, msg.FullOrigin, dest.FullOrigin())
-		dest.Send(msg)
+		err := dest.Send(msg)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 }
 
