@@ -279,7 +279,7 @@ IgnoreNicks="mmbot spammer2"
 Token="Bot Yourtokenhere"
 
 #REQUIRED
-Guild="yourguildname"
+Server="yourservername"
 
 #Nicks you want to ignore. Messages of those users will not be bridged.
 #OPTIONAL 
@@ -322,6 +322,14 @@ enable=true
     #REQUIRED
     account="irc.freenode"
     #channel to connect on that account
+    #How to specify them for the different bridges:
+    #
+    #irc        - #channel (# is required)
+    #mattermost - channel (the channel name as seen in the URL, not the displayname)
+    #gitter     - username/room 
+    #xmpp       - channel
+    #slack      - channel (the channel name as seen in the URL, not the displayname)
+    #discord    - channel (without the #)
     #REQUIRED
     channel="#testing"
 
