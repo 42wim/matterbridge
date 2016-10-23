@@ -576,6 +576,10 @@ func (m *MMClient) GetStatus(userId string) string {
 	return "offline"
 }
 
+func (m *MMClient) GetTeamId() string {
+	return m.Team.Id
+}
+
 func (m *MMClient) StatusLoop() {
 	for {
 		if m.WsQuit {

@@ -31,6 +31,7 @@ type Bmattermost struct {
 	name     string
 	origin   string
 	protocol string
+	TeamId   string
 }
 
 var flog *log.Entry
@@ -75,6 +76,7 @@ func (b *Bmattermost) Connect() error {
 		go b.mc.WsReceiver()
 	}
 	go b.handleMatter()
+	b.TeamId = b.mc.GetTeamId()
 	return nil
 }
 
@@ -153,7 +155,8 @@ func (b *Bmattermost) handleMatter() {
 func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 	for message := range b.mc.MessageChan {
 		// do not post our own messages back to irc
-		if message.Raw.Event == "posted" && b.mc.User.Username != message.Username {
+		// only listen to message from our team
+		if message.Raw.Event == "posted" && b.mc.User.Username != message.Username && message.Raw.TeamId == b.TeamId {
 			flog.Debugf("Receiving from matterclient %#v", message)
 			m := &MMMessage{}
 			m.Username = message.Username
