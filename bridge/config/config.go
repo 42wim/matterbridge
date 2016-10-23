@@ -16,7 +16,6 @@ type Message struct {
 
 type Protocol struct {
 	BindAddress            string // mattermost, slack
-	Guild                  string // discord
 	IconURL                string // mattermost, slack
 	IgnoreNicks            string // all protocols
 	Jid                    string // xmpp

@@ -59,7 +59,7 @@ func (b *bdiscord) Connect() error {
 	}
 	b.Nick = userinfo.Username
 	for _, guild := range guilds {
-		if guild.Name == b.Config.Guild {
+		if guild.Name == b.Config.Server {
 			b.Channels, err = b.c.GuildChannels(guild.ID)
 			if err != nil {
 				flog.Debugf("%#v", err)
