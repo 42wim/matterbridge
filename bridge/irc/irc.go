@@ -44,7 +44,9 @@ func New(config config.Protocol, origin string, c chan config.Message) *Birc {
 func (b *Birc) Command(msg *config.Message) string {
 	switch msg.Text {
 	case "!users":
+		b.i.AddCallback(ircm.RPL_ENDOFNAMES, b.endNames)
 		b.i.SendRaw("NAMES " + msg.Channel)
+		b.i.ClearCallback(ircm.RPL_ENDOFNAMES)
 	}
 	return ""
 }
@@ -133,7 +135,6 @@ func (b *Birc) handleNewConnection(event *irc.Event) {
 	i.AddCallback("PRIVMSG", b.handlePrivMsg)
 	i.AddCallback("CTCP_ACTION", b.handlePrivMsg)
 	i.AddCallback(ircm.RPL_TOPICWHOTIME, b.handleTopicWhoTime)
-	i.AddCallback(ircm.RPL_ENDOFNAMES, b.endNames)
 	i.AddCallback(ircm.RPL_NAMREPLY, b.storeNames)
 	i.AddCallback(ircm.NOTICE, b.handleNotice)
 	//i.AddCallback(ircm.RPL_MYINFO, func(e *irc.Event) { flog.Infof("%s: %s", e.Code, strings.Join(e.Arguments[1:], " ")) })
