@@ -90,7 +90,13 @@ func (gw *Gateway) mapIgnores() {
 }
 
 func (gw *Gateway) getDestChannel(msg *config.Message, dest string) []string {
-	return gw.ChannelsOut[dest]
+	channels := gw.ChannelsIn[msg.FullOrigin]
+	for _, channel := range channels {
+		if channel == msg.Channel {
+			return gw.ChannelsOut[dest]
+		}
+	}
+	return []string{}
 }
 
 func (gw *Gateway) handleMessage(msg config.Message, dest bridge.Bridge) {
