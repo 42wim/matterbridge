@@ -26,12 +26,12 @@ func New(cfg *config.Config, gateway *config.Gateway) error {
 	gw.MyConfig = gateway
 	exists := make(map[string]bool)
 	for _, br := range append(gateway.In, gateway.Out...) {
-		if exists[br.Account+br.Channel] {
+		if exists[br.Account] {
 			continue
 		}
 		log.Infof("Starting bridge: %s channel: %s", br.Account, br.Channel)
 		gw.Bridges = append(gw.Bridges, bridge.New(cfg, &br, c))
-		exists[br.Account+br.Channel] = true
+		exists[br.Account] = true
 	}
 	gw.mapChannels()
 	gw.mapIgnores()
@@ -103,10 +103,11 @@ func (gw *Gateway) handleMessage(msg config.Message, dest bridge.Bridge) {
 	if gw.ignoreMessage(&msg) {
 		return
 	}
+	originchannel := msg.Channel
 	channels := gw.getDestChannel(&msg, dest.FullOrigin())
 	for _, channel := range channels {
 		// do not send the message to the bridge we come from if also the channel is the same
-		if msg.FullOrigin == dest.FullOrigin() && msg.Channel == channel {
+		if msg.FullOrigin == dest.FullOrigin() && channel == originchannel {
 			continue
 		}
 		msg.Channel = channel
@@ -115,7 +116,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest bridge.Bridge) {
 			return
 		}
 		gw.modifyMessage(&msg, dest)
-		log.Debugf("Sending %#v from %s to %s", msg, msg.FullOrigin, dest.FullOrigin())
+		log.Debugf("Sending %#v from %s (%s) to %s (%s)", msg, msg.FullOrigin, originchannel, dest.FullOrigin(), channel)
 		err := dest.Send(msg)
 		if err != nil {
 			fmt.Println(err)

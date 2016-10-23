@@ -106,10 +106,7 @@ func (b *Bmattermost) Protocol() string {
 
 func (b *Bmattermost) Send(msg config.Message) error {
 	flog.Debugf("Receiving %#v", msg)
-	if msg.FullOrigin != b.FullOrigin() {
-		return b.SendType(msg.Username, msg.Text, msg.Channel, "")
-	}
-	return nil
+	return b.SendType(msg.Username, msg.Text, msg.Channel, "")
 }
 
 func (b *Bmattermost) SendType(nick string, message string, channel string, mtype string) error {
