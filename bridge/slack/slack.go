@@ -56,10 +56,10 @@ func (b *Bslack) Connect() error {
 			matterhook.Config{BindAddress: b.Config.BindAddress})
 	} else {
 		b.sc = slack.New(b.Config.Token)
+		b.rtm = b.sc.NewRTM()
+		go b.rtm.ManageConnection()
 	}
 	flog.Info("Connection succeeded")
-	b.rtm = b.sc.NewRTM()
-	go b.rtm.ManageConnection()
 	go b.handleSlack()
 	return nil
 }
