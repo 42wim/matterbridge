@@ -4,16 +4,18 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
 	"github.com/bwmarrin/discordgo"
+	"strings"
 )
 
 type bdiscord struct {
-	c        *discordgo.Session
-	Config   *config.Protocol
-	Remote   chan config.Message
-	protocol string
-	origin   string
-	Channels []*discordgo.Channel
-	Nick     string
+	c            *discordgo.Session
+	Config       *config.Protocol
+	Remote       chan config.Message
+	protocol     string
+	origin       string
+	Channels     []*discordgo.Channel
+	Nick         string
+	UseChannelID bool
 }
 
 var flog *log.Entry
@@ -75,6 +77,10 @@ func (b *bdiscord) FullOrigin() string {
 }
 
 func (b *bdiscord) JoinChannel(channel string) error {
+	idcheck := strings.Split(channel, "ID:")
+	if len(idcheck) > 1 {
+		b.UseChannelID = true
+	}
 	return nil
 }
 
@@ -115,11 +121,19 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 		return
 	}
 	flog.Debugf("Sending message from %s on %s to gateway", m.Author.Username, b.FullOrigin())
-	b.Remote <- config.Message{Username: m.Author.Username, Text: m.Content, Channel: b.getChannelName(m.ChannelID),
+	channelName := b.getChannelName(m.ChannelID)
+	if b.UseChannelID {
+		channelName = "ID:" + m.ChannelID
+	}
+	b.Remote <- config.Message{Username: m.Author.Username, Text: m.Content, Channel: channelName,
 		Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
 }
 
 func (b *bdiscord) getChannelID(name string) string {
+	idcheck := strings.Split(name, "ID:")
+	if len(idcheck) > 1 {
+		return idcheck[1]
+	}
 	for _, channel := range b.Channels {
 		if channel.Name == name {
 			return channel.ID
