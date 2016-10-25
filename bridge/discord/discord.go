@@ -106,6 +106,11 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	if m.Author.Username == b.Nick {
 		return
 	}
+	if len(m.Attachments) > 0 {
+		for _, attach := range m.Attachments {
+			m.Content = m.Content + "\n" + attach.URL
+		}
+	}
 	flog.Debugf("Sending message from %s on %s to gateway", m.Author.Username, b.FullOrigin())
 	b.Remote <- config.Message{Username: m.Author.Username, Text: m.Content, Channel: b.getChannelName(m.ChannelID),
 		Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
