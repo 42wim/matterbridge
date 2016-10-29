@@ -305,8 +305,8 @@ RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 #
 #Most of the time [[gateway.in]] and [[gateway.out]] are the same if you 
 #want bidirectional bridging.
+#
 
-#REQUIRED
 [[gateway]]
 #OPTIONAL (not used for now)
 name="gateway1"
@@ -330,6 +330,8 @@ enable=true
     #xmpp       - channel
     #slack      - channel (the channel name as seen in the URL, not the displayname)
     #discord    - channel (without the #)
+    #           - ID:123456789 (where 123456789 is the channel ID) 
+    #               (https://github.com/42wim/matterbridge/issues/57)
     #REQUIRED
     channel="#testing"
 
@@ -344,3 +346,14 @@ enable=true
     [[gateway.out]]
     account="mattermost.work"
     channel="off-topic"
+
+
+#If you want to do a 1:1 mapping between protocols where the channelnames are the same
+#e.g. slack and mattermost you can use the samechannelgateway configuration
+#the example configuration below send messages from channel testing on mattermost to
+#channel testing on slack and vice versa. (and for the channel testing2 and testing3)
+
+[[samechannelgateway]]
+   enable = false
+   accounts = [ "mattermost.work","slack.hobby" ]
+   channels = [ "testing","testing2","testing3"]
