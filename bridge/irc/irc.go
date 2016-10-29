@@ -164,6 +164,10 @@ func (b *Birc) handlePrivMsg(event *irc.Event) {
 	if event.Arguments[0] == b.Nick {
 		return
 	}
+	// don't forward message from ourself
+	if event.Nick == b.Nick {
+		return
+	}
 	flog.Debugf("handlePrivMsg() %s %s %#v", event.Nick, event.Message(), event)
 	msg := ""
 	if event.Code == "CTCP_ACTION" {
