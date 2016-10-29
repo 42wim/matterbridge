@@ -148,6 +148,8 @@ func (b *Birc) handleNewConnection(event *irc.Event) {
 func (b *Birc) handleNotice(event *irc.Event) {
 	if strings.Contains(event.Message(), "This nickname is registered") && event.Nick == b.Config.NickServNick {
 		b.i.Privmsg(b.Config.NickServNick, "IDENTIFY "+b.Config.NickServPassword)
+	} else {
+		b.handlePrivMsg(event)
 	}
 }
 
