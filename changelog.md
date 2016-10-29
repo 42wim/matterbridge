@@ -4,9 +4,26 @@ Matterbridge now uses TOML configuration (https://github.com/toml-lang/toml)
 See matterbridge.toml.sample for an example
 
 ## New features
+### General
 * Allow for bridging the same type of bridge, which means you can eg bridge between multiple mattermosts.
-* The bridge is now a gateway which has support multiple in and out bridges. (and supports multiple gateways).
+* The bridge is now actually a gateway which has support multiple in and out bridges. (and supports multiple gateways).
 * Discord support added. See matterbridge.toml.sample for more information
+* Samechannelgateway support added, easier configuration for 1:1 mapping of protocols with same channel names. #35
+* Better debugging output
+* discord: new protocol support added (http://www.discordapp.com)
+* mattermost: Support attachments 
+* irc: Strip colors #33
+
+## Bugfix
+* irc: Split newlines #37
+* irc: Only respond to nick related notices from nickserv
+* irc: Ignore queries send to the bot
+* irc: Ignore messages from ourself
+* irc: only output the "users on irc information" when asked with "!users"
+* mattermost: Fix mattermost channel joins
+* mattermost: drop messages not from our team
+* slack: do not panic on non-existing channels
+* general: exit when a bridge fails to start
 
 # v0.6.1
 ## New features
