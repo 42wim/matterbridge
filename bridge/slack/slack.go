@@ -157,23 +157,29 @@ func (b *Bslack) handleSlack() {
 }
 
 func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
+	count := 0
 	for msg := range b.rtm.IncomingEvents {
 		switch ev := msg.Data.(type) {
 		case *slack.MessageEvent:
-			flog.Debugf("Receiving from slackclient %#v", ev)
-			channel, err := b.rtm.GetChannelInfo(ev.Channel)
-			if err != nil {
-				continue
+			// ignore first message
+			if count > 0 {
+				flog.Debugf("Receiving from slackclient %#v", ev)
+				//ev.ReplyTo
+				channel, err := b.rtm.GetChannelInfo(ev.Channel)
+				if err != nil {
+					continue
+				}
+				user, err := b.rtm.GetUserInfo(ev.User)
+				if err != nil {
+					continue
+				}
+				m := &MMMessage{}
+				m.Username = user.Name
+				m.Channel = channel.Name
+				m.Text = ev.Text
+				mchan <- m
 			}
-			user, err := b.rtm.GetUserInfo(ev.User)
-			if err != nil {
-				continue
-			}
-			m := &MMMessage{}
-			m.Username = user.Name
-			m.Channel = channel.Name
-			m.Text = ev.Text
-			mchan <- m
+			count++
 		case *slack.OutgoingErrorEvent:
 			flog.Debugf("%#v", ev.Error())
 		case *slack.ConnectedEvent:
