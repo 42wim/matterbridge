@@ -160,7 +160,11 @@ func (b *Birc) handleOther(event *irc.Event) {
 }
 
 func (b *Birc) handlePrivMsg(event *irc.Event) {
-	flog.Debugf("handlePrivMsg() %s %s", event.Nick, event.Message())
+	// don't forward queries to the bot
+	if event.Arguments[0] == b.Nick {
+		return
+	}
+	flog.Debugf("handlePrivMsg() %s %s %#v", event.Nick, event.Message(), event)
 	msg := ""
 	if event.Code == "CTCP_ACTION" {
 		msg = event.Nick + " "
