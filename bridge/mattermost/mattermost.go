@@ -73,10 +73,10 @@ func (b *Bmattermost) Connect() error {
 			return err
 		}
 		flog.Info("Connection succeeded")
+		b.TeamId = b.mc.GetTeamId()
 		go b.mc.WsReceiver()
 	}
 	go b.handleMatter()
-	b.TeamId = b.mc.GetTeamId()
 	return nil
 }
 
