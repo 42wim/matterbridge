@@ -2,6 +2,7 @@ package birc
 
 import (
 	"crypto/tls"
+	"fmt"
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
 	ircm "github.com/sorcix/irc"
@@ -14,13 +15,14 @@ import (
 )
 
 type Birc struct {
-	i        *irc.Connection
-	Nick     string
-	names    map[string][]string
-	Config   *config.Protocol
-	origin   string
-	protocol string
-	Remote   chan config.Message
+	i         *irc.Connection
+	Nick      string
+	names     map[string][]string
+	Config    *config.Protocol
+	origin    string
+	protocol  string
+	Remote    chan config.Message
+	connected chan struct{}
 }
 
 var flog *log.Entry
@@ -38,6 +40,7 @@ func New(config config.Protocol, origin string, c chan config.Message) *Birc {
 	b.names = make(map[string][]string)
 	b.origin = origin
 	b.protocol = protocol
+	b.connected = make(chan struct{})
 	return b
 }
 
@@ -70,9 +73,14 @@ func (b *Birc) Connect() error {
 	if err != nil {
 		return err
 	}
-	flog.Info("Connection succeeded")
-	i.Debug = false
 	b.i = i
+	select {
+	case <-b.connected:
+		flog.Info("Connection succeeded")
+	case <-time.After(time.Second * 30):
+		return fmt.Errorf("connection timed out")
+	}
+	i.Debug = false
 	return nil
 }
 
@@ -143,6 +151,8 @@ func (b *Birc) handleNewConnection(event *irc.Event) {
 		flog.Debugf("PING/PONG")
 	})
 	i.AddCallback("*", b.handleOther)
+	// we are now fully connected
+	b.connected <- struct{}{}
 }
 
 func (b *Birc) handleNotice(event *irc.Event) {
