@@ -25,6 +25,8 @@ func New(cfg *config.Config, bridge *config.Bridge, c chan config.Message) Bridg
 	accInfo := strings.Split(bridge.Account, ".")
 	protocol := accInfo[0]
 	name := accInfo[1]
+	// override config from environment
+	config.OverrideCfgFromEnv(cfg, protocol, name)
 	switch protocol {
 	case "mattermost":
 		return bmattermost.New(cfg.Mattermost[name], name, c)

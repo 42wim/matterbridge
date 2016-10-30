@@ -3,6 +3,9 @@ package config
 import (
 	"github.com/BurntSushi/toml"
 	"log"
+	"os"
+	"reflect"
+	"strings"
 )
 
 type Message struct {
@@ -79,4 +82,41 @@ func NewConfig(cfgfile string) *Config {
 		log.Fatal(err)
 	}
 	return &cfg
+}
+
+func OverrideCfgFromEnv(cfg *Config, protocol string, account string) {
+	var protoCfg Protocol
+	val := reflect.ValueOf(cfg).Elem()
+	// loop over the Config struct
+	for i := 0; i < val.NumField(); i++ {
+		typeField := val.Type().Field(i)
+		// look for the protocol map (both lowercase)
+		if strings.ToLower(typeField.Name) == protocol {
+			// get the Protocol struct from the map
+			data := val.Field(i).MapIndex(reflect.ValueOf(account))
+			protoCfg = data.Interface().(Protocol)
+			protoStruct := reflect.ValueOf(&protoCfg).Elem()
+			// loop over the found protocol struct
+			for i := 0; i < protoStruct.NumField(); i++ {
+				typeField := protoStruct.Type().Field(i)
+				// build our environment key (eg MATTERBRIDGE_MATTERMOST_WORK_LOGIN)
+				key := "matterbridge_" + protocol + "_" + account + "_" + typeField.Name
+				key = strings.ToUpper(key)
+				// search the environment
+				res := os.Getenv(key)
+				// if it exists and the current field is a string
+				// then update the current field
+				if res != "" {
+					fieldVal := protoStruct.Field(i)
+					if fieldVal.Kind() == reflect.String {
+						log.Printf("config: overriding %s from env with %s\n", key, res)
+						fieldVal.Set(reflect.ValueOf(res))
+					}
+				}
+			}
+			// update the map with the modified Protocol (cfg.Protocol[account] = Protocol)
+			val.Field(i).SetMapIndex(reflect.ValueOf(account), reflect.ValueOf(protoCfg))
+			break
+		}
+	}
 }
