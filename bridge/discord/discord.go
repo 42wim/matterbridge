@@ -125,7 +125,7 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	if b.UseChannelID {
 		channelName = "ID:" + m.ChannelID
 	}
-	b.Remote <- config.Message{Username: m.Author.Username, Text: m.Content, Channel: channelName,
+	b.Remote <- config.Message{Username: m.Author.Username, Text: m.ContentWithMentionsReplaced(), Channel: channelName,
 		Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
 }
 
