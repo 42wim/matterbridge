@@ -49,6 +49,17 @@ RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 #OPTIONAL
 IgnoreNicks="ircspammer1 ircspammer2"
 
+#Flood control
+#Delay in milliseconds between each message send to the IRC server
+#OPTIONAL (default 1300)
+MessageDelay=1300
+
+#Maximum amount of messages to hold in queue. If queue is full 
+#messages will be dropped. 
+#<clipped> will be add to the message that fills the queue.
+#OPTIONAL (default 30)
+MessageQueue=30
+
 ###################################################################
 #XMPP section
 ###################################################################

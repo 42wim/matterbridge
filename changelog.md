@@ -7,23 +7,27 @@ See matterbridge.toml.sample for an example
 ### General
 * Allow for bridging the same type of bridge, which means you can eg bridge between multiple mattermosts.
 * The bridge is now actually a gateway which has support multiple in and out bridges. (and supports multiple gateways).
-* Discord support added. See matterbridge.toml.sample for more information
+* Discord support added. See matterbridge.toml.sample for more information.
 * Samechannelgateway support added, easier configuration for 1:1 mapping of protocols with same channel names. #35
-* Better debugging output
-* discord: new protocol support added (http://www.discordapp.com)
-* mattermost: Support attachments 
-* irc: Strip colors #33
+* Support for override from environment variables. #50
+* Better debugging output.
+* discord: New protocol support added. (http://www.discordapp.com)
+* mattermost: Support attachments.
+* irc: Strip colors. #33
+* irc: Anti-flooding support. #40
+* irc: Forward channel notices.
 
 ## Bugfix
-* irc: Split newlines #37
-* irc: Only respond to nick related notices from nickserv
-* irc: Ignore queries send to the bot
-* irc: Ignore messages from ourself
-* irc: only output the "users on irc information" when asked with "!users"
-* mattermost: Fix mattermost channel joins
-* mattermost: drop messages not from our team
-* slack: do not panic on non-existing channels
-* general: exit when a bridge fails to start
+* irc: Split newlines. #37
+* irc: Only respond to nick related notices from nickserv.
+* irc: Ignore queries send to the bot.
+* irc: Ignore messages from ourself.
+* irc: Only output the "users on irc information" when asked with "!users".
+* irc: Actually wait until connection is complete before saying it is.
+* mattermost: Fix mattermost channel joins.
+* mattermost: Drop messages not from our team.
+* slack: Do not panic on non-existing channels.
+* general: Exit when a bridge fails to start.
 
 # v0.6.1
 ## New features
