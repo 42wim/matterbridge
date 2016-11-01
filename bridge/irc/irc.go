@@ -23,6 +23,7 @@ type Birc struct {
 	protocol  string
 	Remote    chan config.Message
 	connected chan struct{}
+	Local     chan config.Message // local queue for flood control
 }
 
 var flog *log.Entry
@@ -32,15 +33,22 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(config config.Protocol, origin string, c chan config.Message) *Birc {
+func New(cfg config.Protocol, origin string, c chan config.Message) *Birc {
 	b := &Birc{}
-	b.Config = &config
+	b.Config = &cfg
 	b.Nick = b.Config.Nick
 	b.Remote = c
 	b.names = make(map[string][]string)
 	b.origin = origin
 	b.protocol = protocol
 	b.connected = make(chan struct{})
+	if b.Config.MessageDelay == 0 {
+		b.Config.MessageDelay = 1300
+	}
+	if b.Config.MessageQueue == 0 {
+		b.Config.MessageQueue = 30
+	}
+	b.Local = make(chan config.Message, b.Config.MessageQueue+10)
 	return b
 }
 
@@ -81,6 +89,7 @@ func (b *Birc) Connect() error {
 		return fmt.Errorf("connection timed out")
 	}
 	i.Debug = false
+	go b.doSend()
 	return nil
 }
 
@@ -115,9 +124,25 @@ func (b *Birc) Send(msg config.Message) error {
 		return nil
 	}
 	for _, text := range strings.Split(msg.Text, "\n") {
-		b.i.Privmsg(msg.Channel, msg.Username+text)
+		if len(b.Local) < b.Config.MessageQueue {
+			if len(b.Local) == b.Config.MessageQueue-1 {
+				text = text + " <message clipped>"
+			}
+			b.Local <- config.Message{Text: text, Username: msg.Username, Channel: msg.Channel}
+		} else {
+			flog.Debugf("flooding, dropping message (queue at %d)", len(b.Local))
+		}
 	}
 	return nil
+}
+
+func (b *Birc) doSend() {
+	rate := time.Millisecond * time.Duration(b.Config.MessageDelay)
+	throttle := time.Tick(rate)
+	for msg := range b.Local {
+		<-throttle
+		b.i.Privmsg(msg.Channel, msg.Username+msg.Text)
+	}
 }
 
 func (b *Birc) endNames(event *irc.Event) {

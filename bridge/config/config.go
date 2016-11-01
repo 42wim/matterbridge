@@ -34,6 +34,8 @@ type Protocol struct {
 	Password               string // IRC,mattermost,XMPP
 	PrefixMessagesWithNick bool   // mattemost, slack
 	Protocol               string //all protocols
+	MessageQueue           int    // IRC, size of message queue for flood control
+	MessageDelay           int    // IRC, time in millisecond to wait between messages
 	RemoteNickFormat       string // all protocols
 	Server                 string // IRC,mattermost,XMPP,discord
 	ShowJoinPart           bool   // all protocols
