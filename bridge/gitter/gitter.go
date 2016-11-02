@@ -51,14 +51,18 @@ func (b *Bgitter) FullOrigin() string {
 }
 
 func (b *Bgitter) JoinChannel(channel string) error {
-	_, err := b.c.JoinRoom(channel)
-	if err != nil {
-		return err
-	}
 	room := channel
 	roomID := b.getRoomID(room)
 	if roomID == "" {
 		return nil
+	}
+	user, err := b.c.GetUser()
+	if err != nil {
+		return err
+	}
+	_, err = b.c.JoinRoom(roomID, user.ID)
+	if err != nil {
+		return err
 	}
 	stream := b.c.Stream(roomID)
 	go b.c.Listen(stream)
