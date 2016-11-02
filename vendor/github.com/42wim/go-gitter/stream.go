@@ -57,6 +57,11 @@ Loop:
 		//"The JSON stream returns messages as JSON objects that are delimited by carriage return (\r)" <- Not true crap it's (\n) only
 		reader = bufio.NewReader(resp.Body)
 		line, err := reader.ReadBytes('\n')
+		if err != nil {
+			gitter.log("ReadBytes error: " + err.Error())
+			stream.connect()
+			continue
+		}
 
 		//Check if the line only consists of whitespace
 		onlyWhitespace := true
@@ -76,10 +81,6 @@ Loop:
 			continue
 		} else if stream.isClosed() {
 			gitter.log("Stream closed")
-			continue
-		} else if err != nil {
-			gitter.log("ReadBytes error: " + err.Error())
-			stream.connect()
 			continue
 		}
 

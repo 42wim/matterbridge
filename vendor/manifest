@@ -2,6 +2,14 @@
 	"version": 0,
 	"dependencies": [
 		{
+			"importpath": "github.com/42wim/go-gitter",
+			"repository": "https://github.com/42wim/go-gitter",
+			"vcs": "git",
+			"revision": "ae777f740326ef6b4d910496022649859232ff38",
+			"branch": "fixloop",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/42wim/matterbridge-plus/bridge",
 			"repository": "https://github.com/42wim/matterbridge-plus",
 			"vcs": "git",
@@ -155,14 +163,6 @@
 			"repository": "https://github.com/sorcix/irc",
 			"vcs": "",
 			"revision": "2f0c85e4ec6590c2c6f6ef93b0a86021281ea193",
-			"branch": "master",
-			"notests": true
-		},
-		{
-			"importpath": "github.com/sromku/go-gitter",
-			"repository": "https://github.com/sromku/go-gitter",
-			"vcs": "git",
-			"revision": "932bf9af423ac2da1544cb73540b3b08b1bdb181",
 			"branch": "master",
 			"notests": true
 		},

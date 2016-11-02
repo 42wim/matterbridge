@@ -192,7 +192,7 @@ func (gitter *Gitter) SendMessage(roomID, text string) error {
 
 	message := Message{Text: text}
 	body, _ := json.Marshal(message)
-	err := gitter.post(gitter.config.apiBaseURL+"rooms/"+roomID+"/chatMessages", body)
+	_, err := gitter.post(gitter.config.apiBaseURL+"rooms/"+roomID+"/chatMessages", body)
 	if err != nil {
 		gitter.log(err)
 		return err
@@ -202,31 +202,37 @@ func (gitter *Gitter) SendMessage(roomID, text string) error {
 }
 
 // JoinRoom joins a room
-func (gitter *Gitter) JoinRoom(uri string) (*Room, error) {
+func (gitter *Gitter) JoinRoom(roomID, userID string) (*Room, error) {
 
-	message := Room{URI: uri}
+	message := Room{ID: roomID}
 	body, _ := json.Marshal(message)
-	err := gitter.post(apiBaseURL+"rooms", body)
+	response, err := gitter.post(gitter.config.apiBaseURL+"user/"+userID+"/rooms", body)
+
 	if err != nil {
 		gitter.log(err)
 		return nil, err
 	}
 
-	rooms, err := gitter.GetRooms()
+	var room Room
+	err = json.Unmarshal(response, &room)
 	if err != nil {
 		gitter.log(err)
 		return nil, err
 	}
 
-	for _, room := range rooms {
-		if room.URI == uri {
-			return &room, nil
-		}
+	return &room, nil
+}
+
+// LeaveRoom removes a user from the room
+func (gitter *Gitter) LeaveRoom(roomID, userID string) error {
+
+	_, err := gitter.delete(gitter.config.apiBaseURL + "rooms/" + roomID + "/users/" + userID)
+	if err != nil {
+		gitter.log(err)
+		return err
 	}
 
-	err = APIError{What: fmt.Sprintf("Joined room (%v) not found in list of rooms", uri)}
-	gitter.log(err)
-	return nil, err
+	return nil
 }
 
 // SetDebug traces errors if it's set to true.
@@ -319,11 +325,11 @@ func (gitter *Gitter) get(url string) ([]byte, error) {
 	return body, nil
 }
 
-func (gitter *Gitter) post(url string, body []byte) error {
+func (gitter *Gitter) post(url string, body []byte) ([]byte, error) {
 	r, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 	if err != nil {
 		gitter.log(err)
-		return err
+		return nil, err
 	}
 
 	r.Header.Set("Content-Type", "application/json")
@@ -333,17 +339,56 @@ func (gitter *Gitter) post(url string, body []byte) error {
 	resp, err := gitter.config.client.Do(r)
 	if err != nil {
 		gitter.log(err)
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		err = APIError{What: fmt.Sprintf("Status code: %v", resp.StatusCode)}
 		gitter.log(err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	result, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		gitter.log(err)
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (gitter *Gitter) delete(url string) ([]byte, error) {
+	r, err := http.NewRequest("delete", url, nil)
+	if err != nil {
+		gitter.log(err)
+		return nil, err
+	}
+
+	r.Header.Set("Content-Type", "application/json")
+	r.Header.Set("Accept", "application/json")
+	r.Header.Set("Authorization", "Bearer "+gitter.config.token)
+
+	resp, err := gitter.config.client.Do(r)
+	if err != nil {
+		gitter.log(err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		err = APIError{What: fmt.Sprintf("Status code: %v", resp.StatusCode)}
+		gitter.log(err)
+		return nil, err
+	}
+
+	result, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		gitter.log(err)
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func (gitter *Gitter) log(a interface{}) {
