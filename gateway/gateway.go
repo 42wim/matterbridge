@@ -5,6 +5,7 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
+	"reflect"
 	"strings"
 )
 
@@ -34,7 +35,8 @@ func New(cfg *config.Config, gateway *config.Gateway) error {
 		exists[br.Account] = true
 	}
 	gw.mapChannels()
-	gw.mapIgnores()
+	//TODO fix mapIgnores
+	//gw.mapIgnores()
 	exists = make(map[string]bool)
 	for _, br := range gw.Bridges {
 		err := br.Connect()
@@ -134,29 +136,24 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 	return false
 }
 
-func setNickFormat(msg *config.Message, format string) {
-	if format == "" {
-		msg.Username = msg.Protocol + "." + msg.Origin + "-" + msg.Username + ": "
-		return
+func (gw *Gateway) modifyMessage(msg *config.Message, dest bridge.Bridge) {
+	val := reflect.ValueOf(gw.Config).Elem()
+	for i := 0; i < val.NumField(); i++ {
+		typeField := val.Type().Field(i)
+		// look for the protocol map (both lowercase)
+		if strings.ToLower(typeField.Name) == dest.Protocol() {
+			// get the Protocol struct from the map
+			protoCfg := val.Field(i).MapIndex(reflect.ValueOf(dest.Origin()))
+			setNickFormat(msg, protoCfg.Interface().(config.Protocol))
+			val.Field(i).SetMapIndex(reflect.ValueOf(dest.Origin()), protoCfg)
+			break
+		}
 	}
+}
+
+func setNickFormat(msg *config.Message, cfg config.Protocol) {
+	format := cfg.RemoteNickFormat
 	msg.Username = strings.Replace(format, "{NICK}", msg.Username, -1)
 	msg.Username = strings.Replace(msg.Username, "{BRIDGE}", msg.Origin, -1)
 	msg.Username = strings.Replace(msg.Username, "{PROTOCOL}", msg.Protocol, -1)
-}
-
-func (gw *Gateway) modifyMessage(msg *config.Message, dest bridge.Bridge) {
-	switch dest.Protocol() {
-	case "irc":
-		setNickFormat(msg, gw.Config.IRC[dest.Origin()].RemoteNickFormat)
-	case "gitter":
-		setNickFormat(msg, gw.Config.Gitter[dest.Origin()].RemoteNickFormat)
-	case "xmpp":
-		setNickFormat(msg, gw.Config.Xmpp[dest.Origin()].RemoteNickFormat)
-	case "mattermost":
-		setNickFormat(msg, gw.Config.Mattermost[dest.Origin()].RemoteNickFormat)
-	case "slack":
-		setNickFormat(msg, gw.Config.Slack[dest.Origin()].RemoteNickFormat)
-	case "discord":
-		setNickFormat(msg, gw.Config.Discord[dest.Origin()].RemoteNickFormat)
-	}
 }

@@ -14,6 +14,7 @@ type MMMessage struct {
 	Text     string
 	Channel  string
 	Username string
+	Raw      *slack.MessageEvent
 }
 
 type Bslack struct {
@@ -25,6 +26,7 @@ type Bslack struct {
 	Remote   chan config.Message
 	protocol string
 	origin   string
+	si       *slack.Info
 	channels []slack.Channel
 }
 
@@ -35,13 +37,12 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(config config.Protocol, origin string, c chan config.Message) *Bslack {
+func New(cfg config.Protocol, origin string, c chan config.Message) *Bslack {
 	b := &Bslack{}
-	b.Config = &config
+	b.Config = &cfg
 	b.Remote = c
 	b.protocol = protocol
 	b.origin = origin
-	b.Config.UseAPI = config.UseAPI
 	return b
 }
 
@@ -148,6 +149,10 @@ func (b *Bslack) handleSlack() {
 	time.Sleep(time.Second)
 	flog.Debug("Start listening for Slack messages")
 	for message := range mchan {
+		// do not send messages from ourself
+		if message.Username == b.si.User.Name {
+			continue
+		}
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
 			flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.FullOrigin())
@@ -177,6 +182,7 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 				m.Username = user.Name
 				m.Channel = channel.Name
 				m.Text = ev.Text
+				m.Raw = ev
 				mchan <- m
 			}
 			count++
@@ -184,6 +190,7 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 			flog.Debugf("%#v", ev.Error())
 		case *slack.ConnectedEvent:
 			b.channels = ev.Info.Channels
+			b.si = ev.Info
 		case *slack.InvalidAuthEvent:
 			flog.Fatalf("Invalid Token %#v", ev)
 		default:

@@ -25,10 +25,10 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(config config.Protocol, origin string, c chan config.Message) *Bxmpp {
+func New(cfg config.Protocol, origin string, c chan config.Message) *Bxmpp {
 	b := &Bxmpp{}
 	b.xmppMap = make(map[string]string)
-	b.Config = &config
+	b.Config = &cfg
 	b.protocol = protocol
 	b.origin = origin
 	b.Remote = c

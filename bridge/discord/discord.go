@@ -25,9 +25,9 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(config config.Protocol, origin string, c chan config.Message) *bdiscord {
+func New(cfg config.Protocol, origin string, c chan config.Message) *bdiscord {
 	b := &bdiscord{}
-	b.Config = &config
+	b.Config = &cfg
 	b.Remote = c
 	b.protocol = protocol
 	b.origin = origin

@@ -23,9 +23,9 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(config config.Protocol, origin string, c chan config.Message) *Bgitter {
+func New(cfg config.Protocol, origin string, c chan config.Message) *Bgitter {
 	b := &Bgitter{}
-	b.Config = &config
+	b.Config = &cfg
 	b.Remote = c
 	b.protocol = protocol
 	b.origin = origin
