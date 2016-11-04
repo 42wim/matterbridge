@@ -125,9 +125,11 @@ func (m *MMClient) Login() error {
 		if appErr != nil {
 			d := b.Duration()
 			m.log.Debug(appErr.DetailedError)
+			//TODO more generic fix needed
 			if !strings.Contains(appErr.DetailedError, "connection refused") &&
 				!strings.Contains(appErr.DetailedError, "invalid character") &&
-				!strings.Contains(appErr.DetailedError, "connection reset by peer") {
+				!strings.Contains(appErr.DetailedError, "connection reset by peer") &&
+				!strings.Contains(appErr.DetailedError, "connection timed out") {
 				if appErr.Message == "" {
 					return errors.New(appErr.DetailedError)
 				}
