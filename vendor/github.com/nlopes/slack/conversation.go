@@ -18,7 +18,6 @@ type groupConversation struct {
 	Creator    string   `json:"creator"`
 	IsArchived bool     `json:"is_archived"`
 	Members    []string `json:"members"`
-	NumMembers int      `json:"num_members,omitempty"`
 	Topic      Topic    `json:"topic"`
 	Purpose    Purpose  `json:"purpose"`
 }

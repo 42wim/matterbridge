@@ -21,6 +21,8 @@ type UserProfile struct {
 	Image192           string `json:"image_192"`
 	ImageOriginal      string `json:"image_original"`
 	Title              string `json:"title"`
+	BotID              string `json:"bot_id,omitempty"`
+	ApiAppID           string `json:"api_app_id,omitempty"`
 }
 
 // User contains all the information of a user
@@ -53,6 +55,39 @@ type UserPresence struct {
 	ManualAway      bool     `json:"manual_away,omitempty"`
 	ConnectionCount int      `json:"connection_count,omitempty"`
 	LastActivity    JSONTime `json:"last_activity,omitempty"`
+}
+
+type UserIdentityResponse struct {
+	User UserIdentity `json:"user"`
+	Team TeamIdentity `json:"team"`
+	SlackResponse
+}
+
+type UserIdentity struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Image24  string `json:"image_24"`
+	Image32  string `json:"image_32"`
+	Image48  string `json:"image_48"`
+	Image72  string `json:"image_72"`
+	Image192 string `json:"image_192"`
+	Image512 string `json:"image_512"`
+}
+
+type TeamIdentity struct {
+	ID            string `json:"id"`
+	Name          string `json:"name"`
+	Domain        string `json:"domain"`
+	Image34       string `json:"image_34"`
+	Image44       string `json:"image_44"`
+	Image68       string `json:"image_68"`
+	Image88       string `json:"image_88"`
+	Image102      string `json:"image_102"`
+	Image132      string `json:"image_132"`
+	Image230      string `json:"image_230"`
+	ImageDefault  bool   `json:"image_default"`
+	ImageOriginal string `json:"image_original"`
 }
 
 type userResponseFull struct {
@@ -137,4 +172,20 @@ func (api *Client) SetUserPresence(presence string) error {
 	}
 	return nil
 
+}
+
+// GetUserIdentity will retrieve user info available per identity scopes
+func (api *Client) GetUserIdentity() (*UserIdentityResponse, error) {
+	values := url.Values{
+		"token": {api.config.token},
+	}
+	response := &UserIdentityResponse{}
+	err := post("users.identity", values, response, api.debug)
+	if err != nil {
+		return nil, err
+	}
+	if !response.Ok {
+		return nil, errors.New(response.Error)
+	}
+	return response, nil
 }

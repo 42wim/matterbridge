@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -96,6 +97,13 @@ func postWithMultipartResponse(path string, filepath string, values url.Values, 
 		return err
 	}
 	defer resp.Body.Close()
+
+	// Slack seems to send an HTML body along with 5xx error codes. Don't parse it.
+	if resp.StatusCode != 200 {
+		logResponse(resp, debug)
+		return fmt.Errorf("Slack server error: %s.", resp.Status)
+	}
+
 	return parseResponseBody(resp.Body, &intf, debug)
 }
 
@@ -116,4 +124,17 @@ func post(path string, values url.Values, intf interface{}, debug bool) error {
 func parseAdminResponse(method string, teamName string, values url.Values, intf interface{}, debug bool) error {
 	endpoint := fmt.Sprintf(SLACK_WEB_API_FORMAT, teamName, method, time.Now().Unix())
 	return postForm(endpoint, values, intf, debug)
+}
+
+func logResponse(resp *http.Response, debug bool) error {
+	if debug {
+		text, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			return err
+		}
+
+		logger.Print(text)
+	}
+
+	return nil
 }

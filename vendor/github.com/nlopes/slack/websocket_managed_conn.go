@@ -90,6 +90,7 @@ func (rtm *RTM) connect(connectionCount int) (*Info, *websocket.Conn, error) {
 			rtm.IncomingEvents <- RTMEvent{"invalid_auth", &InvalidAuthEvent{}}
 			return nil, nil, sErr
 		}
+
 		// any other errors are treated as recoverable and we try again after
 		// sending the event along the IncomingEvents channel
 		rtm.IncomingEvents <- RTMEvent{"connection_error", &ConnectionErrorEvent{
@@ -191,6 +192,18 @@ func (rtm *RTM) handleIncomingEvents(keepRunning <-chan bool) {
 	}
 }
 
+func (rtm *RTM) sendWithDeadline(msg interface{}) error {
+	// set a write deadline on the connection
+	if err := rtm.conn.SetWriteDeadline(time.Now().Add(10 * time.Second)); err != nil {
+		return err
+	}
+	if err := websocket.JSON.Send(rtm.conn, msg); err != nil {
+		return err
+	}
+	// remove write deadline
+	return rtm.conn.SetWriteDeadline(time.Time{})
+}
+
 // sendOutgoingMessage sends the given OutgoingMessage to the slack websocket.
 //
 // It does not currently detect if a outgoing message fails due to a disconnect
@@ -204,8 +217,8 @@ func (rtm *RTM) sendOutgoingMessage(msg OutgoingMessage) {
 		}}
 		return
 	}
-	err := websocket.JSON.Send(rtm.conn, msg)
-	if err != nil {
+
+	if err := rtm.sendWithDeadline(msg); err != nil {
 		rtm.IncomingEvents <- RTMEvent{"outgoing_error", &OutgoingErrorEvent{
 			Message:  msg,
 			ErrorObj: err,
@@ -227,8 +240,8 @@ func (rtm *RTM) ping() error {
 	rtm.pings[id] = time.Now()
 
 	msg := &Ping{ID: id, Type: "ping"}
-	err := websocket.JSON.Send(rtm.conn, msg)
-	if err != nil {
+
+	if err := rtm.sendWithDeadline(msg); err != nil {
 		rtm.Debugf("RTM Error sending 'PING %d': %s", id, err.Error())
 		return err
 	}

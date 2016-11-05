@@ -136,15 +136,9 @@ type Team struct {
 
 // Icons XXX: needs further investigation
 type Icons struct {
-	Image48 string `json:"image_48"`
-}
-
-// Bot contains information about a bot
-type Bot struct {
-	ID      string `json:"id"`
-	Name    string `json:"name"`
-	Deleted bool   `json:"deleted"`
-	Icons   Icons  `json:"icons"`
+	Image36 string `json:"image_36,omitempty"`
+	Image48 string `json:"image_48,omitempty"`
+	Image72 string `json:"image_72,omitempty"`
 }
 
 // Info contains various details about Users, Channels, Bots and the authenticated user.
