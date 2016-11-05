@@ -94,13 +94,12 @@ func (b *Bslack) Origin() string {
 
 func (b *Bslack) Send(msg config.Message) error {
 	flog.Debugf("Receiving %#v", msg)
-	if msg.FullOrigin != b.FullOrigin() {
-		return b.SendType(msg.Username, msg.Text, msg.Channel, "")
+	if msg.FullOrigin == b.FullOrigin() {
+		return nil
 	}
-	return nil
-}
-
-func (b *Bslack) SendType(nick string, message string, channel string, mtype string) error {
+	nick := config.GetNick(&msg, b.Config)
+	message := msg.Text
+	channel := msg.Channel
 	if b.Config.PrefixMessagesWithNick {
 		message = nick + " " + message
 	}
@@ -108,7 +107,7 @@ func (b *Bslack) SendType(nick string, message string, channel string, mtype str
 		matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL}
 		matterMessage.Channel = channel
 		matterMessage.UserName = nick
-		matterMessage.Type = mtype
+		matterMessage.Type = ""
 		matterMessage.Text = message
 		err := b.mh.Send(matterMessage)
 		if err != nil {
@@ -121,8 +120,19 @@ func (b *Bslack) SendType(nick string, message string, channel string, mtype str
 	if err != nil {
 		return err
 	}
-	newmsg := b.rtm.NewOutgoingMessage(message, schannel.ID)
-	b.rtm.SendMessage(newmsg)
+	np := slack.NewPostMessageParameters()
+	if b.Config.PrefixMessagesWithNick == true {
+		np.AsUser = true
+	}
+	np.Username = nick
+	np.IconURL = config.GetIconURL(&msg, b.Config)
+	b.sc.PostMessage(schannel.ID, message, np)
+
+	/*
+	   newmsg := b.rtm.NewOutgoingMessage(message, schannel.ID)
+	   b.rtm.SendMessage(newmsg)
+	*/
+
 	return nil
 }
 

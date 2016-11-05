@@ -103,7 +103,8 @@ func (b *bdiscord) Send(msg config.Message) error {
 		flog.Errorf("Could not find channelID for %v", msg.Channel)
 		return nil
 	}
-	b.c.ChannelMessageSend(channelID, msg.Username+msg.Text)
+	nick := config.GetNick(&msg, b.Config)
+	b.c.ChannelMessageSend(channelID, nick+msg.Text)
 	return nil
 }
 

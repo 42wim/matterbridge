@@ -105,8 +105,9 @@ func (b *Bgitter) Send(msg config.Message) error {
 		flog.Errorf("Could not find roomID for %v", msg.Channel)
 		return nil
 	}
+	nick := config.GetNick(&msg, b.Config)
 	// add ZWSP because gitter echoes our own messages
-	return b.c.SendMessage(roomID, msg.Username+msg.Text+" ​")
+	return b.c.SendMessage(roomID, nick+msg.Text+" ​")
 }
 
 func (b *Bgitter) getRoomID(channel string) string {

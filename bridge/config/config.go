@@ -122,3 +122,19 @@ func OverrideCfgFromEnv(cfg *Config, protocol string, account string) {
 		}
 	}
 }
+
+func GetIconURL(msg *Message, cfg *Protocol) string {
+	iconURL := cfg.IconURL
+	iconURL = strings.Replace(iconURL, "{NICK}", msg.Username, -1)
+	iconURL = strings.Replace(iconURL, "{BRIDGE}", msg.Origin, -1)
+	iconURL = strings.Replace(iconURL, "{PROTOCOL}", msg.Protocol, -1)
+	return iconURL
+}
+
+func GetNick(msg *Message, cfg *Protocol) string {
+	nick := cfg.RemoteNickFormat
+	nick = strings.Replace(nick, "{NICK}", msg.Username, -1)
+	nick = strings.Replace(nick, "{BRIDGE}", msg.Origin, -1)
+	nick = strings.Replace(nick, "{PROTOCOL}", msg.Protocol, -1)
+	return nick
+}

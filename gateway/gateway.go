@@ -117,7 +117,6 @@ func (gw *Gateway) handleMessage(msg config.Message, dest bridge.Bridge) {
 			log.Debug("empty channel")
 			return
 		}
-		gw.modifyMessage(&msg, dest)
 		log.Debugf("Sending %#v from %s (%s) to %s (%s)", msg, msg.FullOrigin, originchannel, dest.FullOrigin(), channel)
 		err := dest.Send(msg)
 		if err != nil {
@@ -144,16 +143,9 @@ func (gw *Gateway) modifyMessage(msg *config.Message, dest bridge.Bridge) {
 		if strings.ToLower(typeField.Name) == dest.Protocol() {
 			// get the Protocol struct from the map
 			protoCfg := val.Field(i).MapIndex(reflect.ValueOf(dest.Origin()))
-			setNickFormat(msg, protoCfg.Interface().(config.Protocol))
+			//config.SetNickFormat(msg, protoCfg.Interface().(config.Protocol))
 			val.Field(i).SetMapIndex(reflect.ValueOf(dest.Origin()), protoCfg)
 			break
 		}
 	}
-}
-
-func setNickFormat(msg *config.Message, cfg config.Protocol) {
-	format := cfg.RemoteNickFormat
-	msg.Username = strings.Replace(format, "{NICK}", msg.Username, -1)
-	msg.Username = strings.Replace(msg.Username, "{BRIDGE}", msg.Origin, -1)
-	msg.Username = strings.Replace(msg.Username, "{PROTOCOL}", msg.Protocol, -1)
 }

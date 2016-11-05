@@ -106,10 +106,10 @@ func (b *Bmattermost) Protocol() string {
 
 func (b *Bmattermost) Send(msg config.Message) error {
 	flog.Debugf("Receiving %#v", msg)
-	return b.SendType(msg.Username, msg.Text, msg.Channel, "")
-}
+	nick := config.GetNick(&msg, b.Config)
+	message := msg.Text
+	channel := msg.Channel
 
-func (b *Bmattermost) SendType(nick string, message string, channel string, mtype string) error {
 	if b.Config.PrefixMessagesWithNick {
 		/*if IsMarkup(message) {
 			message = nick + "\n\n" + message
@@ -122,7 +122,7 @@ func (b *Bmattermost) SendType(nick string, message string, channel string, mtyp
 		matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL}
 		matterMessage.Channel = channel
 		matterMessage.UserName = nick
-		matterMessage.Type = mtype
+		matterMessage.Type = ""
 		matterMessage.Text = message
 		err := b.mh.Send(matterMessage)
 		if err != nil {

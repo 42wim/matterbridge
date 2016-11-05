@@ -123,12 +123,13 @@ func (b *Birc) Send(msg config.Message) error {
 		b.Command(&msg)
 		return nil
 	}
+	nick := config.GetNick(&msg, b.Config)
 	for _, text := range strings.Split(msg.Text, "\n") {
 		if len(b.Local) < b.Config.MessageQueue {
 			if len(b.Local) == b.Config.MessageQueue-1 {
 				text = text + " <message clipped>"
 			}
-			b.Local <- config.Message{Text: text, Username: msg.Username, Channel: msg.Channel}
+			b.Local <- config.Message{Text: text, Username: nick, Channel: msg.Channel}
 		} else {
 			flog.Debugf("flooding, dropping message (queue at %d)", len(b.Local))
 		}

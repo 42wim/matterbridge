@@ -71,7 +71,8 @@ func (b *Bxmpp) Origin() string {
 
 func (b *Bxmpp) Send(msg config.Message) error {
 	flog.Debugf("Receiving %#v", msg)
-	b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.Config.Muc, Text: msg.Username + msg.Text})
+	nick := config.GetNick(&msg, b.Config)
+	b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.Config.Muc, Text: nick + msg.Text})
 	return nil
 }
 

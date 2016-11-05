@@ -41,7 +41,7 @@ NickServPassword="secret"
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
-#OPTIONAL (default {BRIDGE}-{NICK})
+#OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Nicks you want to ignore. 
@@ -166,7 +166,7 @@ PrefixMessagesWithNick=false
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
-#OPTIONAL (default {BRIDGE}-{NICK})
+#OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #how to format the list of IRC nicks when displayed in mattermost. 
@@ -205,7 +205,7 @@ IgnoreNicks="spammer1 spammer2"
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
-#OPTIONAL (default {BRIDGE}-{NICK})
+#OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 ###################################################################
@@ -232,10 +232,6 @@ URL="https://hooks.slack.com/services/yourhook"
 #REQUIRED (unless useAPI=true)
 BindAddress="0.0.0.0:9999"
 
-#Icon that will be showed in slack
-#OPTIONAL
-IconURL="http://youricon.png"
-
 #### Settings for using slack API
 #OPTIONAL
 useAPI=false
@@ -246,7 +242,14 @@ Token="yourslacktoken"
 
 #### Shared settings for webhooks and API
 
-#Whether to prefix messages from other bridges to mattermost with the sender's nick. 
+#Icon that will be showed in slack
+#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
+#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
+#OPTIONAL
+IconURL="https://robohash.org/{NICK}.png?size=48x48"
+
+#Whether to prefix messages from other bridges to mattermost with RemoteNickFormat
 #Useful if username overrides for incoming webhooks isn't enabled on the 
 #slack server. If you set PrefixMessagesWithNick to true, each message 
 #from bridge to Slack will by default be prefixed by "bridge-" + nick. You can, 
@@ -257,8 +260,8 @@ PrefixMessagesWithNick=false
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
-#OPTIONAL (default {BRIDGE}-{NICK})
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
+#OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #how to format the list of IRC nicks when displayed in slack
@@ -300,7 +303,7 @@ IgnoreNicks="spammer1 spammer2"
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
-#OPTIONAL (default {BRIDGE}-{NICK})
+#OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 
