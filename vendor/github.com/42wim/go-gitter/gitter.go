@@ -125,6 +125,24 @@ func (gitter *Gitter) GetRooms() ([]Room, error) {
 	return rooms, nil
 }
 
+// GetUsersInRoom returns the users in the room with the passed id
+func (gitter *Gitter) GetUsersInRoom(roomID string) ([]User, error) {
+
+	var users []User
+	response, err := gitter.get(gitter.config.apiBaseURL + "rooms/" + roomID + "/users")
+	if err != nil {
+		gitter.log(err)
+		return nil, err
+	}
+
+	err = json.Unmarshal(response, &users)
+	if err != nil {
+		gitter.log(err)
+		return nil, err
+	}
+	return users, nil
+}
+
 // GetRoom returns a room with the passed id
 func (gitter *Gitter) GetRoom(roomID string) (*Room, error) {
 

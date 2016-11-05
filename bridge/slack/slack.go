@@ -24,6 +24,7 @@ type Bslack struct {
 	rtm      *slack.RTM
 	Plus     bool
 	Remote   chan config.Message
+	Users    []slack.User
 	protocol string
 	origin   string
 	si       *slack.Info
@@ -126,6 +127,9 @@ func (b *Bslack) Send(msg config.Message) error {
 	}
 	np.Username = nick
 	np.IconURL = config.GetIconURL(&msg, b.Config)
+	if msg.Avatar != "" {
+		np.IconURL = msg.Avatar
+	}
 	b.sc.PostMessage(schannel.ID, message, np)
 
 	/*
@@ -134,6 +138,18 @@ func (b *Bslack) Send(msg config.Message) error {
 	*/
 
 	return nil
+}
+
+func (b *Bslack) getAvatar(user string) string {
+	var avatar string
+	if b.Users != nil {
+		for _, u := range b.Users {
+			if user == u.Name {
+				return u.Profile.Image48
+			}
+		}
+	}
+	return avatar
 }
 
 func (b *Bslack) getChannelByName(name string) (*slack.Channel, error) {
@@ -166,7 +182,7 @@ func (b *Bslack) handleSlack() {
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
 			flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.FullOrigin())
-			b.Remote <- config.Message{Text: text, Username: message.Username, Channel: message.Channel, Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
+			b.Remote <- config.Message{Text: text, Username: message.Username, Channel: message.Channel, Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin(), Avatar: b.getAvatar(message.Username)}
 		}
 	}
 }
@@ -201,6 +217,7 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 		case *slack.ConnectedEvent:
 			b.channels = ev.Info.Channels
 			b.si = ev.Info
+			b.Users, _ = b.sc.GetUsers()
 		case *slack.InvalidAuthEvent:
 			flog.Fatalf("Invalid Token %#v", ev)
 		default:

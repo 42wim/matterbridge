@@ -15,6 +15,7 @@ type Message struct {
 	Origin     string
 	FullOrigin string
 	Protocol   string
+	Avatar     string
 }
 
 type Protocol struct {

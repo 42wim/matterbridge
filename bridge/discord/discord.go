@@ -127,7 +127,7 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 		channelName = "ID:" + m.ChannelID
 	}
 	b.Remote <- config.Message{Username: m.Author.Username, Text: m.ContentWithMentionsReplaced(), Channel: channelName,
-		Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
+		Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin(), Avatar: "https://cdn.discordapp.com/avatars/" + m.Author.ID + "/" + m.Author.Avatar + ".jpg"}
 }
 
 func (b *bdiscord) getChannelID(name string) string {

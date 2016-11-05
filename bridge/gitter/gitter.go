@@ -13,6 +13,7 @@ type Bgitter struct {
 	Remote   chan config.Message
 	protocol string
 	origin   string
+	Users    []gitter.User
 	Rooms    []gitter.Room
 }
 
@@ -64,6 +65,8 @@ func (b *Bgitter) JoinChannel(channel string) error {
 	if err != nil {
 		return err
 	}
+	users, _ := b.c.GetUsersInRoom(roomID)
+	b.Users = append(b.Users, users...)
 	stream := b.c.Stream(roomID)
 	go b.c.Listen(stream)
 
@@ -76,7 +79,7 @@ func (b *Bgitter) JoinChannel(channel string) error {
 				if !strings.HasSuffix(ev.Message.Text, "​") {
 					flog.Debugf("Sending message from %s on %s to gateway", ev.Message.From.Username, b.FullOrigin())
 					b.Remote <- config.Message{Username: ev.Message.From.Username, Text: ev.Message.Text, Channel: room,
-						Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
+						Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin(), Avatar: b.getAvatar(ev.Message.From.Username)}
 				}
 			case *gitter.GitterConnectionClosed:
 				flog.Errorf("connection with gitter closed for room %s", room)
@@ -117,4 +120,16 @@ func (b *Bgitter) getRoomID(channel string) string {
 		}
 	}
 	return ""
+}
+
+func (b *Bgitter) getAvatar(user string) string {
+	var avatar string
+	if b.Users != nil {
+		for _, u := range b.Users {
+			if user == u.Username {
+				return u.AvatarURLSmall
+			}
+		}
+	}
+	return avatar
 }
