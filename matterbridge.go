@@ -49,12 +49,11 @@ func main() {
 			continue
 		}
 		fmt.Printf("starting gateway %#v\n", gw.Name)
-		go func(gw config.Gateway) {
-			err := gateway.New(cfg, &gw)
-			if err != nil {
-				log.Debugf("starting gateway failed %#v", err)
-			}
-		}(gw)
+		g := gateway.New(cfg, &gw)
+		err := g.Start()
+		if err != nil {
+			log.Debugf("starting gateway failed %#v", err)
+		}
 	}
 	select {}
 }

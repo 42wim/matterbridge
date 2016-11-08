@@ -17,49 +17,60 @@ type Gateway struct {
 	ChannelsIn  map[string][]string
 	ignoreNicks map[string][]string
 	Name        string
+	Message     chan config.Message
 }
 
-func New(cfg *config.Config, gateway *config.Gateway) error {
-	c := make(chan config.Message)
+func New(cfg *config.Config, gateway *config.Gateway) *Gateway {
 	gw := &Gateway{}
 	gw.Name = gateway.Name
 	gw.Config = cfg
 	gw.MyConfig = gateway
-	exists := make(map[string]bool)
-	for _, br := range append(gateway.In, gateway.Out...) {
-		if exists[br.Account] {
-			continue
-		}
-		log.Infof("Starting bridge: %s channel: %s", br.Account, br.Channel)
-		gw.Bridges = append(gw.Bridges, bridge.New(cfg, &br, c))
-		exists[br.Account] = true
-	}
-	gw.mapChannels()
-	//TODO fix mapIgnores
-	//gw.mapIgnores()
-	exists = make(map[string]bool)
+	gw.Message = make(chan config.Message)
+	return gw
+}
+
+func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 	for _, br := range gw.Bridges {
-		err := br.Connect()
-		if err != nil {
-			log.Fatalf("Bridge %s failed to start: %v", br.FullOrigin(), err)
+		if br.FullOrigin() == cfg.Account {
+			return nil
 		}
-		for _, channel := range append(gw.ChannelsOut[br.FullOrigin()], gw.ChannelsIn[br.FullOrigin()]...) {
-			if exists[br.FullOrigin()+channel] {
-				continue
-			}
+	}
+	log.Infof("Starting bridge: %s ", cfg.Account)
+	br := bridge.New(gw.Config, cfg, gw.Message)
+	gw.Bridges = append(gw.Bridges, br)
+	err := br.Connect()
+	if err != nil {
+		return fmt.Errorf("Bridge %s failed to start: %v", br.FullOrigin(), err)
+	}
+	exists := make(map[string]bool)
+	for _, channel := range append(gw.ChannelsOut[br.FullOrigin()], gw.ChannelsIn[br.FullOrigin()]...) {
+		if !exists[br.FullOrigin()+channel] {
 			log.Infof("%s: joining %s", br.FullOrigin(), channel)
 			br.JoinChannel(channel)
 			exists[br.FullOrigin()+channel] = true
 		}
 	}
-	gw.handleReceive(c)
 	return nil
 }
 
-func (gw *Gateway) handleReceive(c chan config.Message) {
+func (gw *Gateway) Start() error {
+	gw.mapChannels()
+	for _, br := range append(gw.MyConfig.In, gw.MyConfig.Out...) {
+		err := gw.AddBridge(&br)
+		if err != nil {
+			return err
+		}
+	}
+	//TODO fix mapIgnores
+	//gw.mapIgnores()
+	go gw.handleReceive()
+	return nil
+}
+
+func (gw *Gateway) handleReceive() {
 	for {
 		select {
-		case msg := <-c:
+		case msg := <-gw.Message:
 			for _, br := range gw.Bridges {
 				gw.handleMessage(msg, br)
 			}
