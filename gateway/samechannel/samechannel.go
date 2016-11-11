@@ -54,12 +54,16 @@ func (gw *SameChannelGateway) handleReceive(c chan config.Message) {
 }
 
 func (gw *SameChannelGateway) handleMessage(msg config.Message, dest bridge.Bridge) {
+	// is this a configured channel
+	if !gw.validChannel(msg.Channel) {
+		return
+	}
 	// do not send the message to the bridge we come from if also the channel is the same
 	if msg.FullOrigin == dest.FullOrigin() {
 		return
 	}
 	gw.modifyMessage(&msg, dest)
-	log.Debugf("Sending %#v from %s to %s", msg, msg.FullOrigin, dest.FullOrigin())
+	log.Debugf("Sending %#v from %s (%s) to %s (%s)", msg, msg.FullOrigin, msg.Channel, dest.FullOrigin(), msg.Channel)
 	err := dest.Send(msg)
 	if err != nil {
 		log.Error(err)
@@ -87,4 +91,13 @@ func (gw *SameChannelGateway) modifyMessage(msg *config.Message, dest bridge.Bri
 	case "discord":
 		setNickFormat(msg, gw.Config.Discord[dest.Origin()].RemoteNickFormat)
 	}
+}
+
+func (gw *SameChannelGateway) validChannel(channel string) bool {
+	for _, c := range gw.Channels {
+		if c == channel {
+			return true
+		}
+	}
+	return false
 }
