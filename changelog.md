@@ -1,4 +1,9 @@
-# v0.7-dev
+# v0.8
+Release because of breaking mattermost API changes
+## New features
+* Supports mattermost v3.5.0
+
+# v0.7
 ## Breaking config changes from 0.6 to 0.7
 Matterbridge now uses TOML configuration (https://github.com/toml-lang/toml)
 See matterbridge.toml.sample for an example
