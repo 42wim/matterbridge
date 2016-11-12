@@ -1,8 +1,4 @@
 # matterbridge
-
-:warning: Look at [README-0.6.md] (https://github.com/42wim/matterbridge/blob/master/README-0.6.md) for the documentation of the current stable. 
-The information below is about the develop version.
-
 Simple bridge between mattermost, IRC, XMPP, Gitter, Slack and Discord
 
 * Relays public channel messages between multiple mattermost, IRC, XMPP, Gitter, Slack and Discord. Pick and mix.
@@ -15,7 +11,7 @@ Look at [matterbridge.toml.sample] (https://github.com/42wim/matterbridge/blob/m
 Look at [matterbridge.toml.simple] (https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.simple) for a simple example.
 
 ## Changelog
-Since v0.7.0-dev the configuration has changed. More details in [changelog.md] (https://github.com/42wim/matterbridge/blob/master/changelog.md)
+Since v0.7.0 the configuration has changed. More details in [changelog.md] (https://github.com/42wim/matterbridge/blob/master/changelog.md)
 
 ## Requirements
 Accounts to one of the supported bridges
@@ -34,12 +30,14 @@ docker run -ti -v /tmp/matterbridge.toml:/matterbridge.toml 42wim/matterbridge
 
 ## binaries
 Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/)
-* For use with mattermost 3.3.0+ [v0.6.1](https://github.com/42wim/matterircd/releases/tag/v0.6.1)
-* For use with mattermost 3.0.0-3.2.0 [v0.5.0](https://github.com/42wim/matterircd/releases/tag/v0.5.0)
+* For use with mattermost 3.5.0+ [v0.8.0](https://github.com/42wim/matterircd/releases/tag/v0.8.0)
+* For use with mattermost 3.3.0 - 3.4.0 [v0.7.0](https://github.com/42wim/matterircd/releases/tag/v0.7.0)
+* For use with mattermost 3.0.0 - 3.2.0 [v0.5.0](https://github.com/42wim/matterircd/releases/tag/v0.5.0) (not maintained anymore)
 
 ## Compatibility
 ### Mattermost 
-* Matterbridge v0.6.1 works with mattermost 3.3.0 and higher [3.3.0 release](https://github.com/mattermost/platform/releases/tag/v3.3.0)
+* Matterbridge v0.8.0 works with mattermost 3.5.0+ [3.5.0 release](https://github.com/mattermost/platform/releases/tag/v3.5.0)
+* Matterbridge v0.7.0 works with mattermost 3.3.0 - 3.4.0 [3.4.0 release](https://github.com/mattermost/platform/releases/tag/v3.4.0)
 * Matterbridge v0.5.0 works with mattermost 3.0.0 - 3.2.0 [3.2.0 release](https://github.com/mattermost/platform/releases/tag/v3.2.0)
 
 
