@@ -15,7 +15,6 @@ import (
 )
 
 const (
-	ROLE_SYSTEM_ADMIN          = "system_admin"
 	USER_NOTIFY_ALL            = "all"
 	USER_NOTIFY_MENTION        = "mention"
 	USER_NOTIFY_NONE           = "none"
@@ -233,14 +232,15 @@ func (u *User) Sanitize(options map[string]bool) {
 	if len(options) != 0 && !options["passwordupdate"] {
 		u.LastPasswordUpdate = 0
 	}
+	if len(options) != 0 && !options["authservice"] {
+		u.AuthService = ""
+	}
 }
 
 func (u *User) ClearNonProfileFields() {
 	u.Password = ""
 	u.AuthData = new(string)
 	*u.AuthData = ""
-	u.AuthService = ""
-	u.MfaActive = false
 	u.MfaSecret = ""
 	u.EmailVerified = false
 	u.AllowMarketing = false
@@ -319,9 +319,17 @@ func (u *User) GetDisplayNameForPreference(nameFormat string) string {
 	return displayName
 }
 
+func (u *User) GetRoles() []string {
+	return strings.Fields(u.Roles)
+}
+
+func (u *User) GetRawRoles() string {
+	return u.Roles
+}
+
 func IsValidUserRoles(userRoles string) bool {
 
-	roles := strings.Split(userRoles, " ")
+	roles := strings.Fields(userRoles)
 
 	for _, r := range roles {
 		if !isValidRole(r) {
@@ -329,19 +337,17 @@ func IsValidUserRoles(userRoles string) bool {
 		}
 	}
 
+	// Exclude just the system_admin role explicitly to prevent mistakes
+	if len(roles) == 1 && roles[0] == "system_admin" {
+		return false
+	}
+
 	return true
 }
 
-func isValidRole(role string) bool {
-	if role == "" {
-		return true
-	}
-
-	if role == ROLE_SYSTEM_ADMIN {
-		return true
-	}
-
-	return false
+func isValidRole(roleId string) bool {
+	_, ok := BuiltInRoles[roleId]
+	return ok
 }
 
 // Make sure you acually want to use this function. In context.go there are functions to check permissions
@@ -403,6 +409,26 @@ func UserMapToJson(u map[string]*User) string {
 func UserMapFromJson(data io.Reader) map[string]*User {
 	decoder := json.NewDecoder(data)
 	var users map[string]*User
+	err := decoder.Decode(&users)
+	if err == nil {
+		return users
+	} else {
+		return nil
+	}
+}
+
+func UserListToJson(u []*User) string {
+	b, err := json.Marshal(u)
+	if err != nil {
+		return ""
+	} else {
+		return string(b)
+	}
+}
+
+func UserListFromJson(data io.Reader) []*User {
+	decoder := json.NewDecoder(data)
+	var users []*User
 	err := decoder.Decode(&users)
 	if err == nil {
 		return users

@@ -153,7 +153,7 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 	for message := range b.mc.MessageChan {
 		// do not post our own messages back to irc
 		// only listen to message from our team
-		if message.Raw.Event == "posted" && b.mc.User.Username != message.Username && message.Raw.TeamId == b.TeamId {
+		if message.Raw.Event == "posted" && b.mc.User.Username != message.Username && message.Raw.Data["team_id"].(string) == b.TeamId {
 			flog.Debugf("Receiving from matterclient %#v", message)
 			m := &MMMessage{}
 			m.Username = message.Username

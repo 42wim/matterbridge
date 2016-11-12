@@ -11,7 +11,7 @@ import (
 
 const (
 	SESSION_COOKIE_TOKEN  = "MMAUTHTOKEN"
-	SESSION_CACHE_SIZE    = 10000
+	SESSION_CACHE_SIZE    = 25000
 	SESSION_PROP_PLATFORM = "platform"
 	SESSION_PROP_OS       = "os"
 	SESSION_PROP_BROWSER  = "browser"
@@ -113,6 +113,10 @@ func (me *Session) GetTeamByTeamId(teamId string) *TeamMember {
 func (me *Session) IsMobileApp() bool {
 	return len(me.DeviceId) > 0 &&
 		(strings.HasPrefix(me.DeviceId, PUSH_NOTIFY_APPLE+":") || strings.HasPrefix(me.DeviceId, PUSH_NOTIFY_ANDROID+":"))
+}
+
+func (me *Session) GetUserRoles() []string {
+	return strings.Fields(me.Roles)
 }
 
 func SessionsToJson(o []*Session) string {
