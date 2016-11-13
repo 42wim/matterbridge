@@ -275,7 +275,7 @@ func (m *MMClient) parseActionPost(rmsg *Message) {
 }
 
 func (m *MMClient) UpdateUsers() error {
-	mmusers, err := m.Client.GetProfiles(0, 1000, "")
+	mmusers, err := m.Client.GetProfiles(0, 5000, "")
 	if err != nil {
 		return errors.New(err.DetailedError)
 	}
@@ -542,14 +542,12 @@ func (m *MMClient) GetTeamFromChannel(channelId string) string {
 func (m *MMClient) GetLastViewedAt(channelId string) int64 {
 	m.RLock()
 	defer m.RUnlock()
-	/*
-		for _, t := range m.OtherTeams {
-			if _, ok := t.Channels.Members[channelId]; ok {
-				return t.Channels.Members[channelId].LastViewedAt
-			}
-		}
-	*/
-	return 0
+	res, err := m.Client.GetChannel(channelId, "")
+	if err != nil {
+		return model.GetMillis()
+	}
+	data := res.Data.(*model.ChannelData)
+	return data.Member.LastViewedAt
 }
 
 func (m *MMClient) GetUsers() map[string]*model.User {
@@ -623,7 +621,7 @@ func (m *MMClient) initUser() error {
 	//m.log.Debug("initUser(): loading all team data")
 	for _, v := range initData.Teams {
 		m.Client.SetTeamId(v.Id)
-		mmusers, _ := m.Client.GetProfiles(0, 1000, "")
+		mmusers, _ := m.Client.GetProfiles(0, 5000, "")
 		t := &Team{Team: v, Users: mmusers.Data.(map[string]*model.User), Id: v.Id}
 		mmchannels, _ := m.Client.GetChannels("")
 		t.Channels = mmchannels.Data.(*model.ChannelList)
