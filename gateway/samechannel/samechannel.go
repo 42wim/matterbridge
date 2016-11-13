@@ -4,7 +4,6 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
-	"strings"
 )
 
 type SameChannelGateway struct {
@@ -62,34 +61,10 @@ func (gw *SameChannelGateway) handleMessage(msg config.Message, dest bridge.Brid
 	if msg.FullOrigin == dest.FullOrigin() {
 		return
 	}
-	gw.modifyMessage(&msg, dest)
 	log.Debugf("Sending %#v from %s (%s) to %s (%s)", msg, msg.FullOrigin, msg.Channel, dest.FullOrigin(), msg.Channel)
 	err := dest.Send(msg)
 	if err != nil {
 		log.Error(err)
-	}
-}
-
-func setNickFormat(msg *config.Message, format string) {
-	if format == "" {
-		msg.Username = msg.Protocol + "." + msg.Origin + "-" + msg.Username + ": "
-		return
-	}
-	msg.Username = strings.Replace(format, "{NICK}", msg.Username, -1)
-	msg.Username = strings.Replace(msg.Username, "{BRIDGE}", msg.Origin, -1)
-	msg.Username = strings.Replace(msg.Username, "{PROTOCOL}", msg.Protocol, -1)
-}
-
-func (gw *SameChannelGateway) modifyMessage(msg *config.Message, dest bridge.Bridge) {
-	switch dest.Protocol() {
-	case "irc":
-		setNickFormat(msg, gw.Config.IRC[dest.Origin()].RemoteNickFormat)
-	case "mattermost":
-		setNickFormat(msg, gw.Config.Mattermost[dest.Origin()].RemoteNickFormat)
-	case "slack":
-		setNickFormat(msg, gw.Config.Slack[dest.Origin()].RemoteNickFormat)
-	case "discord":
-		setNickFormat(msg, gw.Config.Discord[dest.Origin()].RemoteNickFormat)
 	}
 }
 
