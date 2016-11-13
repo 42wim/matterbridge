@@ -19,11 +19,10 @@ type Birc struct {
 	Nick      string
 	names     map[string][]string
 	Config    *config.Protocol
-	origin    string
-	protocol  string
 	Remote    chan config.Message
 	connected chan struct{}
 	Local     chan config.Message // local queue for flood control
+	Account   string
 }
 
 var flog *log.Entry
@@ -33,14 +32,13 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(cfg config.Protocol, origin string, c chan config.Message) *Birc {
+func New(cfg config.Protocol, account string, c chan config.Message) *Birc {
 	b := &Birc{}
 	b.Config = &cfg
 	b.Nick = b.Config.Nick
 	b.Remote = c
 	b.names = make(map[string][]string)
-	b.origin = origin
-	b.protocol = protocol
+	b.Account = account
 	b.connected = make(chan struct{})
 	if b.Config.MessageDelay == 0 {
 		b.Config.MessageDelay = 1300
@@ -93,43 +91,26 @@ func (b *Birc) Connect() error {
 	return nil
 }
 
-func (b *Birc) FullOrigin() string {
-	return b.protocol + "." + b.origin
-}
-
 func (b *Birc) JoinChannel(channel string) error {
 	b.i.Join(channel)
 	return nil
 }
 
-func (b *Birc) Name() string {
-	return b.protocol + "." + b.origin
-}
-
-func (b *Birc) Protocol() string {
-	return b.protocol
-}
-
-func (b *Birc) Origin() string {
-	return b.origin
-}
-
 func (b *Birc) Send(msg config.Message) error {
 	flog.Debugf("Receiving %#v", msg)
-	if msg.FullOrigin == b.FullOrigin() {
+	if msg.Account == b.Account {
 		return nil
 	}
 	if strings.HasPrefix(msg.Text, "!") {
 		b.Command(&msg)
 		return nil
 	}
-	nick := config.GetNick(&msg, b.Config)
 	for _, text := range strings.Split(msg.Text, "\n") {
 		if len(b.Local) < b.Config.MessageQueue {
 			if len(b.Local) == b.Config.MessageQueue-1 {
 				text = text + " <message clipped>"
 			}
-			b.Local <- config.Message{Text: text, Username: nick, Channel: msg.Channel}
+			b.Local <- config.Message{Text: text, Username: msg.Username, Channel: msg.Channel}
 		} else {
 			flog.Debugf("flooding, dropping message (queue at %d)", len(b.Local))
 		}
@@ -153,12 +134,12 @@ func (b *Birc) endNames(event *irc.Event) {
 	continued := false
 	for len(b.names[channel]) > maxNamesPerPost {
 		b.Remote <- config.Message{Username: b.Nick, Text: b.formatnicks(b.names[channel][0:maxNamesPerPost], continued),
-			Channel: channel, Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
+			Channel: channel, Account: b.Account}
 		b.names[channel] = b.names[channel][maxNamesPerPost:]
 		continued = true
 	}
-	b.Remote <- config.Message{Username: b.Nick, Text: b.formatnicks(b.names[channel], continued), Channel: channel,
-		Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
+	b.Remote <- config.Message{Username: b.Nick, Text: b.formatnicks(b.names[channel], continued),
+		Channel: channel, Account: b.Account}
 	b.names[channel] = nil
 }
 
@@ -215,8 +196,8 @@ func (b *Birc) handlePrivMsg(event *irc.Event) {
 	// strip IRC colors
 	re := regexp.MustCompile(`[[:cntrl:]](\d+,|)\d+`)
 	msg = re.ReplaceAllString(msg, "")
-	flog.Debugf("Sending message from %s on %s to gateway", event.Arguments[0], b.FullOrigin())
-	b.Remote <- config.Message{Username: event.Nick, Text: msg, Channel: event.Arguments[0], Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
+	flog.Debugf("Sending message from %s on %s to gateway", event.Arguments[0], b.Account)
+	b.Remote <- config.Message{Username: event.Nick, Text: msg, Channel: event.Arguments[0], Account: b.Account}
 }
 
 func (b *Birc) handleTopicWhoTime(event *irc.Event) {

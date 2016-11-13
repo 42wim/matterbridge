@@ -25,8 +25,7 @@ type Bslack struct {
 	Plus     bool
 	Remote   chan config.Message
 	Users    []slack.User
-	protocol string
-	origin   string
+	Account  string
 	si       *slack.Info
 	channels []slack.Channel
 }
@@ -38,12 +37,11 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(cfg config.Protocol, origin string, c chan config.Message) *Bslack {
+func New(cfg config.Protocol, account string, c chan config.Message) *Bslack {
 	b := &Bslack{}
 	b.Config = &cfg
 	b.Remote = c
-	b.protocol = protocol
-	b.origin = origin
+	b.Account = account
 	return b
 }
 
@@ -66,10 +64,6 @@ func (b *Bslack) Connect() error {
 	return nil
 }
 
-func (b *Bslack) FullOrigin() string {
-	return b.protocol + "." + b.origin
-}
-
 func (b *Bslack) JoinChannel(channel string) error {
 	// we can only join channels using the API
 	if b.Config.UseAPI {
@@ -81,24 +75,12 @@ func (b *Bslack) JoinChannel(channel string) error {
 	return nil
 }
 
-func (b *Bslack) Name() string {
-	return b.protocol + "." + b.origin
-}
-
-func (b *Bslack) Protocol() string {
-	return b.protocol
-}
-
-func (b *Bslack) Origin() string {
-	return b.origin
-}
-
 func (b *Bslack) Send(msg config.Message) error {
 	flog.Debugf("Receiving %#v", msg)
-	if msg.FullOrigin == b.FullOrigin() {
+	if msg.Account == b.Account {
 		return nil
 	}
-	nick := config.GetNick(&msg, b.Config)
+	nick := msg.Username
 	message := msg.Text
 	channel := msg.Channel
 	if b.Config.PrefixMessagesWithNick {
@@ -154,14 +136,14 @@ func (b *Bslack) getAvatar(user string) string {
 
 func (b *Bslack) getChannelByName(name string) (*slack.Channel, error) {
 	if b.channels == nil {
-		return nil, fmt.Errorf("%s: channel %s not found (no channels found)", b.FullOrigin(), name)
+		return nil, fmt.Errorf("%s: channel %s not found (no channels found)", b.Account, name)
 	}
 	for _, channel := range b.channels {
 		if channel.Name == name {
 			return &channel, nil
 		}
 	}
-	return nil, fmt.Errorf("%s: channel %s not found", b.FullOrigin(), name)
+	return nil, fmt.Errorf("%s: channel %s not found", b.Account, name)
 }
 
 func (b *Bslack) handleSlack() {
@@ -181,8 +163,8 @@ func (b *Bslack) handleSlack() {
 		}
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
-			flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.FullOrigin())
-			b.Remote <- config.Message{Text: text, Username: message.Username, Channel: message.Channel, Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin(), Avatar: b.getAvatar(message.Username)}
+			flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)
+			b.Remote <- config.Message{Text: text, Username: message.Username, Channel: message.Channel, Account: b.Account, Avatar: b.getAvatar(message.Username)}
 		}
 	}
 }
