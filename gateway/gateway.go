@@ -11,8 +11,9 @@ import (
 
 type Gateway struct {
 	*config.Config
-	MyConfig    *config.Gateway
-	Bridges     []bridge.Bridge
+	MyConfig *config.Gateway
+	//Bridges     []*bridge.Bridge
+	Bridges     map[string]*bridge.Bridge
 	ChannelsOut map[string][]string
 	ChannelsIn  map[string][]string
 	ignoreNicks map[string][]string
@@ -26,28 +27,29 @@ func New(cfg *config.Config, gateway *config.Gateway) *Gateway {
 	gw.Config = cfg
 	gw.MyConfig = gateway
 	gw.Message = make(chan config.Message)
+	gw.Bridges = make(map[string]*bridge.Bridge)
 	return gw
 }
 
 func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 	for _, br := range gw.Bridges {
-		if br.FullOrigin() == cfg.Account {
+		if br.Account == cfg.Account {
 			return nil
 		}
 	}
 	log.Infof("Starting bridge: %s ", cfg.Account)
 	br := bridge.New(gw.Config, cfg, gw.Message)
-	gw.Bridges = append(gw.Bridges, br)
+	gw.Bridges[cfg.Account] = br
 	err := br.Connect()
 	if err != nil {
-		return fmt.Errorf("Bridge %s failed to start: %v", br.FullOrigin(), err)
+		return fmt.Errorf("Bridge %s failed to start: %v", br.Account, err)
 	}
 	exists := make(map[string]bool)
-	for _, channel := range append(gw.ChannelsOut[br.FullOrigin()], gw.ChannelsIn[br.FullOrigin()]...) {
-		if !exists[br.FullOrigin()+channel] {
-			log.Infof("%s: joining %s", br.FullOrigin(), channel)
+	for _, channel := range append(gw.ChannelsOut[br.Account], gw.ChannelsIn[br.Account]...) {
+		if !exists[br.Account+channel] {
+			log.Infof("%s: joining %s", br.Account, channel)
 			br.JoinChannel(channel)
-			exists[br.FullOrigin()+channel] = true
+			exists[br.Account+channel] = true
 		}
 	}
 	return nil
@@ -103,7 +105,7 @@ func (gw *Gateway) mapIgnores() {
 }
 
 func (gw *Gateway) getDestChannel(msg *config.Message, dest string) []string {
-	channels := gw.ChannelsIn[msg.FullOrigin]
+	channels := gw.ChannelsIn[msg.Account]
 	for _, channel := range channels {
 		if channel == msg.Channel {
 			return gw.ChannelsOut[dest]
@@ -112,15 +114,15 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest string) []string {
 	return []string{}
 }
 
-func (gw *Gateway) handleMessage(msg config.Message, dest bridge.Bridge) {
+func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 	if gw.ignoreMessage(&msg) {
 		return
 	}
 	originchannel := msg.Channel
-	channels := gw.getDestChannel(&msg, dest.FullOrigin())
+	channels := gw.getDestChannel(&msg, dest.Account)
 	for _, channel := range channels {
 		// do not send the message to the bridge we come from if also the channel is the same
-		if msg.FullOrigin == dest.FullOrigin() && channel == originchannel {
+		if msg.Account == dest.Account && channel == originchannel {
 			continue
 		}
 		msg.Channel = channel
@@ -128,7 +130,8 @@ func (gw *Gateway) handleMessage(msg config.Message, dest bridge.Bridge) {
 			log.Debug("empty channel")
 			return
 		}
-		log.Debugf("Sending %#v from %s (%s) to %s (%s)", msg, msg.FullOrigin, originchannel, dest.FullOrigin(), channel)
+		log.Debugf("Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, originchannel, dest.Account, channel)
+		gw.modifyUsername(&msg, dest)
 		err := dest.Send(msg)
 		if err != nil {
 			fmt.Println(err)
@@ -138,7 +141,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest bridge.Bridge) {
 
 func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 	// should we discard messages ?
-	for _, entry := range gw.ignoreNicks[msg.FullOrigin] {
+	for _, entry := range gw.ignoreNicks[msg.Account] {
 		if msg.Username == entry {
 			return true
 		}
@@ -146,17 +149,26 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 	return false
 }
 
-func (gw *Gateway) modifyMessage(msg *config.Message, dest bridge.Bridge) {
+func (gw *Gateway) modifyMessage(msg *config.Message, dest *bridge.Bridge) {
 	val := reflect.ValueOf(gw.Config).Elem()
 	for i := 0; i < val.NumField(); i++ {
 		typeField := val.Type().Field(i)
 		// look for the protocol map (both lowercase)
-		if strings.ToLower(typeField.Name) == dest.Protocol() {
+		if strings.ToLower(typeField.Name) == dest.Protocol {
 			// get the Protocol struct from the map
-			protoCfg := val.Field(i).MapIndex(reflect.ValueOf(dest.Origin()))
+			protoCfg := val.Field(i).MapIndex(reflect.ValueOf(dest.Name))
 			//config.SetNickFormat(msg, protoCfg.Interface().(config.Protocol))
-			val.Field(i).SetMapIndex(reflect.ValueOf(dest.Origin()), protoCfg)
+			val.Field(i).SetMapIndex(reflect.ValueOf(dest.Name), protoCfg)
 			break
 		}
 	}
+}
+
+func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) {
+	br := gw.Bridges[msg.Account]
+	nick := dest.Config.RemoteNickFormat
+	nick = strings.Replace(nick, "{NICK}", msg.Username, -1)
+	nick = strings.Replace(nick, "{BRIDGE}", br.Name, -1)
+	nick = strings.Replace(nick, "{PROTOCOL}", br.Protocol, -1)
+	msg.Username = nick
 }

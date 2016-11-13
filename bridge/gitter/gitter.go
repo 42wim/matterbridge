@@ -8,13 +8,12 @@ import (
 )
 
 type Bgitter struct {
-	c        *gitter.Gitter
-	Config   *config.Protocol
-	Remote   chan config.Message
-	protocol string
-	origin   string
-	Users    []gitter.User
-	Rooms    []gitter.Room
+	c       *gitter.Gitter
+	Config  *config.Protocol
+	Remote  chan config.Message
+	Account string
+	Users   []gitter.User
+	Rooms   []gitter.Room
 }
 
 var flog *log.Entry
@@ -24,12 +23,11 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(cfg config.Protocol, origin string, c chan config.Message) *Bgitter {
+func New(cfg config.Protocol, account string, c chan config.Message) *Bgitter {
 	b := &Bgitter{}
 	b.Config = &cfg
 	b.Remote = c
-	b.protocol = protocol
-	b.origin = origin
+	b.Account = account
 	return b
 }
 
@@ -45,10 +43,6 @@ func (b *Bgitter) Connect() error {
 	flog.Info("Connection succeeded")
 	b.Rooms, _ = b.c.GetRooms()
 	return nil
-}
-
-func (b *Bgitter) FullOrigin() string {
-	return b.protocol + "." + b.origin
 }
 
 func (b *Bgitter) JoinChannel(channel string) error {
@@ -77,9 +71,9 @@ func (b *Bgitter) JoinChannel(channel string) error {
 			case *gitter.MessageReceived:
 				// check for ZWSP to see if it's not an echo
 				if !strings.HasSuffix(ev.Message.Text, "​") {
-					flog.Debugf("Sending message from %s on %s to gateway", ev.Message.From.Username, b.FullOrigin())
+					flog.Debugf("Sending message from %s on %s to gateway", ev.Message.From.Username, b.Account)
 					b.Remote <- config.Message{Username: ev.Message.From.Username, Text: ev.Message.Text, Channel: room,
-						Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin(), Avatar: b.getAvatar(ev.Message.From.Username)}
+						Account: b.Account, Avatar: b.getAvatar(ev.Message.From.Username)}
 				}
 			case *gitter.GitterConnectionClosed:
 				flog.Errorf("connection with gitter closed for room %s", room)
@@ -89,18 +83,6 @@ func (b *Bgitter) JoinChannel(channel string) error {
 	return nil
 }
 
-func (b *Bgitter) Name() string {
-	return b.protocol + "." + b.origin
-}
-
-func (b *Bgitter) Protocol() string {
-	return b.protocol
-}
-
-func (b *Bgitter) Origin() string {
-	return b.origin
-}
-
 func (b *Bgitter) Send(msg config.Message) error {
 	flog.Debugf("Receiving %#v", msg)
 	roomID := b.getRoomID(msg.Channel)
@@ -108,9 +90,8 @@ func (b *Bgitter) Send(msg config.Message) error {
 		flog.Errorf("Could not find roomID for %v", msg.Channel)
 		return nil
 	}
-	nick := config.GetNick(&msg, b.Config)
 	// add ZWSP because gitter echoes our own messages
-	return b.c.SendMessage(roomID, nick+msg.Text+" ​")
+	return b.c.SendMessage(roomID, msg.Username+msg.Text+" ​")
 }
 
 func (b *Bgitter) getRoomID(channel string) string {

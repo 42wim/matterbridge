@@ -9,13 +9,11 @@ import (
 )
 
 type Message struct {
-	Text       string
-	Channel    string
-	Username   string
-	Origin     string
-	FullOrigin string
-	Protocol   string
-	Avatar     string
+	Text     string
+	Channel  string
+	Username string
+	Avatar   string
+	Account  string
 }
 
 type Protocol struct {
@@ -126,16 +124,11 @@ func OverrideCfgFromEnv(cfg *Config, protocol string, account string) {
 
 func GetIconURL(msg *Message, cfg *Protocol) string {
 	iconURL := cfg.IconURL
+	info := strings.Split(msg.Account, ".")
+	protocol := info[0]
+	name := info[1]
 	iconURL = strings.Replace(iconURL, "{NICK}", msg.Username, -1)
-	iconURL = strings.Replace(iconURL, "{BRIDGE}", msg.Origin, -1)
-	iconURL = strings.Replace(iconURL, "{PROTOCOL}", msg.Protocol, -1)
+	iconURL = strings.Replace(iconURL, "{BRIDGE}", name, -1)
+	iconURL = strings.Replace(iconURL, "{PROTOCOL}", protocol, -1)
 	return iconURL
-}
-
-func GetNick(msg *Message, cfg *Protocol) string {
-	nick := cfg.RemoteNickFormat
-	nick = strings.Replace(nick, "{NICK}", msg.Username, -1)
-	nick = strings.Replace(nick, "{BRIDGE}", msg.Origin, -1)
-	nick = strings.Replace(nick, "{PROTOCOL}", msg.Protocol, -1)
-	return nick
 }

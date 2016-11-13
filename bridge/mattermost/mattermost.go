@@ -26,12 +26,11 @@ type MMMessage struct {
 type Bmattermost struct {
 	MMhook
 	MMapi
-	Config   *config.Protocol
-	Remote   chan config.Message
-	name     string
-	origin   string
-	protocol string
-	TeamId   string
+	Config  *config.Protocol
+	Remote  chan config.Message
+	name    string
+	TeamId  string
+	Account string
 }
 
 var flog *log.Entry
@@ -41,13 +40,11 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(cfg config.Protocol, origin string, c chan config.Message) *Bmattermost {
+func New(cfg config.Protocol, account string, c chan config.Message) *Bmattermost {
 	b := &Bmattermost{}
 	b.Config = &cfg
-	b.origin = origin
 	b.Remote = c
-	b.protocol = "mattermost"
-	b.name = cfg.Name
+	b.Account = account
 	b.mmMap = make(map[string]string)
 	return b
 }
@@ -80,10 +77,6 @@ func (b *Bmattermost) Connect() error {
 	return nil
 }
 
-func (b *Bmattermost) FullOrigin() string {
-	return b.protocol + "." + b.origin
-}
-
 func (b *Bmattermost) JoinChannel(channel string) error {
 	// we can only join channels using the API
 	if b.Config.UseAPI {
@@ -92,21 +85,9 @@ func (b *Bmattermost) JoinChannel(channel string) error {
 	return nil
 }
 
-func (b *Bmattermost) Name() string {
-	return b.protocol + "." + b.origin
-}
-
-func (b *Bmattermost) Origin() string {
-	return b.origin
-}
-
-func (b *Bmattermost) Protocol() string {
-	return b.protocol
-}
-
 func (b *Bmattermost) Send(msg config.Message) error {
 	flog.Debugf("Receiving %#v", msg)
-	nick := config.GetNick(&msg, b.Config)
+	nick := msg.Username
 	message := msg.Text
 	channel := msg.Channel
 
@@ -144,8 +125,8 @@ func (b *Bmattermost) handleMatter() {
 		go b.handleMatterHook(mchan)
 	}
 	for message := range mchan {
-		flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.FullOrigin())
-		b.Remote <- config.Message{Text: message.Text, Username: message.Username, Channel: message.Channel, Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
+		flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)
+		b.Remote <- config.Message{Text: message.Text, Username: message.Username, Channel: message.Channel, Account: b.Account}
 	}
 }
 

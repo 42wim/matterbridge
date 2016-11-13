@@ -10,7 +10,7 @@ import (
 type SameChannelGateway struct {
 	*config.Config
 	MyConfig    *config.SameChannelGateway
-	Bridges     []bridge.Bridge
+	Bridges     map[string]*bridge.Bridge
 	Channels    []string
 	ignoreNicks map[string][]string
 	Name        string
@@ -19,6 +19,7 @@ type SameChannelGateway struct {
 func New(cfg *config.Config, gateway *config.SameChannelGateway) error {
 	c := make(chan config.Message)
 	gw := &SameChannelGateway{}
+	gw.Bridges = make(map[string]*bridge.Bridge)
 	gw.Name = gateway.Name
 	gw.Config = cfg
 	gw.MyConfig = gateway
@@ -26,15 +27,15 @@ func New(cfg *config.Config, gateway *config.SameChannelGateway) error {
 	for _, account := range gateway.Accounts {
 		br := config.Bridge{Account: account}
 		log.Infof("Starting bridge: %s", account)
-		gw.Bridges = append(gw.Bridges, bridge.New(cfg, &br, c))
+		gw.Bridges[account] = bridge.New(cfg, &br, c)
 	}
 	for _, br := range gw.Bridges {
 		err := br.Connect()
 		if err != nil {
-			log.Fatalf("Bridge %s failed to start: %v", br.FullOrigin(), err)
+			log.Fatalf("Bridge %s failed to start: %v", br.Account, err)
 		}
 		for _, channel := range gw.Channels {
-			log.Infof("%s: joining %s", br.FullOrigin(), channel)
+			log.Infof("%s: joining %s", br.Account, channel)
 			br.JoinChannel(channel)
 		}
 	}
@@ -53,38 +54,24 @@ func (gw *SameChannelGateway) handleReceive(c chan config.Message) {
 	}
 }
 
-func (gw *SameChannelGateway) handleMessage(msg config.Message, dest bridge.Bridge) {
+func (gw *SameChannelGateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 	// do not send the message to the bridge we come from if also the channel is the same
-	if msg.FullOrigin == dest.FullOrigin() {
+	if msg.Account == dest.Account {
 		return
 	}
-	gw.modifyMessage(&msg, dest)
-	log.Debugf("Sending %#v from %s to %s", msg, msg.FullOrigin, dest.FullOrigin())
+	gw.modifyUsername(&msg, dest)
+	log.Debugf("Sending %#v from %s to %s", msg, msg.Account, dest.Account)
 	err := dest.Send(msg)
 	if err != nil {
 		log.Error(err)
 	}
 }
 
-func setNickFormat(msg *config.Message, format string) {
-	if format == "" {
-		msg.Username = msg.Protocol + "." + msg.Origin + "-" + msg.Username + ": "
-		return
-	}
-	msg.Username = strings.Replace(format, "{NICK}", msg.Username, -1)
-	msg.Username = strings.Replace(msg.Username, "{BRIDGE}", msg.Origin, -1)
-	msg.Username = strings.Replace(msg.Username, "{PROTOCOL}", msg.Protocol, -1)
-}
-
-func (gw *SameChannelGateway) modifyMessage(msg *config.Message, dest bridge.Bridge) {
-	switch dest.Protocol() {
-	case "irc":
-		setNickFormat(msg, gw.Config.IRC[dest.Origin()].RemoteNickFormat)
-	case "mattermost":
-		setNickFormat(msg, gw.Config.Mattermost[dest.Origin()].RemoteNickFormat)
-	case "slack":
-		setNickFormat(msg, gw.Config.Slack[dest.Origin()].RemoteNickFormat)
-	case "discord":
-		setNickFormat(msg, gw.Config.Discord[dest.Origin()].RemoteNickFormat)
-	}
+func (gw *SameChannelGateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) {
+	br := gw.Bridges[msg.Account]
+	nick := dest.Config.RemoteNickFormat
+	nick = strings.Replace(nick, "{NICK}", msg.Username, -1)
+	nick = strings.Replace(nick, "{BRIDGE}", br.Name, -1)
+	nick = strings.Replace(nick, "{PROTOCOL}", br.Protocol, -1)
+	msg.Username = nick
 }

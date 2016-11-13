@@ -10,12 +10,11 @@ import (
 )
 
 type Bxmpp struct {
-	xc       *xmpp.Client
-	xmppMap  map[string]string
-	Config   *config.Protocol
-	origin   string
-	protocol string
-	Remote   chan config.Message
+	xc      *xmpp.Client
+	xmppMap map[string]string
+	Config  *config.Protocol
+	Remote  chan config.Message
+	Account string
 }
 
 var flog *log.Entry
@@ -25,12 +24,11 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(cfg config.Protocol, origin string, c chan config.Message) *Bxmpp {
+func New(cfg config.Protocol, account string, c chan config.Message) *Bxmpp {
 	b := &Bxmpp{}
 	b.xmppMap = make(map[string]string)
 	b.Config = &cfg
-	b.protocol = protocol
-	b.origin = origin
+	b.Account = account
 	b.Remote = c
 	return b
 }
@@ -48,31 +46,14 @@ func (b *Bxmpp) Connect() error {
 	return nil
 }
 
-func (b *Bxmpp) FullOrigin() string {
-	return b.protocol + "." + b.origin
-}
-
 func (b *Bxmpp) JoinChannel(channel string) error {
 	b.xc.JoinMUCNoHistory(channel+"@"+b.Config.Muc, b.Config.Nick)
 	return nil
 }
 
-func (b *Bxmpp) Name() string {
-	return b.protocol + "." + b.origin
-}
-
-func (b *Bxmpp) Protocol() string {
-	return b.protocol
-}
-
-func (b *Bxmpp) Origin() string {
-	return b.origin
-}
-
 func (b *Bxmpp) Send(msg config.Message) error {
 	flog.Debugf("Receiving %#v", msg)
-	nick := config.GetNick(&msg, b.Config)
-	b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.Config.Muc, Text: nick + msg.Text})
+	b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.Config.Muc, Text: msg.Username + msg.Text})
 	return nil
 }
 
@@ -128,8 +109,8 @@ func (b *Bxmpp) handleXmpp() error {
 					nick = s[1]
 				}
 				if nick != b.Config.Nick {
-					flog.Debugf("Sending message from %s on %s to gateway", nick, b.FullOrigin())
-					b.Remote <- config.Message{Username: nick, Text: v.Text, Channel: channel, Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
+					flog.Debugf("Sending message from %s on %s to gateway", nick, b.Account)
+					b.Remote <- config.Message{Username: nick, Text: v.Text, Channel: channel, Account: b.Account}
 				}
 			}
 		case xmpp.Presence:

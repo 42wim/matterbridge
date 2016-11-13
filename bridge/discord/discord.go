@@ -11,8 +11,7 @@ type bdiscord struct {
 	c            *discordgo.Session
 	Config       *config.Protocol
 	Remote       chan config.Message
-	protocol     string
-	origin       string
+	Account      string
 	Channels     []*discordgo.Channel
 	Nick         string
 	UseChannelID bool
@@ -25,12 +24,11 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(cfg config.Protocol, origin string, c chan config.Message) *bdiscord {
+func New(cfg config.Protocol, account string, c chan config.Message) *bdiscord {
 	b := &bdiscord{}
 	b.Config = &cfg
 	b.Remote = c
-	b.protocol = protocol
-	b.origin = origin
+	b.Account = account
 	return b
 }
 
@@ -72,28 +70,12 @@ func (b *bdiscord) Connect() error {
 	return nil
 }
 
-func (b *bdiscord) FullOrigin() string {
-	return b.protocol + "." + b.origin
-}
-
 func (b *bdiscord) JoinChannel(channel string) error {
 	idcheck := strings.Split(channel, "ID:")
 	if len(idcheck) > 1 {
 		b.UseChannelID = true
 	}
 	return nil
-}
-
-func (b *bdiscord) Name() string {
-	return b.protocol + "." + b.origin
-}
-
-func (b *bdiscord) Protocol() string {
-	return b.protocol
-}
-
-func (b *bdiscord) Origin() string {
-	return b.origin
 }
 
 func (b *bdiscord) Send(msg config.Message) error {
@@ -103,8 +85,7 @@ func (b *bdiscord) Send(msg config.Message) error {
 		flog.Errorf("Could not find channelID for %v", msg.Channel)
 		return nil
 	}
-	nick := config.GetNick(&msg, b.Config)
-	b.c.ChannelMessageSend(channelID, nick+msg.Text)
+	b.c.ChannelMessageSend(channelID, msg.Username+msg.Text)
 	return nil
 }
 
@@ -121,13 +102,13 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	if m.Content == "" {
 		return
 	}
-	flog.Debugf("Sending message from %s on %s to gateway", m.Author.Username, b.FullOrigin())
+	flog.Debugf("Sending message from %s on %s to gateway", m.Author.Username, b.Account)
 	channelName := b.getChannelName(m.ChannelID)
 	if b.UseChannelID {
 		channelName = "ID:" + m.ChannelID
 	}
 	b.Remote <- config.Message{Username: m.Author.Username, Text: m.ContentWithMentionsReplaced(), Channel: channelName,
-		Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin(), Avatar: "https://cdn.discordapp.com/avatars/" + m.Author.ID + "/" + m.Author.Avatar + ".jpg"}
+		Account: b.Account, Avatar: "https://cdn.discordapp.com/avatars/" + m.Author.ID + "/" + m.Author.Avatar + ".jpg"}
 }
 
 func (b *bdiscord) getChannelID(name string) string {
