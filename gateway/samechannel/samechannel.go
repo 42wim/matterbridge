@@ -54,7 +54,7 @@ func (gw *SameChannelGateway) handleReceive(c chan config.Message) {
 	}
 }
 
-func (gw *SameChannelGateway) handleMessage(msg config.Message, dest bridge.Bridge) {
+func (gw *SameChannelGateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 	// is this a configured channel
 	if !gw.validChannel(msg.Channel) {
 		return
