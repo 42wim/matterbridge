@@ -288,9 +288,8 @@ IgnoreNicks="mmbot spammer2"
 #Token to connect with Discord API
 #You can get your token by following the instructions on 
 #https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token
-#The "Bot" tag needs to be added before the token
 #REQUIRED
-Token="Bot Yourtokenhere"
+Token="Yourtokenhere"
 
 #REQUIRED
 Server="yourservername"

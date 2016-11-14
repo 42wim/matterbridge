@@ -35,6 +35,9 @@ func New(cfg config.Protocol, account string, c chan config.Message) *bdiscord {
 func (b *bdiscord) Connect() error {
 	var err error
 	flog.Info("Connecting")
+	if !strings.HasPrefix(b.Config.Token, "Bot ") {
+		b.Config.Token = "Bot " + b.Config.Token
+	}
 	b.c, err = discordgo.New(b.Config.Token)
 	if err != nil {
 		flog.Debugf("%#v", err)
