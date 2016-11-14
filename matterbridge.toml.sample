@@ -37,18 +37,6 @@ Nick="matterbot"
 NickServNick="nickserv"
 NickServPassword="secret"
 
-#RemoteNickFormat defines how remote users appear on this bridge 
-#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
-#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
-#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
-#OPTIONAL (default empty)
-RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
-
-#Nicks you want to ignore. 
-#Messages from those users will not be sent to other bridges.
-#OPTIONAL
-IgnoreNicks="ircspammer1 ircspammer2"
-
 #Flood control
 #Delay in milliseconds between each message send to the IRC server
 #OPTIONAL (default 1300)
@@ -59,6 +47,22 @@ MessageDelay=1300
 #<clipped> will be add to the message that fills the queue.
 #OPTIONAL (default 30)
 MessageQueue=30
+
+#Nicks you want to ignore. 
+#Messages from those users will not be sent to other bridges.
+#OPTIONAL
+IgnoreNicks="ircspammer1 ircspammer2"
+
+#RemoteNickFormat defines how remote users appear on this bridge 
+#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
+#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
+#OPTIONAL (default empty)
+RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
+
+#Enable to show users joins/parts from other bridges (only from irc-bridge at the moment)
+#OPTIONAL (default false)
+ShowJoinPart=false
 
 ###################################################################
 #XMPP section
@@ -89,6 +93,21 @@ Muc="conference.jabber.example.com"
 #REQUIRED
 Nick="xmppbot"
 
+#Nicks you want to ignore. 
+#Messages from those users will not be sent to other bridges.
+#OPTIONAL
+IgnoreNicks="ircspammer1 ircspammer2"
+
+#RemoteNickFormat defines how remote users appear on this bridge 
+#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
+#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
+#OPTIONAL (default empty)
+RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
+
+#Enable to show users joins/parts from other bridges (only from irc-bridge at the moment)
+#OPTIONAL (default false)
+ShowJoinPart=false
 
 ###################################################################
 #mattermost section
@@ -150,9 +169,13 @@ NoTLS=false
 #OPTIONAL (default false)
 SkipTLSVerify=true
 
-#Enable to show IRC joins/parts in mattermost. 
-#OPTIONAL (default false)
-ShowJoinPart=false
+#how to format the list of IRC nicks when displayed in mattermost. 
+#Possible options are "table" and "plain"
+#OPTIONAL (default plain)
+NickFormatter="plain"
+#How many nicks to list per row for formatters that support this. 
+#OPTIONAL (default 4)
+NicksPerRow=4
 
 #Whether to prefix messages from other bridges to mattermost with the sender's nick. 
 #Useful if username overrides for incoming webhooks isn't enabled on the 
@@ -162,6 +185,11 @@ ShowJoinPart=false
 #OPTIONAL (default false)
 PrefixMessagesWithNick=false
 
+#Nicks you want to ignore. 
+#Messages from those users will not be sent to other bridges.
+#OPTIONAL
+IgnoreNicks="ircspammer1 ircspammer2"
+
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
@@ -169,17 +197,9 @@ PrefixMessagesWithNick=false
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#how to format the list of IRC nicks when displayed in mattermost. 
-#Possible options are "table" and "plain"
-#OPTIONAL (default plain)
-NickFormatter="plain"
-#How many nicks to list per row for formatters that support this. 
-#OPTIONAL (default 4)
-NicksPerRow=4
-
-#Nicks you want to ignore. Messages from those users will not be bridged.
-#OPTIONAL 
-IgnoreNicks="mmbot spammer2"
+#Enable to show users joins/parts from other bridges (only from irc-bridge at the moment)
+#OPTIONAL (default false)
+ShowJoinPart=false
 
 ###################################################################
 #Gitter section
@@ -197,9 +217,10 @@ IgnoreNicks="mmbot spammer2"
 #REQUIRED
 Token="Yourtokenhere"
 
-#Nicks you want to ignore. Messages of those users will not be bridged.
-#OPTIONAL 
-IgnoreNicks="spammer1 spammer2"
+#Nicks you want to ignore. 
+#Messages from those users will not be sent to other bridges.
+#OPTIONAL
+IgnoreNicks="ircspammer1 ircspammer2"
 
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
@@ -207,6 +228,10 @@ IgnoreNicks="spammer1 spammer2"
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
+
+#Enable to show users joins/parts from other bridges (only from irc-bridge at the moment)
+#OPTIONAL (default false)
+ShowJoinPart=false
 
 ###################################################################
 #slack section
@@ -251,21 +276,6 @@ Token="yourslacktoken"
 #OPTIONAL
 IconURL="https://robohash.org/{NICK}.png?size=48x48"
 
-#Whether to prefix messages from other bridges to mattermost with RemoteNickFormat
-#Useful if username overrides for incoming webhooks isn't enabled on the 
-#slack server. If you set PrefixMessagesWithNick to true, each message 
-#from bridge to Slack will by default be prefixed by "bridge-" + nick. You can, 
-#however, modify how the messages appear, by setting (and modifying) RemoteNickFormat 
-#OPTIONAL (default false)
-PrefixMessagesWithNick=false
-
-#RemoteNickFormat defines how remote users appear on this bridge 
-#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
-#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
-#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
-#OPTIONAL (default empty)
-RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
-
 #how to format the list of IRC nicks when displayed in slack
 #Possible options are "table" and "plain"
 #OPTIONAL (default plain)
@@ -274,9 +284,29 @@ NickFormatter="plain"
 #OPTIONAL (default 4)
 NicksPerRow=4
 
-#Nicks you want to ignore. Messages from those users will not be bridged.
-#OPTIONAL 
-IgnoreNicks="mmbot spammer2"
+#Whether to prefix messages from other bridges to mattermost with RemoteNickFormat
+#Useful if username overrides for incoming webhooks isn't enabled on the 
+#slack server. If you set PrefixMessagesWithNick to true, each message 
+#from bridge to Slack will by default be prefixed by "bridge-" + nick. You can, 
+#however, modify how the messages appear, by setting (and modifying) RemoteNickFormat 
+#OPTIONAL (default false)
+PrefixMessagesWithNick=false
+
+#Nicks you want to ignore. 
+#Messages from those users will not be sent to other bridges.
+#OPTIONAL
+IgnoreNicks="ircspammer1 ircspammer2"
+
+#RemoteNickFormat defines how remote users appear on this bridge 
+#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
+#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
+#OPTIONAL (default empty)
+RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
+
+#Enable to show users joins/parts from other bridges (only from irc-bridge at the moment)
+#OPTIONAL (default false)
+ShowJoinPart=false
 
 ###################################################################
 #discord section
@@ -296,9 +326,10 @@ Token="Yourtokenhere"
 #REQUIRED
 Server="yourservername"
 
-#Nicks you want to ignore. Messages of those users will not be bridged.
-#OPTIONAL 
-IgnoreNicks="spammer1 spammer2"
+#Nicks you want to ignore. 
+#Messages from those users will not be sent to other bridges.
+#OPTIONAL
+IgnoreNicks="ircspammer1 ircspammer2"
 
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
@@ -307,6 +338,9 @@ IgnoreNicks="spammer1 spammer2"
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
+#Enable to show users joins/parts from other bridges (only from irc-bridge at the moment)
+#OPTIONAL (default false)
+ShowJoinPart=false
 
 ###################################################################
 #Gateway configuration

@@ -156,9 +156,22 @@ func (b *Birc) handleNewConnection(event *irc.Event) {
 		i.SendRaw("PONG :" + e.Message())
 		flog.Debugf("PING/PONG")
 	})
+	i.AddCallback("JOIN", b.handleJoinPart)
+	i.AddCallback("PART", b.handleJoinPart)
+	i.AddCallback("QUIT", b.handleJoinPart)
 	i.AddCallback("*", b.handleOther)
 	// we are now fully connected
 	b.connected <- struct{}{}
+}
+
+func (b *Birc) handleJoinPart(event *irc.Event) {
+	flog.Debugf("Sending JOIN_LEAVE event from %s to gateway", b.Account)
+	channel := event.Arguments[0]
+	if event.Code == "QUIT" {
+		channel = ""
+	}
+	b.Remote <- config.Message{Username: "system", Text: event.Nick + " " + strings.ToLower(event.Code) + "s", Channel: channel, Account: b.Account, Event: config.EVENT_JOIN_LEAVE}
+	flog.Debugf("handle %#v", event)
 }
 
 func (b *Birc) handleNotice(event *irc.Event) {

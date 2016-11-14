@@ -106,6 +106,10 @@ func (gw *Gateway) mapIgnores() {
 
 func (gw *Gateway) getDestChannel(msg *config.Message, dest string) []string {
 	channels := gw.ChannelsIn[msg.Account]
+	// broadcast to every out channel (irc QUIT)
+	if msg.Event == config.EVENT_JOIN_LEAVE && msg.Channel == "" {
+		return gw.ChannelsOut[dest]
+	}
 	for _, channel := range channels {
 		if channel == msg.Channel {
 			return gw.ChannelsOut[dest]
@@ -116,6 +120,10 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest string) []string {
 
 func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 	if gw.ignoreMessage(&msg) {
+		return
+	}
+	// only relay join/part when configged
+	if msg.Event == config.EVENT_JOIN_LEAVE && !gw.Bridges[dest.Account].Config.ShowJoinPart {
 		return
 	}
 	originchannel := msg.Channel

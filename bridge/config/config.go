@@ -8,12 +8,17 @@ import (
 	"strings"
 )
 
+const (
+	EVENT_JOIN_LEAVE = "join_leave"
+)
+
 type Message struct {
 	Text     string
 	Channel  string
 	Username string
 	Avatar   string
 	Account  string
+	Event    string
 }
 
 type Protocol struct {
