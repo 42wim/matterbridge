@@ -237,6 +237,8 @@ BindAddress="0.0.0.0:9999"
 useAPI=false
 
 #Token to connect with the Slack API
+#You'll have to use a test/api-token using a dedicated user and not a bot token.
+#See https://github.com/42wim/matterbridge/issues/75 for more info.
 #REQUIRED (when useAPI=true)
 Token="yourslacktoken"
 
