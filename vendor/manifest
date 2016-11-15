@@ -60,6 +60,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/go-telegram-bot-api/telegram-bot-api",
+			"repository": "https://github.com/go-telegram-bot-api/telegram-bot-api",
+			"vcs": "git",
+			"revision": "a7f48eb2dd301356942677e65bebe0c9aef07013",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/gorilla/schema",
 			"repository": "https://github.com/gorilla/schema",
 			"vcs": "",
@@ -163,6 +171,14 @@
 			"repository": "https://github.com/sorcix/irc",
 			"vcs": "",
 			"revision": "2f0c85e4ec6590c2c6f6ef93b0a86021281ea193",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/technoweenie/multipartstreamer",
+			"repository": "https://github.com/technoweenie/multipartstreamer",
+			"vcs": "git",
+			"revision": "a90a01d73ae432e2611d178c18367fbaa13e0154",
 			"branch": "master",
 			"notests": true
 		},

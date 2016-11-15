@@ -7,6 +7,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/irc"
 	"github.com/42wim/matterbridge/bridge/mattermost"
 	"github.com/42wim/matterbridge/bridge/slack"
+	"github.com/42wim/matterbridge/bridge/telegram"
 	"github.com/42wim/matterbridge/bridge/xmpp"
 	"strings"
 )
@@ -55,6 +56,9 @@ func New(cfg *config.Config, bridge *config.Bridge, c chan config.Message) *Brid
 	case "discord":
 		b.Config = cfg.Discord[name]
 		b.Bridger = bdiscord.New(cfg.Discord[name], bridge.Account, c)
+	case "telegram":
+		b.Config = cfg.Telegram[name]
+		b.Bridger = btelegram.New(cfg.Telegram[name], bridge.Account, c)
 	}
 	return b
 }
