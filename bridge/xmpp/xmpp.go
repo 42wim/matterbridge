@@ -65,6 +65,7 @@ func (b *Bxmpp) createXMPP() (*xmpp.Client, error) {
 		NoTLS:    true,
 		StartTLS: true,
 		//StartTLS:      false,
+		SkipTLSVerify:	true,
 		Debug:                        true,
 		Session:                      true,
 		Status:                       "",
