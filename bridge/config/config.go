@@ -78,6 +78,7 @@ type Config struct {
 	Gitter             map[string]Protocol
 	Xmpp               map[string]Protocol
 	Discord            map[string]Protocol
+	Telegram           map[string]Protocol
 	Gateway            []Gateway
 	SameChannelGateway []SameChannelGateway
 }
