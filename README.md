@@ -30,14 +30,14 @@ docker run -ti -v /tmp/matterbridge.toml:/matterbridge.toml 42wim/matterbridge
 
 ## binaries
 Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/)
-* For use with mattermost 3.5.0+ [v0.8.0](https://github.com/42wim/matterircd/releases/tag/v0.8.0)
-* For use with mattermost 3.3.0 - 3.4.0 [v0.7.0](https://github.com/42wim/matterircd/releases/tag/v0.7.0)
+* For use with mattermost 3.5.0+ [v0.8.1](https://github.com/42wim/matterircd/releases/tag/v0.8.1)
+* For use with mattermost 3.3.0 - 3.4.0 [v0.7.1](https://github.com/42wim/matterircd/releases/tag/v0.7.1)
 * For use with mattermost 3.0.0 - 3.2.0 [v0.5.0](https://github.com/42wim/matterircd/releases/tag/v0.5.0) (not maintained anymore)
 
 ## Compatibility
 ### Mattermost 
-* Matterbridge v0.8.0 works with mattermost 3.5.0+ [3.5.0 release](https://github.com/mattermost/platform/releases/tag/v3.5.0)
-* Matterbridge v0.7.0 works with mattermost 3.3.0 - 3.4.0 [3.4.0 release](https://github.com/mattermost/platform/releases/tag/v3.4.0)
+* Matterbridge v0.8.1 works with mattermost 3.5.0+ [3.5.0 release](https://github.com/mattermost/platform/releases/tag/v3.5.0)
+* Matterbridge v0.7.1 works with mattermost 3.3.0 - 3.4.0 [3.4.0 release](https://github.com/mattermost/platform/releases/tag/v3.4.0)
 * Matterbridge v0.5.0 works with mattermost 3.0.0 - 3.2.0 [3.2.0 release](https://github.com/mattermost/platform/releases/tag/v3.2.0)
 
 
