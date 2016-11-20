@@ -160,6 +160,8 @@ func (b *Birc) endNames(event *irc.Event) {
 	b.Remote <- config.Message{Username: b.Nick, Text: b.formatnicks(b.names[channel], continued), Channel: channel,
 		Origin: b.origin, Protocol: b.protocol, FullOrigin: b.FullOrigin()}
 	b.names[channel] = nil
+	b.i.ClearCallback(ircm.RPL_NAMREPLY)
+	b.i.ClearCallback(ircm.RPL_ENDOFNAMES)
 }
 
 func (b *Birc) handleNewConnection(event *irc.Event) {
