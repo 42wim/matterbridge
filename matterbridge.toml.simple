@@ -19,14 +19,10 @@ enable=true
     account="irc.freenode"
     channel="#testing"
 
-    [[gateway.in]]
-    account="mattermost.work"
-    channel="off-topic"
-
     [[gateway.out]]
     account="irc.freenode"
     channel="#testing"
 
-    [[gateway.out]]
+    [[gateway.inout]]
     account="mattermost.work"
     channel="off-topic"

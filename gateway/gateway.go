@@ -57,7 +57,7 @@ func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 
 func (gw *Gateway) Start() error {
 	gw.mapChannels()
-	for _, br := range append(gw.MyConfig.In, gw.MyConfig.Out...) {
+	for _, br := range append(gw.MyConfig.In, append(gw.MyConfig.InOut, gw.MyConfig.Out...)...) {
 		err := gw.AddBridge(&br)
 		if err != nil {
 			return err
@@ -92,6 +92,10 @@ func (gw *Gateway) mapChannels() error {
 		m[br.Account] = append(m[br.Account], br.Channel)
 	}
 	gw.ChannelsIn = m
+	for _, br := range gw.MyConfig.InOut {
+		gw.ChannelsIn[br.Account] = append(gw.ChannelsIn[br.Account], br.Channel)
+		gw.ChannelsOut[br.Account] = append(gw.ChannelsOut[br.Account], br.Channel)
+	}
 	return nil
 }
 

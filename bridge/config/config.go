@@ -62,6 +62,7 @@ type Gateway struct {
 	Enable bool
 	In     []Bridge
 	Out    []Bridge
+	InOut  []Bridge
 }
 
 type SameChannelGateway struct {

@@ -383,7 +383,7 @@ ShowJoinPart=false
 #from [[gateway.in]] to.
 #
 #Most of the time [[gateway.in]] and [[gateway.out]] are the same if you 
-#want bidirectional bridging.
+#want bidirectional bridging. You can then use [[gateway.inout]]
 #
 
 [[gateway]]
@@ -415,15 +415,15 @@ enable=true
     #REQUIRED
     channel="#testing"
 
-    [[gateway.in]]
-    account="mattermost.work"
-    channel="off-topic"
 
+    #[[gateway.out]] specifies the account and channels we will sent messages to.
     [[gateway.out]]
     account="irc.freenode"
     channel="#testing"
 
-    [[gateway.out]]
+    #[[gateway.inout]] can be used when then channel will be used to receive from 
+    #and send messages to
+    [[gateway.inout]]
     account="mattermost.work"
     channel="off-topic"
 
