@@ -6,6 +6,7 @@ import (
 	"github.com/42wim/matterbridge/matterhook"
 	log "github.com/Sirupsen/logrus"
 	"github.com/nlopes/slack"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -191,11 +192,14 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 				m.Channel = channel.Name
 				m.Text = ev.Text
 				m.Raw = ev
+				m.Text = b.replaceMention(m.Text)
 				mchan <- m
 			}
 			count++
 		case *slack.OutgoingErrorEvent:
 			flog.Debugf("%#v", ev.Error())
+		case *slack.ChannelJoinedEvent:
+			b.Users, _ = b.sc.GetUsers()
 		case *slack.ConnectedEvent:
 			b.channels = ev.Info.Channels
 			b.si = ev.Info
@@ -214,7 +218,26 @@ func (b *Bslack) handleMatterHook(mchan chan *MMMessage) {
 		m := &MMMessage{}
 		m.Username = message.UserName
 		m.Text = message.Text
+		m.Text = b.replaceMention(m.Text)
 		m.Channel = message.ChannelName
 		mchan <- m
 	}
+}
+
+func (b *Bslack) userName(id string) string {
+	for _, u := range b.Users {
+		if u.ID == id {
+			return u.Name
+		}
+	}
+	return ""
+}
+
+func (b *Bslack) replaceMention(text string) string {
+	results := regexp.MustCompile(`<@([a-zA-z0-9]+)>`).FindAllStringSubmatch(text, -1)
+	for _, r := range results {
+		text = strings.Replace(text, "<@"+r[1]+">", "@"+b.userName(r[1]), -1)
+
+	}
+	return text
 }
