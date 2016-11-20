@@ -1,7 +1,7 @@
 # matterbridge
-Simple bridge between mattermost, IRC, XMPP, Gitter, Slack and Discord
+Simple bridge between mattermost, IRC, XMPP, Gitter, Slack, Discord and Telegram.
 
-* Relays public channel messages between multiple mattermost, IRC, XMPP, Gitter, Slack and Discord. Pick and mix.
+* Relays public channel messages between multiple mattermost, IRC, XMPP, Gitter, Slack, Discord and Telegram. Pick and mix.
 * Supports multiple channels.
 * Matterbridge can also work with private groups on your mattermost.
 * Allow for bridging the same bridges, which means you can eg bridge between multiple mattermosts.
@@ -21,6 +21,7 @@ Accounts to one of the supported bridges
 * [Gitter] (https://gitter.im)
 * [Slack] (https://slack.com)
 * [Discord] (https://discordapp.com)
+* [Telegram] (https://telegram.org)
 
 ## Docker
 Create your matterbridge.toml file locally eg in ```/tmp/matterbridge.toml```
