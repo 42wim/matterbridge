@@ -1,15 +1,30 @@
 # v0.9.0-dev
+## New features
+* Telegram: New protocol support added (https://telegram.org)
+* Add support for dynamic Iconurl #43
+
 ## General
 * discord: add "Bot " tag to discord tokens automatically
 
 ## Bugfix
+* general: when using samechannelgateway NickFormat get doubled by the NICK #77
 * general: fix ShowJoinPart for messages from irc bridge #72
+* irc: fix !users command #78
+
+# v0.8.1
+## Bugfix
+* general: when using samechannelgateway NickFormat get doubled by the NICK #77
 * irc: fix !users command #78
 
 # v0.8.0
 Release because of breaking mattermost API changes
 ## New features
 * Supports mattermost v3.5.0
+
+# v0.7.1
+## Bugfix
+* general: when using samechannelgateway NickFormat get doubled by the NICK #77
+* irc: fix !users command #78
 
 # v0.7.0
 ## Breaking config changes from 0.6 to 0.7
