@@ -80,6 +80,7 @@ type Config struct {
 	Xmpp               map[string]Protocol
 	Discord            map[string]Protocol
 	Telegram           map[string]Protocol
+	General            Protocol
 	Gateway            []Gateway
 	SameChannelGateway []SameChannelGateway
 }

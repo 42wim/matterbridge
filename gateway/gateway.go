@@ -178,7 +178,10 @@ func (gw *Gateway) modifyMessage(msg *config.Message, dest *bridge.Bridge) {
 
 func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) {
 	br := gw.Bridges[msg.Account]
-	nick := dest.Config.RemoteNickFormat
+	nick := gw.Config.General.RemoteNickFormat
+	if nick == "" {
+		nick = dest.Config.RemoteNickFormat
+	}
 	nick = strings.Replace(nick, "{NICK}", msg.Username, -1)
 	nick = strings.Replace(nick, "{BRIDGE}", br.Name, -1)
 	nick = strings.Replace(nick, "{PROTOCOL}", br.Protocol, -1)
