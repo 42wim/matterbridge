@@ -1,4 +1,6 @@
 # matterbridge
+![matterbridge.gif](https://s15.postimg.org/qpjhp6y3f/matterbridge.gif)
+
 Simple bridge between mattermost, IRC, XMPP, Gitter, Slack, Discord and Telegram.
 
 * Relays public channel messages between multiple mattermost, IRC, XMPP, Gitter, Slack, Discord and Telegram. Pick and mix.
@@ -9,6 +11,7 @@ Simple bridge between mattermost, IRC, XMPP, Gitter, Slack, Discord and Telegram
 
 Look at [matterbridge.toml.sample] (https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.sample) for documentation and an example.
 Look at [matterbridge.toml.simple] (https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.simple) for a simple example.
+
 
 ## Changelog
 Since v0.7.0 the configuration has changed. More details in [changelog.md] (https://github.com/42wim/matterbridge/blob/master/changelog.md)
