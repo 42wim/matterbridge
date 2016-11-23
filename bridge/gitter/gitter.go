@@ -65,8 +65,7 @@ func (b *Bgitter) JoinChannel(channel string) error {
 	go b.c.Listen(stream)
 
 	go func(stream *gitter.Stream, room string) {
-		for {
-			event := <-stream.Event
+		for event := range stream.Event {
 			switch ev := event.Data.(type) {
 			case *gitter.MessageReceived:
 				// check for ZWSP to see if it's not an echo
