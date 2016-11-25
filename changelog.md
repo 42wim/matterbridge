@@ -1,6 +1,7 @@
 # v0.9.0-dev
 ## New features
 * Telegram: New protocol support added (https://telegram.org)
+* Hipchat: Add sample config to connect to hipchat via xmpp
 * Add support for dynamic Iconurl #43
 
 ## General
