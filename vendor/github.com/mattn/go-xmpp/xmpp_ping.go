@@ -25,3 +25,9 @@ func (c *Client) PingS2S(fromServer, toServer string) error {
 		xmlEscape(fromServer), xmlEscape(toServer))
 	return err
 }
+
+func (c *Client) SendResultPing(id, toServer string) error {
+	_, err := fmt.Fprintf(c.conn, "<iq type='result' to='%s' id='%s'/>",
+		xmlEscape(toServer), xmlEscape(id))
+	return err
+}

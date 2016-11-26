@@ -536,12 +536,13 @@ func (c *Client) IsEncrypted() bool {
 
 // Chat is an incoming or outgoing XMPP chat message.
 type Chat struct {
-	Remote string
-	Type   string
-	Text   string
-	Roster Roster
-	Other  []string
-	Stamp  time.Time
+	Remote    string
+	Type      string
+	Text      string
+	Roster    Roster
+	Other     []string
+	OtherElem []XMLElement
+	Stamp     time.Time
 }
 
 type Roster []Contact
@@ -584,11 +585,12 @@ func (c *Client) Recv() (stanza interface{}, err error) {
 				v.Delay.Stamp,
 			)
 			chat := Chat{
-				Remote: v.From,
-				Type:   v.Type,
-				Text:   v.Body,
-				Other:  v.Other,
-				Stamp:  stamp,
+				Remote:    v.From,
+				Type:      v.Type,
+				Text:      v.Body,
+				Other:     v.OtherStrings(),
+				OtherElem: v.Other,
+				Stamp:     stamp,
 			}
 			return chat, nil
 		case *clientQuery:
@@ -600,6 +602,12 @@ func (c *Client) Recv() (stanza interface{}, err error) {
 		case *clientPresence:
 			return Presence{v.From, v.To, v.Type, v.Show, v.Status}, nil
 		case *clientIQ:
+			if bytes.Equal(v.Query, []byte(`<ping xmlns='urn:xmpp:ping'/>`)) {
+				err := c.SendResultPing(v.ID, v.From)
+				if err != nil {
+					return Chat{}, err
+				}
+			}
 			return IQ{ID: v.ID, From: v.From, To: v.To, Type: v.Type, Query: v.Query}, nil
 		}
 	}
@@ -714,9 +722,44 @@ type clientMessage struct {
 	Thread  string `xml:"thread"`
 
 	// Any hasn't matched element
-	Other []string `xml:",any"`
+	Other []XMLElement `xml:",any"`
 
 	Delay Delay `xml:"delay"`
+}
+
+func (m *clientMessage) OtherStrings() []string {
+	a := make([]string, len(m.Other))
+	for i, e := range m.Other {
+		a[i] = e.String()
+	}
+	return a
+}
+
+type XMLElement struct {
+	XMLName  xml.Name
+	InnerXML string `xml:",innerxml"`
+}
+
+func (e *XMLElement) String() string {
+	r := bytes.NewReader([]byte(e.InnerXML))
+	d := xml.NewDecoder(r)
+	var buf bytes.Buffer
+	for {
+		tok, err := d.Token()
+		if err != nil {
+			break
+		}
+		switch v := tok.(type) {
+		case xml.StartElement:
+			err = d.Skip()
+		case xml.CharData:
+			_, err = buf.Write(v)
+		}
+		if err != nil {
+			break
+		}
+	}
+	return buf.String()
 }
 
 type Delay struct {
