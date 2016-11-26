@@ -78,19 +78,26 @@ func (b *Bxmpp) createXMPP() (*xmpp.Client, error) {
 	return b.xc, err
 }
 
-func (b *Bxmpp) xmppKeepAlive() {
+func (b *Bxmpp) xmppKeepAlive() chan bool {
+	done := make(chan bool)
 	go func() {
 		ticker := time.NewTicker(90 * time.Second)
+		defer ticker.Stop()
 		for {
 			select {
 			case <-ticker.C:
-				b.xc.Send(xmpp.Chat{})
+				b.xc.PingC2S("", "")
+			case <-done:
+				return
 			}
 		}
 	}()
+	return done
 }
 
 func (b *Bxmpp) handleXmpp() error {
+	done := b.xmppKeepAlive()
+	defer close(done)
 	for {
 		m, err := b.xc.Recv()
 		if err != nil {
