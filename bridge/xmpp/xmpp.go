@@ -98,6 +98,7 @@ func (b *Bxmpp) xmppKeepAlive() chan bool {
 func (b *Bxmpp) handleXmpp() error {
 	done := b.xmppKeepAlive()
 	defer close(done)
+	nodelay := time.Time{}
 	for {
 		m, err := b.xc.Recv()
 		if err != nil {
@@ -115,7 +116,7 @@ func (b *Bxmpp) handleXmpp() error {
 				if len(s) == 2 {
 					nick = s[1]
 				}
-				if nick != b.Config.Nick {
+				if nick != b.Config.Nick && v.Stamp == nodelay && v.Text != "" {
 					flog.Debugf("Sending message from %s on %s to gateway", nick, b.Account)
 					b.Remote <- config.Message{Username: nick, Text: v.Text, Channel: channel, Account: b.Account}
 				}
