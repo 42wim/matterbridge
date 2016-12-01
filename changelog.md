@@ -1,16 +1,21 @@
-# v0.9.0-dev
+# v0.9.0
 ## New features
 * Telegram: New protocol support added (https://telegram.org)
 * Hipchat: Add sample config to connect to hipchat via xmpp
-* Add support for dynamic Iconurl #43
-
-## General
 * discord: add "Bot " tag to discord tokens automatically
+* slack: Add support for dynamic Iconurl #43
+* general: Add ```gateway.inout``` config option for bidirectional bridges #85
+* general: Add ```[general]``` section so that ```RemoteNickFormat``` can be set globally
 
 ## Bugfix
 * general: when using samechannelgateway NickFormat get doubled by the NICK #77
 * general: fix ShowJoinPart for messages from irc bridge #72
+* gitter: fix high cpu usage #89
 * irc: fix !users command #78
+* xmpp: fix keepalive
+* xmpp: do not relay delayed/empty messages
+* slack: Replace id-mentions to usernames #86 
+* mattermost: fix public links not working (API changes)
 
 # v0.8.1
 ## Bugfix
