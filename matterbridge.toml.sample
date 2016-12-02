@@ -415,6 +415,64 @@ RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 #OPTIONAL (default false)
 ShowJoinPart=false
 
+
+###################################################################
+#rocketchat section
+###################################################################
+[rocketchat]
+#You can configure multiple servers "[rocketchat.name]" or "[rocketchat.name2]"
+#In this example we use [rocketchat.work]
+#REQUIRED
+
+[rocketchat.rockme]
+#Url is your incoming webhook url as specified in rocketchat
+#Read #https://rocket.chat/docs/administrator-guides/integrations/#how-to-create-a-new-incoming-webhook
+#See administration - integrations - new integration - incoming webhook
+#REQUIRED
+URL="https://yourdomain/hooks/yourhookkey"
+
+#Address to listen on for outgoing webhook requests from rocketchat.
+#See administration - integrations - new integration - outgoing webhook
+#REQUIRED 
+BindAddress="0.0.0.0:9999"
+
+#Your nick/username as specified in your incoming webhook "Post as" setting
+#REQUIRED
+Nick="matterbot"
+
+#Enable this to make a http connection (instead of https) to your rocketchat
+#OPTIONAL (default false)
+NoTLS=false
+
+#Enable to not verify the certificate on your rocketchat server. 
+#e.g. when using selfsigned certificates
+#OPTIONAL (default false)
+SkipTLSVerify=true
+
+#Whether to prefix messages from other bridges to rocketchat with the sender's nick. 
+#Useful if username overrides for incoming webhooks isn't enabled on the 
+#rocketchat server. If you set PrefixMessagesWithNick to true, each message 
+#from bridge to rocketchat will by default be prefixed by the RemoteNickFormat setting. i
+#OPTIONAL (default false)
+PrefixMessagesWithNick=false
+
+#Nicks you want to ignore. 
+#Messages from those users will not be sent to other bridges.
+#OPTIONAL
+IgnoreNicks="ircspammer1 ircspammer2"
+
+#RemoteNickFormat defines how remote users appear on this bridge 
+#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
+#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
+#OPTIONAL (default empty)
+RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
+
+#Enable to show users joins/parts from other bridges (only from irc-bridge at the moment)
+#OPTIONAL (default false)
+ShowJoinPart=false
+
+
 ###################################################################
 #General configuration
 ###################################################################
@@ -426,8 +484,6 @@ ShowJoinPart=false
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
-
-
 
 ###################################################################
 #Gateway configuration
@@ -470,6 +526,7 @@ enable=true
     #               (https://github.com/42wim/matterbridge/issues/57)
     #telegram   - chatid (a large negative number, eg -123456789)
     #hipchat    - id_channel (see https://www.hipchat.com/account/xmpp for the correct channel)
+    #rocketchat - #channel (# is required)
     #REQUIRED
     channel="#testing"
 
