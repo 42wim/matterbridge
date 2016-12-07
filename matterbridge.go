@@ -39,7 +39,7 @@ func main() {
 		go func(gw config.SameChannelGateway) {
 			err := samechannelgateway.New(cfg, &gw)
 			if err != nil {
-				log.Debugf("starting gateway failed %#v", err)
+				log.Fatalf("starting gateway failed %#v", err)
 			}
 		}(gw)
 	}
@@ -52,7 +52,7 @@ func main() {
 		g := gateway.New(cfg, &gw)
 		err := g.Start()
 		if err != nil {
-			log.Debugf("starting gateway failed %#v", err)
+			log.Fatalf("starting gateway failed %#v", err)
 		}
 	}
 	select {}
