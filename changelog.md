@@ -1,3 +1,11 @@
+# v0.9.1-dev
+## New features
+* Rocket.Chat: New protocol support added (https://rocket.chat)
+
+## Bugfix
+* general: Exit when a bridge fails to start
+* mattermost: Check errors only on first connect. Keep retrying after first connection succeeds. #95
+
 # v0.9.0
 ## New features
 * Telegram: New protocol support added (https://telegram.org)
