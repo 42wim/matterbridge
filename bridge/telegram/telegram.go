@@ -57,7 +57,7 @@ func (b *Btelegram) Send(msg config.Message) error {
 	if err != nil {
 		return err
 	}
-	m := tgbotapi.NewMessage(chatid, msg.Text)
+	m := tgbotapi.NewMessage(chatid, msg.Username + msg.Text)
 	_, err = b.c.Send(m)
 	return err
 }
