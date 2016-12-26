@@ -13,6 +13,10 @@
 #REQUIRED
 Server="irc.freenode.net:6667"
 
+#Password for irc server (if necessary)
+#OPTIONAL (default "")
+Password=""
+
 #Enable to use TLS connection to your irc server. 
 #OPTIONAL (default false)
 UseTLS=false
