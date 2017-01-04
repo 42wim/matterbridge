@@ -13,12 +13,13 @@ type Gateway struct {
 	*config.Config
 	MyConfig *config.Gateway
 	//Bridges     []*bridge.Bridge
-	Bridges     map[string]*bridge.Bridge
-	ChannelsOut map[string][]string
-	ChannelsIn  map[string][]string
-	ignoreNicks map[string][]string
-	Name        string
-	Message     chan config.Message
+	Bridges        map[string]*bridge.Bridge
+	ChannelsOut    map[string][]string
+	ChannelsIn     map[string][]string
+	ignoreNicks    map[string][]string
+	ChannelOptions map[string]config.ChannelOptions
+	Name           string
+	Message        chan config.Message
 }
 
 func New(cfg *config.Config, gateway *config.Gateway) *Gateway {
@@ -47,8 +48,13 @@ func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 	exists := make(map[string]bool)
 	for _, channel := range append(gw.ChannelsOut[br.Account], gw.ChannelsIn[br.Account]...) {
 		if !exists[br.Account+channel] {
+			mychannel := channel
 			log.Infof("%s: joining %s", br.Account, channel)
-			br.JoinChannel(channel)
+			if br.Protocol == "irc" && gw.ChannelOptions[br.Account+channel].Key != "" {
+				log.Debugf("using key %s for channel %s", gw.ChannelOptions[br.Account+channel].Key, channel)
+				mychannel = mychannel + " " + gw.ChannelOptions[br.Account+channel].Key
+			}
+			br.JoinChannel(mychannel)
 			exists[br.Account+channel] = true
 		}
 	}
@@ -81,21 +87,26 @@ func (gw *Gateway) handleReceive() {
 }
 
 func (gw *Gateway) mapChannels() error {
+	options := make(map[string]config.ChannelOptions)
 	m := make(map[string][]string)
 	for _, br := range gw.MyConfig.Out {
 		m[br.Account] = append(m[br.Account], br.Channel)
+		options[br.Account+br.Channel] = br.Options
 	}
 	gw.ChannelsOut = m
 	m = nil
 	m = make(map[string][]string)
 	for _, br := range gw.MyConfig.In {
 		m[br.Account] = append(m[br.Account], br.Channel)
+		options[br.Account+br.Channel] = br.Options
 	}
 	gw.ChannelsIn = m
 	for _, br := range gw.MyConfig.InOut {
 		gw.ChannelsIn[br.Account] = append(gw.ChannelsIn[br.Account], br.Channel)
 		gw.ChannelsOut[br.Account] = append(gw.ChannelsOut[br.Account], br.Channel)
+		options[br.Account+br.Channel] = br.Options
 	}
+	gw.ChannelOptions = options
 	return nil
 }
 

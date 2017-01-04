@@ -534,11 +534,21 @@ enable=true
     #REQUIRED
     channel="#testing"
 
+        #OPTIONAL - only used for IRC protocol at the moment
+        [gateway.in.options]
+        #OPTIONAL - your irc channel key
+        key="yourkey"
+
 
     #[[gateway.out]] specifies the account and channels we will sent messages to.
     [[gateway.out]]
     account="irc.freenode"
     channel="#testing"
+
+        #OPTIONAL - only used for IRC protocol at the moment
+        [gateway.out.options]
+        #OPTIONAL - your irc channel key
+        key="yourkey"
 
     #[[gateway.inout]] can be used when then channel will be used to receive from 
     #and send messages to
@@ -546,6 +556,10 @@ enable=true
     account="mattermost.work"
     channel="off-topic"
 
+        #OPTIONAL - only used for IRC protocol at the moment
+        [gateway.inout.options]
+        #OPTIONAL - your irc channel key
+        key="yourkey"
 
 #If you want to do a 1:1 mapping between protocols where the channelnames are the same
 #e.g. slack and mattermost you can use the samechannelgateway configuration

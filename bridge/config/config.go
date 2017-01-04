@@ -52,9 +52,14 @@ type Protocol struct {
 	UseTLS                 bool   // IRC
 }
 
+type ChannelOptions struct {
+	Key string // irc
+}
+
 type Bridge struct {
 	Account string
 	Channel string
+	Options ChannelOptions
 }
 
 type Gateway struct {
