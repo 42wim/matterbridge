@@ -97,6 +97,11 @@ Muc="conference.jabber.example.com"
 #REQUIRED
 Nick="xmppbot"
 
+#Enable to not verify the certificate on your xmpp server.
+#e.g. when using selfsigned certificates
+#OPTIONAL (default false)
+SkipTLSVerify=true
+
 #Nicks you want to ignore. 
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
