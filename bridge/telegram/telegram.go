@@ -76,6 +76,30 @@ func (options *customHtml) BlockCode(out *bytes.Buffer, text []byte, lang string
 	out.WriteString("</pre>\n")
 }
 
+func (options *customHtml) Header(out *bytes.Buffer, text func() bool, level int, id string) {
+	options.Paragraph(out, text)
+}
+
+func (options *customHtml) HRule(out *bytes.Buffer) {
+	out.WriteByte('\n')
+}
+
+func (options *customHtml) BlockQuote(out *bytes.Buffer, text []byte) {
+	out.WriteString("> ")
+	out.Write(text)
+	out.WriteByte('\n')
+}
+
+func (options *customHtml) List(out *bytes.Buffer, text func() bool, flags int) {
+	options.Paragraph(out, text)
+}
+
+func (options *customHtml) ListItem(out *bytes.Buffer, text []byte, flags int) {
+	out.WriteString("- ")
+	out.Write(text)
+	out.WriteByte('\n')
+}
+
 func (b *Btelegram) Send(msg config.Message) error {
 	flog.Debugf("Receiving %#v", msg)
 	chatid, err := strconv.ParseInt(msg.Channel, 10, 64)
@@ -84,12 +108,13 @@ func (b *Btelegram) Send(msg config.Message) error {
 	}
 
 	parsed := blackfriday.Markdown([]byte(msg.Text),
-		&customHtml{blackfriday.HtmlRenderer(blackfriday.HTML_USE_XHTML, "", "")},
+		&customHtml{blackfriday.HtmlRenderer(blackfriday.HTML_USE_XHTML|blackfriday.HTML_SKIP_IMAGES, "", "")},
 		blackfriday.EXTENSION_NO_INTRA_EMPHASIS|
 			blackfriday.EXTENSION_FENCED_CODE|
 			blackfriday.EXTENSION_AUTOLINK|
 			blackfriday.EXTENSION_SPACE_HEADERS|
 			blackfriday.EXTENSION_HEADER_IDS|
+			blackfriday.EXTENSION_BACKSLASH_LINE_BREAK|
 			blackfriday.EXTENSION_DEFINITION_LISTS)
 
 	m := tgbotapi.NewMessage(chatid, msg.Username+string(parsed))
