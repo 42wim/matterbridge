@@ -622,11 +622,20 @@ func (m *MMClient) initUser() error {
 	//m.log.Debug("initUser(): loading all team data")
 	for _, v := range initData.Teams {
 		m.Client.SetTeamId(v.Id)
-		mmusers, _ := m.Client.GetProfiles(0, 50000, "")
+		mmusers, err := m.Client.GetProfiles(0, 50000, "")
+		if err != nil {
+			return errors.New(err.DetailedError)
+		}
 		t := &Team{Team: v, Users: mmusers.Data.(map[string]*model.User), Id: v.Id}
-		mmchannels, _ := m.Client.GetChannels("")
+		mmchannels, err := m.Client.GetChannels("")
+		if err != nil {
+			return errors.New(err.DetailedError)
+		}
 		t.Channels = mmchannels.Data.(*model.ChannelList)
-		mmchannels, _ = m.Client.GetMoreChannels("")
+		mmchannels, err = m.Client.GetMoreChannels("")
+		if err != nil {
+			return errors.New(err.DetailedError)
+		}
 		t.MoreChannels = mmchannels.Data.(*model.ChannelList)
 		m.OtherTeams = append(m.OtherTeams, t)
 		if v.Name == m.Credentials.Team {
