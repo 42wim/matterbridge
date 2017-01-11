@@ -159,7 +159,7 @@ func (b *Bslack) handleSlack() {
 	flog.Debug("Start listening for Slack messages")
 	for message := range mchan {
 		// do not send messages from ourself
-		if message.Username == b.si.User.Name {
+		if b.Config.UseAPI && message.Username == b.si.User.Name {
 			continue
 		}
 		texts := strings.Split(message.Text, "\n")
