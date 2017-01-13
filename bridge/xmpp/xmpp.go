@@ -4,6 +4,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
 	"github.com/mattn/go-xmpp"
+	"crypto/tls"
 
 	"strings"
 	"time"
@@ -58,12 +59,16 @@ func (b *Bxmpp) Send(msg config.Message) error {
 }
 
 func (b *Bxmpp) createXMPP() (*xmpp.Client, error) {
+	tc := new(tls.Config)
+	tc.InsecureSkipVerify = b.Config.SkipTLSVerify
 	options := xmpp.Options{
 		Host:     b.Config.Server,
 		User:     b.Config.Jid,
 		Password: b.Config.Password,
 		NoTLS:    true,
 		StartTLS: true,
+		TLSConfig: tc,
+
 		//StartTLS:      false,
 		Debug:                        true,
 		Session:                      true,
