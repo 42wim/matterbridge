@@ -2,11 +2,13 @@
 ## New features
 * Rocket.Chat: New protocol support added (https://rocket.chat)
 * irc: add channel key support #27 (see matterbrige.toml.sample for example)
+* xmpp: add SkipTLSVerify #106
 
 ## Bugfix
 * general: Exit when a bridge fails to start
 * mattermost: Check errors only on first connect. Keep retrying after first connection succeeds. #95
 * telegram: fix missing username #102
+* slack: do not use API functions in webhook (slack) #110
 
 # v0.9.0
 ## New features
