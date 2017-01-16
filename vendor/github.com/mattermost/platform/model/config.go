@@ -38,9 +38,10 @@ const (
 	DIRECT_MESSAGE_ANY  = "any"
 	DIRECT_MESSAGE_TEAM = "team"
 
-	PERMISSIONS_ALL          = "all"
-	PERMISSIONS_TEAM_ADMIN   = "team_admin"
-	PERMISSIONS_SYSTEM_ADMIN = "system_admin"
+	PERMISSIONS_ALL           = "all"
+	PERMISSIONS_CHANNEL_ADMIN = "channel_admin"
+	PERMISSIONS_TEAM_ADMIN    = "team_admin"
+	PERMISSIONS_SYSTEM_ADMIN  = "system_admin"
 
 	FAKE_SETTING = "********************************"
 
@@ -80,6 +81,7 @@ type ServiceSettings struct {
 	EnableSecurityFixAlert            *bool
 	EnableInsecureOutgoingConnections *bool
 	EnableMultifactorAuthentication   *bool
+	EnforceMultifactorAuthentication  *bool
 	AllowCorsFrom                     *string
 	SessionLengthWebInDays            *int
 	SessionLengthMobileInDays         *int
@@ -96,6 +98,16 @@ type ClusterSettings struct {
 	Enable                 *bool
 	InterNodeListenAddress *string
 	InterNodeUrls          []string
+}
+
+type MetricsSettings struct {
+	Enable           *bool
+	BlockProfileRate *int
+	ListenAddress    *string
+}
+
+type AnalyticsSettings struct {
+	MaxUsersForStatistics *int
 }
 
 type SSOSettings struct {
@@ -219,8 +231,13 @@ type TeamSettings struct {
 	RestrictTeamInvite               *string
 	RestrictPublicChannelManagement  *string
 	RestrictPrivateChannelManagement *string
+	RestrictPublicChannelCreation    *string
+	RestrictPrivateChannelCreation   *string
+	RestrictPublicChannelDeletion    *string
+	RestrictPrivateChannelDeletion   *string
 	UserStatusAwayTimeout            *int64
 	MaxChannelsPerTeam               *int64
+	MaxNotificationsPerChannel       *int64
 }
 
 type LdapSettings struct {
@@ -243,6 +260,7 @@ type LdapSettings struct {
 	UsernameAttribute  *string
 	NicknameAttribute  *string
 	IdAttribute        *string
+	PositionAttribute  *string
 
 	// Syncronization
 	SyncIntervalMinutes *int
@@ -289,6 +307,7 @@ type SamlSettings struct {
 	UsernameAttribute  *string
 	NicknameAttribute  *string
 	LocaleAttribute    *string
+	PositionAttribute  *string
 
 	LoginButtonText *string
 }
@@ -330,6 +349,8 @@ type Config struct {
 	SamlSettings         SamlSettings
 	NativeAppSettings    NativeAppSettings
 	ClusterSettings      ClusterSettings
+	MetricsSettings      MetricsSettings
+	AnalyticsSettings    AnalyticsSettings
 	WebrtcSettings       WebrtcSettings
 }
 
@@ -376,21 +397,30 @@ func (o *Config) SetDefaults() {
 		// Defaults to "s3.amazonaws.com"
 		o.FileSettings.AmazonS3Endpoint = "s3.amazonaws.com"
 	}
+
 	if o.FileSettings.AmazonS3Region == "" {
 		// Defaults to "us-east-1" region.
 		o.FileSettings.AmazonS3Region = "us-east-1"
 	}
+
 	if o.FileSettings.AmazonS3SSL == nil {
 		o.FileSettings.AmazonS3SSL = new(bool)
 		*o.FileSettings.AmazonS3SSL = true // Secure by default.
 	}
+
 	if o.FileSettings.MaxFileSize == nil {
 		o.FileSettings.MaxFileSize = new(int64)
 		*o.FileSettings.MaxFileSize = 52428800 // 50 MB
 	}
+
 	if len(*o.FileSettings.PublicLinkSalt) == 0 {
 		o.FileSettings.PublicLinkSalt = new(string)
 		*o.FileSettings.PublicLinkSalt = NewRandomString(32)
+	}
+
+	if o.FileSettings.InitialFont == "" {
+		// Defaults to "luximbi.ttf"
+		o.FileSettings.InitialFont = "luximbi.ttf"
 	}
 
 	if len(o.EmailSettings.InviteSalt) == 0 {
@@ -424,6 +454,11 @@ func (o *Config) SetDefaults() {
 	if o.ServiceSettings.EnableMultifactorAuthentication == nil {
 		o.ServiceSettings.EnableMultifactorAuthentication = new(bool)
 		*o.ServiceSettings.EnableMultifactorAuthentication = false
+	}
+
+	if o.ServiceSettings.EnforceMultifactorAuthentication == nil {
+		o.ServiceSettings.EnforceMultifactorAuthentication = new(bool)
+		*o.ServiceSettings.EnforceMultifactorAuthentication = false
 	}
 
 	if o.PasswordSettings.MinimumLength == nil {
@@ -491,6 +526,30 @@ func (o *Config) SetDefaults() {
 		*o.TeamSettings.RestrictPrivateChannelManagement = PERMISSIONS_ALL
 	}
 
+	if o.TeamSettings.RestrictPublicChannelCreation == nil {
+		o.TeamSettings.RestrictPublicChannelCreation = new(string)
+		// If this setting does not exist, assume migration from <3.6, so use management setting as default.
+		*o.TeamSettings.RestrictPublicChannelCreation = *o.TeamSettings.RestrictPublicChannelManagement
+	}
+
+	if o.TeamSettings.RestrictPrivateChannelCreation == nil {
+		o.TeamSettings.RestrictPrivateChannelCreation = new(string)
+		// If this setting does not exist, assume migration from <3.6, so use management setting as default.
+		*o.TeamSettings.RestrictPrivateChannelCreation = *o.TeamSettings.RestrictPrivateChannelManagement
+	}
+
+	if o.TeamSettings.RestrictPublicChannelDeletion == nil {
+		o.TeamSettings.RestrictPublicChannelDeletion = new(string)
+		// If this setting does not exist, assume migration from <3.6, so use management setting as default.
+		*o.TeamSettings.RestrictPublicChannelDeletion = *o.TeamSettings.RestrictPublicChannelManagement
+	}
+
+	if o.TeamSettings.RestrictPrivateChannelDeletion == nil {
+		o.TeamSettings.RestrictPrivateChannelDeletion = new(string)
+		// If this setting does not exist, assume migration from <3.6, so use management setting as default.
+		*o.TeamSettings.RestrictPrivateChannelDeletion = *o.TeamSettings.RestrictPrivateChannelManagement
+	}
+
 	if o.TeamSettings.UserStatusAwayTimeout == nil {
 		o.TeamSettings.UserStatusAwayTimeout = new(int64)
 		*o.TeamSettings.UserStatusAwayTimeout = 300
@@ -499,6 +558,11 @@ func (o *Config) SetDefaults() {
 	if o.TeamSettings.MaxChannelsPerTeam == nil {
 		o.TeamSettings.MaxChannelsPerTeam = new(int64)
 		*o.TeamSettings.MaxChannelsPerTeam = 2000
+	}
+
+	if o.TeamSettings.MaxNotificationsPerChannel == nil {
+		o.TeamSettings.MaxNotificationsPerChannel = new(int64)
+		*o.TeamSettings.MaxNotificationsPerChannel = 1000
 	}
 
 	if o.EmailSettings.EnableSignInWithEmail == nil {
@@ -671,6 +735,11 @@ func (o *Config) SetDefaults() {
 		*o.LdapSettings.IdAttribute = ""
 	}
 
+	if o.LdapSettings.PositionAttribute == nil {
+		o.LdapSettings.PositionAttribute = new(string)
+		*o.LdapSettings.PositionAttribute = ""
+	}
+
 	if o.LdapSettings.SyncIntervalMinutes == nil {
 		o.LdapSettings.SyncIntervalMinutes = new(int)
 		*o.LdapSettings.SyncIntervalMinutes = 60
@@ -770,6 +839,21 @@ func (o *Config) SetDefaults() {
 
 	if o.ClusterSettings.InterNodeUrls == nil {
 		o.ClusterSettings.InterNodeUrls = []string{}
+	}
+
+	if o.MetricsSettings.ListenAddress == nil {
+		o.MetricsSettings.ListenAddress = new(string)
+		*o.MetricsSettings.ListenAddress = ":8067"
+	}
+
+	if o.MetricsSettings.Enable == nil {
+		o.MetricsSettings.Enable = new(bool)
+		*o.MetricsSettings.Enable = false
+	}
+
+	if o.AnalyticsSettings.MaxUsersForStatistics == nil {
+		o.AnalyticsSettings.MaxUsersForStatistics = new(int)
+		*o.AnalyticsSettings.MaxUsersForStatistics = 2500
 	}
 
 	if o.ComplianceSettings.Enable == nil {
@@ -882,6 +966,11 @@ func (o *Config) SetDefaults() {
 		*o.SamlSettings.NicknameAttribute = ""
 	}
 
+	if o.SamlSettings.PositionAttribute == nil {
+		o.SamlSettings.PositionAttribute = new(string)
+		*o.SamlSettings.PositionAttribute = ""
+	}
+
 	if o.SamlSettings.LocaleAttribute == nil {
 		o.SamlSettings.LocaleAttribute = new(string)
 		*o.SamlSettings.LocaleAttribute = ""
@@ -952,6 +1041,11 @@ func (o *Config) SetDefaults() {
 		*o.ServiceSettings.Forward80To443 = false
 	}
 
+	if o.MetricsSettings.BlockProfileRate == nil {
+		o.MetricsSettings.BlockProfileRate = new(int)
+		*o.MetricsSettings.BlockProfileRate = 0
+	}
+
 	o.defaultWebrtcSettings()
 }
 
@@ -985,6 +1079,10 @@ func (o *Config) IsValid() *AppError {
 
 	if *o.TeamSettings.MaxChannelsPerTeam <= 0 {
 		return NewLocAppError("Config.IsValid", "model.config.is_valid.max_channels.app_error", nil, "")
+	}
+
+	if *o.TeamSettings.MaxNotificationsPerChannel <= 0 {
+		return NewLocAppError("Config.IsValid", "model.config.is_valid.max_notify_per_channel.app_error", nil, "")
 	}
 
 	if !(*o.TeamSettings.RestrictDirectMessage == DIRECT_MESSAGE_ANY || *o.TeamSettings.RestrictDirectMessage == DIRECT_MESSAGE_TEAM) {

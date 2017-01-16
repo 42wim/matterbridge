@@ -18,6 +18,7 @@ const (
 	WEBSOCKET_EVENT_DIRECT_ADDED       = "direct_added"
 	WEBSOCKET_EVENT_NEW_USER           = "new_user"
 	WEBSOCKET_EVENT_LEAVE_TEAM         = "leave_team"
+	WEBSOCKET_EVENT_UPDATE_TEAM        = "update_team"
 	WEBSOCKET_EVENT_USER_ADDED         = "user_added"
 	WEBSOCKET_EVENT_USER_UPDATED       = "user_updated"
 	WEBSOCKET_EVENT_USER_REMOVED       = "user_removed"
@@ -27,6 +28,8 @@ const (
 	WEBSOCKET_EVENT_HELLO              = "hello"
 	WEBSOCKET_EVENT_WEBRTC             = "webrtc"
 	WEBSOCKET_AUTHENTICATION_CHALLENGE = "authentication_challenge"
+	WEBSOCKET_EVENT_REACTION_ADDED     = "reaction_added"
+	WEBSOCKET_EVENT_REACTION_REMOVED   = "reaction_removed"
 )
 
 type WebSocketMessage interface {
@@ -34,6 +37,7 @@ type WebSocketMessage interface {
 	IsValid() bool
 	DoPreComputeJson()
 	GetPreComputeJson() []byte
+	EventType() string
 }
 
 type WebsocketBroadcast struct {
@@ -61,6 +65,10 @@ func NewWebSocketEvent(event, teamId, channelId, userId string, omitUsers map[st
 
 func (o *WebSocketEvent) IsValid() bool {
 	return o.Event != ""
+}
+
+func (o *WebSocketEvent) EventType() string {
+	return o.Event
 }
 
 func (o *WebSocketEvent) DoPreComputeJson() {
@@ -118,6 +126,10 @@ func NewWebSocketError(seqReply int64, err *AppError) *WebSocketResponse {
 
 func (o *WebSocketResponse) IsValid() bool {
 	return o.Status != ""
+}
+
+func (o *WebSocketResponse) EventType() string {
+	return ""
 }
 
 func (o *WebSocketResponse) ToJson() string {
