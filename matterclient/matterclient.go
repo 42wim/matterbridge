@@ -582,6 +582,27 @@ func (m *MMClient) GetStatus(userId string) string {
 	return "offline"
 }
 
+func (m *MMClient) GetStatuses() map[string]string {
+	var ok bool
+	statuses := make(map[string]string)
+	res, err := m.Client.GetStatuses()
+	if err != nil {
+		return statuses
+	}
+	if statuses, ok = res.Data.(map[string]string); ok {
+		for userId, status := range statuses {
+			statuses[userId] = "offline"
+			if status == model.STATUS_AWAY {
+				statuses[userId] = "away"
+			}
+			if status == model.STATUS_ONLINE {
+				statuses[userId] = "online"
+			}
+		}
+	}
+	return statuses
+}
+
 func (m *MMClient) GetTeamId() string {
 	return m.Team.Id
 }
