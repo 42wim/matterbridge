@@ -1,4 +1,4 @@
-# v0.9.1-dev
+# v0.9.1
 ## New features
 * Rocket.Chat: New protocol support added (https://rocket.chat)
 * irc: add channel key support #27 (see matterbrige.toml.sample for example)

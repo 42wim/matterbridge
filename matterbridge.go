@@ -9,7 +9,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-var version = "0.9.1-dev"
+var version = "0.9.1"
 
 func init() {
 	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
