@@ -61,6 +61,7 @@ func (b *Bxmpp) Send(msg config.Message) error {
 func (b *Bxmpp) createXMPP() (*xmpp.Client, error) {
 	tc := new(tls.Config)
 	tc.InsecureSkipVerify = b.Config.SkipTLSVerify
+	tc.ServerName = strings.Split(b.Config.Server, ":")[0]
 	options := xmpp.Options{
 		Host:     b.Config.Server,
 		User:     b.Config.Jid,
