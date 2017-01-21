@@ -16,7 +16,6 @@ type Gateway struct {
 	Bridges        map[string]*bridge.Bridge
 	ChannelsOut    map[string][]string
 	ChannelsIn     map[string][]string
-	ignoreNicks    map[string][]string
 	ChannelOptions map[string]config.ChannelOptions
 	Name           string
 	Message        chan config.Message
@@ -69,8 +68,6 @@ func (gw *Gateway) Start() error {
 			return err
 		}
 	}
-	//TODO fix mapIgnores
-	//gw.mapIgnores()
 	go gw.handleReceive()
 	return nil
 }
@@ -79,8 +76,10 @@ func (gw *Gateway) handleReceive() {
 	for {
 		select {
 		case msg := <-gw.Message:
-			for _, br := range gw.Bridges {
-				gw.handleMessage(msg, br)
+			if !gw.ignoreMessage(&msg) {
+				for _, br := range gw.Bridges {
+					gw.handleMessage(msg, br)
+				}
 			}
 		}
 	}
@@ -110,15 +109,6 @@ func (gw *Gateway) mapChannels() error {
 	return nil
 }
 
-func (gw *Gateway) mapIgnores() {
-	m := make(map[string][]string)
-	for _, br := range gw.MyConfig.In {
-		accInfo := strings.Split(br.Account, ".")
-		m[br.Account] = strings.Fields(gw.Config.IRC[accInfo[1]].IgnoreNicks)
-	}
-	gw.ignoreNicks = m
-}
-
 func (gw *Gateway) getDestChannel(msg *config.Message, dest string) []string {
 	channels := gw.ChannelsIn[msg.Account]
 	// broadcast to every out channel (irc QUIT)
@@ -134,9 +124,6 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest string) []string {
 }
 
 func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
-	if gw.ignoreMessage(&msg) {
-		return
-	}
 	// only relay join/part when configged
 	if msg.Event == config.EVENT_JOIN_LEAVE && !gw.Bridges[dest.Account].Config.ShowJoinPart {
 		return
@@ -163,9 +150,9 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 }
 
 func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
-	// should we discard messages ?
-	for _, entry := range gw.ignoreNicks[msg.Account] {
+	for _, entry := range strings.Fields(gw.Bridges[msg.Account].Config.IgnoreNicks) {
 		if msg.Username == entry {
+			log.Debugf("ignoring %s from %s", msg.Username, msg.Account)
 			return true
 		}
 	}

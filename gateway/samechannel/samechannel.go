@@ -47,8 +47,10 @@ func (gw *SameChannelGateway) handleReceive(c chan config.Message) {
 	for {
 		select {
 		case msg := <-c:
-			for _, br := range gw.Bridges {
-				gw.handleMessage(msg, br)
+			if !gw.ignoreMessage(&msg) {
+				for _, br := range gw.Bridges {
+					gw.handleMessage(msg, br)
+				}
 			}
 		}
 	}
@@ -69,6 +71,16 @@ func (gw *SameChannelGateway) handleMessage(msg config.Message, dest *bridge.Bri
 	if err != nil {
 		log.Error(err)
 	}
+}
+
+func (gw *SameChannelGateway) ignoreMessage(msg *config.Message) bool {
+	for _, entry := range strings.Fields(gw.Bridges[msg.Account].Config.IgnoreNicks) {
+		if msg.Username == entry {
+			log.Debugf("ignoring %s from %s", msg.Username, msg.Account)
+			return true
+		}
+	}
+	return false
 }
 
 func (gw *SameChannelGateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) {
