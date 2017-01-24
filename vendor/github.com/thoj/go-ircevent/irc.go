@@ -74,7 +74,9 @@ func (irc *Connection) readLoop() {
 				irc.Log.Printf("<-- %s\n", strings.TrimSpace(msg))
 			}
 
+			irc.Lock()
 			irc.lastMessage = time.Now()
+			irc.Unlock()
 			event, err := parseToEvent(msg)
 			event.Connection = irc
 			if err == nil {
@@ -171,10 +173,12 @@ func (irc *Connection) pingLoop() {
 			//Ping at the ping frequency
 			irc.SendRawf("PING %d", time.Now().UnixNano())
 			//Try to recapture nickname if it's not as configured.
+			irc.Lock()
 			if irc.nick != irc.nickcurrent {
 				irc.nickcurrent = irc.nick
 				irc.SendRawf("NICK %s", irc.nick)
 			}
+			irc.Unlock()
 		case <-irc.end:
 			ticker.Stop()
 			ticker2.Stop()
@@ -183,13 +187,21 @@ func (irc *Connection) pingLoop() {
 	}
 }
 
+func (irc *Connection) isQuitting() bool {
+	irc.Lock()
+	defer irc.Unlock()
+	return irc.quit
+}
+
 // Main loop to control the connection.
 func (irc *Connection) Loop() {
 	errChan := irc.ErrorChan()
-	for !irc.quit {
+	for !irc.isQuitting() {
 		err := <-errChan
-		irc.Log.Printf("Error, disconnected: %s\n", err)
-		for !irc.quit {
+		close(irc.end)
+		irc.Wait()
+		for !irc.isQuitting() {
+			irc.Log.Printf("Error, disconnected: %s\n", err)
 			if err = irc.Reconnect(); err != nil {
 				irc.Log.Printf("Error while reconnecting: %s\n", err)
 				time.Sleep(60 * time.Second)
@@ -211,8 +223,10 @@ func (irc *Connection) Quit() {
 	}
 
 	irc.SendRaw(quit)
+	irc.Lock()
 	irc.stopped = true
 	irc.quit = true
+	irc.Unlock()
 }
 
 // Use the connection to join a given channel.
@@ -341,37 +355,14 @@ func (irc *Connection) Connected() bool {
 // A disconnect sends all buffered messages (if possible),
 // stops all goroutines and then closes the socket.
 func (irc *Connection) Disconnect() {
-	for event := range irc.events {
-		irc.ClearCallback(event)
-	}
-	if irc.end != nil {
-		close(irc.end)
-	}
-
-	irc.end = nil
-
-	if irc.pwrite != nil {
-		close(irc.pwrite)
-	}
-
-	irc.Wait()
 	if irc.socket != nil {
 		irc.socket.Close()
 	}
-	irc.socket = nil
 	irc.ErrorChan() <- ErrDisconnected
 }
 
 // Reconnect to a server using the current connection.
 func (irc *Connection) Reconnect() error {
-	if irc.end != nil {
-		close(irc.end)
-	}
-
-	irc.end = nil
-
-	irc.Wait() //make sure that wait group is cleared ensuring that all spawned goroutines have completed
-
 	irc.end = make(chan struct{})
 	return irc.Connect(irc.Server)
 }
@@ -427,7 +418,7 @@ func (irc *Connection) Connect(server string) error {
 	}
 
 	irc.stopped = false
-	//irc.Log.Printf("Connected to %s (%s)\n", irc.Server, irc.socket.RemoteAddr())
+	irc.Log.Printf("Connected to %s (%s)\n", irc.Server, irc.socket.RemoteAddr())
 
 	irc.pwrite = make(chan string, 10)
 	irc.Error = make(chan error, 2)

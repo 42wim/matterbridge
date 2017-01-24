@@ -186,7 +186,7 @@
 			"importpath": "github.com/thoj/go-ircevent",
 			"repository": "https://github.com/thoj/go-ircevent",
 			"vcs": "git",
-			"revision": "98c1902dd2097f38142384167e60206ba26f1585",
+			"revision": "1b0acb5f2f1b615cfbd4b9f91abb14cb39a18769",
 			"branch": "master",
 			"notests": true
 		},

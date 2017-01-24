@@ -13,6 +13,7 @@ import (
 )
 
 type Connection struct {
+	sync.Mutex
 	sync.WaitGroup
 	Debug        bool
 	Error        chan error
@@ -46,7 +47,7 @@ type Connection struct {
 	Log                    *log.Logger
 
 	stopped bool
-	quit    bool
+	quit    bool //User called Quit, do not reconnect.
 }
 
 // A struct to represent an event.

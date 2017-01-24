@@ -136,9 +136,8 @@ func (irc *Connection) RunCallbacks(event *Event) {
 func (irc *Connection) setupCallbacks() {
 	irc.events = make(map[string]map[int]func(*Event))
 
-	//Handle error events. This has to be called in a new thred to allow
-	//readLoop to exit
-	irc.AddCallback("ERROR", func(e *Event) { go irc.Disconnect() })
+	//Handle error events.
+	irc.AddCallback("ERROR", func(e *Event) { irc.Disconnect() })
 
 	//Handle ping events
 	irc.AddCallback("PING", func(e *Event) { irc.SendRaw("PONG :" + e.Message()) })
@@ -201,7 +200,7 @@ func (irc *Connection) setupCallbacks() {
 		ns, _ := strconv.ParseInt(e.Message(), 10, 64)
 		delta := time.Duration(time.Now().UnixNano() - ns)
 		if irc.Debug {
-			irc.Log.Printf("Lag: %vs\n", delta)
+			irc.Log.Printf("Lag: %.3f s\n", delta.Seconds())
 		}
 	})
 
@@ -216,6 +215,8 @@ func (irc *Connection) setupCallbacks() {
 	// 1: RPL_WELCOME "Welcome to the Internet Relay Network <nick>!<user>@<host>"
 	// Set irc.nickcurrent to the actually used nick in this connection.
 	irc.AddCallback("001", func(e *Event) {
+		irc.Lock()
 		irc.nickcurrent = e.Arguments[0]
+		irc.Unlock()
 	})
 }
