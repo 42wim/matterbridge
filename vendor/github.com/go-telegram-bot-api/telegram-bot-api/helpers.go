@@ -1,6 +1,7 @@
 package tgbotapi
 
 import (
+	"log"
 	"net/url"
 )
 
@@ -20,6 +21,7 @@ func NewMessage(chatID int64, text string) MessageConfig {
 
 // NewMessageToChannel creates a new Message that is sent to a channel
 // by username.
+//
 // username is the username of the channel, text is the message text.
 func NewMessageToChannel(username string, text string) MessageConfig {
 	return MessageConfig{
@@ -316,6 +318,21 @@ func NewWebhookWithCert(link string, file interface{}) WebhookConfig {
 	}
 }
 
+// NewWebhookWithCert creates a new webhook with a certificate and max_connections.
+//
+// link is the url you wish to get webhooks,
+// file contains a string to a file, FileReader, or FileBytes.
+// maxConnections defines maximum number of connections from telegram to your server
+func NewWebhookWithCertAndMaxConnections(link string, file interface{}, maxConnections int) WebhookConfig {
+	u, _ := url.Parse(link)
+
+	return WebhookConfig{
+		URL:         u,
+		Certificate: file,
+		MaxConnections: maxConnections,
+	}
+}
+
 // NewInlineQueryResultArticle creates a new inline query article.
 func NewInlineQueryResultArticle(id, title, messageText string) InlineQueryResultArticle {
 	return InlineQueryResultArticle{
@@ -479,9 +496,20 @@ func NewEditMessageReplyMarkup(chatID int64, messageID int, replyMarkup InlineKe
 // NewHideKeyboard hides the keyboard, with the option for being selective
 // or hiding for everyone.
 func NewHideKeyboard(selective bool) ReplyKeyboardHide {
+	log.Println("NewHideKeyboard is deprecated, please use NewRemoveKeyboard")
+
 	return ReplyKeyboardHide{
 		HideKeyboard: true,
 		Selective:    selective,
+	}
+}
+
+// NewRemoveKeyboard hides the keyboard, with the option for being selective
+// or hiding for everyone.
+func NewRemoveKeyboard(selective bool) ReplyKeyboardRemove {
+	return ReplyKeyboardRemove{
+		RemoveKeyboard: true,
+		Selective:      selective,
 	}
 }
 

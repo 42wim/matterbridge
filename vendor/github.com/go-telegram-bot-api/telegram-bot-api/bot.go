@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/technoweenie/multipartstreamer"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -16,6 +15,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/technoweenie/multipartstreamer"
 )
 
 // BotAPI allows you to interact with the Telegram Bot API.
@@ -80,7 +81,7 @@ func (bot *BotAPI) MakeRequest(endpoint string, params url.Values) (APIResponse,
 	json.Unmarshal(bytes, &apiResp)
 
 	if !apiResp.Ok {
-		return APIResponse{}, errors.New(apiResp.Description)
+		return apiResp, errors.New(apiResp.Description)
 	}
 
 	return apiResp, nil
@@ -105,16 +106,17 @@ func (bot *BotAPI) makeMessageRequest(endpoint string, params url.Values) (Messa
 //
 // Requires the parameter to hold the file not be in the params.
 // File should be a string to a file path, a FileBytes struct,
-// or a FileReader struct.
+// a FileReader struct, or a url.URL.
 //
 // Note that if your FileReader has a size set to -1, it will read
 // the file into memory to calculate a size.
 func (bot *BotAPI) UploadFile(endpoint string, params map[string]string, fieldname string, file interface{}) (APIResponse, error) {
 	ms := multipartstreamer.New()
-	ms.WriteFields(params)
 
 	switch f := file.(type) {
 	case string:
+		ms.WriteFields(params)
+
 		fileHandle, err := os.Open(f)
 		if err != nil {
 			return APIResponse{}, err
@@ -128,9 +130,13 @@ func (bot *BotAPI) UploadFile(endpoint string, params map[string]string, fieldna
 
 		ms.WriteReader(fieldname, fileHandle.Name(), fi.Size(), fileHandle)
 	case FileBytes:
+		ms.WriteFields(params)
+
 		buf := bytes.NewBuffer(f.Bytes)
 		ms.WriteReader(fieldname, f.Name, int64(len(f.Bytes)), buf)
 	case FileReader:
+		ms.WriteFields(params)
+
 		if f.Size != -1 {
 			ms.WriteReader(fieldname, f.Name, f.Size, f.Reader)
 
@@ -145,6 +151,10 @@ func (bot *BotAPI) UploadFile(endpoint string, params map[string]string, fieldna
 		buf := bytes.NewBuffer(data)
 
 		ms.WriteReader(fieldname, f.Name, int64(len(data)), buf)
+	case url.URL:
+		params[fieldname] = f.String()
+
+		ms.WriteFields(params)
 	default:
 		return APIResponse{}, errors.New(ErrBadFileType)
 	}
@@ -399,15 +409,22 @@ func (bot *BotAPI) RemoveWebhook() (APIResponse, error) {
 // If you do not have a legitimate TLS certificate, you need to include
 // your self signed certificate with the config.
 func (bot *BotAPI) SetWebhook(config WebhookConfig) (APIResponse, error) {
+
 	if config.Certificate == nil {
 		v := url.Values{}
 		v.Add("url", config.URL.String())
+		if config.MaxConnections != 0 {
+			v.Add("max_connections", strconv.Itoa(config.MaxConnections))
+		}
 
 		return bot.MakeRequest("setWebhook", v)
 	}
 
 	params := make(map[string]string)
 	params["url"] = config.URL.String()
+	if config.MaxConnections != 0 {
+		params["max_connections"] = strconv.Itoa(config.MaxConnections)
+	}
 
 	resp, err := bot.UploadFile("setWebhook", params, "certificate", config.Certificate)
 	if err != nil {
@@ -424,9 +441,23 @@ func (bot *BotAPI) SetWebhook(config WebhookConfig) (APIResponse, error) {
 	return apiResp, nil
 }
 
+// GetWebhookInfo allows you to fetch information about a webhook and if
+// one currently is set, along with pending update count and error messages.
+func (bot *BotAPI) GetWebhookInfo() (WebhookInfo, error) {
+	resp, err := bot.MakeRequest("getWebhookInfo", url.Values{})
+	if err != nil {
+		return WebhookInfo{}, err
+	}
+
+	var info WebhookInfo
+	err = json.Unmarshal(resp.Result, &info)
+
+	return info, err
+}
+
 // GetUpdatesChan starts and returns a channel for getting updates.
-func (bot *BotAPI) GetUpdatesChan(config UpdateConfig) (<-chan Update, error) {
-	updatesChan := make(chan Update, 100)
+func (bot *BotAPI) GetUpdatesChan(config UpdateConfig) (UpdatesChannel, error) {
+	ch := make(chan Update, 100)
 
 	go func() {
 		for {
@@ -442,18 +473,18 @@ func (bot *BotAPI) GetUpdatesChan(config UpdateConfig) (<-chan Update, error) {
 			for _, update := range updates {
 				if update.UpdateID >= config.Offset {
 					config.Offset = update.UpdateID + 1
-					updatesChan <- update
+					ch <- update
 				}
 			}
 		}
 	}()
 
-	return updatesChan, nil
+	return ch, nil
 }
 
 // ListenForWebhook registers a http handler for a webhook.
-func (bot *BotAPI) ListenForWebhook(pattern string) <-chan Update {
-	updatesChan := make(chan Update, 100)
+func (bot *BotAPI) ListenForWebhook(pattern string) UpdatesChannel {
+	ch := make(chan Update, 100)
 
 	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 		bytes, _ := ioutil.ReadAll(r.Body)
@@ -461,10 +492,10 @@ func (bot *BotAPI) ListenForWebhook(pattern string) <-chan Update {
 		var update Update
 		json.Unmarshal(bytes, &update)
 
-		updatesChan <- update
+		ch <- update
 	})
 
-	return updatesChan
+	return ch
 }
 
 // AnswerInlineQuery sends a response to an inline query.
@@ -495,8 +526,14 @@ func (bot *BotAPI) AnswerCallbackQuery(config CallbackConfig) (APIResponse, erro
 	v := url.Values{}
 
 	v.Add("callback_query_id", config.CallbackQueryID)
-	v.Add("text", config.Text)
+	if config.Text != "" {
+		v.Add("text", config.Text)
+	}
 	v.Add("show_alert", strconv.FormatBool(config.ShowAlert))
+	if config.URL != "" {
+		v.Add("url", config.URL)
+	}
+	v.Add("cache_time", strconv.Itoa(config.CacheTime))
 
 	bot.debugLog("answerCallbackQuery", v, nil)
 
@@ -647,4 +684,19 @@ func (bot *BotAPI) UnbanChatMember(config ChatMemberConfig) (APIResponse, error)
 	bot.debugLog("unbanChatMember", v, nil)
 
 	return bot.MakeRequest("unbanChatMember", v)
+}
+
+// GetGameHighScores allows you to get the high scores for a game.
+func (bot *BotAPI) GetGameHighScores(config GetGameHighScoresConfig) ([]GameHighScore, error) {
+	v, _ := config.values()
+
+	resp, err := bot.MakeRequest(config.method(), v)
+	if err != nil {
+		return []GameHighScore{}, err
+	}
+
+	var highScores []GameHighScore
+	err = json.Unmarshal(resp.Result, &highScores)
+
+	return highScores, err
 }
