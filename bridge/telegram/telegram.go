@@ -117,7 +117,7 @@ func (b *Btelegram) Send(msg config.Message) error {
 			blackfriday.EXTENSION_BACKSLASH_LINE_BREAK|
 			blackfriday.EXTENSION_DEFINITION_LISTS)
 
-	m := tgbotapi.NewMessage(chatid, msg.Username+string(parsed))
+	m := tgbotapi.NewMessage(chatid, html.EscapeString(msg.Username)+string(parsed))
 	m.ParseMode = "HTML"
 	_, err = b.c.Send(m)
 	return err
