@@ -3,8 +3,12 @@
 * general: make ignorenicks work again #115
 * telegram: fix receiving from channels and groups #112
 * telegram: use html for username
+* telegram: use ```unknown``` as username when username is not visible.
 * irc: update vendor (fixes some crashes) #117
 * xmpp: fix tls by setting ServerName #114
+
+## New features
+* slack: support private channels #118
 
 # v0.9.1
 ## New features
