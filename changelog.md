@@ -1,3 +1,11 @@
+# v0.9.2
+## Bugfix
+* general: make ignorenicks work again #115
+* telegram: fix receiving from channels and groups #112
+* telegram: use html for username
+* irc: update vendor (fixes some crashes) #117
+* xmpp: fix tls by setting ServerName #114
+
 # v0.9.1
 ## New features
 * Rocket.Chat: New protocol support added (https://rocket.chat)
