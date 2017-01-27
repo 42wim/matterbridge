@@ -122,7 +122,7 @@ func (api *Client) GetUserPresence(user string) (*UserPresence, error) {
 	return &response.UserPresence, nil
 }
 
-// GetUserInfo will retrive the complete user information
+// GetUserInfo will retrieve the complete user information
 func (api *Client) GetUserInfo(user string) (*User, error) {
 	values := url.Values{
 		"token": {api.config.token},

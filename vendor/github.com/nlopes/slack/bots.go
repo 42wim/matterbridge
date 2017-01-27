@@ -30,7 +30,7 @@ func botRequest(path string, values url.Values, debug bool) (*botResponseFull, e
 	return response, nil
 }
 
-// GetBotInfo will retrive the complete bot information
+// GetBotInfo will retrieve the complete bot information
 func (api *Client) GetBotInfo(bot string) (*Bot, error) {
 	values := url.Values{
 		"token": {api.config.token},

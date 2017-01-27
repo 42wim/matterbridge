@@ -29,18 +29,18 @@ type chatResponseFull struct {
 
 // PostMessageParameters contains all the parameters necessary (including the optional ones) for a PostMessage() request
 type PostMessageParameters struct {
-	Text        string
-	Username    string
-	AsUser      bool
-	Parse       string
-	LinkNames   int
-	Attachments []Attachment
-	UnfurlLinks bool
-	UnfurlMedia bool
-	IconURL     string
-	IconEmoji   string
-	Markdown    bool `json:"mrkdwn,omitempty"`
-	EscapeText  bool
+	Text        string       `json:"text"`
+	Username    string       `json:"user_name"`
+	AsUser      bool         `json:"as_user"`
+	Parse       string       `json:"parse"`
+	LinkNames   int          `json:"link_names"`
+	Attachments []Attachment `json:"attachments"`
+	UnfurlLinks bool         `json:"unfurl_links"`
+	UnfurlMedia bool         `json:"unfurl_media"`
+	IconURL     string       `json:"icon_url"`
+	IconEmoji   string       `json:"icon_emoji"`
+	Markdown    bool         `json:"mrkdwn,omitempty"`
+	EscapeText  bool         `json:"escape_text"`
 }
 
 // NewPostMessageParameters provides an instance of PostMessageParameters with all the sane default values set

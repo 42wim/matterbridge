@@ -198,3 +198,13 @@ func (info Info) GetGroupByID(groupID string) *Group {
 	}
 	return nil
 }
+
+// GetIMByID returns an IM given an IM id
+func (info Info) GetIMByID(imID string) *IM {
+	for _, im := range info.IMs {
+		if im.ID == imID {
+			return &im
+		}
+	}
+	return nil
+}
