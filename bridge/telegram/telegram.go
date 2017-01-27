@@ -135,9 +135,9 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 				if username == "" {
 					username = update.ChannelPost.From.UserName
 				}
-				text = update.ChannelPost.Text
-				channel = strconv.FormatInt(update.ChannelPost.Chat.ID, 10)
 			}
+			text = update.ChannelPost.Text
+			channel = strconv.FormatInt(update.ChannelPost.Chat.ID, 10)
 		}
 		// handle groups
 		if update.Message != nil {
@@ -146,11 +146,16 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 				if username == "" {
 					username = update.Message.From.UserName
 				}
-				text = update.Message.Text
-				channel = strconv.FormatInt(update.Message.Chat.ID, 10)
 			}
+			text = update.Message.Text
+			channel = strconv.FormatInt(update.Message.Chat.ID, 10)
 		}
-		flog.Debugf("Sending message from %s on %s to gateway", username, b.Account)
-		b.Remote <- config.Message{Username: username, Text: text, Channel: channel, Account: b.Account}
+		if username == "" {
+			username = "unknown"
+		}
+		if text != "" {
+			flog.Debugf("Sending message from %s on %s to gateway", username, b.Account)
+			b.Remote <- config.Message{Username: username, Text: text, Channel: channel, Account: b.Account}
+		}
 	}
 }
