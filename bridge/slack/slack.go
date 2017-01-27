@@ -204,6 +204,14 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 			b.channels = ev.Info.Channels
 			b.si = ev.Info
 			b.Users, _ = b.sc.GetUsers()
+			// add private channels
+			groups, _ := b.sc.GetGroups(true)
+			for _, g := range groups {
+				channel := new(slack.Channel)
+				channel.ID = g.ID
+				channel.Name = g.Name
+				b.channels = append(b.channels, *channel)
+			}
 		case *slack.InvalidAuthEvent:
 			flog.Fatalf("Invalid Token %#v", ev)
 		default:
