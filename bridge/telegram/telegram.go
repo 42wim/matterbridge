@@ -124,11 +124,33 @@ func (b *Btelegram) Send(msg config.Message) error {
 }
 
 func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
+	username := ""
+	text := ""
+	channel := ""
 	for update := range updates {
-		if update.Message == nil {
-			continue
+		// handle channels
+		if update.ChannelPost != nil {
+			if update.ChannelPost.From != nil {
+				username = update.ChannelPost.From.FirstName
+				if username == "" {
+					username = update.ChannelPost.From.UserName
+				}
+				text = update.ChannelPost.Text
+				channel = strconv.FormatInt(update.ChannelPost.Chat.ID, 10)
+			}
 		}
-		flog.Debugf("Sending message from %s on %s to gateway", update.Message.From.UserName, b.Account)
-		b.Remote <- config.Message{Username: update.Message.From.UserName, Text: update.Message.Text, Channel: strconv.FormatInt(update.Message.Chat.ID, 10), Account: b.Account}
+		// handle groups
+		if update.Message != nil {
+			if update.Message.From != nil {
+				username = update.Message.From.FirstName
+				if username == "" {
+					username = update.Message.From.UserName
+				}
+				text = update.Message.Text
+				channel = strconv.FormatInt(update.Message.Chat.ID, 10)
+			}
+		}
+		flog.Debugf("Sending message from %s on %s to gateway", username, b.Account)
+		b.Remote <- config.Message{Username: username, Text: text, Channel: channel, Account: b.Account}
 	}
 }
