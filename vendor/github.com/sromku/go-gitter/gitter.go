@@ -127,7 +127,6 @@ func (gitter *Gitter) GetRooms() ([]Room, error) {
 
 // GetUsersInRoom returns the users in the room with the passed id
 func (gitter *Gitter) GetUsersInRoom(roomID string) ([]User, error) {
-
 	var users []User
 	response, err := gitter.get(gitter.config.apiBaseURL + "rooms/" + roomID + "/users")
 	if err != nil {
@@ -257,6 +256,45 @@ func (gitter *Gitter) LeaveRoom(roomID, userID string) error {
 func (gitter *Gitter) SetDebug(debug bool, logWriter io.Writer) {
 	gitter.debug = debug
 	gitter.logWriter = logWriter
+}
+
+// SearchRooms queries the Rooms resources of gitter API
+func (gitter *Gitter) SearchRooms(room string) ([]Room, error) {
+
+	var rooms struct {
+		Results []Room `json:"results"`
+	}
+
+	response, err := gitter.get(gitter.config.apiBaseURL + "rooms?q=" + room )
+
+	if err != nil {
+		gitter.log(err)
+		return nil, err
+	}
+
+	err = json.Unmarshal(response, &rooms)
+	if err != nil {
+		gitter.log(err)
+		return nil, err
+	}
+	return rooms.Results, nil
+}
+
+// GetRoomId returns the room ID of a given URI
+func (gitter *Gitter) GetRoomId(uri string) (string, error) {
+
+	rooms, err := gitter.SearchRooms(uri)
+	if err != nil {
+		gitter.log(err)
+		return "", err
+	}
+
+	for _, element := range rooms {
+		if element.URI == uri {
+			return element.ID, nil
+		}
+	}
+	return "", APIError{What: "Room not found."}
 }
 
 // Pagination params

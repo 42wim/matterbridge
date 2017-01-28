@@ -441,7 +441,7 @@ func (v *VoiceConnection) onEvent(message []byte) {
 		}
 
 	default:
-		v.log(LogError, "unknown voice operation, %d, %s", e.Operation, string(e.RawData))
+		v.log(LogDebug, "unknown voice operation, %d, %s", e.Operation, string(e.RawData))
 	}
 
 	return
@@ -570,7 +570,7 @@ func (v *VoiceConnection) udpOpen() (err error) {
 		return fmt.Errorf("received udp packet too small")
 	}
 
-	// Loop over position 4 though 20 to grab the IP address
+	// Loop over position 4 through 20 to grab the IP address
 	// Should never be beyond position 20.
 	var ip string
 	for i := 4; i < 20; i++ {

@@ -13,7 +13,7 @@ package discordgo
 
 import (
 	"encoding/json"
-	"reflect"
+	"strconv"
 	"sync"
 	"time"
 
@@ -53,6 +53,9 @@ type Session struct {
 	// Whether the Data Websocket is ready
 	DataReady bool // NOTE: Maye be deprecated soon
 
+	// Max number of REST API retries
+	MaxRestRetries int
+
 	// Status stores the currect status of the websocket connection
 	// this is being tested, may stay, may go away.
 	status int32
@@ -70,13 +73,10 @@ type Session struct {
 	// StateEnabled is true.
 	State *State
 
-	handlersMu sync.RWMutex
-	// This is a mapping of event struct to a reflected value
-	// for event handlers.
-	// We store the reflected value instead of the function
-	// reference as it is more performant, instead of re-reflecting
-	// the function each event.
-	handlers map[interface{}][]reflect.Value
+	// Event handlers
+	handlersMu   sync.RWMutex
+	handlers     map[string][]*eventHandlerInstance
+	onceHandlers map[string][]*eventHandlerInstance
 
 	// The websocket connection.
 	wsConn *websocket.Conn
@@ -85,9 +85,7 @@ type Session struct {
 	listening chan interface{}
 
 	// used to deal with rate limits
-	// may switch to slices later
-	// TODO: performance test map vs slices
-	rateLimit rateLimitMutex
+	ratelimiter *RateLimiter
 
 	// sequence tracks the current gateway api websocket sequence number
 	sequence int
@@ -106,12 +104,6 @@ type rateLimitMutex struct {
 	sync.Mutex
 	url map[string]*sync.Mutex
 	// bucket map[string]*sync.Mutex // TODO :)
-}
-
-// A Resumed struct holds the data received in a RESUMED event
-type Resumed struct {
-	HeartbeatInterval time.Duration `json:"heartbeat_interval"`
-	Trace             []string      `json:"_trace"`
 }
 
 // A VoiceRegion stores data for a specific voice region server.
@@ -137,17 +129,17 @@ type ICEServer struct {
 
 // A Invite stores all data related to a specific Discord Guild or Channel invite.
 type Invite struct {
-	Guild     *Guild   `json:"guild"`
-	Channel   *Channel `json:"channel"`
-	Inviter   *User    `json:"inviter"`
-	Code      string   `json:"code"`
-	CreatedAt string   `json:"created_at"` // TODO make timestamp
-	MaxAge    int      `json:"max_age"`
-	Uses      int      `json:"uses"`
-	MaxUses   int      `json:"max_uses"`
-	XkcdPass  string   `json:"xkcdpass"`
-	Revoked   bool     `json:"revoked"`
-	Temporary bool     `json:"temporary"`
+	Guild     *Guild    `json:"guild"`
+	Channel   *Channel  `json:"channel"`
+	Inviter   *User     `json:"inviter"`
+	Code      string    `json:"code"`
+	CreatedAt Timestamp `json:"created_at"`
+	MaxAge    int       `json:"max_age"`
+	Uses      int       `json:"uses"`
+	MaxUses   int       `json:"max_uses"`
+	XkcdPass  string    `json:"xkcdpass"`
+	Revoked   bool      `json:"revoked"`
+	Temporary bool      `json:"temporary"`
 }
 
 // A Channel holds all data related to an individual Discord channel.
@@ -183,6 +175,17 @@ type Emoji struct {
 	RequireColons bool     `json:"require_colons"`
 }
 
+// APIName returns an correctly formatted API name for use in the MessageReactions endpoints.
+func (e *Emoji) APIName() string {
+	if e.ID != "" && e.Name != "" {
+		return e.Name + ":" + e.ID
+	}
+	if e.Name != "" {
+		return e.Name
+	}
+	return e.ID
+}
+
 // VerificationLevel type defination
 type VerificationLevel int
 
@@ -204,9 +207,10 @@ type Guild struct {
 	AfkChannelID                string            `json:"afk_channel_id"`
 	EmbedChannelID              string            `json:"embed_channel_id"`
 	OwnerID                     string            `json:"owner_id"`
-	JoinedAt                    string            `json:"joined_at"` // make this a timestamp
+	JoinedAt                    Timestamp         `json:"joined_at"`
 	Splash                      string            `json:"splash"`
 	AfkTimeout                  int               `json:"afk_timeout"`
+	MemberCount                 int               `json:"member_count"`
 	VerificationLevel           VerificationLevel `json:"verification_level"`
 	EmbedEnabled                bool              `json:"embed_enabled"`
 	Large                       bool              `json:"large"` // ??
@@ -217,7 +221,16 @@ type Guild struct {
 	Presences                   []*Presence       `json:"presences"`
 	Channels                    []*Channel        `json:"channels"`
 	VoiceStates                 []*VoiceState     `json:"voice_states"`
-	Unavailable                 *bool             `json:"unavailable"`
+	Unavailable                 bool              `json:"unavailable"`
+}
+
+// A UserGuild holds a brief version of a Guild
+type UserGuild struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Icon        string `json:"icon"`
+	Owner       bool   `json:"owner"`
+	Permissions int    `json:"permissions"`
 }
 
 // A GuildParams stores all the data needed to update discord guild settings
@@ -232,6 +245,7 @@ type Role struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Managed     bool   `json:"managed"`
+	Mentionable bool   `json:"mentionable"`
 	Hoist       bool   `json:"hoist"`
 	Color       int    `json:"color"`
 	Position    int    `json:"position"`
@@ -253,9 +267,11 @@ type VoiceState struct {
 
 // A Presence stores the online, offline, or idle and game status of Guild members.
 type Presence struct {
-	User   *User  `json:"user"`
-	Status string `json:"status"`
-	Game   *Game  `json:"game"`
+	User   *User    `json:"user"`
+	Status Status   `json:"status"`
+	Game   *Game    `json:"game"`
+	Nick   string   `json:"nick"`
+	Roles  []string `json:"roles"`
 }
 
 // A Game struct holds the name of the "playing .." game for a user
@@ -263,6 +279,38 @@ type Game struct {
 	Name string `json:"name"`
 	Type int    `json:"type"`
 	URL  string `json:"url"`
+}
+
+// UnmarshalJSON unmarshals json to Game struct
+func (g *Game) UnmarshalJSON(bytes []byte) error {
+	temp := &struct {
+		Name string          `json:"name"`
+		Type json.RawMessage `json:"type"`
+		URL  string          `json:"url"`
+	}{}
+	err := json.Unmarshal(bytes, temp)
+	if err != nil {
+		return err
+	}
+	g.Name = temp.Name
+	g.URL = temp.URL
+
+	if temp.Type != nil {
+		err = json.Unmarshal(temp.Type, &g.Type)
+		if err == nil {
+			return nil
+		}
+
+		s := ""
+		err = json.Unmarshal(temp.Type, &s)
+		if err == nil {
+			g.Type, err = strconv.Atoi(s)
+		}
+
+		return err
+	}
+
+	return nil
 }
 
 // A Member stores user information for Guild members.
@@ -291,52 +339,40 @@ type User struct {
 
 // A Settings stores data for a specific users Discord client settings.
 type Settings struct {
-	RenderEmbeds            bool               `json:"render_embeds"`
-	InlineEmbedMedia        bool               `json:"inline_embed_media"`
-	InlineAttachmentMedia   bool               `json:"inline_attachment_media"`
-	EnableTtsCommand        bool               `json:"enable_tts_command"`
-	MessageDisplayCompact   bool               `json:"message_display_compact"`
-	ShowCurrentGame         bool               `json:"show_current_game"`
-	AllowEmailFriendRequest bool               `json:"allow_email_friend_request"`
-	ConvertEmoticons        bool               `json:"convert_emoticons"`
-	Locale                  string             `json:"locale"`
-	Theme                   string             `json:"theme"`
-	GuildPositions          []string           `json:"guild_positions"`
-	RestrictedGuilds        []string           `json:"restricted_guilds"`
-	FriendSourceFlags       *FriendSourceFlags `json:"friend_source_flags"`
+	RenderEmbeds           bool               `json:"render_embeds"`
+	InlineEmbedMedia       bool               `json:"inline_embed_media"`
+	InlineAttachmentMedia  bool               `json:"inline_attachment_media"`
+	EnableTtsCommand       bool               `json:"enable_tts_command"`
+	MessageDisplayCompact  bool               `json:"message_display_compact"`
+	ShowCurrentGame        bool               `json:"show_current_game"`
+	ConvertEmoticons       bool               `json:"convert_emoticons"`
+	Locale                 string             `json:"locale"`
+	Theme                  string             `json:"theme"`
+	GuildPositions         []string           `json:"guild_positions"`
+	RestrictedGuilds       []string           `json:"restricted_guilds"`
+	FriendSourceFlags      *FriendSourceFlags `json:"friend_source_flags"`
+	Status                 Status             `json:"status"`
+	DetectPlatformAccounts bool               `json:"detect_platform_accounts"`
+	DeveloperMode          bool               `json:"developer_mode"`
 }
+
+// Status type defination
+type Status string
+
+// Constants for Status with the different current available status
+const (
+	StatusOnline       Status = "online"
+	StatusIdle         Status = "idle"
+	StatusDoNotDisturb Status = "dnd"
+	StatusInvisible    Status = "invisible"
+	StatusOffline      Status = "offline"
+)
 
 // FriendSourceFlags stores ... TODO :)
 type FriendSourceFlags struct {
 	All           bool `json:"all"`
 	MutualGuilds  bool `json:"mutual_guilds"`
 	MutualFriends bool `json:"mutual_friends"`
-}
-
-// An Event provides a basic initial struct for all websocket event.
-type Event struct {
-	Operation int             `json:"op"`
-	Sequence  int             `json:"s"`
-	Type      string          `json:"t"`
-	RawData   json.RawMessage `json:"d"`
-	Struct    interface{}     `json:"-"`
-}
-
-// A Ready stores all data for the websocket READY event.
-type Ready struct {
-	Version           int           `json:"v"`
-	SessionID         string        `json:"session_id"`
-	HeartbeatInterval time.Duration `json:"heartbeat_interval"`
-	User              *User         `json:"user"`
-	ReadState         []*ReadState  `json:"read_state"`
-	PrivateChannels   []*Channel    `json:"private_channels"`
-	Guilds            []*Guild      `json:"guilds"`
-
-	// Undocumented fields
-	Settings          *Settings            `json:"user_settings"`
-	UserGuildSettings []*UserGuildSettings `json:"user_guild_settings"`
-	Relationships     []*Relationship      `json:"relationships"`
-	Presences         []*Presence          `json:"presences"`
 }
 
 // A Relationship between the logged in user and Relationship.User
@@ -361,54 +397,21 @@ type ReadState struct {
 	ID            string `json:"id"`
 }
 
-// A TypingStart stores data for the typing start websocket event.
-type TypingStart struct {
-	UserID    string `json:"user_id"`
-	ChannelID string `json:"channel_id"`
-	Timestamp int    `json:"timestamp"`
+// An Ack is used to ack messages
+type Ack struct {
+	Token string `json:"token"`
 }
 
-// A PresenceUpdate stores data for the presence update websocket event.
-type PresenceUpdate struct {
-	Presence
-	GuildID string   `json:"guild_id"`
-	Roles   []string `json:"roles"`
-}
-
-// A MessageAck stores data for the message ack websocket event.
-type MessageAck struct {
-	MessageID string `json:"message_id"`
-	ChannelID string `json:"channel_id"`
-}
-
-// A GuildIntegrationsUpdate stores data for the guild integrations update
-// websocket event.
-type GuildIntegrationsUpdate struct {
-	GuildID string `json:"guild_id"`
-}
-
-// A GuildRole stores data for guild role websocket events.
+// A GuildRole stores data for guild roles.
 type GuildRole struct {
 	Role    *Role  `json:"role"`
 	GuildID string `json:"guild_id"`
 }
 
-// A GuildRoleDelete stores data for the guild role delete websocket event.
-type GuildRoleDelete struct {
-	RoleID  string `json:"role_id"`
-	GuildID string `json:"guild_id"`
-}
-
 // A GuildBan stores data for a guild ban.
 type GuildBan struct {
-	User    *User  `json:"user"`
-	GuildID string `json:"guild_id"`
-}
-
-// A GuildEmojisUpdate stores data for a guild emoji update event.
-type GuildEmojisUpdate struct {
-	GuildID string   `json:"guild_id"`
-	Emojis  []*Emoji `json:"emojis"`
+	Reason string `json:"reason"`
+	User   *User  `json:"user"`
 }
 
 // A GuildIntegration stores data for a guild integration.
@@ -464,6 +467,41 @@ type UserGuildSettingsEdit struct {
 	ChannelOverrides     map[string]*UserGuildSettingsChannelOverride `json:"channel_overrides"`
 }
 
+// An APIErrorMessage is an api error message returned from discord
+type APIErrorMessage struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
+// Webhook stores the data for a webhook.
+type Webhook struct {
+	ID        string `json:"id"`
+	GuildID   string `json:"guild_id"`
+	ChannelID string `json:"channel_id"`
+	User      *User  `json:"user"`
+	Name      string `json:"name"`
+	Avatar    string `json:"avatar"`
+	Token     string `json:"token"`
+}
+
+// WebhookParams is a struct for webhook params, used in the WebhookExecute command.
+type WebhookParams struct {
+	Content   string          `json:"content,omitempty"`
+	Username  string          `json:"username,omitempty"`
+	AvatarURL string          `json:"avatar_url,omitempty"`
+	TTS       bool            `json:"tts,omitempty"`
+	File      string          `json:"file,omitempty"`
+	Embeds    []*MessageEmbed `json:"embeds,omitempty"`
+}
+
+// MessageReaction stores the data for a message reaction.
+type MessageReaction struct {
+	UserID    string `json:"user_id"`
+	MessageID string `json:"message_id"`
+	Emoji     Emoji  `json:"emoji"`
+	ChannelID string `json:"channel_id"`
+}
+
 // Constants for the different bit offsets of text channel permissions
 const (
 	PermissionReadMessages = 1 << (iota + 10)
@@ -474,6 +512,7 @@ const (
 	PermissionAttachFiles
 	PermissionReadMessageHistory
 	PermissionMentionEveryone
+	PermissionUseExternalEmojis
 )
 
 // Constants for the different bit offsets of voice permissions
@@ -486,12 +525,21 @@ const (
 	PermissionVoiceUseVAD
 )
 
+// Constants for general management.
+const (
+	PermissionChangeNickname = 1 << (iota + 26)
+	PermissionManageNicknames
+	PermissionManageRoles
+	PermissionManageWebhooks
+	PermissionManageEmojis
+)
+
 // Constants for the different bit offsets of general permissions
 const (
 	PermissionCreateInstantInvite = 1 << iota
 	PermissionKickMembers
 	PermissionBanMembers
-	PermissionManageRoles
+	PermissionAdministrator
 	PermissionManageChannels
 	PermissionManageServer
 

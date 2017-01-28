@@ -10,24 +10,19 @@ import (
 
 // Variables used for command line parameters
 var (
-	Email    string
-	Password string
-	Token    string
+	Token string
 )
 
 func init() {
 
-	flag.StringVar(&Email, "e", "", "Account Email")
-	flag.StringVar(&Password, "p", "", "Account Password")
-	flag.StringVar(&Token, "t", "", "Account Token")
+	flag.StringVar(&Token, "t", "", "Bot Token")
 	flag.Parse()
 }
 
 func main() {
 
-	// Create a new Discord session using the provided login information.
-	// Use discordgo.New(Token) to just use a token for login.
-	dg, err := discordgo.New(Email, Password, Token)
+	// Create a new Discord session using the provided bot token.
+	dg, err := discordgo.New("Bot " + Token)
 	if err != nil {
 		fmt.Println("error creating Discord session,", err)
 		return

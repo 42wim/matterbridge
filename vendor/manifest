@@ -2,32 +2,6 @@
 	"version": 0,
 	"dependencies": [
 		{
-			"importpath": "github.com/42wim/go-gitter",
-			"repository": "https://github.com/42wim/go-gitter",
-			"vcs": "git",
-			"revision": "ae777f740326ef6b4d910496022649859232ff38",
-			"branch": "fixloop",
-			"notests": true
-		},
-		{
-			"importpath": "github.com/42wim/matterbridge-plus/bridge",
-			"repository": "https://github.com/42wim/matterbridge-plus",
-			"vcs": "git",
-			"revision": "63c7caabf4b92fa47060cf37beb0ed814cefbaea",
-			"branch": "master",
-			"path": "/bridge",
-			"notests": true
-		},
-		{
-			"importpath": "github.com/42wim/matterbridge-plus/matterclient",
-			"repository": "https://github.com/42wim/matterbridge-plus",
-			"vcs": "git",
-			"revision": "63c7caabf4b92fa47060cf37beb0ed814cefbaea",
-			"branch": "master",
-			"path": "/matterclient",
-			"notests": true
-		},
-		{
 			"importpath": "github.com/BurntSushi/toml",
 			"repository": "https://github.com/BurntSushi/toml",
 			"vcs": "git",
@@ -55,7 +29,7 @@
 			"importpath": "github.com/bwmarrin/discordgo",
 			"repository": "https://github.com/bwmarrin/discordgo",
 			"vcs": "git",
-			"revision": "11fa9dc906c531a85cd969b7b6b77c2f452a61b3",
+			"revision": "5835676872d7fa65ee37b32672079c4ede2c1855",
 			"branch": "master",
 			"notests": true
 		},
@@ -113,7 +87,7 @@
 			"importpath": "github.com/mattn/go-xmpp",
 			"repository": "https://github.com/mattn/go-xmpp",
 			"vcs": "git",
-			"revision": "f4550b5399387339df5ce4c3f88c1ef85333bdd5",
+			"revision": "325c112042ffd34aa24365590d3a6fdd1a79c011",
 			"branch": "master",
 			"notests": true
 		},
@@ -171,6 +145,14 @@
 			"repository": "https://github.com/sorcix/irc",
 			"vcs": "",
 			"revision": "2f0c85e4ec6590c2c6f6ef93b0a86021281ea193",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/sromku/go-gitter",
+			"repository": "https://github.com/sromku/go-gitter",
+			"vcs": "git",
+			"revision": "792abbfcc172b35bbf5f8b260ef184e38bbd90bd",
 			"branch": "master",
 			"notests": true
 		},

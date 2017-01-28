@@ -1,9 +1,9 @@
 package bgitter
 
 import (
-	"github.com/42wim/go-gitter"
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
+	"github.com/sromku/go-gitter"
 	"strings"
 )
 

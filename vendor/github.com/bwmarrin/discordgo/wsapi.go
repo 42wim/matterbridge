@@ -17,9 +17,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
-	"reflect"
 	"runtime"
 	"time"
 
@@ -46,6 +44,17 @@ func (s *Session) Open() (err error) {
 			s.Unlock()
 		}
 	}()
+
+	// A basic state is a hard requirement for Voice.
+	if s.State == nil {
+		state := NewState()
+		state.TrackChannels = false
+		state.TrackEmojis = false
+		state.TrackMembers = false
+		state.TrackRoles = false
+		state.TrackVoice = false
+		s.State = state
+	}
 
 	if s.wsConn != nil {
 		err = errors.New("Web socket already opened.")
@@ -111,9 +120,8 @@ func (s *Session) Open() (err error) {
 
 	s.Unlock()
 
-	s.initialize()
 	s.log(LogInformational, "emit connect event")
-	s.handle(&Connect{})
+	s.handleEvent(connectEventType, &Connect{})
 
 	s.log(LogInformational, "exiting")
 	return
@@ -269,6 +277,44 @@ func (s *Session) UpdateStatus(idle int, game string) (err error) {
 	return s.UpdateStreamingStatus(idle, game, "")
 }
 
+type requestGuildMembersData struct {
+	GuildID string `json:"guild_id"`
+	Query   string `json:"query"`
+	Limit   int    `json:"limit"`
+}
+
+type requestGuildMembersOp struct {
+	Op   int                     `json:"op"`
+	Data requestGuildMembersData `json:"d"`
+}
+
+// RequestGuildMembers requests guild members from the gateway
+// The gateway responds with GuildMembersChunk events
+// guildID  : The ID of the guild to request members of
+// query    : String that username starts with, leave empty to return all members
+// limit    : Max number of items to return, or 0 to request all members matched
+func (s *Session) RequestGuildMembers(guildID, query string, limit int) (err error) {
+	s.log(LogInformational, "called")
+
+	s.RLock()
+	defer s.RUnlock()
+	if s.wsConn == nil {
+		return errors.New("no websocket connection exists")
+	}
+
+	data := requestGuildMembersData{
+		GuildID: guildID,
+		Query:   query,
+		Limit:   limit,
+	}
+
+	s.wsMutex.Lock()
+	err = s.wsConn.WriteJSON(requestGuildMembersOp{8, data})
+	s.wsMutex.Unlock()
+
+	return
+}
+
 // onEvent is the "event handler" for all messages received on the
 // Discord Gateway API websocket connection.
 //
@@ -361,16 +407,12 @@ func (s *Session) onEvent(messageType int, message []byte) {
 	// Store the message sequence
 	s.sequence = e.Sequence
 
-	// Map event to registered event handlers and pass it along
-	// to any registered functions
-	i := eventToInterface[e.Type]
-	if i != nil {
-
-		// Create a new instance of the event type.
-		i = reflect.New(reflect.TypeOf(i)).Interface()
+	// Map event to registered event handlers and pass it along to any registered handlers.
+	if eh, ok := registeredInterfaceProviders[e.Type]; ok {
+		e.Struct = eh.New()
 
 		// Attempt to unmarshal our event.
-		if err = json.Unmarshal(e.RawData, i); err != nil {
+		if err = json.Unmarshal(e.RawData, e.Struct); err != nil {
 			s.log(LogError, "error unmarshalling %s event, %s", e.Type, err)
 		}
 
@@ -381,29 +423,18 @@ func (s *Session) onEvent(messageType int, message []byte) {
 		// it's better to pass along what we received than nothing at all.
 		// TODO: Think about that decision :)
 		// Either way, READY events must fire, even with errors.
-		go s.handle(i)
-
+		s.handleEvent(e.Type, e.Struct)
 	} else {
 		s.log(LogWarning, "unknown event: Op: %d, Seq: %d, Type: %s, Data: %s", e.Operation, e.Sequence, e.Type, string(e.RawData))
 	}
 
-	// Emit event to the OnEvent handler
-	e.Struct = i
-	go s.handle(e)
+	// For legacy reasons, we send the raw event also, this could be useful for handling unknown events.
+	s.handleEvent(eventEventType, e)
 }
 
 // ------------------------------------------------------------------------------------------------
 // Code related to voice connections that initiate over the data websocket
 // ------------------------------------------------------------------------------------------------
-
-// A VoiceServerUpdate stores the data received during the Voice Server Update
-// data websocket event. This data is used during the initial Voice Channel
-// join handshaking.
-type VoiceServerUpdate struct {
-	Token    string `json:"token"`
-	GuildID  string `json:"guild_id"`
-	Endpoint string `json:"endpoint"`
-}
 
 type voiceChannelJoinData struct {
 	GuildID   *string `json:"guild_id"`
@@ -461,7 +492,7 @@ func (s *Session) ChannelVoiceJoin(gID, cID string, mute, deaf bool) (voice *Voi
 }
 
 // onVoiceStateUpdate handles Voice State Update events on the data websocket.
-func (s *Session) onVoiceStateUpdate(se *Session, st *VoiceStateUpdate) {
+func (s *Session) onVoiceStateUpdate(st *VoiceStateUpdate) {
 
 	// If we don't have a connection for the channel, don't bother
 	if st.ChannelID == "" {
@@ -474,22 +505,13 @@ func (s *Session) onVoiceStateUpdate(se *Session, st *VoiceStateUpdate) {
 		return
 	}
 
-	// Need to have this happen at login and store it in the Session
-	// TODO : This should be done upon connecting to Discord, or
-	// be moved to a small helper function
-	self, err := s.User("@me") // TODO: move to Login/New
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	// We only care about events that are about us
-	if st.UserID != self.ID {
+	// We only care about events that are about us.
+	if s.State.User.ID != st.UserID {
 		return
 	}
 
 	// Store the SessionID for later use.
-	voice.UserID = self.ID // TODO: Review
+	voice.UserID = st.UserID
 	voice.sessionID = st.SessionID
 }
 
@@ -498,7 +520,7 @@ func (s *Session) onVoiceStateUpdate(se *Session, st *VoiceStateUpdate) {
 // This is also fired if the Guild's voice region changes while connected
 // to a voice channel.  In that case, need to re-establish connection to
 // the new region endpoint.
-func (s *Session) onVoiceServerUpdate(se *Session, st *VoiceServerUpdate) {
+func (s *Session) onVoiceServerUpdate(st *VoiceServerUpdate) {
 
 	s.log(LogInformational, "called")
 
@@ -655,7 +677,7 @@ func (s *Session) Close() (err error) {
 		// frame and wait for the server to close the connection.
 		err := s.wsConn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 		if err != nil {
-			s.log(LogError, "error closing websocket, %s", err)
+			s.log(LogInformational, "error closing websocket, %s", err)
 		}
 
 		// TODO: Wait for Discord to actually close the connection.
@@ -664,7 +686,7 @@ func (s *Session) Close() (err error) {
 		s.log(LogInformational, "closing gateway websocket")
 		err = s.wsConn.Close()
 		if err != nil {
-			s.log(LogError, "error closing websocket, %s", err)
+			s.log(LogInformational, "error closing websocket, %s", err)
 		}
 
 		s.wsConn = nil
@@ -673,7 +695,7 @@ func (s *Session) Close() (err error) {
 	s.Unlock()
 
 	s.log(LogInformational, "emit disconnect event")
-	s.handle(&Disconnect{})
+	s.handleEvent(disconnectEventType, &Disconnect{})
 
 	return
 }

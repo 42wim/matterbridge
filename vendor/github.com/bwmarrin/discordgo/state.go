@@ -55,33 +55,6 @@ func NewState() *State {
 	}
 }
 
-// OnReady takes a Ready event and updates all internal state.
-func (s *State) OnReady(r *Ready) error {
-	if s == nil {
-		return ErrNilState
-	}
-
-	s.Lock()
-	defer s.Unlock()
-
-	s.Ready = *r
-
-	for _, g := range s.Guilds {
-		s.guildMap[g.ID] = g
-
-		for _, c := range g.Channels {
-			c.GuildID = g.ID
-			s.channelMap[c.ID] = c
-		}
-	}
-
-	for _, c := range s.PrivateChannels {
-		s.channelMap[c.ID] = c
-	}
-
-	return nil
-}
-
 // GuildAdd adds a guild to the current world state, or
 // updates it if it already exists.
 func (s *State) GuildAdd(guild *Guild) error {
@@ -94,20 +67,30 @@ func (s *State) GuildAdd(guild *Guild) error {
 
 	// Update the channels to point to the right guild, adding them to the channelMap as we go
 	for _, c := range guild.Channels {
-		c.GuildID = guild.ID
 		s.channelMap[c.ID] = c
 	}
 
-	// If the guild exists, replace it.
 	if g, ok := s.guildMap[guild.ID]; ok {
-		// If this guild already exists with data, don't stomp on props.
-		if g.Unavailable != nil && !*g.Unavailable {
+		// We are about to replace `g` in the state with `guild`, but first we need to
+		// make sure we preserve any fields that the `guild` doesn't contain from `g`.
+		if guild.Roles == nil {
+			guild.Roles = g.Roles
+		}
+		if guild.Emojis == nil {
+			guild.Emojis = g.Emojis
+		}
+		if guild.Members == nil {
 			guild.Members = g.Members
+		}
+		if guild.Presences == nil {
 			guild.Presences = g.Presences
+		}
+		if guild.Channels == nil {
 			guild.Channels = g.Channels
+		}
+		if guild.VoiceStates == nil {
 			guild.VoiceStates = g.VoiceStates
 		}
-
 		*g = *guild
 		return nil
 	}
@@ -325,8 +308,12 @@ func (s *State) ChannelAdd(channel *Channel) error {
 
 	// If the channel exists, replace it
 	if c, ok := s.channelMap[channel.ID]; ok {
-		channel.Messages = c.Messages
-		channel.PermissionOverwrites = c.PermissionOverwrites
+		if channel.Messages == nil {
+			channel.Messages = c.Messages
+		}
+		if channel.PermissionOverwrites == nil {
+			channel.PermissionOverwrites = c.PermissionOverwrites
+		}
 
 		*c = *channel
 		return nil
@@ -511,6 +498,12 @@ func (s *State) MessageAdd(message *Message) error {
 			if message.Attachments != nil {
 				m.Attachments = message.Attachments
 			}
+			if message.Timestamp != "" {
+				m.Timestamp = message.Timestamp
+			}
+			if message.Author != nil {
+				m.Author = message.Author
+			}
 
 			return nil
 		}
@@ -602,18 +595,63 @@ func (s *State) Message(channelID, messageID string) (*Message, error) {
 	return nil, errors.New("Message not found.")
 }
 
+// OnReady takes a Ready event and updates all internal state.
+func (s *State) onReady(se *Session, r *Ready) (err error) {
+	if s == nil {
+		return ErrNilState
+	}
+
+	s.Lock()
+	defer s.Unlock()
+
+	// We must track at least the current user for Voice, even
+	// if state is disabled, store the bare essentials.
+	if !se.StateEnabled {
+		ready := Ready{
+			Version:           r.Version,
+			SessionID:         r.SessionID,
+			HeartbeatInterval: r.HeartbeatInterval,
+			User:              r.User,
+		}
+
+		s.Ready = ready
+
+		return nil
+	}
+
+	s.Ready = *r
+
+	for _, g := range s.Guilds {
+		s.guildMap[g.ID] = g
+
+		for _, c := range g.Channels {
+			s.channelMap[c.ID] = c
+		}
+	}
+
+	for _, c := range s.PrivateChannels {
+		s.channelMap[c.ID] = c
+	}
+
+	return nil
+}
+
 // onInterface handles all events related to states.
 func (s *State) onInterface(se *Session, i interface{}) (err error) {
 	if s == nil {
 		return ErrNilState
 	}
+
+	r, ok := i.(*Ready)
+	if ok {
+		return s.onReady(se, r)
+	}
+
 	if !se.StateEnabled {
 		return nil
 	}
 
 	switch t := i.(type) {
-	case *Ready:
-		err = s.OnReady(t)
 	case *GuildCreate:
 		err = s.GuildAdd(t.Guild)
 	case *GuildUpdate:
@@ -685,6 +723,9 @@ func (s *State) onInterface(se *Session, i interface{}) (err error) {
 // userID    : The ID of the user to calculate permissions for.
 // channelID : The ID of the channel to calculate permission for.
 func (s *State) UserChannelPermissions(userID, channelID string) (apermissions int, err error) {
+	if s == nil {
+		return 0, ErrNilState
+	}
 
 	channel, err := s.Channel(channelID)
 	if err != nil {
@@ -707,6 +748,13 @@ func (s *State) UserChannelPermissions(userID, channelID string) (apermissions i
 	}
 
 	for _, role := range guild.Roles {
+		if role.ID == guild.ID {
+			apermissions |= role.Permissions
+			break
+		}
+	}
+
+	for _, role := range guild.Roles {
 		for _, roleID := range member.Roles {
 			if role.ID == roleID {
 				apermissions |= role.Permissions
@@ -715,7 +763,7 @@ func (s *State) UserChannelPermissions(userID, channelID string) (apermissions i
 		}
 	}
 
-	if apermissions&PermissionManageRoles > 0 {
+	if apermissions&PermissionAdministrator > 0 {
 		apermissions |= PermissionAll
 	}
 
@@ -738,7 +786,7 @@ func (s *State) UserChannelPermissions(userID, channelID string) (apermissions i
 		}
 	}
 
-	if apermissions&PermissionManageRoles > 0 {
+	if apermissions&PermissionAdministrator > 0 {
 		apermissions |= PermissionAllChannel
 	}
 

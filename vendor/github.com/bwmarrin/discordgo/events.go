@@ -1,159 +1,238 @@
 package discordgo
 
-// eventToInterface is a mapping of Discord WSAPI events to their
-// DiscordGo event container.
-// Each Discord WSAPI event maps to a unique interface.
-// Use Session.AddHandler with one of these types to handle that
-// type of event.
-// eg:
-//     Session.AddHandler(func(s *discordgo.Session, m *discordgo.MessageCreate) {
-//     })
-//
-// or:
-//     Session.AddHandler(func(s *discordgo.Session, m *discordgo.PresenceUpdate) {
-//     })
-var eventToInterface = map[string]interface{}{
-	"CHANNEL_CREATE":             ChannelCreate{},
-	"CHANNEL_UPDATE":             ChannelUpdate{},
-	"CHANNEL_DELETE":             ChannelDelete{},
-	"GUILD_CREATE":               GuildCreate{},
-	"GUILD_UPDATE":               GuildUpdate{},
-	"GUILD_DELETE":               GuildDelete{},
-	"GUILD_BAN_ADD":              GuildBanAdd{},
-	"GUILD_BAN_REMOVE":           GuildBanRemove{},
-	"GUILD_MEMBER_ADD":           GuildMemberAdd{},
-	"GUILD_MEMBER_UPDATE":        GuildMemberUpdate{},
-	"GUILD_MEMBER_REMOVE":        GuildMemberRemove{},
-	"GUILD_ROLE_CREATE":          GuildRoleCreate{},
-	"GUILD_ROLE_UPDATE":          GuildRoleUpdate{},
-	"GUILD_ROLE_DELETE":          GuildRoleDelete{},
-	"GUILD_INTEGRATIONS_UPDATE":  GuildIntegrationsUpdate{},
-	"GUILD_EMOJIS_UPDATE":        GuildEmojisUpdate{},
-	"MESSAGE_ACK":                MessageAck{},
-	"MESSAGE_CREATE":             MessageCreate{},
-	"MESSAGE_UPDATE":             MessageUpdate{},
-	"MESSAGE_DELETE":             MessageDelete{},
-	"PRESENCE_UPDATE":            PresenceUpdate{},
-	"PRESENCES_REPLACE":          PresencesReplace{},
-	"READY":                      Ready{},
-	"USER_UPDATE":                UserUpdate{},
-	"USER_SETTINGS_UPDATE":       UserSettingsUpdate{},
-	"USER_GUILD_SETTINGS_UPDATE": UserGuildSettingsUpdate{},
-	"TYPING_START":               TypingStart{},
-	"VOICE_SERVER_UPDATE":        VoiceServerUpdate{},
-	"VOICE_STATE_UPDATE":         VoiceStateUpdate{},
-	"RESUMED":                    Resumed{},
-}
+import (
+	"encoding/json"
+	"time"
+)
 
-// Connect is an empty struct for an event.
+// This file contains all the possible structs that can be
+// handled by AddHandler/EventHandler.
+// DO NOT ADD ANYTHING BUT EVENT HANDLER STRUCTS TO THIS FILE.
+//go:generate go run tools/cmd/eventhandlers/main.go
+
+// Connect is the data for a Connect event.
+// This is a sythetic event and is not dispatched by Discord.
 type Connect struct{}
 
-// Disconnect is an empty struct for an event.
+// Disconnect is the data for a Disconnect event.
+// This is a sythetic event and is not dispatched by Discord.
 type Disconnect struct{}
 
-// RateLimit is a struct for the RateLimited event
+// RateLimit is the data for a RateLimit event.
+// This is a sythetic event and is not dispatched by Discord.
 type RateLimit struct {
 	*TooManyRequests
 	URL string
 }
 
-// MessageCreate is a wrapper struct for an event.
-type MessageCreate struct {
-	*Message
+// Event provides a basic initial struct for all websocket events.
+type Event struct {
+	Operation int             `json:"op"`
+	Sequence  int             `json:"s"`
+	Type      string          `json:"t"`
+	RawData   json.RawMessage `json:"d"`
+	// Struct contains one of the other types in this file.
+	Struct interface{} `json:"-"`
 }
 
-// MessageUpdate is a wrapper struct for an event.
-type MessageUpdate struct {
-	*Message
+// A Ready stores all data for the websocket READY event.
+type Ready struct {
+	Version           int           `json:"v"`
+	SessionID         string        `json:"session_id"`
+	HeartbeatInterval time.Duration `json:"heartbeat_interval"`
+	User              *User         `json:"user"`
+	ReadState         []*ReadState  `json:"read_state"`
+	PrivateChannels   []*Channel    `json:"private_channels"`
+	Guilds            []*Guild      `json:"guilds"`
+
+	// Undocumented fields
+	Settings          *Settings            `json:"user_settings"`
+	UserGuildSettings []*UserGuildSettings `json:"user_guild_settings"`
+	Relationships     []*Relationship      `json:"relationships"`
+	Presences         []*Presence          `json:"presences"`
 }
 
-// MessageDelete is a wrapper struct for an event.
-type MessageDelete struct {
-	*Message
-}
-
-// ChannelCreate is a wrapper struct for an event.
+// ChannelCreate is the data for a ChannelCreate event.
 type ChannelCreate struct {
 	*Channel
 }
 
-// ChannelUpdate is a wrapper struct for an event.
+// ChannelUpdate is the data for a ChannelUpdate event.
 type ChannelUpdate struct {
 	*Channel
 }
 
-// ChannelDelete is a wrapper struct for an event.
+// ChannelDelete is the data for a ChannelDelete event.
 type ChannelDelete struct {
 	*Channel
 }
 
-// GuildCreate is a wrapper struct for an event.
+// ChannelPinsUpdate stores data for a ChannelPinsUpdate event.
+type ChannelPinsUpdate struct {
+	LastPinTimestamp string `json:"last_pin_timestamp"`
+	ChannelID        string `json:"channel_id"`
+}
+
+// GuildCreate is the data for a GuildCreate event.
 type GuildCreate struct {
 	*Guild
 }
 
-// GuildUpdate is a wrapper struct for an event.
+// GuildUpdate is the data for a GuildUpdate event.
 type GuildUpdate struct {
 	*Guild
 }
 
-// GuildDelete is a wrapper struct for an event.
+// GuildDelete is the data for a GuildDelete event.
 type GuildDelete struct {
 	*Guild
 }
 
-// GuildBanAdd is a wrapper struct for an event.
+// GuildBanAdd is the data for a GuildBanAdd event.
 type GuildBanAdd struct {
-	*GuildBan
+	User    *User  `json:"user"`
+	GuildID string `json:"guild_id"`
 }
 
-// GuildBanRemove is a wrapper struct for an event.
+// GuildBanRemove is the data for a GuildBanRemove event.
 type GuildBanRemove struct {
-	*GuildBan
+	User    *User  `json:"user"`
+	GuildID string `json:"guild_id"`
 }
 
-// GuildMemberAdd is a wrapper struct for an event.
+// GuildMemberAdd is the data for a GuildMemberAdd event.
 type GuildMemberAdd struct {
 	*Member
 }
 
-// GuildMemberUpdate is a wrapper struct for an event.
+// GuildMemberUpdate is the data for a GuildMemberUpdate event.
 type GuildMemberUpdate struct {
 	*Member
 }
 
-// GuildMemberRemove is a wrapper struct for an event.
+// GuildMemberRemove is the data for a GuildMemberRemove event.
 type GuildMemberRemove struct {
 	*Member
 }
 
-// GuildRoleCreate is a wrapper struct for an event.
+// GuildRoleCreate is the data for a GuildRoleCreate event.
 type GuildRoleCreate struct {
 	*GuildRole
 }
 
-// GuildRoleUpdate is a wrapper struct for an event.
+// GuildRoleUpdate is the data for a GuildRoleUpdate event.
 type GuildRoleUpdate struct {
 	*GuildRole
 }
 
-// PresencesReplace is an array of Presences for an event.
-type PresencesReplace []*Presence
-
-// VoiceStateUpdate is a wrapper struct for an event.
-type VoiceStateUpdate struct {
-	*VoiceState
+// A GuildRoleDelete is the data for a GuildRoleDelete event.
+type GuildRoleDelete struct {
+	RoleID  string `json:"role_id"`
+	GuildID string `json:"guild_id"`
 }
 
-// UserUpdate is a wrapper struct for an event.
+// A GuildEmojisUpdate is the data for a guild emoji update event.
+type GuildEmojisUpdate struct {
+	GuildID string   `json:"guild_id"`
+	Emojis  []*Emoji `json:"emojis"`
+}
+
+// A GuildMembersChunk is the data for a GuildMembersChunk event.
+type GuildMembersChunk struct {
+	GuildID string    `json:"guild_id"`
+	Members []*Member `json:"members"`
+}
+
+// GuildIntegrationsUpdate is the data for a GuildIntegrationsUpdate event.
+type GuildIntegrationsUpdate struct {
+	GuildID string `json:"guild_id"`
+}
+
+// MessageAck is the data for a MessageAck event.
+type MessageAck struct {
+	MessageID string `json:"message_id"`
+	ChannelID string `json:"channel_id"`
+}
+
+// MessageCreate is the data for a MessageCreate event.
+type MessageCreate struct {
+	*Message
+}
+
+// MessageUpdate is the data for a MessageUpdate event.
+type MessageUpdate struct {
+	*Message
+}
+
+// MessageDelete is the data for a MessageDelete event.
+type MessageDelete struct {
+	*Message
+}
+
+// MessageReactionAdd is the data for a MessageReactionAdd event.
+type MessageReactionAdd struct {
+	*MessageReaction
+}
+
+// MessageReactionRemove is the data for a MessageReactionRemove event.
+type MessageReactionRemove struct {
+	*MessageReaction
+}
+
+// PresencesReplace is the data for a PresencesReplace event.
+type PresencesReplace []*Presence
+
+// PresenceUpdate is the data for a PresenceUpdate event.
+type PresenceUpdate struct {
+	Presence
+	GuildID string   `json:"guild_id"`
+	Roles   []string `json:"roles"`
+}
+
+// Resumed is the data for a Resumed event.
+type Resumed struct {
+	HeartbeatInterval time.Duration `json:"heartbeat_interval"`
+	Trace             []string      `json:"_trace"`
+}
+
+// RelationshipAdd is the data for a RelationshipAdd event.
+type RelationshipAdd struct {
+	*Relationship
+}
+
+// RelationshipRemove is the data for a RelationshipRemove event.
+type RelationshipRemove struct {
+	*Relationship
+}
+
+// TypingStart is the data for a TypingStart event.
+type TypingStart struct {
+	UserID    string `json:"user_id"`
+	ChannelID string `json:"channel_id"`
+	Timestamp int    `json:"timestamp"`
+}
+
+// UserUpdate is the data for a UserUpdate event.
 type UserUpdate struct {
 	*User
 }
 
-// UserSettingsUpdate is a map for an event.
+// UserSettingsUpdate is the data for a UserSettingsUpdate event.
 type UserSettingsUpdate map[string]interface{}
 
-// UserGuildSettingsUpdate is a map for an event.
+// UserGuildSettingsUpdate is the data for a UserGuildSettingsUpdate event.
 type UserGuildSettingsUpdate struct {
 	*UserGuildSettings
+}
+
+// VoiceServerUpdate is the data for a VoiceServerUpdate event.
+type VoiceServerUpdate struct {
+	Token    string `json:"token"`
+	GuildID  string `json:"guild_id"`
+	Endpoint string `json:"endpoint"`
+}
+
+// VoiceStateUpdate is the data for a VoiceStateUpdate event.
+type VoiceStateUpdate struct {
+	*VoiceState
 }

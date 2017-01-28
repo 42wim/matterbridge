@@ -404,9 +404,13 @@ func (c *Client) init(o *Options) error {
 	switch v := val.(type) {
 	case *saslSuccess:
 	case *saslFailure:
-		// v.Any is type of sub-element in failure,
-		// which gives a description of what failed.
-		return errors.New("auth failure: " + v.Any.Local)
+		errorMessage := v.Text
+		if errorMessage == "" {
+			// v.Any is type of sub-element in failure,
+			// which gives a description of what failed if there was no text element
+			errorMessage = v.Any.Local
+		}
+		return errors.New("auth failure: " + errorMessage)
 	default:
 		return errors.New("expected <success> or <failure>, got <" + name.Local + "> in " + name.Space)
 	}
@@ -699,6 +703,7 @@ type saslSuccess struct {
 type saslFailure struct {
 	XMLName xml.Name `xml:"urn:ietf:params:xml:ns:xmpp-sasl failure"`
 	Any     xml.Name `xml:",any"`
+	Text    string   `xml:"text"`
 }
 
 // RFC 3920  C.5  Resource binding name space

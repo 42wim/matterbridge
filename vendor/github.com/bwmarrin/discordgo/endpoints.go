@@ -24,6 +24,7 @@ var (
 	EndpointChannels = EndpointAPI + "channels/"
 	EndpointUsers    = EndpointAPI + "users/"
 	EndpointGateway  = EndpointAPI + "gateway"
+	EndpointWebhooks = EndpointAPI + "webhooks/"
 
 	EndpointAuth           = EndpointAPI + "auth/"
 	EndpointLogin          = EndpointAuth + "login"
@@ -61,6 +62,7 @@ var (
 	EndpointGuildChannels        = func(gID string) string { return EndpointGuilds + gID + "/channels" }
 	EndpointGuildMembers         = func(gID string) string { return EndpointGuilds + gID + "/members" }
 	EndpointGuildMember          = func(gID, uID string) string { return EndpointGuilds + gID + "/members/" + uID }
+	EndpointGuildMemberRole      = func(gID, uID, rID string) string { return EndpointGuilds + gID + "/members/" + uID + "/roles/" + rID }
 	EndpointGuildBans            = func(gID string) string { return EndpointGuilds + gID + "/bans" }
 	EndpointGuildBan             = func(gID, uID string) string { return EndpointGuilds + gID + "/bans/" + uID }
 	EndpointGuildIntegrations    = func(gID string) string { return EndpointGuilds + gID + "/integrations" }
@@ -73,6 +75,7 @@ var (
 	EndpointGuildPrune           = func(gID string) string { return EndpointGuilds + gID + "/prune" }
 	EndpointGuildIcon            = func(gID, hash string) string { return EndpointGuilds + gID + "/icons/" + hash + ".jpg" }
 	EndpointGuildSplash          = func(gID, hash string) string { return EndpointGuilds + gID + "/splashes/" + hash + ".jpg" }
+	EndpointGuildWebhooks        = func(gID string) string { return EndpointGuilds + gID + "/webhooks" }
 
 	EndpointChannel                   = func(cID string) string { return EndpointChannels + cID }
 	EndpointChannelPermissions        = func(cID string) string { return EndpointChannels + cID + "/permissions" }
@@ -85,6 +88,21 @@ var (
 	EndpointChannelMessagesBulkDelete = func(cID string) string { return EndpointChannel(cID) + "/messages/bulk_delete" }
 	EndpointChannelMessagesPins       = func(cID string) string { return EndpointChannel(cID) + "/pins" }
 	EndpointChannelMessagePin         = func(cID, mID string) string { return EndpointChannel(cID) + "/pins/" + mID }
+
+	EndpointChannelWebhooks = func(cID string) string { return EndpointChannel(cID) + "/webhooks" }
+	EndpointWebhook         = func(wID string) string { return EndpointWebhooks + wID }
+	EndpointWebhookToken    = func(wID, token string) string { return EndpointWebhooks + wID + "/" + token }
+
+	EndpointMessageReactions = func(cID, mID, eID string) string {
+		return EndpointChannelMessage(cID, mID) + "/reactions/" + eID
+	}
+	EndpointMessageReaction = func(cID, mID, eID, uID string) string {
+		return EndpointMessageReactions(cID, mID, eID) + "/" + uID
+	}
+
+	EndpointRelationships       = func() string { return EndpointUsers + "@me" + "/relationships" }
+	EndpointRelationship        = func(uID string) string { return EndpointRelationships() + "/" + uID }
+	EndpointRelationshipsMutual = func(uID string) string { return EndpointUsers + uID + "/relationships" }
 
 	EndpointInvite = func(iID string) string { return EndpointAPI + "invite/" + iID }
 

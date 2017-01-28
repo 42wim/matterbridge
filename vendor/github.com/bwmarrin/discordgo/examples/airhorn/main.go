@@ -13,7 +13,7 @@ import (
 )
 
 func init() {
-	flag.StringVar(&token, "t", "", "Account Token")
+	flag.StringVar(&token, "t", "", "Bot Token")
 	flag.Parse()
 }
 
@@ -34,8 +34,8 @@ func main() {
 		return
 	}
 
-	// Create a new Discord session using the provided token.
-	dg, err := discordgo.New(token)
+	// Create a new Discord session using the provided bot token.
+	dg, err := discordgo.New("Bot " + token)
 	if err != nil {
 		fmt.Println("Error creating Discord session: ", err)
 		return
@@ -102,7 +102,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 // This function will be called (due to AddHandler above) every time a new
 // guild is joined.
 func guildCreate(s *discordgo.Session, event *discordgo.GuildCreate) {
-	if event.Guild.Unavailable != nil {
+	if event.Guild.Unavailable {
 		return
 	}
 
@@ -131,6 +131,10 @@ func loadSound() error {
 
 		// If this is the end of the file, just return.
 		if err == io.EOF || err == io.ErrUnexpectedEOF {
+			file.Close()
+			if err != nil {
+				return err
+			}
 			return nil
 		}
 
