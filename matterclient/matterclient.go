@@ -470,11 +470,16 @@ func (m *MMClient) SendDirectMessage(toUserId string, msg string) {
 	_, err := m.Client.CreateDirectChannel(toUserId)
 	if err != nil {
 		m.log.Debugf("SendDirectMessage to %#v failed: %s", toUserId, err)
+		return
 	}
 	channelName := model.GetDMNameFromIds(toUserId, m.User.Id)
 
 	// update our channels
-	mmchannels, _ := m.Client.GetChannels("")
+	mmchannels, err := m.Client.GetChannels("")
+	if err != nil {
+		m.log.Debug("SendDirectMessage: Couldn't update channels")
+		return
+	}
 	m.Lock()
 	m.Team.Channels = mmchannels.Data.(*model.ChannelList)
 	m.Unlock()
