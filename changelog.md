@@ -1,4 +1,6 @@
 # v0.9.3-dev
+## Bugfix
+* slack: fix receiving messages from private channels #118
 
 # v0.9.2
 ## New features
