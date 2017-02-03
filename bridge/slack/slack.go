@@ -147,6 +147,18 @@ func (b *Bslack) getChannelByName(name string) (*slack.Channel, error) {
 	return nil, fmt.Errorf("%s: channel %s not found", b.Account, name)
 }
 
+func (b *Bslack) getChannelByID(ID string) (*slack.Channel, error) {
+	if b.channels == nil {
+		return nil, fmt.Errorf("%s: channel %s not found (no channels found)", b.Account, ID)
+	}
+	for _, channel := range b.channels {
+		if channel.ID == ID {
+			return &channel, nil
+		}
+	}
+	return nil, fmt.Errorf("%s: channel %s not found", b.Account, ID)
+}
+
 func (b *Bslack) handleSlack() {
 	flog.Debugf("Choosing API based slack connection: %t", b.Config.UseAPI)
 	mchan := make(chan *MMMessage)
@@ -178,8 +190,8 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 			// ignore first message
 			if count > 0 {
 				flog.Debugf("Receiving from slackclient %#v", ev)
-				//ev.ReplyTo
-				channel, err := b.rtm.GetChannelInfo(ev.Channel)
+				// use our own func because rtm.GetChannelInfo doesn't work for private channels
+				channel, err := b.getChannelByID(ev.Channel)
 				if err != nil {
 					continue
 				}
