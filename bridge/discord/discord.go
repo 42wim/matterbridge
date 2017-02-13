@@ -5,16 +5,20 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/bwmarrin/discordgo"
 	"strings"
+	"sync"
 )
 
 type bdiscord struct {
-	c            *discordgo.Session
-	Config       *config.Protocol
-	Remote       chan config.Message
-	Account      string
-	Channels     []*discordgo.Channel
-	Nick         string
-	UseChannelID bool
+	c             *discordgo.Session
+	Config        *config.Protocol
+	Remote        chan config.Message
+	Account       string
+	Channels      []*discordgo.Channel
+	Nick          string
+	UseChannelID  bool
+	userMemberMap map[string]*discordgo.Member
+	guildID       string
+	sync.RWMutex
 }
 
 var flog *log.Entry
@@ -29,6 +33,7 @@ func New(cfg config.Protocol, account string, c chan config.Message) *bdiscord {
 	b.Config = &cfg
 	b.Remote = c
 	b.Account = account
+	b.userMemberMap = make(map[string]*discordgo.Member)
 	return b
 }
 
@@ -45,6 +50,7 @@ func (b *bdiscord) Connect() error {
 	}
 	flog.Info("Connection succeeded")
 	b.c.AddHandler(b.messageCreate)
+	b.c.AddHandler(b.memberUpdate)
 	err = b.c.Open()
 	if err != nil {
 		flog.Debugf("%#v", err)
@@ -64,6 +70,7 @@ func (b *bdiscord) Connect() error {
 	for _, guild := range guilds {
 		if guild.Name == b.Config.Server {
 			b.Channels, err = b.c.GuildChannels(guild.ID)
+			b.guildID = guild.ID
 			if err != nil {
 				flog.Debugf("%#v", err)
 				return err
@@ -110,8 +117,42 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	if b.UseChannelID {
 		channelName = "ID:" + m.ChannelID
 	}
-	b.Remote <- config.Message{Username: m.Author.Username, Text: m.ContentWithMentionsReplaced(), Channel: channelName,
+	username := b.getNick(m.Author)
+	b.Remote <- config.Message{Username: username, Text: m.ContentWithMentionsReplaced(), Channel: channelName,
 		Account: b.Account, Avatar: "https://cdn.discordapp.com/avatars/" + m.Author.ID + "/" + m.Author.Avatar + ".jpg"}
+}
+
+func (b *bdiscord) memberUpdate(s *discordgo.Session, m *discordgo.GuildMemberUpdate) {
+	b.Lock()
+	if _, ok := b.userMemberMap[m.Member.User.ID]; ok {
+		flog.Debugf("%s: memberupdate: user %s (nick %s) changes nick to %s", b.Account, m.Member.User.Username, b.userMemberMap[m.Member.User.ID].Nick, m.Member.Nick)
+	}
+	b.userMemberMap[m.Member.User.ID] = m.Member
+	b.Unlock()
+}
+
+func (b *bdiscord) getNick(user *discordgo.User) string {
+	var err error
+	b.Lock()
+	defer b.Unlock()
+	if _, ok := b.userMemberMap[user.ID]; ok {
+		if b.userMemberMap[user.ID].Nick != "" {
+			// only return if nick is set
+			return b.userMemberMap[user.ID].Nick
+		}
+		// otherwise return username
+		return user.Username
+	}
+	// if we didn't find nick, search for it
+	b.userMemberMap[user.ID], err = b.c.GuildMember(b.guildID, user.ID)
+	if err != nil {
+		return user.Username
+	}
+	// only return if nick is set
+	if b.userMemberMap[user.ID].Nick != "" {
+		return b.userMemberMap[user.ID].Nick
+	}
+	return user.Username
 }
 
 func (b *bdiscord) getChannelID(name string) string {
