@@ -10,6 +10,8 @@ import (
 	"github.com/42wim/matterbridge/bridge/slack"
 	"github.com/42wim/matterbridge/bridge/telegram"
 	"github.com/42wim/matterbridge/bridge/xmpp"
+	log "github.com/Sirupsen/logrus"
+
 	"strings"
 )
 
@@ -17,14 +19,18 @@ type Bridger interface {
 	Send(msg config.Message) error
 	Connect() error
 	JoinChannel(channel string) error
+	Disconnect() error
 }
 
 type Bridge struct {
 	Config config.Protocol
 	Bridger
-	Name     string
-	Account  string
-	Protocol string
+	Name           string
+	Account        string
+	Protocol       string
+	ChannelsOut    []string
+	ChannelsIn     []string
+	ChannelOptions config.ChannelOptions
 }
 
 func New(cfg *config.Config, bridge *config.Bridge, c chan config.Message) *Bridge {
@@ -65,4 +71,16 @@ func New(cfg *config.Config, bridge *config.Bridge, c chan config.Message) *Brid
 		b.Bridger = brocketchat.New(cfg.Rocketchat[name], bridge.Account, c)
 	}
 	return b
+}
+
+func (b *Bridge) JoinChannels() error {
+	exists := make(map[string]bool)
+	for _, channel := range append(b.ChannelsIn, b.ChannelsOut...) {
+		if !exists[channel] {
+			log.Infof("%s: joining %s", b.Account, channel)
+			b.JoinChannel(channel)
+			exists[channel] = true
+		}
+	}
+	return nil
 }

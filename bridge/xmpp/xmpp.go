@@ -1,10 +1,10 @@
 package bxmpp
 
 import (
+	"crypto/tls"
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
 	"github.com/mattn/go-xmpp"
-	"crypto/tls"
 
 	"strings"
 	"time"
@@ -47,6 +47,10 @@ func (b *Bxmpp) Connect() error {
 	return nil
 }
 
+func (b *Bxmpp) Disconnect() error {
+	return nil
+}
+
 func (b *Bxmpp) JoinChannel(channel string) error {
 	b.xc.JoinMUCNoHistory(channel+"@"+b.Config.Muc, b.Config.Nick)
 	return nil
@@ -63,11 +67,11 @@ func (b *Bxmpp) createXMPP() (*xmpp.Client, error) {
 	tc.InsecureSkipVerify = b.Config.SkipTLSVerify
 	tc.ServerName = strings.Split(b.Config.Server, ":")[0]
 	options := xmpp.Options{
-		Host:     b.Config.Server,
-		User:     b.Config.Jid,
-		Password: b.Config.Password,
-		NoTLS:    true,
-		StartTLS: true,
+		Host:      b.Config.Server,
+		User:      b.Config.Jid,
+		Password:  b.Config.Password,
+		NoTLS:     true,
+		StartTLS:  true,
 		TLSConfig: tc,
 
 		//StartTLS:      false,

@@ -65,6 +65,11 @@ func (b *Bslack) Connect() error {
 	return nil
 }
 
+func (b *Bslack) Disconnect() error {
+	return nil
+
+}
+
 func (b *Bslack) JoinChannel(channel string) error {
 	// we can only join channels using the API
 	if b.Config.UseAPI {

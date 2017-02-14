@@ -51,6 +51,11 @@ func (b *Btelegram) Connect() error {
 	return nil
 }
 
+func (b *Btelegram) Disconnect() error {
+	return nil
+
+}
+
 func (b *Btelegram) JoinChannel(channel string) error {
 	return nil
 }

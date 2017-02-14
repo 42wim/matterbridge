@@ -7,6 +7,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"reflect"
 	"strings"
+	"time"
 )
 
 type Gateway struct {
@@ -39,24 +40,16 @@ func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 	}
 	log.Infof("Starting bridge: %s ", cfg.Account)
 	br := bridge.New(gw.Config, cfg, gw.Message)
+	br.ChannelsOut = gw.ChannelsOut[br.Account]
+	br.ChannelsIn = gw.ChannelsIn[br.Account]
+	br.ChannelOptions = gw.ChannelOptions[br.Account]
+
 	gw.Bridges[cfg.Account] = br
 	err := br.Connect()
 	if err != nil {
 		return fmt.Errorf("Bridge %s failed to start: %v", br.Account, err)
 	}
-	exists := make(map[string]bool)
-	for _, channel := range append(gw.ChannelsOut[br.Account], gw.ChannelsIn[br.Account]...) {
-		if !exists[br.Account+channel] {
-			mychannel := channel
-			log.Infof("%s: joining %s", br.Account, channel)
-			if br.Protocol == "irc" && gw.ChannelOptions[br.Account+channel].Key != "" {
-				log.Debugf("using key %s for channel %s", gw.ChannelOptions[br.Account+channel].Key, channel)
-				mychannel = mychannel + " " + gw.ChannelOptions[br.Account+channel].Key
-			}
-			br.JoinChannel(mychannel)
-			exists[br.Account+channel] = true
-		}
-	}
+	br.JoinChannels()
 	return nil
 }
 
@@ -76,6 +69,13 @@ func (gw *Gateway) handleReceive() {
 	for {
 		select {
 		case msg := <-gw.Message:
+			if msg.Event == config.EVENT_FAILURE {
+				for _, br := range gw.Bridges {
+					if msg.Account == br.Account {
+						go gw.reconnectBridge(br)
+					}
+				}
+			}
 			if !gw.ignoreMessage(&msg) {
 				for _, br := range gw.Bridges {
 					gw.handleMessage(msg, br)
@@ -83,6 +83,20 @@ func (gw *Gateway) handleReceive() {
 			}
 		}
 	}
+}
+
+func (gw *Gateway) reconnectBridge(br *bridge.Bridge) {
+	br.Disconnect()
+	time.Sleep(time.Second * 5)
+RECONNECT:
+	log.Infof("Reconnecting %s", br.Account)
+	err := br.Connect()
+	if err != nil {
+		log.Errorf("Reconnection failed: %s. Trying again in 60 seconds", err)
+		time.Sleep(time.Second * 60)
+		goto RECONNECT
+	}
+	br.JoinChannels()
 }
 
 func (gw *Gateway) mapChannels() error {

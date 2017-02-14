@@ -46,7 +46,6 @@ func New(cfg config.Protocol, account string, c chan config.Message) *Birc {
 	if b.Config.MessageQueue == 0 {
 		b.Config.MessageQueue = 30
 	}
-	b.Local = make(chan config.Message, b.Config.MessageQueue+10)
 	return b
 }
 
@@ -61,6 +60,7 @@ func (b *Birc) Command(msg *config.Message) string {
 }
 
 func (b *Birc) Connect() error {
+	b.Local = make(chan config.Message, b.Config.MessageQueue+10)
 	flog.Infof("Connecting %s", b.Config.Server)
 	i := irc.IRC(b.Config.Nick, b.Config.Nick)
 	if log.GetLevel() == log.DebugLevel {
@@ -88,6 +88,12 @@ func (b *Birc) Connect() error {
 	}
 	i.Debug = false
 	go b.doSend()
+	return nil
+}
+
+func (b *Birc) Disconnect() error {
+	b.i.Disconnect()
+	close(b.Local)
 	return nil
 }
 
@@ -170,7 +176,11 @@ func (b *Birc) handleJoinPart(event *irc.Event) {
 	flog.Debugf("Sending JOIN_LEAVE event from %s to gateway", b.Account)
 	channel := event.Arguments[0]
 	if event.Code == "QUIT" {
-		channel = ""
+		if event.Nick == b.Nick && strings.Contains(event.Raw, "Ping timeout") {
+			flog.Infof("%s reconnecting ..", b.Account)
+			b.Remote <- config.Message{Username: "system", Text: "reconnect", Channel: channel, Account: b.Account, Event: config.EVENT_FAILURE}
+			return
+		}
 	}
 	b.Remote <- config.Message{Username: "system", Text: event.Nick + " " + strings.ToLower(event.Code) + "s", Channel: channel, Account: b.Account, Event: config.EVENT_JOIN_LEAVE}
 	flog.Debugf("handle %#v", event)

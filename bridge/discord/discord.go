@@ -80,6 +80,10 @@ func (b *bdiscord) Connect() error {
 	return nil
 }
 
+func (b *bdiscord) Disconnect() error {
+	return nil
+}
+
 func (b *bdiscord) JoinChannel(channel string) error {
 	idcheck := strings.Split(channel, "ID:")
 	if len(idcheck) > 1 {
