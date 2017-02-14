@@ -25,16 +25,17 @@ type Bridger interface {
 type Bridge struct {
 	Config config.Protocol
 	Bridger
-	Name           string
-	Account        string
-	Protocol       string
-	ChannelsOut    []string
-	ChannelsIn     []string
-	ChannelOptions config.ChannelOptions
+	Name        string
+	Account     string
+	Protocol    string
+	ChannelsIn  map[string]config.ChannelOptions
+	ChannelsOut map[string]config.ChannelOptions
 }
 
 func New(cfg *config.Config, bridge *config.Bridge, c chan config.Message) *Bridge {
 	b := new(Bridge)
+	b.ChannelsIn = make(map[string]config.ChannelOptions)
+	b.ChannelsOut = make(map[string]config.ChannelOptions)
 	accInfo := strings.Split(bridge.Account, ".")
 	protocol := accInfo[0]
 	name := accInfo[1]
@@ -75,10 +76,22 @@ func New(cfg *config.Config, bridge *config.Bridge, c chan config.Message) *Brid
 
 func (b *Bridge) JoinChannels() error {
 	exists := make(map[string]bool)
-	for _, channel := range append(b.ChannelsIn, b.ChannelsOut...) {
+	b.joinChannels(b.ChannelsIn, exists)
+	b.joinChannels(b.ChannelsOut, exists)
+	return nil
+}
+
+func (b *Bridge) joinChannels(cMap map[string]config.ChannelOptions, exists map[string]bool) error {
+	mychannel := ""
+	for channel, info := range cMap {
 		if !exists[channel] {
+			mychannel = channel
 			log.Infof("%s: joining %s", b.Account, channel)
-			b.JoinChannel(channel)
+			if b.Protocol == "irc" && info.Key != "" {
+				log.Debugf("using key %s for channel %s", info.Key, channel)
+				mychannel = mychannel + " " + info.Key
+			}
+			b.JoinChannel(mychannel)
 			exists[channel] = true
 		}
 	}
