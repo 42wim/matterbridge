@@ -12,14 +12,14 @@ import (
 
 type Gateway struct {
 	*config.Config
-	MyConfig *config.Gateway
-	//Bridges     []*bridge.Bridge
-	Bridges        map[string]*bridge.Bridge
-	ChannelsOut    map[string][]string
-	ChannelsIn     map[string][]string
-	ChannelOptions map[string]config.ChannelOptions
-	Name           string
-	Message        chan config.Message
+	MyConfig        *config.Gateway
+	Bridges         map[string]*bridge.Bridge
+	ChannelsOut     map[string][]string
+	ChannelsIn      map[string][]string
+	ChannelOptions  map[string]config.ChannelOptions
+	Name            string
+	Message         chan config.Message
+	DestChannelFunc func(msg *config.Message, dest string) []string
 }
 
 func New(cfg *config.Config, gateway *config.Gateway) *Gateway {
@@ -29,6 +29,7 @@ func New(cfg *config.Config, gateway *config.Gateway) *Gateway {
 	gw.MyConfig = gateway
 	gw.Message = make(chan config.Message)
 	gw.Bridges = make(map[string]*bridge.Bridge)
+	gw.DestChannelFunc = gw.getDestChannel
 	return gw
 }
 
@@ -151,7 +152,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 		return
 	}
 	originchannel := msg.Channel
-	channels := gw.getDestChannel(&msg, dest.Account)
+	channels := gw.DestChannelFunc(&msg, dest.Account)
 	for _, channel := range channels {
 		// do not send the message to the bridge we come from if also the channel is the same
 		if msg.Account == dest.Account && channel == originchannel {
