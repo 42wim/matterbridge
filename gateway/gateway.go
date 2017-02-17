@@ -7,18 +7,19 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"reflect"
 	"strings"
+	"time"
 )
 
 type Gateway struct {
 	*config.Config
-	MyConfig *config.Gateway
-	//Bridges     []*bridge.Bridge
-	Bridges        map[string]*bridge.Bridge
-	ChannelsOut    map[string][]string
-	ChannelsIn     map[string][]string
-	ChannelOptions map[string]config.ChannelOptions
-	Name           string
-	Message        chan config.Message
+	MyConfig        *config.Gateway
+	Bridges         map[string]*bridge.Bridge
+	ChannelsOut     map[string][]string
+	ChannelsIn      map[string][]string
+	ChannelOptions  map[string]config.ChannelOptions
+	Name            string
+	Message         chan config.Message
+	DestChannelFunc func(msg *config.Message, dest string) []string
 }
 
 func New(cfg *config.Config, gateway *config.Gateway) *Gateway {
@@ -28,6 +29,7 @@ func New(cfg *config.Config, gateway *config.Gateway) *Gateway {
 	gw.MyConfig = gateway
 	gw.Message = make(chan config.Message)
 	gw.Bridges = make(map[string]*bridge.Bridge)
+	gw.DestChannelFunc = gw.getDestChannel
 	return gw
 }
 
@@ -39,25 +41,25 @@ func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 	}
 	log.Infof("Starting bridge: %s ", cfg.Account)
 	br := bridge.New(gw.Config, cfg, gw.Message)
+	gw.mapChannelsToBridge(br, gw.ChannelsOut)
+	gw.mapChannelsToBridge(br, gw.ChannelsIn)
 	gw.Bridges[cfg.Account] = br
 	err := br.Connect()
 	if err != nil {
 		return fmt.Errorf("Bridge %s failed to start: %v", br.Account, err)
 	}
-	exists := make(map[string]bool)
-	for _, channel := range append(gw.ChannelsOut[br.Account], gw.ChannelsIn[br.Account]...) {
-		if !exists[br.Account+channel] {
-			mychannel := channel
-			log.Infof("%s: joining %s", br.Account, channel)
-			if br.Protocol == "irc" && gw.ChannelOptions[br.Account+channel].Key != "" {
-				log.Debugf("using key %s for channel %s", gw.ChannelOptions[br.Account+channel].Key, channel)
-				mychannel = mychannel + " " + gw.ChannelOptions[br.Account+channel].Key
-			}
-			br.JoinChannel(mychannel)
-			exists[br.Account+channel] = true
+	br.JoinChannels()
+	return nil
+}
+
+func (gw *Gateway) mapChannelsToBridge(br *bridge.Bridge, cMap map[string][]string) {
+	for _, channel := range cMap[br.Account] {
+		if _, ok := gw.ChannelOptions[br.Account+channel]; ok {
+			br.ChannelsOut[channel] = gw.ChannelOptions[br.Account+channel]
+		} else {
+			br.ChannelsOut[channel] = config.ChannelOptions{}
 		}
 	}
-	return nil
 }
 
 func (gw *Gateway) Start() error {
@@ -76,6 +78,13 @@ func (gw *Gateway) handleReceive() {
 	for {
 		select {
 		case msg := <-gw.Message:
+			if msg.Event == config.EVENT_FAILURE {
+				for _, br := range gw.Bridges {
+					if msg.Account == br.Account {
+						go gw.reconnectBridge(br)
+					}
+				}
+			}
 			if !gw.ignoreMessage(&msg) {
 				for _, br := range gw.Bridges {
 					gw.handleMessage(msg, br)
@@ -83,6 +92,20 @@ func (gw *Gateway) handleReceive() {
 			}
 		}
 	}
+}
+
+func (gw *Gateway) reconnectBridge(br *bridge.Bridge) {
+	br.Disconnect()
+	time.Sleep(time.Second * 5)
+RECONNECT:
+	log.Infof("Reconnecting %s", br.Account)
+	err := br.Connect()
+	if err != nil {
+		log.Errorf("Reconnection failed: %s. Trying again in 60 seconds", err)
+		time.Sleep(time.Second * 60)
+		goto RECONNECT
+	}
+	br.JoinChannels()
 }
 
 func (gw *Gateway) mapChannels() error {
@@ -129,7 +152,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 		return
 	}
 	originchannel := msg.Channel
-	channels := gw.getDestChannel(&msg, dest.Account)
+	channels := gw.DestChannelFunc(&msg, dest.Account)
 	for _, channel := range channels {
 		// do not send the message to the bridge we come from if also the channel is the same
 		if msg.Account == dest.Account && channel == originchannel {

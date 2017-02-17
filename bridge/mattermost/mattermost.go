@@ -77,6 +77,10 @@ func (b *Bmattermost) Connect() error {
 	return nil
 }
 
+func (b *Bmattermost) Disconnect() error {
+	return nil
+}
+
 func (b *Bmattermost) JoinChannel(channel string) error {
 	// we can only join channels using the API
 	if b.Config.UseAPI {

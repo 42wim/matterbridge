@@ -49,6 +49,11 @@ func (b *Brocketchat) Connect() error {
 	return nil
 }
 
+func (b *Brocketchat) Disconnect() error {
+	return nil
+
+}
+
 func (b *Brocketchat) JoinChannel(channel string) error {
 	return nil
 }

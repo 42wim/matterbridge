@@ -45,6 +45,11 @@ func (b *Bgitter) Connect() error {
 	return nil
 }
 
+func (b *Bgitter) Disconnect() error {
+	return nil
+
+}
+
 func (b *Bgitter) JoinChannel(channel string) error {
 	room := channel
 	roomID := b.getRoomID(room)

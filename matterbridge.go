@@ -36,12 +36,11 @@ func main() {
 			continue
 		}
 		fmt.Printf("starting samechannel gateway %#v\n", gw.Name)
-		go func(gw config.SameChannelGateway) {
-			err := samechannelgateway.New(cfg, &gw)
-			if err != nil {
-				log.Fatalf("starting gateway failed %#v", err)
-			}
-		}(gw)
+		g := samechannelgateway.New(cfg, &gw)
+		err := g.Start()
+		if err != nil {
+			log.Fatalf("starting gateway failed %#v", err)
+		}
 	}
 
 	for _, gw := range cfg.Gateway {
