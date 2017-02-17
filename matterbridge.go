@@ -9,7 +9,10 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-var version = "0.9.3-dev"
+var (
+	version = "0.9.3-dev"
+	githash string
+)
 
 func init() {
 	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
@@ -21,25 +24,25 @@ func main() {
 	flagVersion := flag.Bool("version", false, "show version")
 	flag.Parse()
 	if *flagVersion {
-		fmt.Println("version:", version)
+		fmt.Printf("version: %s %s\n", version, githash)
 		return
 	}
 	flag.Parse()
 	if *flagDebug {
-		log.Info("enabling debug")
+		log.Info("Enabling debug")
 		log.SetLevel(log.DebugLevel)
 	}
-	fmt.Println("running version", version)
+	log.Printf("Running version %s %s", version, githash)
 	cfg := config.NewConfig(*flagConfig)
 	for _, gw := range cfg.SameChannelGateway {
 		if !gw.Enable {
 			continue
 		}
-		fmt.Printf("starting samechannel gateway %#v\n", gw.Name)
+		log.Printf("Starting samechannel gateway %#v", gw.Name)
 		g := samechannelgateway.New(cfg, &gw)
 		err := g.Start()
 		if err != nil {
-			log.Fatalf("starting gateway failed %#v", err)
+			log.Fatalf("Starting gateway failed %#v", err)
 		}
 	}
 
@@ -47,11 +50,11 @@ func main() {
 		if !gw.Enable {
 			continue
 		}
-		fmt.Printf("starting gateway %#v\n", gw.Name)
+		log.Printf("Starting gateway %#v", gw.Name)
 		g := gateway.New(cfg, &gw)
 		err := g.Start()
 		if err != nil {
-			log.Fatalf("starting gateway failed %#v", err)
+			log.Fatalf("Starting gateway failed %#v", err)
 		}
 	}
 	select {}
