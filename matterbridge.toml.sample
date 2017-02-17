@@ -298,11 +298,15 @@ ShowJoinPart=false
 #### Settings for webhook matterbridge.
 #### These settings will not be used when useAPI is enabled
 
+#NOT RECOMMENDED TO USE INCOMING/OUTGOING WEBHOOK. USE SLACK API
+#AND DEDICATED BOT USER WHEN POSSIBLE!
 #Url is your incoming webhook url as specified in slack
 #See account settings - integrations - incoming webhooks on slack
 #REQUIRED (unless useAPI=true)
 URL="https://hooks.slack.com/services/yourhook"
 
+#NOT RECOMMENDED TO USE INCOMING/OUTGOING WEBHOOK. USE SLACK API
+#AND DEDICATED BOT USER WHEN POSSIBLE!
 #Address to listen on for outgoing webhook requests from slack
 #See account settings - integrations - outgoing webhooks on slack
 #This setting will not be used when useAPI is eanbled
@@ -310,7 +314,7 @@ URL="https://hooks.slack.com/services/yourhook"
 #REQUIRED (unless useAPI=true)
 BindAddress="0.0.0.0:9999"
 
-#### Settings for using slack API
+#### Settings for using slack API (RECOMMENDED)
 #OPTIONAL
 useAPI=false
 

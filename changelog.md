@@ -1,6 +1,9 @@
 # v0.9.3-dev
 ## Bugfix
 * slack: fix receiving messages from private channels #118
+* slack: fix echo when using webhooks #119
+* mattermost: reconnecting should work better now
+* irc: keeps reconnecting (every 60 seconds) now after ping timeout/disconnects.
 
 # v0.9.2
 ## New features
