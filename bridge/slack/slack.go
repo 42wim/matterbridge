@@ -245,6 +245,9 @@ func (b *Bslack) handleMatterHook(mchan chan *MMMessage) {
 		m.Text = message.Text
 		m.Text = b.replaceMention(m.Text)
 		m.Channel = message.ChannelName
+		if m.Username == "slackbot" {
+			continue
+		}
 		mchan <- m
 	}
 }
