@@ -103,6 +103,7 @@ func (m *MMClient) Login() error {
 	// login to mattermost
 	m.Client = model.NewClient(uriScheme + m.Credentials.Server)
 	m.Client.HttpClient.Transport = &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: m.SkipTLSVerify}}
+	m.Client.HttpClient.Timeout = time.Second * 10
 	var myinfo *model.Result
 	var appErr *model.AppError
 	var logmsg = "trying login"
