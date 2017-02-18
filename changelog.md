@@ -1,4 +1,7 @@
 # v0.9.3-dev
+## New features
+* API: rest interface to read / post messages (see API section in matterbridge.toml.sample)
+
 ## Bugfix
 * slack: fix receiving messages from private channels #118
 * slack: fix echo when using webhooks #119

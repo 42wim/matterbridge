@@ -6,6 +6,7 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"time"
 )
 
 const (
@@ -14,16 +15,19 @@ const (
 )
 
 type Message struct {
-	Text     string
-	Channel  string
-	Username string
-	Avatar   string
-	Account  string
-	Event    string
+	Text      string
+	Channel   string
+	Username  string
+	Avatar    string
+	Account   string
+	Event     string
+	Protocol  string
+	Timestamp time.Time
 }
 
 type Protocol struct {
 	BindAddress            string // mattermost, slack
+	Buffer                 int    // api
 	IconURL                string // mattermost, slack
 	IgnoreNicks            string // all protocols
 	Jid                    string // xmpp
@@ -79,6 +83,7 @@ type SameChannelGateway struct {
 }
 
 type Config struct {
+	Api                map[string]Protocol
 	IRC                map[string]Protocol
 	Mattermost         map[string]Protocol
 	Slack              map[string]Protocol

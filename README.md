@@ -1,13 +1,14 @@
 # matterbridge
 ![matterbridge.gif](https://s15.postimg.org/qpjhp6y3f/matterbridge.gif)
 
-Simple bridge between mattermost, IRC, XMPP, Gitter, Slack, Discord, Telegram, Rocket.Chat and Hipchat(via xmpp).
+Simple bridge between mattermost, IRC, XMPP, Gitter, Slack, Discord, Telegram, Rocket.Chat and Hipchat(via xmpp) with REST API.
 
 * Relays public channel messages between multiple mattermost, IRC, XMPP, Gitter, Slack, Discord, Telegram, Rocket.Chat and Hipchat (via xmpp). Pick and mix.
 * Supports multiple channels.
 * Matterbridge can also work with private groups on your mattermost.
 * Allow for bridging the same bridges, which means you can eg bridge between multiple mattermosts.
 * The bridge is now a gateway which has support multiple in and out bridges. (and supports multiple gateways).
+* REST API to read/post messages to bridges (WIP)
 
 Look at [matterbridge.toml.sample] (https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.sample) for documentation and an example.
 Look at [matterbridge.toml.simple] (https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.simple) for a simple example.

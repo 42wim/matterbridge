@@ -86,6 +86,7 @@ func (gw *Gateway) handleReceive() {
 				}
 			}
 			if !gw.ignoreMessage(&msg) {
+				msg.Timestamp = time.Now()
 				for _, br := range gw.Bridges {
 					gw.handleMessage(msg, br)
 				}
@@ -165,6 +166,10 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 		}
 		log.Debugf("Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, originchannel, dest.Account, channel)
 		gw.modifyUsername(&msg, dest)
+		// for api we need originchannel as channel
+		if dest.Protocol == "api" {
+			msg.Channel = originchannel
+		}
 		err := dest.Send(msg)
 		if err != nil {
 			fmt.Println(err)
@@ -199,6 +204,7 @@ func (gw *Gateway) modifyMessage(msg *config.Message, dest *bridge.Bridge) {
 
 func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) {
 	br := gw.Bridges[msg.Account]
+	msg.Protocol = br.Protocol
 	nick := gw.Config.General.RemoteNickFormat
 	if nick == "" {
 		nick = dest.Config.RemoteNickFormat
