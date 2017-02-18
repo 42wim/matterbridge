@@ -1,4 +1,4 @@
-# v0.9.3-dev
+# v0.9.3
 ## New features
 * API: rest interface to read / post messages (see API section in matterbridge.toml.sample)
 

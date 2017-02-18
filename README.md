@@ -37,12 +37,12 @@ docker run -ti -v /tmp/matterbridge.toml:/matterbridge.toml 42wim/matterbridge
 
 ## binaries
 Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/)
-* For use with mattermost 3.5.x - 3.6.0 [v0.9.2](https://github.com/42wim/matterircd/releases/tag/v0.9.2)
+* For use with mattermost 3.5.x - 3.6.0 [v0.9.3](https://github.com/42wim/matterircd/releases/tag/v0.9.3)
 * For use with mattermost 3.3.0 - 3.4.0 [v0.7.1](https://github.com/42wim/matterircd/releases/tag/v0.7.1)
 
 ## Compatibility
 ### Mattermost 
-* Matterbridge v0.9.2 works with mattermost 3.5.x - 3.6.0 [3.6.0 release](https://github.com/mattermost/platform/releases/tag/v3.6.0)
+* Matterbridge v0.9.3 works with mattermost 3.5.x - 3.6.0 [3.6.0 release](https://github.com/mattermost/platform/releases/tag/v3.6.0)
 * Matterbridge v0.7.1 works with mattermost 3.3.0 - 3.4.0 [3.4.0 release](https://github.com/mattermost/platform/releases/tag/v3.4.0)
 
 #### Webhooks version
