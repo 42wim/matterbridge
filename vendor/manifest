@@ -10,6 +10,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/GeertJohan/go.rice",
+			"repository": "https://github.com/GeertJohan/go.rice",
+			"vcs": "git",
+			"revision": "4bbccbfa39e784796e483270451217d3369ecfbe",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/Sirupsen/logrus",
 			"repository": "https://github.com/Sirupsen/logrus",
 			"vcs": "",
@@ -30,6 +38,64 @@
 			"repository": "https://github.com/bwmarrin/discordgo",
 			"vcs": "git",
 			"revision": "5835676872d7fa65ee37b32672079c4ede2c1855",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/daaku/go.zipexe",
+			"repository": "https://github.com/daaku/go.zipexe",
+			"vcs": "git",
+			"revision": "a5fe2436ffcb3236e175e5149162b41cd28bd27d",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/dgrijalva/jwt-go",
+			"repository": "https://github.com/dgrijalva/jwt-go",
+			"vcs": "git",
+			"revision": "2268707a8f0843315e2004ee4f1d021dc08baedf",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/facebookgo/clock",
+			"repository": "https://github.com/facebookgo/clock",
+			"vcs": "git",
+			"revision": "600d898af40aa09a7a93ecb9265d87b0504b6f03",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/facebookgo/grace/gracehttp",
+			"repository": "https://github.com/facebookgo/grace",
+			"vcs": "git",
+			"revision": "5b49dc98ff9c92eeb68f8975d2e3aadb5d0c57ab",
+			"branch": "master",
+			"path": "/gracehttp",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/facebookgo/grace/gracenet",
+			"repository": "https://github.com/facebookgo/grace",
+			"vcs": "git",
+			"revision": "5b49dc98ff9c92eeb68f8975d2e3aadb5d0c57ab",
+			"branch": "master",
+			"path": "/gracenet",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/facebookgo/httpdown",
+			"repository": "https://github.com/facebookgo/httpdown",
+			"vcs": "git",
+			"revision": "a3b1354551a26449fbe05f5d855937f6e7acbd71",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/facebookgo/stats",
+			"repository": "https://github.com/facebookgo/stats",
+			"vcs": "git",
+			"revision": "1b76add642e42c6ffba7211ad7b3939ce654526e",
 			"branch": "master",
 			"notests": true
 		},
@@ -66,6 +132,58 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/kardianos/osext",
+			"repository": "https://github.com/kardianos/osext",
+			"vcs": "git",
+			"revision": "9b883c5eb462dd5cb1b0a7a104fe86bc6b9bd391",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/labstack/echo",
+			"repository": "https://github.com/labstack/echo",
+			"vcs": "git",
+			"revision": "0b53f397ad7709a27d37500a67735c0a639b5c38",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/labstack/gommon/bytes",
+			"repository": "https://github.com/labstack/gommon",
+			"vcs": "git",
+			"revision": "f72d3c883f8ea180da8f085dd320804c41332ad1",
+			"branch": "master",
+			"path": "/bytes",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/labstack/gommon/color",
+			"repository": "https://github.com/labstack/gommon",
+			"vcs": "git",
+			"revision": "f72d3c883f8ea180da8f085dd320804c41332ad1",
+			"branch": "master",
+			"path": "/color",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/labstack/gommon/log",
+			"repository": "https://github.com/labstack/gommon",
+			"vcs": "git",
+			"revision": "f72d3c883f8ea180da8f085dd320804c41332ad1",
+			"branch": "master",
+			"path": "/log",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/labstack/gommon/random",
+			"repository": "https://github.com/labstack/gommon",
+			"vcs": "git",
+			"revision": "f72d3c883f8ea180da8f085dd320804c41332ad1",
+			"branch": "master",
+			"path": "/random",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/mattermost/platform/einterfaces",
 			"repository": "https://github.com/mattermost/platform",
 			"vcs": "git",
@@ -81,6 +199,22 @@
 			"revision": "976296cd52533ff565407e55e872339cc312a0cf",
 			"branch": "release-3.6",
 			"path": "/model",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mattn/go-colorable",
+			"repository": "https://github.com/mattn/go-colorable",
+			"vcs": "git",
+			"revision": "5411d3eea5978e6cdc258b30de592b60df6aba96",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mattn/go-isatty",
+			"repository": "https://github.com/mattn/go-isatty",
+			"vcs": "git",
+			"revision": "dda3de49cbfcec471bd7a70e6cc01fcc3ff90109",
+			"branch": "master",
 			"notests": true
 		},
 		{
@@ -173,6 +307,47 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/tylerb/graceful",
+			"repository": "https://github.com/tylerb/graceful",
+			"vcs": "git",
+			"revision": "4654dfbb6ad53cb5e27f37d99b02e16c1872fbbb",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/valyala/bytebufferpool",
+			"repository": "https://github.com/valyala/bytebufferpool",
+			"vcs": "git",
+			"revision": "e746df99fe4a3986f4d4f79e13c1e0117ce9c2f7",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/valyala/fasttemplate",
+			"repository": "https://github.com/valyala/fasttemplate",
+			"vcs": "git",
+			"revision": "d090d65668a286d9a180d43a19dfdc5dcad8fe88",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/zfjagann/golang-ring",
+			"repository": "https://github.com/zfjagann/golang-ring",
+			"vcs": "git",
+			"revision": "17637388c9f6665e2f475e4beec439e6fc19fee9",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/crypto/acme",
+			"repository": "https://go.googlesource.com/crypto",
+			"vcs": "git",
+			"revision": "453249f01cfeb54c3d549ddb75ff152ca243f9d8",
+			"branch": "master",
+			"path": "acme",
+			"notests": true
+		},
+		{
 			"importpath": "golang.org/x/crypto/bcrypt",
 			"repository": "https://go.googlesource.com/crypto",
 			"vcs": "",
@@ -215,6 +390,15 @@
 			"revision": "81372b2fc2f10bef2a7f338da115c315a56b2726",
 			"branch": "master",
 			"path": "/salsa20/salsa",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/net/context",
+			"repository": "https://go.googlesource.com/net",
+			"vcs": "git",
+			"revision": "6b27048ae5e6ad1ef927e72e437531493de612fe",
+			"branch": "master",
+			"path": "/context",
 			"notests": true
 		},
 		{
