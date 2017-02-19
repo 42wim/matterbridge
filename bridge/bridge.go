@@ -6,6 +6,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/discord"
 	"github.com/42wim/matterbridge/bridge/gitter"
 	"github.com/42wim/matterbridge/bridge/irc"
+	"github.com/42wim/matterbridge/bridge/matrix"
 	"github.com/42wim/matterbridge/bridge/mattermost"
 	"github.com/42wim/matterbridge/bridge/rocketchat"
 	"github.com/42wim/matterbridge/bridge/slack"
@@ -71,6 +72,9 @@ func New(cfg *config.Config, bridge *config.Bridge, c chan config.Message) *Brid
 	case "rocketchat":
 		b.Config = cfg.Rocketchat[name]
 		b.Bridger = brocketchat.New(cfg.Rocketchat[name], bridge.Account, c)
+	case "matrix":
+		b.Config = cfg.Matrix[name]
+		b.Bridger = bmatrix.New(cfg.Matrix[name], bridge.Account, c)
 	case "api":
 		b.Config = cfg.Api[name]
 		b.Bridger = api.New(cfg.Api[name], bridge.Account, c)

@@ -1,3 +1,7 @@
+# v0.10.0-dev
+## New features
+* matrix: New protocol support added (https://matrix.org)
+
 # v0.9.3
 ## New features
 * API: rest interface to read / post messages (see API section in matterbridge.toml.sample)

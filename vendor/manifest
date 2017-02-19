@@ -184,6 +184,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/matrix-org/gomatrix",
+			"repository": "https://github.com/matrix-org/gomatrix",
+			"vcs": "git",
+			"revision": "812dcb5515581023371efaa6a82750d997f50d57",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/mattermost/platform/einterfaces",
 			"repository": "https://github.com/mattermost/platform",
 			"vcs": "git",

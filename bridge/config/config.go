@@ -86,6 +86,7 @@ type Config struct {
 	Api                map[string]Protocol
 	IRC                map[string]Protocol
 	Mattermost         map[string]Protocol
+	Matrix             map[string]Protocol
 	Slack              map[string]Protocol
 	Gitter             map[string]Protocol
 	Xmpp               map[string]Protocol
