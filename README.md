@@ -1,59 +1,48 @@
 # matterbridge
 ![matterbridge.gif](https://s15.postimg.org/qpjhp6y3f/matterbridge.gif)
 
-Simple bridge between mattermost, IRC, XMPP, Gitter, Slack, Discord, Telegram, Rocket.Chat, Hipchat(via xmpp) and Matrix with REST API.
+Simple bridge between Mattermost, IRC, XMPP, Gitter, Slack, Discord, Telegram, Rocket.Chat, Hipchat(via xmpp) and Matrix with REST API.
 
+# Table of Contents
+ * [Features](#features)
+ * [Requirements](#requirements)
+ * [Installing](#installing)
+   * [Binaries](#binaries)
+   * [Building](#building)
+ * [Configuration](#configuration)
+   * [Examples](#examples) 
+ * [Running](#running)
+   * [Docker](#docker)
+ * [Changelog](#changelog)
+ * [FAQ](#faq)
+ * [Thanks](#thanks)
+
+# Features
 * Relays public channel messages between multiple mattermost, IRC, XMPP, Gitter, Slack, Discord, Telegram, Rocket.Chat, Hipchat (via xmpp) and Matrix. Pick and mix.
-* Supports multiple channels.
-* Matterbridge can also work with private groups on your mattermost.
+* Matterbridge can also work with private groups on your mattermost/slack.
 * Allow for bridging the same bridges, which means you can eg bridge between multiple mattermosts.
 * The bridge is now a gateway which has support multiple in and out bridges. (and supports multiple gateways).
-* REST API to read/post messages to bridges (WIP)
+* REST API to read/post messages to bridges (WIP).
 
-Look at [matterbridge.toml.sample] (https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.sample) for documentation and an example.
-Look at [matterbridge.toml.simple] (https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.simple) for a simple example.
-
-
-## Changelog
-Since v0.7.0 the configuration has changed. More details in [changelog.md] (https://github.com/42wim/matterbridge/blob/master/changelog.md)
-
-## Requirements
+# Requirements
 Accounts to one of the supported bridges
-* [Mattermost] (https://github.com/mattermost/platform/)
-* [IRC] (http://www.mirc.com/servers.html)
-* [XMPP] (https://jabber.org)
-* [Gitter] (https://gitter.im)
-* [Slack] (https://slack.com)
-* [Discord] (https://discordapp.com)
-* [Telegram] (https://telegram.org)
-* [Hipchat] (https://www.hipchat.com)
-* [Rocket.chat] (https://rocket.chat)
-* [Matrix] (https://matrix.org)
+* [Mattermost](https://github.com/mattermost/platform/) 3.5.x - 3.6.x
+* [IRC](http://www.mirc.com/servers.html)
+* [XMPP](https://jabber.org)
+* [Gitter](https://gitter.im)
+* [Slack](https://slack.com)
+* [Discord](https://discordapp.com)
+* [Telegram](https://telegram.org)
+* [Hipchat](https://www.hipchat.com)
+* [Rocket.chat](https://rocket.chat)
+* [Matrix](https://matrix.org)
 
-## Docker
-Create your matterbridge.toml file locally eg in ```/tmp/matterbridge.toml```
-```
-docker run -ti -v /tmp/matterbridge.toml:/matterbridge.toml 42wim/matterbridge
-```
-
-## binaries
+# Installing
+## Binaries
 Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/)
-* For use with mattermost 3.5.x - 3.6.0 [v0.9.3](https://github.com/42wim/matterircd/releases/tag/v0.9.3)
-* For use with mattermost 3.3.0 - 3.4.0 [v0.7.1](https://github.com/42wim/matterircd/releases/tag/v0.7.1)
+* Latest release [v0.9.3](https://github.com/42wim/matterircd/releases/tag/v0.9.3)
 
-## Compatibility
-### Mattermost 
-* Matterbridge v0.9.3 works with mattermost 3.5.x - 3.6.0 [3.6.0 release](https://github.com/mattermost/platform/releases/tag/v3.6.0)
-* Matterbridge v0.7.1 works with mattermost 3.3.0 - 3.4.0 [3.4.0 release](https://github.com/mattermost/platform/releases/tag/v3.4.0)
-
-#### Webhooks version
-* Configured incoming/outgoing [webhooks](https://www.mattermost.org/webhooks/) on your mattermost instance.
-
-#### API version
-* A dedicated user(bot) on your mattermost instance.
-
-
-## building
+## Building
 Go 1.6+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH] (https://golang.org/doc/code.html#GOPATH)
 
 ```
@@ -68,10 +57,69 @@ $ ls bin/
 matterbridge
 ```
 
-## running
-1) Copy the matterbridge.conf.sample to matterbridge.conf in the same directory as the matterbridge binary.  
-2) Edit matterbridge.conf with the settings for your environment. See below for more config information.  
-3) Now you can run matterbridge. 
+# Configuration
+* [matterbridge.toml.sample](https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.sample) for documentation and an example.
+* [matterbridge.toml.simple](https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.simple) for a simple example.
+
+## Examples
+### Bridge mattermost (off-topic) - irc (#testing)
+```
+[irc]
+    [irc.freenode]
+    Server="irc.freenode.net:6667"
+    Nick="yourbotname"
+
+[mattermost]
+    [mattermost.work]
+    useAPI=true
+    Server="yourmattermostserver.tld"
+    Team="yourteam"
+    Login="yourlogin"
+    Password="yourpass"
+    PrefixMessagesWithNick=true
+
+[[gateway]]
+name="mygateway"
+enable=true
+    [[gateway.inout]]
+    account="irc.freenode"
+    channel="#testing"
+
+    [[gateway.inout]]
+    account="mattermost.work"
+    channel="off-topic"
+```
+
+### Bridge slack (#general) - discord (general)
+```
+[slack.test]
+Token="yourslacktoken"
+PrefixMessagesWithNick=true
+
+[discord.test]
+Token="yourdiscordtoken"
+Server="yourdiscordservername"
+
+[general]
+RemoteNickFormat="[{PROTOCOL}/{BRIDGE}] <{NICK}> "
+
+[[gateway]]
+    name = "mygateway"
+    enable=true
+
+    [[gateway.inout]]
+    account = "discord.test"
+    channel="general"
+
+    [[gateway.inout]]
+    account ="slack.test"
+    channel = "general"
+```
+
+# Running
+1) Copy the matterbridge.toml.sample to matterbridge.toml in the same directory as the matterbridge binary.  
+2) Edit matterbridge.toml with the settings for your environment. 
+3) Now you can run matterbridge.  (```./matterbridge```)
 
 ```
 Usage of ./matterbridge:
@@ -83,35 +131,39 @@ Usage of ./matterbridge:
         show version
 ```
 
-## config
-### matterbridge
-matterbridge looks for matterbridge.toml in current directory. (use -conf to specify another file)
+## Docker
+Create your matterbridge.toml file locally eg in ```/tmp/matterbridge.toml```
+```
+docker run -ti -v /tmp/matterbridge.toml:/matterbridge.toml 42wim/matterbridge
+```
 
-Look at [matterbridge.toml.sample] (https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.sample) for an example.
+# Changelog
+See [changelog.md](https://github.com/42wim/matterbridge/blob/master/changelog.md)
 
-### mattermost
-#### webhooks version
-You'll have to configure the incoming and outgoing webhooks. 
+# FAQ
 
-* incoming webhooks
-Go to "account settings" - integrations - "incoming webhooks".  
-Choose a channel at "Add a new incoming webhook", this will create a webhook URL right below.  
-This URL should be set in the matterbridge.conf in the [mattermost] section (see above)  
+Please look at [matterbridge.toml.sample](https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.sample) for more information first.
 
-* outgoing webhooks
-Go to "account settings" - integrations - "outgoing webhooks".  
-Choose a channel (the same as the one from incoming webhooks) and fill in the address and port of the server matterbridge will run on.  
-
-e.g. http://192.168.1.1:9999 (192.168.1.1:9999 is the BindAddress specified in [mattermost] section of matterbridge.conf)
-
-## FAQ
-Please look at [matterbridge.toml.sample] (https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.sample) for more information first. 
-### Mattermost doesn't show the IRC nicks
+## Mattermost doesn't show the IRC nicks
 If you're running the webhooks version, this can be fixed by either:
 * enabling "override usernames". See [mattermost documentation](http://docs.mattermost.com/developer/webhooks-incoming.html#enabling-incoming-webhooks)
 * setting ```PrefixMessagesWithNick``` to ```true``` in ```mattermost``` section of your matterbridge.toml.
 
-If you're running the plus version you'll need to:
+If you're running the API version you'll need to:
 * setting ```PrefixMessagesWithNick``` to ```true``` in ```mattermost``` section of your matterbridge.toml.
 
 Also look at the ```RemoteNickFormat``` setting.
+
+
+# Thanks
+Matterbridge wouldn't exist without these libraries:
+* discord - https://github.com/bwmarrin/discordgo
+* echo - https://github.com/labstack/echo
+* gitter - https://github.com/sromku/go-gitter
+* irc - https://github.com/thoj/go-ircevent
+* mattermost - https://github.com/mattermost/platform
+* matrix - https://github.com/matrix-org/gomatrix
+* slack - https://github.com/nlopes/slack
+* telegram - https://github.com/go-telegram-bot-api/telegram-bot-api
+* xmpp - https://github.com/mattn/go-xmpp
+
