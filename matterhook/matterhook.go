@@ -12,6 +12,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"time"
 )
 
 // OMessage for mattermost incoming webhook. (send to mattermost)
@@ -82,8 +83,14 @@ func New(url string, config Config) *Client {
 func (c *Client) StartServer() {
 	mux := http.NewServeMux()
 	mux.Handle("/", c)
+	srv := &http.Server{
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		Handler:      mux,
+		Addr:         c.BindAddress,
+	}
 	log.Printf("Listening on http://%v...\n", c.BindAddress)
-	if err := http.ListenAndServe(c.BindAddress, mux); err != nil {
+	if err := srv.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
 }
