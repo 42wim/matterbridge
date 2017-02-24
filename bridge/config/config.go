@@ -31,7 +31,7 @@ type Protocol struct {
 	IconURL                string // mattermost, slack
 	IgnoreNicks            string // all protocols
 	Jid                    string // xmpp
-	Login                  string // mattermost
+	Login                  string // mattermost, matrix
 	Muc                    string // xmpp
 	Name                   string // all protocols
 	Nick                   string // all protocols
@@ -40,18 +40,19 @@ type Protocol struct {
 	NickServPassword       string // IRC
 	NicksPerRow            int    // mattermost, slack
 	NoTLS                  bool   // mattermost
-	Password               string // IRC,mattermost,XMPP
+	Password               string // IRC,mattermost,XMPP,matrix
 	PrefixMessagesWithNick bool   // mattemost, slack
 	Protocol               string //all protocols
 	MessageQueue           int    // IRC, size of message queue for flood control
 	MessageDelay           int    // IRC, time in millisecond to wait between messages
+	MessageFormat          string // telegram
 	RemoteNickFormat       string // all protocols
 	Server                 string // IRC,mattermost,XMPP,discord
 	ShowJoinPart           bool   // all protocols
 	SkipTLSVerify          bool   // IRC, mattermost
 	Team                   string // mattermost
 	Token                  string // gitter, slack, discord
-	URL                    string // mattermost, slack
+	URL                    string // mattermost, slack, matrix
 	UseAPI                 bool   // mattermost, slack
 	UseSASL                bool   // IRC
 	UseTLS                 bool   // IRC

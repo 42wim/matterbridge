@@ -413,6 +413,11 @@ ShowJoinPart=false
 #REQUIRED
 Token="Yourtokenhere"
 
+#OPTIONAL (default empty)
+#Only supported format is "HTML", messages will be sent in html parsemode.
+#See https://core.telegram.org/bots/api#html-style
+MessageFormat=""
+
 #Nicks you want to ignore. 
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
