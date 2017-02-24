@@ -608,7 +608,7 @@ enable=true
     #             see (https://www.linkedin.com/pulse/telegram-bots-beginners-marco-frau)
     #hipchat    - id_channel (see https://www.hipchat.com/account/xmpp for the correct channel)
     #rocketchat - #channel (# is required)
-    #matrix     - room internal ID (looks like !QJFqjsGJwmQzbuBfff:matrix.org)
+    #matrix     - #channel:server (eg #yourchannel:matrix.org)
     #REQUIRED
     channel="#testing"
 

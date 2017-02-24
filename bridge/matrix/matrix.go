@@ -4,6 +4,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
 	matrix "github.com/matrix-org/gomatrix"
+	"sync"
 )
 
 type Bmatrix struct {
@@ -12,6 +13,8 @@ type Bmatrix struct {
 	Remote  chan config.Message
 	Account string
 	UserID  string
+	RoomMap map[string]string
+	sync.RWMutex
 }
 
 var flog *log.Entry
@@ -23,6 +26,7 @@ func init() {
 
 func New(cfg config.Protocol, account string, c chan config.Message) *Bmatrix {
 	b := &Bmatrix{}
+	b.RoomMap = make(map[string]string)
 	b.Config = &cfg
 	b.Account = account
 	b.Remote = c
@@ -58,26 +62,47 @@ func (b *Bmatrix) Disconnect() error {
 }
 
 func (b *Bmatrix) JoinChannel(channel string) error {
-	_, err := b.mc.JoinRoom(channel, "", nil)
+	resp, err := b.mc.JoinRoom(channel, "", nil)
+	if err != nil {
+		return err
+	}
+	b.Lock()
+	b.RoomMap[resp.RoomID] = channel
+	b.Unlock()
 	return err
 }
 
 func (b *Bmatrix) Send(msg config.Message) error {
 	flog.Debugf("Receiving %#v", msg)
-	b.mc.SendText(msg.Channel, msg.Username+msg.Text)
+	channel := b.getRoomID(msg.Channel)
+	flog.Debugf("Sending to channel %s", channel)
+	b.mc.SendText(channel, msg.Username+msg.Text)
 	return nil
 }
 
+func (b *Bmatrix) getRoomID(channel string) string {
+	b.RLock()
+	defer b.RUnlock()
+	for ID, name := range b.RoomMap {
+		if name == channel {
+			return ID
+		}
+	}
+	return ""
+}
 func (b *Bmatrix) handlematrix() error {
-	warning := "Not relaying this message, please setup a dedicated bot user"
 	syncer := b.mc.Syncer.(*matrix.DefaultSyncer)
 	syncer.OnEventType("m.room.message", func(ev *matrix.Event) {
 		if ev.Content["msgtype"].(string) == "m.text" && ev.Sender != b.UserID {
+			b.RLock()
+			channel, ok := b.RoomMap[ev.RoomID]
+			b.RUnlock()
+			if !ok {
+				flog.Debugf("Unknown room %s", ev.RoomID)
+				return
+			}
 			flog.Debugf("Sending message from %s on %s to gateway", ev.Sender, b.Account)
-			b.Remote <- config.Message{Username: ev.Sender, Text: ev.Content["body"].(string), Channel: ev.RoomID, Account: b.Account}
-		}
-		if ev.Sender == b.UserID && ev.Content["body"].(string) != warning {
-			b.mc.SendText(ev.RoomID, warning)
+			b.Remote <- config.Message{Username: ev.Sender, Text: ev.Content["body"].(string), Channel: channel, Account: b.Account}
 		}
 		flog.Debugf("Received: %#v", ev)
 	})
