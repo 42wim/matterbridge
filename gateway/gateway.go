@@ -178,6 +178,10 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 }
 
 func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
+	if msg.Text == "" {
+		log.Debugf("ignoring empty message %#v from %s", msg, msg.Account)
+		return true
+	}
 	for _, entry := range strings.Fields(gw.Bridges[msg.Account].Config.IgnoreNicks) {
 		if msg.Username == entry {
 			log.Debugf("ignoring %s from %s", msg.Username, msg.Account)
