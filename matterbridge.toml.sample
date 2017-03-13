@@ -500,9 +500,9 @@ ShowJoinPart=false
 #REQUIRED
 
 [matrix.neo]
-#Url is your homeserver (eg matrix.org)
+#Server is your homeserver (eg https://matrix.org)
 #REQUIRED
-URL="https://matrix.org"
+Server="https://matrix.org"
 
 #login/pass of your bot. 
 #Use a dedicated user for this and not your own! 
