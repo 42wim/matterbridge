@@ -26,7 +26,7 @@ Simple bridge between Mattermost, IRC, XMPP, Gitter, Slack, Discord, Telegram, R
 
 # Requirements
 Accounts to one of the supported bridges
-* [Mattermost](https://github.com/mattermost/platform/) 3.5.x - 3.6.x
+* [Mattermost](https://github.com/mattermost/platform/) 3.5.x - 3.7.x
 * [IRC](http://www.mirc.com/servers.html)
 * [XMPP](https://jabber.org)
 * [Gitter](https://gitter.im)
