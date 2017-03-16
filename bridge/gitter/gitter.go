@@ -1,6 +1,7 @@
 package bgitter
 
 import (
+	"fmt"
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
 	"github.com/sromku/go-gitter"
@@ -54,7 +55,7 @@ func (b *Bgitter) JoinChannel(channel string) error {
 	room := channel
 	roomID := b.getRoomID(room)
 	if roomID == "" {
-		return nil
+		return fmt.Errorf("Could not find roomID for %v. Please create the room on gitter.im", channel)
 	}
 	user, err := b.c.GetUser()
 	if err != nil {
