@@ -84,8 +84,14 @@ func New(cfg *config.Config, bridge *config.Bridge, c chan config.Message) *Brid
 
 func (b *Bridge) JoinChannels() error {
 	exists := make(map[string]bool)
-	b.joinChannels(b.ChannelsIn, exists)
-	b.joinChannels(b.ChannelsOut, exists)
+	err := b.joinChannels(b.ChannelsIn, exists)
+	if err != nil {
+		return err
+	}
+	err = b.joinChannels(b.ChannelsOut, exists)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -99,7 +105,10 @@ func (b *Bridge) joinChannels(cMap map[string]config.ChannelOptions, exists map[
 				log.Debugf("using key %s for channel %s", info.Key, channel)
 				mychannel = mychannel + " " + info.Key
 			}
-			b.JoinChannel(mychannel)
+			err := b.JoinChannel(mychannel)
+			if err != nil {
+				return err
+			}
 			exists[channel] = true
 		}
 	}

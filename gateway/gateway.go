@@ -48,7 +48,10 @@ func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 	if err != nil {
 		return fmt.Errorf("Bridge %s failed to start: %v", br.Account, err)
 	}
-	br.JoinChannels()
+	err = br.JoinChannels()
+	if err != nil {
+		return fmt.Errorf("Bridge %s failed to join channel: %v", br.Account, err)
+	}
 	return nil
 }
 
