@@ -52,10 +52,13 @@ func (b *Bgitter) Disconnect() error {
 }
 
 func (b *Bgitter) JoinChannel(channel string) error {
-	room := channel
-	roomID := b.getRoomID(room)
-	if roomID == "" {
+	roomID, err := b.c.GetRoomId(channel)
+	if err != nil {
 		return fmt.Errorf("Could not find roomID for %v. Please create the room on gitter.im", channel)
+	}
+	room, err := b.c.GetRoom(roomID)
+	if err != nil {
+		b.Rooms = append(b.Rooms, *room)
 	}
 	user, err := b.c.GetUser()
 	if err != nil {
@@ -84,7 +87,7 @@ func (b *Bgitter) JoinChannel(channel string) error {
 				flog.Errorf("connection with gitter closed for room %s", room)
 			}
 		}
-	}(stream, room)
+	}(stream, room.Name)
 	return nil
 }
 
