@@ -58,8 +58,9 @@ func (b *Bgitter) JoinChannel(channel string) error {
 	}
 	room, err := b.c.GetRoom(roomID)
 	if err != nil {
-		b.Rooms = append(b.Rooms, *room)
+		return err
 	}
+	b.Rooms = append(b.Rooms, *room)
 	user, err := b.c.GetUser()
 	if err != nil {
 		return err
