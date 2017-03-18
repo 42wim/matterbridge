@@ -377,6 +377,7 @@ ShowJoinPart=false
 #Token to connect with Discord API
 #You can get your token by following the instructions on 
 #https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token
+#If you want roles/groups mentions to be shown with names instead of ID, you'll need to give your bot the "Manage Roles" permission.
 #REQUIRED
 Token="Yourtokenhere"
 
