@@ -1,9 +1,13 @@
-# v0.10.0-dev
+# v0.10.0
 ## New features
 * matrix: New protocol support added (https://matrix.org)
+* mattermost: works with mattermost release v3.7.0
+* discord: Replace role ids in mentions to role names (discord). Closes #133
 
 ## Bugfix
 * mattermost: Add ReadTimeout to close lingering connections (mattermost). See #125
+* gitter: Join rooms not already joined by the bot (gitter). See #135
+* general: Fail when bridge is unable to join a channel (general)
 
 ## Changes
 * telegram: Do not use HTML parsemode by default. Set ```MessageFormat="HTML"``` to use it. Closes #126
