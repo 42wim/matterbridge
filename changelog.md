@@ -1,3 +1,7 @@
+# v0.10.1
+## Bugfix
+* gitter: Fix sending messages on new channel join.
+
 # v0.10.0
 ## New features
 * matrix: New protocol support added (https://matrix.org)
