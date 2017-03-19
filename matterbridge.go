@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	version = "0.10.1"
+	version = "0.10.2-dev"
 	githash string
 )
 
@@ -44,6 +44,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("Starting gateway failed %#v", err)
 		}
+		log.Printf("Started samechannel gateway %#v", gw.Name)
 	}
 
 	for _, gw := range cfg.Gateway {
@@ -56,6 +57,8 @@ func main() {
 		if err != nil {
 			log.Fatalf("Starting gateway failed %#v", err)
 		}
+		log.Printf("Started gateway %#v", gw.Name)
 	}
+	log.Printf("Gateway(s) started succesfully. Now relaying messages")
 	select {}
 }
