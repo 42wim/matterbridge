@@ -94,10 +94,13 @@ enable=true
 
 ### Bridge slack (#general) - discord (general)
 ```
+[slack]
 [slack.test]
+useAPI=true
 Token="yourslacktoken"
 PrefixMessagesWithNick=true
 
+[discord]
 [discord.test]
 Token="yourdiscordtoken"
 Server="yourdiscordservername"
