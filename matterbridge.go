@@ -7,6 +7,7 @@ import (
 	"github.com/42wim/matterbridge/gateway"
 	"github.com/42wim/matterbridge/gateway/samechannel"
 	log "github.com/Sirupsen/logrus"
+	"github.com/google/gops/agent"
 )
 
 var (
@@ -22,7 +23,12 @@ func main() {
 	flagConfig := flag.String("conf", "matterbridge.toml", "config file")
 	flagDebug := flag.Bool("debug", false, "enable debug")
 	flagVersion := flag.Bool("version", false, "show version")
+	flagGops := flag.Bool("gops", false, "enable gops agent")
 	flag.Parse()
+	if *flagGops {
+		agent.Listen(&agent.Options{})
+		defer agent.Close()
+	}
 	if *flagVersion {
 		fmt.Printf("version: %s %s\n", version, githash)
 		return
