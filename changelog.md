@@ -1,3 +1,14 @@
+# v0.10.2
+## New features
+* general: gops agent added. Allows for more debugging. See #134
+* general: toml inline table support added for config file
+
+## Bugfix
+* all: vendored libs updated
+
+## Changes
+* general: add more informative messages on startup
+
 # v0.10.1
 ## Bugfix
 * gitter: Fix sending messages on new channel join.

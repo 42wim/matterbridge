@@ -42,7 +42,7 @@ Accounts to one of the supported bridges
 # Installing
 ## Binaries
 Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/)
-* Latest release [v0.10.1](https://github.com/42wim/matterbridge/releases/latest)
+* Latest release [v0.10.2](https://github.com/42wim/matterbridge/releases/latest)
 
 ## Building
 Go 1.6+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH] (https://golang.org/doc/code.html#GOPATH)
@@ -122,9 +122,11 @@ RemoteNickFormat="[{PROTOCOL}/{BRIDGE}] <{NICK}> "
 ```
 
 # Running
-1) Copy the matterbridge.toml.sample to matterbridge.toml in the same directory as the matterbridge binary.  
+1) Copy the matterbridge.toml.sample to matterbridge.toml 
 2) Edit matterbridge.toml with the settings for your environment. 
-3) Now you can run matterbridge.  (```./matterbridge```)
+3) Now you can run matterbridge.  (```./matterbridge```)   
+
+(Matterbridge will only look for the config file in your current directory, if it isn't there specify -conf "/path/toyour/matterbridge.toml")
 
 ```
 Usage of ./matterbridge:
@@ -132,6 +134,8 @@ Usage of ./matterbridge:
         config file (default "matterbridge.toml")
   -debug
         enable debug
+  -gops
+        enable gops agent
   -version
         show version
 ```
@@ -165,6 +169,7 @@ Matterbridge wouldn't exist without these libraries:
 * discord - https://github.com/bwmarrin/discordgo
 * echo - https://github.com/labstack/echo
 * gitter - https://github.com/sromku/go-gitter
+* gops - https://github.com/google/gops
 * irc - https://github.com/thoj/go-ircevent
 * mattermost - https://github.com/mattermost/platform
 * matrix - https://github.com/matrix-org/gomatrix
