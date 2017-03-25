@@ -8,16 +8,17 @@ import (
 )
 
 const (
-	DEFAULT_MESSAGE_USERNAME     = ""
-	DEFAULT_MESSAGE_ASUSER       = false
-	DEFAULT_MESSAGE_PARSE        = ""
-	DEFAULT_MESSAGE_LINK_NAMES   = 0
-	DEFAULT_MESSAGE_UNFURL_LINKS = false
-	DEFAULT_MESSAGE_UNFURL_MEDIA = true
-	DEFAULT_MESSAGE_ICON_URL     = ""
-	DEFAULT_MESSAGE_ICON_EMOJI   = ""
-	DEFAULT_MESSAGE_MARKDOWN     = true
-	DEFAULT_MESSAGE_ESCAPE_TEXT  = true
+	DEFAULT_MESSAGE_USERNAME         = ""
+	DEFAULT_MESSAGE_THREAD_TIMESTAMP = ""
+	DEFAULT_MESSAGE_ASUSER           = false
+	DEFAULT_MESSAGE_PARSE            = ""
+	DEFAULT_MESSAGE_LINK_NAMES       = 0
+	DEFAULT_MESSAGE_UNFURL_LINKS     = false
+	DEFAULT_MESSAGE_UNFURL_MEDIA     = true
+	DEFAULT_MESSAGE_ICON_URL         = ""
+	DEFAULT_MESSAGE_ICON_EMOJI       = ""
+	DEFAULT_MESSAGE_MARKDOWN         = true
+	DEFAULT_MESSAGE_ESCAPE_TEXT      = true
 )
 
 type chatResponseFull struct {
@@ -29,18 +30,19 @@ type chatResponseFull struct {
 
 // PostMessageParameters contains all the parameters necessary (including the optional ones) for a PostMessage() request
 type PostMessageParameters struct {
-	Text        string       `json:"text"`
-	Username    string       `json:"user_name"`
-	AsUser      bool         `json:"as_user"`
-	Parse       string       `json:"parse"`
-	LinkNames   int          `json:"link_names"`
-	Attachments []Attachment `json:"attachments"`
-	UnfurlLinks bool         `json:"unfurl_links"`
-	UnfurlMedia bool         `json:"unfurl_media"`
-	IconURL     string       `json:"icon_url"`
-	IconEmoji   string       `json:"icon_emoji"`
-	Markdown    bool         `json:"mrkdwn,omitempty"`
-	EscapeText  bool         `json:"escape_text"`
+	Text            string       `json:"text"`
+	Username        string       `json:"user_name"`
+	AsUser          bool         `json:"as_user"`
+	Parse           string       `json:"parse"`
+	ThreadTimestamp string       `json:"thread_ts"`
+	LinkNames       int          `json:"link_names"`
+	Attachments     []Attachment `json:"attachments"`
+	UnfurlLinks     bool         `json:"unfurl_links"`
+	UnfurlMedia     bool         `json:"unfurl_media"`
+	IconURL         string       `json:"icon_url"`
+	IconEmoji       string       `json:"icon_emoji"`
+	Markdown        bool         `json:"mrkdwn,omitempty"`
+	EscapeText      bool         `json:"escape_text"`
 }
 
 // NewPostMessageParameters provides an instance of PostMessageParameters with all the sane default values set
@@ -141,6 +143,9 @@ func (api *Client) PostMessage(channel, text string, params PostMessageParameter
 	}
 	if params.Markdown != DEFAULT_MESSAGE_MARKDOWN {
 		values.Set("mrkdwn", "false")
+	}
+	if params.ThreadTimestamp != DEFAULT_MESSAGE_THREAD_TIMESTAMP {
+		values.Set("thread_ts", params.ThreadTimestamp)
 	}
 
 	response, err := chatRequest("chat.postMessage", values, api.debug)

@@ -1,3 +1,4 @@
+// Package backoff provides an exponential-backoff implementation.
 package backoff
 
 import (
@@ -6,64 +7,82 @@ import (
 	"time"
 )
 
-//Backoff is a time.Duration counter. It starts at Min.
-//After every call to Duration() it is  multiplied by Factor.
-//It is capped at Max. It returns to Min on every call to Reset().
-//Used in conjunction with the time package.
+// Backoff is a time.Duration counter, starting at Min. After every call to
+// the Duration method the current timing is multiplied by Factor, but it
+// never exceeds Max.
 //
-// Backoff is not threadsafe, but the ForAttempt method can be
-// used concurrently if non-zero values for Factor, Max, and Min
-// are set on the Backoff shared among threads.
+// Backoff is not generally concurrent-safe, but the ForAttempt method can
+// be used concurrently.
 type Backoff struct {
 	//Factor is the multiplying factor for each increment step
-	attempts, Factor float64
+	attempt, Factor float64
 	//Jitter eases contention by randomizing backoff steps
 	Jitter bool
 	//Min and Max are the minimum and maximum values of the counter
 	Min, Max time.Duration
 }
 
-//Returns the current value of the counter and then
-//multiplies it Factor
+// Duration returns the duration for the current attempt before incrementing
+// the attempt counter. See ForAttempt.
 func (b *Backoff) Duration() time.Duration {
-	d := b.ForAttempt(b.attempts)
-	b.attempts++
+	d := b.ForAttempt(b.attempt)
+	b.attempt++
 	return d
 }
+
+const maxInt64 = float64(math.MaxInt64 - 512)
 
 // ForAttempt returns the duration for a specific attempt. This is useful if
 // you have a large number of independent Backoffs, but don't want use
 // unnecessary memory storing the Backoff parameters per Backoff. The first
 // attempt should be 0.
 //
-// ForAttempt is threadsafe iff non-zero values for Factor, Max, and Min
-// are set before any calls to ForAttempt are made.
+// ForAttempt is concurrent-safe.
 func (b *Backoff) ForAttempt(attempt float64) time.Duration {
-	//Zero-values are nonsensical, so we use
-	//them to apply defaults
-	if b.Min == 0 {
-		b.Min = 100 * time.Millisecond
+	// Zero-values are nonsensical, so we use
+	// them to apply defaults
+	min := b.Min
+	if min <= 0 {
+		min = 100 * time.Millisecond
 	}
-	if b.Max == 0 {
-		b.Max = 10 * time.Second
+	max := b.Max
+	if max <= 0 {
+		max = 10 * time.Second
 	}
-	if b.Factor == 0 {
-		b.Factor = 2
+	if min >= max {
+		// short-circuit
+		return max
+	}
+	factor := b.Factor
+	if factor <= 0 {
+		factor = 2
 	}
 	//calculate this duration
-	dur := float64(b.Min) * math.Pow(b.Factor, attempt)
-	if b.Jitter == true {
-		dur = rand.Float64()*(dur-float64(b.Min)) + float64(b.Min)
+	minf := float64(min)
+	durf := minf * math.Pow(factor, attempt)
+	if b.Jitter {
+		durf = rand.Float64()*(durf-minf) + minf
 	}
-	//cap!
-	if dur > float64(b.Max) {
-		return b.Max
+	//ensure float64 wont overflow int64
+	if durf > maxInt64 {
+		return max
 	}
-	//return as a time.Duration
-	return time.Duration(dur)
+	dur := time.Duration(durf)
+	//keep within bounds
+	if dur < min {
+		return min
+	} else if dur > max {
+		return max
+	}
+	return dur
 }
 
-//Resets the current value of the counter back to Min
+// Reset restarts the current attempt counter at zero.
 func (b *Backoff) Reset() {
-	b.attempts = 0
+	b.attempt = 0
+}
+
+// Attempt returns the current attempt counter value.
+func (b *Backoff) Attempt() float64 {
+	return b.attempt
 }

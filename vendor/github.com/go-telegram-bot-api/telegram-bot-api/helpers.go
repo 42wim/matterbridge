@@ -318,21 +318,6 @@ func NewWebhookWithCert(link string, file interface{}) WebhookConfig {
 	}
 }
 
-// NewWebhookWithCert creates a new webhook with a certificate and max_connections.
-//
-// link is the url you wish to get webhooks,
-// file contains a string to a file, FileReader, or FileBytes.
-// maxConnections defines maximum number of connections from telegram to your server
-func NewWebhookWithCertAndMaxConnections(link string, file interface{}, maxConnections int) WebhookConfig {
-	u, _ := url.Parse(link)
-
-	return WebhookConfig{
-		URL:         u,
-		Certificate: file,
-		MaxConnections: maxConnections,
-	}
-}
-
 // NewInlineQueryResultArticle creates a new inline query article.
 func NewInlineQueryResultArticle(id, title, messageText string) InlineQueryResultArticle {
 	return InlineQueryResultArticle{

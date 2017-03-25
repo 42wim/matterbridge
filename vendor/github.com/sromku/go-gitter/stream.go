@@ -47,13 +47,13 @@ Loop:
 			}
 			break Loop
 		}
-
+		
 		resp := stream.getResponse()
 		if resp.StatusCode != 200 {
 			gitter.log(fmt.Sprintf("Unexpected response code %v", resp.StatusCode))
 			continue
 		}
-
+		
 		//"The JSON stream returns messages as JSON objects that are delimited by carriage return (\r)" <- Not true crap it's (\n) only
 		reader = bufio.NewReader(resp.Body)
 		line, err := reader.ReadBytes('\n')
@@ -112,6 +112,7 @@ type Stream struct {
 
 func (stream *Stream) destroy() {
 	close(stream.Event)
+	stream.streamConnection.currentRetries = 0
 }
 
 type Event struct {
@@ -135,10 +136,8 @@ func (stream *Stream) connect() {
 	}
 
 	res, err := stream.gitter.getResponse(stream.url, stream)
-	if stream.streamConnection.canceled {
-		// do nothing
-	} else if err != nil || res.StatusCode != 200 {
-		stream.gitter.log("Failed to get response, trying reconnect ")
+	if err != nil || res.StatusCode != 200 {
+		stream.gitter.log(fmt.Sprintf("Failed to get response, trying reconnect (Status code: %v)", res.StatusCode))
 		stream.gitter.log(err)
 
 		// sleep and wait
@@ -160,9 +159,6 @@ type streamConnection struct {
 
 	// connection was closed
 	closed bool
-
-	// canceled
-	canceled bool
 
 	// wait time till next try
 	wait time.Duration
@@ -192,13 +188,10 @@ func (stream *Stream) Close() {
 		stream.gitter.log("Stream connection close request")
 		switch transport := stream.gitter.config.client.Transport.(type) {
 		case *httpclient.Transport:
-			stream.streamConnection.canceled = true
 			transport.CancelRequest(conn.request)
 		default:
 		}
-
 	}
-	conn.currentRetries = 0
 }
 
 func (stream *Stream) isClosed() bool {

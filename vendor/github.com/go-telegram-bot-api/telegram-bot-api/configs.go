@@ -768,8 +768,8 @@ type UpdateConfig struct {
 
 // WebhookConfig contains information about a SetWebhook request.
 type WebhookConfig struct {
-	URL         *url.URL
-	Certificate interface{}
+	URL            *url.URL
+	Certificate    interface{}
 	MaxConnections int
 }
 

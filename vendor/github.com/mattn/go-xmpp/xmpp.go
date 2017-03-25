@@ -606,7 +606,8 @@ func (c *Client) Recv() (stanza interface{}, err error) {
 		case *clientPresence:
 			return Presence{v.From, v.To, v.Type, v.Show, v.Status}, nil
 		case *clientIQ:
-			if bytes.Equal(v.Query, []byte(`<ping xmlns='urn:xmpp:ping'/>`)) {
+			// TODO check more strictly
+			if bytes.Equal(v.Query, []byte(`<ping xmlns='urn:xmpp:ping'/>`)) || bytes.Equal(v.Query, []byte(`<ping xmlns="urn:xmpp:ping"/>`)) {
 				err := c.SendResultPing(v.ID, v.From)
 				if err != nil {
 					return Chat{}, err
@@ -630,6 +631,11 @@ func (c *Client) SendOrg(org string) (n int, err error) {
 
 func (c *Client) SendPresence(presence Presence) (n int, err error) {
 	return fmt.Fprintf(c.conn, "<presence from='%s' to='%s'/>", xmlEscape(presence.From), xmlEscape(presence.To))
+}
+
+// SendKeepAlive sends a "whitespace keepalive" as described in chapter 4.6.1 of RFC6120.
+func (c *Client) SendKeepAlive() (n int, err error) {
+	return fmt.Fprintf(c.conn," ")
 }
 
 // SendHtml sends the message as HTML as defined by XEP-0071

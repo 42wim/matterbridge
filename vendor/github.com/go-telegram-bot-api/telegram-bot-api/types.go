@@ -194,7 +194,7 @@ func (m *Message) CommandArguments() string {
 		return ""
 	}
 
-	return strings.SplitN(m.Text, " ", 2)[1]
+	return split[1]
 }
 
 // MessageEntity contains information about data in a Message.

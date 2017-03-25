@@ -20,8 +20,8 @@
 		{
 			"importpath": "github.com/Sirupsen/logrus",
 			"repository": "https://github.com/Sirupsen/logrus",
-			"vcs": "",
-			"revision": "4b6ea7319e214d98c938f12692336f7ca9348d6b",
+			"vcs": "git",
+			"revision": "10f801ebc38b33738c9d17d50860f484a0988ff5",
 			"branch": "master",
 			"notests": true
 		},
@@ -103,7 +103,7 @@
 			"importpath": "github.com/go-telegram-bot-api/telegram-bot-api",
 			"repository": "https://github.com/go-telegram-bot-api/telegram-bot-api",
 			"vcs": "git",
-			"revision": "3293f3ad8411de32d99e443cd82aec7c3bb01a5a",
+			"revision": "89bbb1edff353a7c6d10ef10cfd2675056ad8a58",
 			"branch": "master",
 			"notests": true
 		},
@@ -137,24 +137,24 @@
 		{
 			"importpath": "github.com/gorilla/schema",
 			"repository": "https://github.com/gorilla/schema",
-			"vcs": "",
-			"revision": "ddf016c1034e9cfd3eb5b276f626c8f04d765f6f",
+			"vcs": "git",
+			"revision": "f3c80893412cff6b5596a82f3cb8c31c5a971aa9",
 			"branch": "master",
 			"notests": true
 		},
 		{
 			"importpath": "github.com/gorilla/websocket",
 			"repository": "https://github.com/gorilla/websocket",
-			"vcs": "",
-			"revision": "e2e3d8414d0fbae04004f151979f4e27c6747fe7",
+			"vcs": "git",
+			"revision": "a91eba7f97777409bc2c443f5534d41dd20c5720",
 			"branch": "master",
 			"notests": true
 		},
 		{
 			"importpath": "github.com/jpillora/backoff",
 			"repository": "https://github.com/jpillora/backoff",
-			"vcs": "",
-			"revision": "8dc7c274049d8fa405b51f6fbec11db195a977cd",
+			"vcs": "git",
+			"revision": "06c7a16c845dc8e0bf575fafeeca0f5462f5eb4d",
 			"branch": "master",
 			"notests": true
 		},
@@ -256,7 +256,7 @@
 			"importpath": "github.com/mattn/go-xmpp",
 			"repository": "https://github.com/mattn/go-xmpp",
 			"vcs": "git",
-			"revision": "325c112042ffd34aa24365590d3a6fdd1a79c011",
+			"revision": "16b6a7bdba1ca30969b5db9362b6605e43302daa",
 			"branch": "master",
 			"notests": true
 		},
@@ -289,7 +289,7 @@
 			"importpath": "github.com/nlopes/slack",
 			"repository": "https://github.com/nlopes/slack",
 			"vcs": "git",
-			"revision": "248e1d53d27901137764ae625890c127bf67e7aa",
+			"revision": "6519657c021b7add19c4ef48220140cca0b1657b",
 			"branch": "master",
 			"notests": true
 		},
@@ -321,7 +321,7 @@
 			"importpath": "github.com/sromku/go-gitter",
 			"repository": "https://github.com/sromku/go-gitter",
 			"vcs": "git",
-			"revision": "792abbfcc172b35bbf5f8b260ef184e38bbd90bd",
+			"revision": "0b9f26da1844acd3c6c2fd4ee2bdd30eb1a40568",
 			"branch": "master",
 			"notests": true
 		},
@@ -485,9 +485,34 @@
 			"importpath": "golang.org/x/net/websocket",
 			"repository": "https://go.googlesource.com/net",
 			"vcs": "git",
-			"revision": "1358eff22f0dd0c54fc521042cc607f6ff4b531a",
+			"revision": "6c23252515492caf9b228a9d5cabcdbde29f7f82",
 			"branch": "master",
 			"path": "/websocket",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/sys/unix",
+			"repository": "https://go.googlesource.com/sys",
+			"vcs": "git",
+			"revision": "afadfcc7779c1f4db0f6f6438afcb108d9c9c7cd",
+			"branch": "master",
+			"path": "/unix",
+			"notests": true
+		},
+		{
+			"importpath": "gopkg.in/airbrake/gobrake.v2",
+			"repository": "https://gopkg.in/airbrake/gobrake.v2",
+			"vcs": "git",
+			"revision": "668876711219e8b0206e2994bf0a59d889c775aa",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "gopkg.in/gemnasium/logrus-airbrake-hook.v2",
+			"repository": "https://gopkg.in/gemnasium/logrus-airbrake-hook.v2",
+			"vcs": "git",
+			"revision": "bfee1239d796830ca346767650cce5ba90d58c57",
+			"branch": "master",
 			"notests": true
 		},
 		{
