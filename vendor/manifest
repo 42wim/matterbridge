@@ -5,7 +5,7 @@
 			"importpath": "github.com/BurntSushi/toml",
 			"repository": "https://github.com/BurntSushi/toml",
 			"vcs": "git",
-			"revision": "99064174e013895bbd9b025c31100bd1d9b590ca",
+			"revision": "d94612f9fc140360834f9742158c70b5c5b5535b",
 			"branch": "master",
 			"notests": true
 		},

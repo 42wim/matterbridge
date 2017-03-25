@@ -30,3 +30,12 @@ enable=true
     [[gateway.out]]
     account="mattermost.work"
     channel="off-topic"
+
+#simpler config possible since v0.10.2
+#[[gateway]]
+#name="gateway2"
+#enable=true
+#inout = [
+#    { account="irc.freenode", channel="#testing", options={key="channelkey"}},
+#    { account="mattermost.work", channel="off-topic" },
+#]
