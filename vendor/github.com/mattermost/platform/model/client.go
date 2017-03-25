@@ -35,12 +35,14 @@ const (
 	STATUS                    = "status"
 	STATUS_OK                 = "OK"
 	STATUS_FAIL               = "FAIL"
+	STATUS_REMOVE             = "REMOVE"
 
 	CLIENT_DIR = "webapp/dist"
 
 	API_URL_SUFFIX_V1 = "/api/v1"
 	API_URL_SUFFIX_V3 = "/api/v3"
-	API_URL_SUFFIX    = API_URL_SUFFIX_V3
+	API_URL_SUFFIX_V4 = "/api/v4"
+	API_URL_SUFFIX    = API_URL_SUFFIX_V4
 )
 
 type Result struct {
@@ -71,7 +73,7 @@ type Client struct {
 // NewClient constructs a new client with convienence methods for talking to
 // the server.
 func NewClient(url string) *Client {
-	return &Client{url, url + API_URL_SUFFIX, &http.Client{}, "", "", "", "", "", ""}
+	return &Client{url, url + API_URL_SUFFIX_V3, &http.Client{}, "", "", "", "", "", ""}
 }
 
 func closeBody(r *http.Response) {
@@ -782,7 +784,7 @@ func (c *Client) GetSessions(id string) (*Result, *AppError) {
 }
 
 func (c *Client) EmailToOAuth(m map[string]string) (*Result, *AppError) {
-	if r, err := c.DoApiPost("/users/claim/email_to_sso", MapToJson(m)); err != nil {
+	if r, err := c.DoApiPost("/users/claim/email_to_oauth", MapToJson(m)); err != nil {
 		return nil, err
 	} else {
 		defer closeBody(r)
@@ -1111,6 +1113,16 @@ func (c *Client) CreateDirectChannel(userId string) (*Result, *AppError) {
 	data := make(map[string]string)
 	data["user_id"] = userId
 	if r, err := c.DoApiPost(c.GetTeamRoute()+"/channels/create_direct", MapToJson(data)); err != nil {
+		return nil, err
+	} else {
+		defer closeBody(r)
+		return &Result{r.Header.Get(HEADER_REQUEST_ID),
+			r.Header.Get(HEADER_ETAG_SERVER), ChannelFromJson(r.Body)}, nil
+	}
+}
+
+func (c *Client) CreateGroupChannel(userIds []string) (*Result, *AppError) {
+	if r, err := c.DoApiPost(c.GetTeamRoute()+"/channels/create_group", ArrayToJson(userIds)); err != nil {
 		return nil, err
 	} else {
 		defer closeBody(r)
@@ -1459,6 +1471,21 @@ func (c *Client) GetPost(channelId string, postId string, etag string) (*Result,
 // GetPostById returns a post and any posts in the same thread by post id
 func (c *Client) GetPostById(postId string, etag string) (*PostList, *ResponseMetadata) {
 	if r, err := c.DoApiGet(c.GetTeamRoute()+fmt.Sprintf("/posts/%v", postId), "", etag); err != nil {
+		return nil, &ResponseMetadata{StatusCode: r.StatusCode, Error: err}
+	} else {
+		defer closeBody(r)
+		return PostListFromJson(r.Body),
+			&ResponseMetadata{
+				StatusCode: r.StatusCode,
+				RequestId:  r.Header.Get(HEADER_REQUEST_ID),
+				Etag:       r.Header.Get(HEADER_ETAG_SERVER),
+			}
+	}
+}
+
+// GetPermalink returns a post list, based on the provided channel and post ID.
+func (c *Client) GetPermalink(channelId string, postId string, etag string) (*PostList, *ResponseMetadata) {
+	if r, err := c.DoApiGet(c.GetTeamRoute()+fmt.Sprintf("/pltmp/%v", postId), "", etag); err != nil {
 		return nil, &ResponseMetadata{StatusCode: r.StatusCode, Error: err}
 	} else {
 		defer closeBody(r)
@@ -1991,6 +2018,16 @@ func (c *Client) CreateIncomingWebhook(hook *IncomingWebhook) (*Result, *AppErro
 	}
 }
 
+func (c *Client) UpdateIncomingWebhook(hook *IncomingWebhook) (*Result, *AppError) {
+	if r, err := c.DoApiPost(c.GetTeamRoute()+"/hooks/incoming/update", hook.ToJson()); err != nil {
+		return nil, err
+	} else {
+		defer closeBody(r)
+		return &Result{r.Header.Get(HEADER_REQUEST_ID),
+			r.Header.Get(HEADER_ETAG_SERVER), IncomingWebhookFromJson(r.Body)}, nil
+	}
+}
+
 func (c *Client) PostToWebhook(id, payload string) (*Result, *AppError) {
 	if r, err := c.DoPost("/hooks/"+id, payload, "application/x-www-form-urlencoded"); err != nil {
 		return nil, err
@@ -2074,6 +2111,16 @@ func (c *Client) DeletePreferences(preferences *Preferences) (bool, *AppError) {
 
 func (c *Client) CreateOutgoingWebhook(hook *OutgoingWebhook) (*Result, *AppError) {
 	if r, err := c.DoApiPost(c.GetTeamRoute()+"/hooks/outgoing/create", hook.ToJson()); err != nil {
+		return nil, err
+	} else {
+		defer closeBody(r)
+		return &Result{r.Header.Get(HEADER_REQUEST_ID),
+			r.Header.Get(HEADER_ETAG_SERVER), OutgoingWebhookFromJson(r.Body)}, nil
+	}
+}
+
+func (c *Client) UpdateOutgoingWebhook(hook *OutgoingWebhook) (*Result, *AppError) {
+	if r, err := c.DoApiPost(c.GetTeamRoute()+"/hooks/outgoing/update", hook.ToJson()); err != nil {
 		return nil, err
 	} else {
 		defer closeBody(r)
@@ -2317,5 +2364,28 @@ func (c *Client) ListReactions(channelId string, postId string) ([]*Reaction, *A
 		defer closeBody(r)
 		c.fillInExtraProperties(r)
 		return ReactionsFromJson(r.Body), nil
+	}
+}
+
+// Updates the user's roles in the channel by replacing them with the roles provided.
+func (c *Client) UpdateChannelRoles(channelId string, userId string, roles string) (map[string]string, *ResponseMetadata) {
+	data := make(map[string]string)
+	data["new_roles"] = roles
+	data["user_id"] = userId
+
+	if r, err := c.DoApiPost(c.GetChannelRoute(channelId)+"/update_member_roles", MapToJson(data)); err != nil {
+		metadata := ResponseMetadata{Error: err}
+		if r != nil {
+			metadata.StatusCode = r.StatusCode
+		}
+		return nil, &metadata
+	} else {
+		defer closeBody(r)
+		return MapFromJson(r.Body),
+			&ResponseMetadata{
+				StatusCode: r.StatusCode,
+				RequestId:  r.Header.Get(HEADER_REQUEST_ID),
+				Etag:       r.Header.Get(HEADER_ETAG_SERVER),
+			}
 	}
 }

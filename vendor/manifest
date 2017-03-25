@@ -222,18 +222,81 @@
 			"importpath": "github.com/mattermost/platform/einterfaces",
 			"repository": "https://github.com/mattermost/platform",
 			"vcs": "git",
-			"revision": "976296cd52533ff565407e55e872339cc312a0cf",
-			"branch": "release-3.6",
-			"path": "/einterfaces",
+			"revision": "8ec37570742b67fd640bb3434ea226c655dbf408",
+			"branch": "release-3.7",
+			"path": "einterfaces",
 			"notests": true
 		},
 		{
 			"importpath": "github.com/mattermost/platform/model",
 			"repository": "https://github.com/mattermost/platform",
 			"vcs": "git",
-			"revision": "976296cd52533ff565407e55e872339cc312a0cf",
-			"branch": "release-3.6",
+			"revision": "8ec37570742b67fd640bb3434ea226c655dbf408",
+			"branch": "release-3.7",
 			"path": "/model",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mattermost/platform/vendor/github.com/alecthomas/log4go",
+			"repository": "https://github.com/mattermost/platform",
+			"vcs": "git",
+			"revision": "8ec37570742b67fd640bb3434ea226c655dbf408",
+			"branch": "release-3.7",
+			"path": "vendor/github.com/alecthomas/log4go",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mattermost/platform/vendor/github.com/gorilla/websocket",
+			"repository": "https://github.com/mattermost/platform",
+			"vcs": "git",
+			"revision": "8ec37570742b67fd640bb3434ea226c655dbf408",
+			"branch": "release-3.7",
+			"path": "vendor/github.com/gorilla/websocket",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mattermost/platform/vendor/github.com/nicksnyder/go-i18n/i18n",
+			"repository": "https://github.com/mattermost/platform",
+			"vcs": "git",
+			"revision": "8ec37570742b67fd640bb3434ea226c655dbf408",
+			"branch": "release-3.7",
+			"path": "vendor/github.com/nicksnyder/go-i18n/i18n",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mattermost/platform/vendor/github.com/pborman/uuid",
+			"repository": "https://github.com/mattermost/platform",
+			"vcs": "git",
+			"revision": "8ec37570742b67fd640bb3434ea226c655dbf408",
+			"branch": "release-3.7",
+			"path": "vendor/github.com/pborman/uuid",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mattermost/platform/vendor/golang.org/x/crypto/bcrypt",
+			"repository": "https://github.com/mattermost/platform",
+			"vcs": "git",
+			"revision": "8ec37570742b67fd640bb3434ea226c655dbf408",
+			"branch": "release-3.7",
+			"path": "vendor/golang.org/x/crypto/bcrypt",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mattermost/platform/vendor/golang.org/x/crypto/blowfish",
+			"repository": "https://github.com/mattermost/platform",
+			"vcs": "git",
+			"revision": "8ec37570742b67fd640bb3434ea226c655dbf408",
+			"branch": "release-3.7",
+			"path": "vendor/golang.org/x/crypto/blowfish",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mattermost/platform/vendor/gopkg.in/yaml.v2",
+			"repository": "https://github.com/mattermost/platform",
+			"vcs": "git",
+			"revision": "8ec37570742b67fd640bb3434ea226c655dbf408",
+			"branch": "release-3.7",
+			"path": "vendor/gopkg.in/yaml.v2",
 			"notests": true
 		},
 		{
