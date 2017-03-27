@@ -73,6 +73,10 @@ func (b *Bslack) Disconnect() error {
 func (b *Bslack) JoinChannel(channel string) error {
 	// we can only join channels using the API
 	if b.Config.UseAPI {
+		if strings.HasPrefix(b.Config.Token, "xoxb") {
+			// TODO check if bot has already joined channel
+			return nil
+		}
 		_, err := b.sc.JoinChannel(channel)
 		if err != nil {
 			return err
