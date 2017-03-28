@@ -1,3 +1,5 @@
+# v0.11.0-dev
+
 # v0.10.3
 ## Bugfix
 * slack: Allow bot tokens for now without warning (slack). Closes #140 (fixes user_is_bot message on channel join)
