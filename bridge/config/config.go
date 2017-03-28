@@ -25,6 +25,14 @@ type Message struct {
 	Timestamp time.Time
 }
 
+type ChannelInfo struct {
+	Name      string
+	Account   string
+	Direction string
+	ID        string
+	Options   ChannelOptions
+}
+
 type Protocol struct {
 	BindAddress            string // mattermost, slack
 	Buffer                 int    // api
