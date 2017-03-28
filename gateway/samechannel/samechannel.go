@@ -41,9 +41,11 @@ func (sgw *SameChannelGateway) validChannel(channel string) bool {
 	return false
 }
 
-func (sgw *SameChannelGateway) getDestChannel(msg *config.Message, dest string) []string {
+func (sgw *SameChannelGateway) getDestChannel(msg *config.Message, dest string) []config.ChannelInfo {
+	var channels []config.ChannelInfo
 	if sgw.validChannel(msg.Channel) {
-		return []string{msg.Channel}
+		channels = append(channels, config.ChannelInfo{Name: msg.Channel, Account: dest, ID: msg.Channel + dest})
+		return channels
 	}
-	return []string{}
+	return channels
 }

@@ -27,17 +27,15 @@ type Bridger interface {
 type Bridge struct {
 	Config config.Protocol
 	Bridger
-	Name        string
-	Account     string
-	Protocol    string
-	ChannelsIn  map[string]config.ChannelOptions
-	ChannelsOut map[string]config.ChannelOptions
+	Name     string
+	Account  string
+	Protocol string
+	Channels map[string]config.ChannelInfo
 }
 
 func New(cfg *config.Config, bridge *config.Bridge, c chan config.Message) *Bridge {
 	b := new(Bridge)
-	b.ChannelsIn = make(map[string]config.ChannelOptions)
-	b.ChannelsOut = make(map[string]config.ChannelOptions)
+	b.Channels = make(map[string]config.ChannelInfo)
 	accInfo := strings.Split(bridge.Account, ".")
 	protocol := accInfo[0]
 	name := accInfo[1]
@@ -84,32 +82,28 @@ func New(cfg *config.Config, bridge *config.Bridge, c chan config.Message) *Brid
 
 func (b *Bridge) JoinChannels() error {
 	exists := make(map[string]bool)
-	err := b.joinChannels(b.ChannelsIn, exists)
-	if err != nil {
-		return err
-	}
-	err = b.joinChannels(b.ChannelsOut, exists)
+	err := b.joinChannels(b.Channels, exists)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (b *Bridge) joinChannels(cMap map[string]config.ChannelOptions, exists map[string]bool) error {
+func (b *Bridge) joinChannels(channels map[string]config.ChannelInfo, exists map[string]bool) error {
 	mychannel := ""
-	for channel, info := range cMap {
-		if !exists[channel] {
-			mychannel = channel
-			log.Infof("%s: joining %s", b.Account, channel)
-			if b.Protocol == "irc" && info.Key != "" {
-				log.Debugf("using key %s for channel %s", info.Key, channel)
-				mychannel = mychannel + " " + info.Key
+	for ID, channel := range channels {
+		if !exists[ID] {
+			mychannel = channel.Name
+			log.Infof("%s: joining %s %s", b.Account, channel.Name, ID)
+			if b.Protocol == "irc" && channel.Options.Key != "" {
+				log.Debugf("using key %s for channel %s", channel.Options.Key, channel.Name)
+				mychannel = mychannel + " " + channel.Options.Key
 			}
-			err := b.JoinChannel(mychannel)
+			err := b.JoinChannel(channel.Name)
 			if err != nil {
 				return err
 			}
-			exists[channel] = true
+			exists[ID] = true
 		}
 	}
 	return nil

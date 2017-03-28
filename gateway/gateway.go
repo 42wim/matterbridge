@@ -5,7 +5,6 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
-	"reflect"
 	"strings"
 	"time"
 )
@@ -14,12 +13,11 @@ type Gateway struct {
 	*config.Config
 	MyConfig        *config.Gateway
 	Bridges         map[string]*bridge.Bridge
-	ChannelsOut     map[string][]string
-	ChannelsIn      map[string][]string
+	Channels        map[string]*config.ChannelInfo
 	ChannelOptions  map[string]config.ChannelOptions
 	Name            string
 	Message         chan config.Message
-	DestChannelFunc func(msg *config.Message, dest string) []string
+	DestChannelFunc func(msg *config.Message, dest string) []config.ChannelInfo
 }
 
 func New(cfg *config.Config, gateway *config.Gateway) *Gateway {
@@ -27,6 +25,7 @@ func New(cfg *config.Config, gateway *config.Gateway) *Gateway {
 	gw.Name = gateway.Name
 	gw.Config = cfg
 	gw.MyConfig = gateway
+	gw.Channels = make(map[string]*config.ChannelInfo)
 	gw.Message = make(chan config.Message)
 	gw.Bridges = make(map[string]*bridge.Bridge)
 	gw.DestChannelFunc = gw.getDestChannel
@@ -41,8 +40,7 @@ func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 	}
 	log.Infof("Starting bridge: %s ", cfg.Account)
 	br := bridge.New(gw.Config, cfg, gw.Message)
-	gw.mapChannelsToBridge(br, gw.ChannelsOut)
-	gw.mapChannelsToBridge(br, gw.ChannelsIn)
+	gw.mapChannelsToBridge(br)
 	gw.Bridges[cfg.Account] = br
 	err := br.Connect()
 	if err != nil {
@@ -55,12 +53,10 @@ func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 	return nil
 }
 
-func (gw *Gateway) mapChannelsToBridge(br *bridge.Bridge, cMap map[string][]string) {
-	for _, channel := range cMap[br.Account] {
-		if _, ok := gw.ChannelOptions[br.Account+channel]; ok {
-			br.ChannelsOut[channel] = gw.ChannelOptions[br.Account+channel]
-		} else {
-			br.ChannelsOut[channel] = config.ChannelOptions{}
+func (gw *Gateway) mapChannelsToBridge(br *bridge.Bridge) {
+	for ID, channel := range gw.Channels {
+		if br.Account == channel.Account {
+			br.Channels[ID] = *channel
 		}
 	}
 }
@@ -113,61 +109,53 @@ RECONNECT:
 }
 
 func (gw *Gateway) mapChannels() error {
-	options := make(map[string]config.ChannelOptions)
-	m := make(map[string][]string)
-	for _, br := range gw.MyConfig.Out {
-		m[br.Account] = append(m[br.Account], br.Channel)
-		options[br.Account+br.Channel] = br.Options
+	gw.Channels = make(map[string]*config.ChannelInfo)
+	for _, br := range append(gw.MyConfig.Out, gw.MyConfig.InOut...) {
+		ID := br.Channel + br.Account
+		_, ok := gw.Channels[ID]
+		if !ok {
+			channel := &config.ChannelInfo{Name: br.Channel, Direction: "out", ID: ID, Options: br.Options, Account: br.Account}
+			gw.Channels[channel.ID] = channel
+		}
 	}
-	gw.ChannelsOut = m
-	m = nil
-	m = make(map[string][]string)
-	for _, br := range gw.MyConfig.In {
-		m[br.Account] = append(m[br.Account], br.Channel)
-		options[br.Account+br.Channel] = br.Options
+
+	for _, br := range append(gw.MyConfig.In, gw.MyConfig.InOut...) {
+		ID := br.Channel + br.Account
+		_, ok := gw.Channels[ID]
+		if !ok {
+			channel := &config.ChannelInfo{Name: br.Channel, Direction: "in", ID: ID, Options: br.Options, Account: br.Account}
+			gw.Channels[channel.ID] = channel
+		}
 	}
-	gw.ChannelsIn = m
-	for _, br := range gw.MyConfig.InOut {
-		gw.ChannelsIn[br.Account] = append(gw.ChannelsIn[br.Account], br.Channel)
-		gw.ChannelsOut[br.Account] = append(gw.ChannelsOut[br.Account], br.Channel)
-		options[br.Account+br.Channel] = br.Options
-	}
-	gw.ChannelOptions = options
 	return nil
 }
 
-func (gw *Gateway) getDestChannel(msg *config.Message, dest string) []string {
-	channels := gw.ChannelsIn[msg.Account]
-	// broadcast to every out channel (irc QUIT)
-	if msg.Event == config.EVENT_JOIN_LEAVE && msg.Channel == "" {
-		return gw.ChannelsOut[dest]
-	}
-	for _, channel := range channels {
-		if channel == msg.Channel {
-			return gw.ChannelsOut[dest]
+func (gw *Gateway) getDestChannel(msg *config.Message, dest string) []config.ChannelInfo {
+	var channels []config.ChannelInfo
+	for _, channel := range gw.Channels {
+		if channel.Direction == "out" && channel.Account == dest {
+			channels = append(channels, *channel)
 		}
 	}
-	return []string{}
+	return channels
 }
 
 func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
-	// only relay join/part when configged
-	if msg.Event == config.EVENT_JOIN_LEAVE && !gw.Bridges[dest.Account].Config.ShowJoinPart {
+	// broadcast to every out channel (irc QUIT)
+	if msg.Channel == "" && msg.Event != config.EVENT_JOIN_LEAVE {
+		log.Debug("empty channel")
 		return
 	}
 	originchannel := msg.Channel
-	channels := gw.DestChannelFunc(&msg, dest.Account)
-	for _, channel := range channels {
-		// do not send the message to the bridge we come from if also the channel is the same
-		if msg.Account == dest.Account && channel == originchannel {
+	for _, channel := range gw.DestChannelFunc(&msg, dest.Account) {
+		// do not send to ourself
+		if channel.ID == getChannelID(msg) {
 			continue
 		}
-		msg.Channel = channel
-		if msg.Channel == "" {
-			log.Debug("empty channel")
-			return
-		}
-		log.Debugf("Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, originchannel, dest.Account, channel)
+		// outgoing channels for this account
+		//if channel.Direction == "out" && channel.Account == dest.Account {
+		log.Debugf("Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, originchannel, dest.Account, channel.Name)
+		msg.Channel = channel.Name
 		gw.modifyUsername(&msg, dest)
 		// for api we need originchannel as channel
 		if dest.Protocol == "api" {
@@ -194,21 +182,6 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 	return false
 }
 
-func (gw *Gateway) modifyMessage(msg *config.Message, dest *bridge.Bridge) {
-	val := reflect.ValueOf(gw.Config).Elem()
-	for i := 0; i < val.NumField(); i++ {
-		typeField := val.Type().Field(i)
-		// look for the protocol map (both lowercase)
-		if strings.ToLower(typeField.Name) == dest.Protocol {
-			// get the Protocol struct from the map
-			protoCfg := val.Field(i).MapIndex(reflect.ValueOf(dest.Name))
-			//config.SetNickFormat(msg, protoCfg.Interface().(config.Protocol))
-			val.Field(i).SetMapIndex(reflect.ValueOf(dest.Name), protoCfg)
-			break
-		}
-	}
-}
-
 func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) {
 	br := gw.Bridges[msg.Account]
 	msg.Protocol = br.Protocol
@@ -220,4 +193,8 @@ func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) {
 	nick = strings.Replace(nick, "{BRIDGE}", br.Name, -1)
 	nick = strings.Replace(nick, "{PROTOCOL}", br.Protocol, -1)
 	msg.Username = nick
+}
+
+func getChannelID(msg config.Message) string {
+	return msg.Channel + msg.Account
 }
