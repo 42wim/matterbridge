@@ -587,7 +587,7 @@ RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 #
 
 [[gateway]]
-#OPTIONAL (not used for now)
+#REQUIRED and UNIQUE
 name="gateway1"
 #Enable enables this gateway
 ##OPTIONAL (default false)
@@ -659,6 +659,7 @@ enable=true
 #channel testing on slack and vice versa. (and for the channel testing2 and testing3)
 
 [[samechannelgateway]]
+   name="samechannel1"
    enable = false
    accounts = [ "mattermost.work","slack.hobby" ]
    channels = [ "testing","testing2","testing3"]

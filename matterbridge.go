@@ -8,6 +8,7 @@ import (
 	"github.com/42wim/matterbridge/gateway/samechannel"
 	log "github.com/Sirupsen/logrus"
 	"github.com/google/gops/agent"
+	"strings"
 )
 
 var (
@@ -39,31 +40,26 @@ func main() {
 		log.SetLevel(log.DebugLevel)
 	}
 	log.Printf("Running version %s %s", version, githash)
-	cfg := config.NewConfig(*flagConfig)
-	for _, gw := range cfg.SameChannelGateway {
-		if !gw.Enable {
-			continue
-		}
-		log.Printf("Starting samechannel gateway %#v", gw.Name)
-		g := samechannelgateway.New(cfg, &gw)
-		err := g.Start()
-		if err != nil {
-			log.Fatalf("Starting gateway failed %#v", err)
-		}
-		log.Printf("Started samechannel gateway %#v", gw.Name)
+	if strings.Contains(version, "-dev") {
+		log.Println("WARNING: THIS IS A DEVELOPMENT VERSION. Things may break.")
 	}
+	cfg := config.NewConfig(*flagConfig)
 
-	for _, gw := range cfg.Gateway {
+	g := gateway.New(cfg)
+	sgw := samechannelgateway.New(cfg)
+	gwconfigs := sgw.GetConfig()
+	for _, gw := range append(gwconfigs, cfg.Gateway...) {
 		if !gw.Enable {
 			continue
 		}
-		log.Printf("Starting gateway %#v", gw.Name)
-		g := gateway.New(cfg, &gw)
-		err := g.Start()
+		err := g.AddConfig(&gw)
 		if err != nil {
-			log.Fatalf("Starting gateway failed %#v", err)
+			log.Fatalf("Starting gateway failed: %s", err)
 		}
-		log.Printf("Started gateway %#v", gw.Name)
+	}
+	err := g.Start()
+	if err != nil {
+		log.Fatalf("Starting gateway failed: %s", err)
 	}
 	log.Printf("Gateway(s) started succesfully. Now relaying messages")
 	select {}

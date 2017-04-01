@@ -60,6 +60,7 @@ func (b *Birc) Command(msg *config.Message) string {
 }
 
 func (b *Birc) Connect() error {
+	flog.Info("hier?")
 	b.Local = make(chan config.Message, b.Config.MessageQueue+10)
 	flog.Infof("Connecting %s", b.Config.Server)
 	i := irc.IRC(b.Config.Nick, b.Config.Nick)
@@ -92,7 +93,7 @@ func (b *Birc) Connect() error {
 }
 
 func (b *Birc) Disconnect() error {
-	b.i.Disconnect()
+	//b.i.Disconnect()
 	close(b.Local)
 	return nil
 }

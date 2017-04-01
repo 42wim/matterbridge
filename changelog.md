@@ -1,4 +1,8 @@
 # v0.11.0-dev
+## New features
+* general: reusing the same account on multiple gateways now also reuses the connection. 
+  This is particuarly useful for irc. See #87
+* general: the Name is now REQUIRED and needs to be UNIQUE for each gateway configuration
 
 # v0.10.3
 ## Bugfix

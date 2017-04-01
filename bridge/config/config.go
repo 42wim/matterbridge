@@ -26,11 +26,13 @@ type Message struct {
 }
 
 type ChannelInfo struct {
-	Name      string
-	Account   string
-	Direction string
-	ID        string
-	Options   ChannelOptions
+	Name        string
+	Account     string
+	Direction   string
+	ID          string
+	GID         map[string]bool
+	SameChannel map[string]bool
+	Options     ChannelOptions
 }
 
 type Protocol struct {
@@ -71,9 +73,10 @@ type ChannelOptions struct {
 }
 
 type Bridge struct {
-	Account string
-	Channel string
-	Options ChannelOptions
+	Account     string
+	Channel     string
+	Options     ChannelOptions
+	SameChannel bool
 }
 
 type Gateway struct {

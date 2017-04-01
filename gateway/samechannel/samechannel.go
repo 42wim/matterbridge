@@ -2,50 +2,27 @@ package samechannelgateway
 
 import (
 	"github.com/42wim/matterbridge/bridge/config"
-	"github.com/42wim/matterbridge/gateway"
 )
 
 type SameChannelGateway struct {
 	*config.Config
-	MyConfig *config.SameChannelGateway
-	Channels []string
-	Name     string
 }
 
-func New(cfg *config.Config, gatewayCfg *config.SameChannelGateway) *SameChannelGateway {
-	return &SameChannelGateway{
-		MyConfig: gatewayCfg,
-		Channels: gatewayCfg.Channels,
-		Name:     gatewayCfg.Name,
-		Config:   cfg}
+func New(cfg *config.Config) *SameChannelGateway {
+	return &SameChannelGateway{Config: cfg}
 }
 
-func (sgw *SameChannelGateway) Start() error {
-	gw := gateway.New(sgw.Config, &config.Gateway{Name: sgw.Name})
-	gw.DestChannelFunc = sgw.getDestChannel
-	for _, account := range sgw.MyConfig.Accounts {
-		for _, channel := range sgw.Channels {
-			br := config.Bridge{Account: account, Channel: channel}
-			gw.MyConfig.InOut = append(gw.MyConfig.InOut, br)
+func (sgw *SameChannelGateway) GetConfig() []config.Gateway {
+	var gwconfigs []config.Gateway
+	cfg := sgw.Config
+	for _, gw := range cfg.SameChannelGateway {
+		gwconfig := config.Gateway{Name: gw.Name, Enable: gw.Enable}
+		for _, account := range gw.Accounts {
+			for _, channel := range gw.Channels {
+				gwconfig.InOut = append(gwconfig.InOut, config.Bridge{Account: account, Channel: channel, SameChannel: true})
+			}
 		}
+		gwconfigs = append(gwconfigs, gwconfig)
 	}
-	return gw.Start()
-}
-
-func (sgw *SameChannelGateway) validChannel(channel string) bool {
-	for _, c := range sgw.Channels {
-		if c == channel {
-			return true
-		}
-	}
-	return false
-}
-
-func (sgw *SameChannelGateway) getDestChannel(msg *config.Message, dest string) []config.ChannelInfo {
-	var channels []config.ChannelInfo
-	if sgw.validChannel(msg.Channel) {
-		channels = append(channels, config.ChannelInfo{Name: msg.Channel, Account: dest, ID: msg.Channel + dest})
-		return channels
-	}
-	return channels
+	return gwconfigs
 }

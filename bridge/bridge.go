@@ -31,6 +31,7 @@ type Bridge struct {
 	Account  string
 	Protocol string
 	Channels map[string]config.ChannelInfo
+	Joined   map[string]bool
 }
 
 func New(cfg *config.Config, bridge *config.Bridge, c chan config.Message) *Bridge {
@@ -42,6 +43,7 @@ func New(cfg *config.Config, bridge *config.Bridge, c chan config.Message) *Brid
 	b.Name = name
 	b.Protocol = protocol
 	b.Account = bridge.Account
+	b.Joined = make(map[string]bool)
 
 	// override config from environment
 	config.OverrideCfgFromEnv(cfg, protocol, name)
@@ -81,8 +83,7 @@ func New(cfg *config.Config, bridge *config.Bridge, c chan config.Message) *Brid
 }
 
 func (b *Bridge) JoinChannels() error {
-	exists := make(map[string]bool)
-	err := b.joinChannels(b.Channels, exists)
+	err := b.joinChannels(b.Channels, b.Joined)
 	if err != nil {
 		return err
 	}
@@ -94,7 +95,7 @@ func (b *Bridge) joinChannels(channels map[string]config.ChannelInfo, exists map
 	for ID, channel := range channels {
 		if !exists[ID] {
 			mychannel = channel.Name
-			log.Infof("%s: joining %s %s", b.Account, channel.Name, ID)
+			log.Infof("%s: joining %s (%s)", b.Account, channel.Name, ID)
 			if b.Protocol == "irc" && channel.Options.Key != "" {
 				log.Debugf("using key %s for channel %s", channel.Options.Key, channel.Name)
 				mychannel = mychannel + " " + channel.Options.Key
