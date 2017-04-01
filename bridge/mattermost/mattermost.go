@@ -96,12 +96,7 @@ func (b *Bmattermost) Send(msg config.Message) error {
 	channel := msg.Channel
 
 	if b.Config.PrefixMessagesWithNick {
-		/*if IsMarkup(message) {
-			message = nick + "\n\n" + message
-		} else {
-		*/
-		message = nick + " " + message
-		//}
+		message = nick + message
 	}
 	if !b.Config.UseAPI {
 		matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL}
