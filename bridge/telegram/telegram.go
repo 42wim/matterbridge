@@ -80,28 +80,30 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 	text := ""
 	channel := ""
 	for update := range updates {
+		var message *tgbotapi.Message
 		// handle channels
 		if update.ChannelPost != nil {
-			if update.ChannelPost.From != nil {
-				username = update.ChannelPost.From.FirstName
-				if username == "" {
-					username = update.ChannelPost.From.UserName
-				}
-			}
-			text = update.ChannelPost.Text
-			channel = strconv.FormatInt(update.ChannelPost.Chat.ID, 10)
+			message = update.ChannelPost
+		}
+		if update.EditedChannelPost != nil {
+			message = update.EditedChannelPost
 		}
 		// handle groups
 		if update.Message != nil {
-			if update.Message.From != nil {
-				username = update.Message.From.FirstName
-				if username == "" {
-					username = update.Message.From.UserName
-				}
-			}
-			text = update.Message.Text
-			channel = strconv.FormatInt(update.Message.Chat.ID, 10)
+			message = update.Message
 		}
+		if update.EditedMessage != nil {
+			message = update.EditedMessage
+		}
+		if message.From != nil {
+			username = message.From.FirstName
+			if username == "" {
+				username = message.From.UserName
+			}
+			text = message.Text
+			channel = strconv.FormatInt(message.Chat.ID, 10)
+		}
+
 		if username == "" {
 			username = "unknown"
 		}
