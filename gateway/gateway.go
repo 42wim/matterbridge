@@ -173,6 +173,10 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 }
 
 func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
+	// only relay join/part when configged
+	if msg.Event == config.EVENT_JOIN_LEAVE && !gw.Bridges[dest.Account].Config.ShowJoinPart {
+		return
+	}
 	// broadcast to every out channel (irc QUIT)
 	if msg.Channel == "" && msg.Event != config.EVENT_JOIN_LEAVE {
 		log.Debug("empty channel")
