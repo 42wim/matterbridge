@@ -1,8 +1,17 @@
 # v0.11.0-dev
 ## New features
-* general: reusing the same account on multiple gateways now also reuses the connection. 
+* general: reusing the same account on multiple gateways now also reuses the connection.
   This is particuarly useful for irc. See #87
 * general: the Name is now REQUIRED and needs to be UNIQUE for each gateway configuration
+* telegram:  Support edited messages (telegram). See #141
+* mattermost: Add support for showing/hiding join/leave messages from mattermost. Closes #147
+* mattermost: Reconnect on session removal/timeout (mattermost)
+* irc:  Rejoin channel when kicked (irc).
+
+## Bugfix
+* mattermost: Remove space after nick (mattermost). Closes #142
+* mattermost: Modify iconurl correctly (mattermost).
+* irc: Fix join/leave regression (irc)
 
 # v0.10.3
 ## Bugfix
