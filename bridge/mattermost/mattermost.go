@@ -101,6 +101,7 @@ func (b *Bmattermost) Send(msg config.Message) error {
 	}
 	if !b.Config.UseAPI {
 		matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL}
+		matterMessage.IconURL = msg.Avatar
 		matterMessage.Channel = channel
 		matterMessage.UserName = nick
 		matterMessage.Type = ""

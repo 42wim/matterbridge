@@ -190,6 +190,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 		}
 		log.Debugf("Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, originchannel, dest.Account, channel.Name)
 		msg.Channel = channel.Name
+		gw.modifyAvatar(&msg, dest)
 		gw.modifyUsername(&msg, dest)
 		// for api we need originchannel as channel
 		if dest.Protocol == "api" {
@@ -227,6 +228,17 @@ func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) {
 	nick = strings.Replace(nick, "{BRIDGE}", br.Name, -1)
 	nick = strings.Replace(nick, "{PROTOCOL}", br.Protocol, -1)
 	msg.Username = nick
+}
+
+func (gw *Gateway) modifyAvatar(msg *config.Message, dest *bridge.Bridge) {
+	iconurl := gw.Config.General.IconURL
+	if iconurl == "" {
+		iconurl = dest.Config.IconURL
+	}
+	iconurl = strings.Replace(iconurl, "{NICK}", msg.Username, -1)
+	if msg.Avatar == "" {
+		msg.Avatar = iconurl
+	}
 }
 
 func getChannelID(msg config.Message) string {
