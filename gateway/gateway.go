@@ -103,6 +103,15 @@ func (gw *Gateway) handleReceive() {
 					}
 				}
 			}
+			if msg.Event == config.EVENT_REJOIN_CHANNELS {
+				for _, br := range gw.Bridges {
+					if msg.Account == br.Account {
+						br.Joined = make(map[string]bool)
+						br.JoinChannels()
+					}
+				}
+				continue
+			}
 			if !gw.ignoreMessage(&msg) {
 				msg.Timestamp = time.Now()
 				for _, br := range gw.Bridges {

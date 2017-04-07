@@ -167,14 +167,19 @@ func (b *Birc) handleNewConnection(event *irc.Event) {
 	i.AddCallback("JOIN", b.handleJoinPart)
 	i.AddCallback("PART", b.handleJoinPart)
 	i.AddCallback("QUIT", b.handleJoinPart)
+	i.AddCallback("KICK", b.handleJoinPart)
 	i.AddCallback("*", b.handleOther)
 	// we are now fully connected
 	b.connected <- struct{}{}
 }
 
 func (b *Birc) handleJoinPart(event *irc.Event) {
-	flog.Debugf("Sending JOIN_LEAVE event from %s to gateway", b.Account)
 	channel := event.Arguments[0]
+	if event.Code == "KICK" {
+		flog.Infof("Got kicked from %s by %s", channel, event.Nick)
+		b.Remote <- config.Message{Username: "system", Text: "rejoin", Channel: channel, Account: b.Account, Event: config.EVENT_REJOIN_CHANNELS}
+		return
+	}
 	if event.Code == "QUIT" {
 		if event.Nick == b.Nick && strings.Contains(event.Raw, "Ping timeout") {
 			flog.Infof("%s reconnecting ..", b.Account)
@@ -182,6 +187,7 @@ func (b *Birc) handleJoinPart(event *irc.Event) {
 			return
 		}
 	}
+	flog.Debugf("Sending JOIN_LEAVE event from %s to gateway", b.Account)
 	b.Remote <- config.Message{Username: "system", Text: event.Nick + " " + strings.ToLower(event.Code) + "s", Channel: channel, Account: b.Account, Event: config.EVENT_JOIN_LEAVE}
 	flog.Debugf("handle %#v", event)
 }

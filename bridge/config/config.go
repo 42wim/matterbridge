@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	EVENT_JOIN_LEAVE = "join_leave"
-	EVENT_FAILURE    = "failure"
+	EVENT_JOIN_LEAVE      = "join_leave"
+	EVENT_FAILURE         = "failure"
+	EVENT_REJOIN_CHANNELS = "rejoin_channels"
 )
 
 type Message struct {
