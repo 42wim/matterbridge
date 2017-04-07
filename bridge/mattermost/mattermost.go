@@ -72,6 +72,7 @@ func (b *Bmattermost) Connect() error {
 		flog.Info("Connection succeeded")
 		b.TeamId = b.mc.GetTeamId()
 		go b.mc.WsReceiver()
+		go b.mc.StatusLoop()
 	}
 	go b.handleMatter()
 	return nil

@@ -178,6 +178,7 @@ func (m *MMClient) Login() error {
 	}
 	b.Reset()
 
+	m.log.Debug("WsClient: connected")
 	m.WsSequence = 1
 	m.WsPingChan = make(chan *model.WebSocketResponse)
 	// only start to parse WS messages when login is completely done
@@ -630,6 +631,7 @@ func (m *MMClient) StatusLoop() {
 				m.Logout()
 				m.WsQuit = false
 				m.Login()
+				go m.WsReceiver()
 			}
 		}
 		time.Sleep(time.Second * 60)
