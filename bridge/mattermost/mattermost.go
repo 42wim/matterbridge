@@ -131,6 +131,14 @@ func (b *Bmattermost) handleMatter() {
 
 func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 	for message := range b.mc.MessageChan {
+		flog.Debugf("%#v", message.Raw.Data)
+		if message.Type == "system_join_leave" ||
+			message.Type == "system_join_channel" ||
+			message.Type == "system_leave_channel" {
+			flog.Debugf("Sending JOIN_LEAVE event from %s to gateway", b.Account)
+			b.Remote <- config.Message{Username: "system", Text: message.Text, Channel: message.Channel, Account: b.Account, Event: config.EVENT_JOIN_LEAVE}
+			continue
+		}
 		// do not post our own messages back to irc
 		// only listen to message from our team
 		if message.Raw.Event == "posted" && b.mc.User.Username != message.Username && message.Raw.Data["team_id"].(string) == b.TeamId {

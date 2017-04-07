@@ -34,6 +34,7 @@ type Message struct {
 	Channel  string
 	Username string
 	Text     string
+	Type     string
 }
 
 type Team struct {
@@ -266,6 +267,7 @@ func (m *MMClient) parseActionPost(rmsg *Message) {
 	}
 	rmsg.Username = m.GetUser(data.UserId).Username
 	rmsg.Channel = m.GetChannelName(data.ChannelId)
+	rmsg.Type = data.Type
 	rmsg.Team = m.GetTeamName(rmsg.Raw.Data["team_id"].(string))
 	// direct message
 	if rmsg.Raw.Data["channel_type"] == "D" {

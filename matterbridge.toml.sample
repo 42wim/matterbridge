@@ -64,7 +64,8 @@ IgnoreNicks="ircspammer1 ircspammer2"
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges (only from irc-bridge at the moment)
+#Enable to show users joins/parts from other bridges 
+#Only works hiding/show messages from irc and mattermost bridge for now
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -114,7 +115,8 @@ IgnoreNicks="ircspammer1 ircspammer2"
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges (only from irc-bridge at the moment)
+#Enable to show users joins/parts from other bridges 
+#Only works hiding/show messages from irc and mattermost bridge for now
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -157,7 +159,8 @@ IgnoreNicks="spammer1 spammer2"
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}/{BRIDGE}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges (only from irc-bridge at the moment)
+#Enable to show users joins/parts from other bridges 
+#Only works hiding/show messages from irc and mattermost bridge for now
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -250,7 +253,8 @@ IgnoreNicks="ircspammer1 ircspammer2"
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges (only from irc-bridge at the moment)
+#Enable to show users joins/parts from other bridges 
+#Only works hiding/show messages from irc and mattermost bridge for now
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -282,7 +286,8 @@ IgnoreNicks="ircspammer1 ircspammer2"
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges (only from irc-bridge at the moment)
+#Enable to show users joins/parts from other bridges 
+#Only works hiding/show messages from irc and mattermost bridge for now
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -362,7 +367,8 @@ IgnoreNicks="ircspammer1 ircspammer2"
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges (only from irc-bridge at the moment)
+#Enable to show users joins/parts from other bridges 
+#Only works hiding/show messages from irc and mattermost bridge for now
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -397,7 +403,8 @@ IgnoreNicks="ircspammer1 ircspammer2"
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges (only from irc-bridge at the moment)
+#Enable to show users joins/parts from other bridges 
+#Only works hiding/show messages from irc and mattermost bridge for now
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -432,7 +439,8 @@ IgnoreNicks="spammer1 spammer2"
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges (only from irc-bridge at the moment)
+#Enable to show users joins/parts from other bridges 
+#Only works hiding/show messages from irc and mattermost bridge for now
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -489,7 +497,8 @@ IgnoreNicks="ircspammer1 ircspammer2"
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges (only from irc-bridge at the moment)
+#Enable to show users joins/parts from other bridges 
+#Only works hiding/show messages from irc and mattermost bridge for now
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -532,7 +541,8 @@ IgnoreNicks="spammer1 spammer2"
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges (only from irc-bridge at the moment)
+#Enable to show users joins/parts from other bridges 
+#Only works hiding/show messages from irc and mattermost bridge for now
 #OPTIONAL (default false)
 ShowJoinPart=false
 
