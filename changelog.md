@@ -1,4 +1,4 @@
-# v0.11.0-dev
+# v0.11.0
 ## New features
 * general: reusing the same account on multiple gateways now also reuses the connection.
   This is particuarly useful for irc. See #87
