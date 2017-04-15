@@ -1,5 +1,6 @@
 # v0.12.0
 ## Changes
+* general: edited messages are now being sent by default on discord/mattermost/telegram/gitter/slack. See "New Features"
 * gitter: The default support for edited messages enables experimental FAYE support for gitter.
   If you need stable code add EditDisable=true to your gitter configuration.
 

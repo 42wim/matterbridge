@@ -364,6 +364,14 @@ NickFormatter="plain"
 #OPTIONAL (default 4)
 NicksPerRow=4
 
+#Disable sending of edits to other bridges
+#OPTIONAL (default false)
+EditDisable=true
+
+#Message to be appended to every edited message
+#OPTIONAL (default empty)
+EditSuffix=" (edited)"
+
 #Whether to prefix messages from other bridges to mattermost with RemoteNickFormat
 #Useful if username overrides for incoming webhooks isn't enabled on the 
 #slack server. If you set PrefixMessagesWithNick to true, each message 

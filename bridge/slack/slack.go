@@ -199,6 +199,11 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 			// ignore first message
 			if count > 0 {
 				flog.Debugf("Receiving from slackclient %#v", ev)
+				if !b.Config.EditDisable && ev.SubMessage != nil {
+					flog.Debugf("SubMessage %#v", ev.SubMessage)
+					ev.User = ev.SubMessage.User
+					ev.Text = ev.SubMessage.Text + b.Config.EditSuffix
+				}
 				// use our own func because rtm.GetChannelInfo doesn't work for private channels
 				channel, err := b.getChannelByID(ev.Channel)
 				if err != nil {
