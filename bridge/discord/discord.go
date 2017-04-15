@@ -52,6 +52,7 @@ func (b *bdiscord) Connect() error {
 	flog.Info("Connection succeeded")
 	b.c.AddHandler(b.messageCreate)
 	b.c.AddHandler(b.memberUpdate)
+	b.c.AddHandler(b.messageUpdate)
 	err = b.c.Open()
 	if err != nil {
 		flog.Debugf("%#v", err)
@@ -102,6 +103,18 @@ func (b *bdiscord) Send(msg config.Message) error {
 	}
 	b.c.ChannelMessageSend(channelID, msg.Username+msg.Text)
 	return nil
+}
+
+func (b *bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdate) {
+	if b.Config.EditDisable {
+		return
+	}
+	// only when message is actually edited
+	if m.Message.EditedTimestamp != "" {
+		flog.Debugf("Sending edit message")
+		m.Content = m.Content + b.Config.EditSuffix
+		b.messageCreate(s, (*discordgo.MessageCreate)(m))
+	}
 }
 
 func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
