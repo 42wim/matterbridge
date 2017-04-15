@@ -143,12 +143,16 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 		}
 		// do not post our own messages back to irc
 		// only listen to message from our team
-		if message.Raw.Event == "posted" && b.mc.User.Username != message.Username && message.Raw.Data["team_id"].(string) == b.TeamId {
+		if (message.Raw.Event == "posted" || message.Raw.Event == "post_edited") &&
+			b.mc.User.Username != message.Username && message.Raw.Data["team_id"].(string) == b.TeamId {
 			flog.Debugf("Receiving from matterclient %#v", message)
 			m := &MMMessage{}
 			m.Username = message.Username
 			m.Channel = message.Channel
 			m.Text = message.Text
+			if message.Raw.Event == "post_edited" && !b.Config.EditDisable {
+				m.Text = message.Text + b.Config.EditSuffix
+			}
 			if len(message.Post.FileIds) > 0 {
 				for _, link := range b.mc.GetPublicLinks(message.Post.FileIds) {
 					m.Text = m.Text + "\n" + link

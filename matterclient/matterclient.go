@@ -251,7 +251,7 @@ func (m *MMClient) WsReceiver() {
 
 func (m *MMClient) parseMessage(rmsg *Message) {
 	switch rmsg.Raw.Event {
-	case model.WEBSOCKET_EVENT_POSTED:
+	case model.WEBSOCKET_EVENT_POSTED, model.WEBSOCKET_EVENT_POST_EDITED:
 		m.parseActionPost(rmsg)
 		/*
 			case model.ACTION_USER_REMOVED:
@@ -280,7 +280,17 @@ func (m *MMClient) parseActionPost(rmsg *Message) {
 	rmsg.Username = m.GetUser(data.UserId).Username
 	rmsg.Channel = m.GetChannelName(data.ChannelId)
 	rmsg.Type = data.Type
-	rmsg.Team = m.GetTeamName(rmsg.Raw.Data["team_id"].(string))
+	teamid, _ := rmsg.Raw.Data["team_id"].(string)
+	// edit messsages have no team_id for some reason
+	if teamid == "" {
+		// we can find the team_id from the channelid
+		result, _ := m.Client.GetChannel(data.ChannelId, "")
+		teamid = result.Data.(*model.ChannelData).Channel.TeamId
+		rmsg.Raw.Data["team_id"] = teamid
+	}
+	if teamid != "" {
+		rmsg.Team = m.GetTeamName(teamid)
+	}
 	// direct message
 	if rmsg.Raw.Data["channel_type"] == "D" {
 		rmsg.Channel = m.GetUser(data.UserId).Username
