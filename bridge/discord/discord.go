@@ -4,6 +4,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
 	"github.com/bwmarrin/discordgo"
+	"regexp"
 	"strings"
 	"sync"
 )
@@ -125,6 +126,7 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	if len(m.MentionRoles) > 0 {
 		m.Message.Content = b.replaceRoleMentions(m.Message.Content)
 	}
+	m.Message.Content = b.stripCustomoji(m.Message.Content)
 	b.Remote <- config.Message{Username: username, Text: m.ContentWithMentionsReplaced(), Channel: channelName,
 		Account: b.Account, Avatar: "https://cdn.discordapp.com/avatars/" + m.Author.ID + "/" + m.Author.Avatar + ".jpg"}
 }
@@ -194,4 +196,10 @@ func (b *bdiscord) replaceRoleMentions(text string) string {
 		text = strings.Replace(text, "<@&"+role.ID+">", "@"+role.Name, -1)
 	}
 	return text
+}
+
+func (b *bdiscord) stripCustomoji(text string) string {
+	// <:doge:302803592035958784>
+	re := regexp.MustCompile("<(:.*?:)[0-9]+>")
+	return re.ReplaceAllString(text, `$1`)
 }
