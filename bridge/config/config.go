@@ -39,6 +39,8 @@ type ChannelInfo struct {
 type Protocol struct {
 	BindAddress            string // mattermost, slack
 	Buffer                 int    // api
+	EditSuffix             string // mattermost, slack, discord, telegram, gitter
+	EditDisable            bool   // mattermost, slack, discord, telegram, gitter
 	IconURL                string // mattermost, slack
 	IgnoreNicks            string // all protocols
 	Jid                    string // xmpp
