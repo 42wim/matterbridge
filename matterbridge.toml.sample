@@ -435,6 +435,14 @@ Token="Yourtokenhere"
 #See https://core.telegram.org/bots/api#html-style
 MessageFormat=""
 
+#Disable sending of edits to other bridges
+#OPTIONAL (default false)
+EditDisable=false
+
+#Message to be appended to every edited message
+#OPTIONAL (default empty)
+EditSuffix=" (edited)"
+
 #Nicks you want to ignore. 
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL

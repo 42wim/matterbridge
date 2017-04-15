@@ -85,15 +85,17 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		if update.ChannelPost != nil {
 			message = update.ChannelPost
 		}
-		if update.EditedChannelPost != nil {
+		if update.EditedChannelPost != nil && !b.Config.EditDisable {
 			message = update.EditedChannelPost
+			message.Text = message.Text + b.Config.EditSuffix
 		}
 		// handle groups
 		if update.Message != nil {
 			message = update.Message
 		}
-		if update.EditedMessage != nil {
+		if update.EditedMessage != nil && !b.Config.EditDisable {
 			message = update.EditedMessage
+			message.Text = message.Text + b.Config.EditSuffix
 		}
 		if message.From != nil {
 			username = message.From.FirstName
