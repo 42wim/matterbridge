@@ -79,7 +79,9 @@ func (b *Bslack) JoinChannel(channel string) error {
 		}
 		_, err := b.sc.JoinChannel(channel)
 		if err != nil {
-			return err
+			if err.Error() != "name_taken" {
+				return err
+			}
 		}
 	}
 	return nil
