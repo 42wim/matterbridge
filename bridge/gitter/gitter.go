@@ -2,12 +2,10 @@ package bgitter
 
 import (
 	"fmt"
-	"strings"
-	"time"
-
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
 	"github.com/sromku/go-gitter"
+	"strings"
 )
 
 type Bgitter struct {
@@ -73,46 +71,25 @@ func (b *Bgitter) JoinChannel(channel string) error {
 	}
 	users, _ := b.c.GetUsersInRoom(roomID)
 	b.Users = append(b.Users, users...)
-
-	// we need to use (experimental) faye for edits.
-	// streaming API doesn't show edits.
-	if !b.Config.EditDisable {
-		faye := b.c.Faye(roomID)
-		go faye.Listen()
-		go func(stream *gitter.Faye, room string) {
-			for event := range stream.Event {
-				b.handleEvent(event, room)
-			}
-		}(faye, room.Name)
-		return nil
-	}
 	stream := b.c.Stream(roomID)
 	go b.c.Listen(stream)
 
 	go func(stream *gitter.Stream, room string) {
 		for event := range stream.Event {
-			b.handleEvent(event, room)
+			switch ev := event.Data.(type) {
+			case *gitter.MessageReceived:
+				// check for ZWSP to see if it's not an echo
+				if !strings.HasSuffix(ev.Message.Text, "​") {
+					flog.Debugf("Sending message from %s on %s to gateway", ev.Message.From.Username, b.Account)
+					b.Remote <- config.Message{Username: ev.Message.From.Username, Text: ev.Message.Text, Channel: room,
+						Account: b.Account, Avatar: b.getAvatar(ev.Message.From.Username)}
+				}
+			case *gitter.GitterConnectionClosed:
+				flog.Errorf("connection with gitter closed for room %s", room)
+			}
 		}
 	}(stream, room.Name)
 	return nil
-}
-
-func (b *Bgitter) handleEvent(event gitter.Event, room string) {
-	flog.Debugf("event: %#v %#v", event.Data, event.Data.(*gitter.MessageReceived).Message.EditedAt.Sub(time.Now()).String())
-	switch ev := event.Data.(type) {
-	case *gitter.MessageReceived:
-		// check for ZWSP to see if it's not an echo
-		if !strings.HasSuffix(ev.Message.Text, "​") {
-			if !ev.Message.EditedAt.IsZero() && !b.Config.EditDisable {
-				ev.Message.Text = ev.Message.Text + b.Config.EditSuffix
-			}
-			flog.Debugf("Sending message from %s on %s to gateway", ev.Message.From.Username, b.Account)
-			b.Remote <- config.Message{Username: ev.Message.From.Username, Text: ev.Message.Text, Channel: room,
-				Account: b.Account, Avatar: b.getAvatar(ev.Message.From.Username)}
-		}
-	case *gitter.GitterConnectionClosed:
-		flog.Errorf("connection with gitter closed for room %s", room)
-	}
 }
 
 func (b *Bgitter) Send(msg config.Message) error {

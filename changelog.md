@@ -1,18 +1,11 @@
 # v0.12.0
 ## Changes
-* general: edited messages are now being sent by default on discord/mattermost/telegram/gitter/slack. See "New Features"
-* gitter: The default support for edited messages enables experimental FAYE support for gitter.
-  If you need stable code add EditDisable=true to your gitter configuration.
+* general: edited messages are now being sent by default on discord/mattermost/telegram/slack. See "New Features"
 
 ## New features
 * general: add support for edited messages. 
   Add new keyword EditDisable (false/true), default false. Which means by default edited messages will be sent to other bridges.
-  Add new keyword EditSuffix , default "". You can change this eg to " (edited)", this will be appended to every edit message.
-
-* discord: Add support for edited messages. See EditDisable/EditSuffix
-* mattermost: Add support for edited messages. See EditDisable/EditSuffix
-* telegram: Add support for edited messages. See EditDisable/EditSuffix
-* gitter: Add support for edited messages. See EditDisable/EditSuffix
+  Add new keyword EditSuffix , default "". You can change this eg to "(edited)", this will be appended to every edit message.
 
 ## Enhancements
 * discord: Strip custom emoji metadata (discord). Closes #148

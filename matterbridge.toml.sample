@@ -282,15 +282,6 @@ ShowJoinPart=false
 #REQUIRED
 Token="Yourtokenhere"
 
-#Disable sending of edits to other bridges
-#WARNING: the default uses FAYE which is experimental. If you need stability set EditDisable=true
-#OPTIONAL (default false)
-EditDisable=true
-
-#Message to be appended to every edited message
-#OPTIONAL (default empty)
-EditSuffix=" (edited)"
-
 #Nicks you want to ignore. 
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
