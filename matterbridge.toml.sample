@@ -200,9 +200,9 @@ IconURL="http://youricon.png"
 #OPTIONAL
 useAPI=false
 
-#The mattermost hostname. 
+#The mattermost hostname. (do not prefix it with http or https)
 #REQUIRED (when useAPI=true)
-Server="yourmattermostserver.domain"
+Server="yourmattermostserver.domain" 
 
 #Your team on mattermost. 
 #REQUIRED (when useAPI=true)
