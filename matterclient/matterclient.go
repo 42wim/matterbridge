@@ -108,13 +108,24 @@ func (m *MMClient) Login() error {
 	m.Client = model.NewClient(uriScheme + m.Credentials.Server)
 	m.Client.HttpClient.Transport = &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: m.SkipTLSVerify}}
 	m.Client.HttpClient.Timeout = time.Second * 10
-	// bogus call to get the serverversion
-	m.Client.GetClientProperties()
-	if firstConnection && !supportedVersion(m.Client.ServerVersion) {
-		return fmt.Errorf("unsupported mattermost version: %s", m.Client.ServerVersion)
+
+	for {
+		d := b.Duration()
+		// bogus call to get the serverversion
+		m.Client.GetClientProperties()
+		if firstConnection && !supportedVersion(m.Client.ServerVersion) {
+			return fmt.Errorf("unsupported mattermost version: %s", m.Client.ServerVersion)
+		}
+		m.ServerVersion = m.Client.ServerVersion
+		if m.ServerVersion == "" {
+			m.log.Debugf("Server not up yet, reconnecting in %s", d)
+			time.Sleep(d)
+		} else {
+			m.log.Infof("Found version %s", m.ServerVersion)
+			break
+		}
 	}
-	m.ServerVersion = m.Client.ServerVersion
-	m.log.Infof("Found version %s", m.ServerVersion)
+	b.Reset()
 
 	var myinfo *model.Result
 	var appErr *model.AppError
