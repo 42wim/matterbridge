@@ -109,7 +109,6 @@ func (b *Birc) Send(msg config.Message) error {
 	}
 	if strings.HasPrefix(msg.Text, "!") {
 		b.Command(&msg)
-		return nil
 	}
 	for _, text := range strings.Split(msg.Text, "\n") {
 		if len(b.Local) < b.Config.MessageQueue {
