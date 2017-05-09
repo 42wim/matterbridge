@@ -6,9 +6,14 @@
 * general: add support for edited messages. 
   Add new keyword EditDisable (false/true), default false. Which means by default edited messages will be sent to other bridges.
   Add new keyword EditSuffix , default "". You can change this eg to "(edited)", this will be appended to every edit message.
-
-## Enhancements
+* mattermost: support mattermost v3.9.x
+* general: Add support for HTTP{S}_PROXY env variables (#162)
 * discord: Strip custom emoji metadata (discord). Closes #148
+
+## Bugfix
+* slack: Ignore error on private channel join (slack) Fixes #150 
+* mattermost: fix crash on reconnects when server is down. Closes #163
+* irc: Relay messages starting with ! (irc). Closes #164
 
 # v0.11.0
 ## New features
@@ -18,6 +23,7 @@
 * telegram:  Support edited messages (telegram). See #141
 * mattermost: Add support for showing/hiding join/leave messages from mattermost. Closes #147
 * mattermost: Reconnect on session removal/timeout (mattermost)
+* mattermost: Support mattermost v3.8.x
 * irc:  Rejoin channel when kicked (irc).
 
 ## Bugfix
