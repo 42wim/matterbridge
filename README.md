@@ -28,7 +28,7 @@ Simple bridge between Mattermost, IRC, XMPP, Gitter, Slack, Discord, Telegram, R
 
 # Requirements
 Accounts to one of the supported bridges
-* [Mattermost](https://github.com/mattermost/platform/) 3.5.x - 3.8.x
+* [Mattermost](https://github.com/mattermost/platform/) 3.5.x - 3.9.x
 * [IRC](http://www.mirc.com/servers.html)
 * [XMPP](https://jabber.org)
 * [Gitter](https://gitter.im)
@@ -42,7 +42,7 @@ Accounts to one of the supported bridges
 # Installing
 ## Binaries
 Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/)
-* Latest stable release [v0.11.0](https://github.com/42wim/matterbridge/releases/latest)
+* Latest stable release [v0.12.0](https://github.com/42wim/matterbridge/releases/latest)
 
 ## Building
 Go 1.6+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH] (https://golang.org/doc/code.html#GOPATH)
