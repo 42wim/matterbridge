@@ -119,7 +119,7 @@ func (b *Bxmpp) handleXmpp() error {
 			var channel, nick string
 			if v.Type == "groupchat" {
 				s := strings.Split(v.Remote, "@")
-				if len(s) == 2 {
+				if len(s) >= 2 {
 					channel = s[0]
 				}
 				s = strings.Split(s[1], "/")
