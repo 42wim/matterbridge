@@ -1,10 +1,12 @@
 package bmatrix
 
 import (
+	"regexp"
+	"sync"
+
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
 	matrix "github.com/matrix-org/gomatrix"
-	"sync"
 )
 
 type Bmatrix struct {
@@ -101,8 +103,13 @@ func (b *Bmatrix) handlematrix() error {
 				flog.Debugf("Unknown room %s", ev.RoomID)
 				return
 			}
+			username := ev.Sender[1:]
+			if b.Config.NoHomeServerSuffix {
+				re := regexp.MustCompile("(.*?):.*")
+				username = re.ReplaceAllString(username, `$1`)
+			}
 			flog.Debugf("Sending message from %s on %s to gateway", ev.Sender, b.Account)
-			b.Remote <- config.Message{Username: ev.Sender, Text: ev.Content["body"].(string), Channel: channel, Account: b.Account}
+			b.Remote <- config.Message{Username: username, Text: ev.Content["body"].(string), Channel: channel, Account: b.Account}
 		}
 		flog.Debugf("Received: %#v", ev)
 	})
