@@ -554,6 +554,11 @@ Server="https://matrix.org"
 Login="yourlogin"
 Password="yourpass"
 
+#Whether to send the homeserver suffix. eg ":matrix.org" in @username:matrix.org
+#to other bridges, or only send "username".(true only sends username)
+#OPTIONAL (default false)
+NoHomeServerSuffix=false
+
 #Whether to prefix messages from other bridges to matrix with the sender's nick. 
 #Useful if username overrides for incoming webhooks isn't enabled on the 
 #matrix server. If you set PrefixMessagesWithNick to true, each message 
