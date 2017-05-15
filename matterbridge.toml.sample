@@ -451,6 +451,12 @@ Token="Yourtokenhere"
 #See https://core.telegram.org/bots/api#html-style
 MessageFormat=""
 
+#If enabled use the "First Name" as username. If this is empty use the Username
+#If disabled use the "Username" as username. If this is empty use the First Name 
+#If all names are empty, username will be "unknown"
+#OPTIONAL (default false)
+UseFirstName=false
+
 #Disable sending of edits to other bridges
 #OPTIONAL (default false)
 EditDisable=false

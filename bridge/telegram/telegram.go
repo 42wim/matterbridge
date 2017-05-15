@@ -98,9 +98,14 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 			message.Text = message.Text + b.Config.EditSuffix
 		}
 		if message.From != nil {
-			username = message.From.FirstName
+			if b.Config.UseFirstName {
+				username = message.From.FirstName
+			}
 			if username == "" {
 				username = message.From.UserName
+				if username == "" {
+					username = message.From.FirstName
+				}
 			}
 			text = message.Text
 			channel = strconv.FormatInt(message.Chat.ID, 10)

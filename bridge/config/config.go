@@ -70,6 +70,7 @@ type Protocol struct {
 	UseAPI                 bool   // mattermost, slack
 	UseSASL                bool   // IRC
 	UseTLS                 bool   // IRC
+	UseFirstName           bool   // telegram
 }
 
 type ChannelOptions struct {
