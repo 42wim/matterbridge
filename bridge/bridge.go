@@ -100,7 +100,7 @@ func (b *Bridge) joinChannels(channels map[string]config.ChannelInfo, exists map
 				log.Debugf("using key %s for channel %s", channel.Options.Key, channel.Name)
 				mychannel = mychannel + " " + channel.Options.Key
 			}
-			err := b.JoinChannel(channel.Name)
+			err := b.JoinChannel(mychannel)
 			if err != nil {
 				return err
 			}
