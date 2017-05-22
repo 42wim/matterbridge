@@ -158,12 +158,14 @@ func (b *bdiscord) getNick(user *discordgo.User) string {
 	b.Lock()
 	defer b.Unlock()
 	if _, ok := b.userMemberMap[user.ID]; ok {
-		if b.userMemberMap[user.ID].Nick != "" {
-			// only return if nick is set
-			return b.userMemberMap[user.ID].Nick
+		if b.userMemberMap[user.ID] != nil {
+			if b.userMemberMap[user.ID].Nick != "" {
+				// only return if nick is set
+				return b.userMemberMap[user.ID].Nick
+			}
+			// otherwise return username
+			return user.Username
 		}
-		// otherwise return username
-		return user.Username
 	}
 	// if we didn't find nick, search for it
 	b.userMemberMap[user.ID], err = b.c.GuildMember(b.guildID, user.ID)
