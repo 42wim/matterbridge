@@ -75,6 +75,7 @@ func (b *Bxmpp) createXMPP() (*xmpp.Client, error) {
 		TLSConfig: tc,
 
 		//StartTLS:      false,
+		SkipTLSVerify:	true,
 		Debug:                        true,
 		Session:                      true,
 		Status:                       "",
