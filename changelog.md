@@ -1,3 +1,14 @@
+# v0.12.1
+## New features
+* telegram: Add UseFirstName option (telegram). Closes #144
+* matrix: Add NoHomeServerSuffix. Option to disable homeserver on username (matrix). Closes #160.
+
+## Bugfix
+* xmpp: Add Compatibility for Cisco Jabber (xmpp) (#166)
+* irc: Fix JoinChannel argument to use IRC channel key (#172)
+* discord: Fix possible crash on nil (discord)
+* discord: Replace long ids in channel metions (discord). Fixes #174
+
 # v0.12.0
 ## Changes
 * general: edited messages are now being sent by default on discord/mattermost/telegram/slack. See "New Features"
