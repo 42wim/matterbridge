@@ -192,9 +192,10 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 		return
 	}
 	originchannel := msg.Channel
+	origmsg := msg
 	for _, channel := range gw.DestChannelFunc(&msg, *dest) {
 		// do not send to ourself
-		if channel.ID == getChannelID(msg) {
+		if channel.ID == getChannelID(origmsg) {
 			continue
 		}
 		log.Debugf("Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, originchannel, dest.Account, channel.Name)

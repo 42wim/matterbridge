@@ -89,9 +89,6 @@ func (b *Bslack) JoinChannel(channel string) error {
 
 func (b *Bslack) Send(msg config.Message) error {
 	flog.Debugf("Receiving %#v", msg)
-	if msg.Account == b.Account {
-		return nil
-	}
 	nick := msg.Username
 	message := msg.Text
 	channel := msg.Channel
