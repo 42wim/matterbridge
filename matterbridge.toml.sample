@@ -66,6 +66,7 @@ IgnoreNicks="ircspammer1 ircspammer2"
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
+#The string "{NOPINGNICK}" (case sensitive) will be replaced by the actual nick / username, but with a ZWSP inside the nick, so the irc user with the same nick won't get pinged. See https://github.com/42wim/matterbridge/issues/175 for more information
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
