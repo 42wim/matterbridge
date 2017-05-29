@@ -59,6 +59,7 @@ type Protocol struct {
 	Protocol               string //all protocols
 	MessageQueue           int    // IRC, size of message queue for flood control
 	MessageDelay           int    // IRC, time in millisecond to wait between messages
+	MessageLength          int    // IRC, max length of a message allowed
 	MessageFormat          string // telegram
 	RemoteNickFormat       string // all protocols
 	Server                 string // IRC,mattermost,XMPP,discord

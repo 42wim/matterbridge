@@ -46,6 +46,9 @@ func New(cfg config.Protocol, account string, c chan config.Message) *Birc {
 	if b.Config.MessageQueue == 0 {
 		b.Config.MessageQueue = 30
 	}
+	if b.Config.MessageLength == 0 {
+		b.Config.MessageLength = 400
+	}
 	return b
 }
 
@@ -111,6 +114,9 @@ func (b *Birc) Send(msg config.Message) error {
 		b.Command(&msg)
 	}
 	for _, text := range strings.Split(msg.Text, "\n") {
+		if len(text) > b.Config.MessageLength {
+			text = text[:b.Config.MessageLength] + " <message clipped>"
+		}
 		if len(b.Local) < b.Config.MessageQueue {
 			if len(b.Local) == b.Config.MessageQueue-1 {
 				text = text + " <message clipped>"

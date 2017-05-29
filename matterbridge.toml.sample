@@ -48,9 +48,14 @@ MessageDelay=1300
 
 #Maximum amount of messages to hold in queue. If queue is full 
 #messages will be dropped. 
-#<clipped> will be add to the message that fills the queue.
+#<message clipped> will be add to the message that fills the queue.
 #OPTIONAL (default 30)
 MessageQueue=30
+
+#Maximum length of message sent to irc server. If it exceeds
+#<message clipped> will be add to the message.
+#OPTIONAL (default 400)
+MessageLength=400
 
 #Nicks you want to ignore. 
 #Messages from those users will not be sent to other bridges.
