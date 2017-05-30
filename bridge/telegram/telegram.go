@@ -76,11 +76,11 @@ func (b *Btelegram) Send(msg config.Message) error {
 }
 
 func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
-	username := ""
-	text := ""
-	channel := ""
 	for update := range updates {
 		var message *tgbotapi.Message
+		username := ""
+		channel := ""
+		text := ""
 		// handle channels
 		if update.ChannelPost != nil {
 			message = update.ChannelPost
