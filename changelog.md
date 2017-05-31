@@ -1,3 +1,16 @@
+# v0.13.0
+## New features
+* irc: Limit message length. ```MessageLength=400```
+  Maximum length of message sent to irc server. If it exceeds <message clipped> will be add to the message.
+* irc: Add NOPINGNICK option. 
+  The string "{NOPINGNICK}" (case sensitive) will be replaced by the actual nick / username, but with a ZWSP inside the nick, so the irc user with the same nick won't get pinged.   
+  See https://github.com/42wim/matterbridge/issues/175 for more information
+
+## Bugfix
+* slack: Fix sending to different channels on same account (slack). Closes #177
+* telegram: Fix incorrect usernames being sent. Closes #181
+
+
 # v0.12.1
 ## New features
 * telegram: Add UseFirstName option (telegram). Closes #144
