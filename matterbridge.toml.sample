@@ -662,7 +662,7 @@ enable=true
     #channel to connect on that account
     #How to specify them for the different bridges:
     #
-    #irc        - #channel (# is required)
+    #irc        - #channel (# is required) (this needs to be lowercase!)
     #mattermost - channel (the channel name as seen in the URL, not the displayname)
     #gitter     - username/room 
     #xmpp       - channel
