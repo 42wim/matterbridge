@@ -226,9 +226,9 @@ func (b *bdiscord) replaceChannelMentions(text string) string {
 				return "#unknownchannel"
 			}
 			channel = b.getChannelName(m[2 : len(m)-1])
-			return channel
+			return "#" + channel
 		}
-		return channel
+		return "#" + channel
 	})
 	return text
 }
