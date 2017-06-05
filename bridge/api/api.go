@@ -83,9 +83,7 @@ func (b *Api) handlePostMessage(c echo.Context) error {
 func (b *Api) handleMessages(c echo.Context) error {
 	b.Lock()
 	defer b.Unlock()
-	for _, msg := range b.Messages.Values() {
-		c.JSONPretty(http.StatusOK, msg, " ")
-	}
+	c.JSONPretty(http.StatusOK, b.Messages.Values(), " ")
 	b.Messages = ring.Ring{}
 	return nil
 }
