@@ -200,6 +200,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 		}
 		log.Debugf("Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, originchannel, dest.Account, channel.Name)
 		msg.Channel = channel.Name
+		msg.Gateway = gw.Name
 		gw.modifyAvatar(&msg, dest)
 		gw.modifyUsername(&msg, dest)
 		// for api we need originchannel as channel

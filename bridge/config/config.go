@@ -23,6 +23,7 @@ type Message struct {
 	Account   string
 	Event     string
 	Protocol  string
+	Gateway   string
 	Timestamp time.Time
 }
 
