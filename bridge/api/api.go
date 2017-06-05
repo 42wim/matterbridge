@@ -4,6 +4,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"github.com/zfjagann/golang-ring"
 	"net/http"
 	"sync"
@@ -38,6 +39,11 @@ func New(cfg config.Protocol, account string, c chan config.Message) *Api {
 	b.Config = &cfg
 	b.Account = account
 	b.Remote = c
+	if b.Config.Token != "" {
+		e.Use(middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
+			return key == b.Config.Token, nil
+		}))
+	}
 	e.GET("/api/messages", b.handleMessages)
 	e.POST("/api/message", b.handlePostMessage)
 	go func() {

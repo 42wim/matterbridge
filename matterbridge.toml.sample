@@ -612,12 +612,19 @@ BindAddress="127.0.0.1:4242"
 #Amount of messages to keep in memory
 Buffer=1000
 
+#Bearer token used for authentication
+#curl -H "Authorization: Bearer token" http://localhost:4242/api/messages
+#OPTIONAL (no authorization if token is empty)
+Token="mytoken"
+
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL (default empty)
 RemoteNickFormat="{NICK}"
+
+
 
 ###################################################################
 #General configuration

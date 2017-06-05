@@ -67,7 +67,7 @@ type Protocol struct {
 	ShowJoinPart           bool   // all protocols
 	SkipTLSVerify          bool   // IRC, mattermost
 	Team                   string // mattermost
-	Token                  string // gitter, slack, discord
+	Token                  string // gitter, slack, discord, api
 	URL                    string // mattermost, slack, matrix
 	UseAPI                 bool   // mattermost, slack
 	UseSASL                bool   // IRC
