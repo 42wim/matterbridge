@@ -16,15 +16,15 @@ const (
 )
 
 type Message struct {
-	Text      string
-	Channel   string
-	Username  string
-	Avatar    string
-	Account   string
-	Event     string
-	Protocol  string
-	Gateway   string
-	Timestamp time.Time
+	Text      string    `json:"text"`
+	Channel   string    `json:"channel"`
+	Username  string    `json:"username"`
+	Avatar    string    `json:"avatar"`
+	Account   string    `json:"account"`
+	Event     string    `json:"event"`
+	Protocol  string    `json:"protocol"`
+	Gateway   string    `json:"gateway"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 type ChannelInfo struct {
