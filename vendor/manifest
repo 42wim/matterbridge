@@ -53,7 +53,7 @@
 			"importpath": "github.com/dgrijalva/jwt-go",
 			"repository": "https://github.com/dgrijalva/jwt-go",
 			"vcs": "git",
-			"revision": "2268707a8f0843315e2004ee4f1d021dc08baedf",
+			"revision": "6c8dedd55f8a2e41f605de6d5d66e51ed1f299fc",
 			"branch": "master",
 			"notests": true
 		},
@@ -170,7 +170,7 @@
 			"importpath": "github.com/labstack/echo",
 			"repository": "https://github.com/labstack/echo",
 			"vcs": "git",
-			"revision": "0b53f397ad7709a27d37500a67735c0a639b5c38",
+			"revision": "c3887ebb131d996411cf13a9688ab02c8dba599e",
 			"branch": "master",
 			"notests": true
 		},
@@ -178,7 +178,7 @@
 			"importpath": "github.com/labstack/gommon/bytes",
 			"repository": "https://github.com/labstack/gommon",
 			"vcs": "git",
-			"revision": "f72d3c883f8ea180da8f085dd320804c41332ad1",
+			"revision": "1121fd3e243c202482226a7afe4dcd07ffc4139a",
 			"branch": "master",
 			"path": "/bytes",
 			"notests": true
@@ -187,7 +187,7 @@
 			"importpath": "github.com/labstack/gommon/color",
 			"repository": "https://github.com/labstack/gommon",
 			"vcs": "git",
-			"revision": "f72d3c883f8ea180da8f085dd320804c41332ad1",
+			"revision": "1121fd3e243c202482226a7afe4dcd07ffc4139a",
 			"branch": "master",
 			"path": "/color",
 			"notests": true
@@ -196,7 +196,7 @@
 			"importpath": "github.com/labstack/gommon/log",
 			"repository": "https://github.com/labstack/gommon",
 			"vcs": "git",
-			"revision": "f72d3c883f8ea180da8f085dd320804c41332ad1",
+			"revision": "1121fd3e243c202482226a7afe4dcd07ffc4139a",
 			"branch": "master",
 			"path": "/log",
 			"notests": true
@@ -205,7 +205,7 @@
 			"importpath": "github.com/labstack/gommon/random",
 			"repository": "https://github.com/labstack/gommon",
 			"vcs": "git",
-			"revision": "f72d3c883f8ea180da8f085dd320804c41332ad1",
+			"revision": "1121fd3e243c202482226a7afe4dcd07ffc4139a",
 			"branch": "master",
 			"path": "/random",
 			"notests": true
@@ -424,7 +424,7 @@
 			"importpath": "github.com/valyala/fasttemplate",
 			"repository": "https://github.com/valyala/fasttemplate",
 			"vcs": "git",
-			"revision": "d090d65668a286d9a180d43a19dfdc5dcad8fe88",
+			"revision": "dcecefd839c4193db0d35b88ec65b4c12d360ab0",
 			"branch": "master",
 			"notests": true
 		},

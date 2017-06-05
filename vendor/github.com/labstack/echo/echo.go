@@ -42,10 +42,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	slog "log"
+	stdLog "log"
 	"net"
 	"net/http"
 	"path"
+	"path/filepath"
 	"reflect"
 	"runtime"
 	"sync"
@@ -59,7 +60,7 @@ import (
 type (
 	// Echo is the top-level framework instance.
 	Echo struct {
-		stdLogger        *slog.Logger
+		stdLogger        *stdLog.Logger
 		colorer          *color.Color
 		premiddleware    []MiddlewareFunc
 		middleware       []MiddlewareFunc
@@ -73,20 +74,21 @@ type (
 		TLSListener      net.Listener
 		DisableHTTP2     bool
 		Debug            bool
+		HideBanner       bool
 		HTTPErrorHandler HTTPErrorHandler
 		Binder           Binder
 		Validator        Validator
 		Renderer         Renderer
 		AutoTLSManager   autocert.Manager
-		Mutex            sync.RWMutex
-		Logger           Logger
+		// Mutex            sync.RWMutex
+		Logger Logger
 	}
 
 	// Route contains a handler and information for matching against requests.
 	Route struct {
-		Method  string
-		Path    string
-		Handler string
+		Method  string `json:"method"`
+		Path    string `json:"path"`
+		Handler string `json:"handler"`
 	}
 
 	// HTTPError represents an error that occurred while handling a request.
@@ -144,6 +146,8 @@ const (
 	MIMEApplicationJavaScriptCharsetUTF8 = MIMEApplicationJavaScript + "; " + charsetUTF8
 	MIMEApplicationXML                   = "application/xml"
 	MIMEApplicationXMLCharsetUTF8        = MIMEApplicationXML + "; " + charsetUTF8
+	MIMETextXML                          = "text/xml"
+	MIMETextXMLCharsetUTF8               = MIMETextXML + "; " + charsetUTF8
 	MIMEApplicationForm                  = "application/x-www-form-urlencoded"
 	MIMEApplicationProtobuf              = "application/protobuf"
 	MIMEApplicationMsgpack               = "application/msgpack"
@@ -161,27 +165,34 @@ const (
 
 // Headers
 const (
-	HeaderAcceptEncoding                = "Accept-Encoding"
-	HeaderAllow                         = "Allow"
-	HeaderAuthorization                 = "Authorization"
-	HeaderContentDisposition            = "Content-Disposition"
-	HeaderContentEncoding               = "Content-Encoding"
-	HeaderContentLength                 = "Content-Length"
-	HeaderContentType                   = "Content-Type"
-	HeaderCookie                        = "Cookie"
-	HeaderSetCookie                     = "Set-Cookie"
-	HeaderIfModifiedSince               = "If-Modified-Since"
-	HeaderLastModified                  = "Last-Modified"
-	HeaderLocation                      = "Location"
-	HeaderUpgrade                       = "Upgrade"
-	HeaderVary                          = "Vary"
-	HeaderWWWAuthenticate               = "WWW-Authenticate"
-	HeaderXForwardedProto               = "X-Forwarded-Proto"
-	HeaderXHTTPMethodOverride           = "X-HTTP-Method-Override"
-	HeaderXForwardedFor                 = "X-Forwarded-For"
-	HeaderXRealIP                       = "X-Real-IP"
-	HeaderServer                        = "Server"
-	HeaderOrigin                        = "Origin"
+	HeaderAccept              = "Accept"
+	HeaderAcceptEncoding      = "Accept-Encoding"
+	HeaderAllow               = "Allow"
+	HeaderAuthorization       = "Authorization"
+	HeaderContentDisposition  = "Content-Disposition"
+	HeaderContentEncoding     = "Content-Encoding"
+	HeaderContentLength       = "Content-Length"
+	HeaderContentType         = "Content-Type"
+	HeaderCookie              = "Cookie"
+	HeaderSetCookie           = "Set-Cookie"
+	HeaderIfModifiedSince     = "If-Modified-Since"
+	HeaderLastModified        = "Last-Modified"
+	HeaderLocation            = "Location"
+	HeaderUpgrade             = "Upgrade"
+	HeaderVary                = "Vary"
+	HeaderWWWAuthenticate     = "WWW-Authenticate"
+	HeaderXForwardedFor       = "X-Forwarded-For"
+	HeaderXForwardedProto     = "X-Forwarded-Proto"
+	HeaderXForwardedProtocol  = "X-Forwarded-Protocol"
+	HeaderXForwardedSsl       = "X-Forwarded-Ssl"
+	HeaderXUrlScheme          = "X-Url-Scheme"
+	HeaderXHTTPMethodOverride = "X-HTTP-Method-Override"
+	HeaderXRealIP             = "X-Real-IP"
+	HeaderXRequestID          = "X-Request-ID"
+	HeaderServer              = "Server"
+	HeaderOrigin              = "Origin"
+
+	// Access control
 	HeaderAccessControlRequestMethod    = "Access-Control-Request-Method"
 	HeaderAccessControlRequestHeaders   = "Access-Control-Request-Headers"
 	HeaderAccessControlAllowOrigin      = "Access-Control-Allow-Origin"
@@ -198,6 +209,22 @@ const (
 	HeaderXFrameOptions           = "X-Frame-Options"
 	HeaderContentSecurityPolicy   = "Content-Security-Policy"
 	HeaderXCSRFToken              = "X-CSRF-Token"
+)
+
+const (
+	version = "3.1.0"
+	website = "https://echo.labstack.com"
+	// http://patorjk.com/software/taag/#p=display&f=Small%20Slant&t=Echo
+	banner = `
+   ____    __
+  / __/___/ /  ___
+ / _// __/ _ \/ _ \
+/___/\__/_//_/\___/ %s
+High performance, minimalist Go web framework
+%s
+____________________________________O/_______
+                                    O\
+`
 )
 
 var (
@@ -219,6 +246,7 @@ var (
 	ErrUnsupportedMediaType        = NewHTTPError(http.StatusUnsupportedMediaType)
 	ErrNotFound                    = NewHTTPError(http.StatusNotFound)
 	ErrUnauthorized                = NewHTTPError(http.StatusUnauthorized)
+	ErrForbidden                   = NewHTTPError(http.StatusForbidden)
 	ErrMethodNotAllowed            = NewHTTPError(http.StatusMethodNotAllowed)
 	ErrStatusRequestEntityTooLarge = NewHTTPError(http.StatusRequestEntityTooLarge)
 	ErrValidatorNotRegistered      = errors.New("Validator not registered")
@@ -255,7 +283,7 @@ func New() (e *Echo) {
 	e.HTTPErrorHandler = e.DefaultHTTPErrorHandler
 	e.Binder = &DefaultBinder{}
 	e.Logger.SetLevel(log.OFF)
-	e.stdLogger = slog.New(e.Logger.Output(), e.Logger.Prefix()+": ", 0)
+	e.stdLogger = stdLog.New(e.Logger.Output(), e.Logger.Prefix()+": ", 0)
 	e.pool.New = func() interface{} {
 		return e.NewContext(nil, nil)
 	}
@@ -398,12 +426,16 @@ func (e *Echo) Match(methods []string, path string, handler HandlerFunc, middlew
 // Static registers a new route with path prefix to serve static files from the
 // provided root directory.
 func (e *Echo) Static(prefix, root string) {
+	if root == "" {
+		root = "." // For security we want to restrict to CWD.
+	}
 	static(e, prefix, root)
 }
 
 func static(i i, prefix, root string) {
 	h := func(c Context) error {
-		return c.File(path.Join(root, c.Param("*")))
+		name := filepath.Join(root, path.Clean("/"+c.Param("*"))) // "/"+ for security
+		return c.File(name)
 	}
 	i.GET(prefix, h)
 	if prefix == "/" {
@@ -430,7 +462,7 @@ func (e *Echo) add(method, path string, handler HandlerFunc, middleware ...Middl
 		}
 		return h(c)
 	})
-	r := Route{
+	r := &Route{
 		Method:  method,
 		Path:    path,
 		Handler: name,
@@ -476,8 +508,8 @@ func (e *Echo) URL(h HandlerFunc, params ...interface{}) string {
 }
 
 // Routes returns the registered routes.
-func (e *Echo) Routes() []Route {
-	routes := []Route{}
+func (e *Echo) Routes() []*Route {
+	routes := []*Route{}
 	for _, v := range e.router.routes {
 		routes = append(routes, v)
 	}
@@ -499,8 +531,8 @@ func (e *Echo) ReleaseContext(c Context) {
 // ServeHTTP implements `http.Handler` interface, which serves HTTP requests.
 func (e *Echo) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Acquire lock
-	e.Mutex.RLock()
-	defer e.Mutex.RUnlock()
+	// e.Mutex.RLock()
+	// defer e.Mutex.RUnlock()
 
 	// Acquire context
 	c := e.pool.Get().(*context)
@@ -510,7 +542,10 @@ func (e *Echo) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Middleware
 	h := func(c Context) error {
 		method := r.Method
-		path := r.URL.EscapedPath()
+		path := r.URL.RawPath
+		if path == "" {
+			path = r.URL.Path
+		}
 		e.router.Find(method, path, c)
 		h := c.Handler()
 		for i := len(e.middleware) - 1; i >= 0; i-- {
@@ -572,8 +607,15 @@ func (e *Echo) startTLS(address string) error {
 func (e *Echo) StartServer(s *http.Server) (err error) {
 	// Setup
 	e.colorer.SetOutput(e.Logger.Output())
-	s.Handler = e
 	s.ErrorLog = e.stdLogger
+	s.Handler = e
+	if e.Debug {
+		e.Logger.SetLevel(log.DEBUG)
+	}
+
+	if !e.HideBanner {
+		e.colorer.Printf(banner, e.colorer.Red("v"+version), e.colorer.Blue(website))
+	}
 
 	if s.TLSConfig == nil {
 		if e.Listener == nil {
@@ -582,7 +624,9 @@ func (e *Echo) StartServer(s *http.Server) (err error) {
 				return err
 			}
 		}
-		e.colorer.Printf("⇛ http server started on %s\n", e.colorer.Green(e.Listener.Addr()))
+		if !e.HideBanner {
+			e.colorer.Printf("⇨ http server started on %s\n", e.colorer.Green(e.Listener.Addr()))
+		}
 		return s.Serve(e.Listener)
 	}
 	if e.TLSListener == nil {
@@ -592,7 +636,9 @@ func (e *Echo) StartServer(s *http.Server) (err error) {
 		}
 		e.TLSListener = tls.NewListener(l, s.TLSConfig)
 	}
-	e.colorer.Printf("⇛ https server started on %s\n", e.colorer.Green(e.TLSListener.Addr()))
+	if !e.HideBanner {
+		e.colorer.Printf("⇨ https server started on %s\n", e.colorer.Green(e.TLSListener.Addr()))
+	}
 	return s.Serve(e.TLSListener)
 }
 

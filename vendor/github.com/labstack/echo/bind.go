@@ -30,16 +30,16 @@ type (
 // Bind implements the `Binder#Bind` function.
 func (b *DefaultBinder) Bind(i interface{}, c Context) (err error) {
 	req := c.Request()
-	if req.Method == GET {
-		if err = b.bindData(i, c.QueryParams(), "query"); err != nil {
-			return NewHTTPError(http.StatusBadRequest, err.Error())
-		}
-		return
-	}
-	ctype := req.Header.Get(HeaderContentType)
 	if req.ContentLength == 0 {
+		if req.Method == GET || req.Method == DELETE {
+			if err = b.bindData(i, c.QueryParams(), "query"); err != nil {
+				return NewHTTPError(http.StatusBadRequest, err.Error())
+			}
+			return
+		}
 		return NewHTTPError(http.StatusBadRequest, "Request body can't be empty")
 	}
+	ctype := req.Header.Get(HeaderContentType)
 	switch {
 	case strings.HasPrefix(ctype, MIMEApplicationJSON):
 		if err = json.NewDecoder(req.Body).Decode(i); err != nil {
@@ -51,7 +51,7 @@ func (b *DefaultBinder) Bind(i interface{}, c Context) (err error) {
 				return NewHTTPError(http.StatusBadRequest, err.Error())
 			}
 		}
-	case strings.HasPrefix(ctype, MIMEApplicationXML):
+	case strings.HasPrefix(ctype, MIMEApplicationXML), strings.HasPrefix(ctype, MIMETextXML):
 		if err = xml.NewDecoder(req.Body).Decode(i); err != nil {
 			if ute, ok := err.(*xml.UnsupportedTypeError); ok {
 				return NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unsupported type error: type=%v, error=%v", ute.Type, ute.Error()))
@@ -142,6 +142,8 @@ func setWithProperType(valueKind reflect.Kind, val string, structField reflect.V
 	}
 
 	switch valueKind {
+	case reflect.Ptr:
+		return setWithProperType(structField.Elem().Kind(), val, structField.Elem())
 	case reflect.Int:
 		return setIntField(val, 0, structField)
 	case reflect.Int8:
