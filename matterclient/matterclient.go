@@ -288,7 +288,7 @@ func (m *MMClient) parseActionPost(rmsg *Message) {
 	if m.GetUser(data.UserId) == nil {
 		m.UpdateUsers()
 	}
-	rmsg.Username = m.GetUser(data.UserId).Username
+	rmsg.Username = m.GetUserName(data.UserId)
 	rmsg.Channel = m.GetChannelName(data.ChannelId)
 	rmsg.Type = data.Type
 	teamid, _ := rmsg.Raw.Data["team_id"].(string)
@@ -619,6 +619,14 @@ func (m *MMClient) GetUser(userId string) *model.User {
 	m.RLock()
 	defer m.RUnlock()
 	return m.Users[userId]
+}
+
+func (m *MMClient) GetUserName(userId string) string {
+	user := m.GetUser(userId)
+	if user != nil {
+		return user.Username
+	}
+	return ""
 }
 
 func (m *MMClient) GetStatus(userId string) string {
