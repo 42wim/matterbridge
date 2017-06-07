@@ -718,7 +718,9 @@ enable=true
     #account="api.local"
     #channel="api"
     #To send data to the api:
-    #curl -XPOST -H 'Content-Type: application/json'  -d '{"text":"test","username":"randomuser"}' http://localhost:4242/api/message
+    #curl -XPOST -H 'Content-Type: application/json'  -d '{"text":"test","username":"randomuser","gateway":"gateway1"}' http://localhost:4242/api/message
+    #To read from the api:
+    #curl http://localhost:4242/api/messages
 
 #If you want to do a 1:1 mapping between protocols where the channelnames are the same
 #e.g. slack and mattermost you can use the samechannelgateway configuration
