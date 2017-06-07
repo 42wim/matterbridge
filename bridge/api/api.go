@@ -22,6 +22,7 @@ type ApiMessage struct {
 	Text     string `json:"text"`
 	Username string `json:"username"`
 	Avatar   string `json:"avatar"`
+	Gateway  string `json:"gateway"`
 }
 
 var flog *log.Entry
@@ -76,12 +77,15 @@ func (b *Api) handlePostMessage(c echo.Context) error {
 	if err := c.Bind(message); err != nil {
 		return err
 	}
+	flog.Debugf("Sending message from %s on %s to gateway", message.Username, "api")
 	b.Remote <- config.Message{
 		Text:     message.Text,
 		Username: message.Username,
 		Channel:  "api",
 		Avatar:   message.Avatar,
 		Account:  b.Account,
+		Gateway:  message.Gateway,
+		Protocol: "api",
 	}
 	return c.JSON(http.StatusOK, message)
 }

@@ -174,7 +174,7 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 		if _, ok := gw.Channels[getChannelID(*msg)]; !ok {
 			continue
 		}
-		if channel.Direction == "out" && channel.Account == dest.Account && gw.validGatewayDest(*msg, channel) {
+		if channel.Direction == "out" && channel.Account == dest.Account && gw.validGatewayDest(msg, channel) {
 			channels = append(channels, *channel)
 		}
 	}
@@ -200,7 +200,6 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 		}
 		log.Debugf("Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, originchannel, dest.Account, channel.Name)
 		msg.Channel = channel.Name
-		msg.Gateway = gw.Name
 		gw.modifyAvatar(&msg, dest)
 		gw.modifyUsername(&msg, dest)
 		// for api we need originchannel as channel
@@ -235,7 +234,9 @@ func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) {
 	if nick == "" {
 		nick = dest.Config.RemoteNickFormat
 	}
-	nick = strings.Replace(nick, "{NOPINGNICK}", msg.Username[:1]+"​"+msg.Username[1:], -1)
+	if len(msg.Username) > 0 {
+		nick = strings.Replace(nick, "{NOPINGNICK}", msg.Username[:1]+"​"+msg.Username[1:], -1)
+	}
 	nick = strings.Replace(nick, "{NICK}", msg.Username, -1)
 	nick = strings.Replace(nick, "{BRIDGE}", br.Name, -1)
 	nick = strings.Replace(nick, "{PROTOCOL}", br.Protocol, -1)
@@ -257,13 +258,21 @@ func getChannelID(msg config.Message) string {
 	return msg.Channel + msg.Account
 }
 
-func (gw *Gateway) validGatewayDest(msg config.Message, channel *config.ChannelInfo) bool {
-	GIDmap := gw.Channels[getChannelID(msg)].GID
+func (gw *Gateway) validGatewayDest(msg *config.Message, channel *config.ChannelInfo) bool {
+	GIDmap := gw.Channels[getChannelID(*msg)].GID
+
+	// gateway is specified in message (probably from api)
+	if msg.Gateway != "" {
+		return channel.GID[msg.Gateway]
+	}
+
 	// check if we are running a samechannelgateway.
 	// if it is and the channel name matches it's ok, otherwise we shouldn't use this channel.
 	for k, _ := range GIDmap {
 		if channel.SameChannel[k] == true {
 			if msg.Channel == channel.Name {
+				// add the gateway to our message
+				msg.Gateway = k
 				return true
 			} else {
 				return false
@@ -273,6 +282,8 @@ func (gw *Gateway) validGatewayDest(msg config.Message, channel *config.ChannelI
 	// check if we are in the correct gateway
 	for k, _ := range GIDmap {
 		if channel.GID[k] == true {
+			// add the gateway to our message
+			msg.Gateway = k
 			return true
 		}
 	}
