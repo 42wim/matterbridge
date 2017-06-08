@@ -1,4 +1,5 @@
 #This is configuration for matterbridge.
+#WARNING: as this file contains credentials, be sure to set correct file permissions
 ###################################################################
 #IRC section
 ###################################################################
