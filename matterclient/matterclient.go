@@ -295,8 +295,7 @@ func (m *MMClient) parseActionPost(rmsg *Message) {
 	// edit messsages have no team_id for some reason
 	if teamid == "" {
 		// we can find the team_id from the channelid
-		result, _ := m.Client.GetChannel(data.ChannelId, "")
-		teamid = result.Data.(*model.ChannelData).Channel.TeamId
+		teamid = m.GetChannelTeamId(data.ChannelId)
 		rmsg.Raw.Data["team_id"] = teamid
 	}
 	if teamid != "" {
@@ -368,6 +367,19 @@ func (m *MMClient) GetChannelId(name string, teamId string) string {
 				if channel.Name == name {
 					return channel.Id
 				}
+			}
+		}
+	}
+	return ""
+}
+
+func (m *MMClient) GetChannelTeamId(id string) string {
+	m.RLock()
+	defer m.RUnlock()
+	for _, t := range append(m.OtherTeams, m.Team) {
+		for _, channel := range append(*t.Channels, *t.MoreChannels...) {
+			if channel.Id == id {
+				return channel.TeamId
 			}
 		}
 	}
