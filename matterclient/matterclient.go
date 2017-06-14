@@ -327,7 +327,7 @@ func (m *MMClient) UpdateChannels() error {
 		return errors.New(err.DetailedError)
 	}
 	var mmchannels2 *model.Result
-	if m.mmVersion() >= 3.8 {
+	if m.mmVersion() >= 3.08 {
 		mmchannels2, err = m.Client.GetMoreChannelsPage(0, 5000)
 	} else {
 		mmchannels2, err = m.Client.GetMoreChannels("")
@@ -479,7 +479,7 @@ func (m *MMClient) UpdateChannelHeader(channelId string, header string) {
 
 func (m *MMClient) UpdateLastViewed(channelId string) {
 	m.log.Debugf("posting lastview %#v", channelId)
-	if m.mmVersion() >= 3.8 {
+	if m.mmVersion() >= 3.08 {
 		view := model.ChannelView{ChannelId: channelId}
 		res, _ := m.Client.ViewChannel(view)
 		if res == false {
@@ -728,9 +728,11 @@ func (m *MMClient) initUser() error {
 			return errors.New(err.DetailedError)
 		}
 		t.Channels = mmchannels.Data.(*model.ChannelList)
-		if m.mmVersion() >= 3.8 {
+		if m.mmVersion() >= 3.08 {
+			m.log.Debug("hier")
 			mmchannels, err = m.Client.GetMoreChannelsPage(0, 5000)
 		} else {
+			m.log.Debug("nee hier", m.mmVersion())
 			mmchannels, err = m.Client.GetMoreChannels("")
 		}
 		if err != nil {
@@ -762,7 +764,10 @@ func (m *MMClient) sendWSRequest(action string, data map[string]interface{}) err
 }
 
 func (m *MMClient) mmVersion() float64 {
-	v, _ := strconv.ParseFloat(m.ServerVersion[0:3], 64)
+	v, _ := strconv.ParseFloat(string(m.ServerVersion[0:2])+"0"+string(m.ServerVersion[2]), 64)
+	if string(m.ServerVersion[4]) == "." {
+		v, _ = strconv.ParseFloat(m.ServerVersion[0:4], 64)
+	}
 	return v
 }
 
@@ -771,7 +776,8 @@ func supportedVersion(version string) bool {
 		strings.HasPrefix(version, "3.6.0") ||
 		strings.HasPrefix(version, "3.7.0") ||
 		strings.HasPrefix(version, "3.8.0") ||
-		strings.HasPrefix(version, "3.9.0") {
+		strings.HasPrefix(version, "3.9.0") ||
+		strings.HasPrefix(version, "3.10.0") {
 		return true
 	}
 	return false
