@@ -729,10 +729,8 @@ func (m *MMClient) initUser() error {
 		}
 		t.Channels = mmchannels.Data.(*model.ChannelList)
 		if m.mmVersion() >= 3.08 {
-			m.log.Debug("hier")
 			mmchannels, err = m.Client.GetMoreChannelsPage(0, 5000)
 		} else {
-			m.log.Debug("nee hier", m.mmVersion())
 			mmchannels, err = m.Client.GetMoreChannels("")
 		}
 		if err != nil {
