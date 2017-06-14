@@ -34,7 +34,6 @@ func main() {
 		fmt.Printf("version: %s %s\n", version, githash)
 		return
 	}
-	flag.Parse()
 	if *flagDebug {
 		log.Info("Enabling debug")
 		log.SetLevel(log.DebugLevel)
