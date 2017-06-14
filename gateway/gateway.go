@@ -139,6 +139,9 @@ RECONNECT:
 
 func (gw *Gateway) mapChannels() error {
 	for _, br := range append(gw.MyConfig.Out, gw.MyConfig.InOut...) {
+		if isApi(br.Account) {
+			br.Channel = "api"
+		}
 		ID := br.Channel + br.Account
 		_, ok := gw.Channels[ID]
 		if !ok {
@@ -153,6 +156,9 @@ func (gw *Gateway) mapChannels() error {
 	}
 
 	for _, br := range append(gw.MyConfig.In, gw.MyConfig.InOut...) {
+		if isApi(br.Account) {
+			br.Channel = "api"
+		}
 		ID := br.Channel + br.Account
 		_, ok := gw.Channels[ID]
 		if !ok {
@@ -295,6 +301,13 @@ func (gw *Gateway) validGatewayDest(msg *config.Message, channel *config.Channel
 			msg.Gateway = k
 			return true
 		}
+	}
+	return false
+}
+
+func isApi(account string) bool {
+	if strings.HasPrefix(account, "api.") {
+		return true
 	}
 	return false
 }
