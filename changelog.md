@@ -1,3 +1,21 @@
+# v0.14.0
+## New features
+* api: add token authentication
+* mattermost: add support for mattermost 3.10.0
+
+## Changes
+* api: gateway name is added in JSON messages
+* api: lowercase JSON keys
+* api: channel name isn't needed in config #195
+
+## Bugfix
+* discord: Add hashtag to channelname (when translating from id) (discord)
+* mattermost: Fix a panic. #186
+* mattermost: use teamid cache if possible. Fixes a panic
+* api: post valid json. #185
+* api: allow reuse of api in different gateways. #189
+* general: Fix utf-8 issues for {NOPINGNICK}. #193
+
 # v0.13.0
 ## New features
 * irc: Limit message length. ```MessageLength=400```
