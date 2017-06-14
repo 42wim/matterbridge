@@ -235,7 +235,16 @@ func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) {
 		nick = dest.Config.RemoteNickFormat
 	}
 	if len(msg.Username) > 0 {
-		nick = strings.Replace(nick, "{NOPINGNICK}", msg.Username[:1]+"​"+msg.Username[1:], -1)
+		// fix utf-8 issue #193
+		i := 0
+		for index := range msg.Username {
+			if i == 1 {
+				i = index
+				break
+			}
+			i++
+		}
+		nick = strings.Replace(nick, "{NOPINGNICK}", msg.Username[:i]+"​"+msg.Username[i:], -1)
 	}
 	nick = strings.Replace(nick, "{NICK}", msg.Username, -1)
 	nick = strings.Replace(nick, "{BRIDGE}", br.Name, -1)
