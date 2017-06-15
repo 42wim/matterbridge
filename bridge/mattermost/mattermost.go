@@ -141,6 +141,9 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 			b.Remote <- config.Message{Username: "system", Text: message.Text, Channel: message.Channel, Account: b.Account, Event: config.EVENT_JOIN_LEAVE}
 			continue
 		}
+		if (message.Raw.Event == "post_edited") && b.Config.EditDisable {
+			continue
+		}
 		// do not post our own messages back to irc
 		// only listen to message from our team
 		if (message.Raw.Event == "posted" || message.Raw.Event == "post_edited") &&
