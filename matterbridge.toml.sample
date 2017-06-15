@@ -681,7 +681,7 @@ enable=true
     #telegram   - chatid (a large negative number, eg -123456789)
     #             see (https://www.linkedin.com/pulse/telegram-bots-beginners-marco-frau)
     #hipchat    - id_channel (see https://www.hipchat.com/account/xmpp for the correct channel)
-    #rocketchat - #channel (# is required)
+    #rocketchat - #channel (# is required (also needed for private channels!)
     #matrix     - #channel:server (eg #yourchannel:matrix.org) 
     #           - encrypted rooms are not supported in matrix
     #REQUIRED
