@@ -15,14 +15,15 @@ import (
 )
 
 type Birc struct {
-	i         *irc.Connection
-	Nick      string
-	names     map[string][]string
-	Config    *config.Protocol
-	Remote    chan config.Message
-	connected chan struct{}
-	Local     chan config.Message // local queue for flood control
-	Account   string
+	i               *irc.Connection
+	Nick            string
+	names           map[string][]string
+	Config          *config.Protocol
+	Remote          chan config.Message
+	connected       chan struct{}
+	Local           chan config.Message // local queue for flood control
+	Account         string
+	FirstConnection bool
 }
 
 var flog *log.Entry
@@ -49,6 +50,7 @@ func New(cfg config.Protocol, account string, c chan config.Message) *Birc {
 	if b.Config.MessageLength == 0 {
 		b.Config.MessageLength = 400
 	}
+	b.FirstConnection = true
 	return b
 }
 
@@ -74,6 +76,8 @@ func (b *Birc) Connect() error {
 	i.SASLLogin = b.Config.NickServNick
 	i.SASLPassword = b.Config.NickServPassword
 	i.TLSConfig = &tls.Config{InsecureSkipVerify: b.Config.SkipTLSVerify}
+	i.KeepAlive = time.Minute
+	i.PingFreq = time.Minute
 	if b.Config.Password != "" {
 		i.Password = b.Config.Password
 	}
@@ -90,6 +94,14 @@ func (b *Birc) Connect() error {
 		return fmt.Errorf("connection timed out")
 	}
 	i.Debug = false
+	// clear on reconnects
+	i.ClearCallback(ircm.RPL_WELCOME)
+	i.AddCallback(ircm.RPL_WELCOME, func(event *irc.Event) {
+		b.Remote <- config.Message{Username: "system", Text: "rejoin", Channel: "", Account: b.Account, Event: config.EVENT_REJOIN_CHANNELS}
+		// set our correct nick on reconnect if necessary
+		b.Nick = event.Nick
+	})
+	go i.Loop()
 	go b.doSend()
 	return nil
 }
@@ -217,6 +229,11 @@ func (b *Birc) handleOther(event *irc.Event) {
 }
 
 func (b *Birc) handlePrivMsg(event *irc.Event) {
+	b.Nick = b.i.GetNick()
+	// freenode doesn't send 001 as first reply
+	if event.Code == "NOTICE" {
+		return
+	}
 	// don't forward queries to the bot
 	if event.Arguments[0] == b.Nick {
 		return
