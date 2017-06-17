@@ -192,8 +192,11 @@ func (b *Birc) handleJoinPart(event *irc.Event) {
 			return
 		}
 	}
-	flog.Debugf("Sending JOIN_LEAVE event from %s to gateway", b.Account)
-	b.Remote <- config.Message{Username: "system", Text: event.Nick + " " + strings.ToLower(event.Code) + "s", Channel: channel, Account: b.Account, Event: config.EVENT_JOIN_LEAVE}
+	if event.Nick != b.Nick {
+		flog.Debugf("Sending JOIN_LEAVE event from %s to gateway", b.Account)
+		b.Remote <- config.Message{Username: "system", Text: event.Nick + " " + strings.ToLower(event.Code) + "s", Channel: channel, Account: b.Account, Event: config.EVENT_JOIN_LEAVE}
+		return
+	}
 	flog.Debugf("handle %#v", event)
 }
 
