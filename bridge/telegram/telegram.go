@@ -114,9 +114,31 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		if username == "" {
 			username = "unknown"
 		}
+		if message.Sticker != nil {
+			text = text + " " + b.getFileDirectURL(message.Sticker.FileID)
+		}
+		if message.Video != nil {
+			text = text + " " + b.getFileDirectURL(message.Video.FileID)
+		}
+		if message.Photo != nil {
+			for _, p := range *message.Photo {
+				text = text + " " + b.getFileDirectURL(p.FileID)
+			}
+		}
+		if message.Document != nil {
+			text = text + " " + message.Document.FileName + " : " + b.getFileDirectURL(message.Document.FileID)
+		}
 		if text != "" {
 			flog.Debugf("Sending message from %s on %s to gateway", username, b.Account)
 			b.Remote <- config.Message{Username: username, Text: text, Channel: channel, Account: b.Account}
 		}
 	}
+}
+
+func (b *Btelegram) getFileDirectURL(id string) string {
+	res, err := b.c.GetFileDirectURL(id)
+	if err != nil {
+		return ""
+	}
+	return res
 }
