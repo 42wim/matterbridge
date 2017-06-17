@@ -63,6 +63,12 @@ MessageLength=400
 #OPTIONAL
 IgnoreNicks="ircspammer1 ircspammer2"
 
+#Messages you want to ignore. 
+#Messages matching these regexp will be ignored and not sent to other bridges
+#See https://regex-golang.appspot.com/assets/html/index.html for more regex info
+#OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
+IgnoreMessages="^~~ badword"
+
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
@@ -115,6 +121,12 @@ SkipTLSVerify=true
 #OPTIONAL
 IgnoreNicks="ircspammer1 ircspammer2"
 
+#Messages you want to ignore. 
+#Messages matching these regexp will be ignored and not sent to other bridges
+#See https://regex-golang.appspot.com/assets/html/index.html for more regex info
+#OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
+IgnoreMessages="^~~ badword"
+
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
@@ -158,6 +170,12 @@ Nick="yourlogin"
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
 IgnoreNicks="spammer1 spammer2"
+
+#Messages you want to ignore. 
+#Messages matching these regexp will be ignored and not sent to other bridges
+#See https://regex-golang.appspot.com/assets/html/index.html for more regex info
+#OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
+IgnoreMessages="^~~ badword"
 
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
@@ -261,6 +279,12 @@ EditSuffix=" (edited)"
 #OPTIONAL
 IgnoreNicks="ircspammer1 ircspammer2"
 
+#Messages you want to ignore. 
+#Messages matching these regexp will be ignored and not sent to other bridges
+#See https://regex-golang.appspot.com/assets/html/index.html for more regex info
+#OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
+IgnoreMessages="^~~ badword"
+
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
@@ -293,6 +317,12 @@ Token="Yourtokenhere"
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
 IgnoreNicks="ircspammer1 ircspammer2"
+
+#Messages you want to ignore. 
+#Messages matching these regexp will be ignored and not sent to other bridges
+#See https://regex-golang.appspot.com/assets/html/index.html for more regex info
+#OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
+IgnoreMessages="^~~ badword"
 
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
@@ -383,6 +413,12 @@ PrefixMessagesWithNick=false
 #OPTIONAL
 IgnoreNicks="ircspammer1 ircspammer2"
 
+#Messages you want to ignore. 
+#Messages matching these regexp will be ignored and not sent to other bridges
+#See https://regex-golang.appspot.com/assets/html/index.html for more regex info
+#OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
+IgnoreMessages="^~~ badword"
+
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
@@ -426,6 +462,12 @@ EditSuffix=" (edited)"
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
 IgnoreNicks="ircspammer1 ircspammer2"
+
+#Messages you want to ignore. 
+#Messages matching these regexp will be ignored and not sent to other bridges
+#See https://regex-golang.appspot.com/assets/html/index.html for more regex info
+#OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
+IgnoreMessages="^~~ badword"
 
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
@@ -476,6 +518,12 @@ EditSuffix=" (edited)"
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
 IgnoreNicks="spammer1 spammer2"
+
+#Messages you want to ignore. 
+#Messages matching these regexp will be ignored and not sent to other bridges
+#See https://regex-golang.appspot.com/assets/html/index.html for more regex info
+#OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
+IgnoreMessages="^~~ badword"
 
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
@@ -535,6 +583,12 @@ PrefixMessagesWithNick=false
 #OPTIONAL
 IgnoreNicks="ircspammer1 ircspammer2"
 
+#Messages you want to ignore. 
+#Messages matching these regexp will be ignored and not sent to other bridges
+#See https://regex-golang.appspot.com/assets/html/index.html for more regex info
+#OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
+IgnoreMessages="^~~ badword"
+
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
@@ -583,6 +637,12 @@ PrefixMessagesWithNick=false
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
 IgnoreNicks="spammer1 spammer2"
+
+#Messages you want to ignore. 
+#Messages matching these regexp will be ignored and not sent to other bridges
+#See https://regex-golang.appspot.com/assets/html/index.html for more regex info
+#OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
+IgnoreMessages="^~~ badword"
 
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.

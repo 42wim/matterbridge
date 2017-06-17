@@ -44,6 +44,7 @@ type Protocol struct {
 	EditDisable            bool   // mattermost, slack, discord, telegram, gitter
 	IconURL                string // mattermost, slack
 	IgnoreNicks            string // all protocols
+	IgnoreMessages         string // all protocols
 	Jid                    string // xmpp
 	Login                  string // mattermost, matrix
 	Muc                    string // xmpp

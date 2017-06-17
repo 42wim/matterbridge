@@ -5,6 +5,7 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -197,6 +198,9 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 		log.Debug("empty channel")
 		return
 	}
+	// hide message from bridge
+	//if msg.Text HideMessagesPrefix
+
 	originchannel := msg.Channel
 	origmsg := msg
 	for _, channel := range gw.DestChannelFunc(&msg, *dest) {
@@ -228,6 +232,20 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 		if msg.Username == entry {
 			log.Debugf("ignoring %s from %s", msg.Username, msg.Account)
 			return true
+		}
+	}
+	// TODO do not compile regexps everytime
+	for _, entry := range strings.Fields(gw.Bridges[msg.Account].Config.IgnoreMessages) {
+		if entry != "" {
+			re, err := regexp.Compile(entry)
+			if err != nil {
+				log.Errorf("incorrect regexp %s for %s", entry, msg.Account)
+				continue
+			}
+			if re.MatchString(msg.Text) {
+				log.Debugf("matching %s. ignoring %s from %s", entry, msg.Text, msg.Account)
+				return true
+			}
 		}
 	}
 	return false
