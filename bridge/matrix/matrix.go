@@ -109,7 +109,7 @@ func (b *Bmatrix) handlematrix() error {
 				username = re.ReplaceAllString(username, `$1`)
 			}
 			flog.Debugf("Sending message from %s on %s to gateway", ev.Sender, b.Account)
-			b.Remote <- config.Message{Username: username, Text: ev.Content["body"].(string), Channel: channel, Account: b.Account}
+			b.Remote <- config.Message{Username: username, Text: ev.Content["body"].(string), Channel: channel, Account: b.Account, UserID: ev.Sender}
 		}
 		flog.Debugf("Received: %#v", ev)
 	})

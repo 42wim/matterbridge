@@ -37,6 +37,7 @@ type Message struct {
 	Username string
 	Text     string
 	Type     string
+	UserID   string
 }
 
 type Team struct {
@@ -290,6 +291,7 @@ func (m *MMClient) parseActionPost(rmsg *Message) {
 	}
 	rmsg.Username = m.GetUserName(data.UserId)
 	rmsg.Channel = m.GetChannelName(data.ChannelId)
+	rmsg.UserID = data.UserId
 	rmsg.Type = data.Type
 	teamid, _ := rmsg.Raw.Data["team_id"].(string)
 	// edit messsages have no team_id for some reason

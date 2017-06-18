@@ -132,7 +132,7 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		}
 		if text != "" {
 			flog.Debugf("Sending message from %s on %s to gateway", username, b.Account)
-			b.Remote <- config.Message{Username: username, Text: text, Channel: channel, Account: b.Account}
+			b.Remote <- config.Message{Username: username, Text: text, Channel: channel, Account: b.Account, UserID: strconv.Itoa(message.From.ID)}
 		}
 	}
 }

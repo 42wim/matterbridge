@@ -19,6 +19,7 @@ type Message struct {
 	Text      string    `json:"text"`
 	Channel   string    `json:"channel"`
 	Username  string    `json:"username"`
+	UserID    string    `json:"userid"` // userid on the bridge
 	Avatar    string    `json:"avatar"`
 	Account   string    `json:"account"`
 	Event     string    `json:"event"`

@@ -198,9 +198,6 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 		log.Debug("empty channel")
 		return
 	}
-	// hide message from bridge
-	//if msg.Text HideMessagesPrefix
-
 	originchannel := msg.Channel
 	origmsg := msg
 	for _, channel := range gw.DestChannelFunc(&msg, *dest) {

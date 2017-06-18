@@ -82,7 +82,7 @@ func (b *Bgitter) JoinChannel(channel string) error {
 				if !strings.HasSuffix(ev.Message.Text, "​") {
 					flog.Debugf("Sending message from %s on %s to gateway", ev.Message.From.Username, b.Account)
 					b.Remote <- config.Message{Username: ev.Message.From.Username, Text: ev.Message.Text, Channel: room,
-						Account: b.Account, Avatar: b.getAvatar(ev.Message.From.Username)}
+						Account: b.Account, Avatar: b.getAvatar(ev.Message.From.Username), UserID: ev.Message.From.ID}
 				}
 			case *gitter.GitterConnectionClosed:
 				flog.Errorf("connection with gitter closed for room %s", room)

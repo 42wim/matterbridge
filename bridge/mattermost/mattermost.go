@@ -21,6 +21,7 @@ type MMMessage struct {
 	Text     string
 	Channel  string
 	Username string
+	UserID   string
 }
 
 type Bmattermost struct {
@@ -127,7 +128,7 @@ func (b *Bmattermost) handleMatter() {
 	}
 	for message := range mchan {
 		flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)
-		b.Remote <- config.Message{Text: message.Text, Username: message.Username, Channel: message.Channel, Account: b.Account}
+		b.Remote <- config.Message{Text: message.Text, Username: message.Username, Channel: message.Channel, Account: b.Account, UserID: message.UserID}
 	}
 }
 
@@ -150,6 +151,7 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 			b.mc.User.Username != message.Username && message.Raw.Data["team_id"].(string) == b.TeamId {
 			flog.Debugf("Receiving from matterclient %#v", message)
 			m := &MMMessage{}
+			m.UserID = message.UserID
 			m.Username = message.Username
 			m.Channel = message.Channel
 			m.Text = message.Text
@@ -171,6 +173,7 @@ func (b *Bmattermost) handleMatterHook(mchan chan *MMMessage) {
 		message := b.mh.Receive()
 		flog.Debugf("Receiving from matterhook %#v", message)
 		m := &MMMessage{}
+		m.UserID = message.UserID
 		m.Username = message.UserName
 		m.Text = message.Text
 		m.Channel = message.ChannelName

@@ -82,6 +82,6 @@ func (b *Brocketchat) handleRocketHook() {
 			continue
 		}
 		flog.Debugf("Sending message from %s on %s to gateway", message.UserName, b.Account)
-		b.Remote <- config.Message{Text: message.Text, Username: message.UserName, Channel: message.ChannelName, Account: b.Account}
+		b.Remote <- config.Message{Text: message.Text, Username: message.UserName, Channel: message.ChannelName, Account: b.Account, UserID: message.UserID}
 	}
 }

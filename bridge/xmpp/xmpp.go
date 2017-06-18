@@ -128,7 +128,7 @@ func (b *Bxmpp) handleXmpp() error {
 				}
 				if nick != b.Config.Nick && v.Stamp == nodelay && v.Text != "" {
 					flog.Debugf("Sending message from %s on %s to gateway", nick, b.Account)
-					b.Remote <- config.Message{Username: nick, Text: v.Text, Channel: channel, Account: b.Account}
+					b.Remote <- config.Message{Username: nick, Text: v.Text, Channel: channel, Account: b.Account, UserID: v.Remote}
 				}
 			}
 		case xmpp.Presence:

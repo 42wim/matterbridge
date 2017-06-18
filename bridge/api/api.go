@@ -21,6 +21,7 @@ type Api struct {
 type ApiMessage struct {
 	Text     string `json:"text"`
 	Username string `json:"username"`
+	UserID   string `json:"userid"`
 	Avatar   string `json:"avatar"`
 	Gateway  string `json:"gateway"`
 }
@@ -81,6 +82,7 @@ func (b *Api) handlePostMessage(c echo.Context) error {
 	b.Remote <- config.Message{
 		Text:     message.Text,
 		Username: message.Username,
+		UserID:   message.UserID,
 		Channel:  "api",
 		Avatar:   message.Avatar,
 		Account:  b.Account,

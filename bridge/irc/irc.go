@@ -252,7 +252,7 @@ func (b *Birc) handlePrivMsg(event *irc.Event) {
 	re := regexp.MustCompile(`[[:cntrl:]](\d+,|)\d+`)
 	msg = re.ReplaceAllString(msg, "")
 	flog.Debugf("Sending message from %s on %s to gateway", event.Arguments[0], b.Account)
-	b.Remote <- config.Message{Username: event.Nick, Text: msg, Channel: event.Arguments[0], Account: b.Account}
+	b.Remote <- config.Message{Username: event.Nick, Text: msg, Channel: event.Arguments[0], Account: b.Account, UserID: event.User + "@" + event.Host}
 }
 
 func (b *Birc) handleTopicWhoTime(event *irc.Event) {

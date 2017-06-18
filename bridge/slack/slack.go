@@ -15,6 +15,7 @@ type MMMessage struct {
 	Text     string
 	Channel  string
 	Username string
+	UserID   string
 	Raw      *slack.MessageEvent
 }
 
@@ -185,7 +186,7 @@ func (b *Bslack) handleSlack() {
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
 			flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)
-			b.Remote <- config.Message{Text: text, Username: message.Username, Channel: message.Channel, Account: b.Account, Avatar: b.getAvatar(message.Username)}
+			b.Remote <- config.Message{Text: text, Username: message.Username, Channel: message.Channel, Account: b.Account, Avatar: b.getAvatar(message.Username), UserID: message.UserID}
 		}
 	}
 }
@@ -213,6 +214,7 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 					continue
 				}
 				m := &MMMessage{}
+				m.UserID = user.ID
 				m.Username = user.Name
 				m.Channel = channel.Name
 				m.Text = ev.Text
