@@ -122,10 +122,8 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		}
 		if message.Photo != nil {
 			photos := *message.Photo
-			// photo 3 is the biggest
-			if len(photos) == 3 {
-				text = text + " " + b.getFileDirectURL(photos[2].FileID)
-			}
+			// last photo is the biggest
+			text = text + " " + b.getFileDirectURL(photos[len(photos)-1].FileID)
 		}
 		if message.Document != nil {
 			text = text + " " + message.Document.FileName + " : " + b.getFileDirectURL(message.Document.FileID)
