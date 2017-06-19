@@ -1,3 +1,20 @@
+# v0.15.0
+## New features
+* general: add option IgnoreMessages for all protocols (see mattebridge.toml.sample)
+  Messages matching these regexp will be ignored and not sent to other bridges
+  e.g. IgnoreMessages="^~~ badword"
+* telegram: add support for sticker/video/photo/document #184
+
+## Changes
+* api: add userid to each message #200
+
+## Bugfix
+* discord: fix crash in memberupdate #198
+* mattermost: Fix incorrect behaviour of EditDisable (mattermost). Fixes #197 
+* irc: Do not relay join/part of ourselves (irc). Closes #190 
+* irc: make reconnections more robust. #153
+* gitter: update library, fixes possible crash
+
 # v0.14.0
 ## New features
 * api: add token authentication
