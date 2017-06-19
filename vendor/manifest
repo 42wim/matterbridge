@@ -384,7 +384,7 @@
 			"importpath": "github.com/sromku/go-gitter",
 			"repository": "https://github.com/sromku/go-gitter",
 			"vcs": "git",
-			"revision": "0b9f26da1844acd3c6c2fd4ee2bdd30eb1a40568",
+			"revision": "16aadfbb65c6641501ea8eebb6bcf23b9011912b",
 			"branch": "master",
 			"notests": true
 		},
