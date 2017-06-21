@@ -664,7 +664,7 @@ ShowJoinPart=false
 #In this example we use [steam.gamechat]
 #REQUIRED
 
-[matrix.gamechat]
+[steam.gamechat]
 #login/pass of your bot. 
 #Use a dedicated user for this and not your own account! 
 #REQUIRED 
