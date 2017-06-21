@@ -18,6 +18,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/Philipp15b/go-steam",
+			"repository": "https://github.com/Philipp15b/go-steam",
+			"vcs": "git",
+			"revision": "e0f3bb9566e3e26411c596842288faa371e45cec",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/Sirupsen/logrus",
 			"repository": "https://github.com/Sirupsen/logrus",
 			"vcs": "git",
@@ -47,6 +55,15 @@
 			"vcs": "git",
 			"revision": "a5fe2436ffcb3236e175e5149162b41cd28bd27d",
 			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/davecgh/go-spew/spew",
+			"repository": "https://github.com/davecgh/go-spew",
+			"vcs": "git",
+			"revision": "346938d642f2ec3594ed81d874461961cd0faa76",
+			"branch": "master",
+			"path": "/spew",
 			"notests": true
 		},
 		{
@@ -105,6 +122,33 @@
 			"vcs": "git",
 			"revision": "89bbb1edff353a7c6d10ef10cfd2675056ad8a58",
 			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/golang/protobuf/proto",
+			"repository": "https://github.com/golang/protobuf",
+			"vcs": "git",
+			"revision": "e325f446bebc2998605911c0a2650d9920361d4a",
+			"branch": "master",
+			"path": "/proto",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/golang/protobuf/protoc-gen-go/descriptor",
+			"repository": "https://github.com/golang/protobuf",
+			"vcs": "git",
+			"revision": "e325f446bebc2998605911c0a2650d9920361d4a",
+			"branch": "master",
+			"path": "protoc-gen-go/descriptor",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/golang/protobuf/ptypes/any",
+			"repository": "https://github.com/golang/protobuf",
+			"vcs": "git",
+			"revision": "e325f446bebc2998605911c0a2650d9920361d4a",
+			"branch": "master",
+			"path": "ptypes/any",
 			"notests": true
 		},
 		{
