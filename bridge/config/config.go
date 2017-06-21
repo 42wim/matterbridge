@@ -39,6 +39,7 @@ type ChannelInfo struct {
 }
 
 type Protocol struct {
+	AuthCode               string // steam
 	BindAddress            string // mattermost, slack
 	Buffer                 int    // api
 	EditSuffix             string // mattermost, slack, discord, telegram, gitter
@@ -109,6 +110,7 @@ type Config struct {
 	Mattermost         map[string]Protocol
 	Matrix             map[string]Protocol
 	Slack              map[string]Protocol
+	Steam              map[string]Protocol
 	Gitter             map[string]Protocol
 	Xmpp               map[string]Protocol
 	Discord            map[string]Protocol
