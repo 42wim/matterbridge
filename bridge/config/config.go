@@ -77,6 +77,7 @@ type Protocol struct {
 	UseSASL                bool   // IRC
 	UseTLS                 bool   // IRC
 	UseFirstName           bool   // telegram
+	WebhookURL	       string // discord
 }
 
 type ChannelOptions struct {

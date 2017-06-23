@@ -19,6 +19,8 @@ type bdiscord struct {
 	UseChannelID  bool
 	userMemberMap map[string]*discordgo.Member
 	guildID       string
+	webhookID     string
+	webhookToken  string
 	sync.RWMutex
 }
 
@@ -35,6 +37,12 @@ func New(cfg config.Protocol, account string, c chan config.Message) *bdiscord {
 	b.Remote = c
 	b.Account = account
 	b.userMemberMap = make(map[string]*discordgo.Member)
+	if b.Config.WebhookURL != "" {
+		flog.Debug("Configuring Discord Incoming Webhook")
+		webhookURLSplit := strings.Split(b.Config.WebhookURL, "/")
+		b.webhookToken = webhookURLSplit[len(webhookURLSplit)-1]
+		b.webhookID = webhookURLSplit[len(webhookURLSplit)-2]
+	}
 	return b
 }
 
@@ -101,7 +109,21 @@ func (b *bdiscord) Send(msg config.Message) error {
 		flog.Errorf("Could not find channelID for %v", msg.Channel)
 		return nil
 	}
-	b.c.ChannelMessageSend(channelID, msg.Username+msg.Text)
+	if b.Config.WebhookURL == ""{
+		flog.Debugf("Broadcasting using API")
+		b.c.ChannelMessageSend(channelID, msg.Username+msg.Text)
+	} else {
+		flog.Debugf("Broadcasting using Webhook")
+		b.c.WebhookExecute(
+			b.webhookID,
+			b.webhookToken,
+			true,
+			&discordgo.WebhookParams{
+				Content: msg.Text,
+				Username: msg.Username,
+				AvatarURL: msg.Avatar,
+		})
+	}
 	return nil
 }
 
@@ -120,6 +142,10 @@ func (b *bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdat
 func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// not relay our own messages
 	if m.Author.Username == b.Nick {
+		return
+	}
+	// if using webhooks, do not relay if it's ours
+	if b.Config.WebhookURL != "" && m.Author.Bot && m.Author.ID == b.webhookID {
 		return
 	}
 	if len(m.Attachments) > 0 {
