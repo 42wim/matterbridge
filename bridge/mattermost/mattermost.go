@@ -55,12 +55,18 @@ func (b *Bmattermost) Command(cmd string) string {
 }
 
 func (b *Bmattermost) Connect() error {
-	if !b.Config.UseAPI {
-		flog.Info("Connecting webhooks")
-		b.mh = matterhook.New(b.Config.URL,
+	if b.Config.WebhookURL != "" && b.Config.WebhookBindAddress != "" {
+		flog.Info("Connecting using webhookurl and webhookbindaddress")
+		b.mh = matterhook.New(b.Config.WebhookURL,
 			matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
-				BindAddress: b.Config.BindAddress})
+				BindAddress: b.Config.WebhookBindAddress})
+	} else if b.Config.WebhookURL != "" {
+		flog.Info("Connecting using webhookurl (for posting) and token")
+		b.mh = matterhook.New(b.Config.WebhookURL,
+			matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
+				DisableServer: true})
 	} else {
+		flog.Info("Connecting using token")
 		b.mc = matterclient.New(b.Config.Login, b.Config.Password,
 			b.Config.Team, b.Config.Server)
 		b.mc.SkipTLSVerify = b.Config.SkipTLSVerify
@@ -85,7 +91,7 @@ func (b *Bmattermost) Disconnect() error {
 
 func (b *Bmattermost) JoinChannel(channel string) error {
 	// we can only join channels using the API
-	if b.Config.UseAPI {
+	if b.Config.WebhookURL == "" && b.Config.WebhookBindAddress == "" {
 		return b.mc.JoinChannel(b.mc.GetChannelId(channel, ""))
 	}
 	return nil
@@ -100,7 +106,7 @@ func (b *Bmattermost) Send(msg config.Message) error {
 	if b.Config.PrefixMessagesWithNick {
 		message = nick + message
 	}
-	if !b.Config.UseAPI {
+	if b.Config.WebhookURL != "" {
 		matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL}
 		matterMessage.IconURL = msg.Avatar
 		matterMessage.Channel = channel
@@ -119,12 +125,13 @@ func (b *Bmattermost) Send(msg config.Message) error {
 }
 
 func (b *Bmattermost) handleMatter() {
-	flog.Debugf("Choosing API based Mattermost connection: %t", b.Config.UseAPI)
 	mchan := make(chan *MMMessage)
-	if b.Config.UseAPI {
-		go b.handleMatterClient(mchan)
-	} else {
+	if b.Config.WebhookBindAddress != "" && b.Config.WebhookURL != "" {
+		flog.Debugf("Choosing webhooks based receiving")
 		go b.handleMatterHook(mchan)
+	} else {
+		flog.Debugf("Choosing login (api) based receiving")
+		go b.handleMatterClient(mchan)
 	}
 	for message := range mchan {
 		flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)

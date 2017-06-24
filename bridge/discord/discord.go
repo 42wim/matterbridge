@@ -49,6 +49,11 @@ func New(cfg config.Protocol, account string, c chan config.Message) *bdiscord {
 func (b *bdiscord) Connect() error {
 	var err error
 	flog.Info("Connecting")
+	if b.Config.WebhookURL == "" {
+		flog.Info("Connecting using token")
+	} else {
+		flog.Info("Connecting using webhookurl (for posting) and token")
+	}
 	if !strings.HasPrefix(b.Config.Token, "Bot ") {
 		b.Config.Token = "Bot " + b.Config.Token
 	}
@@ -110,7 +115,7 @@ func (b *bdiscord) Send(msg config.Message) error {
 		return nil
 	}
 	if b.Config.WebhookURL == "" {
-		flog.Debugf("Broadcasting using API")
+		flog.Debugf("Broadcasting using token (API)")
 		b.c.ChannelMessageSend(channelID, msg.Username+msg.Text)
 	} else {
 		flog.Debugf("Broadcasting using Webhook")

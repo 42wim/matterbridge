@@ -199,43 +199,17 @@ ShowJoinPart=false
 #REQUIRED
 
 [mattermost.work]
-#### Settings for webhook matterbridge.
-#### These settings will not be used when useAPI is enabled
-
-#Url is your incoming webhook url as specified in mattermost. 
-#See account settings - integrations - incoming webhooks on mattermost.
-#REQUIRED (unless useAPI=true)
-URL="https://yourdomain/hooks/yourhookkey"
-
-#Address to listen on for outgoing webhook requests from mattermost.
-#See account settings - integrations - outgoing webhooks on mattermost.
-#This setting will not be used when using -plus switch which doesn't use 
-#webhooks
-#REQUIRED (unless useAPI=true)
-BindAddress="0.0.0.0:9999"
-
-#Icon that will be showed in mattermost. 
-#OPTIONAL
-IconURL="http://youricon.png"
-
-#### Settings for matterbridge -plus
-#### Thse settings will only be used when using the -plus switch.
-
-#### Settings for using matterbridge API
-#OPTIONAL
-useAPI=false
-
 #The mattermost hostname. (do not prefix it with http or https)
-#REQUIRED (when useAPI=true)
+#REQUIRED (when not using webhooks)
 Server="yourmattermostserver.domain" 
 
 #Your team on mattermost. 
-#REQUIRED (when useAPI=true)
+#REQUIRED (when not using webhooks)
 Team="yourteam"
 
 #login/pass of your bot. 
 #Use a dedicated user for this and not your own! 
-#REQUIRED (when useAPI=true)
+#REQUIRED (when not using webhooks)
 Login="yourlogin"
 Password="yourpass"
 
@@ -243,7 +217,30 @@ Password="yourpass"
 #OPTIONAL (default false)
 NoTLS=false
 
-#### Shared settings for matterbridge and -plus
+#### Settings for webhook matterbridge.
+#NOT RECOMMENDED TO USE INCOMING/OUTGOING WEBHOOK. USE DEDICATED BOT USER WHEN POSSIBLE!
+#You don't need to configure this, if you have configured the settings 
+#above.
+
+#Url is your incoming webhook url as specified in mattermost. 
+#See account settings - integrations - incoming webhooks on mattermost.
+#If specified, messages will be sent to mattermost using this URL
+#OPTIONAL
+WebhookURL="https://yourdomain/hooks/yourhookkey"
+
+#Address to listen on for outgoing webhook requests from mattermost.
+#See account settings - integrations - outgoing webhooks on mattermost.
+#If specified, messages will be received from mattermost on this ip:port
+#(this will only work if WebhookURL above is also configured)
+#OPTIONAL 
+WebhookBindAddress="0.0.0.0:9999"
+
+#Icon that will be showed in mattermost. 
+#This only works when WebhookURL is configured
+#OPTIONAL
+IconURL="http://youricon.png"
+
+#### End settings for webhook matterbridge.
 
 #Enable to not verify the certificate on your mattermost server. 
 #e.g. when using selfsigned certificates
@@ -345,15 +342,20 @@ ShowJoinPart=false
 #In this example we use [slack.hobby]
 #REQUIRED
 [slack.hobby]
-#### Settings for webhook matterbridge.
-#### These settings will not be used when useAPI is enabled
+#Token to connect with the Slack API
+#You'll have to use a test/api-token using a dedicated user and not a bot token.
+#See https://github.com/42wim/matterbridge/issues/75 for more info.
+#Use https://api.slack.com/custom-integrations/legacy-tokens
+#REQUIRED (when not using webhooks)
+Token="yourslacktoken"
 
+#### Settings for webhook matterbridge.
 #NOT RECOMMENDED TO USE INCOMING/OUTGOING WEBHOOK. USE SLACK API
 #AND DEDICATED BOT USER WHEN POSSIBLE!
 #Url is your incoming webhook url as specified in slack
 #See account settings - integrations - incoming webhooks on slack
-#REQUIRED (unless useAPI=true)
-URL="https://hooks.slack.com/services/yourhook"
+#OPTIONAL
+WebhookURL="https://hooks.slack.com/services/yourhook"
 
 #NOT RECOMMENDED TO USE INCOMING/OUTGOING WEBHOOK. USE SLACK API
 #AND DEDICATED BOT USER WHEN POSSIBLE!
@@ -361,21 +363,8 @@ URL="https://hooks.slack.com/services/yourhook"
 #See account settings - integrations - outgoing webhooks on slack
 #This setting will not be used when useAPI is eanbled
 #webhooks
-#REQUIRED (unless useAPI=true)
-BindAddress="0.0.0.0:9999"
-
-#### Settings for using slack API (RECOMMENDED)
 #OPTIONAL
-useAPI=false
-
-#Token to connect with the Slack API
-#You'll have to use a test/api-token using a dedicated user and not a bot token.
-#See https://github.com/42wim/matterbridge/issues/75 for more info.
-#Use https://api.slack.com/custom-integrations/legacy-tokens
-#REQUIRED (when useAPI=true)
-Token="yourslacktoken"
-
-#### Shared settings for webhooks and API
+WebhookBindAddress="0.0.0.0:9999"
 
 #Icon that will be showed in slack
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
@@ -559,12 +548,12 @@ ShowJoinPart=false
 #Read #https://rocket.chat/docs/administrator-guides/integrations/#how-to-create-a-new-incoming-webhook
 #See administration - integrations - new integration - incoming webhook
 #REQUIRED
-URL="https://yourdomain/hooks/yourhookkey"
+WebhookURL="https://yourdomain/hooks/yourhookkey"
 
 #Address to listen on for outgoing webhook requests from rocketchat.
 #See administration - integrations - new integration - outgoing webhook
 #REQUIRED 
-BindAddress="0.0.0.0:9999"
+WebhookBindAddress="0.0.0.0:9999"
 
 #Your nick/username as specified in your incoming webhook "Post as" setting
 #REQUIRED

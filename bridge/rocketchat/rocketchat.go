@@ -41,10 +41,10 @@ func (b *Brocketchat) Command(cmd string) string {
 
 func (b *Brocketchat) Connect() error {
 	flog.Info("Connecting webhooks")
-	b.mh = matterhook.New(b.Config.URL,
+	b.mh = matterhook.New(b.Config.WebhookURL,
 		matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
 			DisableServer: true})
-	b.rh = rockethook.New(b.Config.URL, rockethook.Config{BindAddress: b.Config.BindAddress})
+	b.rh = rockethook.New(b.Config.WebhookURL, rockethook.Config{BindAddress: b.Config.WebhookBindAddress})
 	go b.handleRocketHook()
 	return nil
 }

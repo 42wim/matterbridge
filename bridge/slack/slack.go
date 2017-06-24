@@ -52,11 +52,16 @@ func (b *Bslack) Command(cmd string) string {
 }
 
 func (b *Bslack) Connect() error {
-	flog.Info("Connecting")
-	if !b.Config.UseAPI {
-		b.mh = matterhook.New(b.Config.URL,
-			matterhook.Config{BindAddress: b.Config.BindAddress})
+	if b.Config.WebhookURL != "" && b.Config.WebhookBindAddress != "" {
+		flog.Info("Connecting using webhookurl and webhookbindaddress")
+		b.mh = matterhook.New(b.Config.WebhookURL,
+			matterhook.Config{BindAddress: b.Config.WebhookBindAddress})
+	} else if b.Config.WebhookURL != "" {
+		flog.Info("Connecting using webhookurl (for posting) and token")
+		b.mh = matterhook.New(b.Config.WebhookURL,
+			matterhook.Config{DisableServer: true})
 	} else {
+		flog.Info("Connecting using token")
 		b.sc = slack.New(b.Config.Token)
 		b.rtm = b.sc.NewRTM()
 		go b.rtm.ManageConnection()
@@ -73,7 +78,7 @@ func (b *Bslack) Disconnect() error {
 
 func (b *Bslack) JoinChannel(channel string) error {
 	// we can only join channels using the API
-	if b.Config.UseAPI {
+	if b.Config.WebhookURL == "" || b.Config.WebhookBindAddress == "" {
 		if strings.HasPrefix(b.Config.Token, "xoxb") {
 			// TODO check if bot has already joined channel
 			return nil
@@ -96,7 +101,7 @@ func (b *Bslack) Send(msg config.Message) error {
 	if b.Config.PrefixMessagesWithNick {
 		message = nick + " " + message
 	}
-	if !b.Config.UseAPI {
+	if b.Config.WebhookURL != "" {
 		matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL}
 		matterMessage.Channel = channel
 		matterMessage.UserName = nick
@@ -169,18 +174,19 @@ func (b *Bslack) getChannelByID(ID string) (*slack.Channel, error) {
 }
 
 func (b *Bslack) handleSlack() {
-	flog.Debugf("Choosing API based slack connection: %t", b.Config.UseAPI)
 	mchan := make(chan *MMMessage)
-	if b.Config.UseAPI {
-		go b.handleSlackClient(mchan)
-	} else {
+	if b.Config.WebhookBindAddress != "" && b.Config.WebhookURL != "" {
+		flog.Debugf("Choosing webhooks based receiving")
 		go b.handleMatterHook(mchan)
+	} else {
+		flog.Debugf("Choosing token based receiving")
+		go b.handleSlackClient(mchan)
 	}
 	time.Sleep(time.Second)
 	flog.Debug("Start listening for Slack messages")
 	for message := range mchan {
 		// do not send messages from ourself
-		if b.Config.UseAPI && message.Username == b.si.User.Name {
+		if b.Config.WebhookURL == "" && b.Config.WebhookBindAddress == "" && message.Username == b.si.User.Name {
 			continue
 		}
 		texts := strings.Split(message.Text, "\n")

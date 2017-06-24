@@ -40,7 +40,7 @@ type ChannelInfo struct {
 
 type Protocol struct {
 	AuthCode               string // steam
-	BindAddress            string // mattermost, slack
+	BindAddress            string // mattermost, slack // DEPRECATED
 	Buffer                 int    // api
 	EditSuffix             string // mattermost, slack, discord, telegram, gitter
 	EditDisable            bool   // mattermost, slack, discord, telegram, gitter
@@ -72,12 +72,14 @@ type Protocol struct {
 	SkipTLSVerify          bool   // IRC, mattermost
 	Team                   string // mattermost
 	Token                  string // gitter, slack, discord, api
-	URL                    string // mattermost, slack, matrix
+	URL                    string // mattermost, slack // DEPRECATED
 	UseAPI                 bool   // mattermost, slack
 	UseSASL                bool   // IRC
 	UseTLS                 bool   // IRC
 	UseFirstName           bool   // telegram
-	WebhookURL	       string // discord
+	WebhookBindAddress     string // mattermost, slack
+	WebhookURL             string // mattermost, slack
+	WebhookUse             string // mattermost, slack, discord
 }
 
 type ChannelOptions struct {
@@ -128,6 +130,28 @@ func NewConfig(cfgfile string) *Config {
 	if _, err := toml.DecodeFile(cfgfile, &cfg); err != nil {
 		log.Fatal(err)
 	}
+	fail := false
+	for k, v := range cfg.Mattermost {
+		res := Deprecated(v, "mattermost."+k)
+		if res {
+			fail = res
+		}
+	}
+	for k, v := range cfg.Slack {
+		res := Deprecated(v, "slack."+k)
+		if res {
+			fail = res
+		}
+	}
+	for k, v := range cfg.Rocketchat {
+		res := Deprecated(v, "rocketchat."+k)
+		if res {
+			fail = res
+		}
+	}
+	if fail {
+		log.Fatalf("Fix your config. Please see changelog for more information")
+	}
 	return &cfg
 }
 
@@ -177,4 +201,18 @@ func GetIconURL(msg *Message, cfg *Protocol) string {
 	iconURL = strings.Replace(iconURL, "{BRIDGE}", name, -1)
 	iconURL = strings.Replace(iconURL, "{PROTOCOL}", protocol, -1)
 	return iconURL
+}
+
+func Deprecated(cfg Protocol, account string) bool {
+	if cfg.BindAddress != "" {
+		log.Printf("ERROR: %s BindAddress is deprecated, you need to change it to WebhookBindAddress.", account)
+	} else if cfg.URL != "" {
+		log.Printf("ERROR: %s URL is deprecated, you need to change it to WebhookURL.", account)
+	} else if cfg.UseAPI == true {
+		log.Printf("ERROR: %s UseAPI is deprecated, it's enabled by default, please remove it from your config file.", account)
+	} else {
+		return false
+	}
+	return true
+	//log.Fatalf("ERROR: Fix your config: %s", account)
 }
