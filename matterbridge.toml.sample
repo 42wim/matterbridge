@@ -450,6 +450,10 @@ Token="Yourtokenhere"
 #REQUIRED
 Server="yourservername"
 
+#Shows title, description and URL of embedded messages (sent by other bots)
+#OPTIONAL (default false)
+ShowEmbeds=false
+
 #Disable sending of edits to other bridges
 #OPTIONAL (default false)
 EditDisable=false

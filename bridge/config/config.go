@@ -68,6 +68,7 @@ type Protocol struct {
 	RemoteNickFormat       string // all protocols
 	Server                 string // IRC,mattermost,XMPP,discord
 	ShowJoinPart           bool   // all protocols
+	ShowEmbeds             bool   // discord
 	SkipTLSVerify          bool   // IRC, mattermost
 	Team                   string // mattermost
 	Token                  string // gitter, slack, discord, api

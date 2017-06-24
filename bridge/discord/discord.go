@@ -141,7 +141,15 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	}
 	m.Message.Content = b.stripCustomoji(m.Message.Content)
 	m.Message.Content = b.replaceChannelMentions(m.Message.Content)
-	b.Remote <- config.Message{Username: username, Text: m.ContentWithMentionsReplaced(), Channel: channelName,
+
+	text := m.ContentWithMentionsReplaced()
+	if b.Config.ShowEmbeds && m.Message.Embeds != nil {
+		for _, embed := range m.Message.Embeds {
+			text = text + "embed: " + embed.Title + " - " + embed.Description + " - " + embed.URL + "\n"
+		}
+	}
+
+	b.Remote <- config.Message{Username: username, Text: text, Channel: channelName,
 		Account: b.Account, Avatar: "https://cdn.discordapp.com/avatars/" + m.Author.ID + "/" + m.Author.Avatar + ".jpg",
 		UserID: m.Author.ID}
 }
