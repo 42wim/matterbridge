@@ -5,6 +5,7 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
+	//	"github.com/davecgh/go-spew/spew"
 	"regexp"
 	"strings"
 	"time"
@@ -181,6 +182,17 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 		if _, ok := gw.Channels[getChannelID(*msg)]; !ok {
 			continue
 		}
+		// add gateway to message
+		gw.validGatewayDest(msg, channel)
+
+		// do samechannelgateway logic
+		if channel.SameChannel[msg.Gateway] {
+			if msg.Channel == channel.Name && msg.Account != dest.Account {
+				channels = append(channels, *channel)
+			}
+			continue
+		}
+
 		if channel.Direction == "out" && channel.Account == dest.Account && gw.validGatewayDest(msg, channel) {
 			channels = append(channels, *channel)
 		}
