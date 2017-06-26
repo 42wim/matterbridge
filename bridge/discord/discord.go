@@ -109,7 +109,7 @@ func (b *bdiscord) Send(msg config.Message) error {
 		flog.Errorf("Could not find channelID for %v", msg.Channel)
 		return nil
 	}
-	if b.Config.WebhookURL == ""{
+	if b.Config.WebhookURL == "" {
 		flog.Debugf("Broadcasting using API")
 		b.c.ChannelMessageSend(channelID, msg.Username+msg.Text)
 	} else {
@@ -119,10 +119,10 @@ func (b *bdiscord) Send(msg config.Message) error {
 			b.webhookToken,
 			true,
 			&discordgo.WebhookParams{
-				Content: msg.Text,
-				Username: msg.Username,
+				Content:   msg.Text,
+				Username:  msg.Username,
 				AvatarURL: msg.Avatar,
-		})
+			})
 	}
 	return nil
 }
@@ -156,7 +156,7 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	if m.Content == "" {
 		return
 	}
-	flog.Debugf("Sending message from %s on %s to gateway", m.Author.Username, b.Account)
+	flog.Debugf("Receiving message %#v", m.Message)
 	channelName := b.getChannelName(m.ChannelID)
 	if b.UseChannelID {
 		channelName = "ID:" + m.ChannelID
@@ -175,6 +175,7 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 		}
 	}
 
+	flog.Debugf("Sending message from %s on %s to gateway", m.Author.Username, b.Account)
 	b.Remote <- config.Message{Username: username, Text: text, Channel: channelName,
 		Account: b.Account, Avatar: "https://cdn.discordapp.com/avatars/" + m.Author.ID + "/" + m.Author.Avatar + ".jpg",
 		UserID: m.Author.ID}
