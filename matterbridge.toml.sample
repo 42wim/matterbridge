@@ -454,6 +454,10 @@ Server="yourservername"
 #OPTIONAL (default false)
 ShowEmbeds=false
 
+#Specify WebhookURL. If given, will relay messages using the Webhook, which gives a better look to messages.
+#OPTIONAL (default empty)
+WebhookURL="Yourwebhooktokenhere"
+
 #Disable sending of edits to other bridges
 #OPTIONAL (default false)
 EditDisable=false
