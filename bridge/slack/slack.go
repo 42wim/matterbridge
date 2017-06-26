@@ -185,6 +185,7 @@ func (b *Bslack) handleSlack() {
 		}
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
+			text = b.replaceURL(text)
 			flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)
 			b.Remote <- config.Message{Text: text, Username: message.Username, Channel: message.Channel, Account: b.Account, Avatar: b.getAvatar(message.Username), UserID: message.UserID}
 		}
@@ -276,6 +277,14 @@ func (b *Bslack) replaceMention(text string) string {
 	for _, r := range results {
 		text = strings.Replace(text, "<@"+r[1]+">", "@"+b.userName(r[1]), -1)
 
+	}
+	return text
+}
+
+func (b *Bslack) replaceURL(text string) string {
+	results := regexp.MustCompile(`<(.*?)\|.*?>`).FindAllStringSubmatch(text, -1)
+	for _, r := range results {
+		text = strings.Replace(text, r[0], r[1], -1)
 	}
 	return text
 }
