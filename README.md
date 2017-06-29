@@ -3,7 +3,8 @@
 
 ![matterbridge.gif](https://s15.postimg.org/qpjhp6y3f/matterbridge.gif)
 
-Simple bridge between Mattermost, IRC, XMPP, Gitter, Slack, Discord, Telegram, Rocket.Chat, Hipchat(via xmpp) and Matrix with REST API.
+Simple bridge between Mattermost, IRC, XMPP, Gitter, Slack, Discord, Telegram, Rocket.Chat, Hipchat(via xmpp), Matrix and Steam.
+Has a REST API.
 
 # Table of Contents
  * [Features](#features)
@@ -20,7 +21,8 @@ Simple bridge between Mattermost, IRC, XMPP, Gitter, Slack, Discord, Telegram, R
  * [Thanks](#thanks)
 
 # Features
-* Relays public channel messages between multiple mattermost, IRC, XMPP, Gitter, Slack, Discord, Telegram, Rocket.Chat, Hipchat (via xmpp) and Matrix. Pick and mix.
+* Relays public channel messages between multiple mattermost, IRC, XMPP, Gitter, Slack, Discord, Telegram, Rocket.Chat, Hipchat (via xmpp), Matrix and Steam. 
+  Pick and mix.
 * Matterbridge can also work with private groups on your mattermost/slack.
 * Allow for bridging the same bridges, which means you can eg bridge between multiple mattermosts.
 * The bridge is now a gateway which has support multiple in and out bridges. (and supports multiple gateways).
@@ -38,11 +40,13 @@ Accounts to one of the supported bridges
 * [Hipchat](https://www.hipchat.com)
 * [Rocket.chat](https://rocket.chat)
 * [Matrix](https://matrix.org)
+* [Steam](https://store.steampowered.com/)
 
 # Installing
 ## Binaries
 Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/)
-* Latest stable release [v0.15.0](https://github.com/42wim/matterbridge/releases/latest)
+* Latest rc release (with steam support) [v0.16.0-rc1](https://github.com/42wim/matterbridge/releases/latest)
+* Latest stable release [v0.15.0](https://github.com/42wim/matterbridge/releases/tag/v0.15.0)
 
 ## Building
 Go 1.6+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH] (https://golang.org/doc/code.html#GOPATH)

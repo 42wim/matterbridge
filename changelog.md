@@ -1,3 +1,23 @@
+# v0.16.0-rc1
+## Breaking Changes
+* URL,UseAPI,BindAddress is deprecated. Your config has to be updated.
+  * URL => WebhookURL
+  * BindAddress => WebhookBindAddress
+  * UseAPI => removed 
+  This change allows you to specify a WebhookURL and a token (slack,discord), so that
+  messages will be sent with the webhook, but received via the token (API)
+  If you have not specified WebhookURL and WebhookBindAddress the API (login or token) 
+  will be used automatically. (no need for UseAPI)
+
+## New features
+* steam: New protocol support added (http://store.steampowered.com/)
+* discord: WebhookURL posting support added (thanks @saury07) #204
+  Discord API does not allow to change the name of the user posting, but webhooks does.
+
+## Bugfix
+* general: samechannelgateway now relays messages correct again #207
+* slack: Remove label from URLs (slack). #205
+
 # v0.15.0
 ## New features
 * general: add option IgnoreMessages for all protocols (see mattebridge.toml.sample)
