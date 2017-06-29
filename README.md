@@ -67,7 +67,10 @@ matterbridge
 * [matterbridge.toml.sample](https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.sample) for documentation and an example.
 * [matterbridge.toml.simple](https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.simple) for a simple example.
 
-## Examples
+## Create a configuration.
+See [howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config) for a step by step walkthrough for creating your configuration.
+
+## Examples 
 ### Bridge mattermost (off-topic) - irc (#testing)
 ```
 [irc]
