@@ -527,17 +527,15 @@ func (m *MMClient) UpdateLastViewed(channelId string) {
 }
 
 func (m *MMClient) UsernamesInChannel(channelId string) []string {
-	res, err := m.Client.GetMyChannelMembers()
+	res, err := m.Client.GetProfilesInChannel(channelId, 0, 50000, "")
 	if err != nil {
 		m.log.Errorf("UsernamesInChannel(%s) failed: %s", channelId, err)
 		return []string{}
 	}
-	members := res.Data.(*model.ChannelMembers)
+	members := res.Data.(map[string]*model.User)
 	result := []string{}
-	for _, channel := range *members {
-		if channel.ChannelId == channelId {
-			result = append(result, m.GetUser(channel.UserId).Username)
-		}
+	for _, member := range members {
+		result = append(result, member.Nickname)
 	}
 	return result
 }
@@ -665,6 +663,15 @@ func (m *MMClient) GetUsers() map[string]*model.User {
 func (m *MMClient) GetUser(userId string) *model.User {
 	m.Lock()
 	defer m.Unlock()
+	u, ok := m.Users[userId]
+	if !ok {
+		res, err := m.Client.GetProfilesByIds([]string{userId})
+		if err != nil {
+			return nil
+		}
+		u = res.Data.(map[string]*model.User)[userId]
+		m.Users[userId] = u
+	}
 	return m.Users[userId]
 }
 
