@@ -684,7 +684,7 @@ func (m *MMClient) GetUserName(userId string) string {
 }
 
 func (m *MMClient) GetStatus(userId string) string {
-	res, err := m.Client.GetStatuses()
+	res, err := m.Client.GetStatusesByIds([]string{userId})
 	if err != nil {
 		return ""
 	}
