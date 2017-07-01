@@ -229,6 +229,10 @@ func (m *MMClient) Logout() error {
 	m.WsQuit = true
 	m.WsClient.Close()
 	m.WsClient.UnderlyingConn().Close()
+	if strings.Contains(m.Credentials.Pass, model.SESSION_COOKIE_TOKEN) {
+		m.log.Debug("Not invalidating session in logout, credential is a token")
+		return nil
+	}
 	_, err := m.Client.Logout()
 	if err != nil {
 		return err
