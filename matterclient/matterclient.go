@@ -100,10 +100,8 @@ func (m *MMClient) Login() error {
 		Jitter: true,
 	}
 	uriScheme := "https://"
-	wsScheme := "wss://"
 	if m.NoTLS {
 		uriScheme = "http://"
-		wsScheme = "ws://"
 	}
 	// login to mattermost
 	m.Client = model.NewClient(uriScheme + m.Credentials.Server)
@@ -182,6 +180,24 @@ func (m *MMClient) Login() error {
 	// set our team id as default route
 	m.Client.SetTeamId(m.Team.Id)
 
+	m.wsConnect()
+
+	return nil
+}
+
+func (m *MMClient) wsConnect() {
+	b := &backoff.Backoff{
+		Min:    time.Second,
+		Max:    5 * time.Minute,
+		Jitter: true,
+	}
+
+	m.WsConnected = false
+	wsScheme := "wss://"
+	if m.NoTLS {
+		wsScheme = "ws://"
+	}
+
 	// setup websocket connection
 	wsurl := wsScheme + m.Credentials.Server + model.API_URL_SUFFIX_V3 + "/users/websocket"
 	header := http.Header{}
@@ -190,6 +206,7 @@ func (m *MMClient) Login() error {
 	m.log.Debugf("WsClient: making connection: %s", wsurl)
 	for {
 		wsDialer := &websocket.Dialer{Proxy: http.ProxyFromEnvironment, TLSClientConfig: &tls.Config{InsecureSkipVerify: m.SkipTLSVerify}}
+		var err error
 		m.WsClient, _, err = wsDialer.Dial(wsurl, header)
 		if err != nil {
 			d := b.Duration()
@@ -199,15 +216,12 @@ func (m *MMClient) Login() error {
 		}
 		break
 	}
-	b.Reset()
 
 	m.log.Debug("WsClient: connected")
 	m.WsSequence = 1
 	m.WsPingChan = make(chan *model.WebSocketResponse)
 	// only start to parse WS messages when login is completely done
 	m.WsConnected = true
-
-	return nil
 }
 
 func (m *MMClient) Logout() error {
@@ -240,7 +254,7 @@ func (m *MMClient) WsReceiver() {
 		if _, rawMsg, err = m.WsClient.ReadMessage(); err != nil {
 			m.log.Error("error:", err)
 			// reconnect
-			m.Login()
+			m.wsConnect()
 		}
 
 		var event model.WebSocketEvent
