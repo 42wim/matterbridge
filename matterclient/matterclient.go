@@ -65,6 +65,7 @@ type MMClient struct {
 	WsSequence    int64
 	WsPingChan    chan *model.WebSocketResponse
 	ServerVersion string
+	OnWsConnect   func()
 }
 
 func New(login, pass, team, server string) *MMClient {
@@ -724,6 +725,12 @@ func (m *MMClient) GetTeamId() string {
 }
 
 func (m *MMClient) StatusLoop() {
+	retries := 0
+	backoff := time.Second * 60
+	if m.OnWsConnect != nil {
+		m.OnWsConnect()
+	}
+	m.log.Debug("StatusLoop:", m.OnWsConnect)
 	for {
 		if m.WsQuit {
 			return
@@ -734,14 +741,23 @@ func (m *MMClient) StatusLoop() {
 			select {
 			case <-m.WsPingChan:
 				m.log.Debug("WS PONG received")
+				backoff = time.Second * 60
 			case <-time.After(time.Second * 5):
-				m.Logout()
-				m.WsQuit = false
-				m.Login()
-				go m.WsReceiver()
+				if retries > 3 {
+					m.Logout()
+					m.WsQuit = false
+					m.Login()
+					if m.OnWsConnect != nil {
+						m.OnWsConnect()
+					}
+					go m.WsReceiver()
+				} else {
+					retries++
+					backoff = time.Second * 5
+				}
 			}
 		}
-		time.Sleep(time.Second * 60)
+		time.Sleep(backoff)
 	}
 }
 
