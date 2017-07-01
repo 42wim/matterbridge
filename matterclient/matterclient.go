@@ -263,7 +263,7 @@ func (m *MMClient) WsReceiver() {
 
 		var event model.WebSocketEvent
 		if err := json.Unmarshal(rawMsg, &event); err == nil && event.IsValid() {
-			m.log.Debugf("WsReceiver: %#v", event)
+			m.log.Debugf("WsReceiver event: %#v", event)
 			msg := &Message{Raw: &event, Team: m.Credentials.Team}
 			m.parseMessage(msg)
 			m.MessageChan <- msg
@@ -272,7 +272,7 @@ func (m *MMClient) WsReceiver() {
 
 		var response model.WebSocketResponse
 		if err := json.Unmarshal(rawMsg, &response); err == nil && response.IsValid() {
-			m.log.Debugf("WsReceiver: %#v", response)
+			m.log.Debugf("WsReceiver response: %#v", response)
 			m.parseResponse(response)
 			continue
 		}
@@ -305,7 +305,8 @@ func (m *MMClient) parseActionPost(rmsg *Message) {
 	data := model.PostFromJson(strings.NewReader(rmsg.Raw.Data["post"].(string)))
 	// we don't have the user, refresh the userlist
 	if m.GetUser(data.UserId) == nil {
-		m.UpdateUsers()
+		m.log.Infof("User %s is not known, ignoring message %s", data)
+		return
 	}
 	rmsg.Username = m.GetUserName(data.UserId)
 	rmsg.Channel = m.GetChannelName(data.ChannelId)
@@ -366,9 +367,21 @@ func (m *MMClient) GetChannelName(channelId string) string {
 	m.RLock()
 	defer m.RUnlock()
 	for _, t := range m.OtherTeams {
-		for _, channel := range append(*t.Channels, *t.MoreChannels...) {
-			if channel.Id == channelId {
-				return channel.Name
+		if t == nil {
+			continue
+		}
+		if t.Channels != nil {
+			for _, channel := range *t.Channels {
+				if channel.Id == channelId {
+					return channel.Name
+				}
+			}
+		}
+		if t.MoreChannels != nil {
+			for _, channel := range *t.MoreChannels {
+				if channel.Id == channelId {
+					return channel.Name
+				}
 			}
 		}
 	}
@@ -616,7 +629,9 @@ func (m *MMClient) GetTeamFromChannel(channelId string) string {
 	var channels []*model.Channel
 	for _, t := range m.OtherTeams {
 		channels = append(channels, *t.Channels...)
-		channels = append(channels, *t.MoreChannels...)
+		if t.MoreChannels != nil {
+			channels = append(channels, *t.MoreChannels...)
+		}
 		for _, c := range channels {
 			if c.Id == channelId {
 				return t.Id
@@ -648,8 +663,8 @@ func (m *MMClient) GetUsers() map[string]*model.User {
 }
 
 func (m *MMClient) GetUser(userId string) *model.User {
-	m.RLock()
-	defer m.RUnlock()
+	m.Lock()
+	defer m.Unlock()
 	return m.Users[userId]
 }
 
