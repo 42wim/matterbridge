@@ -114,18 +114,18 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		if username == "" {
 			username = "unknown"
 		}
-		if message.Sticker != nil {
+		if message.Sticker != nil && b.Config.UseInsecureURL {
 			text = text + " " + b.getFileDirectURL(message.Sticker.FileID)
 		}
-		if message.Video != nil {
+		if message.Video != nil && b.Config.UseInsecureURL {
 			text = text + " " + b.getFileDirectURL(message.Video.FileID)
 		}
-		if message.Photo != nil {
+		if message.Photo != nil && b.Config.UseInsecureURL {
 			photos := *message.Photo
 			// last photo is the biggest
 			text = text + " " + b.getFileDirectURL(photos[len(photos)-1].FileID)
 		}
-		if message.Document != nil {
+		if message.Document != nil && b.Config.UseInsecureURL {
 			text = text + " " + message.Document.FileName + " : " + b.getFileDirectURL(message.Document.FileID)
 		}
 		if text != "" {

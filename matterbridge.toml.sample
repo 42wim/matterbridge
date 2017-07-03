@@ -503,6 +503,12 @@ MessageFormat=""
 #OPTIONAL (default false)
 UseFirstName=false
 
+#WARNING! If enabled this will relay GIF/stickers/documents and other attachments as URLs
+#Those URLs will contain your bot-token. This may not be what you want.
+#For now there is no secure way to relay GIF/stickers/documents without seeing your token.
+#OPTIONAL (default false)
+UseInsecureURL=false
+
 #Disable sending of edits to other bridges
 #OPTIONAL (default false)
 EditDisable=false
