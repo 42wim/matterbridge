@@ -101,7 +101,9 @@ func (b *Bsteam) handleEvents() {
 		case *steam.ChatMsgEvent:
 			flog.Debugf("Receiving ChatMsgEvent: %#v", e)
 			flog.Debugf("Sending message from %s on %s to gateway", b.getNick(e.ChatterId), b.Account)
-			msg := config.Message{Username: b.getNick(e.ChatterId), Text: e.Message, Channel: strconv.FormatInt(int64(e.ChatRoomId), 10), Account: b.Account, UserID: strconv.FormatInt(int64(e.ChatterId), 10)}
+			// for some reason we have to remove 0x18000000000000
+			channel := int64(e.ChatRoomId) - 0x18000000000000
+			msg := config.Message{Username: b.getNick(e.ChatterId), Text: e.Message, Channel: strconv.FormatInt(channel, 10), Account: b.Account, UserID: strconv.FormatInt(int64(e.ChatterId), 10)}
 			b.Remote <- msg
 		case *steam.PersonaStateEvent:
 			flog.Debugf("PersonaStateEvent: %#v\n", e)
