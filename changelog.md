@@ -1,3 +1,24 @@
+# v0.16.0-rc2
+## Breaking Changes
+* URL,UseAPI,BindAddress is deprecated. Your config has to be updated.
+  * URL => WebhookURL
+  * BindAddress => WebhookBindAddress
+  * UseAPI => removed 
+  This change allows you to specify a WebhookURL and a token (slack,discord), so that
+  messages will be sent with the webhook, but received via the token (API)
+  If you have not specified WebhookURL and WebhookBindAddress the API (login or token) 
+  will be used automatically. (no need for UseAPI)
+
+## Bugfix since rc1
+* steam: Fix channel id bug in steam (channels are off by 0x18000000000000)
+* telegram: Add UseInsecureURL option for telegram (default false)
+  WARNING! If enabled this will relay GIF/stickers/documents and other attachments as URLs
+  Those URLs will contain your bot-token. This may not be what you want.
+  For now there is no secure way to relay GIF/stickers/documents without seeing your token.
+* irc: detect charset and try to convert it to utf-8 before sending it to other bridges. #209 #210
+* general: various improvements
+
+
 # v0.16.0-rc1
 ## Breaking Changes
 * URL,UseAPI,BindAddress is deprecated. Your config has to be updated.

@@ -45,7 +45,7 @@ Accounts to one of the supported bridges
 # Installing
 ## Binaries
 Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/)
-* Latest rc release (with steam support) [v0.16.0-rc1](https://github.com/42wim/matterbridge/releases/latest)
+* Latest rc release (with steam support) [v0.16.0-rc2](https://github.com/42wim/matterbridge/releases/latest)
 * Latest stable release [v0.15.0](https://github.com/42wim/matterbridge/releases/tag/v0.15.0)
 
 ## Building
