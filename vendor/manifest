@@ -401,6 +401,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/paulrosania/go-charset",
+			"repository": "https://github.com/paulrosania/go-charset",
+			"vcs": "git",
+			"revision": "621bb39fcc835dce592e682f5073025d0169587b",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/pborman/uuid",
 			"repository": "https://github.com/pborman/uuid",
 			"vcs": "",
@@ -413,6 +421,14 @@
 			"repository": "https://github.com/peterhellberg/giphy",
 			"vcs": "",
 			"revision": "f9e0363118602c138e4d9dad66c261b15f26d31a",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/saintfish/chardet",
+			"repository": "https://github.com/saintfish/chardet",
+			"vcs": "git",
+			"revision": "3af4cd4741ca4f3eb0c407c034571a6fb0ea529c",
 			"branch": "master",
 			"notests": true
 		},
