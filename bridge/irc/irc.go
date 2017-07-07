@@ -5,8 +5,13 @@ import (
 	"fmt"
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
+	"github.com/paulrosania/go-charset/charset"
+	_ "github.com/paulrosania/go-charset/data"
+	"github.com/saintfish/chardet"
 	ircm "github.com/sorcix/irc"
 	"github.com/thoj/go-ircevent"
+	"io"
+	"io/ioutil"
 	"regexp"
 	"sort"
 	"strconv"
@@ -251,6 +256,28 @@ func (b *Birc) handlePrivMsg(event *irc.Event) {
 	// strip IRC colors
 	re := regexp.MustCompile(`[[:cntrl:]](\d+,|)\d+`)
 	msg = re.ReplaceAllString(msg, "")
+
+	// detect what were sending so that we convert it to utf-8
+	detector := chardet.NewTextDetector()
+	result, err := detector.DetectBest([]byte(msg))
+	if err != nil {
+		flog.Infof("detection failed for msg: %#v", msg)
+		return
+	}
+	flog.Debugf("detected %s confidence %#v", result.Charset, result.Confidence)
+	var r io.Reader
+	r, err = charset.NewReader(result.Charset, strings.NewReader(msg))
+	// if we're not sure, just pick ISO-8859-1
+	if result.Confidence < 80 {
+		r, err = charset.NewReader("ISO-8859-1", strings.NewReader(msg))
+	}
+	if err != nil {
+		flog.Errorf("charset to utf-8 conversion failed: %s", err)
+		return
+	}
+	output, _ := ioutil.ReadAll(r)
+	msg = string(output)
+
 	flog.Debugf("Sending message from %s on %s to gateway", event.Arguments[0], b.Account)
 	b.Remote <- config.Message{Username: event.Nick, Text: msg, Channel: event.Arguments[0], Account: b.Account, UserID: event.User + "@" + event.Host}
 }
