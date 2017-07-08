@@ -1,3 +1,5 @@
+If you have a configuration problem, please first try to create a basic configuration following the instructions on [the wiki](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config) before filing an issue.
+
 Please answer the following questions. 
 
 ### Which version of matterbridge are you using?
