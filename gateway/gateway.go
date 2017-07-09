@@ -5,6 +5,7 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
+	"github.com/peterhellberg/emojilib"
 	//	"github.com/davecgh/go-spew/spew"
 	"regexp"
 	"strings"
@@ -116,6 +117,7 @@ func (gw *Gateway) handleReceive() {
 			}
 			if !gw.ignoreMessage(&msg) {
 				msg.Timestamp = time.Now()
+				gw.modifyMessage(&msg)
 				for _, br := range gw.Bridges {
 					gw.handleMessage(msg, br)
 				}
@@ -294,6 +296,11 @@ func (gw *Gateway) modifyAvatar(msg *config.Message, dest *bridge.Bridge) {
 	if msg.Avatar == "" {
 		msg.Avatar = iconurl
 	}
+}
+
+func (gw *Gateway) modifyMessage(msg *config.Message) {
+	// replace :emoji: to unicode
+	msg.Text = emojilib.Replace(msg.Text)
 }
 
 func getChannelID(msg config.Message) string {

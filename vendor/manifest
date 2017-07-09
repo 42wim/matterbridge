@@ -417,6 +417,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/peterhellberg/emojilib",
+			"repository": "https://github.com/peterhellberg/emojilib",
+			"vcs": "git",
+			"revision": "41920917e2710c9f0ec22d29db182f60e7ed9d11",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/peterhellberg/giphy",
 			"repository": "https://github.com/peterhellberg/giphy",
 			"vcs": "",
