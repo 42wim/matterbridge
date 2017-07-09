@@ -181,6 +181,6 @@ Matterbridge wouldn't exist without these libraries:
 * mattermost - https://github.com/mattermost/platform
 * matrix - https://github.com/matrix-org/gomatrix
 * slack - https://github.com/nlopes/slack
+* steam - https://github.com/Philipp15b/go-steam
 * telegram - https://github.com/go-telegram-bot-api/telegram-bot-api
 * xmpp - https://github.com/mattn/go-xmpp
-
