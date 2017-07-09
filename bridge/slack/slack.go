@@ -6,6 +6,7 @@ import (
 	"github.com/42wim/matterbridge/matterhook"
 	log "github.com/Sirupsen/logrus"
 	"github.com/nlopes/slack"
+	"html"
 	"regexp"
 	"strings"
 	"time"
@@ -192,6 +193,7 @@ func (b *Bslack) handleSlack() {
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
 			text = b.replaceURL(text)
+			text = html.UnescapeString(text)
 			flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)
 			b.Remote <- config.Message{Text: text, Username: message.Username, Channel: message.Channel, Account: b.Account, Avatar: b.getAvatar(message.Username), UserID: message.UserID}
 		}
