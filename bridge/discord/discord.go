@@ -153,31 +153,39 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	if b.Config.WebhookURL != "" && m.Author.Bot && m.Author.ID == b.webhookID {
 		return
 	}
+
 	if len(m.Attachments) > 0 {
 		for _, attach := range m.Attachments {
 			m.Content = m.Content + "\n" + attach.URL
 		}
 	}
-	if m.Content == "" {
-		return
+
+	var text string
+	if m.Content != "" {
+		flog.Debugf("Receiving message %#v", m.Message)
+		if len(m.MentionRoles) > 0 {
+			m.Message.Content = b.replaceRoleMentions(m.Message.Content)
+		}
+		m.Message.Content = b.stripCustomoji(m.Message.Content)
+		m.Message.Content = b.replaceChannelMentions(m.Message.Content)
+		text = m.ContentWithMentionsReplaced()
 	}
-	flog.Debugf("Receiving message %#v", m.Message)
+
 	channelName := b.getChannelName(m.ChannelID)
 	if b.UseChannelID {
 		channelName = "ID:" + m.ChannelID
 	}
 	username := b.getNick(m.Author)
-	if len(m.MentionRoles) > 0 {
-		m.Message.Content = b.replaceRoleMentions(m.Message.Content)
-	}
-	m.Message.Content = b.stripCustomoji(m.Message.Content)
-	m.Message.Content = b.replaceChannelMentions(m.Message.Content)
 
-	text := m.ContentWithMentionsReplaced()
 	if b.Config.ShowEmbeds && m.Message.Embeds != nil {
 		for _, embed := range m.Message.Embeds {
 			text = text + "embed: " + embed.Title + " - " + embed.Description + " - " + embed.URL + "\n"
 		}
+	}
+
+	// no empty messages
+	if text == "" {
+		return
 	}
 
 	flog.Debugf("Sending message from %s on %s to gateway", m.Author.Username, b.Account)
