@@ -1,3 +1,39 @@
+# v0.16.0
+## Breaking Changes
+* URL,UseAPI,BindAddress is deprecated. Your config has to be updated.
+  * URL => WebhookURL
+  * BindAddress => WebhookBindAddress
+  * UseAPI => removed 
+  This change allows you to specify a WebhookURL and a token (slack,discord), so that
+  messages will be sent with the webhook, but received via the token (API)
+  If you have not specified WebhookURL and WebhookBindAddress the API (login or token) 
+  will be used automatically. (no need for UseAPI)
+
+## New features
+* mattermost: add support for mattermost 4.0
+* steam: New protocol support added (http://store.steampowered.com/)
+* discord: Support for embedded messages (sent by other bots)
+  Shows title, description and URL of embedded messages (sent by other bots)
+  To enable add ```ShowEmbeds=true``` to your discord config 
+* discord: ```WebhookURL``` posting support added (thanks @saury07) #204
+  Discord API does not allow to change the name of the user posting, but webhooks does.
+
+## Changes
+* general: all :emoji: will be converted to unicode, providing consistent emojis across all bridges
+* telegram: Add ```UseInsecureURL``` option for telegram (default false)
+  WARNING! If enabled this will relay GIF/stickers/documents and other attachments as URLs
+  Those URLs will contain your bot-token. This may not be what you want.
+  For now there is no secure way to relay GIF/stickers/documents without seeing your token.
+
+## Bugfix
+* irc: detect charset and try to convert it to utf-8 before sending it to other bridges. #209 #210
+* slack: Remove label from URLs (slack). #205
+* slack: Relay <>& correctly to other bridges #215
+* steam: Fix channel id bug in steam (channels are off by 0x18000000000000)
+* general: various improvements
+* general: samechannelgateway now relays messages correct again #207
+
+
 # v0.16.0-rc2
 ## Breaking Changes
 * URL,UseAPI,BindAddress is deprecated. Your config has to be updated.
