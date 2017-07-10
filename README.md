@@ -15,6 +15,7 @@ Has a REST API.
    * [Binaries](#binaries)
    * [Building](#building)
  * [Configuration](#configuration)
+   * [Howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config)
    * [Examples](#examples) 
  * [Running](#running)
    * [Docker](#docker)
