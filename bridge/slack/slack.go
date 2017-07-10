@@ -229,6 +229,15 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 				m.Text = ev.Text
 				m.Raw = ev
 				m.Text = b.replaceMention(m.Text)
+				if ev.BotID != "" && user.Name == "" {
+					bot, err := b.rtm.GetBotInfo(ev.BotID)
+					if err != nil {
+						continue
+					}
+					if bot.Name != "" {
+						m.Username = bot.Name
+					}
+				}
 				mchan <- m
 			}
 			count++
