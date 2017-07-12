@@ -500,6 +500,25 @@ func (m *MMClient) GetPublicLinks(filenames []string) []string {
 	return output
 }
 
+func (m *MMClient) GetFileLinks(filenames []string) []string {
+	uriScheme := "https://"
+	if m.NoTLS {
+		uriScheme = "http://"
+	}
+
+	var output []string
+	for _, f := range filenames {
+		res, err := m.Client.GetPublicLink(f)
+		if err != nil {
+			// public links is probably disabled, create the link ourselves
+			output = append(output, uriScheme+m.Credentials.Server+model.API_URL_SUFFIX_V3+"/files/"+f+"/get")
+			continue
+		}
+		output = append(output, res)
+	}
+	return output
+}
+
 func (m *MMClient) UpdateChannelHeader(channelId string, header string) {
 	data := make(map[string]string)
 	data["channel_id"] = channelId
