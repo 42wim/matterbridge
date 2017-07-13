@@ -1,0 +1,7 @@
+language: go
+gobuild_args: -x -ldflags "-X main.githash=$(git log --pretty=format:'%h' -n 1)"
+go:
+    - 1.6.x
+    - 1.7.x
+    - 1.8.x
+    - master
