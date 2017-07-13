@@ -136,7 +136,7 @@ func (b *Bsteam) handleEvents() {
 					myLoginInfo.AuthCode = code
 				}
 			default:
-				log.Errorf("LogOnFailedEvent: ", e.Result)
+				log.Errorf("LogOnFailedEvent: %#v ", e.Result)
 				// TODO: Handle EResult_InvalidLoginAuthCode
 				return
 			}

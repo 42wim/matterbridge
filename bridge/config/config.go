@@ -209,7 +209,7 @@ func Deprecated(cfg Protocol, account string) bool {
 		log.Printf("ERROR: %s BindAddress is deprecated, you need to change it to WebhookBindAddress.", account)
 	} else if cfg.URL != "" {
 		log.Printf("ERROR: %s URL is deprecated, you need to change it to WebhookURL.", account)
-	} else if cfg.UseAPI == true {
+	} else if cfg.UseAPI {
 		log.Printf("ERROR: %s UseAPI is deprecated, it's enabled by default, please remove it from your config file.", account)
 	} else {
 		return false

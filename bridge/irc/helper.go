@@ -4,6 +4,7 @@ import (
 	"strings"
 )
 
+/*
 func tableformatter(nicks []string, nicksPerRow int, continued bool) string {
 	result := "|IRC users"
 	if continued {
@@ -29,6 +30,7 @@ func tableformatter(nicks []string, nicksPerRow int, continued bool) string {
 	}
 	return result
 }
+*/
 
 func plainformatter(nicks []string, nicksPerRow int) string {
 	return strings.Join(nicks, ", ") + " currently on IRC"

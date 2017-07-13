@@ -88,10 +88,7 @@ func New(cfg *config.Config, bridge *config.Bridge, c chan config.Message) *Brid
 
 func (b *Bridge) JoinChannels() error {
 	err := b.joinChannels(b.Channels, b.Joined)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (b *Bridge) joinChannels(channels map[string]config.ChannelInfo, exists map[string]bool) error {

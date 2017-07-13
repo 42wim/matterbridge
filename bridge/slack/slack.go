@@ -120,7 +120,7 @@ func (b *Bslack) Send(msg config.Message) error {
 		return err
 	}
 	np := slack.NewPostMessageParameters()
-	if b.Config.PrefixMessagesWithNick == true {
+	if b.Config.PrefixMessagesWithNick {
 		np.AsUser = true
 	}
 	np.Username = nick

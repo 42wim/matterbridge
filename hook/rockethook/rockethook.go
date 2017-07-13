@@ -99,10 +99,9 @@ func (c *Client) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Receive returns an incoming message from mattermost outgoing webhooks URL.
 func (c *Client) Receive() Message {
-	for {
-		select {
-		case msg := <-c.In:
-			return msg
-		}
+	var msg Message
+	for msg = range c.In {
+		return msg
 	}
+	return msg
 }

@@ -16,7 +16,6 @@ type Brocketchat struct {
 	MMhook
 	Config  *config.Protocol
 	Remote  chan config.Message
-	name    string
 	Account string
 }
 

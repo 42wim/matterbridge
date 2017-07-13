@@ -134,12 +134,11 @@ func (c *Client) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Receive returns an incoming message from mattermost outgoing webhooks URL.
 func (c *Client) Receive() IMessage {
-	for {
-		select {
-		case msg := <-c.In:
-			return msg
-		}
+	var msg IMessage
+	for msg := range c.In {
+		return msg
 	}
+	return msg
 }
 
 // Send sends a msg to mattermost incoming webhooks URL.

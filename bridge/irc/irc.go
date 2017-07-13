@@ -148,9 +148,9 @@ func (b *Birc) Send(msg config.Message) error {
 
 func (b *Birc) doSend() {
 	rate := time.Millisecond * time.Duration(b.Config.MessageDelay)
-	throttle := time.Tick(rate)
+	throttle := time.NewTicker(rate)
 	for msg := range b.Local {
-		<-throttle
+		<-throttle.C
 		b.i.Privmsg(msg.Channel, msg.Username+msg.Text)
 	}
 }

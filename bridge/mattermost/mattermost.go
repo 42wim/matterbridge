@@ -12,9 +12,8 @@ type MMhook struct {
 }
 
 type MMapi struct {
-	mc            *matterclient.MMClient
-	mmMap         map[string]string
-	mmIgnoreNicks []string
+	mc    *matterclient.MMClient
+	mmMap map[string]string
 }
 
 type MMMessage struct {
@@ -29,7 +28,6 @@ type Bmattermost struct {
 	MMapi
 	Config  *config.Protocol
 	Remote  chan config.Message
-	name    string
 	TeamId  string
 	Account string
 }

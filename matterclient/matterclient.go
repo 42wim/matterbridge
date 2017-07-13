@@ -88,7 +88,7 @@ func (m *MMClient) SetLogLevel(level string) {
 func (m *MMClient) Login() error {
 	// check if this is a first connect or a reconnection
 	firstConnection := true
-	if m.WsConnected == true {
+	if m.WsConnected {
 		firstConnection = false
 	}
 	m.WsConnected = false
@@ -149,7 +149,7 @@ func (m *MMClient) Login() error {
 				return errors.New("invalid " + model.SESSION_COOKIE_TOKEN)
 			}
 		} else {
-			myinfo, appErr = m.Client.Login(m.Credentials.Login, m.Credentials.Pass)
+			_, appErr = m.Client.Login(m.Credentials.Login, m.Credentials.Pass)
 		}
 		if appErr != nil {
 			d := b.Duration()
@@ -329,7 +329,6 @@ func (m *MMClient) parseActionPost(rmsg *Message) {
 	}
 	rmsg.Text = data.Message
 	rmsg.Post = data
-	return
 }
 
 func (m *MMClient) UpdateUsers() error {
@@ -535,7 +534,7 @@ func (m *MMClient) UpdateLastViewed(channelId string) {
 	if m.mmVersion() >= 3.08 {
 		view := model.ChannelView{ChannelId: channelId}
 		res, _ := m.Client.ViewChannel(view)
-		if res == false {
+		if !res {
 			m.log.Errorf("ChannelView update for %s failed", channelId)
 		}
 		return
@@ -683,13 +682,13 @@ func (m *MMClient) GetUsers() map[string]*model.User {
 func (m *MMClient) GetUser(userId string) *model.User {
 	m.Lock()
 	defer m.Unlock()
-	u, ok := m.Users[userId]
+	_, ok := m.Users[userId]
 	if !ok {
 		res, err := m.Client.GetProfilesByIds([]string{userId})
 		if err != nil {
 			return nil
 		}
-		u = res.Data.(map[string]*model.User)[userId]
+		u := res.Data.(map[string]*model.User)[userId]
 		m.Users[userId] = u
 	}
 	return m.Users[userId]

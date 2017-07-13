@@ -96,31 +96,28 @@ func (gw *Gateway) Start() error {
 }
 
 func (gw *Gateway) handleReceive() {
-	for {
-		select {
-		case msg := <-gw.Message:
-			if msg.Event == config.EVENT_FAILURE {
-				for _, br := range gw.Bridges {
-					if msg.Account == br.Account {
-						go gw.reconnectBridge(br)
-					}
+	for msg := range gw.Message {
+		if msg.Event == config.EVENT_FAILURE {
+			for _, br := range gw.Bridges {
+				if msg.Account == br.Account {
+					go gw.reconnectBridge(br)
 				}
 			}
-			if msg.Event == config.EVENT_REJOIN_CHANNELS {
-				for _, br := range gw.Bridges {
-					if msg.Account == br.Account {
-						br.Joined = make(map[string]bool)
-						br.JoinChannels()
-					}
+		}
+		if msg.Event == config.EVENT_REJOIN_CHANNELS {
+			for _, br := range gw.Bridges {
+				if msg.Account == br.Account {
+					br.Joined = make(map[string]bool)
+					br.JoinChannels()
 				}
-				continue
 			}
-			if !gw.ignoreMessage(&msg) {
-				msg.Timestamp = time.Now()
-				gw.modifyMessage(&msg)
-				for _, br := range gw.Bridges {
-					gw.handleMessage(msg, br)
-				}
+			continue
+		}
+		if !gw.ignoreMessage(&msg) {
+			msg.Timestamp = time.Now()
+			gw.modifyMessage(&msg)
+			for _, br := range gw.Bridges {
+				gw.handleMessage(msg, br)
 			}
 		}
 	}
@@ -317,8 +314,8 @@ func (gw *Gateway) validGatewayDest(msg *config.Message, channel *config.Channel
 
 	// check if we are running a samechannelgateway.
 	// if it is and the channel name matches it's ok, otherwise we shouldn't use this channel.
-	for k, _ := range GIDmap {
-		if channel.SameChannel[k] == true {
+	for k := range GIDmap {
+		if channel.SameChannel[k] {
 			if msg.Channel == channel.Name {
 				// add the gateway to our message
 				msg.Gateway = k
@@ -329,8 +326,8 @@ func (gw *Gateway) validGatewayDest(msg *config.Message, channel *config.Channel
 		}
 	}
 	// check if we are in the correct gateway
-	for k, _ := range GIDmap {
-		if channel.GID[k] == true {
+	for k := range GIDmap {
+		if channel.GID[k] {
 			// add the gateway to our message
 			msg.Gateway = k
 			return true
@@ -340,8 +337,5 @@ func (gw *Gateway) validGatewayDest(msg *config.Message, channel *config.Channel
 }
 
 func isApi(account string) bool {
-	if strings.HasPrefix(account, "api.") {
-		return true
-	}
-	return false
+	return strings.HasPrefix(account, "api.")
 }
