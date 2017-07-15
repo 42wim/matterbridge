@@ -1,3 +1,11 @@
+# v0.16.1
+## New features
+* slack: also relay messages of other bots #213
+* mattermost: show also links if public links have not been enabled.
+
+## Bugfix
+* mattermost, slack: fix connecting logic #216
+
 # v0.16.0
 ## Breaking Changes
 * URL,UseAPI,BindAddress is deprecated. Your config has to be updated.

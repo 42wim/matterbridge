@@ -48,7 +48,7 @@ Accounts to one of the supported bridges
 # Installing
 ## Binaries
 Binaries can be found [here] (https://github.com/42wim/matterbridge/releases/)
-* Latest stable release [v0.16.0](https://github.com/42wim/matterbridge/releases/tag/v0.16.0)
+* Latest stable release [v0.16.1](https://github.com/42wim/matterbridge/releases/tag/v0.16.1)
 
 ## Building
 Go 1.6+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH] (https://golang.org/doc/code.html#GOPATH)
