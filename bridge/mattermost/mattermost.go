@@ -181,7 +181,7 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 				m.Text = message.Text + b.Config.EditSuffix
 			}
 			if len(message.Post.FileIds) > 0 {
-				for _, link := range b.mc.GetPublicLinks(message.Post.FileIds) {
+				for _, link := range b.mc.GetFileLinks(message.Post.FileIds) {
 					m.Text = m.Text + "\n" + link
 				}
 			}
