@@ -1,6 +1,7 @@
 package bslack
 
 import (
+	"errors"
 	"fmt"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/matterhook"
@@ -53,22 +54,52 @@ func (b *Bslack) Command(cmd string) string {
 }
 
 func (b *Bslack) Connect() error {
-	if b.Config.WebhookURL != "" && b.Config.WebhookBindAddress != "" {
-		flog.Info("Connecting using webhookurl and webhookbindaddress")
+	if b.Config.WebhookBindAddress != "" {
+		if b.Config.WebhookURL != "" {
+			flog.Info("Connecting using webhookurl (sending) and webhookbindaddress (receiving)")
+			b.mh = matterhook.New(b.Config.WebhookURL,
+				matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
+					BindAddress: b.Config.WebhookBindAddress})
+		} else if b.Config.Token != "" {
+			flog.Info("Connecting using token (sending)")
+			b.sc = slack.New(b.Config.Token)
+			b.rtm = b.sc.NewRTM()
+			go b.rtm.ManageConnection()
+			flog.Info("Connecting using webhookbindaddress (receiving)")
+			b.mh = matterhook.New(b.Config.WebhookURL,
+				matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
+					BindAddress: b.Config.WebhookBindAddress})
+		} else {
+			flog.Info("Connecting using webhookbindaddress (receiving)")
+			b.mh = matterhook.New(b.Config.WebhookURL,
+				matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
+					BindAddress: b.Config.WebhookBindAddress})
+		}
+		go b.handleSlack()
+		return nil
+	}
+	if b.Config.WebhookURL != "" {
+		flog.Info("Connecting using webhookurl (sending)")
 		b.mh = matterhook.New(b.Config.WebhookURL,
-			matterhook.Config{BindAddress: b.Config.WebhookBindAddress})
-	} else if b.Config.WebhookURL != "" {
-		flog.Info("Connecting using webhookurl (for posting) and token")
-		b.mh = matterhook.New(b.Config.WebhookURL,
-			matterhook.Config{DisableServer: true})
-	} else {
-		flog.Info("Connecting using token")
+			matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
+				DisableServer: true})
+		if b.Config.Token != "" {
+			flog.Info("Connecting using token (receiving)")
+			b.sc = slack.New(b.Config.Token)
+			b.rtm = b.sc.NewRTM()
+			go b.rtm.ManageConnection()
+			go b.handleSlack()
+		}
+	} else if b.Config.Token != "" {
+		flog.Info("Connecting using token (sending and receiving)")
 		b.sc = slack.New(b.Config.Token)
 		b.rtm = b.sc.NewRTM()
 		go b.rtm.ManageConnection()
+		go b.handleSlack()
 	}
-	flog.Info("Connection succeeded")
-	go b.handleSlack()
+	if b.Config.WebhookBindAddress == "" && b.Config.WebhookURL == "" && b.Config.Token == "" {
+		return errors.New("No connection method found. See that you have WebhookBindAddress, WebhookURL or Token configured.")
+	}
 	return nil
 }
 
@@ -79,7 +110,7 @@ func (b *Bslack) Disconnect() error {
 
 func (b *Bslack) JoinChannel(channel string) error {
 	// we can only join channels using the API
-	if b.Config.WebhookURL == "" || b.Config.WebhookBindAddress == "" {
+	if b.Config.WebhookURL == "" && b.Config.WebhookBindAddress == "" {
 		if strings.HasPrefix(b.Config.Token, "xoxb") {
 			// TODO check if bot has already joined channel
 			return nil
@@ -176,7 +207,7 @@ func (b *Bslack) getChannelByID(ID string) (*slack.Channel, error) {
 
 func (b *Bslack) handleSlack() {
 	mchan := make(chan *MMMessage)
-	if b.Config.WebhookBindAddress != "" && b.Config.WebhookURL != "" {
+	if b.Config.WebhookBindAddress != "" {
 		flog.Debugf("Choosing webhooks based receiving")
 		go b.handleMatterHook(mchan)
 	} else {

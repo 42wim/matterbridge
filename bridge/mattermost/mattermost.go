@@ -1,6 +1,7 @@
 package bmattermost
 
 import (
+	"errors"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/matterclient"
 	"github.com/42wim/matterbridge/matterhook"
@@ -53,33 +54,49 @@ func (b *Bmattermost) Command(cmd string) string {
 }
 
 func (b *Bmattermost) Connect() error {
-	if b.Config.WebhookURL != "" && b.Config.WebhookBindAddress != "" {
-		flog.Info("Connecting using webhookurl and webhookbindaddress")
-		b.mh = matterhook.New(b.Config.WebhookURL,
-			matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
-				BindAddress: b.Config.WebhookBindAddress})
-	} else if b.Config.WebhookURL != "" {
-		flog.Info("Connecting using webhookurl (for posting) and token")
+	if b.Config.WebhookBindAddress != "" {
+		if b.Config.WebhookURL != "" {
+			flog.Info("Connecting using webhookurl (sending) and webhookbindaddress (receiving)")
+		} else if b.Config.Login != "" {
+			flog.Info("Connecting using login/password (sending)")
+			err := b.apiLogin()
+			if err != nil {
+				return err
+			}
+		} else {
+			flog.Info("Connecting using webhookbindaddress (receiving)")
+			b.mh = matterhook.New(b.Config.WebhookURL,
+				matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
+					BindAddress: b.Config.WebhookBindAddress})
+		}
+		go b.handleMatter()
+		return nil
+	}
+	if b.Config.WebhookURL != "" {
+		flog.Info("Connecting using webhookurl (sending)")
 		b.mh = matterhook.New(b.Config.WebhookURL,
 			matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
 				DisableServer: true})
-	} else {
-		flog.Info("Connecting using token")
-		b.mc = matterclient.New(b.Config.Login, b.Config.Password,
-			b.Config.Team, b.Config.Server)
-		b.mc.SkipTLSVerify = b.Config.SkipTLSVerify
-		b.mc.NoTLS = b.Config.NoTLS
-		flog.Infof("Connecting %s (team: %s) on %s", b.Config.Login, b.Config.Team, b.Config.Server)
-		err := b.mc.Login()
+		if b.Config.Login != "" {
+			flog.Info("Connecting using login/password (receiving)")
+			err := b.apiLogin()
+			if err != nil {
+				return err
+			}
+			go b.handleMatter()
+		}
+		return nil
+	} else if b.Config.Login != "" {
+		flog.Info("Connecting using login/password (sending and receiving)")
+		err := b.apiLogin()
 		if err != nil {
 			return err
 		}
-		flog.Info("Connection succeeded")
-		b.TeamId = b.mc.GetTeamId()
-		go b.mc.WsReceiver()
-		go b.mc.StatusLoop()
+		go b.handleMatter()
 	}
-	go b.handleMatter()
+	if b.Config.WebhookBindAddress == "" && b.Config.WebhookURL == "" && b.Config.Login == "" {
+		return errors.New("No connection method found. See that you have WebhookBindAddress, WebhookURL or Login/Password/Server/Team configured.")
+	}
 	return nil
 }
 
@@ -124,11 +141,11 @@ func (b *Bmattermost) Send(msg config.Message) error {
 
 func (b *Bmattermost) handleMatter() {
 	mchan := make(chan *MMMessage)
-	if b.Config.WebhookBindAddress != "" && b.Config.WebhookURL != "" {
+	if b.Config.WebhookBindAddress != "" {
 		flog.Debugf("Choosing webhooks based receiving")
 		go b.handleMatterHook(mchan)
 	} else {
-		flog.Debugf("Choosing login (api) based receiving")
+		flog.Debugf("Choosing login/password based receiving")
 		go b.handleMatterClient(mchan)
 	}
 	for message := range mchan {
@@ -184,4 +201,21 @@ func (b *Bmattermost) handleMatterHook(mchan chan *MMMessage) {
 		m.Channel = message.ChannelName
 		mchan <- m
 	}
+}
+
+func (b *Bmattermost) apiLogin() error {
+	b.mc = matterclient.New(b.Config.Login, b.Config.Password,
+		b.Config.Team, b.Config.Server)
+	b.mc.SkipTLSVerify = b.Config.SkipTLSVerify
+	b.mc.NoTLS = b.Config.NoTLS
+	flog.Infof("Connecting %s (team: %s) on %s", b.Config.Login, b.Config.Team, b.Config.Server)
+	err := b.mc.Login()
+	if err != nil {
+		return err
+	}
+	flog.Info("Connection succeeded")
+	b.TeamId = b.mc.GetTeamId()
+	go b.mc.WsReceiver()
+	go b.mc.StatusLoop()
+	return nil
 }
