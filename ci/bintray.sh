@@ -1,9 +1,8 @@
 #!/bin/bash
 VERSION=$(git describe --tags)
+mkdir ci/binaries
+go build -x -ldflags "-s -w -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o ci/binaries/matterbridge-$VERSION-$GOOS-$GOARCH
 cd ci
-mkdir binaries
-go build -x -ldflags "-s -w -X main.githash=$(git log --pretty=format:'%h' -n 1) -o binaries/matterbridge-$VERSION-$GOOS-$GOARCH
-
 cat > deploy.json <<EOF
 {
     "package": {
@@ -16,7 +15,7 @@ cat > deploy.json <<EOF
     },
     "files":
         [
-        {"includePattern": "binaries/(*)", "uploadPattern":"\$1"}
+        {"includePattern": "binaries/(.*)", "uploadPattern":"\$1"}
         ],
     "publish": true
 }
