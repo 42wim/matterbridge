@@ -71,7 +71,7 @@ func (b *bdiscord) Connect() error {
 		flog.Debugf("%#v", err)
 		return err
 	}
-	guilds, err := b.c.UserGuilds()
+	guilds, err := b.c.UserGuilds(100, "", "")
 	if err != nil {
 		flog.Debugf("%#v", err)
 		return err
