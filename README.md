@@ -3,6 +3,8 @@ Click on one of the badges below to join the chat
 
 [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/42wim/matterbridge) [![Join the IRC chat at https://webchat.freenode.net/?channels=matterbridgechat](https://img.shields.io/badge/IRC-matterbridgechat-green.svg)](https://webchat.freenode.net/?channels=matterbridgechat) [![Discord](https://img.shields.io/badge/discord-matterbridge-green.svg)](https://discord.gg/AkKPtrQ) [![Matrix](https://img.shields.io/badge/matrix-matterbridge-green.svg)](https://riot.im/app/#/room/#matterbridge:matrix.org) [![Slack](https://img.shields.io/badge/slack-matterbridgechat-green.svg)](https://join.slack.com/matterbridgechat/shared_invite/MjEwODMxNjU1NDMwLTE0OTk2MTU3NTMtMzZkZmRiNDZhOA) [![Mattermost](https://img.shields.io/badge/mattermost-matterbridge-green.svg)](https://framateam.org/signup_user_complete/?id=tfqm33ggop8x3qgu4boeieta6e)
 
+[Stable](https://github.com/42wim/matterbridge/releases/latest): [![Download stable](https://img.shields.io/github/release/42wim/matterbridge.svg)(https://github.com/42wim/matterbridge/releases/latest) [Development]((https://bintray.com/42wim/nightly/Matterbridge/_latestVersion): [![Download dev](https://img.shields.io/bintray/v/42wim/nightly/Matterbridge.svg)](https://bintray.com/42wim/nightly/Matterbridge/_latestVersion)
+
 ![matterbridge.gif](https://s15.postimg.org/qpjhp6y3f/matterbridge.gif)
 
 Simple bridge between Mattermost, IRC, XMPP, Gitter, Slack, Discord, Telegram, Rocket.Chat, Hipchat(via xmpp), Matrix and Steam.
@@ -48,7 +50,7 @@ Accounts to one of the supported bridges
 # Installing
 ## Binaries
 * Latest stable release [v0.16.1](https://github.com/42wim/matterbridge/releases/tag/v0.16.1)
-* Development releases (follows master) can be downloaded [here](https://dl.bintray.com/42wim/nightly/)
+* Development releases (follows master) can be downloaded [here](https://dl.bintray.com/42wim/nightly/)  
 
 ## Building
 Go 1.6+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH] (https://golang.org/doc/code.html#GOPATH)
