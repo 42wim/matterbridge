@@ -226,7 +226,8 @@ func (b *Bslack) handleSlack() {
 			text = b.replaceURL(text)
 			text = html.UnescapeString(text)
 			flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)
-			b.Remote <- config.Message{Text: text, Username: message.Username, Channel: message.Channel, Account: b.Account, Avatar: b.getAvatar(message.Username), UserID: message.UserID}
+			msg := config.Message{Text: text, Username: message.Username, Channel: message.Channel, Account: b.Account, Avatar: b.getAvatar(message.Username), UserID: message.UserID}
+			b.Remote <- msg
 		}
 	}
 }
@@ -249,24 +250,27 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 				if err != nil {
 					continue
 				}
-				user, err := b.rtm.GetUserInfo(ev.User)
-				if err != nil {
-					continue
-				}
 				m := &MMMessage{}
-				m.UserID = user.ID
-				m.Username = user.Name
+				if ev.BotID == "" {
+					user, err := b.rtm.GetUserInfo(ev.User)
+					if err != nil {
+						continue
+					}
+					m.UserID = user.ID
+					m.Username = user.Name
+				}
 				m.Channel = channel.Name
 				m.Text = ev.Text
 				m.Raw = ev
 				m.Text = b.replaceMention(m.Text)
-				if ev.BotID != "" && user.Name == "" {
+				if ev.BotID != "" {
 					bot, err := b.rtm.GetBotInfo(ev.BotID)
 					if err != nil {
 						continue
 					}
 					if bot.Name != "" {
 						m.Username = bot.Name
+						m.UserID = bot.ID
 					}
 				}
 				mchan <- m
