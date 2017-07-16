@@ -32,6 +32,7 @@ type Bslack struct {
 	Account  string
 	si       *slack.Info
 	channels []slack.Channel
+	BotID    string
 }
 
 var flog *log.Entry
@@ -218,7 +219,7 @@ func (b *Bslack) handleSlack() {
 	flog.Debug("Start listening for Slack messages")
 	for message := range mchan {
 		// do not send messages from ourself
-		if b.Config.WebhookURL == "" && b.Config.WebhookBindAddress == "" && message.Username == b.si.User.Name {
+		if b.Config.WebhookURL == "" && b.Config.WebhookBindAddress == "" && (message.Username == b.si.User.Name || message.UserID == b.BotID) {
 			continue
 		}
 		texts := strings.Split(message.Text, "\n")
@@ -283,6 +284,12 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 		case *slack.ConnectedEvent:
 			b.channels = ev.Info.Channels
 			b.si = ev.Info
+			for _, bot := range b.si.Bots {
+				if bot.Name == "Slack API Tester" {
+					b.BotID = bot.ID
+					flog.Debugf("my bot ID is %#v", bot.ID)
+				}
+			}
 			b.Users, _ = b.sc.GetUsers()
 			// add private channels
 			groups, _ := b.sc.GetGroups(true)
