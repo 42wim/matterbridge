@@ -14,6 +14,8 @@ func main() {
 		return
 	}
 	for _, channel := range channels {
-		fmt.Println(channel.ID)
+		fmt.Println(channel.Name)
+		// channel is of type conversation & groupConversation
+		// see all available methods in `conversation.go`
 	}
 }

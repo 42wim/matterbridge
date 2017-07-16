@@ -76,8 +76,12 @@ type UserChangeEvent struct {
 
 // EmojiChangedEvent represents the emoji changed event
 type EmojiChangedEvent struct {
-	Type           string `json:"type"`
-	EventTimestamp string `json:"event_ts"`
+	Type           string   `json:"type"`
+	SubType        string   `json:"subtype"`
+	Name           string   `json:"name"`
+	Names          []string `json:"names"`
+	Value          string   `json:"value"` 
+	EventTimestamp string   `json:"event_ts"`
 }
 
 // CommandsChangedEvent represents the commands changed event

@@ -29,7 +29,7 @@ func (rtm *RTM) ManageConnection() {
 		connectionCount++
 		// start trying to connect
 		// the returned err is already passed onto the IncomingEvents channel
-		info, conn, err := rtm.connect(connectionCount)
+		info, conn, err := rtm.connect(connectionCount, rtm.useRTMStart)
 		// if err != nil then the connection is sucessful - otherwise it is
 		// fatal
 		if err != nil {
@@ -64,7 +64,9 @@ func (rtm *RTM) ManageConnection() {
 // connect attempts to connect to the slack websocket API. It handles any
 // errors that occur while connecting and will return once a connection
 // has been successfully opened.
-func (rtm *RTM) connect(connectionCount int) (*Info, *websocket.Conn, error) {
+// If useRTMStart is false then it uses rtm.connect to create the connection,
+// otherwise it uses rtm.start.
+func (rtm *RTM) connect(connectionCount int, useRTMStart bool) (*Info, *websocket.Conn, error) {
 	// used to provide exponential backoff wait time with jitter before trying
 	// to connect to slack again
 	boff := &backoff{
@@ -81,7 +83,7 @@ func (rtm *RTM) connect(connectionCount int) (*Info, *websocket.Conn, error) {
 			ConnectionCount: connectionCount,
 		}}
 		// attempt to start the connection
-		info, conn, err := rtm.startRTMAndDial()
+		info, conn, err := rtm.startRTMAndDial(useRTMStart)
 		if err == nil {
 			return info, conn, nil
 		}
@@ -105,10 +107,19 @@ func (rtm *RTM) connect(connectionCount int) (*Info, *websocket.Conn, error) {
 	}
 }
 
-// startRTMAndDial attemps to connect to the slack websocket. It returns the
-// full information returned by the "rtm.start" method on the slack API.
-func (rtm *RTM) startRTMAndDial() (*Info, *websocket.Conn, error) {
-	info, url, err := rtm.StartRTM()
+// startRTMAndDial attempts to connect to the slack websocket. If useRTMStart is true,
+// then it returns the  full information returned by the "rtm.start" method on the
+// slack API. Else it uses the "rtm.connect" method to connect
+func (rtm *RTM) startRTMAndDial(useRTMStart bool) (*Info, *websocket.Conn, error) {
+	var info *Info
+	var url string
+	var err error
+
+	if useRTMStart {
+		info, url, err = rtm.StartRTM()
+	} else {
+		info, url, err = rtm.ConnectRTM()
+	}
 	if err != nil {
 		return nil, nil, err
 	}

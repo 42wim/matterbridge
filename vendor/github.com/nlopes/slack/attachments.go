@@ -10,16 +10,34 @@ type AttachmentField struct {
 	Short bool   `json:"short"`
 }
 
-// AttachmentAction is a button to be included in the attachment. Required when
-// using message buttons and otherwise not useful. A maximum of 5 actions may be
+// AttachmentAction is a button or menu to be included in the attachment. Required when
+// using message buttons or menus and otherwise not useful. A maximum of 5 actions may be
 // provided per attachment.
 type AttachmentAction struct {
-	Name    string             `json:"name"`              // Required.
-	Text    string             `json:"text"`              // Required.
-	Style   string             `json:"style,omitempty"`   // Optional. Allowed values: "default", "primary", "danger"
-	Type    string             `json:"type"`              // Required. Must be set to "button"
-	Value   string             `json:"value,omitempty"`   // Optional.
-	Confirm *ConfirmationField `json:"confirm,omitempty"` // Optional.
+	Name            string                        `json:"name"`                       // Required.
+	Text            string                        `json:"text"`                       // Required.
+	Style           string                        `json:"style,omitempty"`            // Optional. Allowed values: "default", "primary", "danger".
+	Type            string                        `json:"type"`                       // Required. Must be set to "button" or "select".
+	Value           string                        `json:"value,omitempty"`            // Optional.
+	DataSource      string                        `json:"data_source,omitempty"`      // Optional.
+	MinQueryLength  int                           `json:"min_query_length,omitempty"` // Optional. Default value is 1.
+	Options         []AttachmentActionOption      `json:"options,omitempty"`          // Optional. Maximum of 100 options can be provided in each menu.
+	SelectedOptions []AttachmentActionOption      `json:"selected_options,omitempty"` // Optional. The first element of this array will be set as the pre-selected option for this menu.
+	OptionGroups    []AttachmentActionOptionGroup `json:"option_groups,omitempty"`    // Optional.
+	Confirm         *ConfirmationField            `json:"confirm,omitempty"`          // Optional.
+}
+
+// AttachmentActionOption the individual option to appear in action menu.
+type AttachmentActionOption struct {
+	Text        string `json:"text"`                  // Required.
+	Value       string `json:"value"`                 // Required.
+	Description string `json:"description,omitempty"` // Optional. Up to 30 characters.
+}
+
+// AttachmentActionOptionGroup is a semi-hierarchal way to list available options to appear in action menu.
+type AttachmentActionOptionGroup struct {
+	Text    string                   `json:"text"`    // Required.
+	Options []AttachmentActionOption `json:"options"` // Required.
 }
 
 // AttachmentActionCallback is sent from Slack when a user clicks a button in an interactive message (aka AttachmentAction)

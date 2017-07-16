@@ -2,10 +2,11 @@ package slack
 
 // OutgoingMessage is used for the realtime API, and seems incomplete.
 type OutgoingMessage struct {
-	ID      int    `json:"id"`
-	Channel string `json:"channel,omitempty"`
-	Text    string `json:"text,omitempty"`
-	Type    string `json:"type,omitempty"`
+	ID              int    `json:"id"`
+	Channel         string `json:"channel,omitempty"`
+	Text            string `json:"text,omitempty"`
+	Type            string `json:"type,omitempty"`
+	ThreadTimestamp string `json:"thread_ts,omitempty"`
 }
 
 // Message is an auxiliary type to allow us to have a message containing sub messages
@@ -17,15 +18,16 @@ type Message struct {
 // Msg contains information about a slack message
 type Msg struct {
 	// Basic Message
-	Type        string       `json:"type,omitempty"`
-	Channel     string       `json:"channel,omitempty"`
-	User        string       `json:"user,omitempty"`
-	Text        string       `json:"text,omitempty"`
-	Timestamp   string       `json:"ts,omitempty"`
-	IsStarred   bool         `json:"is_starred,omitempty"`
-	PinnedTo    []string     `json:"pinned_to, omitempty"`
-	Attachments []Attachment `json:"attachments,omitempty"`
-	Edited      *Edited      `json:"edited,omitempty"`
+	Type            string       `json:"type,omitempty"`
+	Channel         string       `json:"channel,omitempty"`
+	User            string       `json:"user,omitempty"`
+	Text            string       `json:"text,omitempty"`
+	Timestamp       string       `json:"ts,omitempty"`
+	ThreadTimestamp string       `json:"thread_ts,omitempty"`
+	IsStarred       bool         `json:"is_starred,omitempty"`
+	PinnedTo        []string     `json:"pinned_to, omitempty"`
+	Attachments     []Attachment `json:"attachments,omitempty"`
+	Edited          *Edited      `json:"edited,omitempty"`
 
 	// Message Subtypes
 	SubType string `json:"subtype,omitempty"`
@@ -56,6 +58,11 @@ type Msg struct {
 	// channel_archive, group_archive
 	Members []string `json:"members,omitempty"`
 
+	// channels.replies, groups.replies, im.replies, mpim.replies
+	ReplyCount   int     `json:"reply_count,omitempty"`
+	Replies      []Reply `json:"replies,omitempty"`
+	ParentUserId string  `json:"parent_user_id,omitempty"`
+
 	// file_share, file_comment, file_mention
 	File *File `json:"file,omitempty"`
 
@@ -84,6 +91,12 @@ type Icon struct {
 
 // Edited indicates that a message has been edited.
 type Edited struct {
+	User      string `json:"user,omitempty"`
+	Timestamp string `json:"ts,omitempty"`
+}
+
+// Reply contains information about a reply for a thread
+type Reply struct {
 	User      string `json:"user,omitempty"`
 	Timestamp string `json:"ts,omitempty"`
 }
