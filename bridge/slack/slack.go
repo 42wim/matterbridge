@@ -18,8 +18,6 @@ type MMMessage struct {
 	Channel   string
 	Username  string
 	UserID    string
-	Thread_ts string
-	Ts	  string
 	Raw       *slack.MessageEvent
 }
 
@@ -223,9 +221,6 @@ func (b *Bslack) handleSlack() {
 		if b.Config.WebhookURL == "" && b.Config.WebhookBindAddress == "" && message.Username == b.si.User.Name {
 			continue
 		}
-		if message.Ts == message.Thread_ts {
-			continue
-		}
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
 			text = b.replaceURL(text)
@@ -244,7 +239,7 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 			// ignore first message
 			if count > 0 {
 				flog.Debugf("Receiving from slackclient %#v", ev)
-				if !b.Config.EditDisable && ev.SubMessage != nil {
+				if !b.Config.EditDisable && ev.SubMessage != nil && ev.SubMessage.ThreadTimestamp != ev.SubMessage.Timestamp {
 					flog.Debugf("SubMessage %#v", ev.SubMessage)
 					ev.User = ev.SubMessage.User
 					ev.Text = ev.SubMessage.Text + b.Config.EditSuffix
