@@ -14,11 +14,13 @@ import (
 )
 
 type MMMessage struct {
-	Text     string
-	Channel  string
-	Username string
-	UserID   string
-	Raw      *slack.MessageEvent
+	Text      string
+	Channel   string
+	Username  string
+	UserID    string
+	Thread_ts string
+	Ts	  string
+	Raw       *slack.MessageEvent
 }
 
 type Bslack struct {
@@ -219,6 +221,9 @@ func (b *Bslack) handleSlack() {
 	for message := range mchan {
 		// do not send messages from ourself
 		if b.Config.WebhookURL == "" && b.Config.WebhookBindAddress == "" && message.Username == b.si.User.Name {
+			continue
+		}
+		if message.Ts == message.Thread_ts {
 			continue
 		}
 		texts := strings.Split(message.Text, "\n")
