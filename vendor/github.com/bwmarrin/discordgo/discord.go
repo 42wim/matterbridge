@@ -13,10 +13,18 @@
 // Package discordgo provides Discord binding for Go
 package discordgo
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"net/http"
+	"time"
+)
 
-// VERSION of Discordgo, follows Symantic Versioning. (http://semver.org/)
-const VERSION = "0.15.0"
+// VERSION of DiscordGo, follows Semantic Versioning. (http://semver.org/)
+const VERSION = "0.16.0"
+
+// ErrMFA will be risen by New when the user has 2FA.
+var ErrMFA = errors.New("account has 2FA enabled")
 
 // New creates a new Discord session and will automate some startup
 // tasks if given enough information to do so.  Currently you can pass zero
@@ -31,6 +39,12 @@ const VERSION = "0.15.0"
 //     With an email, password and auth token - Discord will verify the auth
 //         token, if it is invalid it will sign in with the provided
 //         credentials. This is the Discord recommended way to sign in.
+//
+// NOTE: While email/pass authentication is supported by DiscordGo it is
+// HIGHLY DISCOURAGED by Discord. Please only use email/pass to obtain a token
+// and then use that authentication token for all future connections.
+// Also, doing any form of automation with a user (non Bot) account may result
+// in that account being permanently banned from Discord.
 func New(args ...interface{}) (s *Session, err error) {
 
 	// Create an empty Session interface.
@@ -43,6 +57,8 @@ func New(args ...interface{}) (s *Session, err error) {
 		ShardID:                0,
 		ShardCount:             1,
 		MaxRestRetries:         3,
+		Client:                 &http.Client{Timeout: (20 * time.Second)},
+		sequence:               new(int64),
 	}
 
 	// If no arguments are passed return the empty Session interface.
@@ -60,7 +76,7 @@ func New(args ...interface{}) (s *Session, err error) {
 
 		case []string:
 			if len(v) > 3 {
-				err = fmt.Errorf("Too many string parameters provided.")
+				err = fmt.Errorf("too many string parameters provided")
 				return
 			}
 
@@ -91,7 +107,7 @@ func New(args ...interface{}) (s *Session, err error) {
 			} else if s.Token == "" {
 				s.Token = v
 			} else {
-				err = fmt.Errorf("Too many string parameters provided.")
+				err = fmt.Errorf("too many string parameters provided")
 				return
 			}
 
@@ -99,7 +115,7 @@ func New(args ...interface{}) (s *Session, err error) {
 			// TODO: Parse configuration struct
 
 		default:
-			err = fmt.Errorf("Unsupported parameter type provided.")
+			err = fmt.Errorf("unsupported parameter type provided")
 			return
 		}
 	}
@@ -113,7 +129,11 @@ func New(args ...interface{}) (s *Session, err error) {
 	} else {
 		err = s.Login(auth, pass)
 		if err != nil || s.Token == "" {
-			err = fmt.Errorf("Unable to fetch discord authentication token. %v", err)
+			if s.MFA {
+				err = ErrMFA
+			} else {
+				err = fmt.Errorf("Unable to fetch discord authentication token. %v", err)
+			}
 			return
 		}
 	}

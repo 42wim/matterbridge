@@ -2,7 +2,6 @@ package discordgo
 
 import (
 	"encoding/json"
-	"time"
 )
 
 // This file contains all the possible structs that can be
@@ -28,7 +27,7 @@ type RateLimit struct {
 // Event provides a basic initial struct for all websocket events.
 type Event struct {
 	Operation int             `json:"op"`
-	Sequence  int             `json:"s"`
+	Sequence  int64           `json:"s"`
 	Type      string          `json:"t"`
 	RawData   json.RawMessage `json:"d"`
 	// Struct contains one of the other types in this file.
@@ -37,19 +36,19 @@ type Event struct {
 
 // A Ready stores all data for the websocket READY event.
 type Ready struct {
-	Version           int           `json:"v"`
-	SessionID         string        `json:"session_id"`
-	HeartbeatInterval time.Duration `json:"heartbeat_interval"`
-	User              *User         `json:"user"`
-	ReadState         []*ReadState  `json:"read_state"`
-	PrivateChannels   []*Channel    `json:"private_channels"`
-	Guilds            []*Guild      `json:"guilds"`
+	Version         int          `json:"v"`
+	SessionID       string       `json:"session_id"`
+	User            *User        `json:"user"`
+	ReadState       []*ReadState `json:"read_state"`
+	PrivateChannels []*Channel   `json:"private_channels"`
+	Guilds          []*Guild     `json:"guilds"`
 
 	// Undocumented fields
 	Settings          *Settings            `json:"user_settings"`
 	UserGuildSettings []*UserGuildSettings `json:"user_guild_settings"`
 	Relationships     []*Relationship      `json:"relationships"`
 	Presences         []*Presence          `json:"presences"`
+	Notes             map[string]string    `json:"notes"`
 }
 
 // ChannelCreate is the data for a ChannelCreate event.
@@ -179,6 +178,11 @@ type MessageReactionRemove struct {
 	*MessageReaction
 }
 
+// MessageReactionRemoveAll is the data for a MessageReactionRemoveAll event.
+type MessageReactionRemoveAll struct {
+	*MessageReaction
+}
+
 // PresencesReplace is the data for a PresencesReplace event.
 type PresencesReplace []*Presence
 
@@ -191,8 +195,7 @@ type PresenceUpdate struct {
 
 // Resumed is the data for a Resumed event.
 type Resumed struct {
-	HeartbeatInterval time.Duration `json:"heartbeat_interval"`
-	Trace             []string      `json:"_trace"`
+	Trace []string `json:"_trace"`
 }
 
 // RelationshipAdd is the data for a RelationshipAdd event.
@@ -225,6 +228,12 @@ type UserGuildSettingsUpdate struct {
 	*UserGuildSettings
 }
 
+// UserNoteUpdate is the data for a UserNoteUpdate event.
+type UserNoteUpdate struct {
+	ID   string `json:"id"`
+	Note string `json:"note"`
+}
+
 // VoiceServerUpdate is the data for a VoiceServerUpdate event.
 type VoiceServerUpdate struct {
 	Token    string `json:"token"`
@@ -235,4 +244,10 @@ type VoiceServerUpdate struct {
 // VoiceStateUpdate is the data for a VoiceStateUpdate event.
 type VoiceStateUpdate struct {
 	*VoiceState
+}
+
+// MessageDeleteBulk is the data for a MessageDeleteBulk event
+type MessageDeleteBulk struct {
+	Messages  []string `json:"ids"`
+	ChannelID string   `json:"channel_id"`
 }

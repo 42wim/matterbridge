@@ -29,8 +29,15 @@ import (
 	"time"
 )
 
-// ErrJSONUnmarshal is returned for JSON Unmarshall errors.
-var ErrJSONUnmarshal = errors.New("json unmarshal")
+// All error constants
+var (
+	ErrJSONUnmarshal           = errors.New("json unmarshal")
+	ErrStatusOffline           = errors.New("You can't set your Status to offline")
+	ErrVerificationLevelBounds = errors.New("VerificationLevel out of bounds, should be between 0 and 3")
+	ErrPruneDaysBounds         = errors.New("the number of days should be more than or equal to 1")
+	ErrGuildNoIcon             = errors.New("guild does not have an icon set")
+	ErrGuildNoSplash           = errors.New("guild does not have a splash set")
+)
 
 // Request is the same as RequestWithBucketID but the bucket id is the same as the urlStr
 func (s *Session) Request(method, urlStr string, data interface{}) (response []byte, err error) {
@@ -87,9 +94,7 @@ func (s *Session) request(method, urlStr, contentType string, b []byte, bucketID
 		}
 	}
 
-	client := &http.Client{Timeout: (20 * time.Second)}
-
-	resp, err := client.Do(req)
+	resp, err := s.Client.Do(req)
 	if err != nil {
 		bucket.Release(nil)
 		return
@@ -175,6 +180,12 @@ func unmarshal(data []byte, v interface{}) error {
 // ------------------------------------------------------------------------------------------------
 
 // Login asks the Discord server for an authentication token.
+//
+// NOTE: While email/pass authentication is supported by DiscordGo it is
+// HIGHLY DISCOURAGED by Discord. Please only use email/pass to obtain a token
+// and then use that authentication token for all future connections.
+// Also, doing any form of automation with a user (non Bot) account may result
+// in that account being permanently banned from Discord.
 func (s *Session) Login(email, password string) (err error) {
 
 	data := struct {
@@ -189,6 +200,7 @@ func (s *Session) Login(email, password string) (err error) {
 
 	temp := struct {
 		Token string `json:"token"`
+		MFA   bool   `json:"mfa"`
 	}{}
 
 	err = unmarshal(response, &temp)
@@ -197,6 +209,7 @@ func (s *Session) Login(email, password string) (err error) {
 	}
 
 	s.Token = temp.Token
+	s.MFA = temp.MFA
 	return
 }
 
@@ -264,15 +277,21 @@ func (s *Session) User(userID string) (st *User, err error) {
 	return
 }
 
-// UserAvatar returns an image.Image of a users Avatar.
+// UserAvatar is deprecated. Please use UserAvatarDecode
 // userID    : A user ID or "@me" which is a shortcut of current user ID
 func (s *Session) UserAvatar(userID string) (img image.Image, err error) {
 	u, err := s.User(userID)
 	if err != nil {
 		return
 	}
+	img, err = s.UserAvatarDecode(u)
+	return
+}
 
-	body, err := s.RequestWithBucketID("GET", EndpointUserAvatar(userID, u.Avatar), nil, EndpointUserAvatar("", ""))
+// UserAvatarDecode returns an image.Image of a user's Avatar
+// user : The user which avatar should be retrieved
+func (s *Session) UserAvatarDecode(u *User) (img image.Image, err error) {
+	body, err := s.RequestWithBucketID("GET", EndpointUserAvatar(u.ID, u.Avatar), nil, EndpointUserAvatar("", ""))
 	if err != nil {
 		return
 	}
@@ -292,7 +311,7 @@ func (s *Session) UserUpdate(email, password, username, avatar, newPassword stri
 	data := struct {
 		Email       string `json:"email"`
 		Password    string `json:"password"`
-		Username    string `json:"username"`
+		Username    string `json:"username,omitempty"`
 		Avatar      string `json:"avatar,omitempty"`
 		NewPassword string `json:"new_password,omitempty"`
 	}{email, password, username, avatar, newPassword}
@@ -322,7 +341,7 @@ func (s *Session) UserSettings() (st *Settings, err error) {
 // status   : The new status (Actual valid status are 'online','idle','dnd','invisible')
 func (s *Session) UserUpdateStatus(status Status) (st *Settings, err error) {
 	if status == StatusOffline {
-		err = errors.New("You can't set your Status to offline")
+		err = ErrStatusOffline
 		return
 	}
 
@@ -370,9 +389,30 @@ func (s *Session) UserChannelCreate(recipientID string) (st *Channel, err error)
 }
 
 // UserGuilds returns an array of UserGuild structures for all guilds.
-func (s *Session) UserGuilds() (st []*UserGuild, err error) {
+// limit     : The number guilds that can be returned. (max 100)
+// beforeID  : If provided all guilds returned will be before given ID.
+// afterID   : If provided all guilds returned will be after given ID.
+func (s *Session) UserGuilds(limit int, beforeID, afterID string) (st []*UserGuild, err error) {
 
-	body, err := s.RequestWithBucketID("GET", EndpointUserGuilds("@me"), nil, EndpointUserGuilds(""))
+	v := url.Values{}
+
+	if limit > 0 {
+		v.Set("limit", strconv.Itoa(limit))
+	}
+	if afterID != "" {
+		v.Set("after", afterID)
+	}
+	if beforeID != "" {
+		v.Set("before", beforeID)
+	}
+
+	uri := EndpointUserGuilds("@me")
+
+	if len(v) > 0 {
+		uri = fmt.Sprintf("%s?%s", uri, v.Encode())
+	}
+
+	body, err := s.RequestWithBucketID("GET", uri, nil, EndpointUserGuilds(""))
 	if err != nil {
 		return
 	}
@@ -402,6 +442,13 @@ func (s *Session) UserGuildSettingsEdit(guildID string, settings *UserGuildSetti
 // NOTE: This function is now deprecated and will be removed in the future.
 // Please see the same function inside state.go
 func (s *Session) UserChannelPermissions(userID, channelID string) (apermissions int, err error) {
+	// Try to just get permissions from state.
+	apermissions, err = s.State.UserChannelPermissions(userID, channelID)
+	if err == nil {
+		return
+	}
+
+	// Otherwise try get as much data from state as possible, falling back to the network.
 	channel, err := s.State.Channel(channelID)
 	if err != nil || channel == nil {
 		channel, err = s.Channel(channelID)
@@ -431,6 +478,19 @@ func (s *Session) UserChannelPermissions(userID, channelID string) (apermissions
 		}
 	}
 
+	return memberPermissions(guild, channel, member), nil
+}
+
+// Calculates the permissions for a member.
+// https://support.discordapp.com/hc/en-us/articles/206141927-How-is-the-permission-hierarchy-structured-
+func memberPermissions(guild *Guild, channel *Channel, member *Member) (apermissions int) {
+	userID := member.User.ID
+
+	if userID == guild.OwnerID {
+		apermissions = PermissionAll
+		return
+	}
+
 	for _, role := range guild.Roles {
 		if role.ID == guild.ID {
 			apermissions |= role.Permissions
@@ -447,20 +507,35 @@ func (s *Session) UserChannelPermissions(userID, channelID string) (apermissions
 		}
 	}
 
-	if apermissions&PermissionAdministrator > 0 {
+	if apermissions&PermissionAdministrator == PermissionAdministrator {
 		apermissions |= PermissionAll
 	}
+
+	// Apply @everyone overrides from the channel.
+	for _, overwrite := range channel.PermissionOverwrites {
+		if guild.ID == overwrite.ID {
+			apermissions &= ^overwrite.Deny
+			apermissions |= overwrite.Allow
+			break
+		}
+	}
+
+	denies := 0
+	allows := 0
 
 	// Member overwrites can override role overrides, so do two passes
 	for _, overwrite := range channel.PermissionOverwrites {
 		for _, roleID := range member.Roles {
 			if overwrite.Type == "role" && roleID == overwrite.ID {
-				apermissions &= ^overwrite.Deny
-				apermissions |= overwrite.Allow
+				denies |= overwrite.Deny
+				allows |= overwrite.Allow
 				break
 			}
 		}
 	}
+
+	apermissions &= ^denies
+	apermissions |= allows
 
 	for _, overwrite := range channel.PermissionOverwrites {
 		if overwrite.Type == "member" && overwrite.ID == userID {
@@ -470,11 +545,11 @@ func (s *Session) UserChannelPermissions(userID, channelID string) (apermissions
 		}
 	}
 
-	if apermissions&PermissionAdministrator > 0 {
+	if apermissions&PermissionAdministrator == PermissionAdministrator {
 		apermissions |= PermissionAllChannel
 	}
 
-	return
+	return apermissions
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -527,7 +602,7 @@ func (s *Session) GuildEdit(guildID string, g GuildParams) (st *Guild, err error
 	if g.VerificationLevel != nil {
 		val := *g.VerificationLevel
 		if val < 0 || val > 3 {
-			err = errors.New("VerificationLevel out of bounds, should be between 0 and 3")
+			err = ErrVerificationLevelBounds
 			return
 		}
 	}
@@ -551,13 +626,7 @@ func (s *Session) GuildEdit(guildID string, g GuildParams) (st *Guild, err error
 		}
 	}
 
-	data := struct {
-		Name              string             `json:"name,omitempty"`
-		Region            string             `json:"region,omitempty"`
-		VerificationLevel *VerificationLevel `json:"verification_level,omitempty"`
-	}{g.Name, g.Region, g.VerificationLevel}
-
-	body, err := s.RequestWithBucketID("PATCH", EndpointGuild(guildID), data, EndpointGuild(guildID))
+	body, err := s.RequestWithBucketID("PATCH", EndpointGuild(guildID), g, EndpointGuild(guildID))
 	if err != nil {
 		return
 	}
@@ -607,11 +676,28 @@ func (s *Session) GuildBans(guildID string) (st []*GuildBan, err error) {
 // userID    : The ID of a User
 // days      : The number of days of previous comments to delete.
 func (s *Session) GuildBanCreate(guildID, userID string, days int) (err error) {
+	return s.GuildBanCreateWithReason(guildID, userID, "", days)
+}
+
+// GuildBanCreateWithReason bans the given user from the given guild also providing a reaso.
+// guildID   : The ID of a Guild.
+// userID    : The ID of a User
+// reason    : The reason for this ban
+// days      : The number of days of previous comments to delete.
+func (s *Session) GuildBanCreateWithReason(guildID, userID, reason string, days int) (err error) {
 
 	uri := EndpointGuildBan(guildID, userID)
 
+	queryParams := url.Values{}
 	if days > 0 {
-		uri = fmt.Sprintf("%s?delete-message-days=%d", uri, days)
+		queryParams.Set("delete-message-days", strconv.Itoa(days))
+	}
+	if reason != "" {
+		queryParams.Set("reason", reason)
+	}
+
+	if len(queryParams) > 0 {
+		uri += "?" + queryParams.Encode()
 	}
 
 	_, err = s.RequestWithBucketID("PUT", uri, nil, EndpointGuildBan(guildID, ""))
@@ -722,11 +808,16 @@ func (s *Session) GuildMemberMove(guildID, userID, channelID string) (err error)
 // GuildMemberNickname updates the nickname of a guild member
 // guildID   : The ID of a guild
 // userID    : The ID of a user
+// userID    : The ID of a user or "@me" which is a shortcut of the current user ID
 func (s *Session) GuildMemberNickname(guildID, userID, nickname string) (err error) {
 
 	data := struct {
 		Nick string `json:"nick"`
 	}{nickname}
+
+	if userID == "@me" {
+		userID += "/nick"
+	}
 
 	_, err = s.RequestWithBucketID("PATCH", EndpointGuildMember(guildID, userID), data, EndpointGuildMember(guildID, ""))
 	return
@@ -738,7 +829,7 @@ func (s *Session) GuildMemberNickname(guildID, userID, nickname string) (err err
 //  roleID 	  : The ID of a Role to be assigned to the user.
 func (s *Session) GuildMemberRoleAdd(guildID, userID, roleID string) (err error) {
 
-	_, err = s.RequestWithBucketID("PUT", EndpointGuildMemberRole(guildID, userID, roleID), nil, EndpointGuildMemberRole(guildID, userID, roleID))
+	_, err = s.RequestWithBucketID("PUT", EndpointGuildMemberRole(guildID, userID, roleID), nil, EndpointGuildMemberRole(guildID, "", ""))
 
 	return
 }
@@ -749,7 +840,7 @@ func (s *Session) GuildMemberRoleAdd(guildID, userID, roleID string) (err error)
 //  roleID 	  : The ID of a Role to be removed from the user.
 func (s *Session) GuildMemberRoleRemove(guildID, userID, roleID string) (err error) {
 
-	_, err = s.RequestWithBucketID("DELETE", EndpointGuildMemberRole(guildID, userID, roleID), nil, EndpointGuildMemberRole(guildID, userID, roleID))
+	_, err = s.RequestWithBucketID("DELETE", EndpointGuildMemberRole(guildID, userID, roleID), nil, EndpointGuildMemberRole(guildID, "", ""))
 
 	return
 }
@@ -904,7 +995,7 @@ func (s *Session) GuildPruneCount(guildID string, days uint32) (count uint32, er
 	count = 0
 
 	if days <= 0 {
-		err = errors.New("The number of days should be more than or equal to 1.")
+		err = ErrPruneDaysBounds
 		return
 	}
 
@@ -934,7 +1025,7 @@ func (s *Session) GuildPrune(guildID string, days uint32) (count uint32, err err
 	count = 0
 
 	if days <= 0 {
-		err = errors.New("The number of days should be more than or equal to 1.")
+		err = ErrPruneDaysBounds
 		return
 	}
 
@@ -1036,7 +1127,7 @@ func (s *Session) GuildIcon(guildID string) (img image.Image, err error) {
 	}
 
 	if g.Icon == "" {
-		err = errors.New("Guild does not have an icon set.")
+		err = ErrGuildNoIcon
 		return
 	}
 
@@ -1058,7 +1149,7 @@ func (s *Session) GuildSplash(guildID string) (img image.Image, err error) {
 	}
 
 	if g.Splash == "" {
-		err = errors.New("Guild does not have a splash set.")
+		err = ErrGuildNoSplash
 		return
 	}
 
@@ -1156,7 +1247,8 @@ func (s *Session) ChannelTyping(channelID string) (err error) {
 // limit     : The number messages that can be returned. (max 100)
 // beforeID  : If provided all messages returned will be before given ID.
 // afterID   : If provided all messages returned will be after given ID.
-func (s *Session) ChannelMessages(channelID string, limit int, beforeID, afterID string) (st []*Message, err error) {
+// aroundID  : If provided all messages returned will be around given ID.
+func (s *Session) ChannelMessages(channelID string, limit int, beforeID, afterID, aroundID string) (st []*Message, err error) {
 
 	uri := EndpointChannelMessages(channelID)
 
@@ -1169,6 +1261,9 @@ func (s *Session) ChannelMessages(channelID string, limit int, beforeID, afterID
 	}
 	if beforeID != "" {
 		v.Set("before", beforeID)
+	}
+	if aroundID != "" {
+		v.Set("around", aroundID)
 	}
 	if len(v) > 0 {
 		uri = fmt.Sprintf("%s?%s", uri, v.Encode())
@@ -1212,77 +1307,120 @@ func (s *Session) ChannelMessageAck(channelID, messageID, lastToken string) (st 
 	return
 }
 
-// channelMessageSend sends a message to the given channel.
+// ChannelMessageSend sends a message to the given channel.
 // channelID : The ID of a Channel.
 // content   : The message to send.
-// tts       : Whether to send the message with TTS.
-func (s *Session) channelMessageSend(channelID, content string, tts bool) (st *Message, err error) {
+func (s *Session) ChannelMessageSend(channelID string, content string) (*Message, error) {
+	return s.ChannelMessageSendComplex(channelID, &MessageSend{
+		Content: content,
+	})
+}
 
-	// TODO: nonce string ?
-	data := struct {
-		Content string `json:"content"`
-		TTS     bool   `json:"tts"`
-	}{content, tts}
+// ChannelMessageSendComplex sends a message to the given channel.
+// channelID : The ID of a Channel.
+// data      : The message struct to send.
+func (s *Session) ChannelMessageSendComplex(channelID string, data *MessageSend) (st *Message, err error) {
+	if data.Embed != nil && data.Embed.Type == "" {
+		data.Embed.Type = "rich"
+	}
 
-	// Send the message to the given channel
-	response, err := s.RequestWithBucketID("POST", EndpointChannelMessages(channelID), data, EndpointChannelMessages(channelID))
+	endpoint := EndpointChannelMessages(channelID)
+
+	var response []byte
+	if data.File != nil {
+		body := &bytes.Buffer{}
+		bodywriter := multipart.NewWriter(body)
+
+		// What's a better way of doing this? Reflect? Generator? I'm open to suggestions
+
+		if data.Content != "" {
+			if err = bodywriter.WriteField("content", data.Content); err != nil {
+				return
+			}
+		}
+
+		if data.Embed != nil {
+			var embed []byte
+			embed, err = json.Marshal(data.Embed)
+			if err != nil {
+				return
+			}
+			err = bodywriter.WriteField("embed", string(embed))
+			if err != nil {
+				return
+			}
+		}
+
+		if data.Tts {
+			if err = bodywriter.WriteField("tts", "true"); err != nil {
+				return
+			}
+		}
+
+		var writer io.Writer
+		writer, err = bodywriter.CreateFormFile("file", data.File.Name)
+		if err != nil {
+			return
+		}
+
+		_, err = io.Copy(writer, data.File.Reader)
+		if err != nil {
+			return
+		}
+
+		err = bodywriter.Close()
+		if err != nil {
+			return
+		}
+
+		response, err = s.request("POST", endpoint, bodywriter.FormDataContentType(), body.Bytes(), endpoint, 0)
+	} else {
+		response, err = s.RequestWithBucketID("POST", endpoint, data, endpoint)
+	}
 	if err != nil {
 		return
 	}
 
 	err = unmarshal(response, &st)
 	return
-}
-
-// ChannelMessageSend sends a message to the given channel.
-// channelID : The ID of a Channel.
-// content   : The message to send.
-func (s *Session) ChannelMessageSend(channelID string, content string) (st *Message, err error) {
-
-	return s.channelMessageSend(channelID, content, false)
 }
 
 // ChannelMessageSendTTS sends a message to the given channel with Text to Speech.
 // channelID : The ID of a Channel.
 // content   : The message to send.
-func (s *Session) ChannelMessageSendTTS(channelID string, content string) (st *Message, err error) {
-
-	return s.channelMessageSend(channelID, content, true)
+func (s *Session) ChannelMessageSendTTS(channelID string, content string) (*Message, error) {
+	return s.ChannelMessageSendComplex(channelID, &MessageSend{
+		Content: content,
+		Tts:     true,
+	})
 }
 
-// ChannelMessageSendEmbed sends a message to the given channel with embedded data (bot only).
+// ChannelMessageSendEmbed sends a message to the given channel with embedded data.
 // channelID : The ID of a Channel.
 // embed     : The embed data to send.
-func (s *Session) ChannelMessageSendEmbed(channelID string, embed *MessageEmbed) (st *Message, err error) {
-	if embed != nil && embed.Type == "" {
-		embed.Type = "rich"
-	}
-
-	data := struct {
-		Embed *MessageEmbed `json:"embed"`
-	}{embed}
-
-	// Send the message to the given channel
-	response, err := s.RequestWithBucketID("POST", EndpointChannelMessages(channelID), data, EndpointChannelMessages(channelID))
-	if err != nil {
-		return
-	}
-
-	err = unmarshal(response, &st)
-	return
+func (s *Session) ChannelMessageSendEmbed(channelID string, embed *MessageEmbed) (*Message, error) {
+	return s.ChannelMessageSendComplex(channelID, &MessageSend{
+		Embed: embed,
+	})
 }
 
 // ChannelMessageEdit edits an existing message, replacing it entirely with
 // the given content.
-// channeld  : The ID of a Channel
-// messageID : the ID of a Message
-func (s *Session) ChannelMessageEdit(channelID, messageID, content string) (st *Message, err error) {
+// channelID  : The ID of a Channel
+// messageID  : The ID of a Message
+// content    : The contents of the message
+func (s *Session) ChannelMessageEdit(channelID, messageID, content string) (*Message, error) {
+	return s.ChannelMessageEditComplex(NewMessageEdit(channelID, messageID).SetContent(content))
+}
 
-	data := struct {
-		Content string `json:"content"`
-	}{content}
+// ChannelMessageEditComplex edits an existing message, replacing it entirely with
+// the given MessageEdit struct
+func (s *Session) ChannelMessageEditComplex(m *MessageEdit) (st *Message, err error) {
+	if m.Embed != nil && m.Embed.Type == "" {
+		m.Embed.Type = "rich"
+	}
 
-	response, err := s.RequestWithBucketID("PATCH", EndpointChannelMessage(channelID, messageID), data, EndpointChannelMessage(channelID, ""))
+	response, err := s.RequestWithBucketID("PATCH", EndpointChannelMessage(m.Channel, m.ID), m, EndpointChannelMessage(m.Channel, ""))
 	if err != nil {
 		return
 	}
@@ -1291,26 +1429,12 @@ func (s *Session) ChannelMessageEdit(channelID, messageID, content string) (st *
 	return
 }
 
-// ChannelMessageEditEmbed edits an existing message with embedded data (bot only).
+// ChannelMessageEditEmbed edits an existing message with embedded data.
 // channelID : The ID of a Channel
 // messageID : The ID of a Message
 // embed     : The embed data to send
-func (s *Session) ChannelMessageEditEmbed(channelID, messageID string, embed *MessageEmbed) (st *Message, err error) {
-	if embed != nil && embed.Type == "" {
-		embed.Type = "rich"
-	}
-
-	data := struct {
-		Embed *MessageEmbed `json:"embed"`
-	}{embed}
-
-	response, err := s.RequestWithBucketID("PATCH", EndpointChannelMessage(channelID, messageID), data, EndpointChannelMessage(channelID, ""))
-	if err != nil {
-		return
-	}
-
-	err = unmarshal(response, &st)
-	return
+func (s *Session) ChannelMessageEditEmbed(channelID, messageID string, embed *MessageEmbed) (*Message, error) {
+	return s.ChannelMessageEditComplex(NewMessageEdit(channelID, messageID).SetEmbed(embed))
 }
 
 // ChannelMessageDelete deletes a message from the Channel.
@@ -1385,48 +1509,18 @@ func (s *Session) ChannelMessagesPinned(channelID string) (st []*Message, err er
 // channelID : The ID of a Channel.
 // name: The name of the file.
 // io.Reader : A reader for the file contents.
-func (s *Session) ChannelFileSend(channelID, name string, r io.Reader) (st *Message, err error) {
-	return s.ChannelFileSendWithMessage(channelID, "", name, r)
+func (s *Session) ChannelFileSend(channelID, name string, r io.Reader) (*Message, error) {
+	return s.ChannelMessageSendComplex(channelID, &MessageSend{File: &File{Name: name, Reader: r}})
 }
 
 // ChannelFileSendWithMessage sends a file to the given channel with an message.
+// DEPRECATED. Use ChannelMessageSendComplex instead.
 // channelID : The ID of a Channel.
 // content: Optional Message content.
 // name: The name of the file.
 // io.Reader : A reader for the file contents.
-func (s *Session) ChannelFileSendWithMessage(channelID, content string, name string, r io.Reader) (st *Message, err error) {
-
-	body := &bytes.Buffer{}
-	bodywriter := multipart.NewWriter(body)
-
-	if len(content) != 0 {
-		if err := bodywriter.WriteField("content", content); err != nil {
-			return nil, err
-		}
-	}
-
-	writer, err := bodywriter.CreateFormFile("file", name)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = io.Copy(writer, r)
-	if err != nil {
-		return
-	}
-
-	err = bodywriter.Close()
-	if err != nil {
-		return
-	}
-
-	response, err := s.request("POST", EndpointChannelMessages(channelID), bodywriter.FormDataContentType(), body.Bytes(), EndpointChannelMessages(channelID), 0)
-	if err != nil {
-		return
-	}
-
-	err = unmarshal(response, &st)
-	return
+func (s *Session) ChannelFileSendWithMessage(channelID, content string, name string, r io.Reader) (*Message, error) {
+	return s.ChannelMessageSendComplex(channelID, &MessageSend{File: &File{Name: name, Reader: r}, Content: content})
 }
 
 // ChannelInvites returns an array of Invite structures for the given channel
@@ -1563,7 +1657,7 @@ func (s *Session) VoiceICE() (st *VoiceICE, err error) {
 // Functions specific to Discord Websockets
 // ------------------------------------------------------------------------------------------------
 
-// Gateway returns the a websocket Gateway address
+// Gateway returns the websocket Gateway address
 func (s *Session) Gateway() (gateway string, err error) {
 
 	response, err := s.RequestWithBucketID("GET", EndpointGateway, nil, EndpointGateway)
@@ -1805,6 +1899,20 @@ func (s *Session) MessageReactions(channelID, messageID, emojiID string, limit i
 	}
 
 	err = unmarshal(body, &st)
+	return
+}
+
+// ------------------------------------------------------------------------------------------------
+// Functions specific to user notes
+// ------------------------------------------------------------------------------------------------
+
+// UserNoteSet sets the note for a specific user.
+func (s *Session) UserNoteSet(userID string, message string) (err error) {
+	data := struct {
+		Note string `json:"note"`
+	}{message}
+
+	_, err = s.RequestWithBucketID("PUT", EndpointUserNotes(userID), data, EndpointUserNotes(""))
 	return
 }
 

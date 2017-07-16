@@ -1,7 +1,5 @@
 package discordgo
 
-import "fmt"
-
 // EventHandler is an interface for Discord events.
 type EventHandler interface {
 	// Type returns the type of event this handler belongs to.
@@ -45,12 +43,15 @@ var registeredInterfaceProviders = map[string]EventInterfaceProvider{}
 
 // registerInterfaceProvider registers a provider so that DiscordGo can
 // access it's New() method.
-func registerInterfaceProvider(eh EventInterfaceProvider) error {
+func registerInterfaceProvider(eh EventInterfaceProvider) {
 	if _, ok := registeredInterfaceProviders[eh.Type()]; ok {
-		return fmt.Errorf("event %s already registered", eh.Type())
+		return
+		// XXX:
+		// if we should error here, we need to do something with it.
+		// fmt.Errorf("event %s already registered", eh.Type())
 	}
 	registeredInterfaceProviders[eh.Type()] = eh
-	return nil
+	return
 }
 
 // eventHandlerInstance is a wrapper around an event handler, as functions
@@ -210,14 +211,15 @@ func (s *Session) onInterface(i interface{}) {
 		setGuildIds(t.Guild)
 	case *GuildUpdate:
 		setGuildIds(t.Guild)
-	case *Resumed:
-		s.onResumed(t)
 	case *VoiceServerUpdate:
 		go s.onVoiceServerUpdate(t)
 	case *VoiceStateUpdate:
 		go s.onVoiceStateUpdate(t)
 	}
-	s.State.onInterface(s, i)
+	err := s.State.onInterface(s, i)
+	if err != nil {
+		s.log(LogDebug, "error dispatching internal event, %s", err)
+	}
 }
 
 // onReady handles the ready event.
@@ -225,14 +227,4 @@ func (s *Session) onReady(r *Ready) {
 
 	// Store the SessionID within the Session struct.
 	s.sessionID = r.SessionID
-
-	// Start the heartbeat to keep the connection alive.
-	go s.heartbeat(s.wsConn, s.listening, r.HeartbeatInterval)
-}
-
-// onResumed handles the resumed event.
-func (s *Session) onResumed(r *Resumed) {
-
-	// Start the heartbeat to keep the connection alive.
-	go s.heartbeat(s.wsConn, s.listening, r.HeartbeatInterval)
 }

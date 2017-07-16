@@ -15,13 +15,18 @@ package discordgo
 
 // An Application struct stores values for a Discord OAuth2 Application
 type Application struct {
-	ID           string    `json:"id,omitempty"`
-	Name         string    `json:"name"`
-	Description  string    `json:"description,omitempty"`
-	Icon         string    `json:"icon,omitempty"`
-	Secret       string    `json:"secret,omitempty"`
-	RedirectURIs *[]string `json:"redirect_uris,omitempty"`
-	Owner        *User     `json:"owner"`
+	ID                  string    `json:"id,omitempty"`
+	Name                string    `json:"name"`
+	Description         string    `json:"description,omitempty"`
+	Icon                string    `json:"icon,omitempty"`
+	Secret              string    `json:"secret,omitempty"`
+	RedirectURIs        *[]string `json:"redirect_uris,omitempty"`
+	BotRequireCodeGrant bool      `json:"bot_require_code_grant,omitempty"`
+	BotPublic           bool      `json:"bot_public,omitempty"`
+	RPCApplicationState int       `json:"rpc_application_state,omitempty"`
+	Flags               int       `json:"flags,omitempty"`
+	Owner               *User     `json:"owner"`
+	Bot                 *User     `json:"bot"`
 }
 
 // Application returns an Application structure of a specific Application

@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -21,6 +23,7 @@ var token string
 var buffer = make([][]byte, 0)
 
 func main() {
+
 	if token == "" {
 		fmt.Println("No token provided. Please run: airhorn -t <bot token>")
 		return
@@ -56,21 +59,37 @@ func main() {
 		fmt.Println("Error opening Discord session: ", err)
 	}
 
+	// Wait here until CTRL-C or other term signal is received.
 	fmt.Println("Airhorn is now running.  Press CTRL-C to exit.")
-	// Simple way to keep program running until CTRL-C is pressed.
-	<-make(chan struct{})
-	return
+	sc := make(chan os.Signal, 1)
+	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
+	<-sc
+
+	// Cleanly close down the Discord session.
+	dg.Close()
 }
 
+// This function will be called (due to AddHandler above) when the bot receives
+// the "ready" event from Discord.
 func ready(s *discordgo.Session, event *discordgo.Ready) {
+
 	// Set the playing status.
-	_ = s.UpdateStatus(0, "!airhorn")
+	s.UpdateStatus(0, "!airhorn")
 }
 
 // This function will be called (due to AddHandler above) every time a new
 // message is created on any channel that the autenticated bot has access to.
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+
+	// Ignore all messages created by the bot itself
+	// This isn't required in this specific example but it's a good practice.
+	if m.Author.ID == s.State.User.ID {
+		return
+	}
+
+	// check if the message is "!airhorn"
 	if strings.HasPrefix(m.Content, "!airhorn") {
+
 		// Find the channel that the message came from.
 		c, err := s.State.Channel(m.ChannelID)
 		if err != nil {
@@ -85,7 +104,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			return
 		}
 
-		// Look for the message sender in that guilds current voice states.
+		// Look for the message sender in that guild's current voice states.
 		for _, vs := range g.VoiceStates {
 			if vs.UserID == m.Author.ID {
 				err = playSound(s, g.ID, vs.ChannelID)
@@ -102,6 +121,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 // This function will be called (due to AddHandler above) every time a new
 // guild is joined.
 func guildCreate(s *discordgo.Session, event *discordgo.GuildCreate) {
+
 	if event.Guild.Unavailable {
 		return
 	}
@@ -116,8 +136,8 @@ func guildCreate(s *discordgo.Session, event *discordgo.GuildCreate) {
 
 // loadSound attempts to load an encoded sound file from disk.
 func loadSound() error {
-	file, err := os.Open("airhorn.dca")
 
+	file, err := os.Open("airhorn.dca")
 	if err != nil {
 		fmt.Println("Error opening dca file :", err)
 		return err
@@ -131,7 +151,7 @@ func loadSound() error {
 
 		// If this is the end of the file, just return.
 		if err == io.EOF || err == io.ErrUnexpectedEOF {
-			file.Close()
+			err := file.Close()
 			if err != nil {
 				return err
 			}
@@ -160,6 +180,7 @@ func loadSound() error {
 
 // playSound plays the current buffer to the provided channel.
 func playSound(s *discordgo.Session, guildID, channelID string) (err error) {
+
 	// Join the provided voice channel.
 	vc, err := s.ChannelVoiceJoin(guildID, channelID, false, true)
 	if err != nil {
@@ -170,7 +191,7 @@ func playSound(s *discordgo.Session, guildID, channelID string) (err error) {
 	time.Sleep(250 * time.Millisecond)
 
 	// Start speaking.
-	_ = vc.Speaking(true)
+	vc.Speaking(true)
 
 	// Send the buffer data.
 	for _, buff := range buffer {
@@ -178,13 +199,13 @@ func playSound(s *discordgo.Session, guildID, channelID string) (err error) {
 	}
 
 	// Stop speaking
-	_ = vc.Speaking(false)
+	vc.Speaking(false)
 
 	// Sleep for a specificed amount of time before ending.
 	time.Sleep(250 * time.Millisecond)
 
 	// Disconnect from the provided voice channel.
-	_ = vc.Disconnect()
+	vc.Disconnect()
 
 	return nil
 }

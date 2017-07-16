@@ -13,6 +13,7 @@ package discordgo
 
 import (
 	"encoding/json"
+	"net/http"
 	"strconv"
 	"sync"
 	"time"
@@ -28,6 +29,7 @@ type Session struct {
 
 	// Authentication token for this session
 	Token string
+	MFA   bool
 
 	// Debug for printing JSON request/responses
 	Debug    bool // Deprecated, will be removed.
@@ -73,6 +75,9 @@ type Session struct {
 	// StateEnabled is true.
 	State *State
 
+	// The http client used for REST requests
+	Client *http.Client
+
 	// Event handlers
 	handlersMu   sync.RWMutex
 	handlers     map[string][]*eventHandlerInstance
@@ -88,7 +93,7 @@ type Session struct {
 	ratelimiter *RateLimiter
 
 	// sequence tracks the current gateway api websocket sequence number
-	sequence int
+	sequence *int64
 
 	// stores sessions current Discord Gateway
 	gateway string
@@ -98,12 +103,6 @@ type Session struct {
 
 	// used to make sure gateway websocket writes do not happen concurrently
 	wsMutex sync.Mutex
-}
-
-type rateLimitMutex struct {
-	sync.Mutex
-	url map[string]*sync.Mutex
-	// bucket map[string]*sync.Mutex // TODO :)
 }
 
 // A VoiceRegion stores data for a specific voice region server.
@@ -235,9 +234,15 @@ type UserGuild struct {
 
 // A GuildParams stores all the data needed to update discord guild settings
 type GuildParams struct {
-	Name              string             `json:"name"`
-	Region            string             `json:"region"`
-	VerificationLevel *VerificationLevel `json:"verification_level"`
+	Name                        string             `json:"name,omitempty"`
+	Region                      string             `json:"region,omitempty"`
+	VerificationLevel           *VerificationLevel `json:"verification_level,omitempty"`
+	DefaultMessageNotifications int                `json:"default_message_notifications,omitempty"` // TODO: Separate type?
+	AfkChannelID                string             `json:"afk_channel_id,omitempty"`
+	AfkTimeout                  int                `json:"afk_timeout,omitempty"`
+	Icon                        string             `json:"icon,omitempty"`
+	OwnerID                     string             `json:"owner_id,omitempty"`
+	Splash                      string             `json:"splash,omitempty"`
 }
 
 // A Role stores information about Discord guild member roles.
@@ -250,6 +255,21 @@ type Role struct {
 	Color       int    `json:"color"`
 	Position    int    `json:"position"`
 	Permissions int    `json:"permissions"`
+}
+
+// Roles are a collection of Role
+type Roles []*Role
+
+func (r Roles) Len() int {
+	return len(r)
+}
+
+func (r Roles) Less(i, j int) bool {
+	return r[i].Position > r[j].Position
+}
+
+func (r Roles) Swap(i, j int) {
+	r[i], r[j] = r[j], r[i]
 }
 
 // A VoiceState stores the voice states of Guilds
@@ -284,7 +304,7 @@ type Game struct {
 // UnmarshalJSON unmarshals json to Game struct
 func (g *Game) UnmarshalJSON(bytes []byte) error {
 	temp := &struct {
-		Name string          `json:"name"`
+		Name json.Number     `json:"name"`
 		Type json.RawMessage `json:"type"`
 		URL  string          `json:"url"`
 	}{}
@@ -292,8 +312,8 @@ func (g *Game) UnmarshalJSON(bytes []byte) error {
 	if err != nil {
 		return err
 	}
-	g.Name = temp.Name
 	g.URL = temp.URL
+	g.Name = temp.Name.String()
 
 	if temp.Type != nil {
 		err = json.Unmarshal(temp.Type, &g.Type)
@@ -322,19 +342,6 @@ type Member struct {
 	Mute     bool     `json:"mute"`
 	User     *User    `json:"user"`
 	Roles    []string `json:"roles"`
-}
-
-// A User stores all data for an individual Discord user.
-type User struct {
-	ID            string `json:"id"`
-	Email         string `json:"email"`
-	Username      string `json:"username"`
-	Avatar        string `json:"Avatar"`
-	Discriminator string `json:"discriminator"`
-	Token         string `json:"token"`
-	Verified      bool   `json:"verified"`
-	MFAEnabled    bool   `json:"mfa_enabled"`
-	Bot           bool   `json:"bot"`
 }
 
 // A Settings stores data for a specific users Discord client settings.
@@ -542,6 +549,8 @@ const (
 	PermissionAdministrator
 	PermissionManageChannels
 	PermissionManageServer
+	PermissionAddReactions
+	PermissionViewAuditLogs
 
 	PermissionAllText = PermissionReadMessages |
 		PermissionSendMessages |
@@ -561,9 +570,12 @@ const (
 		PermissionAllVoice |
 		PermissionCreateInstantInvite |
 		PermissionManageRoles |
-		PermissionManageChannels
+		PermissionManageChannels |
+		PermissionAddReactions |
+		PermissionViewAuditLogs
 	PermissionAll = PermissionAllChannel |
 		PermissionKickMembers |
 		PermissionBanMembers |
-		PermissionManageServer
+		PermissionManageServer |
+		PermissionAdministrator
 )

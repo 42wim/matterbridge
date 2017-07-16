@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -18,6 +19,11 @@ func init() {
 	flag.StringVar(&Email, "e", "", "Account Email")
 	flag.StringVar(&Password, "p", "", "Account Password")
 	flag.Parse()
+
+	if Email == "" || Password == "" {
+		flag.Usage()
+		os.Exit(1)
+	}
 }
 
 func main() {
@@ -29,5 +35,6 @@ func main() {
 		return
 	}
 
+	// Print out your token.
 	fmt.Printf("Your Authentication Token is:\n\n%s\n", dg.Token)
 }
