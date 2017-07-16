@@ -262,6 +262,15 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 				}
 				m.Channel = channel.Name
 				m.Text = ev.Text
+				if m.Text == "" {
+					for _, attach := range ev.Attachments {
+						if attach.Text != "" {
+							m.Text = attach.Text
+						} else {
+							m.Text = attach.Fallback
+						}
+					}
+				}
 				m.Raw = ev
 				m.Text = b.replaceMention(m.Text)
 				if ev.BotID != "" {
