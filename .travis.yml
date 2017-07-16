@@ -20,6 +20,11 @@ matrix:
   # tests pass on the stable versions of Go.
   fast_finish: true
 
+jobs:
+  include:
+      - go: 1.8.x
+      - env: MYDEPLOY=mydeploy
+
 notifications:
       email: false
 
@@ -43,7 +48,9 @@ script:
 
 deploy:
     provider: bintray
-    file: binaries/deploy.json
+    file: ci/deploy.json
     user: 42wim
+    on: 
+        condition: "$MYDEPLOY = mydeploy"
     key:
         secure: "CeXXe6JOmt7HYR81MdWLua0ltQHhDdkIeRGBFbgd7hkb1wi8eF9DgpAcQrTso8NIlHNZmSAP46uhFgsRvkuezzX0ygalZ7DCJyAyn3sAMEh+UQSHV1WGThRehTtidqRGjetzsIGSwdrJOWil+XTfbO1Z8DGzfakhSuAZka8CM4BAoe3YeP9rYK8h+84x0GHfczvsLtXZ3mWLvQuwe4pK6+ItBCUg0ae7O7ZUpWHy0xQQkkWztY/6RAzXfaG7DuGjIw+20fhx3WOXRNpHCtZ6Bc3qERCpk0s1HhlQWlrN9wDaFTBWYwlvSnNgvxxMbNXJ6RrRJ0l0bA7FUswYwyroxhzrGLdzWDg8dHaQkypocngdalfhpsnoO9j3ApJhomUFJ3UoEq5nOGRUrKn8MPi+dP0zE4kNQ3e4VNa1ufNrvfpWolMg3xh8OXuhQdD5wIM5zFAbRJLqWSCVAjPq4DDPecmvXBOlIial7oa312lN5qnBnUjvAcxszZ+FUyDHT1Grxzna4tMwxY9obPzZUzm7359AOCCwIQFVB8GLqD2nwIstcXS0zGRz+fhviPipHuBa02q5bGUZwmkvrSNab0s8Jo7pCrel2Rz3nWPKaiCfq2WjbW1CLheSMkOQrjsdUd1hhbqNWFPUjJPInTc77NAKCfm5runv5uyowRLh4NNd0sI="
