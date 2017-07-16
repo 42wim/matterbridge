@@ -1,16 +1,16 @@
 language: go
 go:
-    - 1.7.x
+    #- 1.7.x
     - 1.8.x
-    - tip
+      # - tip
 
 # we have everything vendored
 install: true
 
 env:
     - GOOS=linux GOARCH=amd64
-    - GOOS=windows GOARCH=amd64
-    - GOOS=linux GOARCH=arm
+      #    - GOOS=windows GOARCH=amd64
+      #- GOOS=linux GOARCH=arm
 
 matrix:
   # It's ok if our code fails on unstable development versions of Go.
