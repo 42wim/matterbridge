@@ -18,7 +18,7 @@ cat > deploy.json <<EOF
     },
     "files":
         [
-        {"includePattern": "binaries/(.*)", "uploadPattern":"\$1"}
+        {"includePattern": "ci/binaries/(.*)", "uploadPattern":"\$1"}
         ],
     "publish": true
 }
