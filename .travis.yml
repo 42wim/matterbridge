@@ -3,7 +3,14 @@ go:
     - 1.7.x
     - 1.8.x
     - tip
+
+# we have everything vendored
 install: true
+
+env:
+    - GOOS=linux GOARCH=amd64
+    - GOOS=windows GOARCH=amd64
+    - GOOS=linux GOARCH=arm
 
 matrix:
   # It's ok if our code fails on unstable development versions of Go.
@@ -25,7 +32,6 @@ before_script:
 # Anything in before_script: that returns a nonzero exit code will
 # flunk the build and immediately stop. It's sorta like having
 # set -e enabled in bash. 
-script:
 script:
   - test -z $(gofmt -s -l $GO_FILES)  # Fail if a .go file hasn't been formatted with gofmt
   #- go test -v -race $PKGS            # Run all the tests with the race detector enabled
