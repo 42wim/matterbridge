@@ -14,11 +14,11 @@ import (
 )
 
 type MMMessage struct {
-	Text      string
-	Channel   string
-	Username  string
-	UserID    string
-	Raw       *slack.MessageEvent
+	Text     string
+	Channel  string
+	Username string
+	UserID   string
+	Raw      *slack.MessageEvent
 }
 
 type Bslack struct {
