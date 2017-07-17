@@ -241,7 +241,7 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 			// ignore first message
 			if count > 0 {
 				flog.Debugf("Receiving from slackclient %#v", ev)
-				if !b.Config.EditDisable && ev.SubMessage != nil {
+				if !b.Config.EditDisable && ev.SubMessage != nil && ev.SubMessage.ThreadTimestamp != ev.SubMessage.Timestamp {
 					flog.Debugf("SubMessage %#v", ev.SubMessage)
 					ev.User = ev.SubMessage.User
 					ev.Text = ev.SubMessage.Text + b.Config.EditSuffix
