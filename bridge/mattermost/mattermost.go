@@ -57,6 +57,9 @@ func (b *Bmattermost) Connect() error {
 	if b.Config.WebhookBindAddress != "" {
 		if b.Config.WebhookURL != "" {
 			flog.Info("Connecting using webhookurl (sending) and webhookbindaddress (receiving)")
+			b.mh = matterhook.New(b.Config.WebhookURL,
+				matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
+					BindAddress: b.Config.WebhookBindAddress})
 		} else if b.Config.Login != "" {
 			flog.Info("Connecting using login/password (sending)")
 			err := b.apiLogin()
