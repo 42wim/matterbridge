@@ -32,7 +32,6 @@ type Bslack struct {
 	Account  string
 	si       *slack.Info
 	channels []slack.Channel
-	BotID    string
 }
 
 var flog *log.Entry
@@ -160,6 +159,7 @@ func (b *Bslack) Send(msg config.Message) error {
 	if msg.Avatar != "" {
 		np.IconURL = msg.Avatar
 	}
+	np.Attachments = append(np.Attachments, slack.Attachment{CallbackID: "matterbridge"})
 	b.sc.PostMessage(schannel.ID, message, np)
 
 	/*
@@ -219,7 +219,7 @@ func (b *Bslack) handleSlack() {
 	flog.Debug("Start listening for Slack messages")
 	for message := range mchan {
 		// do not send messages from ourself
-		if b.Config.WebhookURL == "" && b.Config.WebhookBindAddress == "" && (message.Username == b.si.User.Name || message.UserID == b.BotID) {
+		if b.Config.WebhookURL == "" && b.Config.WebhookBindAddress == "" && message.Username == b.si.User.Name {
 			continue
 		}
 		texts := strings.Split(message.Text, "\n")
@@ -241,6 +241,12 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 			// ignore first message
 			if count > 0 {
 				flog.Debugf("Receiving from slackclient %#v", ev)
+				if len(ev.Attachments) > 0 {
+					// skip messages we made ourselves
+					if ev.Attachments[0].CallbackID == "matterbridge" {
+						continue
+					}
+				}
 				if !b.Config.EditDisable && ev.SubMessage != nil && ev.SubMessage.ThreadTimestamp != ev.SubMessage.Timestamp {
 					flog.Debugf("SubMessage %#v", ev.SubMessage)
 					ev.User = ev.SubMessage.User
@@ -293,12 +299,6 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 		case *slack.ConnectedEvent:
 			b.channels = ev.Info.Channels
 			b.si = ev.Info
-			for _, bot := range b.si.Bots {
-				if bot.Name == "Slack API Tester" {
-					b.BotID = bot.ID
-					flog.Debugf("my bot ID is %#v", bot.ID)
-				}
-			}
 			b.Users, _ = b.sc.GetUsers()
 			// add private channels
 			groups, _ := b.sc.GetGroups(true)
