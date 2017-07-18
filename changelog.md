@@ -1,3 +1,12 @@
+# v0.16.2
+## New features
+* general: binary builds against latest commit are now available on https://bintray.com/42wim/nightly/Matterbridge/_latestVersion
+
+## Bugfix
+* slack: fix loop introduced by relaying message of other bots #219
+* slack: Suppress parent message when child message is received #218
+* mattermost: fix regression when using webhookurl and webhookbindaddress #221
+
 # v0.16.1
 ## New features
 * slack: also relay messages of other bots #213
