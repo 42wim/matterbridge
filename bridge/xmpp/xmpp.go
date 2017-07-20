@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
+	"github.com/jpillora/backoff"
 	"github.com/mattn/go-xmpp"
 
 	"strings"
@@ -43,7 +44,29 @@ func (b *Bxmpp) Connect() error {
 		return err
 	}
 	flog.Info("Connection succeeded")
-	go b.handleXmpp()
+	go func() {
+		initial := true
+		bf := &backoff.Backoff{
+			Min:    time.Second,
+			Max:    5 * time.Minute,
+			Jitter: true,
+		}
+		for {
+			if initial {
+				b.handleXmpp()
+				initial = false
+			}
+			d := bf.Duration()
+			flog.Infof("Disconnected. Reconnecting in %s", d)
+			time.Sleep(d)
+			b.xc, err = b.createXMPP()
+			if err == nil {
+				b.Remote <- config.Message{Username: "system", Text: "rejoin", Channel: "", Account: b.Account, Event: config.EVENT_REJOIN_CHANNELS}
+				b.handleXmpp()
+				bf.Reset()
+			}
+		}
+	}()
 	return nil
 }
 
@@ -96,7 +119,11 @@ func (b *Bxmpp) xmppKeepAlive() chan bool {
 		for {
 			select {
 			case <-ticker.C:
-				b.xc.PingC2S("", "")
+				flog.Debugf("PING")
+				err := b.xc.PingC2S("", "")
+				if err != nil {
+					flog.Debugf("PING failed %#v", err)
+				}
 			case <-done:
 				return
 			}
