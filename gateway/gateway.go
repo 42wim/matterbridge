@@ -218,8 +218,8 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 		}
 		log.Debugf("Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, originchannel, dest.Account, channel.Name)
 		msg.Channel = channel.Name
-		gw.modifyAvatar(&msg, dest)
-		gw.modifyUsername(&msg, dest)
+		msg.Avatar = gw.modifyAvatar(origmsg, dest)
+		msg.Username = gw.modifyUsername(origmsg, dest)
 		// for api we need originchannel as channel
 		if dest.Protocol == "api" {
 			msg.Channel = originchannel
@@ -259,7 +259,7 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 	return false
 }
 
-func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) {
+func (gw *Gateway) modifyUsername(msg config.Message, dest *bridge.Bridge) string {
 	br := gw.Bridges[msg.Account]
 	msg.Protocol = br.Protocol
 	nick := gw.Config.General.RemoteNickFormat
@@ -281,10 +281,10 @@ func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) {
 	nick = strings.Replace(nick, "{NICK}", msg.Username, -1)
 	nick = strings.Replace(nick, "{BRIDGE}", br.Name, -1)
 	nick = strings.Replace(nick, "{PROTOCOL}", br.Protocol, -1)
-	msg.Username = nick
+	return nick
 }
 
-func (gw *Gateway) modifyAvatar(msg *config.Message, dest *bridge.Bridge) {
+func (gw *Gateway) modifyAvatar(msg config.Message, dest *bridge.Bridge) string {
 	iconurl := gw.Config.General.IconURL
 	if iconurl == "" {
 		iconurl = dest.Config.IconURL
@@ -293,6 +293,7 @@ func (gw *Gateway) modifyAvatar(msg *config.Message, dest *bridge.Bridge) {
 	if msg.Avatar == "" {
 		msg.Avatar = iconurl
 	}
+	return msg.Avatar
 }
 
 func (gw *Gateway) modifyMessage(msg *config.Message) {
