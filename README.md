@@ -84,12 +84,12 @@ See [howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config
 
 [mattermost]
     [mattermost.work]
-    useAPI=true
     Server="yourmattermostserver.tld"
     Team="yourteam"
     Login="yourlogin"
     Password="yourpass"
     PrefixMessagesWithNick=true
+    RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 [[gateway]]
 name="mygateway"
@@ -107,7 +107,6 @@ enable=true
 ```
 [slack]
 [slack.test]
-useAPI=true
 Token="yourslacktoken"
 PrefixMessagesWithNick=true
 
@@ -133,11 +132,8 @@ RemoteNickFormat="[{PROTOCOL}/{BRIDGE}] <{NICK}> "
 ```
 
 # Running
-1) Copy the matterbridge.toml.sample to matterbridge.toml 
-2) Edit matterbridge.toml with the settings for your environment. 
-3) Now you can run matterbridge.  (```./matterbridge```)   
 
-(Matterbridge will only look for the config file in your current directory, if it isn't there specify -conf "/path/toyour/matterbridge.toml")
+See [howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config) for a step by step walkthrough for creating your configuration.
 
 ```
 Usage of ./matterbridge:
@@ -162,18 +158,7 @@ See [changelog.md](https://github.com/42wim/matterbridge/blob/master/changelog.m
 
 # FAQ
 
-Please look at [matterbridge.toml.sample](https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.sample) for more information first.
-
-## Mattermost doesn't show the IRC nicks
-If you're running the webhooks version, this can be fixed by either:
-* enabling "override usernames". See [mattermost documentation](http://docs.mattermost.com/developer/webhooks-incoming.html#enabling-incoming-webhooks)
-* setting ```PrefixMessagesWithNick``` to ```true``` in ```mattermost``` section of your matterbridge.toml.
-
-If you're running the API version you'll need to:
-* setting ```PrefixMessagesWithNick``` to ```true``` in ```mattermost``` section of your matterbridge.toml.
-
-Also look at the ```RemoteNickFormat``` setting.
-
+See [FAQ](https://github.com/42wim/matterbridge/wiki/FAQ)
 
 # Thanks
 Matterbridge wouldn't exist without these libraries:
