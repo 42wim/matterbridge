@@ -138,45 +138,48 @@ RECONNECT:
 	br.JoinChannels()
 }
 
+func (gw *Gateway) mapChannelConfig(cfg []config.Bridge, direction string) {
+	for _, br := range cfg {
+		if isApi(br.Account) {
+			br.Channel = "api"
+		}
+		ID := br.Channel + br.Account
+		if _, ok := gw.Channels[ID]; !ok {
+			channel := &config.ChannelInfo{Name: br.Channel, Direction: direction, ID: ID, Options: br.Options, Account: br.Account,
+				GID: make(map[string]bool), SameChannel: make(map[string]bool)}
+			channel.GID[gw.Name] = true
+			channel.SameChannel[gw.Name] = br.SameChannel
+			gw.Channels[channel.ID] = channel
+		} else {
+			// if we already have a key and it's not our current direction it means we have a bidirectional inout
+			if gw.Channels[ID].Direction != direction {
+				gw.Channels[ID].Direction = "inout"
+			}
+		}
+		gw.Channels[ID].GID[gw.Name] = true
+		gw.Channels[ID].SameChannel[gw.Name] = br.SameChannel
+	}
+}
 func (gw *Gateway) mapChannels() error {
-	for _, br := range append(gw.MyConfig.Out, gw.MyConfig.InOut...) {
-		if isApi(br.Account) {
-			br.Channel = "api"
-		}
-		ID := br.Channel + br.Account
-		_, ok := gw.Channels[ID]
-		if !ok {
-			channel := &config.ChannelInfo{Name: br.Channel, Direction: "out", ID: ID, Options: br.Options, Account: br.Account,
-				GID: make(map[string]bool), SameChannel: make(map[string]bool)}
-			channel.GID[gw.Name] = true
-			channel.SameChannel[gw.Name] = br.SameChannel
-			gw.Channels[channel.ID] = channel
-		}
-		gw.Channels[ID].GID[gw.Name] = true
-		gw.Channels[ID].SameChannel[gw.Name] = br.SameChannel
-	}
-
-	for _, br := range append(gw.MyConfig.In, gw.MyConfig.InOut...) {
-		if isApi(br.Account) {
-			br.Channel = "api"
-		}
-		ID := br.Channel + br.Account
-		_, ok := gw.Channels[ID]
-		if !ok {
-			channel := &config.ChannelInfo{Name: br.Channel, Direction: "in", ID: ID, Options: br.Options, Account: br.Account,
-				GID: make(map[string]bool), SameChannel: make(map[string]bool)}
-			channel.GID[gw.Name] = true
-			channel.SameChannel[gw.Name] = br.SameChannel
-			gw.Channels[channel.ID] = channel
-		}
-		gw.Channels[ID].GID[gw.Name] = true
-		gw.Channels[ID].SameChannel[gw.Name] = br.SameChannel
-	}
+	gw.mapChannelConfig(gw.MyConfig.In, "in")
+	gw.mapChannelConfig(gw.MyConfig.Out, "out")
+	gw.mapChannelConfig(gw.MyConfig.InOut, "inout")
 	return nil
 }
 
 func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []config.ChannelInfo {
 	var channels []config.ChannelInfo
+	// if source channel is in only, do nothing
+	for _, channel := range gw.Channels {
+		// lookup the channel from the message
+		if channel.ID == getChannelID(*msg) {
+			// we only have destinations if the original message is from an "in" (sending) channel
+			if !strings.Contains(channel.Direction, "in") {
+				return channels
+			}
+			continue
+		}
+	}
 	for _, channel := range gw.Channels {
 		if _, ok := gw.Channels[getChannelID(*msg)]; !ok {
 			continue
@@ -191,8 +194,7 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 			}
 			continue
 		}
-
-		if channel.Direction == "out" && channel.Account == dest.Account && gw.validGatewayDest(msg, channel) {
+		if strings.Contains(channel.Direction, "out") && channel.Account == dest.Account && gw.validGatewayDest(msg, channel) {
 			channels = append(channels, *channel)
 		}
 	}
