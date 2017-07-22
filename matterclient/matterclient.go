@@ -112,7 +112,10 @@ func (m *MMClient) Login() error {
 	for {
 		d := b.Duration()
 		// bogus call to get the serverversion
-		m.Client.GetClientProperties()
+		_, err := m.Client.GetClientProperties()
+		if err != nil {
+			return fmt.Errorf("%#v", err.Error())
+		}
 		if firstConnection && !supportedVersion(m.Client.ServerVersion) {
 			return fmt.Errorf("unsupported mattermost version: %s", m.Client.ServerVersion)
 		}
