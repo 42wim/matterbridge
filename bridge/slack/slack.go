@@ -222,6 +222,9 @@ func (b *Bslack) handleSlack() {
 		if b.Config.WebhookURL == "" && b.Config.WebhookBindAddress == "" && message.Username == b.si.User.Name {
 			continue
 		}
+		if message.Text == "" || message.Username == "" {
+			continue
+		}
 		texts := strings.Split(message.Text, "\n")
 		for _, text := range texts {
 			text = b.replaceURL(text)
@@ -279,7 +282,8 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 				}
 				m.Raw = ev
 				m.Text = b.replaceMention(m.Text)
-				if ev.BotID != "" {
+				// when using webhookURL we can't check if it's our webhook or not for now
+				if ev.BotID != "" && b.Config.WebhookURL == "" {
 					bot, err := b.rtm.GetBotInfo(ev.BotID)
 					if err != nil {
 						continue
