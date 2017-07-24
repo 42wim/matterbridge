@@ -49,7 +49,7 @@ Accounts to one of the supported bridges
 
 # Installing
 ## Binaries
-* Latest stable release [v0.16.2](https://github.com/42wim/matterbridge/releases/latest)
+* Latest stable release [v0.16.3](https://github.com/42wim/matterbridge/releases/latest)
 * Development releases (follows master) can be downloaded [here](https://dl.bintray.com/42wim/nightly/)  
 
 ## Building

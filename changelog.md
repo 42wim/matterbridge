@@ -1,3 +1,10 @@
+# v0.16.3
+## Bugfix
+* general: Fix in/out logic. Closes #224 
+* general: Fix message modification
+* slack: Disable message from other bots when using webhooks (slack)
+* mattermost: Return better error messages on mattermost connect
+
 # v0.16.2
 ## New features
 * general: binary builds against latest commit are now available on https://bintray.com/42wim/nightly/Matterbridge/_latestVersion
