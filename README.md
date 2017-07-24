@@ -13,6 +13,7 @@ Has a REST API.
 # Table of Contents
  * [Features](#features)
  * [Requirements](#requirements)
+ * [Screenshots](https://github.com/42wim/matterbridge/wiki/)
  * [Installing](#installing)
    * [Binaries](#binaries)
    * [Building](#building)
@@ -46,6 +47,9 @@ Accounts to one of the supported bridges
 * [Rocket.chat](https://rocket.chat)
 * [Matrix](https://matrix.org)
 * [Steam](https://store.steampowered.com/)
+
+# Screenshots
+See https://github.com/42wim/matterbridge/wiki
 
 # Installing
 ## Binaries
