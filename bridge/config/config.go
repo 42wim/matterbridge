@@ -33,7 +33,6 @@ type ChannelInfo struct {
 	Account     string
 	Direction   string
 	ID          string
-	GID         map[string]bool
 	SameChannel map[string]bool
 	Options     ChannelOptions
 }

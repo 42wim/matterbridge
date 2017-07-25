@@ -5,8 +5,8 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
-	"github.com/peterhellberg/emojilib"
 	//	"github.com/davecgh/go-spew/spew"
+	"github.com/peterhellberg/emojilib"
 	"regexp"
 	"strings"
 	"time"
@@ -14,62 +14,33 @@ import (
 
 type Gateway struct {
 	*config.Config
-	MyConfig        *config.Gateway
-	Bridges         map[string]*bridge.Bridge
-	Channels        map[string]*config.ChannelInfo
-	ChannelOptions  map[string]config.ChannelOptions
-	Names           map[string]bool
-	Name            string
-	Message         chan config.Message
-	DestChannelFunc func(msg *config.Message, dest bridge.Bridge) []config.ChannelInfo
+	Router         *Router
+	MyConfig       *config.Gateway
+	Bridges        map[string]*bridge.Bridge
+	Channels       map[string]*config.ChannelInfo
+	ChannelOptions map[string]config.ChannelOptions
+	Message        chan config.Message
+	Name           string
 }
 
-func New(cfg *config.Config) *Gateway {
-	gw := &Gateway{}
-	gw.Config = cfg
-	gw.Channels = make(map[string]*config.ChannelInfo)
-	gw.Message = make(chan config.Message)
-	gw.Bridges = make(map[string]*bridge.Bridge)
-	gw.Names = make(map[string]bool)
-	gw.DestChannelFunc = gw.getDestChannel
+func New(cfg config.Gateway, r *Router) *Gateway {
+	gw := &Gateway{Channels: make(map[string]*config.ChannelInfo), Message: r.Message,
+		Router: r, Bridges: make(map[string]*bridge.Bridge), Config: r.Config}
+	gw.AddConfig(&cfg)
 	return gw
 }
 
 func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
-	for _, br := range gw.Bridges {
-		if br.Account == cfg.Account {
-			gw.mapChannelsToBridge(br)
-			err := br.JoinChannels()
-			if err != nil {
-				return fmt.Errorf("Bridge %s failed to join channel: %v", br.Account, err)
-			}
-			return nil
-		}
+	br := gw.Router.getBridge(cfg.Account)
+	if br == nil {
+		br = bridge.New(gw.Config, cfg, gw.Message)
 	}
-	log.Infof("Starting bridge: %s ", cfg.Account)
-	br := bridge.New(gw.Config, cfg, gw.Message)
 	gw.mapChannelsToBridge(br)
 	gw.Bridges[cfg.Account] = br
-	err := br.Connect()
-	if err != nil {
-		return fmt.Errorf("Bridge %s failed to start: %v", br.Account, err)
-	}
-	err = br.JoinChannels()
-	if err != nil {
-		return fmt.Errorf("Bridge %s failed to join channel: %v", br.Account, err)
-	}
 	return nil
 }
 
 func (gw *Gateway) AddConfig(cfg *config.Gateway) error {
-	if gw.Names[cfg.Name] {
-		return fmt.Errorf("Gateway with name %s already exists", cfg.Name)
-	}
-	if cfg.Name == "" {
-		return fmt.Errorf("%s", "Gateway without name found")
-	}
-	log.Infof("Starting gateway: %s", cfg.Name)
-	gw.Names[cfg.Name] = true
 	gw.Name = cfg.Name
 	gw.MyConfig = cfg
 	gw.mapChannels()
@@ -86,39 +57,6 @@ func (gw *Gateway) mapChannelsToBridge(br *bridge.Bridge) {
 	for ID, channel := range gw.Channels {
 		if br.Account == channel.Account {
 			br.Channels[ID] = *channel
-		}
-	}
-}
-
-func (gw *Gateway) Start() error {
-	go gw.handleReceive()
-	return nil
-}
-
-func (gw *Gateway) handleReceive() {
-	for msg := range gw.Message {
-		if msg.Event == config.EVENT_FAILURE {
-			for _, br := range gw.Bridges {
-				if msg.Account == br.Account {
-					go gw.reconnectBridge(br)
-				}
-			}
-		}
-		if msg.Event == config.EVENT_REJOIN_CHANNELS {
-			for _, br := range gw.Bridges {
-				if msg.Account == br.Account {
-					br.Joined = make(map[string]bool)
-					br.JoinChannels()
-				}
-			}
-			continue
-		}
-		if !gw.ignoreMessage(&msg) {
-			msg.Timestamp = time.Now()
-			gw.modifyMessage(&msg)
-			for _, br := range gw.Bridges {
-				gw.handleMessage(msg, br)
-			}
 		}
 	}
 }
@@ -146,8 +84,7 @@ func (gw *Gateway) mapChannelConfig(cfg []config.Bridge, direction string) {
 		ID := br.Channel + br.Account
 		if _, ok := gw.Channels[ID]; !ok {
 			channel := &config.ChannelInfo{Name: br.Channel, Direction: direction, ID: ID, Options: br.Options, Account: br.Account,
-				GID: make(map[string]bool), SameChannel: make(map[string]bool)}
-			channel.GID[gw.Name] = true
+				SameChannel: make(map[string]bool)}
 			channel.SameChannel[gw.Name] = br.SameChannel
 			gw.Channels[channel.ID] = channel
 		} else {
@@ -156,10 +93,10 @@ func (gw *Gateway) mapChannelConfig(cfg []config.Bridge, direction string) {
 				gw.Channels[ID].Direction = "inout"
 			}
 		}
-		gw.Channels[ID].GID[gw.Name] = true
 		gw.Channels[ID].SameChannel[gw.Name] = br.SameChannel
 	}
 }
+
 func (gw *Gateway) mapChannels() error {
 	gw.mapChannelConfig(gw.MyConfig.In, "in")
 	gw.mapChannelConfig(gw.MyConfig.Out, "out")
@@ -184,8 +121,6 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 		if _, ok := gw.Channels[getChannelID(*msg)]; !ok {
 			continue
 		}
-		// add gateway to message
-		gw.validGatewayDest(msg, channel)
 
 		// do samechannelgateway logic
 		if channel.SameChannel[msg.Gateway] {
@@ -213,7 +148,8 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 	}
 	originchannel := msg.Channel
 	origmsg := msg
-	for _, channel := range gw.DestChannelFunc(&msg, *dest) {
+	channels := gw.getDestChannel(&msg, *dest)
+	for _, channel := range channels {
 		// do not send to ourself
 		if channel.ID == getChannelID(origmsg) {
 			continue
@@ -234,6 +170,9 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 }
 
 func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
+	if gw.Router.getGatewayName(getChannelID(*msg)) != gw.Name {
+		return true
+	}
 	if msg.Text == "" {
 		log.Debugf("ignoring empty message %#v from %s", msg, msg.Account)
 		return true
@@ -301,6 +240,7 @@ func (gw *Gateway) modifyAvatar(msg config.Message, dest *bridge.Bridge) string 
 func (gw *Gateway) modifyMessage(msg *config.Message) {
 	// replace :emoji: to unicode
 	msg.Text = emojilib.Replace(msg.Text)
+	msg.Gateway = gw.Router.getGatewayName(getChannelID(*msg))
 }
 
 func getChannelID(msg config.Message) string {
@@ -308,35 +248,7 @@ func getChannelID(msg config.Message) string {
 }
 
 func (gw *Gateway) validGatewayDest(msg *config.Message, channel *config.ChannelInfo) bool {
-	GIDmap := gw.Channels[getChannelID(*msg)].GID
-
-	// gateway is specified in message (probably from api)
-	if msg.Gateway != "" {
-		return channel.GID[msg.Gateway]
-	}
-
-	// check if we are running a samechannelgateway.
-	// if it is and the channel name matches it's ok, otherwise we shouldn't use this channel.
-	for k := range GIDmap {
-		if channel.SameChannel[k] {
-			if msg.Channel == channel.Name {
-				// add the gateway to our message
-				msg.Gateway = k
-				return true
-			} else {
-				return false
-			}
-		}
-	}
-	// check if we are in the correct gateway
-	for k := range GIDmap {
-		if channel.GID[k] {
-			// add the gateway to our message
-			msg.Gateway = k
-			return true
-		}
-	}
-	return false
+	return msg.Gateway == gw.Name
 }
 
 func isApi(account string) bool {

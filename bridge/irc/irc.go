@@ -124,9 +124,6 @@ func (b *Birc) JoinChannel(channel string) error {
 
 func (b *Birc) Send(msg config.Message) error {
 	flog.Debugf("Receiving %#v", msg)
-	if msg.Account == b.Account {
-		return nil
-	}
 	if strings.HasPrefix(msg.Text, "!") {
 		b.Command(&msg)
 	}

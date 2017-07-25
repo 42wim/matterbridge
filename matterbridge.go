@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/gateway"
-	"github.com/42wim/matterbridge/gateway/samechannel"
+	//"github.com/42wim/matterbridge/gateway/samechannel"
 	log "github.com/Sirupsen/logrus"
 	"github.com/google/gops/agent"
 	"strings"
 )
 
 var (
-	version = "0.16.3"
+	version = "1.0.0-dev"
 	githash string
 )
 
@@ -43,20 +43,11 @@ func main() {
 		log.Println("WARNING: THIS IS A DEVELOPMENT VERSION. Things may break.")
 	}
 	cfg := config.NewConfig(*flagConfig)
-
-	g := gateway.New(cfg)
-	sgw := samechannelgateway.New(cfg)
-	gwconfigs := sgw.GetConfig()
-	for _, gw := range append(gwconfigs, cfg.Gateway...) {
-		if !gw.Enable {
-			continue
-		}
-		err := g.AddConfig(&gw)
-		if err != nil {
-			log.Fatalf("Starting gateway failed: %s", err)
-		}
+	r, err := gateway.NewRouter(cfg)
+	if err != nil {
+		log.Fatalf("Starting gateway failed: %s", err)
 	}
-	err := g.Start()
+	err = r.Start()
 	if err != nil {
 		log.Fatalf("Starting gateway failed: %s", err)
 	}
