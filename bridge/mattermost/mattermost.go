@@ -174,6 +174,10 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 		// only listen to message from our team
 		if (message.Raw.Event == "posted" || message.Raw.Event == "post_edited") &&
 			b.mc.User.Username != message.Username && message.Raw.Data["team_id"].(string) == b.TeamId {
+			// if the message has reactions don't repost it (for now, until we can correlate reaction with message)
+			if message.Post.HasReactions {
+				continue
+			}
 			flog.Debugf("Receiving from matterclient %#v", message)
 			m := &MMMessage{}
 			m.UserID = message.UserID
