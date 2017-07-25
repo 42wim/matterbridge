@@ -1,6 +1,7 @@
 package matterclient
 
 import (
+	"crypto/md5"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -16,6 +17,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 
 	"github.com/gorilla/websocket"
+	"github.com/hashicorp/golang-lru"
 	"github.com/jpillora/backoff"
 	"github.com/mattermost/platform/model"
 )
@@ -66,6 +68,7 @@ type MMClient struct {
 	WsPingChan    chan *model.WebSocketResponse
 	ServerVersion string
 	OnWsConnect   func()
+	lruCache      *lru.Cache
 }
 
 func New(login, pass, team, server string) *MMClient {
@@ -73,6 +76,7 @@ func New(login, pass, team, server string) *MMClient {
 	mmclient := &MMClient{Credentials: cred, MessageChan: make(chan *Message, 100), Users: make(map[string]*model.User)}
 	mmclient.log = log.WithFields(log.Fields{"module": "matterclient"})
 	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
+	mmclient.lruCache, _ = lru.New(500)
 	return mmclient
 }
 
@@ -270,7 +274,10 @@ func (m *MMClient) WsReceiver() {
 			m.log.Debugf("WsReceiver event: %#v", event)
 			msg := &Message{Raw: &event, Team: m.Credentials.Team}
 			m.parseMessage(msg)
-			m.MessageChan <- msg
+			// check if we didn't empty the message
+			if msg.Text != "" {
+				m.MessageChan <- msg
+			}
 			continue
 		}
 
@@ -306,6 +313,13 @@ func (m *MMClient) parseResponse(rmsg model.WebSocketResponse) {
 }
 
 func (m *MMClient) parseActionPost(rmsg *Message) {
+	// add post to cache, if it already exists don't relay this again.
+	// this should fix reposts
+	if ok, _ := m.lruCache.ContainsOrAdd(digestString(rmsg.Raw.Data["post"].(string)), true); ok {
+		m.log.Debugf("message %#v in cache, not processing again", rmsg.Raw.Data["post"].(string))
+		rmsg.Text = ""
+		return
+	}
 	data := model.PostFromJson(strings.NewReader(rmsg.Raw.Data["post"].(string)))
 	// we don't have the user, refresh the userlist
 	if m.GetUser(data.UserId) == nil {
@@ -859,4 +873,8 @@ func supportedVersion(version string) bool {
 		return true
 	}
 	return false
+}
+
+func digestString(s string) string {
+	return fmt.Sprintf("%x", md5.Sum([]byte(s)))
 }
