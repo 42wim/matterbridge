@@ -43,7 +43,6 @@ func (irc *Connection) setupSASLCallbacks(result chan<- *SASLResult) {
 		result <- &SASLResult{true, errors.New(e.Arguments[1])}
 	})
 	irc.AddCallback("903", func(e *Event) {
-		irc.SendRaw("CAP END")
 		result <- &SASLResult{false, nil}
 	})
 	irc.AddCallback("904", func(e *Event) {

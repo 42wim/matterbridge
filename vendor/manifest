@@ -2,6 +2,14 @@
 	"version": 0,
 	"dependencies": [
 		{
+			"importpath": "github.com/42wim/go-ircevent",
+			"repository": "https://github.com/42wim/go-ircevent",
+			"vcs": "git",
+			"revision": "d3aec637ae2f2a4f9ff95df55091894d80fa3112",
+			"branch": "ircv3",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/BurntSushi/toml",
 			"repository": "https://github.com/BurntSushi/toml",
 			"vcs": "git",
@@ -496,14 +504,6 @@
 			"repository": "https://github.com/technoweenie/multipartstreamer",
 			"vcs": "git",
 			"revision": "a90a01d73ae432e2611d178c18367fbaa13e0154",
-			"branch": "master",
-			"notests": true
-		},
-		{
-			"importpath": "github.com/thoj/go-ircevent",
-			"repository": "https://github.com/thoj/go-ircevent",
-			"vcs": "git",
-			"revision": "1b0acb5f2f1b615cfbd4b9f91abb14cb39a18769",
 			"branch": "master",
 			"notests": true
 		},

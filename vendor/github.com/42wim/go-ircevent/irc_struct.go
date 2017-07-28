@@ -15,20 +15,22 @@ import (
 type Connection struct {
 	sync.Mutex
 	sync.WaitGroup
-	Debug        bool
-	Error        chan error
-	Password     string
-	UseTLS       bool
-	UseSASL      bool
-	SASLLogin    string
-	SASLPassword string
-	SASLMech     string
-	TLSConfig    *tls.Config
-	Version      string
-	Timeout      time.Duration
-	PingFreq     time.Duration
-	KeepAlive    time.Duration
-	Server       string
+	Debug            bool
+	Error            chan error
+	Password         string
+	UseTLS           bool
+	UseSASL          bool
+	RequestCaps      []string
+	AcknowledgedCaps []string
+	SASLLogin        string
+	SASLPassword     string
+	SASLMech         string
+	TLSConfig        *tls.Config
+	Version          string
+	Timeout          time.Duration
+	PingFreq         time.Duration
+	KeepAlive        time.Duration
+	Server           string
 
 	socket net.Conn
 	pwrite chan string
@@ -59,6 +61,7 @@ type Event struct {
 	Source     string //<host>
 	User       string //<usr>
 	Arguments  []string
+	Tags       map[string]string
 	Connection *Connection
 }
 

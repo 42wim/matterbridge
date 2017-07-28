@@ -87,6 +87,17 @@ func (irc *Connection) readLoop() {
 	}
 }
 
+// Unescape tag values as defined in the IRCv3.2 message tags spec
+// http://ircv3.net/specs/core/message-tags-3.2.html
+func unescapeTagValue(value string) string {
+	value = strings.Replace(value, "\\:", ";", -1)
+	value = strings.Replace(value, "\\s", " ", -1)
+	value = strings.Replace(value, "\\\\", "\\", -1)
+	value = strings.Replace(value, "\\r", "\r", -1)
+	value = strings.Replace(value, "\\n", "\n", -1)
+	return value
+}
+
 //Parse raw irc messages
 func parseToEvent(msg string) (*Event, error) {
 	msg = strings.TrimSuffix(msg, "\n") //Remove \r\n
@@ -95,6 +106,26 @@ func parseToEvent(msg string) (*Event, error) {
 	if len(msg) < 5 {
 		return nil, errors.New("Malformed msg from server")
 	}
+
+	if msg[0] == '@' {
+		// IRCv3 Message Tags
+		if i := strings.Index(msg, " "); i > -1 {
+			event.Tags = make(map[string]string)
+			tags := strings.Split(msg[1:i], ";")
+			for _, data := range tags {
+				parts := strings.SplitN(data, "=", 2)
+				if len(parts) == 1 {
+					event.Tags[parts[0]] = ""
+				} else {
+					event.Tags[parts[0]] = unescapeTagValue(parts[1])
+				}
+			}
+			msg = msg[i+1 : len(msg)]
+		} else {
+			return nil, errors.New("Malformed msg from server")
+		}
+	}
+
 	if msg[0] == ':' {
 		if i := strings.Index(msg, " "); i > -1 {
 			event.Source = msg[1:i]
@@ -430,26 +461,84 @@ func (irc *Connection) Connect(server string) error {
 		irc.pwrite <- fmt.Sprintf("PASS %s\r\n", irc.Password)
 	}
 
-	resChan := make(chan *SASLResult)
+	err = irc.negotiateCaps()
+	if err != nil {
+		return err
+	}
+
+	irc.pwrite <- fmt.Sprintf("NICK %s\r\n", irc.nick)
+	irc.pwrite <- fmt.Sprintf("USER %s 0.0.0.0 0.0.0.0 :%s\r\n", irc.user, irc.user)
+	return nil
+}
+
+// Negotiate IRCv3 capabilities
+func (irc *Connection) negotiateCaps() error {
+	saslResChan := make(chan *SASLResult)
 	if irc.UseSASL {
-		irc.setupSASLCallbacks(resChan)
-		irc.pwrite <- fmt.Sprintf("CAP LS\r\n")
-		// request SASL
-		irc.pwrite <- fmt.Sprintf("CAP REQ :sasl\r\n")
-		// if sasl request doesn't complete in 15 seconds, close chan and timeout
+		irc.RequestCaps = append(irc.RequestCaps, "sasl")
+		irc.setupSASLCallbacks(saslResChan)
+	}
+
+	if len(irc.RequestCaps) == 0 {
+		return nil
+	}
+
+	cap_chan := make(chan bool, len(irc.RequestCaps))
+	irc.AddCallback("CAP", func(e *Event) {
+		if len(e.Arguments) != 3 {
+			return
+		}
+		command := e.Arguments[1]
+
+		if command == "LS" {
+			missing_caps := len(irc.RequestCaps)
+			for _, cap_name := range strings.Split(e.Arguments[2], " ") {
+				for _, req_cap := range irc.RequestCaps {
+					if cap_name == req_cap {
+						irc.pwrite <- fmt.Sprintf("CAP REQ :%s\r\n", cap_name)
+						missing_caps--
+					}
+				}
+			}
+
+			for i := 0; i < missing_caps; i++ {
+				cap_chan <- true
+			}
+		} else if command == "ACK" || command == "NAK" {
+			for _, cap_name := range strings.Split(strings.TrimSpace(e.Arguments[2]), " ") {
+				if cap_name == "" {
+					continue
+				}
+
+				if command == "ACK" {
+					irc.AcknowledgedCaps = append(irc.AcknowledgedCaps, cap_name)
+				}
+				cap_chan <- true
+			}
+		}
+	})
+
+	irc.pwrite <- "CAP LS\r\n"
+
+	if irc.UseSASL {
 		select {
-		case res := <-resChan:
+		case res := <-saslResChan:
 			if res.Failed {
-				close(resChan)
+				close(saslResChan)
 				return res.Err
 			}
 		case <-time.After(time.Second * 15):
-			close(resChan)
+			close(saslResChan)
 			return errors.New("SASL setup timed out. This shouldn't happen.")
 		}
 	}
-	irc.pwrite <- fmt.Sprintf("NICK %s\r\n", irc.nick)
-	irc.pwrite <- fmt.Sprintf("USER %s 0.0.0.0 0.0.0.0 :%s\r\n", irc.user, irc.user)
+
+	// Wait for all capabilities to be ACKed or NAKed before ending negotiation
+	for i := 0; i < len(irc.RequestCaps); i++ {
+		<-cap_chan
+	}
+	irc.pwrite <- fmt.Sprintf("CAP END\r\n")
+
 	return nil
 }
 
