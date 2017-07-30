@@ -1,3 +1,13 @@
+# v1.0.0-rc1
+## New features
+* general: Add action support for slack,mattermost,irc,gitter,matrix,xmpp,discord. #199
+
+## Bugfix
+* general: Handle same account in multiple gateways better
+* mattermost: ignore edited messages with reactions
+* mattermost: Fix double posting of edited messages by using lru cache
+* irc: update vendor
+
 # v0.16.3
 ## Bugfix
 * general: Fix in/out logic. Closes #224 
