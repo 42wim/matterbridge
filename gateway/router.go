@@ -70,16 +70,6 @@ func (r *Router) getBridge(account string) *bridge.Bridge {
 	return nil
 }
 
-func (r *Router) getGatewayName(channelID string) []string {
-	var names []string
-	for _, gw := range r.Gateways {
-		if _, ok := gw.Channels[channelID]; ok {
-			names = append(names, gw.Name)
-		}
-	}
-	return names
-}
-
 func (r *Router) handleReceive() {
 	for msg := range r.Message {
 		if msg.Event == config.EVENT_FAILURE {
