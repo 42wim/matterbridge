@@ -6,6 +6,7 @@ import (
 	"github.com/42wim/matterbridge/matterclient"
 	"github.com/42wim/matterbridge/matterhook"
 	log "github.com/Sirupsen/logrus"
+	"strings"
 )
 
 type MMhook struct {
@@ -117,6 +118,9 @@ func (b *Bmattermost) JoinChannel(channel string) error {
 
 func (b *Bmattermost) Send(msg config.Message) error {
 	flog.Debugf("Receiving %#v", msg)
+	if msg.Event == config.EVENT_USER_ACTION {
+		msg.Text = "*" + msg.Text + "*"
+	}
 	nick := msg.Username
 	message := msg.Text
 	channel := msg.Channel
@@ -152,8 +156,14 @@ func (b *Bmattermost) handleMatter() {
 		go b.handleMatterClient(mchan)
 	}
 	for message := range mchan {
+		rmsg := config.Message{Username: message.Username, Channel: message.Channel, Account: b.Account, UserID: message.UserID}
+		text, ok := b.replaceAction(message.Text)
+		if ok {
+			rmsg.Event = config.EVENT_USER_ACTION
+		}
+		rmsg.Text = text
 		flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)
-		b.Remote <- config.Message{Text: message.Text, Username: message.Username, Channel: message.Channel, Account: b.Account, UserID: message.UserID}
+		b.Remote <- rmsg
 	}
 }
 
@@ -225,4 +235,11 @@ func (b *Bmattermost) apiLogin() error {
 	go b.mc.WsReceiver()
 	go b.mc.StatusLoop()
 	return nil
+}
+
+func (b *Bmattermost) replaceAction(text string) (string, bool) {
+	if strings.HasPrefix(text, "*") && strings.HasSuffix(text, "*") {
+		return strings.Replace(text, "*", "", -1), true
+	}
+	return text, false
 }

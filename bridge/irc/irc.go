@@ -135,7 +135,7 @@ func (b *Birc) Send(msg config.Message) error {
 			if len(b.Local) == b.Config.MessageQueue-1 {
 				text = text + " <message clipped>"
 			}
-			b.Local <- config.Message{Text: text, Username: msg.Username, Channel: msg.Channel}
+			b.Local <- config.Message{Text: text, Username: msg.Username, Channel: msg.Channel, Event: msg.Event}
 		} else {
 			flog.Debugf("flooding, dropping message (queue at %d)", len(b.Local))
 		}
@@ -148,7 +148,11 @@ func (b *Birc) doSend() {
 	throttle := time.NewTicker(rate)
 	for msg := range b.Local {
 		<-throttle.C
-		b.i.Privmsg(msg.Channel, msg.Username+msg.Text)
+		if msg.Event == config.EVENT_USER_ACTION {
+			b.i.Action(msg.Channel, msg.Username+msg.Text)
+		} else {
+			b.i.Privmsg(msg.Channel, msg.Username+msg.Text)
+		}
 	}
 }
 
@@ -244,10 +248,12 @@ func (b *Birc) handlePrivMsg(event *irc.Event) {
 	if event.Nick == b.Nick {
 		return
 	}
+	rmsg := config.Message{Username: event.Nick, Channel: event.Arguments[0], Account: b.Account, UserID: event.User + "@" + event.Host}
 	flog.Debugf("handlePrivMsg() %s %s %#v", event.Nick, event.Message(), event)
 	msg := ""
 	if event.Code == "CTCP_ACTION" {
-		msg = event.Nick + " "
+		//	msg = event.Nick + " "
+		rmsg.Event = config.EVENT_USER_ACTION
 	}
 	msg += event.Message()
 	// strip IRC colors
@@ -276,7 +282,8 @@ func (b *Birc) handlePrivMsg(event *irc.Event) {
 	msg = string(output)
 
 	flog.Debugf("Sending message from %s on %s to gateway", event.Arguments[0], b.Account)
-	b.Remote <- config.Message{Username: event.Nick, Text: msg, Channel: event.Arguments[0], Account: b.Account, UserID: event.User + "@" + event.Host}
+	rmsg.Text = msg
+	b.Remote <- rmsg
 }
 
 func (b *Birc) handleTopicWhoTime(event *irc.Event) {

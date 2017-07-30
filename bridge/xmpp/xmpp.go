@@ -133,6 +133,7 @@ func (b *Bxmpp) xmppKeepAlive() chan bool {
 }
 
 func (b *Bxmpp) handleXmpp() error {
+	var ok bool
 	done := b.xmppKeepAlive()
 	defer close(done)
 	nodelay := time.Time{}
@@ -154,12 +155,24 @@ func (b *Bxmpp) handleXmpp() error {
 					nick = s[1]
 				}
 				if nick != b.Config.Nick && v.Stamp == nodelay && v.Text != "" {
+					rmsg := config.Message{Username: nick, Text: v.Text, Channel: channel, Account: b.Account, UserID: v.Remote}
+					rmsg.Text, ok = b.replaceAction(rmsg.Text)
+					if ok {
+						rmsg.Event = config.EVENT_USER_ACTION
+					}
 					flog.Debugf("Sending message from %s on %s to gateway", nick, b.Account)
-					b.Remote <- config.Message{Username: nick, Text: v.Text, Channel: channel, Account: b.Account, UserID: v.Remote}
+					b.Remote <- rmsg
 				}
 			}
 		case xmpp.Presence:
 			// do nothing
 		}
 	}
+}
+
+func (b *Bxmpp) replaceAction(text string) (string, bool) {
+	if strings.HasPrefix(text, "/me ") {
+		return strings.Replace(text, "/me ", "", -1), true
+	}
+	return text, false
 }

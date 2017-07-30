@@ -78,6 +78,11 @@ func (b *Bmatrix) Send(msg config.Message) error {
 	flog.Debugf("Receiving %#v", msg)
 	channel := b.getRoomID(msg.Channel)
 	flog.Debugf("Sending to channel %s", channel)
+	if msg.Event == config.EVENT_USER_ACTION {
+		b.mc.SendMessageEvent(channel, "m.room.message",
+			matrix.TextMessage{"m.emote", msg.Username + msg.Text})
+		return nil
+	}
 	b.mc.SendText(channel, msg.Username+msg.Text)
 	return nil
 }
@@ -95,7 +100,7 @@ func (b *Bmatrix) getRoomID(channel string) string {
 func (b *Bmatrix) handlematrix() error {
 	syncer := b.mc.Syncer.(*matrix.DefaultSyncer)
 	syncer.OnEventType("m.room.message", func(ev *matrix.Event) {
-		if ev.Content["msgtype"].(string) == "m.text" && ev.Sender != b.UserID {
+		if (ev.Content["msgtype"].(string) == "m.text" || ev.Content["msgtype"].(string) == "m.emote") && ev.Sender != b.UserID {
 			b.RLock()
 			channel, ok := b.RoomMap[ev.RoomID]
 			b.RUnlock()
@@ -108,8 +113,12 @@ func (b *Bmatrix) handlematrix() error {
 				re := regexp.MustCompile("(.*?):.*")
 				username = re.ReplaceAllString(username, `$1`)
 			}
+			rmsg := config.Message{Username: username, Text: ev.Content["body"].(string), Channel: channel, Account: b.Account, UserID: ev.Sender}
+			if ev.Content["msgtype"].(string) == "m.emote" {
+				rmsg.Event = config.EVENT_USER_ACTION
+			}
 			flog.Debugf("Sending message from %s on %s to gateway", ev.Sender, b.Account)
-			b.Remote <- config.Message{Username: username, Text: ev.Content["body"].(string), Channel: channel, Account: b.Account, UserID: ev.Sender}
+			b.Remote <- rmsg
 		}
 		flog.Debugf("Received: %#v", ev)
 	})

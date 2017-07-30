@@ -127,6 +127,9 @@ func (b *Bslack) JoinChannel(channel string) error {
 
 func (b *Bslack) Send(msg config.Message) error {
 	flog.Debugf("Receiving %#v", msg)
+	if msg.Event == config.EVENT_USER_ACTION {
+		msg.Text = "_" + msg.Text + "_"
+	}
 	nick := msg.Username
 	message := msg.Text
 	channel := msg.Channel
@@ -231,6 +234,9 @@ func (b *Bslack) handleSlack() {
 			text = html.UnescapeString(text)
 			flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)
 			msg := config.Message{Text: text, Username: message.Username, Channel: message.Channel, Account: b.Account, Avatar: b.getAvatar(message.Username), UserID: message.UserID}
+			if message.Raw.SubType == "me_message" {
+				msg.Event = config.EVENT_USER_ACTION
+			}
 			b.Remote <- msg
 		}
 	}

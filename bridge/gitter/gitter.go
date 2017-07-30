@@ -81,8 +81,13 @@ func (b *Bgitter) JoinChannel(channel string) error {
 				// check for ZWSP to see if it's not an echo
 				if !strings.HasSuffix(ev.Message.Text, "​") {
 					flog.Debugf("Sending message from %s on %s to gateway", ev.Message.From.Username, b.Account)
-					b.Remote <- config.Message{Username: ev.Message.From.Username, Text: ev.Message.Text, Channel: room,
+					rmsg := config.Message{Username: ev.Message.From.Username, Text: ev.Message.Text, Channel: room,
 						Account: b.Account, Avatar: b.getAvatar(ev.Message.From.Username), UserID: ev.Message.From.ID}
+					if strings.HasPrefix(ev.Message.Text, "@"+ev.Message.From.Username) {
+						rmsg.Event = config.EVENT_USER_ACTION
+						rmsg.Text = strings.Replace(rmsg.Text, "@"+ev.Message.From.Username+" ", "", -1)
+					}
+					b.Remote <- rmsg
 				}
 			case *gitter.GitterConnectionClosed:
 				flog.Errorf("connection with gitter closed for room %s", room)

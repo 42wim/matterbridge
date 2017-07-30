@@ -116,9 +116,16 @@ func (b *bdiscord) Send(msg config.Message) error {
 	}
 	if b.Config.WebhookURL == "" {
 		flog.Debugf("Broadcasting using token (API)")
+		if msg.Event == config.EVENT_USER_ACTION {
+			msg.Username = "_" + msg.Username
+			msg.Text = msg.Text + "_"
+		}
 		b.c.ChannelMessageSend(channelID, msg.Username+msg.Text)
 	} else {
 		flog.Debugf("Broadcasting using Webhook")
+		if msg.Event == config.EVENT_USER_ACTION {
+			msg.Text = "_" + msg.Text + "_"
+		}
 		b.c.WebhookExecute(
 			b.webhookID,
 			b.webhookToken,
@@ -171,11 +178,14 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 		text = m.ContentWithMentionsReplaced()
 	}
 
-	channelName := b.getChannelName(m.ChannelID)
+	rmsg := config.Message{Account: b.Account, Avatar: "https://cdn.discordapp.com/avatars/" + m.Author.ID + "/" + m.Author.Avatar + ".jpg",
+		UserID: m.Author.ID}
+
+	rmsg.Channel = b.getChannelName(m.ChannelID)
 	if b.UseChannelID {
-		channelName = "ID:" + m.ChannelID
+		rmsg.Channel = "ID:" + m.ChannelID
 	}
-	username := b.getNick(m.Author)
+	rmsg.Username = b.getNick(m.Author)
 
 	if b.Config.ShowEmbeds && m.Message.Embeds != nil {
 		for _, embed := range m.Message.Embeds {
@@ -188,10 +198,14 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 		return
 	}
 
+	text, ok := b.replaceAction(text)
+	if ok {
+		rmsg.Event = config.EVENT_USER_ACTION
+	}
+
+	rmsg.Text = text
 	flog.Debugf("Sending message from %s on %s to gateway", m.Author.Username, b.Account)
-	b.Remote <- config.Message{Username: username, Text: text, Channel: channelName,
-		Account: b.Account, Avatar: "https://cdn.discordapp.com/avatars/" + m.Author.ID + "/" + m.Author.Avatar + ".jpg",
-		UserID: m.Author.ID}
+	b.Remote <- rmsg
 }
 
 func (b *bdiscord) memberUpdate(s *discordgo.Session, m *discordgo.GuildMemberUpdate) {
@@ -281,6 +295,13 @@ func (b *bdiscord) replaceChannelMentions(text string) string {
 		return "#" + channel
 	})
 	return text
+}
+
+func (b *bdiscord) replaceAction(text string) (string, bool) {
+	if strings.HasPrefix(text, "_") && strings.HasSuffix(text, "_") {
+		return strings.Replace(text, "_", "", -1), true
+	}
+	return text, false
 }
 
 func (b *bdiscord) stripCustomoji(text string) string {

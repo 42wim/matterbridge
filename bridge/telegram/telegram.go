@@ -77,6 +77,7 @@ func (b *Btelegram) Send(msg config.Message) error {
 
 func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 	for update := range updates {
+		flog.Debugf("Receiving from telegram: %#v", update.Message)
 		var message *tgbotapi.Message
 		username := ""
 		channel := ""
