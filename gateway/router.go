@@ -70,13 +70,14 @@ func (r *Router) getBridge(account string) *bridge.Bridge {
 	return nil
 }
 
-func (r *Router) getGatewayName(channelID string) string {
+func (r *Router) getGatewayName(channelID string) []string {
+	var names []string
 	for _, gw := range r.Gateways {
 		if _, ok := gw.Channels[channelID]; ok {
-			return gw.Name
+			names = append(names, gw.Name)
 		}
 	}
-	return ""
+	return names
 }
 
 func (r *Router) handleReceive() {
@@ -103,13 +104,11 @@ func (r *Router) handleReceive() {
 			}
 		}
 		for _, gw := range r.Gateways {
-			if gw.Name == r.getGatewayName(getChannelID(msg)) {
-				if !gw.ignoreMessage(&msg) {
-					msg.Timestamp = time.Now()
-					gw.modifyMessage(&msg)
-					for _, br := range gw.Bridges {
-						gw.handleMessage(msg, br)
-					}
+			if !gw.ignoreMessage(&msg) {
+				msg.Timestamp = time.Now()
+				gw.modifyMessage(&msg)
+				for _, br := range gw.Bridges {
+					gw.handleMessage(msg, br)
 				}
 			}
 		}

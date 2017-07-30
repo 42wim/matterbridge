@@ -170,7 +170,8 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 }
 
 func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
-	if gw.Router.getGatewayName(getChannelID(*msg)) != gw.Name {
+	// if we don't have the bridge, ignore it
+	if _, ok := gw.Bridges[msg.Account]; !ok {
 		return true
 	}
 	if msg.Text == "" {
@@ -240,7 +241,7 @@ func (gw *Gateway) modifyAvatar(msg config.Message, dest *bridge.Bridge) string 
 func (gw *Gateway) modifyMessage(msg *config.Message) {
 	// replace :emoji: to unicode
 	msg.Text = emojilib.Replace(msg.Text)
-	msg.Gateway = gw.Router.getGatewayName(getChannelID(*msg))
+	msg.Gateway = gw.Name
 }
 
 func getChannelID(msg config.Message) string {
