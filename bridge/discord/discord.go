@@ -114,18 +114,14 @@ func (b *bdiscord) Send(msg config.Message) error {
 		flog.Errorf("Could not find channelID for %v", msg.Channel)
 		return nil
 	}
+	if msg.Event == config.EVENT_USER_ACTION {
+		msg.Text = "_" + msg.Text + "_"
+	}
 	if b.Config.WebhookURL == "" {
 		flog.Debugf("Broadcasting using token (API)")
-		if msg.Event == config.EVENT_USER_ACTION {
-			msg.Username = "_" + msg.Username
-			msg.Text = msg.Text + "_"
-		}
 		b.c.ChannelMessageSend(channelID, msg.Username+msg.Text)
 	} else {
 		flog.Debugf("Broadcasting using Webhook")
-		if msg.Event == config.EVENT_USER_ACTION {
-			msg.Text = "_" + msg.Text + "_"
-		}
 		b.c.WebhookExecute(
 			b.webhookID,
 			b.webhookToken,
