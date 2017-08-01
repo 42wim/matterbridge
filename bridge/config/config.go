@@ -77,6 +77,7 @@ type Protocol struct {
 	UseSASL                bool   // IRC
 	UseTLS                 bool   // IRC
 	UseFirstName           bool   // telegram
+	UseUserName            bool   // discord
 	UseInsecureURL         bool   // telegram
 	WebhookBindAddress     string // mattermost, slack
 	WebhookURL             string // mattermost, slack

@@ -181,7 +181,12 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	if b.UseChannelID {
 		rmsg.Channel = "ID:" + m.ChannelID
 	}
-	rmsg.Username = b.getNick(m.Author)
+
+	if !b.Config.UseUserName {
+		rmsg.Username = b.getNick(m.Author)
+	} else {
+		rmsg.Username = m.Author.Username
+	}
 
 	if b.Config.ShowEmbeds && m.Message.Embeds != nil {
 		for _, embed := range m.Message.Embeds {

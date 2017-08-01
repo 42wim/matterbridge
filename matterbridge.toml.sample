@@ -443,6 +443,10 @@ Server="yourservername"
 #OPTIONAL (default false)
 ShowEmbeds=false
 
+#Shows the username (minus the discriminator) instead of the server nickname
+#OPTIONAL (default false)
+UseUserName=false
+
 #Specify WebhookURL. If given, will relay messages using the Webhook, which gives a better look to messages.
 #OPTIONAL (default empty)
 WebhookURL="Yourwebhooktokenhere"
