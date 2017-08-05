@@ -1,3 +1,8 @@
+# v1.0.0
+## New features
+* general: Add action support for slack,mattermost,irc,gitter,matrix,xmpp,discord. #199
+* discord: Shows the username instead of the server nickname #234
+
 # v1.0.0-rc1
 ## New features
 * general: Add action support for slack,mattermost,irc,gitter,matrix,xmpp,discord. #199

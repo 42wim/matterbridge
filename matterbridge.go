@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/gateway"
-	//"github.com/42wim/matterbridge/gateway/samechannel"
 	log "github.com/Sirupsen/logrus"
 	"github.com/google/gops/agent"
 	"strings"
 )
 
 var (
-	version = "1.0.0-rc1"
+	version = "1.0.0"
 	githash string
 )
 
