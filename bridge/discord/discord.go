@@ -41,7 +41,7 @@ func New(cfg config.Protocol, account string, c chan config.Message) *bdiscord {
 	b.channelInfoMap = make(map[string]*config.ChannelInfo)
 	if b.Config.WebhookURL != "" {
 		flog.Debug("Configuring Discord Incoming Webhook")
-		b.webhookToken, b.webhookID = b.splitURL(b.Config.WebhookURL)
+		b.webhookID, b.webhookToken = b.splitURL(b.Config.WebhookURL)
 	}
 	return b
 }
@@ -121,7 +121,7 @@ func (b *bdiscord) Send(msg config.Message) error {
 
 	wID := b.webhookID
 	wToken := b.webhookToken
-	if ci, ok := b.channelInfoMap[msg.Channel+msg.Account]; ok {
+	if ci, ok := b.channelInfoMap[msg.Channel+b.Account]; ok {
 		if ci.Options.WebhookURL != "" {
 			wID, wToken = b.splitURL(ci.Options.WebhookURL)
 		}
@@ -131,7 +131,7 @@ func (b *bdiscord) Send(msg config.Message) error {
 		flog.Debugf("Broadcasting using token (API)")
 		b.c.ChannelMessageSend(channelID, msg.Username+msg.Text)
 	} else {
-		flog.Debugf("Broadcasting using Webhook %#v %#v", wID, wToken)
+		flog.Debugf("Broadcasting using Webhook")
 		b.c.WebhookExecute(
 			wID,
 			wToken,
@@ -342,6 +342,12 @@ func (b *bdiscord) useWebhook() bool {
 
 // isWebhookID returns true if the specified id is used in a defined webhook
 func (b *bdiscord) isWebhookID(id string) bool {
+	if b.Config.WebhookURL != "" {
+		wID, _ := b.splitURL(b.Config.WebhookURL)
+		if wID == id {
+			return true
+		}
+	}
 	for _, channel := range b.channelInfoMap {
 		if channel.Options.WebhookURL != "" {
 			wID, _ := b.splitURL(channel.Options.WebhookURL)
