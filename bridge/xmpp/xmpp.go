@@ -74,8 +74,8 @@ func (b *Bxmpp) Disconnect() error {
 	return nil
 }
 
-func (b *Bxmpp) JoinChannel(channel string) error {
-	b.xc.JoinMUCNoHistory(channel+"@"+b.Config.Muc, b.Config.Nick)
+func (b *Bxmpp) JoinChannel(channel config.ChannelInfo) error {
+	b.xc.JoinMUCNoHistory(channel.Name+"@"+b.Config.Muc, b.Config.Nick)
 	return nil
 }
 

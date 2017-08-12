@@ -60,8 +60,8 @@ func (b *Bsteam) Disconnect() error {
 
 }
 
-func (b *Bsteam) JoinChannel(channel string) error {
-	id, err := steamid.NewId(channel)
+func (b *Bsteam) JoinChannel(channel config.ChannelInfo) error {
+	id, err := steamid.NewId(channel.Name)
 	if err != nil {
 		return err
 	}

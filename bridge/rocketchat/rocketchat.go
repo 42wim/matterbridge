@@ -53,7 +53,7 @@ func (b *Brocketchat) Disconnect() error {
 
 }
 
-func (b *Brocketchat) JoinChannel(channel string) error {
+func (b *Brocketchat) JoinChannel(channel config.ChannelInfo) error {
 	return nil
 }
 

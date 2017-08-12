@@ -10,17 +10,18 @@ import (
 )
 
 type bdiscord struct {
-	c             *discordgo.Session
-	Config        *config.Protocol
-	Remote        chan config.Message
-	Account       string
-	Channels      []*discordgo.Channel
-	Nick          string
-	UseChannelID  bool
-	userMemberMap map[string]*discordgo.Member
-	guildID       string
-	webhookID     string
-	webhookToken  string
+	c              *discordgo.Session
+	Config         *config.Protocol
+	Remote         chan config.Message
+	Account        string
+	Channels       []*discordgo.Channel
+	Nick           string
+	UseChannelID   bool
+	userMemberMap  map[string]*discordgo.Member
+	guildID        string
+	webhookID      string
+	webhookToken   string
+	channelInfoMap map[string]*config.ChannelInfo
 	sync.RWMutex
 }
 
@@ -37,11 +38,10 @@ func New(cfg config.Protocol, account string, c chan config.Message) *bdiscord {
 	b.Remote = c
 	b.Account = account
 	b.userMemberMap = make(map[string]*discordgo.Member)
+	b.channelInfoMap = make(map[string]*config.ChannelInfo)
 	if b.Config.WebhookURL != "" {
 		flog.Debug("Configuring Discord Incoming Webhook")
-		webhookURLSplit := strings.Split(b.Config.WebhookURL, "/")
-		b.webhookToken = webhookURLSplit[len(webhookURLSplit)-1]
-		b.webhookID = webhookURLSplit[len(webhookURLSplit)-2]
+		b.webhookToken, b.webhookID = b.splitURL(b.Config.WebhookURL)
 	}
 	return b
 }
@@ -99,8 +99,9 @@ func (b *bdiscord) Disconnect() error {
 	return nil
 }
 
-func (b *bdiscord) JoinChannel(channel string) error {
-	idcheck := strings.Split(channel, "ID:")
+func (b *bdiscord) JoinChannel(channel config.ChannelInfo) error {
+	b.channelInfoMap[channel.ID] = &channel
+	idcheck := strings.Split(channel.Name, "ID:")
 	if len(idcheck) > 1 {
 		b.UseChannelID = true
 	}
@@ -117,14 +118,23 @@ func (b *bdiscord) Send(msg config.Message) error {
 	if msg.Event == config.EVENT_USER_ACTION {
 		msg.Text = "_" + msg.Text + "_"
 	}
-	if b.Config.WebhookURL == "" {
+
+	wID := b.webhookID
+	wToken := b.webhookToken
+	if ci, ok := b.channelInfoMap[msg.Channel+msg.Account]; ok {
+		if ci.Options.WebhookURL != "" {
+			wID, wToken = b.splitURL(ci.Options.WebhookURL)
+		}
+	}
+
+	if wID == "" {
 		flog.Debugf("Broadcasting using token (API)")
 		b.c.ChannelMessageSend(channelID, msg.Username+msg.Text)
 	} else {
-		flog.Debugf("Broadcasting using Webhook")
+		flog.Debugf("Broadcasting using Webhook %#v %#v", wID, wToken)
 		b.c.WebhookExecute(
-			b.webhookID,
-			b.webhookToken,
+			wID,
+			wToken,
 			true,
 			&discordgo.WebhookParams{
 				Content:   msg.Text,
@@ -153,7 +163,7 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 		return
 	}
 	// if using webhooks, do not relay if it's ours
-	if b.Config.WebhookURL != "" && m.Author.Bot && m.Author.ID == b.webhookID {
+	if b.useWebhook() && m.Author.Bot && b.isWebhookID(m.Author.ID) {
 		return
 	}
 
@@ -309,4 +319,36 @@ func (b *bdiscord) stripCustomoji(text string) string {
 	// <:doge:302803592035958784>
 	re := regexp.MustCompile("<(:.*?:)[0-9]+>")
 	return re.ReplaceAllString(text, `$1`)
+}
+
+// splitURL splits a webhookURL and returns the id and token
+func (b *bdiscord) splitURL(url string) (string, string) {
+	webhookURLSplit := strings.Split(url, "/")
+	return webhookURLSplit[len(webhookURLSplit)-2], webhookURLSplit[len(webhookURLSplit)-1]
+}
+
+// useWebhook returns true if we have a webhook defined somewhere
+func (b *bdiscord) useWebhook() bool {
+	if b.Config.WebhookURL != "" {
+		return true
+	}
+	for _, channel := range b.channelInfoMap {
+		if channel.Options.WebhookURL != "" {
+			return true
+		}
+	}
+	return false
+}
+
+// isWebhookID returns true if the specified id is used in a defined webhook
+func (b *bdiscord) isWebhookID(id string) bool {
+	for _, channel := range b.channelInfoMap {
+		if channel.Options.WebhookURL != "" {
+			wID, _ := b.splitURL(channel.Options.WebhookURL)
+			if wID == id {
+				return true
+			}
+		}
+	}
+	return false
 }

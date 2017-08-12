@@ -108,10 +108,10 @@ func (b *Bmattermost) Disconnect() error {
 	return nil
 }
 
-func (b *Bmattermost) JoinChannel(channel string) error {
+func (b *Bmattermost) JoinChannel(channel config.ChannelInfo) error {
 	// we can only join channels using the API
 	if b.Config.WebhookURL == "" && b.Config.WebhookBindAddress == "" {
-		return b.mc.JoinChannel(b.mc.GetChannelId(channel, ""))
+		return b.mc.JoinChannel(b.mc.GetChannelId(channel.Name, ""))
 	}
 	return nil
 }

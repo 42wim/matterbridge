@@ -117,8 +117,13 @@ func (b *Birc) Disconnect() error {
 	return nil
 }
 
-func (b *Birc) JoinChannel(channel string) error {
-	b.i.Join(channel)
+func (b *Birc) JoinChannel(channel config.ChannelInfo) error {
+	if channel.Options.Key != "" {
+		flog.Debugf("using key %s for channel %s", channel.Options.Key, channel.Name)
+		b.i.Join(channel.Name + " " + channel.Options.Key)
+	} else {
+		b.i.Join(channel.Name)
+	}
 	return nil
 }
 

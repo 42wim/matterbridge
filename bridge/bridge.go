@@ -21,7 +21,7 @@ import (
 type Bridger interface {
 	Send(msg config.Message) error
 	Connect() error
-	JoinChannel(channel string) error
+	JoinChannel(channel config.ChannelInfo) error
 	Disconnect() error
 }
 
@@ -92,16 +92,10 @@ func (b *Bridge) JoinChannels() error {
 }
 
 func (b *Bridge) joinChannels(channels map[string]config.ChannelInfo, exists map[string]bool) error {
-	mychannel := ""
 	for ID, channel := range channels {
 		if !exists[ID] {
-			mychannel = channel.Name
 			log.Infof("%s: joining %s (%s)", b.Account, channel.Name, ID)
-			if b.Protocol == "irc" && channel.Options.Key != "" {
-				log.Debugf("using key %s for channel %s", channel.Options.Key, channel.Name)
-				mychannel = mychannel + " " + channel.Options.Key
-			}
-			err := b.JoinChannel(mychannel)
+			err := b.JoinChannel(channel)
 			if err != nil {
 				return err
 			}

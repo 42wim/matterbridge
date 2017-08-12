@@ -53,7 +53,7 @@ func (b *Btelegram) Disconnect() error {
 
 }
 
-func (b *Btelegram) JoinChannel(channel string) error {
+func (b *Btelegram) JoinChannel(channel config.ChannelInfo) error {
 	return nil
 }
 

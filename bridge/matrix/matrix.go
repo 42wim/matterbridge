@@ -63,13 +63,13 @@ func (b *Bmatrix) Disconnect() error {
 	return nil
 }
 
-func (b *Bmatrix) JoinChannel(channel string) error {
-	resp, err := b.mc.JoinRoom(channel, "", nil)
+func (b *Bmatrix) JoinChannel(channel config.ChannelInfo) error {
+	resp, err := b.mc.JoinRoom(channel.Name, "", nil)
 	if err != nil {
 		return err
 	}
 	b.Lock()
-	b.RoomMap[resp.RoomID] = channel
+	b.RoomMap[resp.RoomID] = channel.Name
 	b.Unlock()
 	return err
 }

@@ -51,10 +51,10 @@ func (b *Bgitter) Disconnect() error {
 
 }
 
-func (b *Bgitter) JoinChannel(channel string) error {
-	roomID, err := b.c.GetRoomId(channel)
+func (b *Bgitter) JoinChannel(channel config.ChannelInfo) error {
+	roomID, err := b.c.GetRoomId(channel.Name)
 	if err != nil {
-		return fmt.Errorf("Could not find roomID for %v. Please create the room on gitter.im", channel)
+		return fmt.Errorf("Could not find roomID for %v. Please create the room on gitter.im", channel.Name)
 	}
 	room, err := b.c.GetRoom(roomID)
 	if err != nil {

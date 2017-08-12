@@ -61,7 +61,7 @@ func (b *Api) Disconnect() error {
 	return nil
 
 }
-func (b *Api) JoinChannel(channel string) error {
+func (b *Api) JoinChannel(channel config.ChannelInfo) error {
 	return nil
 
 }

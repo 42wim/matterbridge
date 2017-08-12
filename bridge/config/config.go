@@ -85,7 +85,8 @@ type Protocol struct {
 }
 
 type ChannelOptions struct {
-	Key string // irc
+	Key        string // irc
+	WebhookURL string // discord
 }
 
 type Bridge struct {

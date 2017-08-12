@@ -448,6 +448,7 @@ ShowEmbeds=false
 UseUserName=false
 
 #Specify WebhookURL. If given, will relay messages using the Webhook, which gives a better look to messages.
+#This only works if you have one discord channel, if you have multiple discord channels you'll have to specify it in the gateway config
 #OPTIONAL (default empty)
 WebhookURL="Yourwebhooktokenhere"
 
@@ -832,6 +833,14 @@ enable=true
         [gateway.inout.options]
         #OPTIONAL - your irc channel key
         key="yourkey"
+
+    [[gateway.inout]]
+    account="discord.game"
+    channel="mygreatgame"
+
+        #OPTIONAL - webhookurl only works for discord (it needs a different URL for each cahnnel)
+        [gateway.inout.options]
+        webhookurl=""https://discordapp.com/api/webhooks/123456789123456789/C9WPqExYWONPDZabcdef-def1434FGFjstasJX9pYht73y"
 
     #API example
     #[[gateway.inout]]
