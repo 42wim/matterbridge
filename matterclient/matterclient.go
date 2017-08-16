@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -829,14 +828,6 @@ func (m *MMClient) sendWSRequest(action string, data map[string]interface{}) err
 	m.log.Debugf("sendWsRequest %#v", req)
 	m.WsClient.WriteJSON(req)
 	return nil
-}
-
-func (m *MMClient) mmVersion() float64 {
-	v, _ := strconv.ParseFloat(string(m.ServerVersion[0:2])+"0"+string(m.ServerVersion[2]), 64)
-	if string(m.ServerVersion[4]) == "." {
-		v, _ = strconv.ParseFloat(m.ServerVersion[0:4], 64)
-	}
-	return v
 }
 
 func supportedVersion(version string) bool {
