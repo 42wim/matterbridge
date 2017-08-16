@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 package model
@@ -11,9 +11,11 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/mail"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -31,7 +33,6 @@ const (
 type StringInterface map[string]interface{}
 type StringMap map[string]string
 type StringArray []string
-type EncryptStringMap map[string]string
 
 type AppError struct {
 	Id            string `json:"id"`
@@ -156,6 +157,15 @@ func MapToJson(objmap map[string]string) string {
 	}
 }
 
+// MapToJson converts a map to a json string
+func MapBoolToJson(objmap map[string]bool) string {
+	if b, err := json.Marshal(objmap); err != nil {
+		return ""
+	} else {
+		return string(b)
+	}
+}
+
 // MapFromJson will decode the key/value pair map
 func MapFromJson(data io.Reader) map[string]string {
 	decoder := json.NewDecoder(data)
@@ -163,6 +173,18 @@ func MapFromJson(data io.Reader) map[string]string {
 	var objmap map[string]string
 	if err := decoder.Decode(&objmap); err != nil {
 		return make(map[string]string)
+	} else {
+		return objmap
+	}
+}
+
+// MapFromJson will decode the key/value pair map
+func MapBoolFromJson(data io.Reader) map[string]bool {
+	decoder := json.NewDecoder(data)
+
+	var objmap map[string]bool
+	if err := decoder.Decode(&objmap); err != nil {
+		return make(map[string]bool)
 	} else {
 		return objmap
 	}
@@ -243,6 +265,23 @@ func StringFromJson(data io.Reader) string {
 	}
 }
 
+func GetServerIpAddress() string {
+	if addrs, err := net.InterfaceAddrs(); err != nil {
+		return ""
+	} else {
+		for _, addr := range addrs {
+
+			if ip, ok := addr.(*net.IPNet); ok && !ip.IP.IsLoopback() {
+				if ip.IP.To4() != nil {
+					return ip.IP.String()
+				}
+			}
+		}
+	}
+
+	return ""
+}
+
 func IsLower(s string) bool {
 	if strings.ToLower(s) == s {
 		return true
@@ -276,7 +315,7 @@ var reservedName = []string{
 
 func IsValidChannelIdentifier(s string) bool {
 
-	if !IsValidAlphaNum(s, true) {
+	if !IsValidAlphaNumHyphenUnderscore(s, true) {
 		return false
 	}
 
@@ -287,22 +326,20 @@ func IsValidChannelIdentifier(s string) bool {
 	return true
 }
 
-var validAlphaNumUnderscore = regexp.MustCompile(`^[a-z0-9]+([a-z\-\_0-9]+|(__)?)[a-z0-9]+$`)
-var validAlphaNum = regexp.MustCompile(`^[a-z0-9]+([a-z\-0-9]+|(__)?)[a-z0-9]+$`)
+func IsValidAlphaNum(s string) bool {
+	validAlphaNum := regexp.MustCompile(`^[a-z0-9]+([a-z\-0-9]+|(__)?)[a-z0-9]+$`)
 
-func IsValidAlphaNum(s string, allowUnderscores bool) bool {
-	var match bool
-	if allowUnderscores {
-		match = validAlphaNumUnderscore.MatchString(s)
-	} else {
-		match = validAlphaNum.MatchString(s)
+	return validAlphaNum.MatchString(s)
+}
+
+func IsValidAlphaNumHyphenUnderscore(s string, withFormat bool) bool {
+	if withFormat {
+		validAlphaNumHyphenUnderscore := regexp.MustCompile(`^[a-z0-9]+([a-z\-\_0-9]+|(__)?)[a-z0-9]+$`)
+		return validAlphaNumHyphenUnderscore.MatchString(s)
 	}
 
-	if !match {
-		return false
-	}
-
-	return true
+	validSimpleAlphaNumHyphenUnderscore := regexp.MustCompile(`^[a-zA-Z0-9\-_]+$`)
+	return validSimpleAlphaNumHyphenUnderscore.MatchString(s)
 }
 
 func Etag(parts ...interface{}) string {
@@ -382,8 +419,6 @@ func ClearMentionTags(post string) string {
 var UrlRegex = regexp.MustCompile(`^((?:[a-z]+:\/\/)?(?:(?:[a-z0-9\-]+\.)+(?:[a-z]{2}|aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|local|internal))(:[0-9]{1,5})?(?:\/[a-z0-9_\-\.~]+)*(\/([a-z0-9_\-\.]*)(?:\?[a-z0-9+_~\-\.%=&amp;]*)?)?(?:#[a-zA-Z0-9!$&'()*+.=-_~:@/?]*)?)(?:\s+|$)$`)
 var PartialUrlRegex = regexp.MustCompile(`/([A-Za-z0-9]{26})/([A-Za-z0-9]{26})/((?:[A-Za-z0-9]{26})?.+(?:\.[A-Za-z0-9]{3,})?)`)
 
-var SplitRunes = map[rune]bool{',': true, ' ': true, '.': true, '!': true, '?': true, ':': true, ';': true, '\n': true, '<': true, '>': true, '(': true, ')': true, '{': true, '}': true, '[': true, ']': true, '+': true, '/': true, '\\': true, '^': true, '#': true, '$': true, '&': true}
-
 func IsValidHttpUrl(rawUrl string) bool {
 	if strings.Index(rawUrl, "http://") != 0 && strings.Index(rawUrl, "https://") != 0 {
 		return false
@@ -440,6 +475,18 @@ func IsValidWebsocketUrl(rawUrl string) bool {
 	}
 
 	if _, err := url.ParseRequestURI(rawUrl); err != nil {
+		return false
+	}
+
+	return true
+}
+
+func IsValidTrueOrFalseString(value string) bool {
+	return value == "true" || value == "false"
+}
+
+func IsValidNumberString(value string) bool {
+	if _, err := strconv.Atoi(value); err != nil {
 		return false
 	}
 

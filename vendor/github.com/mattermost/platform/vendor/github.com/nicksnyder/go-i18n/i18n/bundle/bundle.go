@@ -2,15 +2,18 @@
 package bundle
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"reflect"
 	"sync"
+	"unicode"
 
 	"github.com/nicksnyder/go-i18n/i18n/language"
 	"github.com/nicksnyder/go-i18n/i18n/translation"
+	toml "github.com/pelletier/go-toml"
 	"gopkg.in/yaml.v2"
 )
 
@@ -78,32 +81,129 @@ func (b *Bundle) ParseTranslationFileBytes(filename string, buf []byte) error {
 }
 
 func parseTranslations(filename string, buf []byte) ([]translation.Translation, error) {
-	var unmarshalFunc func([]byte, interface{}) error
-	switch format := filepath.Ext(filename); format {
-	case ".json":
-		unmarshalFunc = json.Unmarshal
-	case ".yaml":
-		unmarshalFunc = yaml.Unmarshal
-	default:
-		return nil, fmt.Errorf("unsupported file extension %s", format)
+	if len(buf) == 0 {
+		return []translation.Translation{}, nil
 	}
 
-	var translationsData []map[string]interface{}
-	if len(buf) > 0 {
-		if err := unmarshalFunc(buf, &translationsData); err != nil {
-			return nil, fmt.Errorf("failed to load %s because %s", filename, err)
+	ext := filepath.Ext(filename)
+
+	// `github.com/pelletier/go-toml` lacks an Unmarshal function,
+	// so we should parse TOML separately.
+	if ext == ".toml" {
+		tree, err := toml.LoadReader(bytes.NewReader(buf))
+		if err != nil {
+			return nil, err
+		}
+
+		m := make(map[string]map[string]interface{})
+		for k, v := range tree.ToMap() {
+			m[k] = v.(map[string]interface{})
+		}
+
+		return parseFlatFormat(m)
+	}
+
+	// Then parse other formats.
+	if isStandardFormat(ext, buf) {
+		var standardFormat []map[string]interface{}
+		if err := unmarshal(ext, buf, &standardFormat); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal %v: %v", filename, err)
+		}
+		return parseStandardFormat(standardFormat)
+	} else {
+		var flatFormat map[string]map[string]interface{}
+		if err := unmarshal(ext, buf, &flatFormat); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal %v: %v", filename, err)
+		}
+		return parseFlatFormat(flatFormat)
+	}
+}
+
+func isStandardFormat(ext string, buf []byte) bool {
+	buf = deleteLeadingComments(ext, buf)
+	firstRune := rune(buf[0])
+	return (ext == ".json" && firstRune == '[') || (ext == ".yaml" && firstRune == '-')
+}
+
+// deleteLeadingComments deletes leading newlines and comments in buf.
+// It only works for ext == ".yaml".
+func deleteLeadingComments(ext string, buf []byte) []byte {
+	if ext != ".yaml" {
+		return buf
+	}
+
+	for {
+		buf = bytes.TrimLeftFunc(buf, unicode.IsSpace)
+		if buf[0] == '#' {
+			buf = deleteLine(buf)
+		} else {
+			break
 		}
 	}
 
-	translations := make([]translation.Translation, 0, len(translationsData))
-	for i, translationData := range translationsData {
+	return buf
+}
+
+func deleteLine(buf []byte) []byte {
+	index := bytes.IndexRune(buf, '\n')
+	if index == -1 { // If there is only one line without newline ...
+		return nil // ... delete it and return nothing.
+	}
+	if index == len(buf)-1 { // If there is only one line with newline ...
+		return nil // ... do the same as above.
+	}
+	return buf[index+1:]
+}
+
+// unmarshal finds an appropriate unmarshal function for ext
+// (extension of filename) and unmarshals buf to out. out must be a pointer.
+func unmarshal(ext string, buf []byte, out interface{}) error {
+	switch ext {
+	case ".json":
+		return json.Unmarshal(buf, out)
+	case ".yaml":
+		return yaml.Unmarshal(buf, out)
+	}
+
+	return fmt.Errorf("unsupported file extension %v", ext)
+}
+
+func parseStandardFormat(data []map[string]interface{}) ([]translation.Translation, error) {
+	translations := make([]translation.Translation, 0, len(data))
+	for i, translationData := range data {
 		t, err := translation.NewTranslation(translationData)
 		if err != nil {
-			return nil, fmt.Errorf("unable to parse translation #%d in %s because %s\n%v", i, filename, err, translationData)
+			return nil, fmt.Errorf("unable to parse translation #%d because %s\n%v", i, err, translationData)
 		}
 		translations = append(translations, t)
 	}
 	return translations, nil
+}
+
+// parseFlatFormat just converts data from flat format to standard format
+// and passes it to parseStandardFormat.
+//
+// Flat format logic:
+// key of data must be a string and data[key] must be always map[string]interface{},
+// but if there is only "other" key in it then it is non-plural, else plural.
+func parseFlatFormat(data map[string]map[string]interface{}) ([]translation.Translation, error) {
+	var standardFormatData []map[string]interface{}
+	for id, translationData := range data {
+		dataObject := make(map[string]interface{})
+		dataObject["id"] = id
+		if len(translationData) == 1 { // non-plural form
+			_, otherExists := translationData["other"]
+			if otherExists {
+				dataObject["translation"] = translationData["other"]
+			}
+		} else { // plural form
+			dataObject["translation"] = translationData
+		}
+
+		standardFormatData = append(standardFormatData, dataObject)
+	}
+
+	return parseStandardFormat(standardFormatData)
 }
 
 // AddTranslation adds translations for a language.

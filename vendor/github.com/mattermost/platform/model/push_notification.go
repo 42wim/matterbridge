@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 package model
@@ -36,6 +36,10 @@ type PushNotification struct {
 	ChannelId        string `json:"channel_id"`
 	ChannelName      string `json:"channel_name"`
 	Type             string `json:"type"`
+	SenderId         string `json:"sender_id"`
+	OverrideUsername string `json:"override_username"`
+	OverrideIconUrl  string `json:"override_icon_url"`
+	FromWebhook      string `json:"from_webhook"`
 }
 
 func (me *PushNotification) ToJson() string {

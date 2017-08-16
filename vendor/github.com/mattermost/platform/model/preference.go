@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 package model
@@ -16,14 +16,10 @@ const (
 	PREFERENCE_CATEGORY_TUTORIAL_STEPS      = "tutorial_step"
 	PREFERENCE_CATEGORY_ADVANCED_SETTINGS   = "advanced_settings"
 	PREFERENCE_CATEGORY_FLAGGED_POST        = "flagged_post"
+	PREFERENCE_CATEGORY_FAVORITE_CHANNEL    = "favorite_channel"
 
-	PREFERENCE_CATEGORY_DISPLAY_SETTINGS   = "display_settings"
-	PREFERENCE_NAME_COLLAPSE_SETTING       = "collapse_previews"
-	PREFERENCE_NAME_DISPLAY_NAME_FORMAT    = "name_format"
-	PREFERENCE_VALUE_DISPLAY_NAME_NICKNAME = "nickname_full_name"
-	PREFERENCE_VALUE_DISPLAY_NAME_FULL     = "full_name"
-	PREFERENCE_VALUE_DISPLAY_NAME_USERNAME = "username"
-	PREFERENCE_DEFAULT_DISPLAY_NAME_FORMAT = PREFERENCE_VALUE_DISPLAY_NAME_USERNAME
+	PREFERENCE_CATEGORY_DISPLAY_SETTINGS = "display_settings"
+	PREFERENCE_NAME_COLLAPSE_SETTING     = "collapse_previews"
 
 	PREFERENCE_CATEGORY_THEME = "theme"
 	// the name for theme props is the team id
@@ -37,7 +33,9 @@ const (
 
 	PREFERENCE_CATEGORY_NOTIFICATIONS = "notifications"
 	PREFERENCE_NAME_EMAIL_INTERVAL    = "email_interval"
-	PREFERENCE_DEFAULT_EMAIL_INTERVAL = "30" // default to match the interval of the "immediate" setting (ie 30 seconds)
+
+	PREFERENCE_EMAIL_INTERVAL_NO_BATCHING_SECONDS = "30"  // the "immediate" setting is actually 30s
+	PREFERENCE_EMAIL_INTERVAL_BATCHING_SECONDS    = "900" // fifteen minutes is 900 seconds
 )
 
 type Preference struct {

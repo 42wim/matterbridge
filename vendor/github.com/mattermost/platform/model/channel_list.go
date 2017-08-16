@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 package model
@@ -46,6 +46,17 @@ func ChannelListFromJson(data io.Reader) *ChannelList {
 	err := decoder.Decode(&o)
 	if err == nil {
 		return &o
+	} else {
+		return nil
+	}
+}
+
+func ChannelSliceFromJson(data io.Reader) []*Channel {
+	decoder := json.NewDecoder(data)
+	var o []*Channel
+	err := decoder.Decode(&o)
+	if err == nil {
+		return o
 	} else {
 		return nil
 	}

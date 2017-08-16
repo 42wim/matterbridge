@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 package model
@@ -39,6 +39,7 @@ var PERMISSION_DELETE_PUBLIC_CHANNEL *Permission
 var PERMISSION_DELETE_PRIVATE_CHANNEL *Permission
 var PERMISSION_EDIT_OTHER_USERS *Permission
 var PERMISSION_READ_CHANNEL *Permission
+var PERMISSION_READ_PUBLIC_CHANNEL *Permission
 var PERMISSION_PERMANENT_DELETE_USER *Permission
 var PERMISSION_UPLOAD_FILE *Permission
 var PERMISSION_GET_PUBLIC_LINK *Permission
@@ -47,6 +48,7 @@ var PERMISSION_MANAGE_OTHERS_WEBHOOKS *Permission
 var PERMISSION_MANAGE_OAUTH *Permission
 var PERMISSION_MANAGE_SYSTEM_WIDE_OAUTH *Permission
 var PERMISSION_CREATE_POST *Permission
+var PERMISSION_CREATE_POST_PUBLIC *Permission
 var PERMISSION_EDIT_POST *Permission
 var PERMISSION_EDIT_OTHERS_POSTS *Permission
 var PERMISSION_DELETE_POST *Permission
@@ -56,6 +58,11 @@ var PERMISSION_CREATE_TEAM *Permission
 var PERMISSION_MANAGE_TEAM *Permission
 var PERMISSION_IMPORT_TEAM *Permission
 var PERMISSION_VIEW_TEAM *Permission
+var PERMISSION_LIST_USERS_WITHOUT_TEAM *Permission
+var PERMISSION_MANAGE_JOBS *Permission
+var PERMISSION_CREATE_USER_ACCESS_TOKEN *Permission
+var PERMISSION_READ_USER_ACCESS_TOKEN *Permission
+var PERMISSION_REVOKE_USER_ACCESS_TOKEN *Permission
 
 // General permission that encompases all system admin functions
 // in the future this could be broken up to allow access to some
@@ -64,9 +71,14 @@ var PERMISSION_MANAGE_SYSTEM *Permission
 
 var ROLE_SYSTEM_USER *Role
 var ROLE_SYSTEM_ADMIN *Role
+var ROLE_SYSTEM_POST_ALL *Role
+var ROLE_SYSTEM_POST_ALL_PUBLIC *Role
+var ROLE_SYSTEM_USER_ACCESS_TOKEN *Role
 
 var ROLE_TEAM_USER *Role
 var ROLE_TEAM_ADMIN *Role
+var ROLE_TEAM_POST_ALL *Role
+var ROLE_TEAM_POST_ALL_PUBLIC *Role
 
 var ROLE_CHANNEL_USER *Role
 var ROLE_CHANNEL_ADMIN *Role
@@ -195,6 +207,11 @@ func InitalizePermissions() {
 		"authentication.permissions.read_channel.name",
 		"authentication.permissions.read_channel.description",
 	}
+	PERMISSION_READ_PUBLIC_CHANNEL = &Permission{
+		"read_public_channel",
+		"authentication.permissions.read_public_channel.name",
+		"authentication.permissions.read_public_channel.description",
+	}
 	PERMISSION_PERMANENT_DELETE_USER = &Permission{
 		"permanent_delete_user",
 		"authentication.permissions.permanent_delete_user.name",
@@ -234,6 +251,11 @@ func InitalizePermissions() {
 		"create_post",
 		"authentication.permissions.create_post.name",
 		"authentication.permissions.create_post.description",
+	}
+	PERMISSION_CREATE_POST_PUBLIC = &Permission{
+		"create_post_public",
+		"authentication.permissions.create_post_public.name",
+		"authentication.permissions.create_post_public.description",
 	}
 	PERMISSION_EDIT_POST = &Permission{
 		"edit_post",
@@ -280,6 +302,31 @@ func InitalizePermissions() {
 		"authentication.permissions.view_team.name",
 		"authentication.permissions.view_team.description",
 	}
+	PERMISSION_LIST_USERS_WITHOUT_TEAM = &Permission{
+		"list_users_without_team",
+		"authentication.permissions.list_users_without_team.name",
+		"authentication.permissions.list_users_without_team.description",
+	}
+	PERMISSION_CREATE_USER_ACCESS_TOKEN = &Permission{
+		"create_user_access_token",
+		"authentication.permissions.create_user_access_token.name",
+		"authentication.permissions.create_user_access_token.description",
+	}
+	PERMISSION_READ_USER_ACCESS_TOKEN = &Permission{
+		"read_user_access_token",
+		"authentication.permissions.read_user_access_token.name",
+		"authentication.permissions.read_user_access_token.description",
+	}
+	PERMISSION_REVOKE_USER_ACCESS_TOKEN = &Permission{
+		"revoke_user_access_token",
+		"authentication.permissions.revoke_user_access_token.name",
+		"authentication.permissions.revoke_user_access_token.description",
+	}
+	PERMISSION_MANAGE_JOBS = &Permission{
+		"manage_jobs",
+		"authentication.permisssions.manage_jobs.name",
+		"authentication.permisssions.manage_jobs.description",
+	}
 }
 
 func InitalizeRoles() {
@@ -293,7 +340,6 @@ func InitalizeRoles() {
 		[]string{
 			PERMISSION_READ_CHANNEL.Id,
 			PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS.Id,
-			PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS.Id,
 			PERMISSION_UPLOAD_FILE.Id,
 			PERMISSION_GET_PUBLIC_LINK.Id,
 			PERMISSION_CREATE_POST.Id,
@@ -326,17 +372,38 @@ func InitalizeRoles() {
 		[]string{
 			PERMISSION_LIST_TEAM_CHANNELS.Id,
 			PERMISSION_JOIN_PUBLIC_CHANNELS.Id,
+			PERMISSION_READ_PUBLIC_CHANNEL.Id,
 			PERMISSION_VIEW_TEAM.Id,
 		},
 	}
 	BuiltInRoles[ROLE_TEAM_USER.Id] = ROLE_TEAM_USER
+
+	ROLE_TEAM_POST_ALL = &Role{
+		"team_post_all",
+		"authentication.roles.team_post_all.name",
+		"authentication.roles.team_post_all.description",
+		[]string{
+			PERMISSION_CREATE_POST.Id,
+		},
+	}
+	BuiltInRoles[ROLE_TEAM_POST_ALL.Id] = ROLE_TEAM_POST_ALL
+
+	ROLE_TEAM_POST_ALL_PUBLIC = &Role{
+		"team_post_all_public",
+		"authentication.roles.team_post_all_public.name",
+		"authentication.roles.team_post_all_public.description",
+		[]string{
+			PERMISSION_CREATE_POST_PUBLIC.Id,
+		},
+	}
+	BuiltInRoles[ROLE_TEAM_POST_ALL_PUBLIC.Id] = ROLE_TEAM_POST_ALL_PUBLIC
+
 	ROLE_TEAM_ADMIN = &Role{
 		"team_admin",
 		"authentication.roles.team_admin.name",
 		"authentication.roles.team_admin.description",
 		[]string{
 			PERMISSION_EDIT_OTHERS_POSTS.Id,
-			PERMISSION_ADD_USER_TO_TEAM.Id,
 			PERMISSION_REMOVE_USER_FROM_TEAM.Id,
 			PERMISSION_MANAGE_TEAM.Id,
 			PERMISSION_IMPORT_TEAM.Id,
@@ -358,10 +425,42 @@ func InitalizeRoles() {
 			PERMISSION_CREATE_DIRECT_CHANNEL.Id,
 			PERMISSION_CREATE_GROUP_CHANNEL.Id,
 			PERMISSION_PERMANENT_DELETE_USER.Id,
-			PERMISSION_MANAGE_OAUTH.Id,
 		},
 	}
 	BuiltInRoles[ROLE_SYSTEM_USER.Id] = ROLE_SYSTEM_USER
+
+	ROLE_SYSTEM_POST_ALL = &Role{
+		"system_post_all",
+		"authentication.roles.system_post_all.name",
+		"authentication.roles.system_post_all.description",
+		[]string{
+			PERMISSION_CREATE_POST.Id,
+		},
+	}
+	BuiltInRoles[ROLE_SYSTEM_POST_ALL.Id] = ROLE_SYSTEM_POST_ALL
+
+	ROLE_SYSTEM_POST_ALL_PUBLIC = &Role{
+		"system_post_all_public",
+		"authentication.roles.system_post_all_public.name",
+		"authentication.roles.system_post_all_public.description",
+		[]string{
+			PERMISSION_CREATE_POST_PUBLIC.Id,
+		},
+	}
+	BuiltInRoles[ROLE_SYSTEM_POST_ALL_PUBLIC.Id] = ROLE_SYSTEM_POST_ALL_PUBLIC
+
+	ROLE_SYSTEM_USER_ACCESS_TOKEN = &Role{
+		"system_user_access_token",
+		"authentication.roles.system_user_access_token.name",
+		"authentication.roles.system_user_access_token.description",
+		[]string{
+			PERMISSION_CREATE_USER_ACCESS_TOKEN.Id,
+			PERMISSION_READ_USER_ACCESS_TOKEN.Id,
+			PERMISSION_REVOKE_USER_ACCESS_TOKEN.Id,
+		},
+	}
+	BuiltInRoles[ROLE_SYSTEM_USER_ACCESS_TOKEN.Id] = ROLE_SYSTEM_USER_ACCESS_TOKEN
+
 	ROLE_SYSTEM_ADMIN = &Role{
 		"system_admin",
 		"authentication.roles.global_admin.name",
@@ -378,6 +477,8 @@ func InitalizeRoles() {
 							PERMISSION_MANAGE_SYSTEM.Id,
 							PERMISSION_MANAGE_ROLES.Id,
 							PERMISSION_MANAGE_PUBLIC_CHANNEL_PROPERTIES.Id,
+							PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS.Id,
+							PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS.Id,
 							PERMISSION_DELETE_PUBLIC_CHANNEL.Id,
 							PERMISSION_CREATE_PUBLIC_CHANNEL.Id,
 							PERMISSION_MANAGE_PRIVATE_CHANNEL_PROPERTIES.Id,
@@ -391,6 +492,13 @@ func InitalizeRoles() {
 							PERMISSION_DELETE_POST.Id,
 							PERMISSION_DELETE_OTHERS_POSTS.Id,
 							PERMISSION_CREATE_TEAM.Id,
+							PERMISSION_ADD_USER_TO_TEAM.Id,
+							PERMISSION_LIST_USERS_WITHOUT_TEAM.Id,
+							PERMISSION_MANAGE_JOBS.Id,
+							PERMISSION_CREATE_POST_PUBLIC.Id,
+							PERMISSION_CREATE_USER_ACCESS_TOKEN.Id,
+							PERMISSION_READ_USER_ACCESS_TOKEN.Id,
+							PERMISSION_REVOKE_USER_ACCESS_TOKEN.Id,
 						},
 						ROLE_TEAM_USER.Permissions...,
 					),

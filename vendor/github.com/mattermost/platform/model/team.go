@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 package model
@@ -39,6 +39,14 @@ type Team struct {
 	AllowedDomains  string `json:"allowed_domains"`
 	InviteId        string `json:"invite_id"`
 	AllowOpenInvite bool   `json:"allow_open_invite"`
+}
+
+type TeamPatch struct {
+	DisplayName     *string `json:"display_name"`
+	Description     *string `json:"description"`
+	CompanyName     *string `json:"company_name"`
+	InviteId        *string `json:"invite_id"`
+	AllowOpenInvite *bool   `json:"allow_open_invite"`
 }
 
 type Invites struct {
@@ -225,7 +233,7 @@ func IsReservedTeamName(s string) bool {
 
 func IsValidTeamName(s string) bool {
 
-	if !IsValidAlphaNum(s, false) {
+	if !IsValidAlphaNum(s) {
 		return false
 	}
 
@@ -277,4 +285,46 @@ func (o *Team) SanitizeForNotLoggedIn() {
 	if !o.AllowOpenInvite {
 		o.InviteId = ""
 	}
+}
+
+func (t *Team) Patch(patch *TeamPatch) {
+	if patch.DisplayName != nil {
+		t.DisplayName = *patch.DisplayName
+	}
+
+	if patch.Description != nil {
+		t.Description = *patch.Description
+	}
+
+	if patch.CompanyName != nil {
+		t.CompanyName = *patch.CompanyName
+	}
+
+	if patch.InviteId != nil {
+		t.InviteId = *patch.InviteId
+	}
+
+	if patch.AllowOpenInvite != nil {
+		t.AllowOpenInvite = *patch.AllowOpenInvite
+	}
+}
+
+func (t *TeamPatch) ToJson() string {
+	b, err := json.Marshal(t)
+	if err != nil {
+		return ""
+	}
+
+	return string(b)
+}
+
+func TeamPatchFromJson(data io.Reader) *TeamPatch {
+	decoder := json.NewDecoder(data)
+	var team TeamPatch
+	err := decoder.Decode(&team)
+	if err != nil {
+		return nil
+	}
+
+	return &team
 }

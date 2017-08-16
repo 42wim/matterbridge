@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 package model
@@ -6,16 +6,14 @@ package model
 import (
 	"encoding/json"
 	"io"
+	"strings"
 )
 
 type ClusterInfo struct {
-	Id                 string `json:"id"`
-	Version            string `json:"version"`
-	ConfigHash         string `json:"config_hash"`
-	InterNodeUrl       string `json:"internode_url"`
-	Hostname           string `json:"hostname"`
-	LastSuccessfulPing int64  `json:"last_ping"`
-	IsAlive            bool   `json:"is_alive"`
+	Version    string `json:"version"`
+	ConfigHash string `json:"config_hash"`
+	IpAddress  string `json:"ipaddress"`
+	Hostname   string `json:"hostname"`
 }
 
 func (me *ClusterInfo) ToJson() string {
@@ -27,6 +25,11 @@ func (me *ClusterInfo) ToJson() string {
 	}
 }
 
+func (me *ClusterInfo) Copy() *ClusterInfo {
+	json := me.ToJson()
+	return ClusterInfoFromJson(strings.NewReader(json))
+}
+
 func ClusterInfoFromJson(data io.Reader) *ClusterInfo {
 	decoder := json.NewDecoder(data)
 	var me ClusterInfo
@@ -36,14 +39,6 @@ func ClusterInfoFromJson(data io.Reader) *ClusterInfo {
 	} else {
 		return nil
 	}
-}
-
-func (me *ClusterInfo) HaveEstablishedInitialContact() bool {
-	if me.Id != "" {
-		return true
-	}
-
-	return false
 }
 
 func ClusterInfosToJson(objmap []*ClusterInfo) string {

@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 package model
@@ -6,10 +6,9 @@ package model
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
+	"net/http"
 	"regexp"
-	"strings"
 )
 
 const (
@@ -81,35 +80,36 @@ func IncomingWebhookListFromJson(data io.Reader) []*IncomingWebhook {
 func (o *IncomingWebhook) IsValid() *AppError {
 
 	if len(o.Id) != 26 {
-		return NewLocAppError("IncomingWebhook.IsValid", "model.incoming_hook.id.app_error", nil, "")
+		return NewAppError("IncomingWebhook.IsValid", "model.incoming_hook.id.app_error", nil, "", http.StatusBadRequest)
+
 	}
 
 	if o.CreateAt == 0 {
-		return NewLocAppError("IncomingWebhook.IsValid", "model.incoming_hook.create_at.app_error", nil, "id="+o.Id)
+		return NewAppError("IncomingWebhook.IsValid", "model.incoming_hook.create_at.app_error", nil, "id="+o.Id, http.StatusBadRequest)
 	}
 
 	if o.UpdateAt == 0 {
-		return NewLocAppError("IncomingWebhook.IsValid", "model.incoming_hook.update_at.app_error", nil, "id="+o.Id)
+		return NewAppError("IncomingWebhook.IsValid", "model.incoming_hook.update_at.app_error", nil, "id="+o.Id, http.StatusBadRequest)
 	}
 
 	if len(o.UserId) != 26 {
-		return NewLocAppError("IncomingWebhook.IsValid", "model.incoming_hook.user_id.app_error", nil, "")
+		return NewAppError("IncomingWebhook.IsValid", "model.incoming_hook.user_id.app_error", nil, "", http.StatusBadRequest)
 	}
 
 	if len(o.ChannelId) != 26 {
-		return NewLocAppError("IncomingWebhook.IsValid", "model.incoming_hook.channel_id.app_error", nil, "")
+		return NewAppError("IncomingWebhook.IsValid", "model.incoming_hook.channel_id.app_error", nil, "", http.StatusBadRequest)
 	}
 
 	if len(o.TeamId) != 26 {
-		return NewLocAppError("IncomingWebhook.IsValid", "model.incoming_hook.team_id.app_error", nil, "")
+		return NewAppError("IncomingWebhook.IsValid", "model.incoming_hook.team_id.app_error", nil, "", http.StatusBadRequest)
 	}
 
 	if len(o.DisplayName) > 64 {
-		return NewLocAppError("IncomingWebhook.IsValid", "model.incoming_hook.display_name.app_error", nil, "")
+		return NewAppError("IncomingWebhook.IsValid", "model.incoming_hook.display_name.app_error", nil, "", http.StatusBadRequest)
 	}
 
 	if len(o.Description) > 128 {
-		return NewLocAppError("IncomingWebhook.IsValid", "model.incoming_hook.description.app_error", nil, "")
+		return NewAppError("IncomingWebhook.IsValid", "model.incoming_hook.description.app_error", nil, "", http.StatusBadRequest)
 	}
 
 	return nil
@@ -193,39 +193,6 @@ func decodeIncomingWebhookRequest(by []byte) (*IncomingWebhookRequest, error) {
 	}
 }
 
-// To mention @channel via a webhook in Slack, the message should contain
-// <!channel>, as explained at the bottom of this article:
-// https://get.slack.help/hc/en-us/articles/202009646-Making-announcements
-func expandAnnouncement(text string) string {
-	c1 := "<!channel>"
-	c2 := "@channel"
-	if strings.Contains(text, c1) {
-		return strings.Replace(text, c1, c2, -1)
-	}
-	return text
-}
-
-// Expand announcements in incoming webhooks from Slack. Those announcements
-// can be found in the text attribute, or in the pretext, text, title and value
-// attributes of the attachment structure. The Slack attachment structure is
-// documented here: https://api.slack.com/docs/attachments
-func expandAnnouncements(i *IncomingWebhookRequest) {
-	i.Text = expandAnnouncement(i.Text)
-
-	for _, attachment := range i.Attachments {
-		attachment.Pretext = expandAnnouncement(attachment.Pretext)
-		attachment.Text = expandAnnouncement(attachment.Text)
-		attachment.Title = expandAnnouncement(attachment.Title)
-
-		for _, field := range attachment.Fields {
-			if field.Value != nil {
-				// Ensure the value is set to a string if it is set
-				field.Value = expandAnnouncement(fmt.Sprintf("%v", field.Value))
-			}
-		}
-	}
-}
-
 func IncomingWebhookRequestFromJson(data io.Reader) *IncomingWebhookRequest {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(data)
@@ -241,7 +208,8 @@ func IncomingWebhookRequestFromJson(data io.Reader) *IncomingWebhookRequest {
 		}
 	}
 
-	expandAnnouncements(o)
+	o.Text = ExpandAnnouncement(o.Text)
+	o.Attachments = ProcessSlackAttachments(o.Attachments)
 
 	return o
 }

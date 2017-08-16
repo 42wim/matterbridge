@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
 package einterfaces
@@ -6,7 +6,7 @@ package einterfaces
 import "github.com/mattermost/platform/model"
 
 type AccountMigrationInterface interface {
-	MigrateToLdap(fromAuthService string, forignUserFieldNameToMatch string) *model.AppError
+	MigrateToLdap(fromAuthService string, forignUserFieldNameToMatch string, force bool) *model.AppError
 }
 
 var theAccountMigrationInterface AccountMigrationInterface
