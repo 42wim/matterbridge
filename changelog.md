@@ -1,3 +1,10 @@
+# v1.0.1
+## New features
+* mattermost: add support for mattermost 4.1.x
+* discord: allow a webhookURL per channel #239
+
+## Bugfix
+
 # v1.0.0
 ## New features
 * general: Add action support for slack,mattermost,irc,gitter,matrix,xmpp,discord. #199
