@@ -43,6 +43,7 @@ type IMessage struct {
 	ServiceId   string `schema:"service_id"`
 	Text        string `schema:"text"`
 	TriggerWord string `schema:"trigger_word"`
+	FileID      string `schema:"file_id"`
 }
 
 // Client for Mattermost.
