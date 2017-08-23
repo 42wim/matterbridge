@@ -140,7 +140,7 @@ func (m *MMClient) Login() error {
 	for {
 		m.log.Debugf("%s %s %s %s", logmsg, m.Credentials.Team, m.Credentials.Login, m.Credentials.Server)
 		if strings.Contains(m.Credentials.Pass, model.SESSION_COOKIE_TOKEN) {
-			m.log.Debugf(logmsg+" with %s", model.SESSION_COOKIE_TOKEN)
+			m.log.Debugf(logmsg + " with token")
 			token := strings.Split(m.Credentials.Pass, model.SESSION_COOKIE_TOKEN+"=")
 			if len(token) != 2 {
 				return errors.New("incorrect MMAUTHTOKEN. valid input is MMAUTHTOKEN=yourtoken")
@@ -150,7 +150,7 @@ func (m *MMClient) Login() error {
 			m.Client.AuthType = model.HEADER_BEARER
 			m.User, resp = m.Client.GetMe("")
 			if resp.Error != nil {
-				return errors.New(resp.Error.DetailedError)
+				return resp.Error
 			}
 			if m.User == nil {
 				m.log.Errorf("LOGIN TOKEN: %s is invalid", m.Credentials.Pass)

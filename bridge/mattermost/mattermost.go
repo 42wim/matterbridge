@@ -61,6 +61,12 @@ func (b *Bmattermost) Connect() error {
 			b.mh = matterhook.New(b.Config.WebhookURL,
 				matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
 					BindAddress: b.Config.WebhookBindAddress})
+		} else if b.Config.Token != "" {
+			flog.Info("Connecting using token (sending)")
+			err := b.apiLogin()
+			if err != nil {
+				return err
+			}
 		} else if b.Config.Login != "" {
 			flog.Info("Connecting using login/password (sending)")
 			err := b.apiLogin()
@@ -81,7 +87,14 @@ func (b *Bmattermost) Connect() error {
 		b.mh = matterhook.New(b.Config.WebhookURL,
 			matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
 				DisableServer: true})
-		if b.Config.Login != "" {
+		if b.Config.Token != "" {
+			flog.Info("Connecting using token (receiving)")
+			err := b.apiLogin()
+			if err != nil {
+				return err
+			}
+			go b.handleMatter()
+		} else if b.Config.Login != "" {
 			flog.Info("Connecting using login/password (receiving)")
 			err := b.apiLogin()
 			if err != nil {
@@ -90,6 +103,13 @@ func (b *Bmattermost) Connect() error {
 			go b.handleMatter()
 		}
 		return nil
+	} else if b.Config.Token != "" {
+		flog.Info("Connecting using token (sending and receiving)")
+		err := b.apiLogin()
+		if err != nil {
+			return err
+		}
+		go b.handleMatter()
 	} else if b.Config.Login != "" {
 		flog.Info("Connecting using login/password (sending and receiving)")
 		err := b.apiLogin()
@@ -98,8 +118,8 @@ func (b *Bmattermost) Connect() error {
 		}
 		go b.handleMatter()
 	}
-	if b.Config.WebhookBindAddress == "" && b.Config.WebhookURL == "" && b.Config.Login == "" {
-		return errors.New("No connection method found. See that you have WebhookBindAddress, WebhookURL or Login/Password/Server/Team configured.")
+	if b.Config.WebhookBindAddress == "" && b.Config.WebhookURL == "" && b.Config.Login == "" && b.Config.Token == "" {
+		return errors.New("No connection method found. See that you have WebhookBindAddress, WebhookURL or Token/Login/Password/Server/Team configured.")
 	}
 	return nil
 }
@@ -152,7 +172,11 @@ func (b *Bmattermost) handleMatter() {
 		flog.Debugf("Choosing webhooks based receiving")
 		go b.handleMatterHook(mchan)
 	} else {
-		flog.Debugf("Choosing login/password based receiving")
+		if b.Config.Token != "" {
+			flog.Debugf("Choosing token based receiving")
+		} else {
+			flog.Debugf("Choosing login/password based receiving")
+		}
 		go b.handleMatterClient(mchan)
 	}
 	for message := range mchan {
@@ -221,7 +245,12 @@ func (b *Bmattermost) handleMatterHook(mchan chan *MMMessage) {
 }
 
 func (b *Bmattermost) apiLogin() error {
-	b.mc = matterclient.New(b.Config.Login, b.Config.Password,
+	password := b.Config.Password
+	if b.Config.Token != "" {
+		password = "MMAUTHTOKEN=" + b.Config.Token
+	}
+
+	b.mc = matterclient.New(b.Config.Login, password,
 		b.Config.Team, b.Config.Server)
 	b.mc.SkipTLSVerify = b.Config.SkipTLSVerify
 	b.mc.NoTLS = b.Config.NoTLS

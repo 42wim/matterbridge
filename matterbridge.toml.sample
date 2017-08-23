@@ -213,6 +213,11 @@ Team="yourteam"
 Login="yourlogin"
 Password="yourpass"
 
+#personal access token of the bot.
+#new feature since mattermost 4.1. See https://docs.mattermost.com/developer/personal-access-tokens.html
+#OPTIONAL (you can use token instead of login/password)
+#Token="abcdefghijklm"
+
 #Enable this to make a http connection (instead of https) to your mattermost. 
 #OPTIONAL (default false)
 NoTLS=false
