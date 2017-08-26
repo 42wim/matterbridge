@@ -237,6 +237,10 @@ func (b *Bslack) handleSlack() {
 			if message.Raw.SubType == "me_message" {
 				msg.Event = config.EVENT_USER_ACTION
 			}
+			if message.Raw.SubType == "channel_leave" || message.Raw.SubType == "channel_join" {
+				msg.Username = "system"
+				msg.Event = config.EVENT_JOIN_LEAVE
+			}
 			b.Remote <- msg
 		}
 	}
