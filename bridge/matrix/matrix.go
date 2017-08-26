@@ -100,7 +100,7 @@ func (b *Bmatrix) getRoomID(channel string) string {
 func (b *Bmatrix) handlematrix() error {
 	syncer := b.mc.Syncer.(*matrix.DefaultSyncer)
 	syncer.OnEventType("m.room.message", func(ev *matrix.Event) {
-		if (ev.Content["msgtype"].(string) == "m.text" || ev.Content["msgtype"].(string) == "m.emote") && ev.Sender != b.UserID {
+		if (ev.Content["msgtype"].(string) == "m.text" || ev.Content["msgtype"].(string) == "m.notice" || ev.Content["msgtype"].(string) == "m.emote") && ev.Sender != b.UserID {
 			b.RLock()
 			channel, ok := b.RoomMap[ev.RoomID]
 			b.RUnlock()
