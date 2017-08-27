@@ -94,11 +94,17 @@ func (r *Router) handleReceive() {
 			}
 		}
 		for _, gw := range r.Gateways {
+			// record all the message ID's of the different bridges
+			var msgIDs []*BrMsgID
 			if !gw.ignoreMessage(&msg) {
 				msg.Timestamp = time.Now()
 				gw.modifyMessage(&msg)
 				for _, br := range gw.Bridges {
-					gw.handleMessage(msg, br)
+					msgIDs = append(msgIDs, gw.handleMessage(msg, br)...)
+				}
+				// only add the message ID if it doesn't already exists
+				if _, ok := gw.Messages.Get(msg.ID); !ok {
+					gw.Messages.Add(msg.ID, msgIDs)
 				}
 			}
 		}

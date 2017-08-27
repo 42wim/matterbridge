@@ -27,6 +27,7 @@ type Message struct {
 	Protocol  string    `json:"protocol"`
 	Gateway   string    `json:"gateway"`
 	Timestamp time.Time `json:"timestamp"`
+	ID        string    `json:"id"`
 }
 
 type ChannelInfo struct {

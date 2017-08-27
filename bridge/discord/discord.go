@@ -129,20 +129,27 @@ func (b *bdiscord) Send(msg config.Message) (string, error) {
 
 	if wID == "" {
 		flog.Debugf("Broadcasting using token (API)")
-		b.c.ChannelMessageSend(channelID, msg.Username+msg.Text)
-	} else {
-		flog.Debugf("Broadcasting using Webhook")
-		b.c.WebhookExecute(
-			wID,
-			wToken,
-			true,
-			&discordgo.WebhookParams{
-				Content:   msg.Text,
-				Username:  msg.Username,
-				AvatarURL: msg.Avatar,
-			})
+		if msg.ID != "" {
+			_, err := b.c.ChannelMessageEdit(channelID, msg.ID, msg.Username+msg.Text)
+			return msg.ID, err
+		}
+		res, err := b.c.ChannelMessageSend(channelID, msg.Username+msg.Text)
+		if err != nil {
+			return "", err
+		}
+		return res.ID, err
 	}
-	return "", nil
+	flog.Debugf("Broadcasting using Webhook")
+	err := b.c.WebhookExecute(
+		wID,
+		wToken,
+		true,
+		&discordgo.WebhookParams{
+			Content:   msg.Text,
+			Username:  msg.Username,
+			AvatarURL: msg.Avatar,
+		})
+	return "", err
 }
 
 func (b *bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdate) {
@@ -185,7 +192,7 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	}
 
 	rmsg := config.Message{Account: b.Account, Avatar: "https://cdn.discordapp.com/avatars/" + m.Author.ID + "/" + m.Author.Avatar + ".jpg",
-		UserID: m.Author.ID}
+		UserID: m.Author.ID, ID: m.ID}
 
 	rmsg.Channel = b.getChannelName(m.ChannelID)
 	if b.UseChannelID {

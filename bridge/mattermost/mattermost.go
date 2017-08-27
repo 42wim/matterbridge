@@ -23,6 +23,7 @@ type MMMessage struct {
 	Channel  string
 	Username string
 	UserID   string
+	ID       string
 }
 
 type Bmattermost struct {
@@ -162,8 +163,10 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 		}
 		return "", nil
 	}
-	b.mc.PostMessage(b.mc.GetChannelId(channel, ""), message)
-	return "", nil
+	if msg.ID != "" {
+		return b.mc.EditMessage(msg.ID, message)
+	}
+	return b.mc.PostMessage(b.mc.GetChannelId(channel, ""), message)
 }
 
 func (b *Bmattermost) handleMatter() {
@@ -180,7 +183,7 @@ func (b *Bmattermost) handleMatter() {
 		go b.handleMatterClient(mchan)
 	}
 	for message := range mchan {
-		rmsg := config.Message{Username: message.Username, Channel: message.Channel, Account: b.Account, UserID: message.UserID}
+		rmsg := config.Message{Username: message.Username, Channel: message.Channel, Account: b.Account, UserID: message.UserID, ID: message.ID}
 		text, ok := b.replaceAction(message.Text)
 		if ok {
 			rmsg.Event = config.EVENT_USER_ACTION
@@ -218,6 +221,7 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 			m.Username = message.Username
 			m.Channel = message.Channel
 			m.Text = message.Text
+			m.ID = message.Post.Id
 			if message.Raw.Event == "post_edited" && !b.Config.EditDisable {
 				m.Text = message.Text + b.Config.EditSuffix
 			}

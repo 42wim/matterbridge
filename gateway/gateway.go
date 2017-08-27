@@ -6,6 +6,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
 	//	"github.com/davecgh/go-spew/spew"
+	"github.com/hashicorp/golang-lru"
 	"github.com/peterhellberg/emojilib"
 	"regexp"
 	"strings"
@@ -21,10 +22,12 @@ type Gateway struct {
 	ChannelOptions map[string]config.ChannelOptions
 	Message        chan config.Message
 	Name           string
-	Messages       map[string][]*BridgeMsg
+	Messages       *lru.Cache
+	//map[string][]*BrMsg
+	lruCache *lru.Cache
 }
 
-type BridgeMsg struct {
+type BrMsgID struct {
 	br *bridge.Bridge
 	ID string
 }
@@ -32,6 +35,8 @@ type BridgeMsg struct {
 func New(cfg config.Gateway, r *Router) *Gateway {
 	gw := &Gateway{Channels: make(map[string]*config.ChannelInfo), Message: r.Message,
 		Router: r, Bridges: make(map[string]*bridge.Bridge), Config: r.Config}
+	cache, _ := lru.New(5000)
+	gw.Messages = cache
 	gw.AddConfig(&cfg)
 	return gw
 }
@@ -142,15 +147,16 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 	return channels
 }
 
-func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
+func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrMsgID {
+	var brMsgIDs []*BrMsgID
 	// only relay join/part when configged
 	if msg.Event == config.EVENT_JOIN_LEAVE && !gw.Bridges[dest.Account].Config.ShowJoinPart {
-		return
+		return brMsgIDs
 	}
 	// broadcast to every out channel (irc QUIT)
 	if msg.Channel == "" && msg.Event != config.EVENT_JOIN_LEAVE {
 		log.Debug("empty channel")
-		return
+		return brMsgIDs
 	}
 	originchannel := msg.Channel
 	origmsg := msg
@@ -164,15 +170,28 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 		msg.Channel = channel.Name
 		msg.Avatar = gw.modifyAvatar(origmsg, dest)
 		msg.Username = gw.modifyUsername(origmsg, dest)
+		msg.ID = ""
+		if res, ok := gw.Messages.Get(origmsg.ID); ok {
+			IDs := res.([]*BrMsgID)
+			for _, id := range IDs {
+				if dest.Protocol == id.br.Protocol {
+					msg.ID = id.ID
+				}
+			}
+		}
 		// for api we need originchannel as channel
 		if dest.Protocol == "api" {
 			msg.Channel = originchannel
 		}
-		_, err := dest.Send(msg)
+		mID, err := dest.Send(msg)
 		if err != nil {
 			fmt.Println(err)
 		}
+		// append the message ID (mID) from this bridge (dest) to our brMsgIDs slice
+		log.Debugf("message ID: %s\n", mID)
+		brMsgIDs = append(brMsgIDs, &BrMsgID{dest, mID})
 	}
+	return brMsgIDs
 }
 
 func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
