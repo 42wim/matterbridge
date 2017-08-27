@@ -125,7 +125,7 @@ func (b *Bslack) JoinChannel(channel config.ChannelInfo) error {
 	return nil
 }
 
-func (b *Bslack) Send(msg config.Message) error {
+func (b *Bslack) Send(msg config.Message) (string, error) {
 	flog.Debugf("Receiving %#v", msg)
 	if msg.Event == config.EVENT_USER_ACTION {
 		msg.Text = "_" + msg.Text + "_"
@@ -145,13 +145,13 @@ func (b *Bslack) Send(msg config.Message) error {
 		err := b.mh.Send(matterMessage)
 		if err != nil {
 			flog.Info(err)
-			return err
+			return "", err
 		}
-		return nil
+		return "", nil
 	}
 	schannel, err := b.getChannelByName(channel)
 	if err != nil {
-		return err
+		return "", err
 	}
 	np := slack.NewPostMessageParameters()
 	if b.Config.PrefixMessagesWithNick {
@@ -170,7 +170,7 @@ func (b *Bslack) Send(msg config.Message) error {
 	   b.rtm.SendMessage(newmsg)
 	*/
 
-	return nil
+	return "", nil
 }
 
 func (b *Bslack) getAvatar(user string) string {

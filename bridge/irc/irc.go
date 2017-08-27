@@ -127,7 +127,7 @@ func (b *Birc) JoinChannel(channel config.ChannelInfo) error {
 	return nil
 }
 
-func (b *Birc) Send(msg config.Message) error {
+func (b *Birc) Send(msg config.Message) (string, error) {
 	flog.Debugf("Receiving %#v", msg)
 	if strings.HasPrefix(msg.Text, "!") {
 		b.Command(&msg)
@@ -145,7 +145,7 @@ func (b *Birc) Send(msg config.Message) error {
 			flog.Debugf("flooding, dropping message (queue at %d)", len(b.Local))
 		}
 	}
-	return nil
+	return "", nil
 }
 
 func (b *Birc) doSend() {

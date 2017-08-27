@@ -57,11 +57,11 @@ func (b *Btelegram) JoinChannel(channel config.ChannelInfo) error {
 	return nil
 }
 
-func (b *Btelegram) Send(msg config.Message) error {
+func (b *Btelegram) Send(msg config.Message) (string, error) {
 	flog.Debugf("Receiving %#v", msg)
 	chatid, err := strconv.ParseInt(msg.Channel, 10, 64)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if b.Config.MessageFormat == "HTML" {
@@ -72,7 +72,7 @@ func (b *Btelegram) Send(msg config.Message) error {
 		m.ParseMode = tgbotapi.ModeHTML
 	}
 	_, err = b.c.Send(m)
-	return err
+	return "", err
 }
 
 func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {

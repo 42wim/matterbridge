@@ -136,7 +136,7 @@ func (b *Bmattermost) JoinChannel(channel config.ChannelInfo) error {
 	return nil
 }
 
-func (b *Bmattermost) Send(msg config.Message) error {
+func (b *Bmattermost) Send(msg config.Message) (string, error) {
 	flog.Debugf("Receiving %#v", msg)
 	if msg.Event == config.EVENT_USER_ACTION {
 		msg.Text = "*" + msg.Text + "*"
@@ -158,12 +158,12 @@ func (b *Bmattermost) Send(msg config.Message) error {
 		err := b.mh.Send(matterMessage)
 		if err != nil {
 			flog.Info(err)
-			return err
+			return "", err
 		}
-		return nil
+		return "", nil
 	}
 	b.mc.PostMessage(b.mc.GetChannelId(channel, ""), message)
-	return nil
+	return "", nil
 }
 
 func (b *Bmattermost) handleMatter() {

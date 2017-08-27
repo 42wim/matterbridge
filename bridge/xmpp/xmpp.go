@@ -79,10 +79,10 @@ func (b *Bxmpp) JoinChannel(channel config.ChannelInfo) error {
 	return nil
 }
 
-func (b *Bxmpp) Send(msg config.Message) error {
+func (b *Bxmpp) Send(msg config.Message) (string, error) {
 	flog.Debugf("Receiving %#v", msg)
 	b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.Config.Muc, Text: msg.Username + msg.Text})
-	return nil
+	return "", nil
 }
 
 func (b *Bxmpp) createXMPP() (*xmpp.Client, error) {

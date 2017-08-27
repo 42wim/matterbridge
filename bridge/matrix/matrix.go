@@ -74,17 +74,17 @@ func (b *Bmatrix) JoinChannel(channel config.ChannelInfo) error {
 	return err
 }
 
-func (b *Bmatrix) Send(msg config.Message) error {
+func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	flog.Debugf("Receiving %#v", msg)
 	channel := b.getRoomID(msg.Channel)
 	flog.Debugf("Sending to channel %s", channel)
 	if msg.Event == config.EVENT_USER_ACTION {
 		b.mc.SendMessageEvent(channel, "m.room.message",
 			matrix.TextMessage{"m.emote", msg.Username + msg.Text})
-		return nil
+		return "", nil
 	}
 	b.mc.SendText(channel, msg.Username+msg.Text)
-	return nil
+	return "", nil
 }
 
 func (b *Bmatrix) getRoomID(channel string) string {

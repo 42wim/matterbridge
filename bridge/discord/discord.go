@@ -108,12 +108,12 @@ func (b *bdiscord) JoinChannel(channel config.ChannelInfo) error {
 	return nil
 }
 
-func (b *bdiscord) Send(msg config.Message) error {
+func (b *bdiscord) Send(msg config.Message) (string, error) {
 	flog.Debugf("Receiving %#v", msg)
 	channelID := b.getChannelID(msg.Channel)
 	if channelID == "" {
 		flog.Errorf("Could not find channelID for %v", msg.Channel)
-		return nil
+		return "", nil
 	}
 	if msg.Event == config.EVENT_USER_ACTION {
 		msg.Text = "_" + msg.Text + "_"
@@ -142,7 +142,7 @@ func (b *bdiscord) Send(msg config.Message) error {
 				AvatarURL: msg.Avatar,
 			})
 	}
-	return nil
+	return "", nil
 }
 
 func (b *bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdate) {

@@ -69,13 +69,13 @@ func (b *Bsteam) JoinChannel(channel config.ChannelInfo) error {
 	return nil
 }
 
-func (b *Bsteam) Send(msg config.Message) error {
+func (b *Bsteam) Send(msg config.Message) (string, error) {
 	id, err := steamid.NewId(msg.Channel)
 	if err != nil {
-		return err
+		return "", err
 	}
 	b.c.Social.SendMessage(id, steamlang.EChatEntryType_ChatMsg, msg.Username+msg.Text)
-	return nil
+	return "", nil
 }
 
 func (b *Bsteam) getNick(id steamid.SteamId) string {

@@ -97,15 +97,15 @@ func (b *Bgitter) JoinChannel(channel config.ChannelInfo) error {
 	return nil
 }
 
-func (b *Bgitter) Send(msg config.Message) error {
+func (b *Bgitter) Send(msg config.Message) (string, error) {
 	flog.Debugf("Receiving %#v", msg)
 	roomID := b.getRoomID(msg.Channel)
 	if roomID == "" {
 		flog.Errorf("Could not find roomID for %v", msg.Channel)
-		return nil
+		return "", nil
 	}
 	// add ZWSP because gitter echoes our own messages
-	return b.c.SendMessage(roomID, msg.Username+msg.Text+" ​")
+	return "", b.c.SendMessage(roomID, msg.Username+msg.Text+" ​")
 }
 
 func (b *Bgitter) getRoomID(channel string) string {

@@ -57,7 +57,7 @@ func (b *Brocketchat) JoinChannel(channel config.ChannelInfo) error {
 	return nil
 }
 
-func (b *Brocketchat) Send(msg config.Message) error {
+func (b *Brocketchat) Send(msg config.Message) (string, error) {
 	flog.Debugf("Receiving %#v", msg)
 	matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL}
 	matterMessage.Channel = msg.Channel
@@ -67,9 +67,9 @@ func (b *Brocketchat) Send(msg config.Message) error {
 	err := b.mh.Send(matterMessage)
 	if err != nil {
 		flog.Info(err)
-		return err
+		return "", err
 	}
-	return nil
+	return "", nil
 }
 
 func (b *Brocketchat) handleRocketHook() {

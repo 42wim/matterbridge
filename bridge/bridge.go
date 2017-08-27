@@ -19,7 +19,7 @@ import (
 )
 
 type Bridger interface {
-	Send(msg config.Message) error
+	Send(msg config.Message) (string, error)
 	Connect() error
 	JoinChannel(channel config.ChannelInfo) error
 	Disconnect() error

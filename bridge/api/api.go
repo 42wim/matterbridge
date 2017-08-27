@@ -66,11 +66,11 @@ func (b *Api) JoinChannel(channel config.ChannelInfo) error {
 
 }
 
-func (b *Api) Send(msg config.Message) error {
+func (b *Api) Send(msg config.Message) (string, error) {
 	b.Lock()
 	defer b.Unlock()
 	b.Messages.Enqueue(&msg)
-	return nil
+	return "", nil
 }
 
 func (b *Api) handlePostMessage(c echo.Context) error {

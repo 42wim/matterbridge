@@ -21,6 +21,12 @@ type Gateway struct {
 	ChannelOptions map[string]config.ChannelOptions
 	Message        chan config.Message
 	Name           string
+	Messages       map[string][]*BridgeMsg
+}
+
+type BridgeMsg struct {
+	br *bridge.Bridge
+	ID string
 }
 
 func New(cfg config.Gateway, r *Router) *Gateway {
@@ -162,7 +168,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) {
 		if dest.Protocol == "api" {
 			msg.Channel = originchannel
 		}
-		err := dest.Send(msg)
+		_, err := dest.Send(msg)
 		if err != nil {
 			fmt.Println(err)
 		}
