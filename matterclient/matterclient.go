@@ -451,9 +451,22 @@ func (m *MMClient) GetChannelHeader(channelId string) string {
 	return ""
 }
 
-func (m *MMClient) PostMessage(channelId string, text string) {
+func (m *MMClient) PostMessage(channelId string, text string) (string, error) {
 	post := &model.Post{ChannelId: channelId, Message: text}
-	m.Client.CreatePost(post)
+	res, resp := m.Client.CreatePost(post)
+	if resp.Error != nil {
+		return "", resp.Error
+	}
+	return res.Id, nil
+}
+
+func (m *MMClient) EditMessage(postId string, text string) (string, error) {
+	post := &model.Post{Message: text}
+	res, resp := m.Client.UpdatePost(postId, post)
+	if resp.Error != nil {
+		return "", resp.Error
+	}
+	return res.Id, nil
 }
 
 func (m *MMClient) JoinChannel(channelId string) error {
