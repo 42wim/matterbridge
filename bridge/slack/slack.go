@@ -163,14 +163,17 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 		np.IconURL = msg.Avatar
 	}
 	np.Attachments = append(np.Attachments, slack.Attachment{CallbackID: "matterbridge"})
-	b.sc.PostMessage(schannel.ID, message, np)
-
-	/*
-	   newmsg := b.rtm.NewOutgoingMessage(message, schannel.ID)
-	   b.rtm.SendMessage(newmsg)
-	*/
-
-	return "", nil
+	// if we have no ID it means we're creating a new message, not updating an existing one
+	if msg.ID != "" {
+		ts := strings.Fields(msg.ID)
+		b.sc.UpdateMessage(schannel.ID, ts[1], message)
+		return "", nil
+	}
+	_, id, err := b.sc.PostMessage(schannel.ID, message, np)
+	if err != nil {
+		return "", err
+	}
+	return "slack " + id, nil
 }
 
 func (b *Bslack) getAvatar(user string) string {
@@ -233,13 +236,17 @@ func (b *Bslack) handleSlack() {
 			text = b.replaceURL(text)
 			text = html.UnescapeString(text)
 			flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)
-			msg := config.Message{Text: text, Username: message.Username, Channel: message.Channel, Account: b.Account, Avatar: b.getAvatar(message.Username), UserID: message.UserID}
+			msg := config.Message{Text: text, Username: message.Username, Channel: message.Channel, Account: b.Account, Avatar: b.getAvatar(message.Username), UserID: message.UserID, ID: "slack " + message.Raw.Timestamp}
 			if message.Raw.SubType == "me_message" {
 				msg.Event = config.EVENT_USER_ACTION
 			}
 			if message.Raw.SubType == "channel_leave" || message.Raw.SubType == "channel_join" {
 				msg.Username = "system"
 				msg.Event = config.EVENT_JOIN_LEAVE
+			}
+			// edited messages have a submessage, use this timestamp
+			if message.Raw.SubMessage != nil {
+				msg.ID = "slack " + message.Raw.SubMessage.Timestamp
 			}
 			b.Remote <- msg
 		}
