@@ -23,8 +23,6 @@ type Gateway struct {
 	Message        chan config.Message
 	Name           string
 	Messages       *lru.Cache
-	//map[string][]*BrMsg
-	lruCache *lru.Cache
 }
 
 type BrMsgID struct {
@@ -188,7 +186,6 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			fmt.Println(err)
 		}
 		// append the message ID (mID) from this bridge (dest) to our brMsgIDs slice
-		log.Debugf("message ID: %s\n", mID)
 		brMsgIDs = append(brMsgIDs, &BrMsgID{dest, mID})
 	}
 	return brMsgIDs
