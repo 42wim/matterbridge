@@ -205,17 +205,43 @@ func (gitter *Gitter) GetMessage(roomID, messageID string) (*Message, error) {
 }
 
 // SendMessage sends a message to a room
-func (gitter *Gitter) SendMessage(roomID, text string) error {
+func (gitter *Gitter) SendMessage(roomID, text string) (*Message, error) {
 
 	message := Message{Text: text}
 	body, _ := json.Marshal(message)
-	_, err := gitter.post(gitter.config.apiBaseURL+"rooms/"+roomID+"/chatMessages", body)
+	response, err := gitter.post(gitter.config.apiBaseURL+"rooms/"+roomID+"/chatMessages", body)
 	if err != nil {
 		gitter.log(err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	err = json.Unmarshal(response, &message)
+	if err != nil {
+		gitter.log(err)
+		return nil, err
+	}
+
+	return &message, nil
+}
+
+// UpdateMessage updates a message in a room
+func (gitter *Gitter) UpdateMessage(roomID, msgID, text string) (*Message, error) {
+
+	message := Message{Text: text}
+	body, _ := json.Marshal(message)
+	response, err := gitter.put(gitter.config.apiBaseURL+"rooms/"+roomID+"/chatMessages/"+msgID, body)
+	if err != nil {
+		gitter.log(err)
+		return nil, err
+	}
+
+	err = json.Unmarshal(response, &message)
+	if err != nil {
+		gitter.log(err)
+		return nil, err
+	}
+
+	return &message, nil
 }
 
 // JoinRoom joins a room
@@ -265,7 +291,7 @@ func (gitter *Gitter) SearchRooms(room string) ([]Room, error) {
 		Results []Room `json:"results"`
 	}
 
-	response, err := gitter.get(gitter.config.apiBaseURL + "rooms?q=" + room )
+	response, err := gitter.get(gitter.config.apiBaseURL + "rooms?q=" + room)
 
 	if err != nil {
 		gitter.log(err)
@@ -383,6 +409,39 @@ func (gitter *Gitter) get(url string) ([]byte, error) {
 
 func (gitter *Gitter) post(url string, body []byte) ([]byte, error) {
 	r, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	if err != nil {
+		gitter.log(err)
+		return nil, err
+	}
+
+	r.Header.Set("Content-Type", "application/json")
+	r.Header.Set("Accept", "application/json")
+	r.Header.Set("Authorization", "Bearer "+gitter.config.token)
+
+	resp, err := gitter.config.client.Do(r)
+	if err != nil {
+		gitter.log(err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		err = APIError{What: fmt.Sprintf("Status code: %v", resp.StatusCode)}
+		gitter.log(err)
+		return nil, err
+	}
+
+	result, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		gitter.log(err)
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (gitter *Gitter) put(url string, body []byte) ([]byte, error) {
+	r, err := http.NewRequest("PUT", url, bytes.NewBuffer(body))
 	if err != nil {
 		gitter.log(err)
 		return nil, err

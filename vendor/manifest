@@ -2,6 +2,14 @@
 	"version": 0,
 	"dependencies": [
 		{
+			"importpath": "github.com/42wim/go-gitter",
+			"repository": "https://github.com/42wim/go-gitter",
+			"vcs": "git",
+			"revision": "017310c2d5575ae5b3c9d2caef2989d5912bb4b1",
+			"branch": "sendmessage",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/42wim/go-ircevent",
 			"repository": "https://github.com/42wim/go-ircevent",
 			"vcs": "git",
@@ -470,14 +478,6 @@
 			"repository": "https://github.com/sorcix/irc",
 			"vcs": "",
 			"revision": "2f0c85e4ec6590c2c6f6ef93b0a86021281ea193",
-			"branch": "master",
-			"notests": true
-		},
-		{
-			"importpath": "github.com/sromku/go-gitter",
-			"repository": "https://github.com/sromku/go-gitter",
-			"vcs": "git",
-			"revision": "16aadfbb65c6641501ea8eebb6bcf23b9011912b",
 			"branch": "master",
 			"notests": true
 		},
