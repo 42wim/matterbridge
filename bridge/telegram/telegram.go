@@ -67,12 +67,31 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 	if b.Config.MessageFormat == "HTML" {
 		msg.Text = makeHTML(msg.Text)
 	}
+
+	// edit the message if we have a msg ID
+	if msg.ID != "" {
+		msgid, err := strconv.Atoi(msg.ID)
+		if err != nil {
+			return "", err
+		}
+		m := tgbotapi.NewEditMessageText(chatid, msgid, msg.Username+msg.Text)
+		_, err = b.c.Send(m)
+		if err != nil {
+			return "", err
+		}
+		return "", nil
+	}
+
 	m := tgbotapi.NewMessage(chatid, msg.Username+msg.Text)
 	if b.Config.MessageFormat == "HTML" {
 		m.ParseMode = tgbotapi.ModeHTML
 	}
-	_, err = b.c.Send(m)
-	return "", err
+	res, err := b.c.Send(m)
+	if err != nil {
+		return "", err
+	}
+	return strconv.Itoa(res.MessageID), nil
+
 }
 
 func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
@@ -131,7 +150,7 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		}
 		if text != "" {
 			flog.Debugf("Sending message from %s on %s to gateway", username, b.Account)
-			b.Remote <- config.Message{Username: username, Text: text, Channel: channel, Account: b.Account, UserID: strconv.Itoa(message.From.ID)}
+			b.Remote <- config.Message{Username: username, Text: text, Channel: channel, Account: b.Account, UserID: strconv.Itoa(message.From.ID), ID: strconv.Itoa(message.MessageID)}
 		}
 	}
 }
