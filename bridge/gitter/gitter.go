@@ -2,9 +2,9 @@ package bgitter
 
 import (
 	"fmt"
+	"github.com/42wim/go-gitter"
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
-	"github.com/sromku/go-gitter"
 	"strings"
 )
 
@@ -13,6 +13,7 @@ type Bgitter struct {
 	Config  *config.Protocol
 	Remote  chan config.Message
 	Account string
+	User    *gitter.User
 	Users   []gitter.User
 	Rooms   []gitter.Room
 }
@@ -36,7 +37,7 @@ func (b *Bgitter) Connect() error {
 	var err error
 	flog.Info("Connecting")
 	b.c = gitter.New(b.Config.Token)
-	_, err = b.c.GetUser()
+	b.User, err = b.c.GetUser()
 	if err != nil {
 		flog.Debugf("%#v", err)
 		return err
@@ -78,11 +79,11 @@ func (b *Bgitter) JoinChannel(channel config.ChannelInfo) error {
 		for event := range stream.Event {
 			switch ev := event.Data.(type) {
 			case *gitter.MessageReceived:
-				// check for ZWSP to see if it's not an echo
-				if !strings.HasSuffix(ev.Message.Text, "​") {
+				if ev.Message.From.ID != b.User.ID {
 					flog.Debugf("Sending message from %s on %s to gateway", ev.Message.From.Username, b.Account)
 					rmsg := config.Message{Username: ev.Message.From.Username, Text: ev.Message.Text, Channel: room,
-						Account: b.Account, Avatar: b.getAvatar(ev.Message.From.Username), UserID: ev.Message.From.ID}
+						Account: b.Account, Avatar: b.getAvatar(ev.Message.From.Username), UserID: ev.Message.From.ID,
+						ID: ev.Message.ID}
 					if strings.HasPrefix(ev.Message.Text, "@"+ev.Message.From.Username) {
 						rmsg.Event = config.EVENT_USER_ACTION
 						rmsg.Text = strings.Replace(rmsg.Text, "@"+ev.Message.From.Username+" ", "", -1)
@@ -105,7 +106,18 @@ func (b *Bgitter) Send(msg config.Message) (string, error) {
 		return "", nil
 	}
 	// add ZWSP because gitter echoes our own messages
-	return "", b.c.SendMessage(roomID, msg.Username+msg.Text+" ​")
+	if msg.ID != "" {
+		_, err := b.c.UpdateMessage(roomID, msg.ID, msg.Username+msg.Text)
+		if err != nil {
+			return "", err
+		}
+		return "", nil
+	}
+	resp, err := b.c.SendMessage(roomID, msg.Username+msg.Text)
+	if err != nil {
+		return "", err
+	}
+	return resp.ID, nil
 }
 
 func (b *Bgitter) getRoomID(channel string) string {
