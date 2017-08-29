@@ -186,7 +186,9 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			fmt.Println(err)
 		}
 		// append the message ID (mID) from this bridge (dest) to our brMsgIDs slice
-		brMsgIDs = append(brMsgIDs, &BrMsgID{dest, mID})
+		if mID != "" {
+			brMsgIDs = append(brMsgIDs, &BrMsgID{dest, mID})
+		}
 	}
 	return brMsgIDs
 }

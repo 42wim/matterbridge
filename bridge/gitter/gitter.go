@@ -105,8 +105,8 @@ func (b *Bgitter) Send(msg config.Message) (string, error) {
 		flog.Errorf("Could not find roomID for %v", msg.Channel)
 		return "", nil
 	}
-	// add ZWSP because gitter echoes our own messages
 	if msg.ID != "" {
+		flog.Debugf("updating message with id %s", msg.ID)
 		_, err := b.c.UpdateMessage(roomID, msg.ID, msg.Username+msg.Text)
 		if err != nil {
 			return "", err

@@ -103,7 +103,7 @@ func (r *Router) handleReceive() {
 					msgIDs = append(msgIDs, gw.handleMessage(msg, br)...)
 				}
 				// only add the message ID if it doesn't already exists
-				if _, ok := gw.Messages.Get(msg.ID); !ok {
+				if _, ok := gw.Messages.Get(msg.ID); !ok && msg.ID != "" {
 					gw.Messages.Add(msg.ID, msgIDs)
 				}
 			}
