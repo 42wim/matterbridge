@@ -277,7 +277,7 @@ func (b *Birc) handlePrivMsg(event *irc.Event) {
 			return
 		}
 		flog.Debugf("detected %s confidence %#v", result.Charset, result.Confidence)
-		r, err = charset.NewReader(result.Charset, strings.NewReader(msg))
+		mycharset = result.Charset
 		// if we're not sure, just pick ISO-8859-1
 		if result.Confidence < 80 {
 			mycharset = "ISO-8859-1"
