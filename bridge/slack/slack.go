@@ -163,6 +163,9 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 		np.IconURL = msg.Avatar
 	}
 	np.Attachments = append(np.Attachments, slack.Attachment{CallbackID: "matterbridge"})
+	// replace mentions
+	np.LinkNames = 1
+
 	// if we have no ID it means we're creating a new message, not updating an existing one
 	if msg.ID != "" {
 		ts := strings.Fields(msg.ID)
