@@ -32,6 +32,23 @@ UseSASL=false
 #OPTIONAL (default false)
 SkipTLSVerify=true
 
+#If you know your charset, you can specify it manually. 
+#Otherwise it tries to detect this automatically. Select one below
+# "iso-8859-2:1987", "iso-8859-9:1989", "866", "latin9", "iso-8859-10:1992", "iso-ir-109", "hebrew", 
+# "cp932", "iso-8859-15", "cp437", "utf-16be", "iso-8859-3:1988", "windows-1251", "utf16", "latin6", 
+# "latin3", "iso-8859-1:1987", "iso-8859-9", "utf-16le", "big5", "cp819", "asmo-708", "utf-8", 
+# "ibm437", "iso-ir-157", "iso-ir-144", "latin4", "850", "iso-8859-5", "iso-8859-5:1988", "l3", 
+# "windows-31j", "utf8", "iso-8859-3", "437", "greek", "iso-8859-8", "l6", "l9-iso-8859-15", 
+# "iso-8859-2", "latin2", "iso-ir-100", "iso-8859-6", "arabic", "iso-ir-148", "us-ascii", "x-sjis", 
+# "utf16be", "iso-8859-8:1988", "utf16le", "l4", "utf-16", "iso-ir-138", "iso-8859-7", "iso-8859-7:1987", 
+# "windows-1252", "l2", "koi8-r", "iso8859-1", "latin1", "ecma-114", "iso-ir-110", "elot-928", 
+# "iso-ir-126", "iso-8859-1", "iso-ir-127", "cp850", "cyrillic", "greek8", "windows-1250", "iso-latin-1", 
+# "l5", "ibm866", "cp866", "ms-kanji", "ibm850", "ecma-118", "iso-ir-101", "ibm819", "l1", "iso-8859-6:1987", 
+# "latin5", "ascii", "sjis", "iso-8859-10", "iso-8859-4", "iso-8859-4:1988", "shift-jis
+# The select charset will be converted to utf-8 when sent to other bridges.
+#OPTIONAL (default "")
+Charset=""
+
 #Your nick on irc. 
 #REQUIRED
 Nick="matterbot"

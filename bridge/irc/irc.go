@@ -265,20 +265,25 @@ func (b *Birc) handlePrivMsg(event *irc.Event) {
 	re := regexp.MustCompile(`[[:cntrl:]](\d+,|)\d+`)
 	msg = re.ReplaceAllString(msg, "")
 
-	// detect what were sending so that we convert it to utf-8
-	detector := chardet.NewTextDetector()
-	result, err := detector.DetectBest([]byte(msg))
-	if err != nil {
-		flog.Infof("detection failed for msg: %#v", msg)
-		return
-	}
-	flog.Debugf("detected %s confidence %#v", result.Charset, result.Confidence)
 	var r io.Reader
-	r, err = charset.NewReader(result.Charset, strings.NewReader(msg))
-	// if we're not sure, just pick ISO-8859-1
-	if result.Confidence < 80 {
-		r, err = charset.NewReader("ISO-8859-1", strings.NewReader(msg))
+	var err error
+	mycharset := b.Config.Charset
+	if mycharset == "" {
+		// detect what were sending so that we convert it to utf-8
+		detector := chardet.NewTextDetector()
+		result, err := detector.DetectBest([]byte(msg))
+		if err != nil {
+			flog.Infof("detection failed for msg: %#v", msg)
+			return
+		}
+		flog.Debugf("detected %s confidence %#v", result.Charset, result.Confidence)
+		r, err = charset.NewReader(result.Charset, strings.NewReader(msg))
+		// if we're not sure, just pick ISO-8859-1
+		if result.Confidence < 80 {
+			mycharset = "ISO-8859-1"
+		}
 	}
+	r, err = charset.NewReader(mycharset, strings.NewReader(msg))
 	if err != nil {
 		flog.Errorf("charset to utf-8 conversion failed: %s", err)
 		return

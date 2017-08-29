@@ -43,6 +43,7 @@ type Protocol struct {
 	AuthCode               string // steam
 	BindAddress            string // mattermost, slack // DEPRECATED
 	Buffer                 int    // api
+	Charset                string // irc
 	EditSuffix             string // mattermost, slack, discord, telegram, gitter
 	EditDisable            bool   // mattermost, slack, discord, telegram, gitter
 	IconURL                string // mattermost, slack
