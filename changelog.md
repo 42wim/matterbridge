@@ -1,9 +1,23 @@
+# v1.1.0
+## New features
+* general: Add better editing support. (actually edit the messages on bridges that support it)
+	(mattermost,discord,gitter,slack,telegram)
+* mattermost: use API v4 (removes support for mattermost < 3.8)
+* mattermost: add support for personal access tokens (since mattermost 4.1)
+	Use ```Token="yourtoken"``` in mattermost config
+	See https://docs.mattermost.com/developer/personal-access-tokens.html for more info
+* matrix: Relay notices (matrix). Closes #243
+* irc: Add a charset option. Closes #247
+
+## Bugfix
+* slack: Handle leave/join events (slack). Closes #246
+* slack: Replace mentions from other bridges. (slack). Closes #233
+* gitter: remove ZWSP after messages
+
 # v1.0.1
 ## New features
 * mattermost: add support for mattermost 4.1.x
 * discord: allow a webhookURL per channel #239
-
-## Bugfix
 
 # v1.0.0
 ## New features
