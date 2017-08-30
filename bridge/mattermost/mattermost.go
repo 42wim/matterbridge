@@ -2,6 +2,7 @@ package bmattermost
 
 import (
 	"errors"
+	"fmt"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/matterclient"
 	"github.com/42wim/matterbridge/matterhook"
@@ -132,7 +133,11 @@ func (b *Bmattermost) Disconnect() error {
 func (b *Bmattermost) JoinChannel(channel config.ChannelInfo) error {
 	// we can only join channels using the API
 	if b.Config.WebhookURL == "" && b.Config.WebhookBindAddress == "" {
-		return b.mc.JoinChannel(b.mc.GetChannelId(channel.Name, ""))
+		id := b.mc.GetChannelId(channel.Name, "")
+		if id == "" {
+			return fmt.Errorf("Could not find channel ID for channel %s", channel.Name)
+		}
+		return b.mc.JoinChannel(id)
 	}
 	return nil
 }

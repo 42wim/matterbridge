@@ -481,7 +481,7 @@ func (m *MMClient) JoinChannel(channelId string) error {
 	m.log.Debug("Joining ", channelId)
 	_, resp := m.Client.AddChannelMember(channelId, m.User.Id)
 	if resp.Error != nil {
-		return errors.New("failed to join")
+		return resp.Error
 	}
 	return nil
 }
@@ -812,13 +812,19 @@ func (m *MMClient) initUser() error {
 		for _, user := range mmusers {
 			usermap[user.Id] = user
 		}
+
 		t := &Team{Team: team, Users: usermap, Id: team.Id}
 
-		mmchannels, resp := m.Client.GetPublicChannelsForTeam(team.Id, 0, 5000, "")
+		mmchannels, resp := m.Client.GetChannelsForTeamForUser(team.Id, m.User.Id, "")
 		if resp.Error != nil {
-			return errors.New(resp.Error.DetailedError)
+			return resp.Error
 		}
 		t.Channels = mmchannels
+		mmchannels, resp = m.Client.GetPublicChannelsForTeam(team.Id, 0, 5000, "")
+		if resp.Error != nil {
+			return resp.Error
+		}
+		t.MoreChannels = mmchannels
 		m.OtherTeams = append(m.OtherTeams, t)
 		if team.Name == m.Credentials.Team {
 			m.Team = t
