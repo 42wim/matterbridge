@@ -1,6 +1,7 @@
 package birc
 
 import (
+	"bytes"
 	"crypto/tls"
 	"fmt"
 	"github.com/42wim/go-ircevent"
@@ -132,6 +133,19 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 	if strings.HasPrefix(msg.Text, "!") {
 		b.Command(&msg)
 	}
+
+	if b.Config.Charset != "" {
+		buf := new(bytes.Buffer)
+		w, err := charset.NewWriter(b.Config.Charset, buf)
+		if err != nil {
+			flog.Errorf("charset from utf-8 conversion failed: %s", err)
+			return "", err
+		}
+		fmt.Fprintf(w, msg.Text)
+		w.Close()
+		msg.Text = buf.String()
+	}
+
 	for _, text := range strings.Split(msg.Text, "\n") {
 		if len(text) > b.Config.MessageLength {
 			text = text[:b.Config.MessageLength] + " <message clipped>"
