@@ -383,7 +383,6 @@ WebhookURL="https://hooks.slack.com/services/yourhook"
 #AND DEDICATED BOT USER WHEN POSSIBLE!
 #Address to listen on for outgoing webhook requests from slack
 #See account settings - integrations - outgoing webhooks on slack
-#This setting will not be used when useAPI is eanbled
 #webhooks
 #OPTIONAL
 WebhookBindAddress="0.0.0.0:9999"
