@@ -6,7 +6,6 @@
 
 [mattermost]
     [mattermost.work]
-    useAPI=true
     #do not prefix it wit http:// or https://
     Server="yourmattermostserver.domain" 
     Team="yourteam"
