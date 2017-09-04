@@ -600,9 +600,9 @@ func (m *MMClient) createCookieJar(token string) *cookiejar.Jar {
 func (m *MMClient) SendDirectMessage(toUserId string, msg string) {
 	m.log.Debugf("SendDirectMessage to %s, msg %s", toUserId, msg)
 	// create DM channel (only happens on first message)
-	_, err := m.Client.CreateDirectChannel(m.User.Id, toUserId)
-	if err != nil {
-		m.log.Debugf("SendDirectMessage to %#v failed: %s", toUserId, err)
+	_, resp := m.Client.CreateDirectChannel(m.User.Id, toUserId)
+	if resp.Error != nil {
+		m.log.Debugf("SendDirectMessage to %#v failed: %s", toUserId, resp.Error)
 		return
 	}
 	channelName := model.GetDMNameFromIds(toUserId, m.User.Id)
