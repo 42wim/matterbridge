@@ -1,3 +1,7 @@
+# v1.1.1
+## Bugfix
+* mattermost: fix public links
+
 # v1.1.0
 ## New features
 * general: Add better editing support. (actually edit the messages on bridges that support it)
