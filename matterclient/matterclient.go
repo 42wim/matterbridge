@@ -511,8 +511,8 @@ func (m *MMClient) GetPosts(channelId string, limit int) *model.PostList {
 }
 
 func (m *MMClient) GetPublicLink(filename string) string {
-	res, err := m.Client.GetFileLink(filename)
-	if err != nil {
+	res, resp := m.Client.GetFileLink(filename)
+	if resp.Error != nil {
 		return ""
 	}
 	return res
@@ -521,8 +521,8 @@ func (m *MMClient) GetPublicLink(filename string) string {
 func (m *MMClient) GetPublicLinks(filenames []string) []string {
 	var output []string
 	for _, f := range filenames {
-		res, err := m.Client.GetFileLink(f)
-		if err != nil {
+		res, resp := m.Client.GetFileLink(f)
+		if resp.Error != nil {
 			continue
 		}
 		output = append(output, res)
@@ -538,8 +538,8 @@ func (m *MMClient) GetFileLinks(filenames []string) []string {
 
 	var output []string
 	for _, f := range filenames {
-		res, err := m.Client.GetFileLink(f)
-		if err != nil {
+		res, resp := m.Client.GetFileLink(f)
+		if resp.Error != nil {
 			// public links is probably disabled, create the link ourselves
 			output = append(output, uriScheme+m.Credentials.Server+model.API_URL_SUFFIX_V3+"/files/"+f+"/get")
 			continue
