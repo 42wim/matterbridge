@@ -88,6 +88,7 @@ func (b *Bgitter) JoinChannel(channel config.ChannelInfo) error {
 						rmsg.Event = config.EVENT_USER_ACTION
 						rmsg.Text = strings.Replace(rmsg.Text, "@"+ev.Message.From.Username+" ", "", -1)
 					}
+					flog.Debugf("Message is %#v", rmsg)
 					b.Remote <- rmsg
 				}
 			case *gitter.GitterConnectionClosed:
