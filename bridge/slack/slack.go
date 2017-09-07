@@ -257,65 +257,60 @@ func (b *Bslack) handleSlack() {
 }
 
 func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
-	count := 0
 	for msg := range b.rtm.IncomingEvents {
 		switch ev := msg.Data.(type) {
 		case *slack.MessageEvent:
-			// ignore first message
-			if count > 0 {
-				flog.Debugf("Receiving from slackclient %#v", ev)
-				if len(ev.Attachments) > 0 {
-					// skip messages we made ourselves
-					if ev.Attachments[0].CallbackID == "matterbridge" {
-						continue
-					}
+			flog.Debugf("Receiving from slackclient %#v", ev)
+			if len(ev.Attachments) > 0 {
+				// skip messages we made ourselves
+				if ev.Attachments[0].CallbackID == "matterbridge" {
+					continue
 				}
-				if !b.Config.EditDisable && ev.SubMessage != nil && ev.SubMessage.ThreadTimestamp != ev.SubMessage.Timestamp {
-					flog.Debugf("SubMessage %#v", ev.SubMessage)
-					ev.User = ev.SubMessage.User
-					ev.Text = ev.SubMessage.Text + b.Config.EditSuffix
-				}
-				// use our own func because rtm.GetChannelInfo doesn't work for private channels
-				channel, err := b.getChannelByID(ev.Channel)
+			}
+			if !b.Config.EditDisable && ev.SubMessage != nil && ev.SubMessage.ThreadTimestamp != ev.SubMessage.Timestamp {
+				flog.Debugf("SubMessage %#v", ev.SubMessage)
+				ev.User = ev.SubMessage.User
+				ev.Text = ev.SubMessage.Text + b.Config.EditSuffix
+			}
+			// use our own func because rtm.GetChannelInfo doesn't work for private channels
+			channel, err := b.getChannelByID(ev.Channel)
+			if err != nil {
+				continue
+			}
+			m := &MMMessage{}
+			if ev.BotID == "" {
+				user, err := b.rtm.GetUserInfo(ev.User)
 				if err != nil {
 					continue
 				}
-				m := &MMMessage{}
-				if ev.BotID == "" {
-					user, err := b.rtm.GetUserInfo(ev.User)
-					if err != nil {
-						continue
-					}
-					m.UserID = user.ID
-					m.Username = user.Name
-				}
-				m.Channel = channel.Name
-				m.Text = ev.Text
-				if m.Text == "" {
-					for _, attach := range ev.Attachments {
-						if attach.Text != "" {
-							m.Text = attach.Text
-						} else {
-							m.Text = attach.Fallback
-						}
-					}
-				}
-				m.Raw = ev
-				m.Text = b.replaceMention(m.Text)
-				// when using webhookURL we can't check if it's our webhook or not for now
-				if ev.BotID != "" && b.Config.WebhookURL == "" {
-					bot, err := b.rtm.GetBotInfo(ev.BotID)
-					if err != nil {
-						continue
-					}
-					if bot.Name != "" {
-						m.Username = bot.Name
-						m.UserID = bot.ID
-					}
-				}
-				mchan <- m
+				m.UserID = user.ID
+				m.Username = user.Name
 			}
-			count++
+			m.Channel = channel.Name
+			m.Text = ev.Text
+			if m.Text == "" {
+				for _, attach := range ev.Attachments {
+					if attach.Text != "" {
+						m.Text = attach.Text
+					} else {
+						m.Text = attach.Fallback
+					}
+				}
+			}
+			m.Raw = ev
+			m.Text = b.replaceMention(m.Text)
+			// when using webhookURL we can't check if it's our webhook or not for now
+			if ev.BotID != "" && b.Config.WebhookURL == "" {
+				bot, err := b.rtm.GetBotInfo(ev.BotID)
+				if err != nil {
+					continue
+				}
+				if bot.Name != "" {
+					m.Username = bot.Name
+					m.UserID = bot.ID
+				}
+			}
+			mchan <- m
 		case *slack.OutgoingErrorEvent:
 			flog.Debugf("%#v", ev.Error())
 		case *slack.ChannelJoinedEvent:
