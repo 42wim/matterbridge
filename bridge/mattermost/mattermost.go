@@ -195,6 +195,7 @@ func (b *Bmattermost) handleMatter() {
 		}
 		rmsg.Text = text
 		flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)
+		flog.Debugf("Message is %#v", rmsg)
 		b.Remote <- rmsg
 	}
 }
