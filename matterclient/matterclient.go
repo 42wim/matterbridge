@@ -861,7 +861,8 @@ func supportedVersion(version string) bool {
 		strings.HasPrefix(version, "3.9.0") ||
 		strings.HasPrefix(version, "3.10.0") ||
 		strings.HasPrefix(version, "4.0") ||
-		strings.HasPrefix(version, "4.1") {
+		strings.HasPrefix(version, "4.1") ||
+		strings.HasPrefix(version, "4.2") {
 		return true
 	}
 	return false
