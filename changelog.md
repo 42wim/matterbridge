@@ -1,3 +1,9 @@
+# v1.1.2
+* general: also build darwin binaries
+* mattermost: add support for mattermost 4.2.x
+* mattermost: Send images when text is empty regression. (mattermost). Closes #254
+* slack: also send the first messsage after connect. #252
+
 # v1.1.1
 ## Bugfix
 * mattermost: fix public links
