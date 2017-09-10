@@ -574,6 +574,16 @@ func (m *MMClient) UpdateLastViewed(channelId string) {
 	}
 }
 
+func (m *MMClient) UpdateUserNick(nick string) error {
+	user := m.User
+	user.Nickname = nick
+	_, resp := m.Client.UpdateUser(user)
+	if resp.Error != nil {
+		return resp.Error
+	}
+	return nil
+}
+
 func (m *MMClient) UsernamesInChannel(channelId string) []string {
 	res, resp := m.Client.GetChannelMembers(channelId, 0, 50000, "")
 	if resp.Error != nil {
