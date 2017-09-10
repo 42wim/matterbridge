@@ -234,25 +234,23 @@ func (b *Bslack) handleSlack() {
 		if message.Text == "" || message.Username == "" {
 			continue
 		}
-		texts := strings.Split(message.Text, "\n")
-		for _, text := range texts {
-			text = b.replaceURL(text)
-			text = html.UnescapeString(text)
-			flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)
-			msg := config.Message{Text: text, Username: message.Username, Channel: message.Channel, Account: b.Account, Avatar: b.getAvatar(message.Username), UserID: message.UserID, ID: "slack " + message.Raw.Timestamp}
-			if message.Raw.SubType == "me_message" {
-				msg.Event = config.EVENT_USER_ACTION
-			}
-			if message.Raw.SubType == "channel_leave" || message.Raw.SubType == "channel_join" {
-				msg.Username = "system"
-				msg.Event = config.EVENT_JOIN_LEAVE
-			}
-			// edited messages have a submessage, use this timestamp
-			if message.Raw.SubMessage != nil {
-				msg.ID = "slack " + message.Raw.SubMessage.Timestamp
-			}
-			b.Remote <- msg
+		text := message.Text
+		text = b.replaceURL(text)
+		text = html.UnescapeString(text)
+		flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)
+		msg := config.Message{Text: text, Username: message.Username, Channel: message.Channel, Account: b.Account, Avatar: b.getAvatar(message.Username), UserID: message.UserID, ID: "slack " + message.Raw.Timestamp}
+		if message.Raw.SubType == "me_message" {
+			msg.Event = config.EVENT_USER_ACTION
 		}
+		if message.Raw.SubType == "channel_leave" || message.Raw.SubType == "channel_join" {
+			msg.Username = "system"
+			msg.Event = config.EVENT_JOIN_LEAVE
+		}
+		// edited messages have a submessage, use this timestamp
+		if message.Raw.SubMessage != nil {
+			msg.ID = "slack " + message.Raw.SubMessage.Timestamp
+		}
+		b.Remote <- msg
 	}
 }
 
