@@ -10,9 +10,24 @@
 package discordgo
 
 import (
-	"fmt"
 	"io"
 	"regexp"
+	"strings"
+)
+
+// MessageType is the type of Message
+type MessageType int
+
+// Block contains the valid known MessageType values
+const (
+	MessageTypeDefault MessageType = iota
+	MessageTypeRecipientAdd
+	MessageTypeRecipientRemove
+	MessageTypeCall
+	MessageTypeChannelNameChange
+	MessageTypeChannelIconChange
+	MessageTypeChannelPinnedMessage
+	MessageTypeGuildMemberJoin
 )
 
 // A Message stores all data related to a specific Discord message.
@@ -30,12 +45,14 @@ type Message struct {
 	Embeds          []*MessageEmbed      `json:"embeds"`
 	Mentions        []*User              `json:"mentions"`
 	Reactions       []*MessageReactions  `json:"reactions"`
+	Type            MessageType          `json:"type"`
 }
 
 // File stores info about files you e.g. send in messages.
 type File struct {
-	Name   string
-	Reader io.Reader
+	Name        string
+	ContentType string
+	Reader      io.Reader
 }
 
 // MessageSend stores all parameters you can send with ChannelMessageSendComplex.
@@ -43,7 +60,10 @@ type MessageSend struct {
 	Content string        `json:"content,omitempty"`
 	Embed   *MessageEmbed `json:"embed,omitempty"`
 	Tts     bool          `json:"tts"`
-	File    *File         `json:"file"`
+	Files   []*File       `json:"-"`
+
+	// TODO: Remove this when compatibility is not required.
+	File *File `json:"-"`
 }
 
 // MessageEdit is used to chain parameters via ChannelMessageEditComplex, which
@@ -168,13 +188,65 @@ type MessageReactions struct {
 
 // ContentWithMentionsReplaced will replace all @<id> mentions with the
 // username of the mention.
-func (m *Message) ContentWithMentionsReplaced() string {
-	if m.Mentions == nil {
-		return m.Content
-	}
-	content := m.Content
+func (m *Message) ContentWithMentionsReplaced() (content string) {
+	content = m.Content
+
 	for _, user := range m.Mentions {
-		content = regexp.MustCompile(fmt.Sprintf("<@!?(%s)>", user.ID)).ReplaceAllString(content, "@"+user.Username)
+		content = strings.NewReplacer(
+			"<@"+user.ID+">", "@"+user.Username,
+			"<@!"+user.ID+">", "@"+user.Username,
+		).Replace(content)
 	}
-	return content
+	return
+}
+
+var patternChannels = regexp.MustCompile("<#[^>]*>")
+
+// ContentWithMoreMentionsReplaced will replace all @<id> mentions with the
+// username of the mention, but also role IDs and more.
+func (m *Message) ContentWithMoreMentionsReplaced(s *Session) (content string, err error) {
+	content = m.Content
+
+	if !s.StateEnabled {
+		content = m.ContentWithMentionsReplaced()
+		return
+	}
+
+	channel, err := s.State.Channel(m.ChannelID)
+	if err != nil {
+		content = m.ContentWithMentionsReplaced()
+		return
+	}
+
+	for _, user := range m.Mentions {
+		nick := user.Username
+
+		member, err := s.State.Member(channel.GuildID, user.ID)
+		if err == nil && member.Nick != "" {
+			nick = member.Nick
+		}
+
+		content = strings.NewReplacer(
+			"<@"+user.ID+">", "@"+user.Username,
+			"<@!"+user.ID+">", "@"+nick,
+		).Replace(content)
+	}
+	for _, roleID := range m.MentionRoles {
+		role, err := s.State.Role(channel.GuildID, roleID)
+		if err != nil || !role.Mentionable {
+			continue
+		}
+
+		content = strings.Replace(content, "<&"+role.ID+">", "@"+role.Name, -1)
+	}
+
+	content = patternChannels.ReplaceAllStringFunc(content, func(mention string) string {
+		channel, err := s.State.Channel(mention[2 : len(mention)-1])
+		if err != nil || channel.Type == ChannelTypeGuildVoice {
+			return mention
+		}
+
+		return "#" + channel.Name
+	})
+	return
 }

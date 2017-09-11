@@ -796,7 +796,7 @@ func (v *VoiceConnection) opusReceiver(udpConn *net.UDPConn, close <-chan struct
 		}
 
 		// For now, skip anything except audio.
-		if rlen < 12 || recvbuf[0] != 0x80 {
+		if rlen < 12 || (recvbuf[0] != 0x80 && recvbuf[0] != 0x90) {
 			continue
 		}
 
@@ -810,8 +810,17 @@ func (v *VoiceConnection) opusReceiver(udpConn *net.UDPConn, close <-chan struct
 		copy(nonce[:], recvbuf[0:12])
 		p.Opus, _ = secretbox.Open(nil, recvbuf[12:rlen], &nonce, &v.op4.SecretKey)
 
+		if len(p.Opus) > 8 && recvbuf[0] == 0x90 {
+			// Extension bit is set, first 8 bytes is the extended header
+			p.Opus = p.Opus[8:]
+		}
+
 		if c != nil {
-			c <- &p
+			select {
+			case c <- &p:
+			case <-close:
+				return
+			}
 		}
 	}
 }

@@ -23,6 +23,7 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"net/textproto"
 	"net/url"
 	"strconv"
 	"strings"
@@ -309,8 +310,8 @@ func (s *Session) UserUpdate(email, password, username, avatar, newPassword stri
 	// If left blank, avatar will be set to null/blank
 
 	data := struct {
-		Email       string `json:"email"`
-		Password    string `json:"password"`
+		Email       string `json:"email,omitempty"`
+		Password    string `json:"password,omitempty"`
 		Username    string `json:"username,omitempty"`
 		Avatar      string `json:"avatar,omitempty"`
 		NewPassword string `json:"new_password,omitempty"`
@@ -763,7 +764,21 @@ func (s *Session) GuildMember(guildID, userID string) (st *Member, err error) {
 // userID    : The ID of a User
 func (s *Session) GuildMemberDelete(guildID, userID string) (err error) {
 
-	_, err = s.RequestWithBucketID("DELETE", EndpointGuildMember(guildID, userID), nil, EndpointGuildMember(guildID, ""))
+	return s.GuildMemberDeleteWithReason(guildID, userID, "")
+}
+
+// GuildMemberDeleteWithReason removes the given user from the given guild.
+// guildID   : The ID of a Guild.
+// userID    : The ID of a User
+// reason    : The reason for the kick
+func (s *Session) GuildMemberDeleteWithReason(guildID, userID, reason string) (err error) {
+
+	uri := EndpointGuildMember(guildID, userID)
+	if reason != "" {
+		uri += "?reason=" + url.QueryEscape(reason)
+	}
+
+	_, err = s.RequestWithBucketID("DELETE", uri, nil, EndpointGuildMember(guildID, ""))
 	return
 }
 
@@ -1316,6 +1331,8 @@ func (s *Session) ChannelMessageSend(channelID string, content string) (*Message
 	})
 }
 
+var quoteEscaper = strings.NewReplacer("\\", "\\\\", `"`, "\\\"")
+
 // ChannelMessageSendComplex sends a message to the given channel.
 // channelID : The ID of a Channel.
 // data      : The message struct to send.
@@ -1326,46 +1343,60 @@ func (s *Session) ChannelMessageSendComplex(channelID string, data *MessageSend)
 
 	endpoint := EndpointChannelMessages(channelID)
 
-	var response []byte
+	// TODO: Remove this when compatibility is not required.
+	files := data.Files
 	if data.File != nil {
+		if files == nil {
+			files = []*File{data.File}
+		} else {
+			err = fmt.Errorf("cannot specify both File and Files")
+			return
+		}
+	}
+
+	var response []byte
+	if len(files) > 0 {
 		body := &bytes.Buffer{}
 		bodywriter := multipart.NewWriter(body)
 
-		// What's a better way of doing this? Reflect? Generator? I'm open to suggestions
-
-		if data.Content != "" {
-			if err = bodywriter.WriteField("content", data.Content); err != nil {
-				return
-			}
-		}
-
-		if data.Embed != nil {
-			var embed []byte
-			embed, err = json.Marshal(data.Embed)
-			if err != nil {
-				return
-			}
-			err = bodywriter.WriteField("embed", string(embed))
-			if err != nil {
-				return
-			}
-		}
-
-		if data.Tts {
-			if err = bodywriter.WriteField("tts", "true"); err != nil {
-				return
-			}
-		}
-
-		var writer io.Writer
-		writer, err = bodywriter.CreateFormFile("file", data.File.Name)
+		var payload []byte
+		payload, err = json.Marshal(data)
 		if err != nil {
 			return
 		}
 
-		_, err = io.Copy(writer, data.File.Reader)
+		var p io.Writer
+
+		h := make(textproto.MIMEHeader)
+		h.Set("Content-Disposition", `form-data; name="payload_json"`)
+		h.Set("Content-Type", "application/json")
+
+		p, err = bodywriter.CreatePart(h)
 		if err != nil {
 			return
+		}
+
+		if _, err = p.Write(payload); err != nil {
+			return
+		}
+
+		for i, file := range files {
+			h := make(textproto.MIMEHeader)
+			h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="file%d"; filename="%s"`, i, quoteEscaper.Replace(file.Name)))
+			contentType := file.ContentType
+			if contentType == "" {
+				contentType = "application/octet-stream"
+			}
+			h.Set("Content-Type", contentType)
+
+			p, err = bodywriter.CreatePart(h)
+			if err != nil {
+				return
+			}
+
+			if _, err = io.Copy(p, file.Reader); err != nil {
+				return
+			}
 		}
 
 		err = bodywriter.Close()
@@ -1685,6 +1716,28 @@ func (s *Session) Gateway() (gateway string, err error) {
 	return
 }
 
+// GatewayBot returns the websocket Gateway address and the recommended number of shards
+func (s *Session) GatewayBot() (st *GatewayBotResponse, err error) {
+
+	response, err := s.RequestWithBucketID("GET", EndpointGatewayBot, nil, EndpointGatewayBot)
+	if err != nil {
+		return
+	}
+
+	err = unmarshal(response, &st)
+	if err != nil {
+		return
+	}
+
+	// Ensure the gateway always has a trailing slash.
+	// MacOS will fail to connect if we add query params without a trailing slash on the base domain.
+	if !strings.HasSuffix(st.URL, "/") {
+		st.URL += "/"
+	}
+
+	return
+}
+
 // Functions specific to Webhooks
 
 // WebhookCreate returns a new Webhook.
@@ -1810,14 +1863,9 @@ func (s *Session) WebhookEditWithToken(webhookID, token, name, avatar string) (s
 
 // WebhookDelete deletes a webhook for a given ID
 // webhookID: The ID of a webhook.
-func (s *Session) WebhookDelete(webhookID string) (st *Webhook, err error) {
+func (s *Session) WebhookDelete(webhookID string) (err error) {
 
-	body, err := s.RequestWithBucketID("DELETE", EndpointWebhook(webhookID), nil, EndpointWebhooks)
-	if err != nil {
-		return
-	}
-
-	err = unmarshal(body, &st)
+	_, err = s.RequestWithBucketID("DELETE", EndpointWebhook(webhookID), nil, EndpointWebhooks)
 
 	return
 }
@@ -1871,6 +1919,16 @@ func (s *Session) MessageReactionAdd(channelID, messageID, emojiID string) error
 func (s *Session) MessageReactionRemove(channelID, messageID, emojiID, userID string) error {
 
 	_, err := s.RequestWithBucketID("DELETE", EndpointMessageReaction(channelID, messageID, emojiID, userID), nil, EndpointMessageReaction(channelID, "", "", ""))
+
+	return err
+}
+
+// MessageReactionsRemoveAll deletes all reactions from a message
+// channelID : The channel ID
+// messageID : The message ID.
+func (s *Session) MessageReactionsRemoveAll(channelID, messageID string) error {
+
+	_, err := s.RequestWithBucketID("DELETE", EndpointMessageReactionsAll(channelID, messageID), nil, EndpointMessageReactionsAll(channelID, messageID))
 
 	return err
 }

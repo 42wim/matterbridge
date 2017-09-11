@@ -42,6 +42,7 @@ type State struct {
 
 	guildMap   map[string]*Guild
 	channelMap map[string]*Channel
+	memberMap  map[string]map[string]*Member
 }
 
 // NewState creates an empty state.
@@ -59,7 +60,16 @@ func NewState() *State {
 		TrackPresences: true,
 		guildMap:       make(map[string]*Guild),
 		channelMap:     make(map[string]*Channel),
+		memberMap:      make(map[string]map[string]*Member),
 	}
+}
+
+func (s *State) createMemberMap(guild *Guild) {
+	members := make(map[string]*Member)
+	for _, m := range guild.Members {
+		members[m.User.ID] = m
+	}
+	s.memberMap[guild.ID] = members
 }
 
 // GuildAdd adds a guild to the current world state, or
@@ -75,6 +85,14 @@ func (s *State) GuildAdd(guild *Guild) error {
 	// Update the channels to point to the right guild, adding them to the channelMap as we go
 	for _, c := range guild.Channels {
 		s.channelMap[c.ID] = c
+	}
+
+	// If this guild contains a new member slice, we must regenerate the member map so the pointers stay valid
+	if guild.Members != nil {
+		s.createMemberMap(guild)
+	} else if _, ok := s.memberMap[guild.ID]; !ok {
+		// Even if we have no new member slice, we still initialize the member map for this guild if it doesn't exist
+		s.memberMap[guild.ID] = make(map[string]*Member)
 	}
 
 	if g, ok := s.guildMap[guild.ID]; ok {
@@ -271,14 +289,19 @@ func (s *State) MemberAdd(member *Member) error {
 	s.Lock()
 	defer s.Unlock()
 
-	for i, m := range guild.Members {
-		if m.User.ID == member.User.ID {
-			guild.Members[i] = member
-			return nil
-		}
+	members, ok := s.memberMap[member.GuildID]
+	if !ok {
+		return ErrStateNotFound
 	}
 
-	guild.Members = append(guild.Members, member)
+	m, ok := members[member.User.ID]
+	if !ok {
+		members[member.User.ID] = member
+		guild.Members = append(guild.Members, member)
+	} else {
+		*m = *member // Update the actual data, which will also update the member pointer in the slice
+	}
+
 	return nil
 }
 
@@ -296,6 +319,17 @@ func (s *State) MemberRemove(member *Member) error {
 	s.Lock()
 	defer s.Unlock()
 
+	members, ok := s.memberMap[member.GuildID]
+	if !ok {
+		return ErrStateNotFound
+	}
+
+	_, ok = members[member.User.ID]
+	if !ok {
+		return ErrStateNotFound
+	}
+	delete(members, member.User.ID)
+
 	for i, m := range guild.Members {
 		if m.User.ID == member.User.ID {
 			guild.Members = append(guild.Members[:i], guild.Members[i+1:]...)
@@ -312,18 +346,17 @@ func (s *State) Member(guildID, userID string) (*Member, error) {
 		return nil, ErrNilState
 	}
 
-	guild, err := s.Guild(guildID)
-	if err != nil {
-		return nil, err
-	}
-
 	s.RLock()
 	defer s.RUnlock()
 
-	for _, m := range guild.Members {
-		if m.User.ID == userID {
-			return m, nil
-		}
+	members, ok := s.memberMap[guildID]
+	if !ok {
+		return nil, ErrStateNotFound
+	}
+
+	m, ok := members[userID]
+	if ok {
+		return m, nil
 	}
 
 	return nil, ErrStateNotFound
@@ -427,7 +460,7 @@ func (s *State) ChannelAdd(channel *Channel) error {
 		return nil
 	}
 
-	if channel.IsPrivate {
+	if channel.Type == ChannelTypeDM || channel.Type == ChannelTypeGroupDM {
 		s.PrivateChannels = append(s.PrivateChannels, channel)
 	} else {
 		guild, ok := s.guildMap[channel.GuildID]
@@ -454,7 +487,7 @@ func (s *State) ChannelRemove(channel *Channel) error {
 		return err
 	}
 
-	if channel.IsPrivate {
+	if channel.Type == ChannelTypeDM || channel.Type == ChannelTypeGroupDM {
 		s.Lock()
 		defer s.Unlock()
 
@@ -735,6 +768,7 @@ func (s *State) onReady(se *Session, r *Ready) (err error) {
 
 	for _, g := range s.Guilds {
 		s.guildMap[g.ID] = g
+		s.createMemberMap(g)
 
 		for _, c := range g.Channels {
 			s.channelMap[c.ID] = c
@@ -748,8 +782,8 @@ func (s *State) onReady(se *Session, r *Ready) (err error) {
 	return nil
 }
 
-// onInterface handles all events related to states.
-func (s *State) onInterface(se *Session, i interface{}) (err error) {
+// OnInterface handles all events related to states.
+func (s *State) OnInterface(se *Session, i interface{}) (err error) {
 	if s == nil {
 		return ErrNilState
 	}

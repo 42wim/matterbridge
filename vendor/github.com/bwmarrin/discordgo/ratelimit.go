@@ -3,17 +3,26 @@ package discordgo
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 )
 
+// customRateLimit holds information for defining a custom rate limit
+type customRateLimit struct {
+	suffix   string
+	requests int
+	reset    time.Duration
+}
+
 // RateLimiter holds all ratelimit buckets
 type RateLimiter struct {
 	sync.Mutex
-	global          *int64
-	buckets         map[string]*Bucket
-	globalRateLimit time.Duration
+	global           *int64
+	buckets          map[string]*Bucket
+	globalRateLimit  time.Duration
+	customRateLimits []*customRateLimit
 }
 
 // NewRatelimiter returns a new RateLimiter
@@ -22,6 +31,13 @@ func NewRatelimiter() *RateLimiter {
 	return &RateLimiter{
 		buckets: make(map[string]*Bucket),
 		global:  new(int64),
+		customRateLimits: []*customRateLimit{
+			&customRateLimit{
+				suffix:   "//reactions//",
+				requests: 1,
+				reset:    200 * time.Millisecond,
+			},
+		},
 	}
 }
 
@@ -38,6 +54,14 @@ func (r *RateLimiter) getBucket(key string) *Bucket {
 		remaining: 1,
 		Key:       key,
 		global:    r.global,
+	}
+
+	// Check if there is a custom ratelimit set for this bucket ID.
+	for _, rl := range r.customRateLimits {
+		if strings.HasSuffix(b.Key, rl.suffix) {
+			b.customRateLimit = rl
+			break
+		}
 	}
 
 	r.buckets[key] = b
@@ -76,13 +100,28 @@ type Bucket struct {
 	limit     int
 	reset     time.Time
 	global    *int64
+
+	lastReset       time.Time
+	customRateLimit *customRateLimit
 }
 
 // Release unlocks the bucket and reads the headers to update the buckets ratelimit info
 // and locks up the whole thing in case if there's a global ratelimit.
 func (b *Bucket) Release(headers http.Header) error {
-
 	defer b.Unlock()
+
+	// Check if the bucket uses a custom ratelimiter
+	if rl := b.customRateLimit; rl != nil {
+		if time.Now().Sub(b.lastReset) >= rl.reset {
+			b.remaining = rl.requests - 1
+			b.lastReset = time.Now()
+		}
+		if b.remaining < 1 {
+			b.reset = time.Now().Add(rl.reset)
+		}
+		return nil
+	}
+
 	if headers == nil {
 		return nil
 	}

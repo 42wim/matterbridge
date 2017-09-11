@@ -15,7 +15,6 @@ import (
 	"compress/zlib"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"runtime"
@@ -87,7 +86,7 @@ func (s *Session) Open() (err error) {
 		}
 
 		// Add the version and encoding to the URL
-		s.gateway = fmt.Sprintf("%s?v=5&encoding=json", s.gateway)
+		s.gateway = s.gateway + "?v=" + APIVersion + "&encoding=json"
 	}
 
 	header := http.Header{}
@@ -131,6 +130,7 @@ func (s *Session) Open() (err error) {
 	// lock.
 	s.listening = make(chan interface{})
 	go s.listen(s.wsConn, s.listening)
+	s.LastHeartbeatAck = time.Now().UTC()
 
 	s.Unlock()
 
@@ -199,10 +199,13 @@ type helloOp struct {
 	Trace             []string      `json:"_trace"`
 }
 
+// FailedHeartbeatAcks is the Number of heartbeat intervals to wait until forcing a connection restart.
+const FailedHeartbeatAcks time.Duration = 5 * time.Millisecond
+
 // heartbeat sends regular heartbeats to Discord so it knows the client
 // is still connected.  If you do not send these heartbeats Discord will
 // disconnect the websocket connection after a few seconds.
-func (s *Session) heartbeat(wsConn *websocket.Conn, listening <-chan interface{}, i time.Duration) {
+func (s *Session) heartbeat(wsConn *websocket.Conn, listening <-chan interface{}, heartbeatIntervalMsec time.Duration) {
 
 	s.log(LogInformational, "called")
 
@@ -211,20 +214,26 @@ func (s *Session) heartbeat(wsConn *websocket.Conn, listening <-chan interface{}
 	}
 
 	var err error
-	ticker := time.NewTicker(i * time.Millisecond)
+	ticker := time.NewTicker(heartbeatIntervalMsec * time.Millisecond)
 	defer ticker.Stop()
 
 	for {
+		s.RLock()
+		last := s.LastHeartbeatAck
+		s.RUnlock()
 		sequence := atomic.LoadInt64(s.sequence)
 		s.log(LogInformational, "sending gateway websocket heartbeat seq %d", sequence)
 		s.wsMutex.Lock()
 		err = wsConn.WriteJSON(heartbeatOp{1, sequence})
 		s.wsMutex.Unlock()
-		if err != nil {
-			s.log(LogError, "error sending heartbeat to gateway %s, %s", s.gateway, err)
-			s.Lock()
-			s.DataReady = false
-			s.Unlock()
+		if err != nil || time.Now().UTC().Sub(last) > (heartbeatIntervalMsec*FailedHeartbeatAcks) {
+			if err != nil {
+				s.log(LogError, "error sending heartbeat to gateway %s, %s", s.gateway, err)
+			} else {
+				s.log(LogError, "haven't gotten a heartbeat ACK in %v, triggering a reconnection", time.Now().UTC().Sub(last))
+			}
+			s.Close()
+			s.reconnect()
 			return
 		}
 		s.Lock()
@@ -241,8 +250,10 @@ func (s *Session) heartbeat(wsConn *websocket.Conn, listening <-chan interface{}
 }
 
 type updateStatusData struct {
-	IdleSince *int  `json:"idle_since"`
-	Game      *Game `json:"game"`
+	IdleSince *int   `json:"since"`
+	Game      *Game  `json:"game"`
+	AFK       bool   `json:"afk"`
+	Status    string `json:"status"`
 }
 
 type updateStatusOp struct {
@@ -265,7 +276,10 @@ func (s *Session) UpdateStreamingStatus(idle int, game string, url string) (err 
 		return ErrWSNotFound
 	}
 
-	var usd updateStatusData
+	usd := updateStatusData{
+		Status: "online",
+	}
+
 	if idle > 0 {
 		usd.IdleSince = &idle
 	}
@@ -398,7 +412,10 @@ func (s *Session) onEvent(messageType int, message []byte) {
 	// Reconnect
 	// Must immediately disconnect from gateway and reconnect to new gateway.
 	if e.Operation == 7 {
-		// TODO
+		s.log(LogInformational, "Closing and reconnecting in response to Op7")
+		s.Close()
+		s.reconnect()
+		return
 	}
 
 	// Invalid Session
@@ -423,6 +440,14 @@ func (s *Session) onEvent(messageType int, message []byte) {
 		} else {
 			go s.heartbeat(s.wsConn, s.listening, h.HeartbeatInterval)
 		}
+		return
+	}
+
+	if e.Operation == 11 {
+		s.Lock()
+		s.LastHeartbeatAck = time.Now().UTC()
+		s.Unlock()
+		s.log(LogInformational, "got heartbeat ACK")
 		return
 	}
 
@@ -685,6 +710,13 @@ func (s *Session) reconnect() {
 					time.Sleep(1 * time.Second)
 
 				}
+				return
+			}
+
+			// Certain race conditions can call reconnect() twice. If this happens, we
+			// just break out of the reconnect loop
+			if err == ErrWSAlreadyOpen {
+				s.log(LogInformational, "Websocket already exists, no need to reconnect")
 				return
 			}
 
