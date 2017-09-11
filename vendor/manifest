@@ -136,7 +136,7 @@
 			"importpath": "github.com/go-telegram-bot-api/telegram-bot-api",
 			"repository": "https://github.com/go-telegram-bot-api/telegram-bot-api",
 			"vcs": "git",
-			"revision": "89bbb1edff353a7c6d10ef10cfd2675056ad8a58",
+			"revision": "9dda67c714e5e2cba837b28a0172cca2ed54f078",
 			"branch": "master",
 			"notests": true
 		},

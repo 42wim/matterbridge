@@ -349,6 +349,7 @@ func (config AudioConfig) method() string {
 // DocumentConfig contains information about a SendDocument request.
 type DocumentConfig struct {
 	BaseFile
+	Caption string
 }
 
 // values returns a url.Values representation of DocumentConfig.
@@ -359,6 +360,9 @@ func (config DocumentConfig) values() (url.Values, error) {
 	}
 
 	v.Add(config.name(), config.FileID)
+	if config.Caption != "" {
+		v.Add("caption", config.Caption)
+	}
 
 	return v, nil
 }
@@ -366,6 +370,10 @@ func (config DocumentConfig) values() (url.Values, error) {
 // params returns a map[string]string representation of DocumentConfig.
 func (config DocumentConfig) params() (map[string]string, error) {
 	params, _ := config.BaseFile.params()
+
+	if config.Caption != "" {
+		params["caption"] = config.Caption
+	}
 
 	return params, nil
 }
@@ -443,6 +451,10 @@ func (config VideoConfig) values() (url.Values, error) {
 func (config VideoConfig) params() (map[string]string, error) {
 	params, _ := config.BaseFile.params()
 
+	if config.Caption != "" {
+		params["caption"] = config.Caption
+	}
+
 	return params, nil
 }
 
@@ -454,6 +466,57 @@ func (config VideoConfig) name() string {
 // method returns Telegram API method name for sending Video.
 func (config VideoConfig) method() string {
 	return "sendVideo"
+}
+
+// VideoNoteConfig contains information about a SendVideoNote request.
+type VideoNoteConfig struct {
+	BaseFile
+	Duration int
+	Length   int
+}
+
+// values returns a url.Values representation of VideoNoteConfig.
+func (config VideoNoteConfig) values() (url.Values, error) {
+	v, err := config.BaseChat.values()
+	if err != nil {
+		return v, err
+	}
+
+	v.Add(config.name(), config.FileID)
+	if config.Duration != 0 {
+		v.Add("duration", strconv.Itoa(config.Duration))
+	}
+
+	// Telegram API seems to have a bug, if no length is provided or it is 0, it will send an error response
+	if config.Length != 0 {
+		v.Add("length", strconv.Itoa(config.Length))
+	}
+
+	return v, nil
+}
+
+// params returns a map[string]string representation of VideoNoteConfig.
+func (config VideoNoteConfig) params() (map[string]string, error) {
+	params, _ := config.BaseFile.params()
+
+	if config.Length != 0 {
+		params["length"] = strconv.Itoa(config.Length)
+	}
+	if config.Duration != 0 {
+		params["duration"] = strconv.Itoa(config.Duration)
+	}
+
+	return params, nil
+}
+
+// name returns the field name for the VideoNote.
+func (config VideoNoteConfig) name() string {
+	return "video_note"
+}
+
+// method returns Telegram API method name for sending VideoNote.
+func (config VideoNoteConfig) method() string {
+	return "sendVideoNote"
 }
 
 // VoiceConfig contains information about a SendVoice request.
@@ -474,6 +537,9 @@ func (config VoiceConfig) values() (url.Values, error) {
 	if config.Duration != 0 {
 		v.Add("duration", strconv.Itoa(config.Duration))
 	}
+	if config.Caption != "" {
+		v.Add("caption", config.Caption)
+	}
 
 	return v, nil
 }
@@ -484,6 +550,9 @@ func (config VoiceConfig) params() (map[string]string, error) {
 
 	if config.Duration != 0 {
 		params["duration"] = strconv.Itoa(config.Duration)
+	}
+	if config.Caption != "" {
+		params["caption"] = config.Caption
 	}
 
 	return params, nil
@@ -814,7 +883,37 @@ type CallbackConfig struct {
 type ChatMemberConfig struct {
 	ChatID             int64
 	SuperGroupUsername string
+	ChannelUsername    string
 	UserID             int
+}
+
+// KickChatMemberConfig contains extra fields to kick user
+type KickChatMemberConfig struct {
+	ChatMemberConfig
+	UntilDate int64
+}
+
+// RestrictChatMemberConfig contains fields to restrict members of chat
+type RestrictChatMemberConfig struct {
+	ChatMemberConfig
+	UntilDate             int64
+	CanSendMessages       *bool
+	CanSendMediaMessages  *bool
+	CanSendOtherMessages  *bool
+	CanAddWebPagePreviews *bool
+}
+
+// PromoteChatMemberConfig contains fields to promote members of chat
+type PromoteChatMemberConfig struct {
+	ChatMemberConfig
+	CanChangeInfo      *bool
+	CanPostMessages    *bool
+	CanEditMessages    *bool
+	CanDeleteMessages  *bool
+	CanInviteUsers     *bool
+	CanRestrictMembers *bool
+	CanPinMessages     *bool
+	CanPromoteMembers  *bool
 }
 
 // ChatConfig contains information about getting information on a chat.
@@ -829,4 +928,148 @@ type ChatConfigWithUser struct {
 	ChatID             int64
 	SuperGroupUsername string
 	UserID             int
+}
+
+// InvoiceConfig contains information for sendInvoice request.
+type InvoiceConfig struct {
+	BaseChat
+	Title               string          // required
+	Description         string          // required
+	Payload             string          // required
+	ProviderToken       string          // required
+	StartParameter      string          // required
+	Currency            string          // required
+	Prices              *[]LabeledPrice // required
+	PhotoURL            string
+	PhotoSize           int
+	PhotoWidth          int
+	PhotoHeight         int
+	NeedName            bool
+	NeedPhoneNumber     bool
+	NeedEmail           bool
+	NeedShippingAddress bool
+	IsFlexible          bool
+}
+
+func (config InvoiceConfig) values() (url.Values, error) {
+	v, err := config.BaseChat.values()
+	if err != nil {
+		return v, err
+	}
+	v.Add("title", config.Title)
+	v.Add("description", config.Description)
+	v.Add("payload", config.Payload)
+	v.Add("provider_token", config.ProviderToken)
+	v.Add("start_parameter", config.StartParameter)
+	v.Add("currency", config.Currency)
+	data, err := json.Marshal(config.Prices)
+	if err != nil {
+		return v, err
+	}
+	v.Add("prices", string(data))
+	if config.PhotoURL != "" {
+		v.Add("photo_url", config.PhotoURL)
+	}
+	if config.PhotoSize != 0 {
+		v.Add("photo_size", strconv.Itoa(config.PhotoSize))
+	}
+	if config.PhotoWidth != 0 {
+		v.Add("photo_width", strconv.Itoa(config.PhotoWidth))
+	}
+	if config.PhotoHeight != 0 {
+		v.Add("photo_height", strconv.Itoa(config.PhotoHeight))
+	}
+	if config.NeedName != false {
+		v.Add("need_name", strconv.FormatBool(config.NeedName))
+	}
+	if config.NeedPhoneNumber != false {
+		v.Add("need_phone_number", strconv.FormatBool(config.NeedPhoneNumber))
+	}
+	if config.NeedEmail != false {
+		v.Add("need_email", strconv.FormatBool(config.NeedEmail))
+	}
+	if config.NeedShippingAddress != false {
+		v.Add("need_shipping_address", strconv.FormatBool(config.NeedShippingAddress))
+	}
+	if config.IsFlexible != false {
+		v.Add("is_flexible", strconv.FormatBool(config.IsFlexible))
+	}
+
+	return v, nil
+}
+
+func (config InvoiceConfig) method() string {
+	return "sendInvoice"
+}
+
+// ShippingConfig contains information for answerShippingQuery request.
+type ShippingConfig struct {
+	ShippingQueryID string // required
+	OK              bool   // required
+	ShippingOptions *[]ShippingOption
+	ErrorMessage    string
+}
+
+// PreCheckoutConfig conatins information for answerPreCheckoutQuery request.
+type PreCheckoutConfig struct {
+	PreCheckoutQueryID string // required
+	OK                 bool   // required
+	ErrorMessage       string
+}
+
+// DeleteMessageConfig contains information of a message in a chat to delete.
+type DeleteMessageConfig struct {
+	ChatID    int64
+	MessageID int
+}
+
+func (config DeleteMessageConfig) method() string {
+	return "deleteMessage"
+}
+
+func (config DeleteMessageConfig) values() (url.Values, error) {
+	v := url.Values{}
+
+	v.Add("chat_id", strconv.FormatInt(config.ChatID, 10))
+	v.Add("message_id", strconv.Itoa(config.MessageID))
+
+	return v, nil
+}
+
+// PinChatMessageConfig contains information of a message in a chat to pin.
+type PinChatMessageConfig struct {
+	ChatID int64
+	MessageID int
+	DisableNotification bool
+}
+
+func (config PinChatMessageConfig) method() string {
+	return "pinChatMessage"
+}
+
+func (config PinChatMessageConfig) values() (url.Values, error) {
+	v := url.Values{}
+
+	v.Add("chat_id", strconv.FormatInt(config.ChatID, 10))
+	v.Add("message_id", strconv.Itoa(config.MessageID))
+	v.Add("disable_notification", strconv.FormatBool(config.DisableNotification))
+
+	return v, nil
+}
+
+// UnpinChatMessageConfig contains information of chat to unpin.
+type UnpinChatMessageConfig struct {
+	ChatID int64
+}
+
+func (config UnpinChatMessageConfig) method() string {
+	return "unpinChatMessage"
+}
+
+func (config UnpinChatMessageConfig) values() (url.Values, error) {
+	v := url.Values{}
+
+	v.Add("chat_id", strconv.FormatInt(config.ChatID, 10))
+
+	return v, nil
 }

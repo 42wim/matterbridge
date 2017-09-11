@@ -35,6 +35,8 @@ type Update struct {
 	InlineQuery        *InlineQuery        `json:"inline_query"`
 	ChosenInlineResult *ChosenInlineResult `json:"chosen_inline_result"`
 	CallbackQuery      *CallbackQuery      `json:"callback_query"`
+	ShippingQuery      *ShippingQuery      `json:"shipping_query"`
+	PreCheckoutQuery   *PreCheckoutQuery   `json:"pre_checkout_query"`
 }
 
 // UpdatesChannel is the channel for getting updates.
@@ -49,10 +51,11 @@ func (ch UpdatesChannel) Clear() {
 
 // User is a user on Telegram.
 type User struct {
-	ID        int    `json:"id"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"` // optional
-	UserName  string `json:"username"`  // optional
+	ID           int    `json:"id"`
+	FirstName    string `json:"first_name"`
+	LastName     string `json:"last_name"`     // optional
+	UserName     string `json:"username"`      // optional
+	LanguageCode string `json:"language_code"` // optional
 }
 
 // String displays a simple text version of a user.
@@ -78,15 +81,24 @@ type GroupChat struct {
 	Title string `json:"title"`
 }
 
+// ChatPhoto represents a chat photo.
+type ChatPhoto struct {
+	SmallFileID string `json:"small_file_id"`
+	BigFileID   string `json:"big_file_id"`
+}
+
 // Chat contains information about the place a message was sent.
 type Chat struct {
-	ID                  int64  `json:"id"`
-	Type                string `json:"type"`
-	Title               string `json:"title"`                          // optional
-	UserName            string `json:"username"`                       // optional
-	FirstName           string `json:"first_name"`                     // optional
-	LastName            string `json:"last_name"`                      // optional
-	AllMembersAreAdmins bool   `json:"all_members_are_administrators"` // optional
+	ID                  int64      `json:"id"`
+	Type                string     `json:"type"`
+	Title               string     `json:"title"`                          // optional
+	UserName            string     `json:"username"`                       // optional
+	FirstName           string     `json:"first_name"`                     // optional
+	LastName            string     `json:"last_name"`                      // optional
+	AllMembersAreAdmins bool       `json:"all_members_are_administrators"` // optional
+	Photo               *ChatPhoto `json:"photo"`
+	Description         string     `json:"description,omitempty"` // optional
+	InviteLink          string     `json:"invite_link,omitempty"` // optional
 }
 
 // IsPrivate returns if the Chat is a private conversation.
@@ -117,40 +129,43 @@ func (c Chat) ChatConfig() ChatConfig {
 // Message is returned by almost every request, and contains data about
 // almost anything.
 type Message struct {
-	MessageID             int              `json:"message_id"`
-	From                  *User            `json:"from"` // optional
-	Date                  int              `json:"date"`
-	Chat                  *Chat            `json:"chat"`
-	ForwardFrom           *User            `json:"forward_from"`            // optional
-	ForwardFromChat       *Chat            `json:"forward_from_chat"`       // optional
-	ForwardFromMessageID  int              `json:"forward_from_message_id"` // optional
-	ForwardDate           int              `json:"forward_date"`            // optional
-	ReplyToMessage        *Message         `json:"reply_to_message"`        // optional
-	EditDate              int              `json:"edit_date"`               // optional
-	Text                  string           `json:"text"`                    // optional
-	Entities              *[]MessageEntity `json:"entities"`                // optional
-	Audio                 *Audio           `json:"audio"`                   // optional
-	Document              *Document        `json:"document"`                // optional
-	Game                  *Game            `json:"game"`                    // optional
-	Photo                 *[]PhotoSize     `json:"photo"`                   // optional
-	Sticker               *Sticker         `json:"sticker"`                 // optional
-	Video                 *Video           `json:"video"`                   // optional
-	Voice                 *Voice           `json:"voice"`                   // optional
-	Caption               string           `json:"caption"`                 // optional
-	Contact               *Contact         `json:"contact"`                 // optional
-	Location              *Location        `json:"location"`                // optional
-	Venue                 *Venue           `json:"venue"`                   // optional
-	NewChatMember         *User            `json:"new_chat_member"`         // optional
-	LeftChatMember        *User            `json:"left_chat_member"`        // optional
-	NewChatTitle          string           `json:"new_chat_title"`          // optional
-	NewChatPhoto          *[]PhotoSize     `json:"new_chat_photo"`          // optional
-	DeleteChatPhoto       bool             `json:"delete_chat_photo"`       // optional
-	GroupChatCreated      bool             `json:"group_chat_created"`      // optional
-	SuperGroupChatCreated bool             `json:"supergroup_chat_created"` // optional
-	ChannelChatCreated    bool             `json:"channel_chat_created"`    // optional
-	MigrateToChatID       int64            `json:"migrate_to_chat_id"`      // optional
-	MigrateFromChatID     int64            `json:"migrate_from_chat_id"`    // optional
-	PinnedMessage         *Message         `json:"pinned_message"`          // optional
+	MessageID             int                `json:"message_id"`
+	From                  *User              `json:"from"` // optional
+	Date                  int                `json:"date"`
+	Chat                  *Chat              `json:"chat"`
+	ForwardFrom           *User              `json:"forward_from"`            // optional
+	ForwardFromChat       *Chat              `json:"forward_from_chat"`       // optional
+	ForwardFromMessageID  int                `json:"forward_from_message_id"` // optional
+	ForwardDate           int                `json:"forward_date"`            // optional
+	ReplyToMessage        *Message           `json:"reply_to_message"`        // optional
+	EditDate              int                `json:"edit_date"`               // optional
+	Text                  string             `json:"text"`                    // optional
+	Entities              *[]MessageEntity   `json:"entities"`                // optional
+	Audio                 *Audio             `json:"audio"`                   // optional
+	Document              *Document          `json:"document"`                // optional
+	Game                  *Game              `json:"game"`                    // optional
+	Photo                 *[]PhotoSize       `json:"photo"`                   // optional
+	Sticker               *Sticker           `json:"sticker"`                 // optional
+	Video                 *Video             `json:"video"`                   // optional
+	VideoNote             *VideoNote         `json:"video_note"`              // optional
+	Voice                 *Voice             `json:"voice"`                   // optional
+	Caption               string             `json:"caption"`                 // optional
+	Contact               *Contact           `json:"contact"`                 // optional
+	Location              *Location          `json:"location"`                // optional
+	Venue                 *Venue             `json:"venue"`                   // optional
+	NewChatMembers        *[]User            `json:"new_chat_members"`        // optional
+	LeftChatMember        *User              `json:"left_chat_member"`        // optional
+	NewChatTitle          string             `json:"new_chat_title"`          // optional
+	NewChatPhoto          *[]PhotoSize       `json:"new_chat_photo"`          // optional
+	DeleteChatPhoto       bool               `json:"delete_chat_photo"`       // optional
+	GroupChatCreated      bool               `json:"group_chat_created"`      // optional
+	SuperGroupChatCreated bool               `json:"supergroup_chat_created"` // optional
+	ChannelChatCreated    bool               `json:"channel_chat_created"`    // optional
+	MigrateToChatID       int64              `json:"migrate_to_chat_id"`      // optional
+	MigrateFromChatID     int64              `json:"migrate_from_chat_id"`    // optional
+	PinnedMessage         *Message           `json:"pinned_message"`          // optional
+	Invoice               *Invoice           `json:"invoice"`                 // optional
+	SuccessfulPayment     *SuccessfulPayment `json:"successful_payment"`      // optional
 }
 
 // Time converts the message timestamp into a Time.
@@ -263,6 +278,15 @@ type Video struct {
 	FileSize  int        `json:"file_size"` // optional
 }
 
+// VideoNote contains information about a video.
+type VideoNote struct {
+	FileID    string     `json:"file_id"`
+	Length    int        `json:"length"`
+	Duration  int        `json:"duration"`
+	Thumbnail *PhotoSize `json:"thumb"`     // optional
+	FileSize  int        `json:"file_size"` // optional
+}
+
 // Voice contains information about a voice.
 type Voice struct {
 	FileID   string `json:"file_id"`
@@ -361,6 +385,7 @@ type InlineKeyboardButton struct {
 	SwitchInlineQuery            *string       `json:"switch_inline_query,omitempty"`              // optional
 	SwitchInlineQueryCurrentChat *string       `json:"switch_inline_query_current_chat,omitempty"` // optional
 	CallbackGame                 *CallbackGame `json:"callback_game,omitempty"`                    // optional
+	Pay                          bool          `json:"pay,omitempty"`			       // optional
 }
 
 // CallbackQuery is data sent when a keyboard button with callback data
@@ -384,8 +409,22 @@ type ForceReply struct {
 
 // ChatMember is information about a member in a chat.
 type ChatMember struct {
-	User   *User  `json:"user"`
-	Status string `json:"status"`
+	User                  *User  `json:"user"`
+	Status                string `json:"status"`
+	UntilDate             int64  `json:"until_date,omitempty"`                // optional
+	CanBeEdited           bool   `json:"can_be_edited,omitempty"`             // optional
+	CanChangeInfo         bool   `json:"can_change_info,omitempty"`           // optional
+	CanPostMessages       bool   `json:"can_post_messages,omitempty"`         // optional
+	CanEditMessages       bool   `json:"can_edit_messages,omitempty"`         // optional
+	CanDeleteMessages     bool   `json:"can_delete_messages,omitempty"`       // optional
+	CanInviteUsers        bool   `json:"can_invite_users,omitempty"`          // optional
+	CanRestrictMembers    bool   `json:"can_restrict_members,omitempty"`      // optional
+	CanPinMessages        bool   `json:"can_pin_messages,omitempty"`          // optional
+	CanPromoteMembers     bool   `json:"can_promote_members,omitempty"`       // optional
+	CanSendMessages       bool   `json:"can_send_messages,omitempty"`         // optional
+	CanSendMediaMessages  bool   `json:"can_send_media_messages,omitempty"`   // optional
+	CanSendOtherMessages  bool   `json:"can_send_other_messages,omitempty"`   // optional
+	CanAddWebPagePreviews bool   `json:"can_add_web_page_previews,omitempty"` // optional
 }
 
 // IsCreator returns if the ChatMember was the creator of the chat.
@@ -493,6 +532,7 @@ type InlineQueryResultGIF struct {
 	URL                 string                `json:"gif_url"` // required
 	Width               int                   `json:"gif_width"`
 	Height              int                   `json:"gif_height"`
+	Duration            int                   `json:"gif_duration"`
 	ThumbURL            string                `json:"thumb_url"`
 	Title               string                `json:"title"`
 	Caption             string                `json:"caption"`
@@ -507,6 +547,7 @@ type InlineQueryResultMPEG4GIF struct {
 	URL                 string                `json:"mpeg4_url"` // required
 	Width               int                   `json:"mpeg4_width"`
 	Height              int                   `json:"mpeg4_height"`
+	Duration            int                   `json:"mpeg4_duration"`
 	ThumbURL            string                `json:"thumb_url"`
 	Title               string                `json:"title"`
 	Caption             string                `json:"caption"`
@@ -634,4 +675,74 @@ type InputContactMessageContent struct {
 	PhoneNumber string `json:"phone_number"`
 	FirstName   string `json:"first_name"`
 	LastName    string `json:"last_name"`
+}
+
+// Invoice contains basic information about an invoice.
+type Invoice struct {
+	Title          string `json:"title"`
+	Description    string `json:"description"`
+	StartParameter string `json:"start_parameter"`
+	Currency       string `json:"currency"`
+	TotalAmount    int    `json:"total_amount"`
+}
+
+// LabeledPrice represents a portion of the price for goods or services.
+type LabeledPrice struct {
+	Label  string `json:"label"`
+	Amount int    `json:"amount"`
+}
+
+// ShippingAddress represents a shipping address.
+type ShippingAddress struct {
+	CountryCode string `json:"country_code"`
+	State       string `json:"state"`
+	City        string `json:"city"`
+	StreetLine1 string `json:"street_line1"`
+	StreetLine2 string `json:"street_line2"`
+	PostCode    string `json:"post_code"`
+}
+
+// OrderInfo represents information about an order.
+type OrderInfo struct {
+	Name            string           `json:"name,omitempty"`
+	PhoneNumber     string           `json:"phone_number,omitempty"`
+	Email           string           `json:"email,omitempty"`
+	ShippingAddress *ShippingAddress `json:"shipping_address,omitempty"`
+}
+
+// ShippingOption represents one shipping option.
+type ShippingOption struct {
+	ID     string          `json:"id"`
+	Title  string          `json:"title"`
+	Prices *[]LabeledPrice `json:"prices"`
+}
+
+// SuccessfulPayment contains basic information about a successful payment.
+type SuccessfulPayment struct {
+	Currency                string     `json:"currency"`
+	TotalAmount             int        `json:"total_amount"`
+	InvoicePayload          string     `json:"invoice_payload"`
+	ShippingOptionID        string     `json:"shipping_option_id,omitempty"`
+	OrderInfo               *OrderInfo `json:"order_info,omitempty"`
+	TelegramPaymentChargeID string     `json:"telegram_payment_charge_id"`
+	ProviderPaymentChargeID string     `json:"provider_payment_charge_id"`
+}
+
+// ShippingQuery contains information about an incoming shipping query.
+type ShippingQuery struct {
+	ID              string           `json:"id"`
+	From            *User            `json:"from"`
+	InvoicePayload  string           `json:"invoice_payload"`
+	ShippingAddress *ShippingAddress `json:"shipping_address"`
+}
+
+// PreCheckoutQuery contains information about an incoming pre-checkout query.
+type PreCheckoutQuery struct {
+	ID               string     `json:"id"`
+	From             *User      `json:"from"`
+	Currency         string     `json:"currency"`
+	TotalAmount      int        `json:"total_amount"`
+	InvoicePayload   string     `json:"invoice_payload"`
+	ShippingOptionID string     `json:"shipping_option_id,omitempty"`
+	OrderInfo        *OrderInfo `json:"order_info,omitempty"`
 }

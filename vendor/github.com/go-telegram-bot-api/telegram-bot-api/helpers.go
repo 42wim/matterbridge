@@ -194,6 +194,37 @@ func NewVideoShare(chatID int64, fileID string) VideoConfig {
 	}
 }
 
+// NewVideoNoteUpload creates a new video note uploader.
+//
+// chatID is where to send it, file is a string path to the file,
+// FileReader, or FileBytes.
+func NewVideoNoteUpload(chatID int64, length int, file interface{}) VideoNoteConfig {
+	return VideoNoteConfig{
+		BaseFile: BaseFile{
+			BaseChat:    BaseChat{ChatID: chatID},
+			File:        file,
+			UseExisting: false,
+		},
+		Length: length,
+	}
+}
+
+// NewVideoNoteShare shares an existing video.
+// You may use this to reshare an existing video without reuploading it.
+//
+// chatID is where to send it, fileID is the ID of the video
+// already uploaded.
+func NewVideoNoteShare(chatID int64, length int, fileID string) VideoNoteConfig {
+	return VideoNoteConfig{
+		BaseFile: BaseFile{
+			BaseChat:    BaseChat{ChatID: chatID},
+			FileID:      fileID,
+			UseExisting: true,
+		},
+		Length: length,
+	}
+}
+
 // NewVoiceUpload creates a new voice uploader.
 //
 // chatID is where to send it, file is a string path to the file,
@@ -608,4 +639,17 @@ func NewCallbackWithAlert(id, text string) CallbackConfig {
 		Text:            text,
 		ShowAlert:       true,
 	}
+}
+
+// NewInvoice created a new Invoice request to the user.
+func NewInvoice(chatID int64, title, description, payload, providerToken, startParameter, currency string, prices *[]LabeledPrice) InvoiceConfig {
+	return InvoiceConfig{
+		BaseChat:       BaseChat{ChatID: chatID},
+		Title:          title,
+		Description:    description,
+		Payload:        payload,
+		ProviderToken:  providerToken,
+		StartParameter: startParameter,
+		Currency:       currency,
+		Prices:         prices}
 }
