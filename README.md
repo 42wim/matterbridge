@@ -29,9 +29,10 @@ Has a REST API.
 # Features
 * Relays public channel messages between multiple mattermost, IRC, XMPP, Gitter, Slack, Discord, Telegram, Rocket.Chat, Hipchat (via xmpp), Matrix and Steam. 
   Pick and mix.
-* Matterbridge can also work with private groups on your mattermost/slack.
+* Support private groups on your mattermost/slack.
 * Allow for bridging the same bridges, which means you can eg bridge between multiple mattermosts.
 * The bridge is now a gateway which has support multiple in and out bridges. (and supports multiple gateways).
+* Edits and delete messages across bridges that support it (mattermost,slack,discord,gitter,telegram)
 * REST API to read/post messages to bridges (WIP).
 
 # Requirements
