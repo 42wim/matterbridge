@@ -68,6 +68,18 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 		msg.Text = makeHTML(msg.Text)
 	}
 
+	if msg.Event == config.EVENT_MSG_DELETE {
+		if msg.ID == "" {
+			return "", nil
+		}
+		msgid, err := strconv.Atoi(msg.ID)
+		if err != nil {
+			return "", err
+		}
+		_, err = b.c.DeleteMessage(tgbotapi.DeleteMessageConfig{ChatID: chatid, MessageID: msgid})
+		return "", err
+	}
+
 	// edit the message if we have a msg ID
 	if msg.ID != "" {
 		msgid, err := strconv.Atoi(msg.ID)
