@@ -1,3 +1,17 @@
+# v1.2.0
+## Breaking changes
+* If you're running a discord bridge, update to this release before 16 october otherwise
+it will stop working. (see https://discordapp.com/developers/docs/reference)
+
+## New features
+* general: Add delete support. (actually delete the messages on bridges that support it)
+    (mattermost,discord,gitter,slack,telegram)
+
+## Bugfix
+* Do not break messages on newline (slack). Closes #258 
+* Update telegram library
+* Update discord library (supports v6 API now). Old API is deprecated on 16 October
+
 # v1.1.2
 ## New features
 * general: also build darwin binaries
