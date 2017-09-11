@@ -76,6 +76,10 @@ func (b *Bmatrix) JoinChannel(channel config.ChannelInfo) error {
 
 func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	flog.Debugf("Receiving %#v", msg)
+	// ignore delete messages
+	if msg.Event == config.EVENT_MSG_DELETE {
+		return "", nil
+	}
 	channel := b.getRoomID(msg.Channel)
 	flog.Debugf("Sending to channel %s", channel)
 	if msg.Event == config.EVENT_USER_ACTION {

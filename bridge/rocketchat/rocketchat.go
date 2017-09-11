@@ -58,6 +58,10 @@ func (b *Brocketchat) JoinChannel(channel config.ChannelInfo) error {
 }
 
 func (b *Brocketchat) Send(msg config.Message) (string, error) {
+	// ignore delete messages
+	if msg.Event == config.EVENT_MSG_DELETE {
+		return "", nil
+	}
 	flog.Debugf("Receiving %#v", msg)
 	matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL}
 	matterMessage.Channel = msg.Channel

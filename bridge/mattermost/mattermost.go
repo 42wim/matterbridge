@@ -25,6 +25,7 @@ type MMMessage struct {
 	Username string
 	UserID   string
 	ID       string
+	Event    string
 }
 
 type Bmattermost struct {
@@ -168,6 +169,12 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 		}
 		return "", nil
 	}
+	if msg.Event == config.EVENT_MSG_DELETE {
+		if msg.ID == "" {
+			return "", nil
+		}
+		return msg.ID, b.mc.DeleteMessage(msg.ID)
+	}
 	if msg.ID != "" {
 		return b.mc.EditMessage(msg.ID, message)
 	}
@@ -188,7 +195,7 @@ func (b *Bmattermost) handleMatter() {
 		go b.handleMatterClient(mchan)
 	}
 	for message := range mchan {
-		rmsg := config.Message{Username: message.Username, Channel: message.Channel, Account: b.Account, UserID: message.UserID, ID: message.ID}
+		rmsg := config.Message{Username: message.Username, Channel: message.Channel, Account: b.Account, UserID: message.UserID, ID: message.ID, Event: message.Event}
 		text, ok := b.replaceAction(message.Text)
 		if ok {
 			rmsg.Event = config.EVENT_USER_ACTION
@@ -215,7 +222,7 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 		}
 		// do not post our own messages back to irc
 		// only listen to message from our team
-		if (message.Raw.Event == "posted" || message.Raw.Event == "post_edited") &&
+		if (message.Raw.Event == "posted" || message.Raw.Event == "post_edited" || message.Raw.Event == "post_deleted") &&
 			b.mc.User.Username != message.Username && message.Raw.Data["team_id"].(string) == b.TeamId {
 			// if the message has reactions don't repost it (for now, until we can correlate reaction with message)
 			if message.Post.HasReactions {
@@ -230,6 +237,9 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 			m.ID = message.Post.Id
 			if message.Raw.Event == "post_edited" && !b.Config.EditDisable {
 				m.Text = message.Text + b.Config.EditSuffix
+			}
+			if message.Raw.Event == "post_deleted" {
+				m.Event = config.EVENT_MSG_DELETE
 			}
 			if len(message.Post.FileIds) > 0 {
 				for _, link := range b.mc.GetFileLinks(message.Post.FileIds) {

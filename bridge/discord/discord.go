@@ -66,6 +66,7 @@ func (b *bdiscord) Connect() error {
 	b.c.AddHandler(b.messageCreate)
 	b.c.AddHandler(b.memberUpdate)
 	b.c.AddHandler(b.messageUpdate)
+	b.c.AddHandler(b.messageDelete)
 	err = b.c.Open()
 	if err != nil {
 		flog.Debugf("%#v", err)
@@ -129,6 +130,13 @@ func (b *bdiscord) Send(msg config.Message) (string, error) {
 
 	if wID == "" {
 		flog.Debugf("Broadcasting using token (API)")
+		if msg.Event == config.EVENT_MSG_DELETE {
+			if msg.ID == "" {
+				return "", nil
+			}
+			err := b.c.ChannelMessageDelete(channelID, msg.ID)
+			return "", err
+		}
 		if msg.ID != "" {
 			_, err := b.c.ChannelMessageEdit(channelID, msg.ID, msg.Username+msg.Text)
 			return msg.ID, err
@@ -150,6 +158,17 @@ func (b *bdiscord) Send(msg config.Message) (string, error) {
 			AvatarURL: msg.Avatar,
 		})
 	return "", err
+}
+
+func (b *bdiscord) messageDelete(s *discordgo.Session, m *discordgo.MessageDelete) {
+	rmsg := config.Message{Account: b.Account, ID: m.ID, Event: config.EVENT_MSG_DELETE, Text: config.EVENT_MSG_DELETE}
+	rmsg.Channel = b.getChannelName(m.ChannelID)
+	if b.UseChannelID {
+		rmsg.Channel = "ID:" + m.ChannelID
+	}
+	flog.Debugf("Sending message from %s to gateway", b.Account)
+	flog.Debugf("Message is %#v", rmsg)
+	b.Remote <- rmsg
 }
 
 func (b *bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdate) {
@@ -223,6 +242,7 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 
 	rmsg.Text = text
 	flog.Debugf("Sending message from %s on %s to gateway", m.Author.Username, b.Account)
+	flog.Debugf("Message is %#v", rmsg)
 	b.Remote <- rmsg
 }
 

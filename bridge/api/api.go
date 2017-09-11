@@ -69,6 +69,10 @@ func (b *Api) JoinChannel(channel config.ChannelInfo) error {
 func (b *Api) Send(msg config.Message) (string, error) {
 	b.Lock()
 	defer b.Unlock()
+	// ignore delete messages
+	if msg.Event == config.EVENT_MSG_DELETE {
+		return "", nil
+	}
 	b.Messages.Enqueue(&msg)
 	return "", nil
 }

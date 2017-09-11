@@ -106,6 +106,17 @@ func (b *Bgitter) Send(msg config.Message) (string, error) {
 		flog.Errorf("Could not find roomID for %v", msg.Channel)
 		return "", nil
 	}
+	if msg.Event == config.EVENT_MSG_DELETE {
+		if msg.ID == "" {
+			return "", nil
+		}
+		// gitter has no delete message api
+		_, err := b.c.UpdateMessage(roomID, msg.ID, "")
+		if err != nil {
+			return "", err
+		}
+		return "", nil
+	}
 	if msg.ID != "" {
 		flog.Debugf("updating message with id %s", msg.ID)
 		_, err := b.c.UpdateMessage(roomID, msg.ID, msg.Username+msg.Text)

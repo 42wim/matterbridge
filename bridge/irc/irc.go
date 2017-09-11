@@ -129,6 +129,10 @@ func (b *Birc) JoinChannel(channel config.ChannelInfo) error {
 }
 
 func (b *Birc) Send(msg config.Message) (string, error) {
+	// ignore delete messages
+	if msg.Event == config.EVENT_MSG_DELETE {
+		return "", nil
+	}
 	flog.Debugf("Receiving %#v", msg)
 	if strings.HasPrefix(msg.Text, "!") {
 		b.Command(&msg)

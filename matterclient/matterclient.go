@@ -299,7 +299,7 @@ func (m *MMClient) WsReceiver() {
 
 func (m *MMClient) parseMessage(rmsg *Message) {
 	switch rmsg.Raw.Event {
-	case model.WEBSOCKET_EVENT_POSTED, model.WEBSOCKET_EVENT_POST_EDITED:
+	case model.WEBSOCKET_EVENT_POSTED, model.WEBSOCKET_EVENT_POST_EDITED, model.WEBSOCKET_EVENT_POST_DELETED:
 		m.parseActionPost(rmsg)
 		/*
 			case model.ACTION_USER_REMOVED:
@@ -474,6 +474,14 @@ func (m *MMClient) EditMessage(postId string, text string) (string, error) {
 		return "", resp.Error
 	}
 	return res.Id, nil
+}
+
+func (m *MMClient) DeleteMessage(postId string) error {
+	_, resp := m.Client.DeletePost(postId)
+	if resp.Error != nil {
+		return resp.Error
+	}
+	return nil
 }
 
 func (m *MMClient) JoinChannel(channelId string) error {

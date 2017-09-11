@@ -166,6 +166,16 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	// replace mentions
 	np.LinkNames = 1
 
+	if msg.Event == config.EVENT_MSG_DELETE {
+		// some protocols echo deletes, but with empty ID
+		if msg.ID == "" {
+			return "", nil
+		}
+		// we get a "slack <ID>", split it
+		ts := strings.Fields(msg.ID)
+		b.sc.DeleteMessage(schannel.ID, ts[1])
+		return "", nil
+	}
 	// if we have no ID it means we're creating a new message, not updating an existing one
 	if msg.ID != "" {
 		ts := strings.Fields(msg.ID)
@@ -231,7 +241,7 @@ func (b *Bslack) handleSlack() {
 		if b.Config.WebhookURL == "" && b.Config.WebhookBindAddress == "" && message.Username == b.si.User.Name {
 			continue
 		}
-		if message.Text == "" || message.Username == "" {
+		if (message.Text == "" || message.Username == "") && message.Raw.SubType != "message_deleted" {
 			continue
 		}
 		text := message.Text
@@ -250,6 +260,12 @@ func (b *Bslack) handleSlack() {
 		if message.Raw.SubMessage != nil {
 			msg.ID = "slack " + message.Raw.SubMessage.Timestamp
 		}
+		if message.Raw.SubType == "message_deleted" {
+			msg.Text = config.EVENT_MSG_DELETE
+			msg.Event = config.EVENT_MSG_DELETE
+			msg.ID = "slack " + message.Raw.DeletedTimestamp
+		}
+		flog.Debugf("Message is %#v", msg)
 		b.Remote <- msg
 	}
 }
@@ -276,7 +292,7 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 				continue
 			}
 			m := &MMMessage{}
-			if ev.BotID == "" {
+			if ev.BotID == "" && ev.SubType != "message_deleted" {
 				user, err := b.rtm.GetUserInfo(ev.User)
 				if err != nil {
 					continue
