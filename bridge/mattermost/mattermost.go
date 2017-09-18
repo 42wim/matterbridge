@@ -220,6 +220,12 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 		if (message.Raw.Event == "post_edited") && b.Config.EditDisable {
 			continue
 		}
+		props := message.Post.Props
+		if props != nil {
+			if _, ok := props["override_username"].(string); ok {
+				message.Username = props["override_username"].(string)
+			}
+		}
 		// do not post our own messages back to irc
 		// only listen to message from our team
 		if (message.Raw.Event == "posted" || message.Raw.Event == "post_edited" || message.Raw.Event == "post_deleted") &&
