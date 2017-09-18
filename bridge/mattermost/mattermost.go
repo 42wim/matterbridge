@@ -163,6 +163,9 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 		matterMessage.UserName = nick
 		matterMessage.Type = ""
 		matterMessage.Text = message
+		matterMessage.Text = message
+		matterMessage.Props = make(map[string]interface{})
+		matterMessage.Props["matterbridge"] = true
 		err := b.mh.Send(matterMessage)
 		if err != nil {
 			flog.Info(err)
@@ -226,6 +229,10 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 
 		props := message.Post.Props
 		if props != nil {
+			if _, ok := props["matterbridge"].(bool); ok {
+				flog.Debugf("sent by matterbridge, ignoring")
+				continue
+			}
 			if _, ok := props["override_username"].(string); ok {
 				message.Username = props["override_username"].(string)
 			}
