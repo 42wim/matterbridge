@@ -281,7 +281,7 @@ func (m *MMClient) WsReceiver() {
 			}
 			// if we have file attached but the message is empty, also send it
 			if msg.Post != nil {
-				if msg.Text != "" || len(msg.Post.FileIds) > 0 {
+				if msg.Text != "" || len(msg.Post.FileIds) > 0 || msg.Post.Type == "slack_attachment" {
 					m.MessageChan <- msg
 				}
 			}
