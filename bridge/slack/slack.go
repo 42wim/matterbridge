@@ -394,25 +394,23 @@ func (b *Bslack) replaceURL(text string) string {
 
 func (b *Bslack) createAttach(extra []interface{}) []slack.Attachment {
 	var attachs []slack.Attachment
-	if extra != nil {
-		for _, v := range extra {
-			entry := v.(map[string]interface{})
-			s := slack.Attachment{}
-			s.Fallback = entry["fallback"].(string)
-			s.Color = entry["color"].(string)
-			s.Pretext = entry["pretext"].(string)
-			s.AuthorName = entry["author_name"].(string)
-			s.AuthorLink = entry["author_link"].(string)
-			s.AuthorIcon = entry["author_icon"].(string)
-			s.Title = entry["title"].(string)
-			s.TitleLink = entry["title_link"].(string)
-			s.Text = entry["text"].(string)
-			s.ImageURL = entry["image_url"].(string)
-			s.ThumbURL = entry["thumb_url"].(string)
-			s.Footer = entry["footer"].(string)
-			s.FooterIcon = entry["footer_icon"].(string)
-			attachs = append(attachs, s)
-		}
+	for _, v := range extra {
+		entry := v.(map[string]interface{})
+		s := slack.Attachment{}
+		s.Fallback = entry["fallback"].(string)
+		s.Color = entry["color"].(string)
+		s.Pretext = entry["pretext"].(string)
+		s.AuthorName = entry["author_name"].(string)
+		s.AuthorLink = entry["author_link"].(string)
+		s.AuthorIcon = entry["author_icon"].(string)
+		s.Title = entry["title"].(string)
+		s.TitleLink = entry["title_link"].(string)
+		s.Text = entry["text"].(string)
+		s.ImageURL = entry["image_url"].(string)
+		s.ThumbURL = entry["thumb_url"].(string)
+		s.Footer = entry["footer"].(string)
+		s.FooterIcon = entry["footer_icon"].(string)
+		attachs = append(attachs, s)
 	}
 	return attachs
 }
