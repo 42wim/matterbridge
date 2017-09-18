@@ -163,6 +163,8 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 		np.IconURL = msg.Avatar
 	}
 	np.Attachments = append(np.Attachments, slack.Attachment{CallbackID: "matterbridge"})
+	np.Attachments = append(np.Attachments, b.createAttach(msg.Extra)...)
+
 	// replace mentions
 	np.LinkNames = 1
 
@@ -388,4 +390,29 @@ func (b *Bslack) replaceURL(text string) string {
 		text = strings.Replace(text, r[0], r[1], -1)
 	}
 	return text
+}
+
+func (b *Bslack) createAttach(extra []interface{}) []slack.Attachment {
+	var attachs []slack.Attachment
+	if extra != nil {
+		for _, v := range extra {
+			entry := v.(map[string]interface{})
+			s := slack.Attachment{}
+			s.Fallback = entry["fallback"].(string)
+			s.Color = entry["color"].(string)
+			s.Pretext = entry["pretext"].(string)
+			s.AuthorName = entry["author_name"].(string)
+			s.AuthorLink = entry["author_link"].(string)
+			s.AuthorIcon = entry["author_icon"].(string)
+			s.Title = entry["title"].(string)
+			s.TitleLink = entry["title_link"].(string)
+			s.Text = entry["text"].(string)
+			s.ImageURL = entry["image_url"].(string)
+			s.ThumbURL = entry["thumb_url"].(string)
+			s.Footer = entry["footer"].(string)
+			s.FooterIcon = entry["footer_icon"].(string)
+			attachs = append(attachs, s)
+		}
+	}
+	return attachs
 }

@@ -26,6 +26,7 @@ type MMMessage struct {
 	UserID   string
 	ID       string
 	Event    string
+	Extra    []interface{}
 }
 
 type Bmattermost struct {
@@ -195,7 +196,7 @@ func (b *Bmattermost) handleMatter() {
 		go b.handleMatterClient(mchan)
 	}
 	for message := range mchan {
-		rmsg := config.Message{Username: message.Username, Channel: message.Channel, Account: b.Account, UserID: message.UserID, ID: message.ID, Event: message.Event}
+		rmsg := config.Message{Username: message.Username, Channel: message.Channel, Account: b.Account, UserID: message.UserID, ID: message.ID, Event: message.Event, Extra: message.Extra}
 		text, ok := b.replaceAction(message.Text)
 		if ok {
 			rmsg.Event = config.EVENT_USER_ACTION
@@ -220,10 +221,16 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 		if (message.Raw.Event == "post_edited") && b.Config.EditDisable {
 			continue
 		}
+
+		m := &MMMessage{}
+
 		props := message.Post.Props
 		if props != nil {
 			if _, ok := props["override_username"].(string); ok {
 				message.Username = props["override_username"].(string)
+			}
+			if _, ok := props["attachments"].([]interface{}); ok {
+				m.Extra = props["attachments"].([]interface{})
 			}
 		}
 		// do not post our own messages back to irc
@@ -235,7 +242,6 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 				continue
 			}
 			flog.Debugf("Receiving from matterclient %#v", message)
-			m := &MMMessage{}
 			m.UserID = message.UserID
 			m.Username = message.Username
 			m.Channel = message.Channel

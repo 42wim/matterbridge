@@ -147,6 +147,17 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 
 func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrMsgID {
 	var brMsgIDs []*BrMsgID
+
+	// TODO refactor
+	// only slack now, check will have to be done in the different bridges.
+	// we need to check if we can't use fallback or text in other bridges
+	if msg.Extra != nil {
+		if dest.Protocol != "slack" {
+			if msg.Text == "" {
+				return brMsgIDs
+			}
+		}
+	}
 	// only relay join/part when configged
 	if msg.Event == config.EVENT_JOIN_LEAVE && !gw.Bridges[dest.Account].Config.ShowJoinPart {
 		return brMsgIDs
@@ -199,6 +210,10 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 		return true
 	}
 	if msg.Text == "" {
+		// we have an attachment
+		if msg.Extra != nil {
+			return false
+		}
 		log.Debugf("ignoring empty message %#v from %s", msg, msg.Account)
 		return true
 	}
