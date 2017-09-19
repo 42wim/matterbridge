@@ -287,6 +287,12 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 				flog.Debugf("SubMessage %#v", ev.SubMessage)
 				ev.User = ev.SubMessage.User
 				ev.Text = ev.SubMessage.Text + b.Config.EditSuffix
+
+				// it seems ev.SubMessage.Edited == nil when slack unfurls
+				// do not forward these messages #266
+				if ev.SubMessage.Edited == nil {
+					continue
+				}
 			}
 			// use our own func because rtm.GetChannelInfo doesn't work for private channels
 			channel, err := b.getChannelByID(ev.Channel)
