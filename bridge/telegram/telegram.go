@@ -160,6 +160,27 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		if message.Document != nil && b.Config.UseInsecureURL {
 			text = text + " " + message.Document.FileName + " : " + b.getFileDirectURL(message.Document.FileID)
 		}
+
+		// quote the previous message
+		if message.ReplyToMessage != nil {
+			usernameReply := ""
+			if message.ReplyToMessage.From != nil {
+				if b.Config.UseFirstName {
+					usernameReply = message.ReplyToMessage.From.FirstName
+				}
+				if usernameReply == "" {
+					usernameReply = message.ReplyToMessage.From.UserName
+					if usernameReply == "" {
+						usernameReply = message.ReplyToMessage.From.FirstName
+					}
+				}
+			}
+			if usernameReply == "" {
+				usernameReply = "unknown"
+			}
+			text = text + " (re @" + usernameReply + ":" + message.ReplyToMessage.Text + ")"
+		}
+
 		if text != "" {
 			flog.Debugf("Sending message from %s on %s to gateway", username, b.Account)
 			msg := config.Message{Username: username, Text: text, Channel: channel, Account: b.Account, UserID: strconv.Itoa(message.From.ID), ID: strconv.Itoa(message.MessageID)}
