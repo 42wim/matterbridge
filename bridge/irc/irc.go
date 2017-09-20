@@ -88,6 +88,7 @@ func (b *Birc) Connect() error {
 		i.Password = b.Config.Password
 	}
 	i.AddCallback(ircm.RPL_WELCOME, b.handleNewConnection)
+	i.AddCallback(ircm.RPL_ENDOFMOTD, b.handleOtherAuth)
 	err := i.Connect(b.Config.Server)
 	if err != nil {
 		return err
@@ -255,6 +256,13 @@ func (b *Birc) handleOther(event *irc.Event) {
 		return
 	}
 	flog.Debugf("%#v", event.Raw)
+}
+
+func (b *Birc) handleOtherAuth(event *irc.Event) {
+	if strings.EqualFold(b.Config.NickServNick, "Q@CServe.quakenet.org") {
+		flog.Debugf("Authenticating %s against %s", b.Config.NickServUsername, b.Config.NickServNick)
+		b.i.Privmsg(b.Config.NickServNick, "AUTH "+b.Config.NickServUsername+" "+b.Config.NickServPassword)
+	}
 }
 
 func (b *Birc) handlePrivMsg(event *irc.Event) {

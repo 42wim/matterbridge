@@ -55,9 +55,14 @@ Nick="matterbot"
 
 #If you registered your bot with a service like Nickserv on freenode. 
 #Also being used when UseSASL=true
+#
+#Note: if you want do to quakenet auth, set NickServNick="Q@CServe.quakenet.org"
 #OPTIONAL
 NickServNick="nickserv"
 NickServPassword="secret"
+
+#OPTIONAL only used for quakenet auth
+NickServUsername="username"
 
 #Flood control
 #Delay in milliseconds between each message send to the IRC server

@@ -58,6 +58,7 @@ type Protocol struct {
 	Nick                   string // all protocols
 	NickFormatter          string // mattermost, slack
 	NickServNick           string // IRC
+	NickServUsername       string // IRC
 	NickServPassword       string // IRC
 	NicksPerRow            int    // mattermost, slack
 	NoHomeServerSuffix     bool   // matrix
