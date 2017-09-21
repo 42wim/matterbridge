@@ -180,18 +180,23 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 		return msg.ID, b.mc.DeleteMessage(msg.ID)
 	}
 	if msg.Extra != nil {
-		for _, f := range msg.Extra["file"] {
-			fi := f.(config.FileInfo)
-			id, err := b.mc.UploadFile(*fi.Data, b.mc.GetChannelId(channel, ""), fi.Name)
-			if err != nil {
-				flog.Debugf("ERROR %#v", err)
-				return "", err
+		if len(msg.Extra["file"]) > 0 {
+			var err error
+			var res, id string
+			for _, f := range msg.Extra["file"] {
+				fi := f.(config.FileInfo)
+				id, err = b.mc.UploadFile(*fi.Data, b.mc.GetChannelId(channel, ""), fi.Name)
+				if err != nil {
+					flog.Debugf("ERROR %#v", err)
+					return "", err
+				}
+				message = "uploaded a file: " + fi.Name
+				if b.Config.PrefixMessagesWithNick {
+					message = nick + "uploaded a file: " + fi.Name
+				}
+				res, err = b.mc.PostMessageWithFiles(b.mc.GetChannelId(channel, ""), message, []string{id})
 			}
-			message = "uploaded a file: " + fi.Name
-			if b.Config.PrefixMessagesWithNick {
-				message = nick + "uploaded a file: " + fi.Name
-			}
-			return b.mc.PostMessageWithFiles(b.mc.GetChannelId(channel, ""), message, []string{id})
+			return res, err
 		}
 	}
 	if msg.ID != "" {
