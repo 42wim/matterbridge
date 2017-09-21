@@ -29,7 +29,12 @@ type Message struct {
 	Gateway   string    `json:"gateway"`
 	Timestamp time.Time `json:"timestamp"`
 	ID        string    `json:"id"`
-	Extra     []interface{}
+	Extra     map[string][]interface{}
+}
+
+type FileInfo struct {
+	Name string
+	Data *[]byte
 }
 
 type ChannelInfo struct {

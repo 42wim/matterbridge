@@ -211,7 +211,7 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 	}
 	if msg.Text == "" {
 		// we have an attachment
-		if msg.Extra != nil {
+		if msg.Extra != nil && msg.Extra["attachments"] != nil {
 			return false
 		}
 		log.Debugf("ignoring empty message %#v from %s", msg, msg.Account)

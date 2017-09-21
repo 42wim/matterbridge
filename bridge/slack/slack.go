@@ -1,6 +1,7 @@
 package bslack
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -8,6 +9,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/nlopes/slack"
 	"html"
+	"io"
+	"net/http"
 	"regexp"
 	"strings"
 	"time"
@@ -250,7 +253,7 @@ func (b *Bslack) handleSlack() {
 		text = b.replaceURL(text)
 		text = html.UnescapeString(text)
 		flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)
-		msg := config.Message{Text: text, Username: message.Username, Channel: message.Channel, Account: b.Account, Avatar: b.getAvatar(message.Username), UserID: message.UserID, ID: "slack " + message.Raw.Timestamp}
+		msg := config.Message{Text: text, Username: message.Username, Channel: message.Channel, Account: b.Account, Avatar: b.getAvatar(message.Username), UserID: message.UserID, ID: "slack " + message.Raw.Timestamp, Extra: make(map[string][]interface{})}
 		if message.Raw.SubType == "me_message" {
 			msg.Event = config.EVENT_USER_ACTION
 		}
@@ -266,6 +269,19 @@ func (b *Bslack) handleSlack() {
 			msg.Text = config.EVENT_MSG_DELETE
 			msg.Event = config.EVENT_MSG_DELETE
 			msg.ID = "slack " + message.Raw.DeletedTimestamp
+		}
+
+		// if we have a file attached, download it (in memory) and put a pointer to it in msg.Extra
+		if message.Raw.File != nil {
+			// limit to 1MB for now
+			if message.Raw.File.Size <= 1000000 {
+				data, err := b.downloadFile(message.Raw.File.URLPrivateDownload)
+				if err != nil {
+					flog.Errorf("download %s failed %#v", message.Raw.File.URLPrivateDownload, err)
+				} else {
+					msg.Extra["file"] = append(msg.Extra["file"], config.FileInfo{Name: message.Raw.File.Name, Data: data})
+				}
+			}
 		}
 		flog.Debugf("Message is %#v", msg)
 		b.Remote <- msg
@@ -398,9 +414,9 @@ func (b *Bslack) replaceURL(text string) string {
 	return text
 }
 
-func (b *Bslack) createAttach(extra []interface{}) []slack.Attachment {
+func (b *Bslack) createAttach(extra map[string][]interface{}) []slack.Attachment {
 	var attachs []slack.Attachment
-	for _, v := range extra {
+	for _, v := range extra["attachments"] {
 		entry := v.(map[string]interface{})
 		s := slack.Attachment{}
 		s.Fallback = entry["fallback"].(string)
@@ -419,4 +435,25 @@ func (b *Bslack) createAttach(extra []interface{}) []slack.Attachment {
 		attachs = append(attachs, s)
 	}
 	return attachs
+}
+
+func (b *Bslack) downloadFile(url string) (*[]byte, error) {
+	var buf bytes.Buffer
+	client := &http.Client{
+		Timeout: time.Second * 5,
+	}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Authorization", "Bearer "+b.Config.Token)
+	resp, err := client.Do(req)
+	if err != nil {
+		resp.Body.Close()
+		return nil, err
+	}
+	io.Copy(&buf, resp.Body)
+	data := buf.Bytes()
+	resp.Body.Close()
+	return &data, nil
 }

@@ -26,7 +26,7 @@ type MMMessage struct {
 	UserID   string
 	ID       string
 	Event    string
-	Extra    []interface{}
+	Extra    map[string][]interface{}
 }
 
 type Bmattermost struct {
@@ -179,6 +179,21 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 		}
 		return msg.ID, b.mc.DeleteMessage(msg.ID)
 	}
+	if msg.Extra != nil {
+		for _, f := range msg.Extra["file"] {
+			fi := f.(config.FileInfo)
+			id, err := b.mc.UploadFile(*fi.Data, b.mc.GetChannelId(channel, ""), fi.Name)
+			if err != nil {
+				flog.Debugf("ERROR %#v", err)
+				return "", err
+			}
+			message = "uploaded a file: " + fi.Name
+			if b.Config.PrefixMessagesWithNick {
+				message = nick + "uploaded a file: " + fi.Name
+			}
+			return b.mc.PostMessageWithFiles(b.mc.GetChannelId(channel, ""), message, []string{id})
+		}
+	}
 	if msg.ID != "" {
 		return b.mc.EditMessage(msg.ID, message)
 	}
@@ -225,7 +240,7 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 			continue
 		}
 
-		m := &MMMessage{}
+		m := &MMMessage{Extra: make(map[string][]interface{})}
 
 		props := message.Post.Props
 		if props != nil {
@@ -237,7 +252,7 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 				message.Username = props["override_username"].(string)
 			}
 			if _, ok := props["attachments"].([]interface{}); ok {
-				m.Extra = props["attachments"].([]interface{})
+				m.Extra["attachments"] = props["attachments"].([]interface{})
 			}
 		}
 		// do not post our own messages back to irc
