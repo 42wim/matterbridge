@@ -467,6 +467,15 @@ func (m *MMClient) PostMessage(channelId string, text string) (string, error) {
 	return res.Id, nil
 }
 
+func (m *MMClient) PostMessageWithFiles(channelId string, text string, fileIds []string) (string, error) {
+	post := &model.Post{ChannelId: channelId, Message: text, FileIds: fileIds}
+	res, resp := m.Client.CreatePost(post)
+	if resp.Error != nil {
+		return "", resp.Error
+	}
+	return res.Id, nil
+}
+
 func (m *MMClient) EditMessage(postId string, text string) (string, error) {
 	post := &model.Post{Message: text}
 	res, resp := m.Client.UpdatePost(postId, post)
@@ -778,6 +787,14 @@ func (m *MMClient) GetStatuses() map[string]string {
 
 func (m *MMClient) GetTeamId() string {
 	return m.Team.Id
+}
+
+func (m *MMClient) UploadFile(data []byte, channelId string, filename string) (string, error) {
+	f, resp := m.Client.UploadFile(data, channelId, filename)
+	if resp.Error != nil {
+		return "", resp.Error
+	}
+	return f.FileInfos[0].Id, nil
 }
 
 func (m *MMClient) StatusLoop() {
