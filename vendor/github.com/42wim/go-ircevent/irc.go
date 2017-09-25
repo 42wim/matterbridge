@@ -227,12 +227,17 @@ func (irc *Connection) isQuitting() bool {
 // Main loop to control the connection.
 func (irc *Connection) Loop() {
 	errChan := irc.ErrorChan()
+	connTime := time.Now()
 	for !irc.isQuitting() {
 		err := <-errChan
 		close(irc.end)
 		irc.Wait()
 		for !irc.isQuitting() {
 			irc.Log.Printf("Error, disconnected: %s\n", err)
+			if time.Now().Sub(connTime) < time.Second*5 {
+				irc.Log.Println("Rreconnecting too fast, sleeping 60 seconds")
+				time.Sleep(60 * time.Second)
+			}
 			if err = irc.Reconnect(); err != nil {
 				irc.Log.Printf("Error while reconnecting: %s\n", err)
 				time.Sleep(60 * time.Second)
@@ -241,6 +246,7 @@ func (irc *Connection) Loop() {
 				break
 			}
 		}
+		connTime = time.Now()
 	}
 }
 
