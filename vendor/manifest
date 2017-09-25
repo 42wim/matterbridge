@@ -13,7 +13,7 @@
 			"importpath": "github.com/42wim/go-ircevent",
 			"repository": "https://github.com/42wim/go-ircevent",
 			"vcs": "git",
-			"revision": "d3aec637ae2f2a4f9ff95df55091894d80fa3112",
+			"revision": "469ee24527988eda3f400a017cb3276104ea0803",
 			"branch": "ircv3",
 			"notests": true
 		},
