@@ -1,3 +1,17 @@
+# v1.3.0
+## New features
+* Relay slack_attachments from mattermost to slack (slack). Closes #260
+* Add support for quoting previous message when replying (telegram). #237
+* Add support for Quakenet auth (irc). Closes #263
+* Download files (max size 1MB) from slack and reupload to mattermost (slack/mattermost). Closes #255
+
+## Enhancements
+* Backoff for 60 seconds when reconnecting too fast (irc) #267
+* Use override username if specified (mattermost). #260
+
+## Bugfix
+* Try to not forward slack unfurls. Closes #266
+
 # v1.2.0
 ## Breaking changes
 * If you're running a discord bridge, update to this release before 16 october otherwise
