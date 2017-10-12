@@ -345,6 +345,9 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 				}
 				if bot.Name != "" {
 					m.Username = bot.Name
+					if ev.Username != "" {
+						m.Username = ev.Username
+					}
 					m.UserID = bot.ID
 				}
 			}
