@@ -37,7 +37,7 @@ Has a REST API.
 
 # Requirements
 Accounts to one of the supported bridges
-* [Mattermost](https://github.com/mattermost/platform/) 3.8.x - 3.10.x, 4.0.x - 4.2.x
+* [Mattermost](https://github.com/mattermost/platform/) 3.8.x - 3.10.x, 4.x
 * [IRC](http://www.mirc.com/servers.html)
 * [XMPP](https://jabber.org)
 * [Gitter](https://gitter.im)
@@ -54,7 +54,7 @@ See https://github.com/42wim/matterbridge/wiki
 
 # Installing
 ## Binaries
-* Latest stable release [v1.3.0](https://github.com/42wim/matterbridge/releases/latest)
+* Latest stable release [v1.3.1](https://github.com/42wim/matterbridge/releases/latest)
 * Development releases (follows master) can be downloaded [here](https://dl.bintray.com/42wim/nightly/)  
 
 ## Building

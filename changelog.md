@@ -1,3 +1,9 @@
+# v1.3.1
+## New features
+* Support mattermost 4.3.0 and every other 4.x as api4 should be stable (mattermost)
+## Bugfix
+* Use bot username if specified (slack). Closes #273
+
 # v1.3.0
 ## New features
 * Relay slack_attachments from mattermost to slack (slack). Closes #260
