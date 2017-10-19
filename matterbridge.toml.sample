@@ -817,7 +817,7 @@ enable=true
     #mattermost - channel (the channel name as seen in the URL, not the displayname)
     #gitter     - username/room 
     #xmpp       - channel
-    #slack      - channel (the channel name as seen in the URL, not the displayname)
+    #slack      - channel (without the #)
     #discord    - channel (without the #)
     #           - ID:123456789 (where 123456789 is the channel ID) 
     #               (https://github.com/42wim/matterbridge/issues/57)
