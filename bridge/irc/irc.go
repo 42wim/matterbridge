@@ -89,7 +89,7 @@ func (b *Birc) Connect() error {
 		User:       b.Config.Nick,
 		Name:       b.Config.Nick,
 		SSL:        b.Config.UseTLS,
-		TLSConfig:  &tls.Config{InsecureSkipVerify: b.Config.SkipTLSVerify},
+		TLSConfig:  &tls.Config{InsecureSkipVerify: b.Config.SkipTLSVerify, ServerName: server},
 		PingDelay:  time.Minute,
 	})
 
