@@ -773,7 +773,7 @@ RemoteNickFormat="{NICK}"
 ###################################################################
 #General configuration
 ###################################################################
-#Settings here override specific settings for each protocol
+# Settings here are defaults that each protocol can override
 [general]
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.

@@ -243,9 +243,9 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 func (gw *Gateway) modifyUsername(msg config.Message, dest *bridge.Bridge) string {
 	br := gw.Bridges[msg.Account]
 	msg.Protocol = br.Protocol
-	nick := gw.Config.General.RemoteNickFormat
+	nick := dest.Config.RemoteNickFormat
 	if nick == "" {
-		nick = dest.Config.RemoteNickFormat
+		nick = gw.Config.General.RemoteNickFormat
 	}
 	if len(msg.Username) > 0 {
 		// fix utf-8 issue #193
