@@ -340,6 +340,7 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 			}
 			m.Raw = ev
 			m.Text = b.replaceMention(m.Text)
+			m.Text = b.replaceChannel(m.Text)
 			// when using webhookURL we can't check if it's our webhook or not for now
 			if ev.BotID != "" && b.Config.WebhookURL == "" {
 				bot, err := b.rtm.GetBotInfo(ev.BotID)
@@ -386,6 +387,7 @@ func (b *Bslack) handleMatterHook(mchan chan *MMMessage) {
 		m.Username = message.UserName
 		m.Text = message.Text
 		m.Text = b.replaceMention(m.Text)
+		m.Text = b.replaceChannel(m.Text)
 		m.Channel = message.ChannelName
 		if m.Username == "slackbot" {
 			continue
@@ -410,7 +412,14 @@ func (b *Bslack) replaceMention(text string) string {
 	results := regexp.MustCompile(`<@([a-zA-z0-9]+)>`).FindAllStringSubmatch(text, -1)
 	for _, r := range results {
 		text = strings.Replace(text, "<@"+r[1]+">", "@"+b.userName(r[1]), -1)
+	}
+	return text
+}
 
+func (b *Bslack) replaceChannel(text string) string {
+	results := regexp.MustCompile(`<#[a-zA-Z0-9]+\|(.+?)>`).FindAllStringSubmatch(text, -1)
+	for _, r := range results {
+		text = strings.Replace(text, r[0], "#"+r[1], -1)
 	}
 	return text
 }
