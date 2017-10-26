@@ -410,7 +410,7 @@ func (b *Bslack) replaceMention(text string) string {
 }
 
 func (b *Bslack) replaceURL(text string) string {
-	results := regexp.MustCompile(`<(.*?)\|.*?>`).FindAllStringSubmatch(text, -1)
+	results := regexp.MustCompile(`<(.*?)(\|.*?)?>`).FindAllStringSubmatch(text, -1)
 	for _, r := range results {
 		text = strings.Replace(text, r[0], r[1], -1)
 	}
