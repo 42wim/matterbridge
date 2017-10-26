@@ -243,6 +243,10 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 func (gw *Gateway) modifyUsername(msg config.Message, dest *bridge.Bridge) string {
 	br := gw.Bridges[msg.Account]
 	msg.Protocol = br.Protocol
+	if gw.Config.General.StripNick || dest.Config.StripNick {
+		re := regexp.MustCompile("[^a-zA-Z0-9]+")
+		msg.Username = re.ReplaceAllString(msg.Username, "")
+	}
 	nick := dest.Config.RemoteNickFormat
 	if nick == "" {
 		nick = gw.Config.General.RemoteNickFormat

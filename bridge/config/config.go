@@ -80,6 +80,7 @@ type Protocol struct {
 	ShowJoinPart           bool   // all protocols
 	ShowEmbeds             bool   // discord
 	SkipTLSVerify          bool   // IRC, mattermost
+	StripNick              bool   // all protocols
 	Team                   string // mattermost
 	Token                  string // gitter, slack, discord, api
 	URL                    string // mattermost, slack // DEPRECATED
