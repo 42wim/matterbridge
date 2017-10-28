@@ -7,6 +7,7 @@ import (
 	"github.com/42wim/matterbridge/gateway"
 	log "github.com/Sirupsen/logrus"
 	"github.com/google/gops/agent"
+	"os"
 	"strings"
 )
 
@@ -33,7 +34,7 @@ func main() {
 		fmt.Printf("version: %s %s\n", version, githash)
 		return
 	}
-	if *flagDebug {
+	if *flagDebug || os.Getenv("DEBUG") == "1" {
 		log.Info("Enabling debug")
 		log.SetLevel(log.DebugLevel)
 	}
