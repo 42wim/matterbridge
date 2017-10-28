@@ -288,9 +288,7 @@ func (b *Birc) handlePrivMsg(event *irc.Event) {
 	}
 	msg += event.Message()
 	// strip IRC colors
-	re := regexp.MustCompile(`\x03(\d+,|)\d+`)
-	msg = re.ReplaceAllString(msg, "")
-	re = regexp.MustCompile(`[[:cntrl:]]`)
+	re := regexp.MustCompile(`[[:cntrl:]](?:\d{1,2}(?:,\d{1,2})?)?`)
 	msg = re.ReplaceAllString(msg, "")
 
 	var r io.Reader
