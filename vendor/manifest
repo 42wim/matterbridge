@@ -287,6 +287,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/matterbridge/slack",
+			"repository": "https://github.com/matterbridge/slack",
+			"vcs": "git",
+			"revision": "1c6e6305bf9c07fc603c9cf28f09ab0517a03120",
+			"branch": "matterbridge",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/mattermost/platform/einterfaces",
 			"repository": "https://github.com/mattermost/platform",
 			"vcs": "git",
@@ -423,14 +431,6 @@
 			"revision": "37e5c2de3e03e4b82693e3fcb4a6aa2cc4eb07e3",
 			"branch": "master",
 			"path": "/i18n",
-			"notests": true
-		},
-		{
-			"importpath": "github.com/nlopes/slack",
-			"repository": "https://github.com/nlopes/slack",
-			"vcs": "git",
-			"revision": "5cde21b8b96a43fc3435a1f514123d14fd7eabdc",
-			"branch": "master",
 			"notests": true
 		},
 		{
