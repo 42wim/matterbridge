@@ -7,7 +7,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/matterhook"
 	log "github.com/Sirupsen/logrus"
-	"github.com/nlopes/slack"
+	"github.com/matterbridge/slack"
 	"html"
 	"io"
 	"net/http"
@@ -323,6 +323,9 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 				}
 				m.UserID = user.ID
 				m.Username = user.Name
+				if user.Profile.DisplayName != "" {
+					m.Username = user.Profile.DisplayName
+				}
 			}
 			m.Channel = channel.Name
 			m.Text = ev.Text
@@ -394,6 +397,9 @@ func (b *Bslack) handleMatterHook(mchan chan *MMMessage) {
 func (b *Bslack) userName(id string) string {
 	for _, u := range b.Users {
 		if u.ID == id {
+			if u.Profile.DisplayName != "" {
+				return u.Profile.DisplayName
+			}
 			return u.Name
 		}
 	}
