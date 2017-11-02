@@ -1,6 +1,7 @@
 package bdiscord
 
 import (
+	"bytes"
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
 	"github.com/bwmarrin/discordgo"
@@ -140,6 +141,23 @@ func (b *bdiscord) Send(msg config.Message) (string, error) {
 		if msg.ID != "" {
 			_, err := b.c.ChannelMessageEdit(channelID, msg.ID, msg.Username+msg.Text)
 			return msg.ID, err
+		}
+
+		if msg.Extra != nil {
+			// check if we have files to upload (from slack, telegram or mattermost)
+			if len(msg.Extra["file"]) > 0 {
+				for _, f := range msg.Extra["file"] {
+					fi := f.(config.FileInfo)
+					files := []*discordgo.File{}
+					files = append(files, &discordgo.File{fi.Name, "", bytes.NewReader(*fi.Data)})
+					res, err := b.c.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{Content: msg.Text, Files: files})
+					if err != nil {
+						flog.Debugf("ERROR channelMessageSendComplex: %#v", err)
+						return "", err
+					}
+					return res.ID, err
+				}
+			}
 		}
 		res, err := b.c.ChannelMessageSend(channelID, msg.Username+msg.Text)
 		if err != nil {
