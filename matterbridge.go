@@ -27,7 +27,7 @@ func main() {
 	flagGops := flag.Bool("gops", false, "enable gops agent")
 	flag.Parse()
 	if *flagGops {
-		agent.Listen(&agent.Options{})
+		agent.Listen(agent.Options{})
 		defer agent.Close()
 	}
 	if *flagVersion {
