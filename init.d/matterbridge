@@ -1,0 +1,99 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          matterbridge
+# Required-Start:    $mattermost
+# Required-Stop:     $mattermost
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# X-Interactive:     false
+# Short-Description: Matterbridge as daemon
+# Description:       init.d script to run the matterbridge as a daemon
+### END INIT INFO
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
+
+DESC="Matterbridge, see https://github.com/42wim/matterbridge"
+NAME=matterbridge
+SCRIPTNAME=/etc/init.d/$NAME
+#DAEMON=
+
+EXECUTABLE=matterbridge-linux64
+INSTALLDIR=/opt/matterbridge
+LOGFILE=/var/log/matterbridge.log
+
+do_start()
+{
+   # Return
+   # 0 if daemon has been started
+   # 1 if daemon was already running
+   # 2 if daemon could not be started
+
+   pidof "$EXECUTABLE" >/dev/null
+   if [[ $? = 0 ]] ; then
+      echo "Matterbridge is still running, please stop it first." >&2
+      return 1
+   fi
+
+   cd "$INSTALLDIR"
+   echo "$(date) Starting matterbridge" >> "$LOGFILE"
+   nohup ./"$EXECUTABLE" >> "$LOGFILE" 2>&1 &
+   cd -
+   echo "$NAME Started."
+   return 0
+}
+
+do_stop()
+{
+   # Return
+   # 0 if daemon has been stopped
+   # 1 if daemon was already stopped
+   # 2 if daemon could not be stopped
+   # other if a failure occurred
+
+   pidof "$EXECUTABLE" >/dev/null
+   if [[ $? -ne 0 ]] ; then
+      echo "$NAME was not running." >&2
+      return 1
+   fi
+
+   echo "$(date) Stopping matterbridge" >> "$LOGFILE"
+   sudo killall -e "$INSTALLDIR/$EXECUTABLE" >> "$LOGFILE"
+   echo "$NAME Stopped."
+   return 0
+}
+
+do_status()
+{
+   pidof "$EXECUTABLE" >/dev/null
+   case "$?" in
+   0)
+     echo "$NAME is running."
+     return 0
+     ;;
+   *)
+     echo "$NAME stopped."
+     return 1
+   ;;
+   esac
+}
+
+case "$1" in
+   start)
+     do_start
+     exit "$?"
+     ;;
+   stop)
+     do_stop
+     exit "$?"
+     ;;
+   status)
+     do_status
+     exit "$?"
+     ;;
+   *)
+     echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
+     exit 3
+     ;;
+esac
+
+exit 0
