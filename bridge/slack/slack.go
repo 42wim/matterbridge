@@ -187,6 +187,25 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 		b.sc.UpdateMessage(schannel.ID, ts[1], message)
 		return "", nil
 	}
+
+	if msg.Extra != nil {
+		// check if we have files to upload (from slack, telegram or mattermost)
+		if len(msg.Extra["file"]) > 0 {
+			var err error
+			for _, f := range msg.Extra["file"] {
+				fi := f.(config.FileInfo)
+				_, err = b.sc.UploadFile(slack.FileUploadParameters{
+					Reader:   bytes.NewReader(*fi.Data),
+					Filename: fi.Name,
+					Channels: []string{schannel.ID},
+				})
+				if err != nil {
+					flog.Errorf("uploadfile %#v", err)
+				}
+			}
+		}
+	}
+
 	_, id, err := b.sc.PostMessage(schannel.ID, message, np)
 	if err != nil {
 		return "", err
