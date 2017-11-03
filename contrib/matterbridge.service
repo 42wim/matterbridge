@@ -1,0 +1,11 @@
+[Unit]
+Description=matterbridge
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/matterbridge -conf /etc/matterbridge/bridge.toml
+User=matterbridge
+Group=matterbridge
+
+[Install]
+WantedBy=multi-user.target
