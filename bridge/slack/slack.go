@@ -340,6 +340,7 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 			}
 			m.Raw = ev
 			m.Text = b.replaceMention(m.Text)
+			m.Text = b.replaceVariable(m.Text)
 			m.Text = b.replaceChannel(m.Text)
 			// when using webhookURL we can't check if it's our webhook or not for now
 			if ev.BotID != "" && b.Config.WebhookURL == "" {
@@ -387,6 +388,7 @@ func (b *Bslack) handleMatterHook(mchan chan *MMMessage) {
 		m.Username = message.UserName
 		m.Text = message.Text
 		m.Text = b.replaceMention(m.Text)
+		m.Text = b.replaceVariable(m.Text)
 		m.Text = b.replaceChannel(m.Text)
 		m.Channel = message.ChannelName
 		if m.Username == "slackbot" {
@@ -408,6 +410,7 @@ func (b *Bslack) userName(id string) string {
 	return ""
 }
 
+// @see https://api.slack.com/docs/message-formatting#linking_to_channels_and_users
 func (b *Bslack) replaceMention(text string) string {
 	results := regexp.MustCompile(`<@([a-zA-z0-9]+)>`).FindAllStringSubmatch(text, -1)
 	for _, r := range results {
@@ -416,6 +419,7 @@ func (b *Bslack) replaceMention(text string) string {
 	return text
 }
 
+// @see https://api.slack.com/docs/message-formatting#linking_to_channels_and_users
 func (b *Bslack) replaceChannel(text string) string {
 	results := regexp.MustCompile(`<#[a-zA-Z0-9]+\|(.+?)>`).FindAllStringSubmatch(text, -1)
 	for _, r := range results {
@@ -424,6 +428,16 @@ func (b *Bslack) replaceChannel(text string) string {
 	return text
 }
 
+// @see https://api.slack.com/docs/message-formatting#variables
+func (b *Bslack) replaceVariable(text string) string {
+	results := regexp.MustCompile(`<!([a-zA-Z0-9]+)(\|.+?)?>`).FindAllStringSubmatch(text, -1)
+	for _, r := range results {
+		text = strings.Replace(text, r[0], "@"+r[1], -1)
+	}
+	return text
+}
+
+// @see https://api.slack.com/docs/message-formatting#linking_to_urls
 func (b *Bslack) replaceURL(text string) string {
 	results := regexp.MustCompile(`<(.*?)(\|.*?)?>`).FindAllStringSubmatch(text, -1)
 	for _, r := range results {
