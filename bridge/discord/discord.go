@@ -147,16 +147,18 @@ func (b *bdiscord) Send(msg config.Message) (string, error) {
 			// check if we have files to upload (from slack, telegram or mattermost)
 			if len(msg.Extra["file"]) > 0 {
 				var err error
-				var res *discordgo.Message
 				for _, f := range msg.Extra["file"] {
 					fi := f.(config.FileInfo)
 					files := []*discordgo.File{}
 					files = append(files, &discordgo.File{fi.Name, "", bytes.NewReader(*fi.Data)})
-					res, err = b.c.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{Content: msg.Text, Files: files})
+					_, err = b.c.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{Content: msg.Text, Files: files})
+					if err != nil {
+						flog.Errorf("file upload failed: %#v", err)
+					}
 				}
-				return res.ID, err
 			}
 		}
+
 		res, err := b.c.ChannelMessageSend(channelID, msg.Username+msg.Text)
 		if err != nil {
 			return "", err
