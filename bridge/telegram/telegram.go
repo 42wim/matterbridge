@@ -111,7 +111,7 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 				}
 				_, err := b.c.Send(c)
 				if err != nil {
-					log.Errorf("file upload failed: %#v")
+					log.Errorf("file upload failed: %#v", err)
 				}
 			}
 		}
