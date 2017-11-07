@@ -95,7 +95,7 @@ func (b *Bgitter) JoinChannel(channel config.ChannelInfo) error {
 				flog.Errorf("connection with gitter closed for room %s", room)
 			}
 		}
-	}(stream, room.Name)
+	}(stream, room.URI)
 	return nil
 }
 
