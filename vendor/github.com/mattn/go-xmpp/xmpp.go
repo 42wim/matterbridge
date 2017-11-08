@@ -191,7 +191,9 @@ func (o Options) NewClient() (*Client, error) {
 			tlsconn = tls.Client(c, o.TLSConfig)
 		} else {
 			DefaultConfig.ServerName = host
-			tlsconn = tls.Client(c, &DefaultConfig)
+			newconfig := DefaultConfig
+			newconfig.ServerName = host
+			tlsconn = tls.Client(c, &newconfig)
 		}
 		if err = tlsconn.Handshake(); err != nil {
 			return nil, err
@@ -635,7 +637,7 @@ func (c *Client) SendPresence(presence Presence) (n int, err error) {
 
 // SendKeepAlive sends a "whitespace keepalive" as described in chapter 4.6.1 of RFC6120.
 func (c *Client) SendKeepAlive() (n int, err error) {
-	return fmt.Fprintf(c.conn," ")
+	return fmt.Fprintf(c.conn, " ")
 }
 
 // SendHtml sends the message as HTML as defined by XEP-0071
@@ -831,7 +833,7 @@ type rosterItem struct {
 func nextStart(p *xml.Decoder) (xml.StartElement, error) {
 	for {
 		t, err := p.Token()
-		if err != nil && err != io.EOF || t == nil {
+		if err != nil || t == nil {
 			return xml.StartElement{}, err
 		}
 		switch t := t.(type) {

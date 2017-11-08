@@ -412,7 +412,7 @@
 			"importpath": "github.com/mattn/go-xmpp",
 			"repository": "https://github.com/mattn/go-xmpp",
 			"vcs": "git",
-			"revision": "16b6a7bdba1ca30969b5db9362b6605e43302daa",
+			"revision": "d0cdb99fae16437f69616ccc40662b6fe8ac6d47",
 			"branch": "master",
 			"notests": true
 		},
