@@ -54,11 +54,11 @@ See https://github.com/42wim/matterbridge/wiki
 
 # Installing
 ## Binaries
-* Latest stable release [v1.3.1](https://github.com/42wim/matterbridge/releases/latest)
+* Latest stable release [v1.4.0](https://github.com/42wim/matterbridge/releases/latest)
 * Development releases (follows master) can be downloaded [here](https://dl.bintray.com/42wim/nightly/)  
 
 ## Building
-Go 1.7+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH] (https://golang.org/doc/code.html#GOPATH)
+Go 1.8+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH] (https://golang.org/doc/code.html#GOPATH)
 
 ```
 cd $GOPATH

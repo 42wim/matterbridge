@@ -1,3 +1,25 @@
+# v1.4.0
+## Breaking changes
+* general: `[general]` settings don't override the specific bridge settings
+
+## New features
+* irc: Replace sorcix/irc and go-ircevent with girc, this should be give better reconnects
+* steam: Add support for bridging to individual steam chats. (steam) (#294)
+* telegram: Download files from telegram and reupload to supported bridges (telegram). #278
+* slack: Add support to upload files to slack, from bridges with private urls like slack/mattermost/telegram. (slack)
+* discord: Add support to upload files to discord, from bridges with private urls like slack/mattermost/telegram. (discord)
+* general: Add systemd service file (#291)
+* general: Add support for DEBUG=1 envvar to enable debug. Closes #283
+* general: Add StripNick option, only allow alphanumerical nicks. Closes #285
+
+## Bugfix
+* gitter: Use room.URI instead of room.Name. (gitter) (#293)
+* slack: Allow slack messages with variables (eg. @here) to be formatted correctly. (slack) (#288)
+* slack: Resolve slack channel to human-readable name. (slack) (#282)
+* slack: Use DisplayName instead of deprecated username (slack). Closes #276
+* slack: Allowed Slack bridge to extract simpler link format. (#287)
+* irc: Strip irc colors correct, strip also ctrl chars (irc)
+
 # v1.3.1
 ## New features
 * Support mattermost 4.3.0 and every other 4.x as api4 should be stable (mattermost)
