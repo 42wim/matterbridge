@@ -279,6 +279,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/lrstanley/girc",
+			"repository": "https://github.com/lrstanley/girc",
+			"vcs": "git",
+			"revision": "055075db54ebd311be5946efb3f62502846089ff",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/matrix-org/gomatrix",
 			"repository": "https://github.com/matrix-org/gomatrix",
 			"vcs": "git",
