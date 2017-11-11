@@ -81,12 +81,22 @@ func (b *Birc) Connect() error {
 	if err != nil {
 		return err
 	}
+	// fix strict user handling of girc
+	user := b.Config.Nick
+	for !girc.IsValidUser(user) {
+		if len(user) == 1 {
+			user = "matterbridge"
+			break
+		}
+		user = user[1:]
+	}
+
 	i := girc.New(girc.Config{
 		Server:     server,
 		ServerPass: b.Config.Password,
 		Port:       port,
 		Nick:       b.Config.Nick,
-		User:       b.Config.Nick,
+		User:       user,
 		Name:       b.Config.Nick,
 		SSL:        b.Config.UseTLS,
 		TLSConfig:  &tls.Config{InsecureSkipVerify: b.Config.SkipTLSVerify, ServerName: server},
