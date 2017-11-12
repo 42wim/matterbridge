@@ -152,7 +152,10 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 	// only slack now, check will have to be done in the different bridges.
 	// we need to check if we can't use fallback or text in other bridges
 	if msg.Extra != nil {
-		if dest.Protocol != "slack" {
+		if dest.Protocol != "discord" &&
+			dest.Protocol != "slack" &&
+			dest.Protocol != "mattermost" &&
+			dest.Protocol != "telegram" {
 			if msg.Text == "" {
 				return brMsgIDs
 			}
@@ -210,8 +213,8 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 		return true
 	}
 	if msg.Text == "" {
-		// we have an attachment
-		if msg.Extra != nil && msg.Extra["attachments"] != nil {
+		// we have an attachment or actual bytes
+		if msg.Extra != nil && (msg.Extra["attachments"] != nil || len(msg.Extra["file"]) > 0) {
 			return false
 		}
 		log.Debugf("ignoring empty message %#v from %s", msg, msg.Account)
