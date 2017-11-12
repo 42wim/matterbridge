@@ -182,7 +182,7 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 			b.handleDownload(message.Photo, &fmsg)
 		}
 		if message.Document != nil {
-			b.handleDownload(message.Sticker, &fmsg)
+			b.handleDownload(message.Document, &fmsg)
 		}
 
 		// quote the previous message
