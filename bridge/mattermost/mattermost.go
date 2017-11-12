@@ -190,9 +190,9 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 					flog.Debugf("ERROR %#v", err)
 					return "", err
 				}
-				message = "uploaded a file: " + fi.Name
+				message = fi.Comment
 				if b.Config.PrefixMessagesWithNick {
-					message = nick + "uploaded a file: " + fi.Name
+					message = nick + fi.Comment
 				}
 				res, err = b.mc.PostMessageWithFiles(b.mc.GetChannelId(channel, ""), message, []string{id})
 			}

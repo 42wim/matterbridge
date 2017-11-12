@@ -151,11 +151,12 @@ func (b *bdiscord) Send(msg config.Message) (string, error) {
 					fi := f.(config.FileInfo)
 					files := []*discordgo.File{}
 					files = append(files, &discordgo.File{fi.Name, "", bytes.NewReader(*fi.Data)})
-					_, err = b.c.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{Content: msg.Text, Files: files})
+					_, err = b.c.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{Content: msg.Username + fi.Comment, Files: files})
 					if err != nil {
 						flog.Errorf("file upload failed: %#v", err)
 					}
 				}
+				return "", nil
 			}
 		}
 

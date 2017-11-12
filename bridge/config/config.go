@@ -33,8 +33,9 @@ type Message struct {
 }
 
 type FileInfo struct {
-	Name string
-	Data *[]byte
+	Name    string
+	Data    *[]byte
+	Comment string
 }
 
 type ChannelInfo struct {

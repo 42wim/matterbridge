@@ -114,20 +114,14 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 				if err != nil {
 					log.Errorf("file upload failed: %#v", err)
 				}
+				if fi.Comment != "" {
+					b.sendMessage(chatid, msg.Username+fi.Comment)
+				}
 			}
+			return "", nil
 		}
 	}
-
-	m := tgbotapi.NewMessage(chatid, msg.Username+msg.Text)
-	if b.Config.MessageFormat == "HTML" {
-		m.ParseMode = tgbotapi.ModeHTML
-	}
-	res, err := b.c.Send(m)
-	if err != nil {
-		return "", err
-	}
-	return strconv.Itoa(res.MessageID), nil
-
+	return b.sendMessage(chatid, msg.Username+msg.Text)
 }
 
 func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
@@ -274,4 +268,16 @@ func (b *Btelegram) handleDownload(file interface{}, msg *config.Message) {
 			msg.Extra["file"] = append(msg.Extra["file"], config.FileInfo{Name: name, Data: data})
 		}
 	}
+}
+
+func (b *Btelegram) sendMessage(chatid int64, text string) (string, error) {
+	m := tgbotapi.NewMessage(chatid, text)
+	if b.Config.MessageFormat == "HTML" {
+		m.ParseMode = tgbotapi.ModeHTML
+	}
+	res, err := b.c.Send(m)
+	if err != nil {
+		return "", err
+	}
+	return strconv.Itoa(res.MessageID), nil
 }

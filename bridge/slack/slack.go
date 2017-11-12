@@ -195,9 +195,10 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 			for _, f := range msg.Extra["file"] {
 				fi := f.(config.FileInfo)
 				_, err = b.sc.UploadFile(slack.FileUploadParameters{
-					Reader:   bytes.NewReader(*fi.Data),
-					Filename: fi.Name,
-					Channels: []string{schannel.ID},
+					Reader:         bytes.NewReader(*fi.Data),
+					Filename:       fi.Name,
+					Channels:       []string{schannel.ID},
+					InitialComment: fi.Comment,
 				})
 				if err != nil {
 					flog.Errorf("uploadfile %#v", err)
@@ -294,16 +295,21 @@ func (b *Bslack) handleSlack() {
 		if message.Raw.File != nil {
 			// limit to 1MB for now
 			if message.Raw.File.Size <= 1000000 {
+				comment := ""
 				data, err := b.downloadFile(message.Raw.File.URLPrivateDownload)
 				if err != nil {
 					flog.Errorf("download %s failed %#v", message.Raw.File.URLPrivateDownload, err)
 				} else {
-					msg.Extra["file"] = append(msg.Extra["file"], config.FileInfo{Name: message.Raw.File.Name, Data: data})
+					results := regexp.MustCompile(`.*?commented: (.*)`).FindAllStringSubmatch(msg.Text, -1)
+					if len(results) > 0 {
+						comment = results[0][1]
+					}
+					msg.Extra["file"] = append(msg.Extra["file"], config.FileInfo{Name: message.Raw.File.Name, Data: data, Comment: comment})
 				}
+				flog.Debugf("Message is %#v", msg)
+				b.Remote <- msg
 			}
 		}
-		flog.Debugf("Message is %#v", msg)
-		b.Remote <- msg
 	}
 }
 
