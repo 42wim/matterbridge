@@ -3,6 +3,7 @@ package btelegram
 import (
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
@@ -232,20 +233,23 @@ func (b *Btelegram) handleDownload(file interface{}, msg *config.Message) {
 	case *tgbotapi.Sticker:
 		size = v.FileSize
 		url = b.getFileDirectURL(v.FileID)
-		name = "sticker"
+		urlPart := strings.Split(url, "/")
+		name = urlPart[len(urlPart)-1]
 		text = " " + url
 		fileid = v.FileID
 	case *tgbotapi.Video:
 		size = v.FileSize
 		url = b.getFileDirectURL(v.FileID)
-		name = "video"
+		urlPart := strings.Split(url, "/")
+		name = urlPart[len(urlPart)-1]
 		text = " " + url
 		fileid = v.FileID
 	case *[]tgbotapi.PhotoSize:
 		photos := *v
 		size = photos[len(photos)-1].FileSize
 		url = b.getFileDirectURL(photos[len(photos)-1].FileID)
-		name = "photo"
+		urlPart := strings.Split(url, "/")
+		name = urlPart[len(urlPart)-1]
 		text = " " + url
 	case *tgbotapi.Document:
 		size = v.FileSize
