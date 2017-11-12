@@ -227,28 +227,33 @@ func (b *Btelegram) handleDownload(file interface{}, msg *config.Message) {
 	url := ""
 	name := ""
 	text := ""
+	fileid := ""
 	switch v := file.(type) {
 	case *tgbotapi.Sticker:
 		size = v.FileSize
 		url = b.getFileDirectURL(v.FileID)
 		name = "sticker"
 		text = " " + url
+		fileid = v.FileID
 	case *tgbotapi.Video:
 		size = v.FileSize
 		url = b.getFileDirectURL(v.FileID)
 		name = "video"
 		text = " " + url
+		fileid = v.FileID
 	case *[]tgbotapi.PhotoSize:
 		photos := *v
 		size = photos[len(photos)-1].FileSize
 		url = b.getFileDirectURL(photos[len(photos)-1].FileID)
 		name = "photo"
 		text = " " + url
+		fileid = v.FileID
 	case *tgbotapi.Document:
 		size = v.FileSize
 		url = b.getFileDirectURL(v.FileID)
 		name = v.FileName
 		text = " " + v.FileName + " : " + url
+		fileid = v.FileID
 	}
 	if b.Config.UseInsecureURL {
 		msg.Text = text
@@ -256,11 +261,13 @@ func (b *Btelegram) handleDownload(file interface{}, msg *config.Message) {
 	}
 	// if we have a file attached, download it (in memory) and put a pointer to it in msg.Extra
 	// limit to 1MB for now
+	flog.Debugf("trying to download %#v fileid %#v with size %#v", name, fileid, size)
 	if size <= 1000000 {
 		data, err := helper.DownloadFile(url)
 		if err != nil {
 			flog.Errorf("download %s failed %#v", url, err)
 		} else {
+			flog.Debugf("download OK %#v %#v %#v", name, len(data), len(url))
 			msg.Extra["file"] = append(msg.Extra["file"], config.FileInfo{Name: name, Data: data})
 		}
 	}
