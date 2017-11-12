@@ -178,12 +178,11 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		if message.Video != nil {
 			b.handleDownload(message.Video, &fmsg)
 		}
-		if message.Photo != nil && b.Config.UseInsecureURL {
+		if message.Photo != nil {
 			b.handleDownload(message.Photo, &fmsg)
 		}
-		if message.Document != nil && b.Config.UseInsecureURL {
+		if message.Document != nil {
 			b.handleDownload(message.Sticker, &fmsg)
-			text = text + " " + message.Document.FileName + " : " + b.getFileDirectURL(message.Document.FileID)
 		}
 
 		// quote the previous message
