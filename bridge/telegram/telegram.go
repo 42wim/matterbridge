@@ -207,7 +207,7 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 
 		if text != "" || len(fmsg.Extra) > 0 {
 			flog.Debugf("Sending message from %s on %s to gateway", username, b.Account)
-			msg := config.Message{Username: username, Text: text, Channel: channel, Account: b.Account, UserID: strconv.Itoa(message.From.ID), ID: strconv.Itoa(message.MessageID)}
+			msg := config.Message{Username: username, Text: text, Channel: channel, Account: b.Account, UserID: strconv.Itoa(message.From.ID), ID: strconv.Itoa(message.MessageID), Extra: fmsg.Extra}
 			flog.Debugf("Message is %#v", msg)
 			b.Remote <- msg
 		}
