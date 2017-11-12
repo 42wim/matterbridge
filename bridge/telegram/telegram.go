@@ -247,7 +247,6 @@ func (b *Btelegram) handleDownload(file interface{}, msg *config.Message) {
 		url = b.getFileDirectURL(photos[len(photos)-1].FileID)
 		name = "photo"
 		text = " " + url
-		fileid = v.FileID
 	case *tgbotapi.Document:
 		size = v.FileSize
 		url = b.getFileDirectURL(v.FileID)
@@ -267,7 +266,7 @@ func (b *Btelegram) handleDownload(file interface{}, msg *config.Message) {
 		if err != nil {
 			flog.Errorf("download %s failed %#v", url, err)
 		} else {
-			flog.Debugf("download OK %#v %#v %#v", name, len(data), len(url))
+			flog.Debugf("download OK %#v %#v %#v", name, len(*data), len(url))
 			msg.Extra["file"] = append(msg.Extra["file"], config.FileInfo{Name: name, Data: data})
 		}
 	}
