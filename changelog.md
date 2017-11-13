@@ -1,3 +1,9 @@
+# v1.4.1
+## Bugfix
+* telegram: fix issue with uploading for images/documents/stickers
+* slack: remove double messages sent to other bridges when uploading files
+* irc: Fix strict user handling of girc (irc). Closes #298 
+
 # v1.4.0
 ## Breaking changes
 * general: `[general]` settings don't override the specific bridge settings
