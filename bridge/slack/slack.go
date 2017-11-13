@@ -306,10 +306,10 @@ func (b *Bslack) handleSlack() {
 					}
 					msg.Extra["file"] = append(msg.Extra["file"], config.FileInfo{Name: message.Raw.File.Name, Data: data, Comment: comment})
 				}
-				flog.Debugf("Message is %#v", msg)
-				b.Remote <- msg
 			}
 		}
+		flog.Debugf("Message is %#v", msg)
+		b.Remote <- msg
 	}
 }
 
