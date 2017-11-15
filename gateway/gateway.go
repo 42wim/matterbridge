@@ -287,6 +287,19 @@ func (gw *Gateway) modifyAvatar(msg config.Message, dest *bridge.Bridge) string 
 func (gw *Gateway) modifyMessage(msg *config.Message) {
 	// replace :emoji: to unicode
 	msg.Text = emojilib.Replace(msg.Text)
+	br := gw.Bridges[msg.Account]
+	// loop to replace messages
+	for _, outer := range br.Config.ReplaceMessages {
+		search := outer[0]
+		replace := outer[1]
+		// TODO move compile to bridge init somewhere
+		re, err := regexp.Compile(search)
+		if err != nil {
+			log.Errorf("regexp in %s failed: %s", msg.Account, err)
+			break
+		}
+		msg.Text = re.ReplaceAllString(msg.Text, replace)
+	}
 	msg.Gateway = gw.Name
 }
 
