@@ -817,9 +817,14 @@ func (m *MMClient) StatusLoop() {
 				backoff = time.Second * 60
 			case <-time.After(time.Second * 5):
 				if retries > 3 {
+					m.log.Debug("StatusLoop() timeout")
 					m.Logout()
 					m.WsQuit = false
-					m.Login()
+					err := m.Login()
+					if err != nil {
+						log.Errorf("Login failed: %#v", err)
+						break
+					}
 					if m.OnWsConnect != nil {
 						m.OnWsConnect()
 					}
