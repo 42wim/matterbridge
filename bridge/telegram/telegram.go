@@ -229,6 +229,9 @@ func (b *Btelegram) handleDownload(file interface{}, msg *config.Message) {
 		url = b.getFileDirectURL(v.FileID)
 		urlPart := strings.Split(url, "/")
 		name = urlPart[len(urlPart)-1]
+		if !strings.HasSuffix(name, ".webp") {
+			name = name + ".webp"
+		}
 		text = " " + url
 		fileid = v.FileID
 	case *tgbotapi.Video:
