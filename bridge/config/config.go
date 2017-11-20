@@ -59,6 +59,10 @@ type Protocol struct {
 	IgnoreMessages         string     // all protocols
 	Jid                    string     // xmpp
 	Login                  string     // mattermost, matrix
+	MessageQueue           int        // IRC, size of message queue for flood control
+	MessageDelay           int        // IRC, time in millisecond to wait between messages
+	MessageLength          int        // IRC, max length of a message allowed
+	MessageFormat          string     // telegram
 	Muc                    string     // xmpp
 	Name                   string     // all protocols
 	Nick                   string     // all protocols
@@ -71,12 +75,9 @@ type Protocol struct {
 	NoTLS                  bool       // mattermost
 	Password               string     // IRC,mattermost,XMPP,matrix
 	PrefixMessagesWithNick bool       // mattemost, slack
-	Protocol               string     //all protocols
-	ReplaceMessages        [][]string // all messages
-	MessageQueue           int        // IRC, size of message queue for flood control
-	MessageDelay           int        // IRC, time in millisecond to wait between messages
-	MessageLength          int        // IRC, max length of a message allowed
-	MessageFormat          string     // telegram
+	Protocol               string     // all protocols
+	ReplaceMessages        [][]string // all protocols
+	ReplaceNicks           [][]string // all protocols
 	RemoteNickFormat       string     // all protocols
 	Server                 string     // IRC,mattermost,XMPP,discord
 	ShowJoinPart           bool       // all protocols

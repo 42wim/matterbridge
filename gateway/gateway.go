@@ -254,6 +254,20 @@ func (gw *Gateway) modifyUsername(msg config.Message, dest *bridge.Bridge) strin
 	if nick == "" {
 		nick = gw.Config.General.RemoteNickFormat
 	}
+
+	// loop to replace nicks
+	for _, outer := range br.Config.ReplaceNicks {
+		search := outer[0]
+		replace := outer[1]
+		// TODO move compile to bridge init somewhere
+		re, err := regexp.Compile(search)
+		if err != nil {
+			log.Errorf("regexp in %s failed: %s", msg.Account, err)
+			break
+		}
+		msg.Username = re.ReplaceAllString(msg.Username, replace)
+	}
+
 	if len(msg.Username) > 0 {
 		// fix utf-8 issue #193
 		i := 0
