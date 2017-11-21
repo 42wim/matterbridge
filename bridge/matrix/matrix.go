@@ -1,7 +1,10 @@
 package bmatrix
 
 import (
+	"bytes"
+	"mime"
 	"regexp"
+	"strings"
 	"sync"
 
 	"github.com/42wim/matterbridge/bridge/config"
@@ -87,6 +90,43 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 			matrix.TextMessage{"m.emote", msg.Username + msg.Text})
 		return "", nil
 	}
+
+	if msg.Extra != nil {
+		// check if we have files to upload (from slack, telegram or mattermost)
+		if len(msg.Extra["file"]) > 0 {
+			for _, f := range msg.Extra["file"] {
+				fi := f.(config.FileInfo)
+				content := bytes.NewReader(*fi.Data)
+				sp := strings.Split(fi.Name, ".")
+				mtype := mime.TypeByExtension("." + sp[len(sp)-1])
+				if strings.Contains(mtype, "image") ||
+					strings.Contains(mtype, "video") {
+					flog.Debugf("uploading file: %s %s", fi.Name, mtype)
+					res, err := b.mc.UploadToContentRepo(content, mtype, int64(len(*fi.Data)))
+					if err != nil {
+						flog.Errorf("file upload failed: %#v", err)
+					}
+					if strings.Contains(mtype, "video") {
+						flog.Debugf("sendVideo %s", res.ContentURI)
+						_, err = b.mc.SendVideo(channel, fi.Name, res.ContentURI)
+						if err != nil {
+							flog.Errorf("sendVideo failed: %#v", err)
+						}
+					}
+					if strings.Contains(mtype, "image") {
+						flog.Debugf("sendImage %s", res.ContentURI)
+						_, err = b.mc.SendImage(channel, fi.Name, res.ContentURI)
+						if err != nil {
+							flog.Errorf("sendImage failed: %#v", err)
+						}
+					}
+					flog.Debugf("result: %#v", res)
+				}
+			}
+			return "", nil
+		}
+	}
+
 	b.mc.SendText(channel, msg.Username+msg.Text)
 	return "", nil
 }
