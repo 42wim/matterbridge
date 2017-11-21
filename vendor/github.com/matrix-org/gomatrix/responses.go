@@ -45,6 +45,9 @@ type RespBanUser struct{}
 // RespUnbanUser is the JSON response for http://matrix.org/docs/spec/client_server/r0.2.0.html#post-matrix-client-r0-rooms-roomid-unban
 type RespUnbanUser struct{}
 
+// RespTyping is the JSON response for https://matrix.org/docs/spec/client_server/r0.2.0.html#put-matrix-client-r0-rooms-roomid-typing-userid
+type RespTyping struct{}
+
 // RespJoinedRooms is the JSON response for TODO-SPEC https://github.com/matrix-org/synapse/pull/1680
 type RespJoinedRooms struct {
 	JoinedRooms []string `json:"joined_rooms"`
@@ -56,6 +59,13 @@ type RespJoinedMembers struct {
 		DisplayName *string `json:"display_name"`
 		AvatarURL   *string `json:"avatar_url"`
 	} `json:"joined"`
+}
+
+// RespMessages is the JSON response for https://matrix.org/docs/spec/client_server/r0.2.0.html#get-matrix-client-r0-rooms-roomid-messages
+type RespMessages struct {
+	Start string  `json:"start"`
+	Chunk []Event `json:"chunk"`
+	End   string  `json:"end"`
 }
 
 // RespSendEvent is the JSON response for http://matrix.org/docs/spec/client_server/r0.2.0.html#put-matrix-client-r0-rooms-roomid-send-eventtype-txnid
@@ -88,6 +98,11 @@ func (r RespUserInteractive) HasSingleStageFlow(stageName string) bool {
 		}
 	}
 	return false
+}
+
+// RespUserDisplayName is the JSON response for https://matrix.org/docs/spec/client_server/r0.2.0.html#get-matrix-client-r0-profile-userid-displayname
+type RespUserDisplayName struct {
+	DisplayName string `json:"displayname"`
 }
 
 // RespRegister is the JSON response for http://matrix.org/docs/spec/client_server/r0.2.0.html#post-matrix-client-r0-register
@@ -125,6 +140,16 @@ type RespSync struct {
 		Events []Event `json:"events"`
 	} `json:"presence"`
 	Rooms struct {
+		Leave map[string]struct {
+			State struct {
+				Events []Event `json:"events"`
+			} `json:"state"`
+			Timeline struct {
+				Events    []Event `json:"events"`
+				Limited   bool    `json:"limited"`
+				PrevBatch string  `json:"prev_batch"`
+			} `json:"timeline"`
+		} `json:"leave"`
 		Join map[string]struct {
 			State struct {
 				Events []Event `json:"events"`
@@ -141,4 +166,11 @@ type RespSync struct {
 			} `json:"invite_state"`
 		} `json:"invite"`
 	} `json:"rooms"`
+}
+
+type RespTurnServer struct {
+	Username string   `json:"username"`
+	Password string   `json:"password"`
+	TTL      int      `json:"ttl"`
+	URIs     []string `json:"uris"`
 }

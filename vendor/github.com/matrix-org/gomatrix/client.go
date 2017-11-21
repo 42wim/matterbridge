@@ -79,7 +79,7 @@ func (cli *Client) BuildBaseURL(urlPath ...string) string {
 	return hsURL.String()
 }
 
-// BuildURLWithQuery builds a URL with query paramters in addition to the Client's homeserver/prefix/access_token set already.
+// BuildURLWithQuery builds a URL with query parameters in addition to the Client's homeserver/prefix/access_token set already.
 func (cli *Client) BuildURLWithQuery(urlPath []string, urlQuery map[string]string) string {
 	u, _ := url.Parse(cli.BuildURL(urlPath...))
 	q := u.Query()
@@ -387,6 +387,20 @@ func (cli *Client) JoinRoom(roomIDorAlias, serverName string, content interface{
 	return
 }
 
+// GetDisplayName returns the display name of the user from the specified MXID. See https://matrix.org/docs/spec/client_server/r0.2.0.html#get-matrix-client-r0-profile-userid-displayname
+func (cli *Client) GetDisplayName(mxid string) (resp *RespUserDisplayName, err error) {
+	urlPath := cli.BuildURL("profile", mxid, "displayname")
+	_, err = cli.MakeRequest("GET", urlPath, nil, &resp)
+	return
+}
+
+// GetOwnDisplayName returns the user's display name. See https://matrix.org/docs/spec/client_server/r0.2.0.html#get-matrix-client-r0-profile-userid-displayname
+func (cli *Client) GetOwnDisplayName() (resp *RespUserDisplayName, err error) {
+	urlPath := cli.BuildURL("profile", cli.UserID, "displayname")
+	_, err = cli.MakeRequest("GET", urlPath, nil, &resp)
+	return
+}
+
 // SetDisplayName sets the user's profile display name. See http://matrix.org/docs/spec/client_server/r0.2.0.html#put-matrix-client-r0-profile-userid-displayname
 func (cli *Client) SetDisplayName(displayName string) (err error) {
 	urlPath := cli.BuildURL("profile", cli.UserID, "displayname")
@@ -448,6 +462,35 @@ func (cli *Client) SendStateEvent(roomID, eventType, stateKey string, contentJSO
 func (cli *Client) SendText(roomID, text string) (*RespSendEvent, error) {
 	return cli.SendMessageEvent(roomID, "m.room.message",
 		TextMessage{"m.text", text})
+}
+
+// SendImage sends an m.room.message event into the given room with a msgtype of m.image
+// See https://matrix.org/docs/spec/client_server/r0.2.0.html#m-image
+func (cli *Client) SendImage(roomID, body, url string) (*RespSendEvent, error) {
+	return cli.SendMessageEvent(roomID, "m.room.message",
+		ImageMessage{
+			MsgType: "m.image",
+			Body:    body,
+			URL:     url,
+		})
+}
+
+// SendVideo sends an m.room.message event into the given room with a msgtype of m.video
+// See https://matrix.org/docs/spec/client_server/r0.2.0.html#m-video
+func (cli *Client) SendVideo(roomID, body, url string) (*RespSendEvent, error) {
+	return cli.SendMessageEvent(roomID, "m.room.message",
+		VideoMessage{
+			MsgType: "m.video",
+			Body:    body,
+			URL:     url,
+		})
+}
+
+// SendNotice sends an m.room.message event into the given room with a msgtype of m.notice
+// See http://matrix.org/docs/spec/client_server/r0.2.0.html#m-notice
+func (cli *Client) SendNotice(roomID, text string) (*RespSendEvent, error) {
+	return cli.SendMessageEvent(roomID, "m.room.message",
+		TextMessage{"m.notice", text})
 }
 
 // RedactEvent redacts the given event. See http://matrix.org/docs/spec/client_server/r0.2.0.html#put-matrix-client-r0-rooms-roomid-redact-eventid-txnid
@@ -518,6 +561,14 @@ func (cli *Client) UnbanUser(roomID string, req *ReqUnbanUser) (resp *RespUnbanU
 	return
 }
 
+// UserTyping sets the typing status of the user. See https://matrix.org/docs/spec/client_server/r0.2.0.html#put-matrix-client-r0-rooms-roomid-typing-userid
+func (cli *Client) UserTyping(roomID string, typing bool, timeout int64) (resp *RespTyping, err error) {
+	req := ReqTyping{Typing: typing, Timeout: timeout}
+	u := cli.BuildURL("rooms", roomID, "typing", cli.UserID)
+	_, err = cli.MakeRequest("PUT", u, req, &resp)
+	return
+}
+
 // StateEvent gets a single state event in a room. It will attempt to JSON unmarshal into the given "outContent" struct with
 // the HTTP response body, or return an error.
 // See http://matrix.org/docs/spec/client_server/r0.2.0.html#get-matrix-client-r0-rooms-roomid-state-eventtype-statekey
@@ -556,8 +607,15 @@ func (cli *Client) UploadToContentRepo(content io.Reader, contentType string, co
 		return nil, err
 	}
 	if res.StatusCode != 200 {
+		contents, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return nil, HTTPError{
+				Message: "Upload request failed - Failed to read response body: " + err.Error(),
+				Code:    res.StatusCode,
+			}
+		}
 		return nil, HTTPError{
-			Message: "Upload request failed",
+			Message: "Upload request failed: " + string(contents),
 			Code:    res.StatusCode,
 		}
 	}
@@ -585,6 +643,34 @@ func (cli *Client) JoinedMembers(roomID string) (resp *RespJoinedMembers, err er
 func (cli *Client) JoinedRooms() (resp *RespJoinedRooms, err error) {
 	u := cli.BuildURL("joined_rooms")
 	_, err = cli.MakeRequest("GET", u, nil, &resp)
+	return
+}
+
+// Messages returns a list of message and state events for a room. It uses
+// pagination query parameters to paginate history in the room.
+// See https://matrix.org/docs/spec/client_server/r0.2.0.html#get-matrix-client-r0-rooms-roomid-messages
+func (cli *Client) Messages(roomID, from, to string, dir rune, limit int) (resp *RespMessages, err error) {
+	query := map[string]string{
+		"from": from,
+		"dir":  string(dir),
+	}
+	if to != "" {
+		query["to"] = to
+	}
+	if limit != 0 {
+		query["limit"] = strconv.Itoa(limit)
+	}
+
+	urlPath := cli.BuildURLWithQuery([]string{"rooms", roomID, "messages"}, query)
+	_, err = cli.MakeRequest("GET", urlPath, nil, &resp)
+	return
+}
+
+// TurnServer returns turn server details and credentials for the client to use when initiating calls.
+// See http://matrix.org/docs/spec/client_server/r0.2.0.html#get-matrix-client-r0-voip-turnserver
+func (cli *Client) TurnServer() (resp *RespTurnServer, err error) {
+	urlPath := cli.BuildURL("voip", "turnServer")
+	_, err = cli.MakeRequest("GET", urlPath, nil, &resp)
 	return
 }
 

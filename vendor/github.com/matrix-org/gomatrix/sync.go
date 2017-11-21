@@ -73,6 +73,16 @@ func (s *DefaultSyncer) ProcessResponse(res *RespSync, since string) (err error)
 			s.notifyListeners(&event)
 		}
 	}
+	for roomID, roomData := range res.Rooms.Leave {
+		room := s.getOrCreateRoom(roomID)
+		for _, event := range roomData.Timeline.Events {
+			if event.StateKey != nil {
+				event.RoomID = roomID
+				room.UpdateState(&event)
+				s.notifyListeners(&event)
+			}
+		}
+	}
 	return
 }
 
@@ -102,7 +112,7 @@ func (s *DefaultSyncer) shouldProcessResponse(resp *RespSync, since string) bool
 	for roomID, roomData := range resp.Rooms.Join {
 		for i := len(roomData.Timeline.Events) - 1; i >= 0; i-- {
 			e := roomData.Timeline.Events[i]
-			if e.Type == "m.room.member" && e.StateKey == s.UserID {
+			if e.Type == "m.room.member" && e.StateKey != nil && *e.StateKey == s.UserID {
 				m := e.Content["membership"]
 				mship, ok := m.(string)
 				if !ok {

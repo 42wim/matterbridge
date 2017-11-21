@@ -7,13 +7,13 @@ import (
 
 // Event represents a single Matrix event.
 type Event struct {
-	StateKey  string                 `json:"state_key"`        // The state key for the event. Only present on State Events.
-	Sender    string                 `json:"sender"`           // The user ID of the sender of the event
-	Type      string                 `json:"type"`             // The event type
-	Timestamp int                    `json:"origin_server_ts"` // The unix timestamp when this message was sent by the origin server
-	ID        string                 `json:"event_id"`         // The unique ID of this event
-	RoomID    string                 `json:"room_id"`          // The room the event was sent to. May be nil (e.g. for presence)
-	Content   map[string]interface{} `json:"content"`          // The JSON content of the event.
+	StateKey  *string                `json:"state_key,omitempty"` // The state key for the event. Only present on State Events.
+	Sender    string                 `json:"sender"`              // The user ID of the sender of the event
+	Type      string                 `json:"type"`                // The event type
+	Timestamp int64                  `json:"origin_server_ts"`    // The unix timestamp when this message was sent by the origin server
+	ID        string                 `json:"event_id"`            // The unique ID of this event
+	RoomID    string                 `json:"room_id"`             // The room the event was sent to. May be nil (e.g. for presence)
+	Content   map[string]interface{} `json:"content"`             // The JSON content of the event.
 }
 
 // Body returns the value of the "body" key in the event content if it is
@@ -44,12 +44,31 @@ type TextMessage struct {
 	Body    string `json:"body"`
 }
 
-// ImageInfo contains info about an image
+// ImageInfo contains info about an image - http://matrix.org/docs/spec/client_server/r0.2.0.html#m-image
 type ImageInfo struct {
-	Height   uint   `json:"h"`
-	Width    uint   `json:"w"`
-	Mimetype string `json:"mimetype"`
-	Size     uint   `json:"size"`
+	Height   uint   `json:"h,omitempty"`
+	Width    uint   `json:"w,omitempty"`
+	Mimetype string `json:"mimetype,omitempty"`
+	Size     uint   `json:"size,omitempty"`
+}
+
+// VideoInfo contains info about a video - http://matrix.org/docs/spec/client_server/r0.2.0.html#m-video
+type VideoInfo struct {
+	Mimetype      string    `json:"mimetype,omitempty"`
+	ThumbnailInfo ImageInfo `json:"thumbnail_info"`
+	ThumbnailURL  string    `json:"thumbnail_url,omitempty"`
+	Height        uint      `json:"h,omitempty"`
+	Width         uint      `json:"w,omitempty"`
+	Duration      uint      `json:"duration,omitempty"`
+	Size          uint      `json:"size,omitempty"`
+}
+
+// VideoMessage is an m.video  - http://matrix.org/docs/spec/client_server/r0.2.0.html#m-video
+type VideoMessage struct {
+	MsgType string    `json:"msgtype"`
+	Body    string    `json:"body"`
+	URL     string    `json:"url"`
+	Info    VideoInfo `json:"info"`
 }
 
 // ImageMessage is an m.image event

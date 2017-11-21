@@ -70,3 +70,9 @@ type ReqBanUser struct {
 type ReqUnbanUser struct {
 	UserID string `json:"user_id"`
 }
+
+// ReqTyping is the JSON request for https://matrix.org/docs/spec/client_server/r0.2.0.html#put-matrix-client-r0-rooms-roomid-typing-userid
+type ReqTyping struct {
+	Typing  bool  `json:"typing"`
+	Timeout int64 `json:"timeout"`
+}

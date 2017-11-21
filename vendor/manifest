@@ -290,7 +290,7 @@
 			"importpath": "github.com/matrix-org/gomatrix",
 			"repository": "https://github.com/matrix-org/gomatrix",
 			"vcs": "git",
-			"revision": "812dcb5515581023371efaa6a82750d997f50d57",
+			"revision": "a7fc80c8060c2544fe5d4dae465b584f8e9b4e27",
 			"branch": "master",
 			"notests": true
 		},

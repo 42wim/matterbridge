@@ -13,7 +13,7 @@ func (room Room) UpdateState(event *Event) {
 	if !exists {
 		room.State[event.Type] = make(map[string]*Event)
 	}
-	room.State[event.Type][event.StateKey] = event
+	room.State[event.Type][*event.StateKey] = event
 }
 
 // GetStateEvent returns the state event for the given type/state_key combo, or nil.
