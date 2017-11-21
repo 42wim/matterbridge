@@ -155,7 +155,8 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		if dest.Protocol != "discord" &&
 			dest.Protocol != "slack" &&
 			dest.Protocol != "mattermost" &&
-			dest.Protocol != "telegram" {
+			dest.Protocol != "telegram" &&
+			dest.Protocol != "matrix" {
 			if msg.Text == "" {
 				return brMsgIDs
 			}

@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/helper"
 	log "github.com/Sirupsen/logrus"
 	matrix "github.com/matrix-org/gomatrix"
 )
@@ -144,7 +145,13 @@ func (b *Bmatrix) getRoomID(channel string) string {
 func (b *Bmatrix) handlematrix() error {
 	syncer := b.mc.Syncer.(*matrix.DefaultSyncer)
 	syncer.OnEventType("m.room.message", func(ev *matrix.Event) {
-		if (ev.Content["msgtype"].(string) == "m.text" || ev.Content["msgtype"].(string) == "m.notice" || ev.Content["msgtype"].(string) == "m.emote") && ev.Sender != b.UserID {
+		flog.Debugf("Received: %#v", ev)
+		if (ev.Content["msgtype"].(string) == "m.text" ||
+			ev.Content["msgtype"].(string) == "m.notice" ||
+			ev.Content["msgtype"].(string) == "m.emote" ||
+			ev.Content["msgtype"].(string) == "m.file" ||
+			ev.Content["msgtype"].(string) == "m.image" ||
+			ev.Content["msgtype"].(string) == "m.video") && ev.Sender != b.UserID {
 			b.RLock()
 			channel, ok := b.RoomMap[ev.RoomID]
 			b.RUnlock()
@@ -161,10 +168,31 @@ func (b *Bmatrix) handlematrix() error {
 			if ev.Content["msgtype"].(string) == "m.emote" {
 				rmsg.Event = config.EVENT_USER_ACTION
 			}
+			if ev.Content["msgtype"].(string) == "m.image" ||
+				ev.Content["msgtype"].(string) == "m.video" ||
+				ev.Content["msgtype"].(string) == "m.file" {
+				flog.Debugf("ev: %#v", ev)
+				rmsg.Extra = make(map[string][]interface{})
+				url := ev.Content["url"].(string)
+				url = strings.Replace(url, "mxc://", b.Config.Server+"/_matrix/media/v1/download/", -1)
+				info := ev.Content["info"].(map[string]interface{})
+				size := info["size"].(float64)
+				name := ev.Content["body"].(string)
+				flog.Debugf("trying to download %#v with size %#v", name, size)
+				if size <= 1000000 {
+					data, err := helper.DownloadFile(url)
+					if err != nil {
+						flog.Errorf("download %s failed %#v", url, err)
+					} else {
+						flog.Debugf("download OK %#v %#v %#v", name, len(*data), len(url))
+						rmsg.Extra["file"] = append(rmsg.Extra["file"], config.FileInfo{Name: name, Data: data})
+					}
+				}
+				rmsg.Text = ""
+			}
 			flog.Debugf("Sending message from %s on %s to gateway", ev.Sender, b.Account)
 			b.Remote <- rmsg
 		}
-		flog.Debugf("Received: %#v", ev)
 	})
 	go func() {
 		for {
