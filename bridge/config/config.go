@@ -36,6 +36,7 @@ type FileInfo struct {
 	Name    string
 	Data    *[]byte
 	Comment string
+	URL     string
 }
 
 type ChannelInfo struct {
@@ -48,17 +49,19 @@ type ChannelInfo struct {
 }
 
 type Protocol struct {
-	AuthCode               string     // steam
-	BindAddress            string     // mattermost, slack // DEPRECATED
-	Buffer                 int        // api
-	Charset                string     // irc
-	EditSuffix             string     // mattermost, slack, discord, telegram, gitter
-	EditDisable            bool       // mattermost, slack, discord, telegram, gitter
-	IconURL                string     // mattermost, slack
-	IgnoreNicks            string     // all protocols
-	IgnoreMessages         string     // all protocols
-	Jid                    string     // xmpp
-	Login                  string     // mattermost, matrix
+	AuthCode               string // steam
+	BindAddress            string // mattermost, slack // DEPRECATED
+	Buffer                 int    // api
+	Charset                string // irc
+	EditSuffix             string // mattermost, slack, discord, telegram, gitter
+	EditDisable            bool   // mattermost, slack, discord, telegram, gitter
+	IconURL                string // mattermost, slack
+	IgnoreNicks            string // all protocols
+	IgnoreMessages         string // all protocols
+	Jid                    string // xmpp
+	Login                  string // mattermost, matrix
+	MediaServerDownload    string
+	MediaServerUpload      string
 	MessageQueue           int        // IRC, size of message queue for flood control
 	MessageDelay           int        // IRC, time in millisecond to wait between messages
 	MessageLength          int        // IRC, max length of a message allowed

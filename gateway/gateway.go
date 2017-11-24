@@ -1,13 +1,16 @@
 package gateway
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
 	//	"github.com/davecgh/go-spew/spew"
+	"crypto/sha1"
 	"github.com/hashicorp/golang-lru"
 	"github.com/peterhellberg/emojilib"
+	"net/http"
 	"regexp"
 	"strings"
 	"time"
@@ -316,6 +319,34 @@ func (gw *Gateway) modifyMessage(msg *config.Message) {
 		msg.Text = re.ReplaceAllString(msg.Text, replace)
 	}
 	msg.Gateway = gw.Name
+}
+
+func (gw *Gateway) handleFiles(msg *config.Message) {
+	if msg.Extra == nil || gw.Config.General.MediaServerUpload == "" {
+		return
+	}
+	if len(msg.Extra["file"]) > 0 {
+		client := &http.Client{
+			Timeout: time.Second * 5,
+		}
+		for i, f := range msg.Extra["file"] {
+			fi := f.(config.FileInfo)
+			sha1sum := fmt.Sprintf("%x", sha1.Sum(*fi.Data))
+			reader := bytes.NewReader(*fi.Data)
+			url := gw.Config.General.MediaServerUpload + "/" + sha1sum + "/" + fi.Name
+			durl := gw.Config.General.MediaServerDownload + "/" + sha1sum + "/" + fi.Name
+			extra := msg.Extra["file"][i].(config.FileInfo)
+			extra.URL = durl
+			msg.Extra["file"][i] = extra
+			req, _ := http.NewRequest("PUT", url, reader)
+			req.Header.Set("Content-Type", "binary/octet-stream")
+			_, err := client.Do(req)
+			if err != nil {
+				log.Errorf("mediaserver upload failed: %#v", err)
+			}
+			log.Debugf("mediaserver download URL = %s", durl)
+		}
+	}
 }
 
 func getChannelID(msg config.Message) string {

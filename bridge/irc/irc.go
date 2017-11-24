@@ -178,6 +178,21 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 		msg.Text = buf.String()
 	}
 
+	if msg.Extra != nil {
+		if len(msg.Extra["file"]) > 0 {
+			for _, f := range msg.Extra["file"] {
+				fi := f.(config.FileInfo)
+				if fi.URL != "" {
+					msg.Text = fi.URL
+					b.Local <- config.Message{Text: msg.Text, Username: msg.Username, Channel: msg.Channel, Event: msg.Event}
+				} else {
+					b.Local <- config.Message{Text: msg.Text, Username: msg.Username, Channel: msg.Channel, Event: msg.Event}
+				}
+			}
+		}
+		return "", nil
+	}
+
 	for _, text := range strings.Split(msg.Text, "\n") {
 		if len(text) > b.Config.MessageLength {
 			text = text[:b.Config.MessageLength] + " <message clipped>"

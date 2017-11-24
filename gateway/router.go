@@ -99,6 +99,7 @@ func (r *Router) handleReceive() {
 			if !gw.ignoreMessage(&msg) {
 				msg.Timestamp = time.Now()
 				gw.modifyMessage(&msg)
+				gw.handleFiles(&msg)
 				for _, br := range gw.Bridges {
 					msgIDs = append(msgIDs, gw.handleMessage(msg, br)...)
 				}
