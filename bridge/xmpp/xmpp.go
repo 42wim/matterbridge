@@ -85,6 +85,19 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 		return "", nil
 	}
 	flog.Debugf("Receiving %#v", msg)
+	if msg.Extra != nil {
+		if len(msg.Extra["file"]) > 0 {
+			for _, f := range msg.Extra["file"] {
+				fi := f.(config.FileInfo)
+				if fi.URL != "" {
+					msg.Text = fi.URL
+				}
+				b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.Config.Muc, Text: msg.Username + msg.Text})
+			}
+			return "", nil
+		}
+	}
+
 	b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.Config.Muc, Text: msg.Username + msg.Text})
 	return "", nil
 }

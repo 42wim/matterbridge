@@ -184,13 +184,11 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 				fi := f.(config.FileInfo)
 				if fi.URL != "" {
 					msg.Text = fi.URL
-					b.Local <- config.Message{Text: msg.Text, Username: msg.Username, Channel: msg.Channel, Event: msg.Event}
-				} else {
-					b.Local <- config.Message{Text: msg.Text, Username: msg.Username, Channel: msg.Channel, Event: msg.Event}
 				}
+				b.Local <- config.Message{Text: msg.Text, Username: msg.Username, Channel: msg.Channel, Event: msg.Event}
 			}
+			return "", nil
 		}
-		return "", nil
 	}
 
 	for _, text := range strings.Split(msg.Text, "\n") {
