@@ -26,3 +26,15 @@ func DownloadFile(url string) (*[]byte, error) {
 	resp.Body.Close()
 	return &data, nil
 }
+
+func SplitStringLength(input string, length int) string {
+	a := []rune(input)
+	str := ""
+	for i, r := range a {
+		str = str + string(r)
+		if i > 0 && (i+1)%length == 0 {
+			str += "\n"
+		}
+	}
+	return str
+}

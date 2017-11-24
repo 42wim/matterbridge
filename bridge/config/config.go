@@ -62,10 +62,11 @@ type Protocol struct {
 	Login                  string // mattermost, matrix
 	MediaServerDownload    string
 	MediaServerUpload      string
-	MessageQueue           int        // IRC, size of message queue for flood control
 	MessageDelay           int        // IRC, time in millisecond to wait between messages
-	MessageLength          int        // IRC, max length of a message allowed
 	MessageFormat          string     // telegram
+	MessageLength          int        // IRC, max length of a message allowed
+	MessageQueue           int        // IRC, size of message queue for flood control
+	MessageSplit           bool       // IRC, split long messages with newlines on MessageLength instead of clipping
 	Muc                    string     // xmpp
 	Name                   string     // all protocols
 	Nick                   string     // all protocols

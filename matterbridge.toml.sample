@@ -80,6 +80,11 @@ MessageQueue=30
 #OPTIONAL (default 400)
 MessageLength=400
 
+#Split messages on MessageLength instead of showing the <message clipped>
+#WARNING: this could lead to flooding
+#OPTIONAL (default false)
+MessageSplit=false
+
 #Nicks you want to ignore. 
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL

@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/helper"
 	log "github.com/Sirupsen/logrus"
 	"github.com/lrstanley/girc"
 	"github.com/paulrosania/go-charset/charset"
@@ -191,6 +192,10 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 		}
 	}
 
+	// split long messages on messageLength, to avoid clipped messages #281
+	if b.Config.MessageSplit {
+		msg.Text = helper.SplitStringLength(msg.Text, b.Config.MessageLength)
+	}
 	for _, text := range strings.Split(msg.Text, "\n") {
 		if len(text) > b.Config.MessageLength {
 			text = text[:b.Config.MessageLength] + " <message clipped>"
