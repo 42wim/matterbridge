@@ -1,3 +1,17 @@
+# v1.5.0
+## New features
+* general: remote mediaserver support. See MediaServerDownload and MediaServerUpload in matterbridge.toml.sample
+  more information on https://github.com/42wim/matterbridge/wiki/Mediaserver-setup-%5Badvanced%5D
+* general: Add support for ReplaceNicks using regexp to replace nicks. Closes #269 (see matterbridge.toml.sample)
+* general: Add support for ReplaceMessages using regexp to replace messages. #269 (see matterbridge.toml.sample)
+* irc: Add MessageSplit option to split messages on MessageLength (irc). Closes #281
+* matrix: Add support for uploading images/video (matrix). Closes #302
+* matrix: Add support for uploaded images/video (matrix) 
+
+## Bugfix
+* telegram: Add webp extension to stickers if necessary (telegram)
+* mattermost: Break when re-login fails (mattermost)
+
 # v1.4.1
 ## Bugfix
 * telegram: fix issue with uploading for images/documents/stickers
