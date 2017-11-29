@@ -233,6 +233,7 @@ func IsValidNick(nick string) bool {
 
 	for i := 1; i < len(nick); i++ {
 		if (nick[i] < 0x41 || nick[i] > 0x7D) && (nick[i] < 0x30 || nick[i] > 0x39) && nick[i] != 0x2D {
+			fmt.Println(nick[i], i, nick)
 			// a-z, A-Z, 0-9, -, and _\[]{}^|
 			return false
 		}
@@ -291,7 +292,9 @@ func IsValidUser(name string) bool {
 // ToRFC1459 converts a string to the stripped down conversion within RFC
 // 1459. This will do things like replace an "A" with an "a", "[]" with "{}",
 // and so forth. Useful to compare two nicknames or channels.
-func ToRFC1459(input string) (out string) {
+func ToRFC1459(input string) string {
+	var out string
+
 	for i := 0; i < len(input); i++ {
 		if input[i] >= 65 && input[i] <= 94 {
 			out += string(rune(input[i]) + 32)

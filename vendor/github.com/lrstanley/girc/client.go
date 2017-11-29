@@ -191,18 +191,6 @@ func (conf *Config) isValid() error {
 // connected.
 var ErrNotConnected = errors.New("client is not connected to server")
 
-// ErrDisconnected is called when Config.Retries is less than 1, and we
-// non-intentionally disconnected from the server.
-var ErrDisconnected = errors.New("unexpectedly disconnected")
-
-// ErrInvalidTarget should be returned if the target which you are
-// attempting to send an event to is invalid or doesn't match RFC spec.
-type ErrInvalidTarget struct {
-	Target string
-}
-
-func (e *ErrInvalidTarget) Error() string { return "invalid target: " + e.Target }
-
 // New creates a new IRC client with the specified server, name and config.
 func New(config Config) *Client {
 	c := &Client{
@@ -252,6 +240,37 @@ func (c *Client) String() string {
 		"<Client init:%q handlers:%d connected:%t>", c.initTime.String(), c.Handlers.Len(), connected,
 	)
 }
+
+// TLSConnectionState returns the TLS connection state from tls.Conn{}, which
+// is useful to return needed TLS fingerprint info, certificates, verify cert
+// expiration dates, etc. Will only return an error if the underlying
+// connection wasn't established using TLS (see ErrConnNotTLS), or if the
+// client isn't connected.
+func (c *Client) TLSConnectionState() (*tls.ConnectionState, error) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	if c.conn == nil {
+		return nil, ErrNotConnected
+	}
+
+	c.conn.mu.RLock()
+	defer c.conn.mu.RUnlock()
+
+	if !c.conn.connected {
+		return nil, ErrNotConnected
+	}
+
+	if tlsConn, ok := c.conn.sock.(*tls.Conn); ok {
+		cs := tlsConn.ConnectionState()
+		return &cs, nil
+	}
+
+	return nil, ErrConnNotTLS
+}
+
+// ErrConnNotTLS is returned when Client.TLSConnectionState() is called, and
+// the connection to the server wasn't made with TLS.
+var ErrConnNotTLS = errors.New("underlying connection is not tls")
 
 // Close closes the network connection to the server, and sends a STOPPED
 // event. This should cause Connect() to return with nil. This should be
@@ -387,7 +406,7 @@ func (c *Client) ConnSince() (since *time.Duration, err error) {
 }
 
 // IsConnected returns true if the client is connected to the server.
-func (c *Client) IsConnected() (connected bool) {
+func (c *Client) IsConnected() bool {
 	c.mu.RLock()
 	if c.conn == nil {
 		c.mu.RUnlock()
@@ -395,7 +414,7 @@ func (c *Client) IsConnected() (connected bool) {
 	}
 
 	c.conn.mu.RLock()
-	connected = c.conn.connected
+	connected := c.conn.connected
 	c.conn.mu.RUnlock()
 	c.mu.RUnlock()
 
@@ -562,30 +581,30 @@ func (c *Client) NetworkName() (name string) {
 // supplied this information during connection. May be empty if the server
 // does not support RPL_MYINFO. Will panic if used when tracking has been
 // disabled.
-func (c *Client) ServerVersion() (version string) {
+func (c *Client) ServerVersion() string {
 	c.panicIfNotTracking()
 
-	version, _ = c.GetServerOption("VERSION")
+	version, _ := c.GetServerOption("VERSION")
 
 	return version
 }
 
 // ServerMOTD returns the servers message of the day, if the server has sent
 // it upon connect. Will panic if used when tracking has been disabled.
-func (c *Client) ServerMOTD() (motd string) {
+func (c *Client) ServerMOTD() string {
 	c.panicIfNotTracking()
 
 	c.state.RLock()
-	motd = c.state.motd
+	motd := c.state.motd
 	c.state.RUnlock()
 
 	return motd
 }
 
-// Lag is the latency between the server and the client. This is measured by
-// determining the difference in time between when we ping the server, and
+// Latency is the latency between the server and the client. This is measured
+// by determining the difference in time between when we ping the server, and
 // when we receive a pong.
-func (c *Client) Lag() time.Duration {
+func (c *Client) Latency() time.Duration {
 	c.mu.RLock()
 	c.conn.mu.RLock()
 	delta := c.conn.lastPong.Sub(c.conn.lastPing)

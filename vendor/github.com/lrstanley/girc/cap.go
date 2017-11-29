@@ -136,7 +136,7 @@ func handleCAP(c *Client, e Event) {
 			}
 
 			// Let them know which ones we'd like to enable.
-			c.write(&Event{Command: CAP, Params: []string{CAP_REQ}, Trailing: strings.Join(c.state.tmpCap, " ")})
+			c.write(&Event{Command: CAP, Params: []string{CAP_REQ}, Trailing: strings.Join(c.state.tmpCap, " "), EmptyTrailing: true})
 
 			// Re-initialize the tmpCap, so if we get multiple 'CAP LS' requests
 			// due to cap-notify, we can re-evaluate what we can support.

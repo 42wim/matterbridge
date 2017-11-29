@@ -12,8 +12,9 @@ import (
 
 // Input is a wrapper for events, based around private messages.
 type Input struct {
-	Origin *girc.Event
-	Args   []string
+	Origin  *girc.Event
+	Args    []string
+	RawArgs string
 }
 
 // Command is an IRC command, supporting aliases, help documentation and easy
@@ -189,8 +190,9 @@ func (ch *CmdHandler) Execute(client *girc.Client, event girc.Event) {
 	}
 
 	in := &Input{
-		Origin: &event,
-		Args:   args,
+		Origin:  &event,
+		Args:    args,
+		RawArgs: parsed[2],
 	}
 
 	go cmd.Fn(client, in)

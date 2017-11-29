@@ -16,18 +16,13 @@ type Commands struct {
 }
 
 // Nick changes the client nickname.
-func (cmd *Commands) Nick(name string) error {
-	if !IsValidNick(name) {
-		return &ErrInvalidTarget{Target: name}
-	}
-
+func (cmd *Commands) Nick(name string) {
 	cmd.c.Send(&Event{Command: NICK, Params: []string{name}})
-	return nil
 }
 
 // Join attempts to enter a list of IRC channels, at bulk if possible to
 // prevent sending extensive JOIN commands.
-func (cmd *Commands) Join(channels ...string) error {
+func (cmd *Commands) Join(channels ...string) {
 	// We can join multiple channels at once, however we need to ensure that
 	// we are not exceeding the line length. (see maxLength)
 	max := maxLength - len(JOIN) - 1
@@ -35,10 +30,6 @@ func (cmd *Commands) Join(channels ...string) error {
 	var buffer string
 
 	for i := 0; i < len(channels); i++ {
-		if !IsValidChannel(channels[i]) {
-			return &ErrInvalidTarget{Target: channels[i]}
-		}
-
 		if len(buffer+","+channels[i]) > max {
 			cmd.c.Send(&Event{Command: JOIN, Params: []string{buffer}})
 			buffer = ""
@@ -53,91 +44,74 @@ func (cmd *Commands) Join(channels ...string) error {
 
 		if i == len(channels)-1 {
 			cmd.c.Send(&Event{Command: JOIN, Params: []string{buffer}})
-			return nil
+			return
 		}
 	}
-
-	return nil
 }
 
 // JoinKey attempts to enter an IRC channel with a password.
-func (cmd *Commands) JoinKey(channel, password string) error {
-	if !IsValidChannel(channel) {
-		return &ErrInvalidTarget{Target: channel}
-	}
-
+func (cmd *Commands) JoinKey(channel, password string) {
 	cmd.c.Send(&Event{Command: JOIN, Params: []string{channel, password}})
-	return nil
 }
 
 // Part leaves an IRC channel.
-func (cmd *Commands) Part(channel, message string) error {
-	if !IsValidChannel(channel) {
-		return &ErrInvalidTarget{Target: channel}
+func (cmd *Commands) Part(channels ...string) {
+	for i := 0; i < len(channels); i++ {
+		cmd.c.Send(&Event{Command: PART, Params: []string{channels[i]}})
 	}
-
-	cmd.c.Send(&Event{Command: JOIN, Params: []string{channel}})
-	return nil
 }
 
 // PartMessage leaves an IRC channel with a specified leave message.
-func (cmd *Commands) PartMessage(channel, message string) error {
-	if !IsValidChannel(channel) {
-		return &ErrInvalidTarget{Target: channel}
-	}
-
-	cmd.c.Send(&Event{Command: JOIN, Params: []string{channel}, Trailing: message})
-	return nil
+func (cmd *Commands) PartMessage(channel, message string) {
+	cmd.c.Send(&Event{Command: PART, Params: []string{channel}, Trailing: message, EmptyTrailing: true})
 }
 
 // SendCTCP sends a CTCP request to target. Note that this method uses
-// PRIVMSG specifically.
-func (cmd *Commands) SendCTCP(target, ctcpType, message string) error {
+// PRIVMSG specifically. ctcpType is the CTCP command, e.g. "FINGER", "TIME",
+// "VERSION", etc.
+func (cmd *Commands) SendCTCP(target, ctcpType, message string) {
 	out := encodeCTCPRaw(ctcpType, message)
 	if out == "" {
-		return errors.New("invalid CTCP")
+		panic(fmt.Sprintf("invalid CTCP: %s -> %s: %s", target, ctcpType, message))
 	}
 
-	return cmd.Message(target, out)
+	cmd.Message(target, out)
 }
 
 // SendCTCPf sends a CTCP request to target using a specific format. Note that
-// this method uses PRIVMSG specifically.
-func (cmd *Commands) SendCTCPf(target, ctcpType, format string, a ...interface{}) error {
-	return cmd.SendCTCP(target, ctcpType, fmt.Sprintf(format, a...))
+// this method uses PRIVMSG specifically. ctcpType is the CTCP command, e.g.
+// "FINGER", "TIME", "VERSION", etc.
+func (cmd *Commands) SendCTCPf(target, ctcpType, format string, a ...interface{}) {
+	cmd.SendCTCP(target, ctcpType, fmt.Sprintf(format, a...))
 }
 
 // SendCTCPReplyf sends a CTCP response to target using a specific format.
-// Note that this method uses NOTICE specifically.
-func (cmd *Commands) SendCTCPReplyf(target, ctcpType, format string, a ...interface{}) error {
-	return cmd.SendCTCPReply(target, ctcpType, fmt.Sprintf(format, a...))
+// Note that this method uses NOTICE specifically. ctcpType is the CTCP
+// command, e.g. "FINGER", "TIME", "VERSION", etc.
+func (cmd *Commands) SendCTCPReplyf(target, ctcpType, format string, a ...interface{}) {
+	cmd.SendCTCPReply(target, ctcpType, fmt.Sprintf(format, a...))
 }
 
 // SendCTCPReply sends a CTCP response to target. Note that this method uses
 // NOTICE specifically.
-func (cmd *Commands) SendCTCPReply(target, ctcpType, message string) error {
+func (cmd *Commands) SendCTCPReply(target, ctcpType, message string) {
 	out := encodeCTCPRaw(ctcpType, message)
 	if out == "" {
-		return errors.New("invalid CTCP")
+		panic(fmt.Sprintf("invalid CTCP: %s -> %s: %s", target, ctcpType, message))
 	}
 
-	return cmd.Notice(target, out)
+	cmd.Notice(target, out)
 }
 
 // Message sends a PRIVMSG to target (either channel, service, or user).
-func (cmd *Commands) Message(target, message string) error {
-	if !IsValidNick(target) && !IsValidChannel(target) {
-		return &ErrInvalidTarget{Target: target}
-	}
-
-	cmd.c.Send(&Event{Command: PRIVMSG, Params: []string{target}, Trailing: message})
-	return nil
+func (cmd *Commands) Message(target, message string) {
+	cmd.c.Send(&Event{Command: PRIVMSG, Params: []string{target}, Trailing: message, EmptyTrailing: true})
 }
 
 // Messagef sends a formated PRIVMSG to target (either channel, service, or
 // user).
-func (cmd *Commands) Messagef(target, format string, a ...interface{}) error {
-	return cmd.Message(target, fmt.Sprintf(format, a...))
+func (cmd *Commands) Messagef(target, format string, a ...interface{}) {
+	cmd.Message(target, fmt.Sprintf(format, a...))
 }
 
 // ErrInvalidSource is returned when a method needs to know the origin of an
@@ -146,94 +120,95 @@ func (cmd *Commands) Messagef(target, format string, a ...interface{}) error {
 var ErrInvalidSource = errors.New("event has nil or invalid source address")
 
 // Reply sends a reply to channel or user, based on where the supplied event
-// originated from. See also ReplyTo().
-func (cmd *Commands) Reply(event Event, message string) error {
+// originated from. See also ReplyTo(). Panics if the incoming event has no
+// source.
+func (cmd *Commands) Reply(event Event, message string) {
 	if event.Source == nil {
-		return ErrInvalidSource
+		panic(ErrInvalidSource)
 	}
 
 	if len(event.Params) > 0 && IsValidChannel(event.Params[0]) {
-		return cmd.Message(event.Params[0], message)
+		cmd.Message(event.Params[0], message)
+		return
 	}
 
-	return cmd.Message(event.Source.Name, message)
+	cmd.Message(event.Source.Name, message)
 }
 
 // Replyf sends a reply to channel or user with a format string, based on
-// where the supplied event originated from. See also ReplyTof().
-func (cmd *Commands) Replyf(event Event, format string, a ...interface{}) error {
-	return cmd.Reply(event, fmt.Sprintf(format, a...))
+// where the supplied event originated from. See also ReplyTof(). Panics if
+// the incoming event has no source.
+func (cmd *Commands) Replyf(event Event, format string, a ...interface{}) {
+	cmd.Reply(event, fmt.Sprintf(format, a...))
 }
 
 // ReplyTo sends a reply to a channel or user, based on where the supplied
 // event originated from. ReplyTo(), when originating from a channel will
-// default to replying with "<user>, <message>". See also Reply().
-func (cmd *Commands) ReplyTo(event Event, message string) error {
+// default to replying with "<user>, <message>". See also Reply(). Panics if
+// the incoming event has no source.
+func (cmd *Commands) ReplyTo(event Event, message string) {
 	if event.Source == nil {
-		return ErrInvalidSource
+		panic(ErrInvalidSource)
 	}
 
 	if len(event.Params) > 0 && IsValidChannel(event.Params[0]) {
-		return cmd.Message(event.Params[0], event.Source.Name+", "+message)
+		cmd.Message(event.Params[0], event.Source.Name+", "+message)
+		return
 	}
 
-	return cmd.Message(event.Source.Name, message)
+	cmd.Message(event.Source.Name, message)
 }
 
 // ReplyTof sends a reply to a channel or user with a format string, based
 // on where the supplied event originated from. ReplyTo(), when originating
 // from a channel will default to replying with "<user>, <message>". See
-// also Replyf().
-func (cmd *Commands) ReplyTof(event Event, format string, a ...interface{}) error {
-	return cmd.ReplyTo(event, fmt.Sprintf(format, a...))
+// also Replyf(). Panics if the incoming event has no source.
+func (cmd *Commands) ReplyTof(event Event, format string, a ...interface{}) {
+	cmd.ReplyTo(event, fmt.Sprintf(format, a...))
 }
 
 // Action sends a PRIVMSG ACTION (/me) to target (either channel, service,
 // or user).
-func (cmd *Commands) Action(target, message string) error {
-	if !IsValidNick(target) && !IsValidChannel(target) {
-		return &ErrInvalidTarget{Target: target}
-	}
-
+func (cmd *Commands) Action(target, message string) {
 	cmd.c.Send(&Event{
 		Command:  PRIVMSG,
 		Params:   []string{target},
 		Trailing: fmt.Sprintf("\001ACTION %s\001", message),
 	})
-	return nil
 }
 
 // Actionf sends a formated PRIVMSG ACTION (/me) to target (either channel,
 // service, or user).
-func (cmd *Commands) Actionf(target, format string, a ...interface{}) error {
-	return cmd.Action(target, fmt.Sprintf(format, a...))
+func (cmd *Commands) Actionf(target, format string, a ...interface{}) {
+	cmd.Action(target, fmt.Sprintf(format, a...))
 }
 
 // Notice sends a NOTICE to target (either channel, service, or user).
-func (cmd *Commands) Notice(target, message string) error {
-	if !IsValidNick(target) && !IsValidChannel(target) {
-		return &ErrInvalidTarget{Target: target}
-	}
-
-	cmd.c.Send(&Event{Command: NOTICE, Params: []string{target}, Trailing: message})
-	return nil
+func (cmd *Commands) Notice(target, message string) {
+	cmd.c.Send(&Event{Command: NOTICE, Params: []string{target}, Trailing: message, EmptyTrailing: true})
 }
 
 // Noticef sends a formated NOTICE to target (either channel, service, or
 // user).
-func (cmd *Commands) Noticef(target, format string, a ...interface{}) error {
-	return cmd.Notice(target, fmt.Sprintf(format, a...))
+func (cmd *Commands) Noticef(target, format string, a ...interface{}) {
+	cmd.Notice(target, fmt.Sprintf(format, a...))
 }
 
-// SendRaw sends a raw string back to the server, without carriage returns
-// or newlines.
-func (cmd *Commands) SendRaw(raw string) error {
-	e := ParseEvent(raw)
-	if e == nil {
-		return errors.New("invalid event: " + raw)
+// SendRaw sends a raw string (or multiple) to the server, without carriage
+// returns or newlines. Returns an error if one of the raw strings cannot be
+// properly parsed.
+func (cmd *Commands) SendRaw(raw ...string) error {
+	var event *Event
+
+	for i := 0; i < len(raw); i++ {
+		event = ParseEvent(raw[i])
+		if event == nil {
+			return errors.New("invalid event: " + raw[i])
+		}
+
+		cmd.c.Send(event)
 	}
 
-	cmd.c.Send(e)
 	return nil
 }
 
@@ -246,31 +221,26 @@ func (cmd *Commands) SendRawf(format string, a ...interface{}) error {
 // Topic sets the topic of channel to message. Does not verify the length
 // of the topic.
 func (cmd *Commands) Topic(channel, message string) {
-	cmd.c.Send(&Event{Command: TOPIC, Params: []string{channel}, Trailing: message})
+	cmd.c.Send(&Event{Command: TOPIC, Params: []string{channel}, Trailing: message, EmptyTrailing: true})
 }
 
 // Who sends a WHO query to the server, which will attempt WHOX by default.
 // See http://faerion.sourceforge.net/doc/irc/whox.var for more details. This
 // sends "%tcuhnr,2" per default. Do not use "1" as this will conflict with
 // girc's builtin tracking functionality.
-func (cmd *Commands) Who(target string) error {
-	if !IsValidNick(target) && !IsValidChannel(target) && !IsValidUser(target) {
-		return &ErrInvalidTarget{Target: target}
+func (cmd *Commands) Who(users ...string) {
+	for i := 0; i < len(users); i++ {
+		cmd.c.Send(&Event{Command: WHO, Params: []string{users[i], "%tcuhnr,2"}})
 	}
-
-	cmd.c.Send(&Event{Command: WHO, Params: []string{target, "%tcuhnr,2"}})
-	return nil
 }
 
-// Whois sends a WHOIS query to the server, targeted at a specific user.
-// as WHOIS is a bit slower, you may want to use WHO for brief user info.
-func (cmd *Commands) Whois(nick string) error {
-	if !IsValidNick(nick) {
-		return &ErrInvalidTarget{Target: nick}
+// Whois sends a WHOIS query to the server, targeted at a specific user (or
+// set of users). As WHOIS is a bit slower, you may want to use WHO for brief
+// user info.
+func (cmd *Commands) Whois(users ...string) {
+	for i := 0; i < len(users); i++ {
+		cmd.c.Send(&Event{Command: WHOIS, Params: []string{users[i]}})
 	}
-
-	cmd.c.Send(&Event{Command: WHOIS, Params: []string{nick}})
-	return nil
 }
 
 // Ping sends a PING query to the server, with a specific identifier that
@@ -294,36 +264,19 @@ func (cmd *Commands) Oper(user, pass string) {
 // Kick sends a KICK query to the server, attempting to kick nick from
 // channel, with reason. If reason is blank, one will not be sent to the
 // server.
-func (cmd *Commands) Kick(channel, nick, reason string) error {
-	if !IsValidChannel(channel) {
-		return &ErrInvalidTarget{Target: channel}
-	}
-
-	if !IsValidNick(nick) {
-		return &ErrInvalidTarget{Target: nick}
-	}
-
+func (cmd *Commands) Kick(channel, user, reason string) {
 	if reason != "" {
-		cmd.c.Send(&Event{Command: KICK, Params: []string{channel, nick}, Trailing: reason})
-		return nil
+		cmd.c.Send(&Event{Command: KICK, Params: []string{channel, user}, Trailing: reason, EmptyTrailing: true})
 	}
 
-	cmd.c.Send(&Event{Command: KICK, Params: []string{channel, nick}})
-	return nil
+	cmd.c.Send(&Event{Command: KICK, Params: []string{channel, user}})
 }
 
 // Invite sends a INVITE query to the server, to invite nick to channel.
-func (cmd *Commands) Invite(channel, nick string) error {
-	if !IsValidChannel(channel) {
-		return &ErrInvalidTarget{Target: channel}
+func (cmd *Commands) Invite(channel string, users ...string) {
+	for i := 0; i < len(users); i++ {
+		cmd.c.Send(&Event{Command: INVITE, Params: []string{users[i], channel}})
 	}
-
-	if !IsValidNick(nick) {
-		return &ErrInvalidTarget{Target: nick}
-	}
-
-	cmd.c.Send(&Event{Command: INVITE, Params: []string{nick, channel}})
-	return nil
 }
 
 // Away sends a AWAY query to the server, suggesting that the client is no
@@ -348,10 +301,10 @@ func (cmd *Commands) Back() {
 // Supports multiple channels at once, in hopes it will reduce extensive
 // LIST queries to the server. Supply no channels to run a list against the
 // entire server (warning, that may mean LOTS of channels!)
-func (cmd *Commands) List(channels ...string) error {
+func (cmd *Commands) List(channels ...string) {
 	if len(channels) == 0 {
 		cmd.c.Send(&Event{Command: LIST})
-		return nil
+		return
 	}
 
 	// We can LIST multiple channels at once, however we need to ensure that
@@ -361,10 +314,6 @@ func (cmd *Commands) List(channels ...string) error {
 	var buffer string
 
 	for i := 0; i < len(channels); i++ {
-		if !IsValidChannel(channels[i]) {
-			return &ErrInvalidTarget{Target: channels[i]}
-		}
-
 		if len(buffer+","+channels[i]) > max {
 			cmd.c.Send(&Event{Command: LIST, Params: []string{buffer}})
 			buffer = ""
@@ -379,20 +328,13 @@ func (cmd *Commands) List(channels ...string) error {
 
 		if i == len(channels)-1 {
 			cmd.c.Send(&Event{Command: LIST, Params: []string{buffer}})
-			return nil
+			return
 		}
 	}
-
-	return nil
 }
 
 // Whowas sends a WHOWAS query to the server. amount is the amount of results
 // you want back.
-func (cmd *Commands) Whowas(nick string, amount int) error {
-	if !IsValidNick(nick) {
-		return &ErrInvalidTarget{Target: nick}
-	}
-
-	cmd.c.Send(&Event{Command: WHOWAS, Params: []string{nick, string(amount)}})
-	return nil
+func (cmd *Commands) Whowas(user string, amount int) {
+	cmd.c.Send(&Event{Command: WHOWAS, Params: []string{user, string(amount)}})
 }
