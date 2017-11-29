@@ -232,7 +232,7 @@ func IsValidNick(nick string) bool {
 	}
 
 	for i := 1; i < len(nick); i++ {
-		if (nick[i] < 0x41 || nick[i] > 0x7D) && (nick[i] < 0x30 || nick[i] > 0x39) && nick[i] != 0x2D {
+		if (nick[i] < 0x41 || nick[i] > 0x7E) && (nick[i] < 0x30 || nick[i] > 0x39) && nick[i] != 0x2D {
 			fmt.Println(nick[i], i, nick)
 			// a-z, A-Z, 0-9, -, and _\[]{}^|
 			return false
