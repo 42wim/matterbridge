@@ -29,11 +29,12 @@ func (c *Client) RunHandlers(event *Event) {
 		}
 	}
 
-	// Regular wildcard handlers.
-	c.Handlers.exec(ALL_EVENTS, c, event.Copy())
+	// Background handlers first.
+	c.Handlers.exec(ALL_EVENTS, true, c, event.Copy())
+	c.Handlers.exec(event.Command, true, c, event.Copy())
 
-	// Then regular handlers.
-	c.Handlers.exec(event.Command, c, event.Copy())
+	c.Handlers.exec(ALL_EVENTS, false, c, event.Copy())
+	c.Handlers.exec(event.Command, false, c, event.Copy())
 
 	// Check if it's a CTCP.
 	if ctcp := decodeCTCP(event.Copy()); ctcp != nil {
@@ -144,7 +145,7 @@ func (c *Caller) cuid(cmd string, n int) (cuid, uid string) {
 // cuidToID allows easy mapping between a generated cuid and the caller
 // external/internal handler maps.
 func (c *Caller) cuidToID(input string) (cmd, uid string) {
-	i := strings.IndexByte(input, 0x3A)
+	i := strings.IndexByte(input, ':')
 	if i < 0 {
 		return "", ""
 	}
@@ -160,9 +161,9 @@ type execStack struct {
 // exec executes all handlers pertaining to specified event. Internal first,
 // then external.
 //
-// Please note that there is no specific order/priority for which the
-// handler types themselves or the handlers are executed.
-func (c *Caller) exec(command string, client *Client, event *Event) {
+// Please note that there is no specific order/priority for which the handlers
+// are executed.
+func (c *Caller) exec(command string, bg bool, client *Client, event *Event) {
 	// Build a stack of handlers which can be executed concurrently.
 	var stack []execStack
 
@@ -170,13 +171,21 @@ func (c *Caller) exec(command string, client *Client, event *Event) {
 	// Get internal handlers first.
 	if _, ok := c.internal[command]; ok {
 		for cuid := range c.internal[command] {
+			if (strings.HasSuffix(cuid, ":bg") && !bg) || (!strings.HasSuffix(cuid, ":bg") && bg) {
+				continue
+			}
+
 			stack = append(stack, execStack{c.internal[command][cuid], cuid})
 		}
 	}
 
-	// Aaand then external handlers.
+	// Then external handlers.
 	if _, ok := c.external[command]; ok {
 		for cuid := range c.external[command] {
+			if (strings.HasSuffix(cuid, ":bg") && !bg) || (!strings.HasSuffix(cuid, ":bg") && bg) {
+				continue
+			}
+
 			stack = append(stack, execStack{c.external[command][cuid], cuid})
 		}
 	}
@@ -189,18 +198,29 @@ func (c *Caller) exec(command string, client *Client, event *Event) {
 	wg.Add(len(stack))
 	for i := 0; i < len(stack); i++ {
 		go func(index int) {
-			c.debug.Printf("executing handler %s for event %s (%d of %d)", stack[index].cuid, command, index+1, len(stack))
+			defer wg.Done()
+			c.debug.Printf("[%d/%d] exec %s => %s", index+1, len(stack), stack[index].cuid, command)
 			start := time.Now()
 
-			// If they want to catch any panics, add to defer stack.
+			if bg {
+				go func() {
+					if client.Config.RecoverFunc != nil {
+						defer recoverHandlerPanic(client, event, stack[index].cuid, 3)
+					}
+
+					stack[index].Execute(client, *event)
+					c.debug.Printf("[%d/%d] done %s == %s", index+1, len(stack), stack[index].cuid, time.Since(start))
+				}()
+
+				return
+			}
+
 			if client.Config.RecoverFunc != nil {
 				defer recoverHandlerPanic(client, event, stack[index].cuid, 3)
 			}
 
 			stack[index].Execute(client, *event)
-
-			c.debug.Printf("execution of %s took %s (%d of %d)", stack[index].cuid, time.Since(start), index+1, len(stack))
-			wg.Done()
+			c.debug.Printf("[%d/%d] done %s == %s", index+1, len(stack), stack[index].cuid, time.Since(start))
 		}(i)
 	}
 
@@ -281,9 +301,9 @@ func (c *Caller) remove(cuid string) (success bool) {
 
 // sregister is much like Caller.register(), except that it safely locks
 // the Caller mutex.
-func (c *Caller) sregister(internal bool, cmd string, handler Handler) (cuid string) {
+func (c *Caller) sregister(internal, bg bool, cmd string, handler Handler) (cuid string) {
 	c.mu.Lock()
-	cuid = c.register(internal, cmd, handler)
+	cuid = c.register(internal, bg, cmd, handler)
 	c.mu.Unlock()
 
 	return cuid
@@ -291,30 +311,34 @@ func (c *Caller) sregister(internal bool, cmd string, handler Handler) (cuid str
 
 // register will register a handler in the internal tracker. Unsafe (you
 // must lock c.mu yourself!)
-func (c *Caller) register(internal bool, cmd string, handler Handler) (cuid string) {
+func (c *Caller) register(internal, bg bool, cmd string, handler Handler) (cuid string) {
 	var uid string
 
 	cmd = strings.ToUpper(cmd)
+
+	cuid, uid = c.cuid(cmd, 20)
+	if bg {
+		uid += ":bg"
+		cuid += ":bg"
+	}
 
 	if internal {
 		if _, ok := c.internal[cmd]; !ok {
 			c.internal[cmd] = map[string]Handler{}
 		}
 
-		cuid, uid = c.cuid(cmd, 20)
 		c.internal[cmd][uid] = handler
 	} else {
 		if _, ok := c.external[cmd]; !ok {
 			c.external[cmd] = map[string]Handler{}
 		}
 
-		cuid, uid = c.cuid(cmd, 20)
 		c.external[cmd][uid] = handler
 	}
 
 	_, file, line, _ := runtime.Caller(3)
 
-	c.debug.Printf("registering handler for %q with cuid %q (internal: %t) from: %s:%d", cmd, cuid, internal, file, line)
+	c.debug.Printf("reg %q => %s [int:%t bg:%t] %s:%d", uid, cmd, internal, bg, file, line)
 
 	return cuid
 }
@@ -323,31 +347,20 @@ func (c *Caller) register(internal bool, cmd string, handler Handler) (cuid stri
 // given event. cuid is the handler uid which can be used to remove the
 // handler with Caller.Remove().
 func (c *Caller) AddHandler(cmd string, handler Handler) (cuid string) {
-	return c.sregister(false, cmd, handler)
+	return c.sregister(false, false, cmd, handler)
 }
 
 // Add registers the handler function for the given event. cuid is the
 // handler uid which can be used to remove the handler with Caller.Remove().
 func (c *Caller) Add(cmd string, handler func(client *Client, event Event)) (cuid string) {
-	return c.sregister(false, cmd, HandlerFunc(handler))
+	return c.sregister(false, false, cmd, HandlerFunc(handler))
 }
 
 // AddBg registers the handler function for the given event and executes it
 // in a go-routine. cuid is the handler uid which can be used to remove the
 // handler with Caller.Remove().
 func (c *Caller) AddBg(cmd string, handler func(client *Client, event Event)) (cuid string) {
-	return c.sregister(false, cmd, HandlerFunc(func(client *Client, event Event) {
-		// Setting up background-based handlers this way allows us to get
-		// clean call stacks for use with panic recovery.
-		go func() {
-			// If they want to catch any panics, add to defer stack.
-			if client.Config.RecoverFunc != nil {
-				defer recoverHandlerPanic(client, &event, "goroutine", 3)
-			}
-
-			handler(client, event)
-		}()
-	}))
+	return c.sregister(false, true, cmd, HandlerFunc(handler))
 }
 
 // AddTmp adds a "temporary" handler, which is good for one-time or few-time
@@ -361,47 +374,37 @@ func (c *Caller) AddBg(cmd string, handler func(client *Client, event Event)) (c
 //
 // Additionally, AddTmp has a useful option, deadline. When set to greater
 // than 0, deadline will be the amount of time that passes before the handler
-// is removed from the stack, regardless if the handler returns true or not.
+// is removed from the stack, regardless of if the handler returns true or not.
 // This is useful in that it ensures that the handler is cleaned up if the
 // server does not respond appropriately, or takes too long to respond.
 //
 // Note that handlers supplied with AddTmp are executed in a goroutine to
-// ensure that they are not blocking other handlers. Additionally, use cuid
-// with Caller.Remove() to prematurely remove the handler from the stack,
-// bypassing the timeout or waiting for the handler to return that it wants
-// to be removed from the stack.
+// ensure that they are not blocking other handlers. However, if you are
+// creating a temporary handler from another handler, it should be a
+// background handler.
+//
+// Use cuid with Caller.Remove() to prematurely remove the handler from the
+// stack, bypassing the timeout or waiting for the handler to return that it
+// wants to be removed from the stack.
 func (c *Caller) AddTmp(cmd string, deadline time.Duration, handler func(client *Client, event Event) bool) (cuid string, done chan struct{}) {
-	var uid string
-	cuid, uid = c.cuid(cmd, 20)
-
 	done = make(chan struct{})
 
-	c.mu.Lock()
-	if _, ok := c.external[cmd]; !ok {
-		c.external[cmd] = map[string]Handler{}
-	}
-	c.external[cmd][uid] = HandlerFunc(func(client *Client, event Event) {
-		// Setting up background-based handlers this way allows us to get
-		// clean call stacks for use with panic recovery.
-		go func() {
-			// If they want to catch any panics, add to defer stack.
-			if client.Config.RecoverFunc != nil {
-				defer recoverHandlerPanic(client, &event, "tmp-goroutine", 3)
+	cuid = c.sregister(false, true, cmd, HandlerFunc(func(client *Client, event Event) {
+		remove := handler(client, event)
+		if remove {
+			if ok := c.Remove(cuid); ok {
+				close(done)
 			}
-
-			remove := handler(client, event)
-			if remove {
-				if ok := c.Remove(cuid); ok {
-					close(done)
-				}
-			}
-		}()
-	})
-	c.mu.Unlock()
+		}
+	}))
 
 	if deadline > 0 {
 		go func() {
-			<-time.After(deadline)
+			select {
+			case <-time.After(deadline):
+			case <-done:
+			}
+
 			if ok := c.Remove(cuid); ok {
 				close(done)
 			}

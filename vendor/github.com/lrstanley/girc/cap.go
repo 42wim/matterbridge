@@ -375,11 +375,11 @@ func handleTags(c *Client, e Event) {
 }
 
 const (
-	prefixTag      byte = 0x40 // @
-	prefixTagValue byte = 0x3D // =
-	prefixUserTag  byte = 0x2B // +
-	tagSeparator   byte = 0x3B // ;
-	maxTagLength   int  = 511  // 510 + @ and " " (space), though space usually not included.
+	prefixTag      byte = '@'
+	prefixTagValue byte = '='
+	prefixUserTag  byte = '+'
+	tagSeparator   byte = ';'
+	maxTagLength   int  = 511 // 510 + @ and " " (space), though space usually not included.
 )
 
 // Tags represents the key-value pairs in IRCv3 message tags. The map contains
@@ -618,7 +618,7 @@ func validTag(name string) bool {
 
 	for i := 0; i < len(name); i++ {
 		// A-Z, a-z, 0-9, -/._
-		if (name[i] < 0x41 || name[i] > 0x5A) && (name[i] < 0x61 || name[i] > 0x7A) && (name[i] < 0x2D || name[i] > 0x39) && name[i] != 0x5F {
+		if (name[i] < 'A' || name[i] > 'Z') && (name[i] < 'a' || name[i] > 'z') && (name[i] < '-' || name[i] > '9') && name[i] != '_' {
 			return false
 		}
 	}
@@ -631,7 +631,7 @@ func validTag(name string) bool {
 func validTagValue(value string) bool {
 	for i := 0; i < len(value); i++ {
 		// Don't allow any invisible chars within the tag, or semicolons.
-		if value[i] < 0x21 || value[i] > 0x7E || value[i] == 0x3B {
+		if value[i] < '!' || value[i] > '~' || value[i] == ';' {
 			return false
 		}
 	}

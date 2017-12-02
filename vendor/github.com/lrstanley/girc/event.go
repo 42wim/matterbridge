@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	eventSpace byte = 0x20 // Separator.
-	maxLength       = 510  // Maximum length is 510 (2 for line endings).
+	eventSpace byte = ' ' // Separator.
+	maxLength       = 510 // Maximum length is 510 (2 for line endings).
 )
 
 // cutCRFunc is used to trim CR characters from prefixes/messages.
@@ -256,7 +256,7 @@ func (e *Event) Bytes() []byte {
 
 	// Strip newlines and carriage returns.
 	for i := 0; i < len(out); i++ {
-		if out[i] == 0x0A || out[i] == 0x0D {
+		if out[i] == '\n' || out[i] == '\r' {
 			out = append(out[:i], out[i+1:]...)
 			i-- // Decrease the index so we can pick up where we left off.
 		}
@@ -432,9 +432,9 @@ func (e *Event) StripAction() string {
 }
 
 const (
-	messagePrefix byte = 0x3A // ":" -- prefix or last argument
-	prefixIdent   byte = 0x21 // "!" -- username
-	prefixHost    byte = 0x40 // "@" -- hostname
+	messagePrefix byte = ':' // Prefix or last argument.
+	prefixIdent   byte = '!' // Username.
+	prefixHost    byte = '@' // Hostname.
 )
 
 // Source represents the sender of an IRC event, see RFC1459 section 2.3.1.

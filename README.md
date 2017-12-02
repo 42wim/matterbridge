@@ -175,7 +175,7 @@ Matterbridge wouldn't exist without these libraries:
 * echo - https://github.com/labstack/echo
 * gitter - https://github.com/sromku/go-gitter
 * gops - https://github.com/google/gops
-* irc - https://github.com/thoj/go-ircevent
+* irc - https://github.com/lrstanley/girc
 * mattermost - https://github.com/mattermost/platform
 * matrix - https://github.com/matrix-org/gomatrix
 * slack - https://github.com/nlopes/slack

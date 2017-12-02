@@ -464,9 +464,9 @@ func (c *Client) GetHost() string {
 	return c.state.host
 }
 
-// Channels returns the active list of channels that the client is in.
+// ChannelList returns the active list of channel names that the client is in.
 // Panics if tracking is disabled.
-func (c *Client) Channels() []string {
+func (c *Client) ChannelList() []string {
 	c.panicIfNotTracking()
 
 	c.state.RLock()
@@ -482,9 +482,26 @@ func (c *Client) Channels() []string {
 	return channels
 }
 
-// Users returns the active list of users that the client is tracking across
-// all files. Panics if tracking is disabled.
-func (c *Client) Users() []string {
+// Channels returns the active channels that the client is in. Panics if
+// tracking is disabled.
+func (c *Client) Channels() []*Channel {
+	c.panicIfNotTracking()
+
+	c.state.RLock()
+	channels := make([]*Channel, len(c.state.channels))
+	var i int
+	for channel := range c.state.channels {
+		channels[i] = c.state.channels[channel].Copy()
+		i++
+	}
+	c.state.RUnlock()
+
+	return channels
+}
+
+// UserList returns the active list of nicknames that the client is tracking
+// across all networks. Panics if tracking is disabled.
+func (c *Client) UserList() []string {
 	c.panicIfNotTracking()
 
 	c.state.RLock()
@@ -496,6 +513,23 @@ func (c *Client) Users() []string {
 	}
 	c.state.RUnlock()
 	sort.Strings(users)
+
+	return users
+}
+
+// Users returns the active users that the client is tracking across all
+// networks. Panics if tracking is disabled.
+func (c *Client) Users() []*User {
+	c.panicIfNotTracking()
+
+	c.state.RLock()
+	users := make([]*User, len(c.state.users))
+	var i int
+	for user := range c.state.users {
+		users[i] = c.state.users[user].Copy()
+		i++
+	}
+	c.state.RUnlock()
 
 	return users
 }

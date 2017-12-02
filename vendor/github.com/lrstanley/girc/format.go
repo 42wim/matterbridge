@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	fmtOpenChar  = 0x7B // {
-	fmtCloseChar = 0x7D // }
+	fmtOpenChar  = '{'
+	fmtCloseChar = '}'
 )
 
 var fmtColors = map[string]int{
@@ -113,7 +113,7 @@ func Fmt(text string) string {
 
 		if last > -1 {
 			// A-Z, a-z, and ","
-			if text[i] != 0x2c && (text[i] <= 0x41 || text[i] >= 0x5a) && (text[i] <= 0x61 || text[i] >= 0x7a) {
+			if text[i] != ',' && (text[i] <= 'A' || text[i] >= 'Z') && (text[i] <= 'a' || text[i] >= 'z') {
 				last = -1
 				continue
 			}
@@ -127,10 +127,10 @@ func Fmt(text string) string {
 // See Fmt() for more information.
 func TrimFmt(text string) string {
 	for color := range fmtColors {
-		text = strings.Replace(text, "{"+color+"}", "", -1)
+		text = strings.Replace(text, string(fmtOpenChar)+color+string(fmtCloseChar), "", -1)
 	}
 	for code := range fmtCodes {
-		text = strings.Replace(text, "{"+code+"}", "", -1)
+		text = strings.Replace(text, string(fmtOpenChar)+code+string(fmtCloseChar), "", -1)
 	}
 
 	return text
@@ -175,9 +175,10 @@ func IsValidChannel(channel string) bool {
 		return false
 	}
 
-	// #, +, !<channelid>, or &
-	// Including "*" in the prefix list, as this is commonly used (e.g. ZNC)
-	if bytes.IndexByte([]byte{0x21, 0x23, 0x26, 0x2A, 0x2B}, channel[0]) == -1 {
+	// #, +, !<channelid>, ~, or &
+	// Including "*" and "~" in the prefix list, as these are commonly used
+	// (e.g. ZNC.)
+	if bytes.IndexByte([]byte{'!', '#', '&', '*', '~', '+'}, channel[0]) == -1 {
 		return false
 	}
 
@@ -186,14 +187,14 @@ func IsValidChannel(channel string) bool {
 	//   1 (prefix) + 5 (id) + 1 (+, channel name)
 	// On some networks, this may be extended with ISUPPORT capabilities,
 	// however this is extremely uncommon.
-	if channel[0] == 0x21 {
+	if channel[0] == '!' {
 		if len(channel) < 7 {
 			return false
 		}
 
 		// check for valid ID
 		for i := 1; i < 6; i++ {
-			if (channel[i] < 0x30 || channel[i] > 0x39) && (channel[i] < 0x41 || channel[i] > 0x5A) {
+			if (channel[i] < '0' || channel[i] > '9') && (channel[i] < 'A' || channel[i] > 'Z') {
 				return false
 			}
 		}
@@ -222,18 +223,15 @@ func IsValidNick(nick string) bool {
 		return false
 	}
 
-	nick = ToRFC1459(nick)
-
 	// Check the first index. Some characters aren't allowed for the first
 	// index of an IRC nickname.
-	if nick[0] < 0x41 || nick[0] > 0x7D {
-		// a-z, A-Z, and _\[]{}^|
+	if (nick[0] < 'A' || nick[0] > '}') && nick[0] != '?' {
+		// a-z, A-Z, '_\[]{}^|', and '?' in the case of znc.
 		return false
 	}
 
 	for i := 1; i < len(nick); i++ {
-		if (nick[i] < 0x41 || nick[i] > 0x7E) && (nick[i] < 0x30 || nick[i] > 0x39) && nick[i] != 0x2D {
-			fmt.Println(nick[i], i, nick)
+		if (nick[i] < 'A' || nick[i] > '}') && (nick[i] < '0' || nick[i] > '9') && nick[i] != '-' {
 			// a-z, A-Z, 0-9, -, and _\[]{}^|
 			return false
 		}
@@ -262,10 +260,8 @@ func IsValidUser(name string) bool {
 		return false
 	}
 
-	name = ToRFC1459(name)
-
 	// "~" is prepended (commonly) if there was no ident server response.
-	if name[0] == 0x7E {
+	if name[0] == '~' {
 		// Means name only contained "~".
 		if len(name) < 2 {
 			return false
@@ -275,12 +271,12 @@ func IsValidUser(name string) bool {
 	}
 
 	// Check to see if the first index is alphanumeric.
-	if (name[0] < 0x41 || name[0] > 0x4A) && (name[0] < 0x61 || name[0] > 0x7A) && (name[0] < 0x30 || name[0] > 0x39) {
+	if (name[0] < 'A' || name[0] > 'J') && (name[0] < 'a' || name[0] > 'z') && (name[0] < '0' || name[0] > '9') {
 		return false
 	}
 
 	for i := 1; i < len(name); i++ {
-		if (name[i] < 0x41 || name[i] > 0x7D) && (name[i] < 0x30 || name[i] > 0x39) && name[i] != 0x2D && name[i] != 0x2E {
+		if (name[i] < 'A' || name[i] > '}') && (name[i] < '0' || name[i] > '9') && name[i] != '-' && name[i] != '.' {
 			// a-z, A-Z, 0-9, -, and _\[]{}^|
 			return false
 		}
@@ -291,7 +287,10 @@ func IsValidUser(name string) bool {
 
 // ToRFC1459 converts a string to the stripped down conversion within RFC
 // 1459. This will do things like replace an "A" with an "a", "[]" with "{}",
-// and so forth. Useful to compare two nicknames or channels.
+// and so forth. Useful to compare two nicknames or channels. Note that this
+// should not be used to normalize nicknames or similar, as this may convert
+// valid input characters to non-rfc-valid characters. As such, it's main use
+// is for comparing two nicks.
 func ToRFC1459(input string) string {
 	var out string
 

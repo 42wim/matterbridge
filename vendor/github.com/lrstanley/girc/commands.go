@@ -272,6 +272,27 @@ func (cmd *Commands) Kick(channel, user, reason string) {
 	cmd.c.Send(&Event{Command: KICK, Params: []string{channel, user}})
 }
 
+// Ban adds the +b mode on the given mask on a channel.
+func (cmd *Commands) Ban(channel, mask string) {
+	cmd.Mode(channel, "+b", mask)
+}
+
+// Unban removes the +b mode on the given mask on a channel.
+func (cmd *Commands) Unban(channel, mask string) {
+	cmd.Mode(channel, "-b", mask)
+}
+
+// Mode sends a mode change to the server which should be applied to target
+// (usually a channel or user), along with a set of modes (generally "+m",
+// "+mmmm", or "-m", where "m" is the mode you want to change). Params is only
+// needed if the mode change requires a parameter (ban or invite-only exclude.)
+func (cmd *Commands) Mode(target, modes string, params ...string) {
+	out := []string{target, modes}
+	out = append(out, params...)
+
+	cmd.c.Send(&Event{Command: MODE, Params: out})
+}
+
 // Invite sends a INVITE query to the server, to invite nick to channel.
 func (cmd *Commands) Invite(channel string, users ...string) {
 	for i := 0; i < len(users); i++ {

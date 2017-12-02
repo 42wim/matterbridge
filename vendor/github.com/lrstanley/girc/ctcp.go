@@ -58,7 +58,7 @@ func decodeCTCP(e *Event) *CTCPEvent {
 	if s < 0 {
 		for i := 0; i < len(text); i++ {
 			// Check for A-Z, 0-9.
-			if (text[i] < 0x41 || text[i] > 0x5A) && (text[i] < 0x30 || text[i] > 0x39) {
+			if (text[i] < 'A' || text[i] > 'Z') && (text[i] < '0' || text[i] > '9') {
 				return nil
 			}
 		}
@@ -74,7 +74,7 @@ func decodeCTCP(e *Event) *CTCPEvent {
 	// Loop through checking the tag first.
 	for i := 0; i < s; i++ {
 		// Check for A-Z, 0-9.
-		if (text[i] < 0x41 || text[i] > 0x5A) && (text[i] < 0x30 || text[i] > 0x39) {
+		if (text[i] < 'A' || text[i] > 'Z') && (text[i] < '0' || text[i] > '9') {
 			return nil
 		}
 	}
@@ -168,7 +168,7 @@ func (c *CTCP) parseCMD(cmd string) string {
 
 	for i := 0; i < len(cmd); i++ {
 		// Check for A-Z, 0-9.
-		if (cmd[i] < 0x41 || cmd[i] > 0x5A) && (cmd[i] < 0x30 || cmd[i] > 0x39) {
+		if (cmd[i] < 'A' || cmd[i] > 'Z') && (cmd[i] < '0' || cmd[i] > '9') {
 			return ""
 		}
 	}

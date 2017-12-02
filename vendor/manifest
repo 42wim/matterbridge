@@ -282,7 +282,7 @@
 			"importpath": "github.com/lrstanley/girc",
 			"repository": "https://github.com/lrstanley/girc",
 			"vcs": "git",
-			"revision": "e698f0468e166574e122130ffd2f579aba7e2abc",
+			"revision": "5dff93b5453c1b2ac8382c9a38881635f47bba0e",
 			"branch": "master",
 			"notests": true
 		},

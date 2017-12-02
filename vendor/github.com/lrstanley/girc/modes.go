@@ -206,11 +206,11 @@ func (c *CModes) Parse(flags string, args []string) (out []CMode) {
 	var argCount int
 
 	for i := 0; i < len(flags); i++ {
-		if flags[i] == 0x2B {
+		if flags[i] == '+' {
 			add = true
 			continue
 		}
-		if flags[i] == 0x2D {
+		if flags[i] == '-' {
 			add = false
 			continue
 		}
@@ -265,7 +265,7 @@ func IsValidChannelMode(raw string) bool {
 
 	for i := 0; i < len(raw); i++ {
 		// Allowed are: ",", A-Z and a-z.
-		if raw[i] != 0x2C && (raw[i] < 0x41 || raw[i] > 0x5A) && (raw[i] < 0x61 || raw[i] > 0x7A) {
+		if raw[i] != ',' && (raw[i] < 'A' || raw[i] > 'Z') && (raw[i] < 'a' || raw[i] > 'z') {
 			return false
 		}
 	}
@@ -279,7 +279,7 @@ func isValidUserPrefix(raw string) bool {
 		return false
 	}
 
-	if raw[0] != 0x28 { // (.
+	if raw[0] != '(' {
 		return false
 	}
 
@@ -288,7 +288,7 @@ func isValidUserPrefix(raw string) bool {
 
 	// Skip the first one as we know it's (.
 	for i := 1; i < len(raw); i++ {
-		if raw[i] == 0x29 { // ).
+		if raw[i] == ')' {
 			passedKeys = true
 			continue
 		}

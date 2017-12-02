@@ -16,64 +16,62 @@ func (c *Client) registerBuiltins() {
 	c.Handlers.mu.Lock()
 
 	// Built-in things that should always be supported.
-	c.Handlers.register(true, RPL_WELCOME, HandlerFunc(func(c *Client, e Event) {
-		go handleConnect(c, e)
-	}))
-	c.Handlers.register(true, PING, HandlerFunc(handlePING))
-	c.Handlers.register(true, PONG, HandlerFunc(handlePONG))
+	c.Handlers.register(true, true, RPL_WELCOME, HandlerFunc(handleConnect))
+	c.Handlers.register(true, false, PING, HandlerFunc(handlePING))
+	c.Handlers.register(true, false, PONG, HandlerFunc(handlePONG))
 
 	if !c.Config.disableTracking {
 		// Joins/parts/anything that may add/remove/rename users.
-		c.Handlers.register(true, JOIN, HandlerFunc(handleJOIN))
-		c.Handlers.register(true, PART, HandlerFunc(handlePART))
-		c.Handlers.register(true, KICK, HandlerFunc(handleKICK))
-		c.Handlers.register(true, QUIT, HandlerFunc(handleQUIT))
-		c.Handlers.register(true, NICK, HandlerFunc(handleNICK))
-		c.Handlers.register(true, RPL_NAMREPLY, HandlerFunc(handleNAMES))
+		c.Handlers.register(true, false, JOIN, HandlerFunc(handleJOIN))
+		c.Handlers.register(true, false, PART, HandlerFunc(handlePART))
+		c.Handlers.register(true, false, KICK, HandlerFunc(handleKICK))
+		c.Handlers.register(true, false, QUIT, HandlerFunc(handleQUIT))
+		c.Handlers.register(true, false, NICK, HandlerFunc(handleNICK))
+		c.Handlers.register(true, false, RPL_NAMREPLY, HandlerFunc(handleNAMES))
 
 		// Modes.
-		c.Handlers.register(true, MODE, HandlerFunc(handleMODE))
-		c.Handlers.register(true, RPL_CHANNELMODEIS, HandlerFunc(handleMODE))
+		c.Handlers.register(true, false, MODE, HandlerFunc(handleMODE))
+		c.Handlers.register(true, false, RPL_CHANNELMODEIS, HandlerFunc(handleMODE))
 
 		// WHO/WHOX responses.
-		c.Handlers.register(true, RPL_WHOREPLY, HandlerFunc(handleWHO))
-		c.Handlers.register(true, RPL_WHOSPCRPL, HandlerFunc(handleWHO))
+		c.Handlers.register(true, false, RPL_WHOREPLY, HandlerFunc(handleWHO))
+		c.Handlers.register(true, false, RPL_WHOSPCRPL, HandlerFunc(handleWHO))
 
 		// Other misc. useful stuff.
-		c.Handlers.register(true, TOPIC, HandlerFunc(handleTOPIC))
-		c.Handlers.register(true, RPL_TOPIC, HandlerFunc(handleTOPIC))
-		c.Handlers.register(true, RPL_MYINFO, HandlerFunc(handleMYINFO))
-		c.Handlers.register(true, RPL_ISUPPORT, HandlerFunc(handleISUPPORT))
-		c.Handlers.register(true, RPL_MOTDSTART, HandlerFunc(handleMOTD))
-		c.Handlers.register(true, RPL_MOTD, HandlerFunc(handleMOTD))
+		c.Handlers.register(true, false, TOPIC, HandlerFunc(handleTOPIC))
+		c.Handlers.register(true, false, RPL_TOPIC, HandlerFunc(handleTOPIC))
+		c.Handlers.register(true, false, RPL_MYINFO, HandlerFunc(handleMYINFO))
+		c.Handlers.register(true, false, RPL_ISUPPORT, HandlerFunc(handleISUPPORT))
+		c.Handlers.register(true, false, RPL_MOTDSTART, HandlerFunc(handleMOTD))
+		c.Handlers.register(true, false, RPL_MOTD, HandlerFunc(handleMOTD))
 
 		// Keep users lastactive times up to date.
-		c.Handlers.register(true, PRIVMSG, HandlerFunc(updateLastActive))
-		c.Handlers.register(true, NOTICE, HandlerFunc(updateLastActive))
-		c.Handlers.register(true, TOPIC, HandlerFunc(updateLastActive))
-		c.Handlers.register(true, KICK, HandlerFunc(updateLastActive))
+		c.Handlers.register(true, false, PRIVMSG, HandlerFunc(updateLastActive))
+		c.Handlers.register(true, false, NOTICE, HandlerFunc(updateLastActive))
+		c.Handlers.register(true, false, TOPIC, HandlerFunc(updateLastActive))
+		c.Handlers.register(true, false, KICK, HandlerFunc(updateLastActive))
 
 		// CAP IRCv3-specific tracking and functionality.
-		c.Handlers.register(true, CAP, HandlerFunc(handleCAP))
-		c.Handlers.register(true, CAP_CHGHOST, HandlerFunc(handleCHGHOST))
-		c.Handlers.register(true, CAP_AWAY, HandlerFunc(handleAWAY))
-		c.Handlers.register(true, CAP_ACCOUNT, HandlerFunc(handleACCOUNT))
-		c.Handlers.register(true, ALL_EVENTS, HandlerFunc(handleTags))
+		c.Handlers.register(true, false, CAP, HandlerFunc(handleCAP))
+		c.Handlers.register(true, false, CAP_CHGHOST, HandlerFunc(handleCHGHOST))
+		c.Handlers.register(true, false, CAP_AWAY, HandlerFunc(handleAWAY))
+		c.Handlers.register(true, false, CAP_ACCOUNT, HandlerFunc(handleACCOUNT))
+		c.Handlers.register(true, false, ALL_EVENTS, HandlerFunc(handleTags))
 
 		// SASL IRCv3 support.
-		c.Handlers.register(true, AUTHENTICATE, HandlerFunc(handleSASL))
-		c.Handlers.register(true, RPL_SASLSUCCESS, HandlerFunc(handleSASL))
-		c.Handlers.register(true, RPL_NICKLOCKED, HandlerFunc(handleSASLError))
-		c.Handlers.register(true, ERR_SASLFAIL, HandlerFunc(handleSASLError))
-		c.Handlers.register(true, ERR_SASLTOOLONG, HandlerFunc(handleSASLError))
-		c.Handlers.register(true, ERR_SASLABORTED, HandlerFunc(handleSASLError))
-		c.Handlers.register(true, RPL_SASLMECHS, HandlerFunc(handleSASLError))
+		c.Handlers.register(true, false, AUTHENTICATE, HandlerFunc(handleSASL))
+		c.Handlers.register(true, false, RPL_SASLSUCCESS, HandlerFunc(handleSASL))
+		c.Handlers.register(true, false, RPL_NICKLOCKED, HandlerFunc(handleSASLError))
+		c.Handlers.register(true, false, ERR_SASLFAIL, HandlerFunc(handleSASLError))
+		c.Handlers.register(true, false, ERR_SASLTOOLONG, HandlerFunc(handleSASLError))
+		c.Handlers.register(true, false, ERR_SASLABORTED, HandlerFunc(handleSASLError))
+		c.Handlers.register(true, false, RPL_SASLMECHS, HandlerFunc(handleSASLError))
 	}
 
 	// Nickname collisions.
-	c.Handlers.register(true, ERR_NICKNAMEINUSE, HandlerFunc(nickCollisionHandler))
-	c.Handlers.register(true, ERR_NICKCOLLISION, HandlerFunc(nickCollisionHandler))
-	c.Handlers.register(true, ERR_UNAVAILRESOURCE, HandlerFunc(nickCollisionHandler))
+	c.Handlers.register(true, false, ERR_NICKNAMEINUSE, HandlerFunc(nickCollisionHandler))
+	c.Handlers.register(true, false, ERR_NICKCOLLISION, HandlerFunc(nickCollisionHandler))
+	c.Handlers.register(true, false, ERR_UNAVAILRESOURCE, HandlerFunc(nickCollisionHandler))
 
 	c.Handlers.mu.Unlock()
 }
@@ -389,7 +387,7 @@ func handleISUPPORT(c *Client, e Event) {
 	c.state.Lock()
 	// Skip the first parameter, as it's our nickname.
 	for i := 1; i < len(e.Params); i++ {
-		j := strings.IndexByte(e.Params[i], 0x3D) // =
+		j := strings.IndexByte(e.Params[i], '=')
 
 		if j < 1 || (j+1) == len(e.Params[i]) {
 			c.state.serverOptions[e.Params[i]] = ""
