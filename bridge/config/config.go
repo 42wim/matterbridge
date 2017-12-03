@@ -141,6 +141,7 @@ type Config struct {
 	Discord            map[string]Protocol
 	Telegram           map[string]Protocol
 	Rocketchat         map[string]Protocol
+	Sshchat            map[string]Protocol
 	General            Protocol
 	Gateway            []Gateway
 	SameChannelGateway []SameChannelGateway

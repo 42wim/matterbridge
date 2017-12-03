@@ -10,6 +10,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/mattermost"
 	"github.com/42wim/matterbridge/bridge/rocketchat"
 	"github.com/42wim/matterbridge/bridge/slack"
+	"github.com/42wim/matterbridge/bridge/sshchat"
 	"github.com/42wim/matterbridge/bridge/steam"
 	"github.com/42wim/matterbridge/bridge/telegram"
 	"github.com/42wim/matterbridge/bridge/xmpp"
@@ -79,6 +80,9 @@ func New(cfg *config.Config, bridge *config.Bridge, c chan config.Message) *Brid
 	case "steam":
 		b.Config = cfg.Steam[name]
 		b.Bridger = bsteam.New(cfg.Steam[name], bridge.Account, c)
+	case "sshchat":
+		b.Config = cfg.Sshchat[name]
+		b.Bridger = bsshchat.New(cfg.Sshchat[name], bridge.Account, c)
 	case "api":
 		b.Config = cfg.Api[name]
 		b.Bridger = api.New(cfg.Api[name], bridge.Account, c)
