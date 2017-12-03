@@ -482,6 +482,23 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/shazow/rateio",
+			"repository": "https://github.com/shazow/rateio",
+			"vcs": "git",
+			"revision": "e8e00881e5c12090412414be41c04ca9c8a71106",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/shazow/ssh-chat/sshd",
+			"repository": "https://github.com/shazow/ssh-chat",
+			"vcs": "git",
+			"revision": "2078e1381991457ecd7821efe2bb1a9162640c24",
+			"branch": "master",
+			"path": "/sshd",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/sorcix/irc",
 			"repository": "https://github.com/sorcix/irc",
 			"vcs": "",
@@ -611,6 +628,24 @@
 			"notests": true
 		},
 		{
+			"importpath": "golang.org/x/crypto/curve25519",
+			"repository": "https://go.googlesource.com/crypto",
+			"vcs": "git",
+			"revision": "94eea52f7b742c7cbe0b03b22f0c4c8631ece122",
+			"branch": "master",
+			"path": "curve25519",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/crypto/ed25519",
+			"repository": "https://go.googlesource.com/crypto",
+			"vcs": "git",
+			"revision": "94eea52f7b742c7cbe0b03b22f0c4c8631ece122",
+			"branch": "master",
+			"path": "ed25519",
+			"notests": true
+		},
+		{
 			"importpath": "golang.org/x/crypto/nacl/secretbox",
 			"repository": "https://go.googlesource.com/crypto",
 			"vcs": "git",
@@ -635,6 +670,15 @@
 			"revision": "81372b2fc2f10bef2a7f338da115c315a56b2726",
 			"branch": "master",
 			"path": "/salsa20/salsa",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/crypto/ssh",
+			"repository": "https://go.googlesource.com/crypto",
+			"vcs": "git",
+			"revision": "94eea52f7b742c7cbe0b03b22f0c4c8631ece122",
+			"branch": "master",
+			"path": "ssh",
 			"notests": true
 		},
 		{
@@ -677,9 +721,18 @@
 			"importpath": "golang.org/x/sys/unix",
 			"repository": "https://go.googlesource.com/sys",
 			"vcs": "git",
-			"revision": "afadfcc7779c1f4db0f6f6438afcb108d9c9c7cd",
+			"revision": "8b4580aae2a0dd0c231a45d3ccb8434ff533b840",
 			"branch": "master",
 			"path": "/unix",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/sys/windows",
+			"repository": "https://go.googlesource.com/sys",
+			"vcs": "git",
+			"revision": "8b4580aae2a0dd0c231a45d3ccb8434ff533b840",
+			"branch": "master",
+			"path": "/windows",
 			"notests": true
 		},
 		{
