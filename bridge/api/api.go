@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
@@ -8,6 +9,7 @@ import (
 	"github.com/zfjagann/golang-ring"
 	"net/http"
 	"sync"
+	"time"
 )
 
 type Api struct {
@@ -47,6 +49,7 @@ func New(cfg config.Protocol, account string, c chan config.Message) *Api {
 		}))
 	}
 	e.GET("/api/messages", b.handleMessages)
+	e.GET("/api/stream", b.handleStream)
 	e.POST("/api/message", b.handlePostMessage)
 	go func() {
 		flog.Fatal(e.Start(cfg.BindAddress))
@@ -101,5 +104,27 @@ func (b *Api) handleMessages(c echo.Context) error {
 	defer b.Unlock()
 	c.JSONPretty(http.StatusOK, b.Messages.Values(), " ")
 	b.Messages = ring.Ring{}
+	return nil
+}
+
+func (b *Api) handleStream(c echo.Context) error {
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	c.Response().WriteHeader(http.StatusOK)
+	closeNotifier := c.Response().CloseNotify()
+	for {
+		select {
+		case <-closeNotifier:
+			return nil
+		default:
+			msg := b.Messages.Dequeue()
+			if msg != nil {
+				if err := json.NewEncoder(c.Response()).Encode(msg); err != nil {
+					return err
+				}
+				c.Response().Flush()
+			}
+			time.Sleep(200 * time.Millisecond)
+		}
+	}
 	return nil
 }
