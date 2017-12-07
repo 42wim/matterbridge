@@ -1,3 +1,13 @@
+# v1.6.0-dev
+## New features
+* sshchat: New protocol support added (https://github.com/shazow/ssh-chat)
+
+# v1.5.1
+
+## Bugfix
+* irc: Fix irc ACTION regression (irc). Closes #306
+* irc: Split on UTF-8 for MessageSplit (irc). Closes #308
+
 # v1.5.0
 ## New features
 * general: remote mediaserver support. See MediaServerDownload and MediaServerUpload in matterbridge.toml.sample
