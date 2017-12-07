@@ -21,66 +21,66 @@ func (g *Group) Use(middleware ...MiddlewareFunc) {
 	// Allow all requests to reach the group as they might get dropped if router
 	// doesn't find a match, making none of the group middleware process.
 	g.echo.Any(path.Clean(g.prefix+"/*"), func(c Context) error {
-		return ErrNotFound
+		return NotFoundHandler(c)
 	}, g.middleware...)
 }
 
 // CONNECT implements `Echo#CONNECT()` for sub-routes within the Group.
-func (g *Group) CONNECT(path string, h HandlerFunc, m ...MiddlewareFunc) {
-	g.add(CONNECT, path, h, m...)
+func (g *Group) CONNECT(path string, h HandlerFunc, m ...MiddlewareFunc) *Route {
+	return g.Add(CONNECT, path, h, m...)
 }
 
 // DELETE implements `Echo#DELETE()` for sub-routes within the Group.
-func (g *Group) DELETE(path string, h HandlerFunc, m ...MiddlewareFunc) {
-	g.add(DELETE, path, h, m...)
+func (g *Group) DELETE(path string, h HandlerFunc, m ...MiddlewareFunc) *Route {
+	return g.Add(DELETE, path, h, m...)
 }
 
 // GET implements `Echo#GET()` for sub-routes within the Group.
-func (g *Group) GET(path string, h HandlerFunc, m ...MiddlewareFunc) {
-	g.add(GET, path, h, m...)
+func (g *Group) GET(path string, h HandlerFunc, m ...MiddlewareFunc) *Route {
+	return g.Add(GET, path, h, m...)
 }
 
 // HEAD implements `Echo#HEAD()` for sub-routes within the Group.
-func (g *Group) HEAD(path string, h HandlerFunc, m ...MiddlewareFunc) {
-	g.add(HEAD, path, h, m...)
+func (g *Group) HEAD(path string, h HandlerFunc, m ...MiddlewareFunc) *Route {
+	return g.Add(HEAD, path, h, m...)
 }
 
 // OPTIONS implements `Echo#OPTIONS()` for sub-routes within the Group.
-func (g *Group) OPTIONS(path string, h HandlerFunc, m ...MiddlewareFunc) {
-	g.add(OPTIONS, path, h, m...)
+func (g *Group) OPTIONS(path string, h HandlerFunc, m ...MiddlewareFunc) *Route {
+	return g.Add(OPTIONS, path, h, m...)
 }
 
 // PATCH implements `Echo#PATCH()` for sub-routes within the Group.
-func (g *Group) PATCH(path string, h HandlerFunc, m ...MiddlewareFunc) {
-	g.add(PATCH, path, h, m...)
+func (g *Group) PATCH(path string, h HandlerFunc, m ...MiddlewareFunc) *Route {
+	return g.Add(PATCH, path, h, m...)
 }
 
 // POST implements `Echo#POST()` for sub-routes within the Group.
-func (g *Group) POST(path string, h HandlerFunc, m ...MiddlewareFunc) {
-	g.add(POST, path, h, m...)
+func (g *Group) POST(path string, h HandlerFunc, m ...MiddlewareFunc) *Route {
+	return g.Add(POST, path, h, m...)
 }
 
 // PUT implements `Echo#PUT()` for sub-routes within the Group.
-func (g *Group) PUT(path string, h HandlerFunc, m ...MiddlewareFunc) {
-	g.add(PUT, path, h, m...)
+func (g *Group) PUT(path string, h HandlerFunc, m ...MiddlewareFunc) *Route {
+	return g.Add(PUT, path, h, m...)
 }
 
 // TRACE implements `Echo#TRACE()` for sub-routes within the Group.
-func (g *Group) TRACE(path string, h HandlerFunc, m ...MiddlewareFunc) {
-	g.add(TRACE, path, h, m...)
+func (g *Group) TRACE(path string, h HandlerFunc, m ...MiddlewareFunc) *Route {
+	return g.Add(TRACE, path, h, m...)
 }
 
 // Any implements `Echo#Any()` for sub-routes within the Group.
 func (g *Group) Any(path string, handler HandlerFunc, middleware ...MiddlewareFunc) {
 	for _, m := range methods {
-		g.add(m, path, handler, middleware...)
+		g.Add(m, path, handler, middleware...)
 	}
 }
 
 // Match implements `Echo#Match()` for sub-routes within the Group.
 func (g *Group) Match(methods []string, path string, handler HandlerFunc, middleware ...MiddlewareFunc) {
 	for _, m := range methods {
-		g.add(m, path, handler, middleware...)
+		g.Add(m, path, handler, middleware...)
 	}
 }
 
@@ -102,12 +102,13 @@ func (g *Group) File(path, file string) {
 	g.echo.File(g.prefix+path, file)
 }
 
-func (g *Group) add(method, path string, handler HandlerFunc, middleware ...MiddlewareFunc) {
+// Add implements `Echo#Add()` for sub-routes within the Group.
+func (g *Group) Add(method, path string, handler HandlerFunc, middleware ...MiddlewareFunc) *Route {
 	// Combine into a new slice to avoid accidentally passing the same slice for
 	// multiple routes, which would lead to later add() calls overwriting the
 	// middleware from earlier calls.
 	m := []MiddlewareFunc{}
 	m = append(m, g.middleware...)
 	m = append(m, middleware...)
-	g.echo.add(method, g.prefix+path, handler, m...)
+	return g.echo.Add(method, g.prefix+path, handler, m...)
 }

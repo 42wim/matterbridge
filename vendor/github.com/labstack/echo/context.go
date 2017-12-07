@@ -494,14 +494,9 @@ func (c *context) Stream(code int, contentType string, r io.Reader) (err error) 
 }
 
 func (c *context) File(file string) (err error) {
-	file, err = url.QueryUnescape(file) // Issue #839
-	if err != nil {
-		return
-	}
-
 	f, err := os.Open(file)
 	if err != nil {
-		return ErrNotFound
+		return NotFoundHandler(c)
 	}
 	defer f.Close()
 
@@ -510,7 +505,7 @@ func (c *context) File(file string) (err error) {
 		file = filepath.Join(file, indexPage)
 		f, err = os.Open(file)
 		if err != nil {
-			return ErrNotFound
+			return NotFoundHandler(c)
 		}
 		defer f.Close()
 		if fi, err = f.Stat(); err != nil {
@@ -530,7 +525,7 @@ func (c *context) Inline(file, name string) (err error) {
 }
 
 func (c *context) contentDisposition(file, name, dispositionType string) (err error) {
-	c.response.Header().Set(HeaderContentDisposition, fmt.Sprintf("%s; filename=%s", dispositionType, name))
+	c.response.Header().Set(HeaderContentDisposition, fmt.Sprintf("%s; filename=%q", dispositionType, name))
 	c.File(file)
 	return
 }

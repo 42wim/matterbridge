@@ -11,11 +11,12 @@ type (
 	// by an HTTP handler to construct an HTTP response.
 	// See: https://golang.org/pkg/net/http/#ResponseWriter
 	Response struct {
-		Writer    http.ResponseWriter
-		Status    int
-		Size      int64
-		Committed bool
-		echo      *Echo
+		echo        *Echo
+		beforeFuncs []func()
+		Writer      http.ResponseWriter
+		Status      int
+		Size        int64
+		Committed   bool
 	}
 )
 
@@ -34,6 +35,11 @@ func (r *Response) Header() http.Header {
 	return r.Writer.Header()
 }
 
+// Before registers a function which is called just before the response is written.
+func (r *Response) Before(fn func()) {
+	r.beforeFuncs = append(r.beforeFuncs, fn)
+}
+
 // WriteHeader sends an HTTP response header with status code. If WriteHeader is
 // not called explicitly, the first call to Write will trigger an implicit
 // WriteHeader(http.StatusOK). Thus explicit calls to WriteHeader are mainly
@@ -42,6 +48,9 @@ func (r *Response) WriteHeader(code int) {
 	if r.Committed {
 		r.echo.Logger.Warn("response already committed")
 		return
+	}
+	for _, fn := range r.beforeFuncs {
+		fn()
 	}
 	r.Status = code
 	r.Writer.WriteHeader(code)

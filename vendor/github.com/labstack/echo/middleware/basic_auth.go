@@ -3,6 +3,7 @@ package middleware
 import (
 	"encoding/base64"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo"
 )
@@ -27,7 +28,7 @@ type (
 )
 
 const (
-	basic        = "Basic"
+	basic        = "basic"
 	defaultRealm = "Restricted"
 )
 
@@ -54,7 +55,7 @@ func BasicAuth(fn BasicAuthValidator) echo.MiddlewareFunc {
 func BasicAuthWithConfig(config BasicAuthConfig) echo.MiddlewareFunc {
 	// Defaults
 	if config.Validator == nil {
-		panic("basic-auth middleware requires a validator function")
+		panic("echo: basic-auth middleware requires a validator function")
 	}
 	if config.Skipper == nil {
 		config.Skipper = DefaultBasicAuthConfig.Skipper
@@ -72,7 +73,7 @@ func BasicAuthWithConfig(config BasicAuthConfig) echo.MiddlewareFunc {
 			auth := c.Request().Header.Get(echo.HeaderAuthorization)
 			l := len(basic)
 
-			if len(auth) > l+1 && auth[:l] == basic {
+			if len(auth) > l+1 && strings.ToLower(auth[:l]) == basic {
 				b, err := base64.StdEncoding.DecodeString(auth[l+1:])
 				if err != nil {
 					return err
