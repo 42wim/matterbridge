@@ -327,11 +327,10 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 	rmsg := config.Message{Username: event.Source.Name, Channel: event.Params[0], Account: b.Account, UserID: event.Source.Ident + "@" + event.Source.Host}
 	flog.Debugf("handlePrivMsg() %s %s %#v", event.Source.Name, event.Trailing, event)
 	msg := ""
-	if event.Command == "CTCP_ACTION" {
-		//	msg = event.Source.Name + " "
+	if event.IsAction() {
 		rmsg.Event = config.EVENT_USER_ACTION
 	}
-	msg += event.Trailing
+	msg += event.StripAction()
 	// strip IRC colors
 	re := regexp.MustCompile(`[[:cntrl:]](?:\d{1,2}(?:,\d{1,2})?)?`)
 	msg = re.ReplaceAllString(msg, "")
