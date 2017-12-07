@@ -197,8 +197,9 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 		msg.Text = helper.SplitStringLength(msg.Text, b.Config.MessageLength)
 	}
 	for _, text := range strings.Split(msg.Text, "\n") {
+		input := []rune(text)
 		if len(text) > b.Config.MessageLength {
-			text = text[:b.Config.MessageLength] + " <message clipped>"
+			text = string(input[:b.Config.MessageLength]) + " <message clipped>"
 		}
 		if len(b.Local) < b.Config.MessageQueue {
 			if len(b.Local) == b.Config.MessageQueue-1 {
