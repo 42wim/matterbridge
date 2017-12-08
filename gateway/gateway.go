@@ -287,6 +287,12 @@ func (gw *Gateway) modifyUsername(msg config.Message, dest *bridge.Bridge) strin
 	nick = strings.Replace(nick, "{NICK}", msg.Username, -1)
 	nick = strings.Replace(nick, "{BRIDGE}", br.Name, -1)
 	nick = strings.Replace(nick, "{PROTOCOL}", br.Protocol, -1)
+	if br.Protocol == "matrix" {
+		nick_parts := strings.Split(msg.Username, ":")
+		nick = strings.Replace(nick, "{LOCALPART}", nick_parts[0], -1)
+	} else {
+		nick = strings.Replace(nick, "{LOCALPART}", msg.Username, -1)
+	}
 	return nick
 }
 
