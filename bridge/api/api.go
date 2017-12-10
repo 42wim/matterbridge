@@ -126,5 +126,4 @@ func (b *Api) handleStream(c echo.Context) error {
 			time.Sleep(200 * time.Millisecond)
 		}
 	}
-	return nil
 }
