@@ -179,6 +179,12 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		if message.Document != nil {
 			b.handleDownload(message.Document, &fmsg)
 		}
+		if message.Voice != nil {
+			b.handleDownload(message.Voice, &fmsg)
+		}
+		if message.Audio != nil {
+			b.handleDownload(message.Audio, &fmsg)
+		}
 
 		if message.ForwardFrom != nil {
 			text = "Forward from " + message.ForwardFrom.FirstName
@@ -242,6 +248,23 @@ func (b *Btelegram) handleDownload(file interface{}, msg *config.Message) {
 	text := ""
 	fileid := ""
 	switch v := file.(type) {
+	case *tgbotapi.Audio:
+		size = v.FileSize
+		url = b.getFileDirectURL(v.FileID)
+		urlPart := strings.Split(url, "/")
+		name = urlPart[len(urlPart)-1]
+		text = " " + url
+		fileid = v.FileID
+	case *tgbotapi.Voice:
+		size = v.FileSize
+		url = b.getFileDirectURL(v.FileID)
+		urlPart := strings.Split(url, "/")
+		name = urlPart[len(urlPart)-1]
+		text = " " + url
+		if !strings.HasSuffix(name, ".ogg") {
+			name = name + ".ogg"
+		}
+		fileid = v.FileID
 	case *tgbotapi.Sticker:
 		size = v.FileSize
 		url = b.getFileDirectURL(v.FileID)
