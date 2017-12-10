@@ -180,6 +180,24 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 			b.handleDownload(message.Document, &fmsg)
 		}
 
+		if message.ForwardFrom != nil {
+			text = "Forward from " + message.ForwardFrom.FirstName
+			usernameForward := ""
+			if b.Config.UseFirstName {
+				usernameForward = message.ForwardFrom.FirstName
+			}
+			if usernameForward == "" {
+				usernameForward = message.ForwardFrom.UserName
+				if usernameForward == "" {
+					usernameForward = message.ForwardFrom.FirstName
+				}
+			}
+			if usernameForward == "" {
+				usernameForward = "unknown"
+			}
+			text = "Forwarded from " + usernameForward + ": " + text
+		}
+
 		// quote the previous message
 		if message.ReplyToMessage != nil {
 			usernameReply := ""
