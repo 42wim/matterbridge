@@ -90,6 +90,9 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 			return "", err
 		}
 		m := tgbotapi.NewEditMessageText(chatid, msgid, msg.Username+msg.Text)
+		if b.Config.MessageFormat == "HTML" {
+			m.ParseMode = tgbotapi.ModeHTML
+		}
 		_, err = b.c.Send(m)
 		if err != nil {
 			return "", err
