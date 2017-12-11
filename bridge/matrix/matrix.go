@@ -106,6 +106,7 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 					res, err := b.mc.UploadToContentRepo(content, mtype, int64(len(*fi.Data)))
 					if err != nil {
 						flog.Errorf("file upload failed: %#v", err)
+						continue
 					}
 					if strings.Contains(mtype, "video") {
 						flog.Debugf("sendVideo %s", res.ContentURI)
