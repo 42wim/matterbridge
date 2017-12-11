@@ -190,7 +190,6 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		}
 
 		if message.ForwardFrom != nil {
-			text = "Forward from " + message.ForwardFrom.FirstName
 			usernameForward := ""
 			if b.Config.UseFirstName {
 				usernameForward = message.ForwardFrom.FirstName
