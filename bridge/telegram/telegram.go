@@ -299,7 +299,7 @@ func (b *Btelegram) handleDownload(file interface{}, msg *config.Message) {
 	// if we have a file attached, download it (in memory) and put a pointer to it in msg.Extra
 	// limit to 1MB for now
 	flog.Debugf("trying to download %#v fileid %#v with size %#v", name, fileid, size)
-	if size <= 1000000 {
+	if size <= b.General.MediaDownloadSize {
 		data, err := helper.DownloadFile(url)
 		if err != nil {
 			flog.Errorf("download %s failed %#v", url, err)

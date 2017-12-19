@@ -288,7 +288,7 @@ func (b *Bslack) handleSlack() {
 		// if we have a file attached, download it (in memory) and put a pointer to it in msg.Extra
 		if message.Raw.File != nil {
 			// limit to 1MB for now
-			if message.Raw.File.Size <= 1000000 {
+			if message.Raw.File.Size <= b.General.MediaDownloadSize {
 				comment := ""
 				data, err := b.downloadFile(message.Raw.File.URLPrivateDownload)
 				if err != nil {

@@ -182,6 +182,9 @@ func NewConfig(cfgfile string) *Config {
 	if fail {
 		log.Fatalf("Fix your config. Please see changelog for more information")
 	}
+	if cfg.General.MediaDownloadSize == 0 {
+		cfg.General.MediaDownloadSize = 1000000
+	}
 	return &cfg
 }
 

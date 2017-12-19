@@ -175,7 +175,7 @@ func (b *Bmatrix) handlematrix() error {
 				size := info["size"].(float64)
 				name := ev.Content["body"].(string)
 				flog.Debugf("trying to download %#v with size %#v", name, size)
-				if size <= 1000000 {
+				if size <= float64(b.General.MediaDownloadSize) {
 					data, err := helper.DownloadFile(url)
 					if err != nil {
 						flog.Errorf("download %s failed %#v", url, err)

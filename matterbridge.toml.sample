@@ -1044,6 +1044,15 @@ MediaServerUpload="https://user:pass@yourserver.com/upload"
 #OPTIONAL (default empty)
 MediaServerDownload="https://youserver.com/download"
 
+#MediaDownloadSize is the maximum size of attachments, videos, images
+#matterbridge will download and upload this file to bridges that also support uploading files.
+#eg downloading from slack to upload it to mattermost
+#
+#It will only download from bridges that don't have public links available, which are for the moment
+#slack, telegram and matrix
+#
+#Optional (default 1000000 (1 megabyte))
+MediaDownloadSize=1000000
 
 ###################################################################
 #Gateway configuration
