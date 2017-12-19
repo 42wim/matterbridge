@@ -25,12 +25,11 @@ type Birc struct {
 	i               *girc.Client
 	Nick            string
 	names           map[string][]string
-	Config          *config.Protocol
-	Remote          chan config.Message
 	connected       chan struct{}
 	Local           chan config.Message // local queue for flood control
-	Account         string
 	FirstConnection bool
+
+	*config.BridgeConfig
 }
 
 var flog *log.Entry
@@ -40,13 +39,11 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(cfg config.Protocol, account string, c chan config.Message) *Birc {
+func New(cfg *config.BridgeConfig) *Birc {
 	b := &Birc{}
-	b.Config = &cfg
+	b.BridgeConfig = cfg
 	b.Nick = b.Config.Nick
-	b.Remote = c
 	b.names = make(map[string][]string)
-	b.Account = account
 	b.connected = make(chan struct{})
 	if b.Config.MessageDelay == 0 {
 		b.Config.MessageDelay = 1300

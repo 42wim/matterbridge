@@ -14,9 +14,7 @@ import (
 type Bxmpp struct {
 	xc      *xmpp.Client
 	xmppMap map[string]string
-	Config  *config.Protocol
-	Remote  chan config.Message
-	Account string
+	*config.BridgeConfig
 }
 
 var flog *log.Entry
@@ -26,12 +24,9 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(cfg config.Protocol, account string, c chan config.Message) *Bxmpp {
-	b := &Bxmpp{}
+func New(cfg *config.BridgeConfig) *Bxmpp {
+	b := &Bxmpp{BridgeConfig: cfg}
 	b.xmppMap = make(map[string]string)
-	b.Config = &cfg
-	b.Account = account
-	b.Remote = c
 	return b
 }
 

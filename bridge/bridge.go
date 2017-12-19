@@ -46,46 +46,47 @@ func New(cfg *config.Config, bridge *config.Bridge, c chan config.Message) *Brid
 	b.Protocol = protocol
 	b.Account = bridge.Account
 	b.Joined = make(map[string]bool)
+	bridgeConfig := &config.BridgeConfig{General: &cfg.General, Account: bridge.Account, Remote: c}
 
 	// override config from environment
 	config.OverrideCfgFromEnv(cfg, protocol, name)
 	switch protocol {
 	case "mattermost":
-		b.Config = cfg.Mattermost[name]
-		b.Bridger = bmattermost.New(cfg.Mattermost[name], bridge.Account, c)
+		bridgeConfig.Config = cfg.Mattermost[name]
+		b.Bridger = bmattermost.New(bridgeConfig)
 	case "irc":
-		b.Config = cfg.IRC[name]
-		b.Bridger = birc.New(cfg.IRC[name], bridge.Account, c)
+		bridgeConfig.Config = cfg.IRC[name]
+		b.Bridger = birc.New(bridgeConfig)
 	case "gitter":
-		b.Config = cfg.Gitter[name]
-		b.Bridger = bgitter.New(cfg.Gitter[name], bridge.Account, c)
+		bridgeConfig.Config = cfg.Gitter[name]
+		b.Bridger = bgitter.New(bridgeConfig)
 	case "slack":
-		b.Config = cfg.Slack[name]
-		b.Bridger = bslack.New(cfg.Slack[name], bridge.Account, c)
+		bridgeConfig.Config = cfg.Slack[name]
+		b.Bridger = bslack.New(bridgeConfig)
 	case "xmpp":
-		b.Config = cfg.Xmpp[name]
-		b.Bridger = bxmpp.New(cfg.Xmpp[name], bridge.Account, c)
+		bridgeConfig.Config = cfg.Xmpp[name]
+		b.Bridger = bxmpp.New(bridgeConfig)
 	case "discord":
-		b.Config = cfg.Discord[name]
-		b.Bridger = bdiscord.New(cfg.Discord[name], bridge.Account, c)
+		bridgeConfig.Config = cfg.Discord[name]
+		b.Bridger = bdiscord.New(bridgeConfig)
 	case "telegram":
-		b.Config = cfg.Telegram[name]
-		b.Bridger = btelegram.New(cfg.Telegram[name], bridge.Account, c)
+		bridgeConfig.Config = cfg.Telegram[name]
+		b.Bridger = btelegram.New(bridgeConfig)
 	case "rocketchat":
-		b.Config = cfg.Rocketchat[name]
-		b.Bridger = brocketchat.New(cfg.Rocketchat[name], bridge.Account, c)
+		bridgeConfig.Config = cfg.Rocketchat[name]
+		b.Bridger = brocketchat.New(bridgeConfig)
 	case "matrix":
-		b.Config = cfg.Matrix[name]
-		b.Bridger = bmatrix.New(cfg.Matrix[name], bridge.Account, c)
+		bridgeConfig.Config = cfg.Matrix[name]
+		b.Bridger = bmatrix.New(bridgeConfig)
 	case "steam":
-		b.Config = cfg.Steam[name]
-		b.Bridger = bsteam.New(cfg.Steam[name], bridge.Account, c)
+		bridgeConfig.Config = cfg.Steam[name]
+		b.Bridger = bsteam.New(bridgeConfig)
 	case "sshchat":
-		b.Config = cfg.Sshchat[name]
-		b.Bridger = bsshchat.New(cfg.Sshchat[name], bridge.Account, c)
+		bridgeConfig.Config = cfg.Sshchat[name]
+		b.Bridger = bsshchat.New(bridgeConfig)
 	case "api":
-		b.Config = cfg.Api[name]
-		b.Bridger = api.New(cfg.Api[name], bridge.Account, c)
+		bridgeConfig.Config = cfg.Api[name]
+		b.Bridger = api.New(bridgeConfig)
 	}
 	return b
 }

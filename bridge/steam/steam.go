@@ -16,11 +16,9 @@ import (
 type Bsteam struct {
 	c         *steam.Client
 	connected chan struct{}
-	Config    *config.Protocol
-	Remote    chan config.Message
-	Account   string
 	userMap   map[steamid.SteamId]string
 	sync.RWMutex
+	*config.BridgeConfig
 }
 
 var flog *log.Entry
@@ -30,11 +28,8 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(cfg config.Protocol, account string, c chan config.Message) *Bsteam {
-	b := &Bsteam{}
-	b.Config = &cfg
-	b.Remote = c
-	b.Account = account
+func New(cfg *config.BridgeConfig) *Bsteam {
+	b := &Bsteam{BridgeConfig: cfg}
 	b.userMap = make(map[steamid.SteamId]string)
 	b.connected = make(chan struct{})
 	return b

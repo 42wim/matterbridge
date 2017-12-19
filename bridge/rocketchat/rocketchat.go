@@ -14,9 +14,7 @@ type MMhook struct {
 
 type Brocketchat struct {
 	MMhook
-	Config  *config.Protocol
-	Remote  chan config.Message
-	Account string
+	*config.BridgeConfig
 }
 
 var flog *log.Entry
@@ -26,12 +24,8 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(cfg config.Protocol, account string, c chan config.Message) *Brocketchat {
-	b := &Brocketchat{}
-	b.Config = &cfg
-	b.Remote = c
-	b.Account = account
-	return b
+func New(cfg *config.BridgeConfig) *Brocketchat {
+	return &Brocketchat{BridgeConfig: cfg}
 }
 
 func (b *Brocketchat) Command(cmd string) string {

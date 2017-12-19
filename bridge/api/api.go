@@ -13,11 +13,9 @@ import (
 )
 
 type Api struct {
-	Config   *config.Protocol
-	Remote   chan config.Message
-	Account  string
 	Messages ring.Ring
 	sync.RWMutex
+	*config.BridgeConfig
 }
 
 type ApiMessage struct {
@@ -35,14 +33,11 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(cfg config.Protocol, account string, c chan config.Message) *Api {
-	b := &Api{}
+func New(cfg *config.BridgeConfig) *Api {
+	b := &Api{BridgeConfig: cfg}
 	e := echo.New()
 	b.Messages = ring.Ring{}
-	b.Messages.SetCapacity(cfg.Buffer)
-	b.Config = &cfg
-	b.Account = account
-	b.Remote = c
+	b.Messages.SetCapacity(b.Config.Buffer)
 	if b.Config.Token != "" {
 		e.Use(middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
 			return key == b.Config.Token, nil
@@ -52,7 +47,7 @@ func New(cfg config.Protocol, account string, c chan config.Message) *Api {
 	e.GET("/api/stream", b.handleStream)
 	e.POST("/api/message", b.handlePostMessage)
 	go func() {
-		flog.Fatal(e.Start(cfg.BindAddress))
+		flog.Fatal(e.Start(b.Config.BindAddress))
 	}()
 	return b
 }

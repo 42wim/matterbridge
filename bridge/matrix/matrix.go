@@ -15,12 +15,10 @@ import (
 
 type Bmatrix struct {
 	mc      *matrix.Client
-	Config  *config.Protocol
-	Remote  chan config.Message
-	Account string
 	UserID  string
 	RoomMap map[string]string
 	sync.RWMutex
+	*config.BridgeConfig
 }
 
 var flog *log.Entry
@@ -30,12 +28,9 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(cfg config.Protocol, account string, c chan config.Message) *Bmatrix {
-	b := &Bmatrix{}
+func New(cfg *config.BridgeConfig) *Bmatrix {
+	b := &Bmatrix{BridgeConfig: cfg}
 	b.RoomMap = make(map[string]string)
-	b.Config = &cfg
-	b.Account = account
-	b.Remote = c
 	return b
 }
 

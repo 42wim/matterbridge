@@ -60,6 +60,7 @@ type Protocol struct {
 	IgnoreMessages         string // all protocols
 	Jid                    string // xmpp
 	Login                  string // mattermost, matrix
+	MediaDownloadSize      int    // all protocols
 	MediaServerDownload    string
 	MediaServerUpload      string
 	MessageDelay           int        // IRC, time in millisecond to wait between messages
@@ -145,6 +146,13 @@ type Config struct {
 	General            Protocol
 	Gateway            []Gateway
 	SameChannelGateway []SameChannelGateway
+}
+
+type BridgeConfig struct {
+	Config  Protocol
+	General *Protocol
+	Account string
+	Remote  chan Message
 }
 
 func NewConfig(cfgfile string) *Config {

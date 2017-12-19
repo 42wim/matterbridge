@@ -27,14 +27,12 @@ type MMMessage struct {
 type Bslack struct {
 	mh       *matterhook.Client
 	sc       *slack.Client
-	Config   *config.Protocol
 	rtm      *slack.RTM
 	Plus     bool
-	Remote   chan config.Message
 	Users    []slack.User
-	Account  string
 	si       *slack.Info
 	channels []slack.Channel
+	*config.BridgeConfig
 }
 
 var flog *log.Entry
@@ -44,12 +42,8 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(cfg config.Protocol, account string, c chan config.Message) *Bslack {
-	b := &Bslack{}
-	b.Config = &cfg
-	b.Remote = c
-	b.Account = account
-	return b
+func New(cfg *config.BridgeConfig) *Bslack {
+	return &Bslack{BridgeConfig: cfg}
 }
 
 func (b *Bslack) Command(cmd string) string {
@@ -161,7 +155,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 		np.AsUser = true
 	}
 	np.Username = nick
-	np.IconURL = config.GetIconURL(&msg, b.Config)
+	np.IconURL = config.GetIconURL(&msg, &b.Config)
 	if msg.Avatar != "" {
 		np.IconURL = msg.Avatar
 	}

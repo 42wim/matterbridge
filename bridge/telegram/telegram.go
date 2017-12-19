@@ -12,10 +12,8 @@ import (
 )
 
 type Btelegram struct {
-	c       *tgbotapi.BotAPI
-	Config  *config.Protocol
-	Remote  chan config.Message
-	Account string
+	c *tgbotapi.BotAPI
+	*config.BridgeConfig
 }
 
 var flog *log.Entry
@@ -25,12 +23,8 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(cfg config.Protocol, account string, c chan config.Message) *Btelegram {
-	b := &Btelegram{}
-	b.Config = &cfg
-	b.Remote = c
-	b.Account = account
-	return b
+func New(cfg *config.BridgeConfig) *Btelegram {
+	return &Btelegram{BridgeConfig: cfg}
 }
 
 func (b *Btelegram) Connect() error {

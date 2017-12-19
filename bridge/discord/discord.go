@@ -12,9 +12,6 @@ import (
 
 type bdiscord struct {
 	c              *discordgo.Session
-	Config         *config.Protocol
-	Remote         chan config.Message
-	Account        string
 	Channels       []*discordgo.Channel
 	Nick           string
 	UseChannelID   bool
@@ -24,6 +21,7 @@ type bdiscord struct {
 	webhookToken   string
 	channelInfoMap map[string]*config.ChannelInfo
 	sync.RWMutex
+	*config.BridgeConfig
 }
 
 var flog *log.Entry
@@ -33,11 +31,8 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(cfg config.Protocol, account string, c chan config.Message) *bdiscord {
-	b := &bdiscord{}
-	b.Config = &cfg
-	b.Remote = c
-	b.Account = account
+func New(cfg *config.BridgeConfig) *bdiscord {
+	b := &bdiscord{BridgeConfig: cfg}
 	b.userMemberMap = make(map[string]*discordgo.Member)
 	b.channelInfoMap = make(map[string]*config.ChannelInfo)
 	if b.Config.WebhookURL != "" {

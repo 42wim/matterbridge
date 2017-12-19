@@ -36,6 +36,7 @@ type Bmattermost struct {
 	Remote  chan config.Message
 	TeamId  string
 	Account string
+	*config.BridgeConfig
 }
 
 var flog *log.Entry
@@ -45,11 +46,8 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(cfg config.Protocol, account string, c chan config.Message) *Bmattermost {
-	b := &Bmattermost{}
-	b.Config = &cfg
-	b.Remote = c
-	b.Account = account
+func New(cfg *config.BridgeConfig) *Bmattermost {
+	b := &Bmattermost{BridgeConfig: cfg}
 	b.mmMap = make(map[string]string)
 	return b
 }

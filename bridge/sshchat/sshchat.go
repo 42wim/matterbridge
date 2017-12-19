@@ -10,11 +10,9 @@ import (
 )
 
 type Bsshchat struct {
-	r       *bufio.Scanner
-	w       io.WriteCloser
-	Config  *config.Protocol
-	Remote  chan config.Message
-	Account string
+	r *bufio.Scanner
+	w io.WriteCloser
+	*config.BridgeConfig
 }
 
 var flog *log.Entry
@@ -24,12 +22,8 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(cfg config.Protocol, account string, c chan config.Message) *Bsshchat {
-	b := &Bsshchat{}
-	b.Config = &cfg
-	b.Account = account
-	b.Remote = c
-	return b
+func New(cfg *config.BridgeConfig) *Bsshchat {
+	return &Bsshchat{BridgeConfig: cfg}
 }
 
 func (b *Bsshchat) Connect() error {

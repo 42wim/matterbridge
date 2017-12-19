@@ -9,13 +9,11 @@ import (
 )
 
 type Bgitter struct {
-	c       *gitter.Gitter
-	Config  *config.Protocol
-	Remote  chan config.Message
-	Account string
-	User    *gitter.User
-	Users   []gitter.User
-	Rooms   []gitter.Room
+	c     *gitter.Gitter
+	User  *gitter.User
+	Users []gitter.User
+	Rooms []gitter.Room
+	*config.BridgeConfig
 }
 
 var flog *log.Entry
@@ -25,12 +23,8 @@ func init() {
 	flog = log.WithFields(log.Fields{"module": protocol})
 }
 
-func New(cfg config.Protocol, account string, c chan config.Message) *Bgitter {
-	b := &Bgitter{}
-	b.Config = &cfg
-	b.Remote = c
-	b.Account = account
-	return b
+func New(cfg *config.BridgeConfig) *Bgitter {
+	return &Bgitter{BridgeConfig: cfg}
 }
 
 func (b *Bgitter) Connect() error {
