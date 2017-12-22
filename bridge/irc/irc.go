@@ -267,6 +267,7 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 	channel := event.Params[0]
 	if event.Command == "KICK" {
 		flog.Infof("Got kicked from %s by %s", channel, event.Source.Name)
+		time.Sleep(time.Duration(b.Config.RejoinDelay) * time.Second)
 		b.Remote <- config.Message{Username: "system", Text: "rejoin", Channel: channel, Account: b.Account, Event: config.EVENT_REJOIN_CHANNELS}
 		return
 	}

@@ -85,6 +85,10 @@ MessageLength=400
 #OPTIONAL (default false)
 MessageSplit=false
 
+#Delay in seconds to rejoin a channel when kicked
+#OPTIONAL (default 0)
+RejoinDelay=0
+
 #Nicks you want to ignore. 
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
