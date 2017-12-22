@@ -1,6 +1,15 @@
-# v1.6.0-dev
+# v1.6.0
 ## New features
 * sshchat: New protocol support added (https://github.com/shazow/ssh-chat)
+* general: Allow specifying maximum download size of media using MediaDownloadSize (slack,telegram,matrix)
+* api: Add (simple, one listener) long-polling support (api). Closes #307
+* telegram: Add support for forwarded messages. Closes #313
+* telegram: Add support for Audio/Voice files (telegram). Closes #314
+* irc: Add RejoinDelay option. Delay to rejoin after channel kick (irc). Closes #322
+
+## Bugfix
+* telegram: Also use HTML in edited messages (telegram). Closes #315
+* matrix: Fix panic (matrix). Closes #316
 
 # v1.5.1
 
