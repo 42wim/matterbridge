@@ -10,7 +10,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	log "github.com/Sirupsen/logrus"
-	matrix "github.com/matrix-org/gomatrix"
+	matrix "github.com/matterbridge/gomatrix"
 )
 
 type Bmatrix struct {
@@ -75,16 +75,23 @@ func (b *Bmatrix) JoinChannel(channel config.ChannelInfo) error {
 
 func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	flog.Debugf("Receiving %#v", msg)
+	channel := b.getRoomID(msg.Channel)
 	// ignore delete messages
 	if msg.Event == config.EVENT_MSG_DELETE {
-		return "", nil
+		if msg.ID == "" {
+			return "", nil
+		}
+		resp, err := b.mc.RedactEvent(channel, msg.ID, &matrix.ReqRedact{})
+		if err != nil {
+			return "", err
+		}
+		return resp.EventID, err
 	}
-	channel := b.getRoomID(msg.Channel)
 	flog.Debugf("Sending to channel %s", channel)
 	if msg.Event == config.EVENT_USER_ACTION {
-		b.mc.SendMessageEvent(channel, "m.room.message",
+		resp, err := b.mc.SendMessageEvent(channel, "m.room.message",
 			matrix.TextMessage{"m.emote", msg.Username + msg.Text})
-		return "", nil
+		return resp.EventID, err
 	}
 
 	if msg.Extra != nil {
@@ -124,8 +131,8 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 		}
 	}
 
-	b.mc.SendText(channel, msg.Username+msg.Text)
-	return "", nil
+	resp, err := b.mc.SendText(channel, msg.Username+msg.Text)
+	return resp.EventID, err
 }
 
 func (b *Bmatrix) getRoomID(channel string) string {
@@ -138,58 +145,11 @@ func (b *Bmatrix) getRoomID(channel string) string {
 	}
 	return ""
 }
+
 func (b *Bmatrix) handlematrix() error {
 	syncer := b.mc.Syncer.(*matrix.DefaultSyncer)
-	syncer.OnEventType("m.room.message", func(ev *matrix.Event) {
-		flog.Debugf("Received: %#v", ev)
-		if (ev.Content["msgtype"].(string) == "m.text" ||
-			ev.Content["msgtype"].(string) == "m.notice" ||
-			ev.Content["msgtype"].(string) == "m.emote" ||
-			ev.Content["msgtype"].(string) == "m.file" ||
-			ev.Content["msgtype"].(string) == "m.image" ||
-			ev.Content["msgtype"].(string) == "m.video") && ev.Sender != b.UserID {
-			b.RLock()
-			channel, ok := b.RoomMap[ev.RoomID]
-			b.RUnlock()
-			if !ok {
-				flog.Debugf("Unknown room %s", ev.RoomID)
-				return
-			}
-			username := ev.Sender[1:]
-			if b.Config.NoHomeServerSuffix {
-				re := regexp.MustCompile("(.*?):.*")
-				username = re.ReplaceAllString(username, `$1`)
-			}
-			rmsg := config.Message{Username: username, Text: ev.Content["body"].(string), Channel: channel, Account: b.Account, UserID: ev.Sender}
-			if ev.Content["msgtype"].(string) == "m.emote" {
-				rmsg.Event = config.EVENT_USER_ACTION
-			}
-			if ev.Content["msgtype"].(string) == "m.image" ||
-				ev.Content["msgtype"].(string) == "m.video" ||
-				ev.Content["msgtype"].(string) == "m.file" {
-				flog.Debugf("ev: %#v", ev)
-				rmsg.Extra = make(map[string][]interface{})
-				url := ev.Content["url"].(string)
-				url = strings.Replace(url, "mxc://", b.Config.Server+"/_matrix/media/v1/download/", -1)
-				info := ev.Content["info"].(map[string]interface{})
-				size := info["size"].(float64)
-				name := ev.Content["body"].(string)
-				flog.Debugf("trying to download %#v with size %#v", name, size)
-				if size <= float64(b.General.MediaDownloadSize) {
-					data, err := helper.DownloadFile(url)
-					if err != nil {
-						flog.Errorf("download %s failed %#v", url, err)
-					} else {
-						flog.Debugf("download OK %#v %#v %#v", name, len(*data), len(url))
-						rmsg.Extra["file"] = append(rmsg.Extra["file"], config.FileInfo{Name: name, Data: data})
-					}
-				}
-				rmsg.Text = ""
-			}
-			flog.Debugf("Sending message from %s on %s to gateway", ev.Sender, b.Account)
-			b.Remote <- rmsg
-		}
-	})
+	syncer.OnEventType("m.room.redaction", b.handleEvent)
+	syncer.OnEventType("m.room.message", b.handleEvent)
 	go func() {
 		for {
 			if err := b.mc.Sync(); err != nil {
@@ -198,4 +158,60 @@ func (b *Bmatrix) handlematrix() error {
 		}
 	}()
 	return nil
+}
+
+func (b *Bmatrix) handleEvent(ev *matrix.Event) {
+	flog.Debugf("Received: %#v", ev)
+	if ev.Sender != b.UserID {
+		b.RLock()
+		channel, ok := b.RoomMap[ev.RoomID]
+		b.RUnlock()
+		if !ok {
+			flog.Debugf("Unknown room %s", ev.RoomID)
+			return
+		}
+		username := ev.Sender[1:]
+		if b.Config.NoHomeServerSuffix {
+			re := regexp.MustCompile("(.*?):.*")
+			username = re.ReplaceAllString(username, `$1`)
+		}
+		var text string
+		text, _ = ev.Content["body"].(string)
+		rmsg := config.Message{Username: username, Text: text, Channel: channel, Account: b.Account, UserID: ev.Sender}
+		rmsg.ID = ev.ID
+		if ev.Type == "m.room.redaction" {
+			rmsg.Event = config.EVENT_MSG_DELETE
+			rmsg.ID = ev.Redacts
+			rmsg.Text = config.EVENT_MSG_DELETE
+			b.Remote <- rmsg
+			return
+		}
+		if ev.Content["msgtype"].(string) == "m.emote" {
+			rmsg.Event = config.EVENT_USER_ACTION
+		}
+		if ev.Content["msgtype"] != nil && ev.Content["msgtype"].(string) == "m.image" ||
+			ev.Content["msgtype"].(string) == "m.video" ||
+			ev.Content["msgtype"].(string) == "m.file" {
+			flog.Debugf("ev: %#v", ev)
+			rmsg.Extra = make(map[string][]interface{})
+			url := ev.Content["url"].(string)
+			url = strings.Replace(url, "mxc://", b.Config.Server+"/_matrix/media/v1/download/", -1)
+			info := ev.Content["info"].(map[string]interface{})
+			size := info["size"].(float64)
+			name := ev.Content["body"].(string)
+			flog.Debugf("trying to download %#v with size %#v", name, size)
+			if size <= float64(b.General.MediaDownloadSize) {
+				data, err := helper.DownloadFile(url)
+				if err != nil {
+					flog.Errorf("download %s failed %#v", url, err)
+				} else {
+					flog.Debugf("download OK %#v %#v %#v", name, len(*data), len(url))
+					rmsg.Extra["file"] = append(rmsg.Extra["file"], config.FileInfo{Name: name, Data: data})
+				}
+			}
+			rmsg.Text = ""
+		}
+		flog.Debugf("Sending message from %s on %s to gateway", ev.Sender, b.Account)
+		b.Remote <- rmsg
+	}
 }
