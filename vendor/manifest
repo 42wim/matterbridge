@@ -295,6 +295,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/matterbridge/gomatrix",
+			"repository": "https://github.com/matterbridge/gomatrix",
+			"vcs": "git",
+			"revision": "78ac6a1a0f5fb9eb1684d85a3ed581a742fe4c79",
+			"branch": "work",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/matterbridge/slack",
 			"repository": "https://github.com/matterbridge/slack",
 			"vcs": "git",
