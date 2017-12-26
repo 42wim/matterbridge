@@ -1,3 +1,7 @@
+# v1.6.1
+## Bugfix
+* general: Display of nicks not longer working (regression). Closes #323
+
 # v1.6.0
 ## New features
 * sshchat: New protocol support added (https://github.com/shazow/ssh-chat)
