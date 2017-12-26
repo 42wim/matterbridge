@@ -88,6 +88,7 @@ func New(cfg *config.Config, bridge *config.Bridge, c chan config.Message) *Brid
 		bridgeConfig.Config = cfg.Api[name]
 		b.Bridger = api.New(bridgeConfig)
 	}
+	b.Config = bridgeConfig.Config
 	return b
 }
 
