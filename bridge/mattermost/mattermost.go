@@ -32,10 +32,7 @@ type MMMessage struct {
 type Bmattermost struct {
 	MMhook
 	MMapi
-	Config  *config.Protocol
-	Remote  chan config.Message
-	TeamId  string
-	Account string
+	TeamId string
 	*config.BridgeConfig
 }
 
