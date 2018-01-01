@@ -1,3 +1,7 @@
+# v1.6.2
+## Bugfix
+* mattermost: Crashes while connecting to Mattermost (regression). Closes #327
+
 # v1.6.1
 ## Bugfix
 * general: Display of nicks not longer working (regression). Closes #323
