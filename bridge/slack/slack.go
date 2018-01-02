@@ -309,9 +309,11 @@ func (b *Bslack) handleSlack() {
 
 func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 	for msg := range b.rtm.IncomingEvents {
+		if msg.Type != "user_typing" && msg.Type != "latency_report" {
+			flog.Debugf("Receiving from slackclient %#v", msg.Data)
+		}
 		switch ev := msg.Data.(type) {
 		case *slack.MessageEvent:
-			flog.Debugf("Receiving from slackclient %#v", ev)
 			if len(ev.Attachments) > 0 {
 				// skip messages we made ourselves
 				if ev.Attachments[0].CallbackID == "matterbridge" {
