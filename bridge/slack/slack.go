@@ -107,7 +107,7 @@ func (b *Bslack) Disconnect() error {
 
 func (b *Bslack) JoinChannel(channel config.ChannelInfo) error {
 	// we can only join channels using the API
-	if b.Config.WebhookURL == "" && b.Config.WebhookBindAddress == "" {
+	if b.sc != nil {
 		if strings.HasPrefix(b.Config.Token, "xoxb") {
 			// TODO check if bot has already joined channel
 			return nil
