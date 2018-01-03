@@ -396,6 +396,8 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 			}
 		case *slack.InvalidAuthEvent:
 			flog.Fatalf("Invalid Token %#v", ev)
+		case *slack.ConnectionErrorEvent:
+			flog.Errorf("Connection failed %#v %#v", ev.Error(), ev.ErrorObj)
 		default:
 		}
 	}
