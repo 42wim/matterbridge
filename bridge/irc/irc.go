@@ -323,7 +323,7 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 	if event.Source.Name == b.Nick {
 		return
 	}
-	rmsg := config.Message{Username: event.Source.Name, Channel: event.Params[0], Account: b.Account, UserID: event.Source.Ident + "@" + event.Source.Host}
+	rmsg := config.Message{Username: event.Source.Name, Channel: strings.ToLower(event.Params[0]), Account: b.Account, UserID: event.Source.Ident + "@" + event.Source.Host}
 	flog.Debugf("handlePrivMsg() %s %s %#v", event.Source.Name, event.Trailing, event)
 	msg := ""
 	if event.IsAction() {
