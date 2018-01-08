@@ -99,6 +99,15 @@ func (rtm *RTM) connect(connectionCount int, useRTMStart bool) (*Info, *websocke
 			Attempt:  boff.attempts,
 			ErrorObj: err,
 		}}
+
+		// check if Disconnect() has been invoked.
+		select {
+		case _ = <-rtm.disconnected:
+			rtm.IncomingEvents <- RTMEvent{"disconnected", &DisconnectedEvent{Intentional: true}}
+			return nil, nil, fmt.Errorf("disconnect received while trying to connect")
+		default:
+		}
+
 		// get time we should wait before attempting to connect again
 		dur := boff.Duration()
 		rtm.Debugf("reconnection %d failed: %s", boff.attempts+1, err)
@@ -124,7 +133,8 @@ func (rtm *RTM) startRTMAndDial(useRTMStart bool) (*Info, *websocket.Conn, error
 		return nil, nil, err
 	}
 
-	conn, err := websocketProxyDial(url, "http://api.slack.com")
+	// Only use HTTPS for connections to prevent MITM attacks on the connection.
+	conn, err := websocketProxyDial(url, "https://api.slack.com")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -317,10 +327,13 @@ func (rtm *RTM) handleAck(event json.RawMessage) {
 		rtm.Debugln(" -> Erroneous 'ack' event:", string(event))
 		return
 	}
+
 	if ack.Ok {
 		rtm.IncomingEvents <- RTMEvent{"ack", ack}
-	} else {
+	} else if ack.RTMResponse.Error != nil {
 		rtm.IncomingEvents <- RTMEvent{"ack_error", &AckErrorEvent{ack.Error}}
+	} else {
+		rtm.IncomingEvents <- RTMEvent{"ack_error", &AckErrorEvent{fmt.Errorf("ack decode failure")}}
 	}
 }
 

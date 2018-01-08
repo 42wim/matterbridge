@@ -267,10 +267,7 @@ func (api *Client) DeleteFileContext(ctx context.Context, fileID string) error {
 		"file":  {fileID},
 	}
 	_, err := fileRequest(ctx, "files.delete", values, api.debug)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 
 }
 

@@ -27,17 +27,8 @@ func (api *Client) StartRTMContext(ctx context.Context) (info *Info, websocketUR
 	if !response.Ok {
 		return nil, "", response.Error
 	}
-
-	// websocket.Dial does not accept url without the port (yet)
-	// Fixed by: https://github.com/golang/net/commit/5058c78c3627b31e484a81463acd51c7cecc06f3
-	// but slack returns the address with no port, so we have to fix it
 	api.Debugln("Using URL:", response.Info.URL)
-	websocketURL, err = websocketizeURLPort(response.Info.URL)
-	if err != nil {
-		return nil, "", fmt.Errorf("parsing response URL: %s", err)
-	}
-
-	return &response.Info, websocketURL, nil
+	return &response.Info, response.Info.URL, nil
 }
 
 // ConnectRTM calls the "rtm.connect" endpoint and returns the provided URL and the compact Info block.
@@ -59,17 +50,8 @@ func (api *Client) ConnectRTMContext(ctx context.Context) (info *Info, websocket
 	if !response.Ok {
 		return nil, "", response.Error
 	}
-
-	// websocket.Dial does not accept url without the port (yet)
-	// Fixed by: https://github.com/golang/net/commit/5058c78c3627b31e484a81463acd51c7cecc06f3
-	// but slack returns the address with no port, so we have to fix it
 	api.Debugln("Using URL:", response.Info.URL)
-	websocketURL, err = websocketizeURLPort(response.Info.URL)
-	if err != nil {
-		return nil, "", fmt.Errorf("parsing response URL: %s", err)
-	}
-
-	return &response.Info, websocketURL, nil
+	return &response.Info, response.Info.URL, nil
 }
 
 // NewRTM returns a RTM, which provides a fully managed connection to
@@ -90,6 +72,7 @@ func (api *Client) NewRTMWithOptions(options *RTMOptions) *RTM {
 		isConnected:      false,
 		wasIntentional:   true,
 		killChannel:      make(chan bool),
+		disconnected:     make(chan struct{}),
 		forcePing:        make(chan bool),
 		rawEvents:        make(chan json.RawMessage),
 		idGen:            NewSafeID(1),

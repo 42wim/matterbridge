@@ -3,12 +3,13 @@ package slack
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/url"
 	"os"
 )
 
-var logger *log.Logger // A logger that can be set by consumers
+var logger stdLogger // A logger that can be set by consumers
 /*
   Added as a var so that we can change this for testing purposes
 */
@@ -41,12 +42,31 @@ type Client struct {
 	debug bool
 }
 
+// stdLogger is a logger interface compatible with both stdlib and some
+// 3rd party loggers such as logrus.
+type stdLogger interface {
+	Print(...interface{})
+	Printf(string, ...interface{})
+	Println(...interface{})
+
+	Fatal(...interface{})
+	Fatalf(string, ...interface{})
+	Fatalln(...interface{})
+
+	Panic(...interface{})
+	Panicf(string, ...interface{})
+	Panicln(...interface{})
+
+	Output(int, string) error
+}
+
 // SetLogger let's library users supply a logger, so that api debugging
 // can be logged along with the application's debugging info.
-func SetLogger(l *log.Logger) {
+func SetLogger(l stdLogger) {
 	logger = l
 }
 
+// New creates new Client.
 func New(token string) *Client {
 	s := &Client{}
 	s.config.token = token
@@ -83,12 +103,12 @@ func (api *Client) SetDebug(debug bool) {
 
 func (api *Client) Debugf(format string, v ...interface{}) {
 	if api.debug {
-		logger.Printf(format, v...)
+		logger.Output(2, fmt.Sprintf(format, v...))
 	}
 }
 
 func (api *Client) Debugln(v ...interface{}) {
 	if api.debug {
-		logger.Println(v...)
+		logger.Output(2, fmt.Sprintln(v...))
 	}
 }
