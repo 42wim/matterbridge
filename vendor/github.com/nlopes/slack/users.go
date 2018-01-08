@@ -200,10 +200,7 @@ func (api *Client) SetUserAsActiveContext(ctx context.Context) error {
 		"token": {api.config.token},
 	}
 	_, err := userRequest(ctx, "users.setActive", values, api.debug)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 // SetUserPresence changes the currently authenticated user presence
@@ -247,8 +244,8 @@ func (api *Client) GetUserIdentityContext(ctx context.Context) (*UserIdentityRes
 }
 
 // SetUserPhoto changes the currently authenticated user's profile image
-func (api *Client) SetUserPhoto(ctx context.Context, image string, params UserSetPhotoParams) error {
-	return api.SetUserPhoto(context.Background(), image, params)
+func (api *Client) SetUserPhoto(image string, params UserSetPhotoParams) error {
+	return api.SetUserPhotoContext(context.Background(), image, params)
 }
 
 // SetUserPhotoContext changes the currently authenticated user's profile image using a custom context

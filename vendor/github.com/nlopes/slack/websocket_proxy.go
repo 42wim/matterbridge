@@ -32,8 +32,7 @@ func websocketHTTPConnect(proxy, urlString string) (net.Conn, error) {
 	}
 
 	cc := httputil.NewProxyClientConn(p, nil)
-	cc.Do(&req)
-	if err != nil && err != httputil.ErrPersistEOF {
+	if _, err := cc.Do(&req); err != nil {
 		return nil, err
 	}
 

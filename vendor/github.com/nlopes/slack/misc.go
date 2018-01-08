@@ -13,6 +13,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -40,6 +41,14 @@ type WebError string
 
 func (s WebError) Error() string {
 	return string(s)
+}
+
+type RateLimitedError struct {
+	RetryAfter time.Duration
+}
+
+func (e *RateLimitedError) Error() string {
+	return fmt.Sprintf("Slack rate limit exceeded, retry after %s", e.RetryAfter)
 }
 
 func fileUploadReq(ctx context.Context, path, fieldname, filename string, values url.Values, r io.Reader) (*http.Request, error) {
@@ -79,12 +88,7 @@ func parseResponseBody(body io.ReadCloser, intf *interface{}, debug bool) error 
 		logger.Printf("parseResponseBody: %s\n", string(response))
 	}
 
-	err = json.Unmarshal(response, &intf)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return json.Unmarshal(response, &intf)
 }
 
 func postLocalWithMultipartResponse(ctx context.Context, path, fpath, fieldname string, values url.Values, intf interface{}, debug bool) error {
@@ -112,8 +116,16 @@ func postWithMultipartResponse(ctx context.Context, path, name, fieldname string
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode == http.StatusTooManyRequests {
+		retry, err := strconv.ParseInt(resp.Header.Get("Retry-After"), 10, 64)
+		if err != nil {
+			return err
+		}
+		return &RateLimitedError{time.Duration(retry) * time.Second}
+	}
+
 	// Slack seems to send an HTML body along with 5xx error codes. Don't parse it.
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		logResponse(resp, debug)
 		return fmt.Errorf("Slack server error: %s.", resp.Status)
 	}
@@ -136,8 +148,16 @@ func postForm(ctx context.Context, endpoint string, values url.Values, intf inte
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode == http.StatusTooManyRequests {
+		retry, err := strconv.ParseInt(resp.Header.Get("Retry-After"), 10, 64)
+		if err != nil {
+			return err
+		}
+		return &RateLimitedError{time.Duration(retry) * time.Second}
+	}
+
 	// Slack seems to send an HTML body along with 5xx error codes. Don't parse it.
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		logResponse(resp, debug)
 		return fmt.Errorf("Slack server error: %s.", resp.Status)
 	}

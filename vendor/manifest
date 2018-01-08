@@ -303,14 +303,6 @@
 			"notests": true
 		},
 		{
-			"importpath": "github.com/matterbridge/slack",
-			"repository": "https://github.com/matterbridge/slack",
-			"vcs": "git",
-			"revision": "1c6e6305bf9c07fc603c9cf28f09ab0517a03120",
-			"branch": "matterbridge",
-			"notests": true
-		},
-		{
 			"importpath": "github.com/mattermost/platform/einterfaces",
 			"repository": "https://github.com/mattermost/platform",
 			"vcs": "git",
@@ -447,6 +439,14 @@
 			"revision": "37e5c2de3e03e4b82693e3fcb4a6aa2cc4eb07e3",
 			"branch": "master",
 			"path": "/i18n",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/nlopes/slack",
+			"repository": "https://github.com/nlopes/slack",
+			"vcs": "git",
+			"revision": "107290b5bbaf3e634833346bb4ff389b1c782bc7",
+			"branch": "master",
 			"notests": true
 		},
 		{
@@ -720,7 +720,7 @@
 			"importpath": "golang.org/x/net/websocket",
 			"repository": "https://go.googlesource.com/net",
 			"vcs": "git",
-			"revision": "6c23252515492caf9b228a9d5cabcdbde29f7f82",
+			"revision": "434ec0c7fe3742c984919a691b2018a6e9694425",
 			"branch": "master",
 			"path": "/websocket",
 			"notests": true
