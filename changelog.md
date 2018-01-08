@@ -1,3 +1,9 @@
+# v1.6.3
+## Bugfix
+* slack: Fix connection issues
+* slack: Add more debug messages
+* irc: Convert received IRC channel names to lowercase. Fixes #329 (#330)
+
 # v1.6.2
 ## Bugfix
 * mattermost: Crashes while connecting to Mattermost (regression). Closes #327
