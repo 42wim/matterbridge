@@ -7,7 +7,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/matterhook"
 	log "github.com/Sirupsen/logrus"
-	"github.com/matterbridge/slack"
+	"github.com/nlopes/slack"
 	"html"
 	"io"
 	"net/http"
