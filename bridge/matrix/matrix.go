@@ -91,6 +91,9 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	if msg.Event == config.EVENT_USER_ACTION {
 		resp, err := b.mc.SendMessageEvent(channel, "m.room.message",
 			matrix.TextMessage{"m.emote", msg.Username + msg.Text})
+		if err != nil {
+			return "", err
+		}
 		return resp.EventID, err
 	}
 
@@ -132,6 +135,9 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	}
 
 	resp, err := b.mc.SendText(channel, msg.Username+msg.Text)
+	if err != nil {
+		return "", err
+	}
 	return resp.EventID, err
 }
 
