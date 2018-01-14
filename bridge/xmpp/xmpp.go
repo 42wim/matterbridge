@@ -166,7 +166,7 @@ func (b *Bxmpp) handleXmpp() error {
 				if len(s) == 2 {
 					nick = s[1]
 				}
-				if nick != b.Config.Nick && v.Stamp == nodelay && v.Text != "" {
+				if nick != b.Config.Nick && v.Stamp == nodelay && v.Text != "" && !strings.Contains(v.Text, "</subject>") {
 					rmsg := config.Message{Username: nick, Text: v.Text, Channel: channel, Account: b.Account, UserID: v.Remote}
 					rmsg.Text, ok = b.replaceAction(rmsg.Text)
 					if ok {
