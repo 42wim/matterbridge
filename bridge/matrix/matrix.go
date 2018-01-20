@@ -205,6 +205,20 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 			info := ev.Content["info"].(map[string]interface{})
 			size := info["size"].(float64)
 			name := ev.Content["body"].(string)
+			// check if we have an image uploaded without extension
+			if !strings.Contains(name, ".") {
+				if ev.Content["msgtype"].(string) == "m.image" {
+					if mtype, ok := ev.Content["mimetype"].(string); ok {
+						mext, _ := mime.ExtensionsByType(mtype)
+						if len(mext) > 0 {
+							name = name + mext[0]
+						}
+					} else {
+						// just a default .png extension if we don't have mime info
+						name = name + ".png"
+					}
+				}
+			}
 			flog.Debugf("trying to download %#v with size %#v", name, size)
 			if size <= float64(b.General.MediaDownloadSize) {
 				data, err := helper.DownloadFile(url)
