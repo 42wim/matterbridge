@@ -48,6 +48,7 @@ Accounts to one of the supported bridges
 * [Rocket.chat](https://rocket.chat)
 * [Matrix](https://matrix.org)
 * [Steam](https://store.steampowered.com/)
+* [Twitch](https://twitch.tv)
 
 # Screenshots
 See https://github.com/42wim/matterbridge/wiki
