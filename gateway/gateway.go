@@ -29,8 +29,9 @@ type Gateway struct {
 }
 
 type BrMsgID struct {
-	br *bridge.Bridge
-	ID string
+	br        *bridge.Bridge
+	ID        string
+	ChannelID string
 }
 
 func New(cfg config.Gateway, r *Router) *Gateway {
@@ -190,7 +191,9 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		if res, ok := gw.Messages.Get(origmsg.ID); ok {
 			IDs := res.([]*BrMsgID)
 			for _, id := range IDs {
-				if dest.Protocol == id.br.Protocol {
+				// check protocol, bridge name and channelname
+				// for people that reuse the same bridge multiple times. see #342
+				if dest.Protocol == id.br.Protocol && dest.Name == id.br.Name && channel.ID == id.ChannelID {
 					msg.ID = id.ID
 				}
 			}
@@ -205,7 +208,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		}
 		// append the message ID (mID) from this bridge (dest) to our brMsgIDs slice
 		if mID != "" {
-			brMsgIDs = append(brMsgIDs, &BrMsgID{dest, mID})
+			brMsgIDs = append(brMsgIDs, &BrMsgID{dest, mID, channel.ID})
 		}
 	}
 	return brMsgIDs
