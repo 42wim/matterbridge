@@ -119,6 +119,12 @@ func (gw *Gateway) mapChannels() error {
 
 func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []config.ChannelInfo {
 	var channels []config.ChannelInfo
+
+	// for messages received from the api check that the gateway is the specified one
+	if msg.Protocol == "api" && gw.Name != msg.Gateway {
+		return channels
+	}
+
 	// if source channel is in only, do nothing
 	for _, channel := range gw.Channels {
 		// lookup the channel from the message
@@ -321,7 +327,11 @@ func (gw *Gateway) modifyMessage(msg *config.Message) {
 		}
 		msg.Text = re.ReplaceAllString(msg.Text, replace)
 	}
-	msg.Gateway = gw.Name
+
+	// messages from api have Gateway specified, don't overwrite
+	if msg.Protocol != "api" {
+		msg.Gateway = gw.Name
+	}
 }
 
 func (gw *Gateway) handleFiles(msg *config.Message) {
