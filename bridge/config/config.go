@@ -53,6 +53,7 @@ type Protocol struct {
 	BindAddress            string // mattermost, slack // DEPRECATED
 	Buffer                 int    // api
 	Charset                string // irc
+	Debug                  bool   // general
 	EditSuffix             string // mattermost, slack, discord, telegram, gitter
 	EditDisable            bool   // mattermost, slack, discord, telegram, gitter
 	IconURL                string // mattermost, slack

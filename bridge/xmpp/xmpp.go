@@ -110,7 +110,7 @@ func (b *Bxmpp) createXMPP() (*xmpp.Client, error) {
 		TLSConfig: tc,
 
 		//StartTLS:      false,
-		Debug:                        true,
+		Debug:                        b.General.Debug,
 		Session:                      true,
 		Status:                       "",
 		StatusMessage:                "",

@@ -43,6 +43,7 @@ func main() {
 		log.Println("WARNING: THIS IS A DEVELOPMENT VERSION. Things may break.")
 	}
 	cfg := config.NewConfig(*flagConfig)
+	cfg.General.Debug = *flagDebug
 	r, err := gateway.NewRouter(cfg)
 	if err != nil {
 		log.Fatalf("Starting gateway failed: %s", err)
