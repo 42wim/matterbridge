@@ -1,4 +1,4 @@
-FROM easypi/alpine-arm:edge
+FROM cmosh/alpine-arm:edge
 ENTRYPOINT ["/bin/matterbridge"]
 
 COPY . /go/src/github.com/42wim/matterbridge
