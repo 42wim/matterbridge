@@ -8,7 +8,8 @@ Click on one of the badges below to join the chat
 ![matterbridge.gif](https://s15.postimg.org/qpjhp6y3f/matterbridge.gif)
 
 Simple bridge between Mattermost, IRC, XMPP, Gitter, Slack, Discord, Telegram, Rocket.Chat, Hipchat(via xmpp), Matrix and Steam.
-Has a REST API.
+Has a REST API.  
+Minecraft server chat support via [MatterLink](https://github.com/elytra/MatterLink)
 
 # Table of Contents
  * [Features](#features)
@@ -34,6 +35,14 @@ Has a REST API.
 * The bridge is now a gateway which has support multiple in and out bridges. (and supports multiple gateways).
 * Edits and delete messages across bridges that support it (mattermost,slack,discord,gitter,telegram)
 * REST API to read/post messages to bridges (WIP).
+
+## API
+The API is very basic at the moment and rather undocumented.
+
+Used by at least 2 projects. Feel free to make a PR to add your project to this list.
+
+* [MatterLink](https://github.com/elytra/MatterLink) (Matterbridge link for Minecraft Server chat)
+* [pyCord](https://github.com/NikkyAI/pyCord) (crossplatform chatbot)
 
 # Requirements
 Accounts to one of the supported bridges
