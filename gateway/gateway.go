@@ -94,6 +94,10 @@ func (gw *Gateway) mapChannelConfig(cfg []config.Bridge, direction string) {
 		if isApi(br.Account) {
 			br.Channel = "api"
 		}
+		// make sure to lowercase irc channels in config #348
+		if strings.HasPrefix(br.Account, "irc.") {
+			br.Channel = strings.ToLower(br.Channel)
+		}
 		ID := br.Channel + br.Account
 		if _, ok := gw.Channels[ID]; !ok {
 			channel := &config.ChannelInfo{Name: br.Channel, Direction: direction, ID: ID, Options: br.Options, Account: br.Account,
