@@ -1,3 +1,19 @@
+# v1.7.0
+## New features
+* matrix: Add support for deleting messages from/to matrix (matrix). Closes #320
+* xmpp: Ignore <subject> messages (xmpp). #272
+* irc: Add twitch support (irc) to README / wiki
+
+## Bugfix
+* general: Change RemoteNickFormat replacement order. Closes #336
+* general: Make edits/delete work for bridges that gets reused. Closes #342
+* general: Lowercase irc channels in config. Closes #348
+* matrix: Fix possible panics (matrix). Closes #333
+* matrix: Add an extension to images without one (matrix). #331
+* api: Obey the Gateway value from the json (api). Closes #344
+* xmpp: Print only debug messages when specified (xmpp). Closes #345
+* xmpp: Allow xmpp to receive the extra messages (file uploads) when text is empty. #295
+
 # v1.6.3
 ## Bugfix
 * slack: Fix connection issues
