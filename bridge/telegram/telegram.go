@@ -35,7 +35,9 @@ func (b *Btelegram) Connect() error {
 		flog.Debugf("%#v", err)
 		return err
 	}
-	updates, err := b.c.GetUpdatesChan(tgbotapi.NewUpdate(0))
+	u := tgbotapi.NewUpdate(0)
+	u.Timeout = 60
+	updates, err := b.c.GetUpdatesChan(u)
 	if err != nil {
 		flog.Debugf("%#v", err)
 		return err
