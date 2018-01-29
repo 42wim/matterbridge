@@ -1,3 +1,7 @@
+# v1.7.1
+## Bugfix
+* telegram: Enable Long Polling for Telegram. Reduces bandwidth consumption. (#350)
+
 # v1.7.0
 ## New features
 * matrix: Add support for deleting messages from/to matrix (matrix). Closes #320
