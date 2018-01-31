@@ -167,22 +167,22 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 			username = "unknown"
 		}
 		if message.Sticker != nil {
-			b.handleDownload(message.Sticker, &fmsg)
+			b.handleDownload(message.Sticker, message.Caption, &fmsg)
 		}
 		if message.Video != nil {
-			b.handleDownload(message.Video, &fmsg)
+			b.handleDownload(message.Video, message.Caption, &fmsg)
 		}
 		if message.Photo != nil {
-			b.handleDownload(message.Photo, &fmsg)
+			b.handleDownload(message.Photo, message.Caption, &fmsg)
 		}
 		if message.Document != nil {
-			b.handleDownload(message.Document, &fmsg)
+			b.handleDownload(message.Document, message.Caption, &fmsg)
 		}
 		if message.Voice != nil {
-			b.handleDownload(message.Voice, &fmsg)
+			b.handleDownload(message.Voice, message.Caption, &fmsg)
 		}
 		if message.Audio != nil {
-			b.handleDownload(message.Audio, &fmsg)
+			b.handleDownload(message.Audio, message.Caption, &fmsg)
 		}
 
 		if message.ForwardFrom != nil {
@@ -239,7 +239,7 @@ func (b *Btelegram) getFileDirectURL(id string) string {
 	return res
 }
 
-func (b *Btelegram) handleDownload(file interface{}, msg *config.Message) {
+func (b *Btelegram) handleDownload(file interface{}, comment string, msg *config.Message) {
 	size := 0
 	url := ""
 	name := ""
@@ -307,7 +307,7 @@ func (b *Btelegram) handleDownload(file interface{}, msg *config.Message) {
 			flog.Errorf("download %s failed %#v", url, err)
 		} else {
 			flog.Debugf("download OK %#v %#v %#v", name, len(*data), len(url))
-			msg.Extra["file"] = append(msg.Extra["file"], config.FileInfo{Name: name, Data: data})
+			msg.Extra["file"] = append(msg.Extra["file"], config.FileInfo{Name: name, Data: data, Comment: comment})
 		}
 	}
 }

@@ -84,8 +84,11 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 		if len(msg.Extra["file"]) > 0 {
 			for _, f := range msg.Extra["file"] {
 				fi := f.(config.FileInfo)
+				if fi.Comment != "" {
+					msg.Text += fi.Comment + ":"
+				}
 				if fi.URL != "" {
-					msg.Text = fi.URL
+					msg.Text += fi.URL
 				}
 				b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.Config.Muc, Text: msg.Username + msg.Text})
 			}

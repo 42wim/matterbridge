@@ -107,6 +107,12 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 				mtype := mime.TypeByExtension("." + sp[len(sp)-1])
 				if strings.Contains(mtype, "image") ||
 					strings.Contains(mtype, "video") {
+					if fi.Comment != "" {
+						resp, err := b.mc.SendText(channel, msg.Username+fi.Comment)
+						if err != nil {
+							flog.Errorf("file comment failed: %#v", err)
+						}
+					}
 					flog.Debugf("uploading file: %s %s", fi.Name, mtype)
 					res, err := b.mc.UploadToContentRepo(content, mtype, int64(len(*fi.Data)))
 					if err != nil {
