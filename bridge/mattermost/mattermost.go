@@ -152,12 +152,23 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 		message = nick + message
 	}
 	if b.Config.WebhookURL != "" {
+
+		if msg.Extra != nil {
+			if len(msg.Extra["file"]) > 0 {
+				for _, f := range msg.Extra["file"] {
+					fi := f.(config.FileInfo)
+					if fi.URL != "" {
+						message += fi.URL
+					}
+				}
+			}
+		}
+
 		matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL}
 		matterMessage.IconURL = msg.Avatar
 		matterMessage.Channel = channel
 		matterMessage.UserName = nick
 		matterMessage.Type = ""
-		matterMessage.Text = message
 		matterMessage.Text = message
 		matterMessage.Props = make(map[string]interface{})
 		matterMessage.Props["matterbridge"] = true
