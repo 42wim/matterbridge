@@ -108,7 +108,7 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 				if strings.Contains(mtype, "image") ||
 					strings.Contains(mtype, "video") {
 					if fi.Comment != "" {
-						resp, err := b.mc.SendText(channel, msg.Username+fi.Comment)
+						_, err := b.mc.SendText(channel, msg.Username+fi.Comment)
 						if err != nil {
 							flog.Errorf("file comment failed: %#v", err)
 						}
