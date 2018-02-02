@@ -181,6 +181,9 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 	if msg.Event == config.EVENT_JOIN_LEAVE && !gw.Bridges[dest.Account].Config.ShowJoinPart {
 		return brMsgIDs
 	}
+	if msg.Event == config.EVENT_TOPIC_CHANGE && !gw.Bridges[dest.Account].Config.ShowTopicChange {
+		return brMsgIDs
+	}
 	// broadcast to every out channel (irc QUIT)
 	if msg.Channel == "" && msg.Event != config.EVENT_JOIN_LEAVE {
 		log.Debug("empty channel")

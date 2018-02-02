@@ -284,6 +284,9 @@ func (b *Bslack) handleSlack() {
 			msg.Event = config.EVENT_MSG_DELETE
 			msg.ID = "slack " + message.Raw.DeletedTimestamp
 		}
+		if message.Raw.SubType == "channel_topic" {
+			msg.Event = config.EVENT_TOPIC_CHANGE
+		}
 
 		// if we have a file attached, download it (in memory) and put a pointer to it in msg.Extra
 		if message.Raw.File != nil {

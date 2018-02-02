@@ -11,6 +11,7 @@ import (
 
 const (
 	EVENT_JOIN_LEAVE      = "join_leave"
+	EVENT_TOPIC_CHANGE    = "topic_change"
 	EVENT_FAILURE         = "failure"
 	EVENT_REJOIN_CHANNELS = "rejoin_channels"
 	EVENT_USER_ACTION     = "user_action"
@@ -88,6 +89,7 @@ type Protocol struct {
 	RemoteNickFormat       string     // all protocols
 	Server                 string     // IRC,mattermost,XMPP,discord
 	ShowJoinPart           bool       // all protocols
+	ShowTopicChange        bool       // slack
 	ShowEmbeds             bool       // discord
 	SkipTLSVerify          bool       // IRC, mattermost
 	StripNick              bool       // all protocols
