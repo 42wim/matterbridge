@@ -287,8 +287,24 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 				m.Event = config.EVENT_MSG_DELETE
 			}
 			if len(message.Post.FileIds) > 0 {
-				for _, link := range b.mc.GetFileLinks(message.Post.FileIds) {
-					m.Text = m.Text + "\n" + link
+				for _, id := range message.Post.FileIds {
+					url, _ := b.mc.Client.GetFileLink(id)
+					finfo, resp := b.mc.Client.GetFileInfo(id)
+					if resp.Error != nil {
+						continue
+					}
+					flog.Debugf("trying to download %#v fileid %#v with size %#v", finfo.Name, finfo.Id, finfo.Size)
+					if int(finfo.Size) > b.General.MediaDownloadSize {
+						flog.Errorf("File %#v to large to download (%#v). MediaDownloadSize is %#v", finfo.Name, finfo.Size, b.General.MediaDownloadSize)
+						continue
+					}
+					data, resp := b.mc.Client.DownloadFile(id, true)
+					if resp.Error != nil {
+						flog.Errorf("download %s failed %#v", finfo.Name, resp.Error)
+						continue
+					}
+					flog.Debugf("download OK %#v %#v", finfo.Name, len(data))
+					m.Extra["file"] = append(m.Extra["file"], config.FileInfo{Name: finfo.Name, Data: &data, URL: url, Comment: message.Text})
 				}
 			}
 			mchan <- m
