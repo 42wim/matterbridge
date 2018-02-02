@@ -340,7 +340,7 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 				continue
 			}
 			m := &MMMessage{}
-			if ev.BotID == "" && ev.SubType != "message_deleted" {
+			if ev.BotID == "" && ev.SubType != "message_deleted" && ev.SubType != "file_comment" {
 				user, err := b.rtm.GetUserInfo(ev.User)
 				if err != nil {
 					continue
@@ -380,6 +380,11 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 					m.UserID = bot.ID
 				}
 			}
+
+			if ev.SubType == "file_comment" {
+				m.Username = "system"
+			}
+
 			mchan <- m
 		case *slack.OutgoingErrorEvent:
 			flog.Debugf("%#v", ev.Error())
