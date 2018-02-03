@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/42wim/go-gitter"
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/helper"
 	log "github.com/Sirupsen/logrus"
 	"strings"
 )
@@ -121,6 +122,9 @@ func (b *Bgitter) Send(msg config.Message) (string, error) {
 	}
 
 	if msg.Extra != nil {
+		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+			b.c.SendMessage(roomID, rmsg.Username+rmsg.Text)
+		}
 		if len(msg.Extra["file"]) > 0 {
 			for _, f := range msg.Extra["file"] {
 				fi := f.(config.FileInfo)

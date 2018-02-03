@@ -10,12 +10,13 @@ import (
 )
 
 const (
-	EVENT_JOIN_LEAVE      = "join_leave"
-	EVENT_TOPIC_CHANGE    = "topic_change"
-	EVENT_FAILURE         = "failure"
-	EVENT_REJOIN_CHANNELS = "rejoin_channels"
-	EVENT_USER_ACTION     = "user_action"
-	EVENT_MSG_DELETE      = "msg_delete"
+	EVENT_JOIN_LEAVE        = "join_leave"
+	EVENT_TOPIC_CHANGE      = "topic_change"
+	EVENT_FAILURE           = "failure"
+	EVENT_FILE_FAILURE_SIZE = "file_failure_size"
+	EVENT_REJOIN_CHANNELS   = "rejoin_channels"
+	EVENT_USER_ACTION       = "user_action"
+	EVENT_MSG_DELETE        = "msg_delete"
 )
 
 type Message struct {
@@ -38,6 +39,7 @@ type FileInfo struct {
 	Data    *[]byte
 	Comment string
 	URL     string
+	Size    int64
 }
 
 type ChannelInfo struct {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/42wim/matterbridge/matterhook"
 	log "github.com/Sirupsen/logrus"
 	"github.com/nlopes/slack"
@@ -134,6 +135,22 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 		message = nick + " " + message
 	}
 	if b.Config.WebhookURL != "" {
+		if msg.Extra != nil {
+			for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+				matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL, Channel: channel, UserName: rmsg.Username,
+					Text: rmsg.Text}
+				b.mh.Send(matterMessage)
+			}
+			if len(msg.Extra["file"]) > 0 {
+				for _, f := range msg.Extra["file"] {
+					fi := f.(config.FileInfo)
+					if fi.URL != "" {
+						message += fi.URL
+					}
+				}
+			}
+		}
+
 		matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL}
 		matterMessage.Channel = channel
 		matterMessage.UserName = nick
@@ -183,6 +200,9 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	}
 
 	if msg.Extra != nil {
+		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+			b.sc.PostMessage(schannel.ID, rmsg.Username+rmsg.Text, np)
+		}
 		// check if we have files to upload (from slack, telegram or mattermost)
 		if len(msg.Extra["file"]) > 0 {
 			var err error
@@ -291,16 +311,21 @@ func (b *Bslack) handleSlack() {
 		// if we have a file attached, download it (in memory) and put a pointer to it in msg.Extra
 		if message.Raw.File != nil {
 			// limit to 1MB for now
-			if message.Raw.File.Size <= b.General.MediaDownloadSize {
-				comment := ""
+			comment := ""
+			results := regexp.MustCompile(`.*?commented: (.*)`).FindAllStringSubmatch(msg.Text, -1)
+			if len(results) > 0 {
+				comment = results[0][1]
+			}
+
+			if message.Raw.File.Size > b.General.MediaDownloadSize {
+				flog.Errorf("File %#v to large to download (%#v). MediaDownloadSize is %#v", message.Raw.File.Name, message.Raw.File.Size, b.General.MediaDownloadSize)
+				msg.Event = config.EVENT_FILE_FAILURE_SIZE
+				msg.Extra[msg.Event] = append(msg.Extra[msg.Event], config.FileInfo{Name: message.Raw.File.Name, Comment: comment, Size: int64(message.Raw.File.Size)})
+			} else {
 				data, err := b.downloadFile(message.Raw.File.URLPrivateDownload)
 				if err != nil {
 					flog.Errorf("download %s failed %#v", message.Raw.File.URLPrivateDownload, err)
 				} else {
-					results := regexp.MustCompile(`.*?commented: (.*)`).FindAllStringSubmatch(msg.Text, -1)
-					if len(results) > 0 {
-						comment = results[0][1]
-					}
 					msg.Extra["file"] = append(msg.Extra["file"], config.FileInfo{Name: message.Raw.File.Name, Data: data, Comment: comment})
 				}
 			}

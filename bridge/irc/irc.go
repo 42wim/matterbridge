@@ -177,6 +177,9 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 	}
 
 	if msg.Extra != nil {
+		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+			b.Local <- rmsg
+		}
 		if len(msg.Extra["file"]) > 0 {
 			for _, f := range msg.Extra["file"] {
 				fi := f.(config.FileInfo)

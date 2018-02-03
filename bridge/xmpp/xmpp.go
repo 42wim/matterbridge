@@ -3,6 +3,7 @@ package bxmpp
 import (
 	"crypto/tls"
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/helper"
 	log "github.com/Sirupsen/logrus"
 	"github.com/jpillora/backoff"
 	"github.com/mattn/go-xmpp"
@@ -81,6 +82,9 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 	}
 	flog.Debugf("Receiving %#v", msg)
 	if msg.Extra != nil {
+		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+			b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: rmsg.Channel + "@" + b.Config.Muc, Text: rmsg.Username + rmsg.Text})
+		}
 		if len(msg.Extra["file"]) > 0 {
 			for _, f := range msg.Extra["file"] {
 				fi := f.(config.FileInfo)

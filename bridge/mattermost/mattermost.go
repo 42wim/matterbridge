@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/42wim/matterbridge/matterclient"
 	"github.com/42wim/matterbridge/matterhook"
 	log "github.com/Sirupsen/logrus"
@@ -154,6 +155,12 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 	if b.Config.WebhookURL != "" {
 
 		if msg.Extra != nil {
+			for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+				matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL, Channel: channel, UserName: rmsg.Username,
+					Text: rmsg.Text, Props: make(map[string]interface{})}
+				matterMessage.Props["matterbridge"] = true
+				b.mh.Send(matterMessage)
+			}
 			if len(msg.Extra["file"]) > 0 {
 				for _, f := range msg.Extra["file"] {
 					fi := f.(config.FileInfo)
@@ -186,6 +193,9 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 		return msg.ID, b.mc.DeleteMessage(msg.ID)
 	}
 	if msg.Extra != nil {
+		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+			b.mc.PostMessage(b.mc.GetChannelId(channel, ""), rmsg.Username+rmsg.Text)
+		}
 		if len(msg.Extra["file"]) > 0 {
 			var err error
 			var res, id string
@@ -296,6 +306,8 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 					flog.Debugf("trying to download %#v fileid %#v with size %#v", finfo.Name, finfo.Id, finfo.Size)
 					if int(finfo.Size) > b.General.MediaDownloadSize {
 						flog.Errorf("File %#v to large to download (%#v). MediaDownloadSize is %#v", finfo.Name, finfo.Size, b.General.MediaDownloadSize)
+						m.Event = config.EVENT_FILE_FAILURE_SIZE
+						m.Extra[m.Event] = append(m.Extra[m.Event], config.FileInfo{Name: finfo.Name, Comment: message.Text, Size: int64(finfo.Size)})
 						continue
 					}
 					data, resp := b.mc.Client.DownloadFile(id, true)

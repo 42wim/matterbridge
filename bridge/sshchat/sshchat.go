@@ -3,6 +3,7 @@ package bsshchat
 import (
 	"bufio"
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/helper"
 	log "github.com/Sirupsen/logrus"
 	"github.com/shazow/ssh-chat/sshd"
 	"io"
@@ -62,6 +63,9 @@ func (b *Bsshchat) Send(msg config.Message) (string, error) {
 	}
 	flog.Debugf("Receiving %#v", msg)
 	if msg.Extra != nil {
+		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+			b.w.Write([]byte(rmsg.Username + rmsg.Text + "\r\n"))
+		}
 		if len(msg.Extra["file"]) > 0 {
 			for _, f := range msg.Extra["file"] {
 				fi := f.(config.FileInfo)

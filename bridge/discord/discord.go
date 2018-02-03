@@ -3,6 +3,7 @@ package bdiscord
 import (
 	"bytes"
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/helper"
 	log "github.com/Sirupsen/logrus"
 	"github.com/bwmarrin/discordgo"
 	"regexp"
@@ -139,6 +140,9 @@ func (b *bdiscord) Send(msg config.Message) (string, error) {
 		}
 
 		if msg.Extra != nil {
+			for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+				b.c.ChannelMessageSend(channelID, rmsg.Username+rmsg.Text)
+			}
 			// check if we have files to upload (from slack, telegram or mattermost)
 			if len(msg.Extra["file"]) > 0 {
 				var err error

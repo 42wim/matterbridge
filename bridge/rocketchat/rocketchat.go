@@ -2,6 +2,7 @@ package brocketchat
 
 import (
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/42wim/matterbridge/hook/rockethook"
 	"github.com/42wim/matterbridge/matterhook"
 	log "github.com/Sirupsen/logrus"
@@ -57,6 +58,22 @@ func (b *Brocketchat) Send(msg config.Message) (string, error) {
 		return "", nil
 	}
 	flog.Debugf("Receiving %#v", msg)
+	if msg.Extra != nil {
+		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+			matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL, Channel: rmsg.Channel, UserName: rmsg.Username,
+				Text: rmsg.Text}
+			b.mh.Send(matterMessage)
+		}
+		if len(msg.Extra["file"]) > 0 {
+			for _, f := range msg.Extra["file"] {
+				fi := f.(config.FileInfo)
+				if fi.URL != "" {
+					msg.Text += fi.URL
+				}
+			}
+		}
+	}
+
 	matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL}
 	matterMessage.Channel = msg.Channel
 	matterMessage.UserName = msg.Username

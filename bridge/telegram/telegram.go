@@ -97,6 +97,9 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 	}
 
 	if msg.Extra != nil {
+		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+			b.sendMessage(chatid, rmsg.Username+rmsg.Text)
+		}
 		// check if we have files to upload (from slack, telegram or mattermost)
 		if len(msg.Extra["file"]) > 0 {
 			var c tgbotapi.Chattable
@@ -309,6 +312,10 @@ func (b *Btelegram) handleDownload(file interface{}, comment string, msg *config
 			flog.Debugf("download OK %#v %#v %#v", name, len(*data), len(url))
 			msg.Extra["file"] = append(msg.Extra["file"], config.FileInfo{Name: name, Data: data, Comment: comment})
 		}
+	} else {
+		flog.Errorf("File %#v to large to download (%#v). MediaDownloadSize is %#v", name, size, b.General.MediaDownloadSize)
+		msg.Event = config.EVENT_FILE_FAILURE_SIZE
+		msg.Extra[msg.Event] = append(msg.Extra[msg.Event], config.FileInfo{Name: name, Comment: comment, Size: int64(size)})
 	}
 }
 

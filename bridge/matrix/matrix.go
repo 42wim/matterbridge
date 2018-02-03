@@ -98,6 +98,9 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	}
 
 	if msg.Extra != nil {
+		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+			b.mc.SendText(channel, rmsg.Username+rmsg.Text)
+		}
 		// check if we have files to upload (from slack, telegram or mattermost)
 		if len(msg.Extra["file"]) > 0 {
 			for _, f := range msg.Extra["file"] {
@@ -234,6 +237,10 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 					flog.Debugf("download OK %#v %#v %#v", name, len(*data), len(url))
 					rmsg.Extra["file"] = append(rmsg.Extra["file"], config.FileInfo{Name: name, Data: data})
 				}
+			} else {
+				flog.Errorf("File %#v to large to download (%#v). MediaDownloadSize is %#v", name, size, b.General.MediaDownloadSize)
+				rmsg.Event = config.EVENT_FILE_FAILURE_SIZE
+				rmsg.Extra[rmsg.Event] = append(rmsg.Extra[rmsg.Event], config.FileInfo{Name: name, Size: int64(size)})
 			}
 			rmsg.Text = ""
 		}
