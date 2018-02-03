@@ -89,6 +89,9 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 		if b.Config.MessageFormat == "HTML" {
 			m.ParseMode = tgbotapi.ModeHTML
 		}
+		if b.Config.MessageFormat == "Markdown" {
+			m.ParseMode = tgbotapi.ModeMarkdown
+		}
 		_, err = b.c.Send(m)
 		if err != nil {
 			return "", err
@@ -323,6 +326,9 @@ func (b *Btelegram) sendMessage(chatid int64, text string) (string, error) {
 	m := tgbotapi.NewMessage(chatid, text)
 	if b.Config.MessageFormat == "HTML" {
 		m.ParseMode = tgbotapi.ModeHTML
+	}
+	if b.Config.MessageFormat == "Markdown" {
+		m.ParseMode = tgbotapi.ModeMarkdown
 	}
 	res, err := b.c.Send(m)
 	if err != nil {
