@@ -304,7 +304,7 @@ func (b *Bslack) handleSlack() {
 			msg.Event = config.EVENT_MSG_DELETE
 			msg.ID = "slack " + message.Raw.DeletedTimestamp
 		}
-		if message.Raw.SubType == "channel_topic" {
+		if message.Raw.SubType == "channel_topic" || message.Raw.SubType == "channel_purpose" {
 			msg.Event = config.EVENT_TOPIC_CHANGE
 		}
 
@@ -342,6 +342,9 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 		}
 		switch ev := msg.Data.(type) {
 		case *slack.MessageEvent:
+			if ev.SubType == "pinned_item" || ev.SubType == "unpinned_item" {
+				continue
+			}
 			if len(ev.Attachments) > 0 {
 				// skip messages we made ourselves
 				if ev.Attachments[0].CallbackID == "matterbridge" {
