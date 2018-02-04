@@ -87,9 +87,11 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 		}
 		m := tgbotapi.NewEditMessageText(chatid, msgid, msg.Username+msg.Text)
 		if b.Config.MessageFormat == "HTML" {
+			flog.Debug("Using mode HTML")
 			m.ParseMode = tgbotapi.ModeHTML
 		}
 		if b.Config.MessageFormat == "Markdown" {
+			flog.Debug("Using mode markdown")
 			m.ParseMode = tgbotapi.ModeMarkdown
 		}
 		_, err = b.c.Send(m)
@@ -325,9 +327,11 @@ func (b *Btelegram) handleDownload(file interface{}, comment string, msg *config
 func (b *Btelegram) sendMessage(chatid int64, text string) (string, error) {
 	m := tgbotapi.NewMessage(chatid, text)
 	if b.Config.MessageFormat == "HTML" {
+		flog.Debug("Using mode HTML")
 		m.ParseMode = tgbotapi.ModeHTML
 	}
 	if b.Config.MessageFormat == "Markdown" {
+		flog.Debug("Using mode markdown")
 		m.ParseMode = tgbotapi.ModeMarkdown
 	}
 	res, err := b.c.Send(m)
