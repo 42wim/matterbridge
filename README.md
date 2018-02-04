@@ -12,7 +12,7 @@ Has a REST API.
 Minecraft server chat support via [MatterLink](https://github.com/elytra/MatterLink)
 
 # Table of Contents
- * [Features](#features)
+ * [Features](https://github.com/42wim/matterbridge/wiki/Features)
  * [Requirements](#requirements)
  * [Screenshots](https://github.com/42wim/matterbridge/wiki/)
  * [Installing](#installing)
@@ -28,13 +28,13 @@ Minecraft server chat support via [MatterLink](https://github.com/elytra/MatterL
  * [Thanks](#thanks)
 
 # Features
-* Relays public channel messages between multiple mattermost, IRC, XMPP, Gitter, Slack, Discord, Telegram, Rocket.Chat, Hipchat (via xmpp), Matrix and Steam. 
-  Pick and mix.
-* Support private groups on your mattermost/slack.
-* Allow for bridging the same bridges, which means you can eg bridge between multiple mattermosts.
-* The bridge is now a gateway which has support multiple in and out bridges. (and supports multiple gateways).
-* Edits and delete messages across bridges that support it (mattermost,slack,discord,gitter,telegram)
-* REST API to read/post messages to bridges (WIP).
+* [Support bridging between any protocols](https://github.com/42wim/matterbridge/wiki/Features#support-bridging-between-any-protocols)
+* [Support multiple gateways(bridges) for your protocols](https://github.com/42wim/matterbridge/wiki/Features#support-multiple-gatewaysbridges-for-your-protocols)
+* [Message edits and deletes](https://github.com/42wim/matterbridge/wiki/Features#message-edits-and-deletes)
+* [Attachment / files handling](https://github.com/42wim/matterbridge/wiki/Features#attachment--files-handling)
+* [Username and avatar spoofing](https://github.com/42wim/matterbridge/wiki/Features#username-and-avatar-spoofing)
+* [Private groups](https://github.com/42wim/matterbridge/wiki/Features#private-groups)
+* [API](https://github.com/42wim/matterbridge/wiki/Features#api)
 
 ## API
 The API is very basic at the moment and rather undocumented.
