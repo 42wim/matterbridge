@@ -20,9 +20,9 @@ func DownloadFile(url string) (*[]byte, error) {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		resp.Body.Close()
 		return nil, err
 	}
+	defer resp.Body.Close()
 	io.Copy(&buf, resp.Body)
 	data := buf.Bytes()
 	resp.Body.Close()
