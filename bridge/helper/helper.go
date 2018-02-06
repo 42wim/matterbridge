@@ -25,7 +25,6 @@ func DownloadFile(url string) (*[]byte, error) {
 	defer resp.Body.Close()
 	io.Copy(&buf, resp.Body)
 	data := buf.Bytes()
-	resp.Body.Close()
 	return &data, nil
 }
 
