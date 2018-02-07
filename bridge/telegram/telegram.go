@@ -134,6 +134,10 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 	for update := range updates {
 		flog.Debugf("Receiving from telegram: %#v", update.Message)
+		if update.Message == nil {
+			flog.Error("Getting nil messages, this shouldn't happen.")
+			continue
+		}
 		var message *tgbotapi.Message
 		username := ""
 		channel := ""
