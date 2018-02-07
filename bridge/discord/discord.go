@@ -369,6 +369,9 @@ func (b *bdiscord) stripCustomoji(text string) string {
 // splitURL splits a webhookURL and returns the id and token
 func (b *bdiscord) splitURL(url string) (string, string) {
 	webhookURLSplit := strings.Split(url, "/")
+	if len(webhookURLSplit) != 7 {
+		log.Fatalf("%s is no correct discord WebhookURL", url)
+	}
 	return webhookURLSplit[len(webhookURLSplit)-2], webhookURLSplit[len(webhookURLSplit)-1]
 }
 
