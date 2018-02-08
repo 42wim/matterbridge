@@ -19,6 +19,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 type Birc struct {
@@ -200,9 +201,12 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 		msg.Text = helper.SplitStringLength(msg.Text, b.Config.MessageLength)
 	}
 	for _, text := range strings.Split(msg.Text, "\n") {
-		input := []rune(text)
 		if len(text) > b.Config.MessageLength {
-			text = string(input[:b.Config.MessageLength]) + " <message clipped>"
+			text = text[:b.Config.MessageLength-len(" <message clipped>")]
+			if r, size := utf8.DecodeLastRuneInString(text); r == utf8.RuneError {
+				text = text[:len(text)-size]
+			}
+			text += " <message clipped>"
 		}
 		if len(b.Local) < b.Config.MessageQueue {
 			if len(b.Local) == b.Config.MessageQueue-1 {
