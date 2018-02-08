@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"io"
+	"net/http"
 	"sort"
 	"strings"
 	"unicode/utf8"
@@ -24,6 +25,7 @@ const (
 	CHANNEL_DISPLAY_NAME_MAX_RUNES = 64
 	CHANNEL_NAME_MIN_LENGTH        = 2
 	CHANNEL_NAME_MAX_LENGTH        = 64
+	CHANNEL_NAME_UI_MAX_LENGTH     = 22
 	CHANNEL_HEADER_MAX_RUNES       = 1024
 	CHANNEL_PURPOSE_MAX_RUNES      = 250
 	CHANNEL_CACHE_SIZE             = 25000
@@ -51,6 +53,11 @@ type ChannelPatch struct {
 	Name        *string `json:"name"`
 	Header      *string `json:"header"`
 	Purpose     *string `json:"purpose"`
+}
+
+func (o *Channel) DeepCopy() *Channel {
+	copy := *o
+	return &copy
 }
 
 func (o *Channel) ToJson() string {
@@ -104,39 +111,39 @@ func (o *Channel) StatsEtag() string {
 func (o *Channel) IsValid() *AppError {
 
 	if len(o.Id) != 26 {
-		return NewLocAppError("Channel.IsValid", "model.channel.is_valid.id.app_error", nil, "")
+		return NewAppError("Channel.IsValid", "model.channel.is_valid.id.app_error", nil, "", http.StatusBadRequest)
 	}
 
 	if o.CreateAt == 0 {
-		return NewLocAppError("Channel.IsValid", "model.channel.is_valid.create_at.app_error", nil, "id="+o.Id)
+		return NewAppError("Channel.IsValid", "model.channel.is_valid.create_at.app_error", nil, "id="+o.Id, http.StatusBadRequest)
 	}
 
 	if o.UpdateAt == 0 {
-		return NewLocAppError("Channel.IsValid", "model.channel.is_valid.update_at.app_error", nil, "id="+o.Id)
+		return NewAppError("Channel.IsValid", "model.channel.is_valid.update_at.app_error", nil, "id="+o.Id, http.StatusBadRequest)
 	}
 
 	if utf8.RuneCountInString(o.DisplayName) > CHANNEL_DISPLAY_NAME_MAX_RUNES {
-		return NewLocAppError("Channel.IsValid", "model.channel.is_valid.display_name.app_error", nil, "id="+o.Id)
+		return NewAppError("Channel.IsValid", "model.channel.is_valid.display_name.app_error", nil, "id="+o.Id, http.StatusBadRequest)
 	}
 
 	if !IsValidChannelIdentifier(o.Name) {
-		return NewLocAppError("Channel.IsValid", "model.channel.is_valid.2_or_more.app_error", nil, "id="+o.Id)
+		return NewAppError("Channel.IsValid", "model.channel.is_valid.2_or_more.app_error", nil, "id="+o.Id, http.StatusBadRequest)
 	}
 
 	if !(o.Type == CHANNEL_OPEN || o.Type == CHANNEL_PRIVATE || o.Type == CHANNEL_DIRECT || o.Type == CHANNEL_GROUP) {
-		return NewLocAppError("Channel.IsValid", "model.channel.is_valid.type.app_error", nil, "id="+o.Id)
+		return NewAppError("Channel.IsValid", "model.channel.is_valid.type.app_error", nil, "id="+o.Id, http.StatusBadRequest)
 	}
 
 	if utf8.RuneCountInString(o.Header) > CHANNEL_HEADER_MAX_RUNES {
-		return NewLocAppError("Channel.IsValid", "model.channel.is_valid.header.app_error", nil, "id="+o.Id)
+		return NewAppError("Channel.IsValid", "model.channel.is_valid.header.app_error", nil, "id="+o.Id, http.StatusBadRequest)
 	}
 
 	if utf8.RuneCountInString(o.Purpose) > CHANNEL_PURPOSE_MAX_RUNES {
-		return NewLocAppError("Channel.IsValid", "model.channel.is_valid.purpose.app_error", nil, "id="+o.Id)
+		return NewAppError("Channel.IsValid", "model.channel.is_valid.purpose.app_error", nil, "id="+o.Id, http.StatusBadRequest)
 	}
 
 	if len(o.CreatorId) > 26 {
-		return NewLocAppError("Channel.IsValid", "model.channel.is_valid.creator_id.app_error", nil, "")
+		return NewAppError("Channel.IsValid", "model.channel.is_valid.creator_id.app_error", nil, "", http.StatusBadRequest)
 	}
 
 	return nil

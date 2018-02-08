@@ -88,6 +88,12 @@ type UserPatch struct {
 	Locale      *string   `json:"locale"`
 }
 
+type UserAuth struct {
+	Password    string  `json:"password,omitempty"`
+	AuthData    *string `json:"auth_data,omitempty"`
+	AuthService string  `json:"auth_service,omitempty"`
+}
+
 // IsValid validates the user and returns an error if it isn't configured
 // correctly.
 func (u *User) IsValid() *AppError {
@@ -228,16 +234,13 @@ func (u *User) SetDefaultNotifications() {
 	u.NotifyProps = make(map[string]string)
 	u.NotifyProps["email"] = "true"
 	u.NotifyProps["push"] = USER_NOTIFY_MENTION
-	u.NotifyProps["desktop"] = USER_NOTIFY_ALL
+	u.NotifyProps["desktop"] = USER_NOTIFY_MENTION
 	u.NotifyProps["desktop_sound"] = "true"
 	u.NotifyProps["mention_keys"] = u.Username + ",@" + u.Username
 	u.NotifyProps["channel"] = "true"
-
-	if u.FirstName == "" {
-		u.NotifyProps["first_name"] = "false"
-	} else {
-		u.NotifyProps["first_name"] = "true"
-	}
+	u.NotifyProps["push_status"] = STATUS_AWAY
+	u.NotifyProps["comments"] = "never"
+	u.NotifyProps["first_name"] = "false"
 }
 
 func (user *User) UpdateMentionKeysFromUsername(oldUsername string) {
@@ -312,6 +315,15 @@ func (u *UserPatch) ToJson() string {
 	}
 }
 
+func (u *UserAuth) ToJson() string {
+	b, err := json.Marshal(u)
+	if err != nil {
+		return ""
+	} else {
+		return string(b)
+	}
+}
+
 // Generate a valid strong etag so the browser can cache the results
 func (u *User) Etag(showFullName, showEmail bool) string {
 	return Etag(u.Id, u.UpdateAt, showFullName, showEmail)
@@ -320,8 +332,7 @@ func (u *User) Etag(showFullName, showEmail bool) string {
 // Remove any private data from the user object
 func (u *User) Sanitize(options map[string]bool) {
 	u.Password = ""
-	u.AuthData = new(string)
-	*u.AuthData = ""
+	u.AuthData = NewString("")
 	u.MfaSecret = ""
 
 	if len(options) != 0 && !options["email"] {
@@ -341,12 +352,10 @@ func (u *User) Sanitize(options map[string]bool) {
 
 func (u *User) ClearNonProfileFields() {
 	u.Password = ""
-	u.AuthData = new(string)
-	*u.AuthData = ""
+	u.AuthData = NewString("")
 	u.MfaSecret = ""
 	u.EmailVerified = false
 	u.AllowMarketing = false
-	u.Props = StringMap{}
 	u.NotifyProps = StringMap{}
 	u.LastPasswordUpdate = 0
 	u.FailedAttempts = 0
@@ -437,7 +446,7 @@ func IsValidUserRoles(userRoles string) bool {
 }
 
 func isValidRole(roleId string) bool {
-	_, ok := BuiltInRoles[roleId]
+	_, ok := DefaultRoles[roleId]
 	return ok
 }
 
@@ -492,6 +501,17 @@ func UserFromJson(data io.Reader) *User {
 func UserPatchFromJson(data io.Reader) *UserPatch {
 	decoder := json.NewDecoder(data)
 	var user UserPatch
+	err := decoder.Decode(&user)
+	if err == nil {
+		return &user
+	} else {
+		return nil
+	}
+}
+
+func UserAuthFromJson(data io.Reader) *UserAuth {
+	decoder := json.NewDecoder(data)
+	var user UserAuth
 	err := decoder.Decode(&user)
 	if err == nil {
 		return &user

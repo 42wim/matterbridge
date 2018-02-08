@@ -25,6 +25,8 @@ type IncomingWebhook struct {
 	TeamId      string `json:"team_id"`
 	DisplayName string `json:"display_name"`
 	Description string `json:"description"`
+	Username    string `json:"username"`
+	IconURL     string `json:"icon_url"`
 }
 
 type IncomingWebhookRequest struct {
@@ -112,6 +114,14 @@ func (o *IncomingWebhook) IsValid() *AppError {
 		return NewAppError("IncomingWebhook.IsValid", "model.incoming_hook.description.app_error", nil, "", http.StatusBadRequest)
 	}
 
+	if len(o.Username) > 64 {
+		return NewAppError("IncomingWebhook.IsValid", "model.incoming_hook.username.app_error", nil, "", http.StatusBadRequest)
+	}
+
+	if len(o.IconURL) > 1024 {
+		return NewAppError("IncomingWebhook.IsValid", "model.incoming_hook.icon_url.app_error", nil, "", http.StatusBadRequest)
+	}
+
 	return nil
 }
 
@@ -193,7 +203,7 @@ func decodeIncomingWebhookRequest(by []byte) (*IncomingWebhookRequest, error) {
 	}
 }
 
-func IncomingWebhookRequestFromJson(data io.Reader) *IncomingWebhookRequest {
+func IncomingWebhookRequestFromJson(data io.Reader) (*IncomingWebhookRequest, *AppError) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(data)
 	by := buf.Bytes()
@@ -204,12 +214,11 @@ func IncomingWebhookRequestFromJson(data io.Reader) *IncomingWebhookRequest {
 	if err != nil {
 		o, err = decodeIncomingWebhookRequest(escapeControlCharsFromPayload(by))
 		if err != nil {
-			return nil
+			return nil, NewAppError("IncomingWebhookRequestFromJson", "Unable to parse incoming data", nil, err.Error(), http.StatusBadRequest)
 		}
 	}
 
-	o.Text = ExpandAnnouncement(o.Text)
-	o.Attachments = ProcessSlackAttachments(o.Attachments)
+	o.Attachments = StringifySlackFieldValue(o.Attachments)
 
-	return o
+	return o, nil
 }

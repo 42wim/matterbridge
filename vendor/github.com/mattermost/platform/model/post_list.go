@@ -6,6 +6,7 @@ package model
 import (
 	"encoding/json"
 	"io"
+	"sort"
 )
 
 type PostList struct {
@@ -20,8 +21,20 @@ func NewPostList() *PostList {
 	}
 }
 
+func (o *PostList) StripActionIntegrations() {
+	posts := o.Posts
+	o.Posts = make(map[string]*Post)
+	for id, post := range posts {
+		pcopy := *post
+		pcopy.StripActionIntegrations()
+		o.Posts[id] = &pcopy
+	}
+}
+
 func (o *PostList) ToJson() string {
-	b, err := json.Marshal(o)
+	copy := *o
+	copy.StripActionIntegrations()
+	b, err := json.Marshal(&copy)
 	if err != nil {
 		return ""
 	} else {
@@ -68,6 +81,12 @@ func (o *PostList) Extend(other *PostList) {
 			o.AddOrder(postId)
 		}
 	}
+}
+
+func (o *PostList) SortByCreateAt() {
+	sort.Slice(o.Order, func(i, j int) bool {
+		return o.Posts[o.Order[i]].CreateAt > o.Posts[o.Order[j]].CreateAt
+	})
 }
 
 func (o *PostList) Etag() string {
