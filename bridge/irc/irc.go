@@ -196,8 +196,8 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 	}
 	for _, text := range strings.Split(msg.Text, "\n") {
 		if len(text) > b.Config.MessageLength {
-			for len(text)+len(" <message clipped>") > b.Config.MessageLength {
-				_, size := utf8.DecodeLastRuneInString(text)
+			text = text[:b.Config.MessageLength-len(" <message clipped>")]
+			if r, size := utf8.DecodeLastRuneInString(text); r == utf8.RuneError {
 				text = text[:len(text)-size]
 			}
 			text += " <message clipped>"
