@@ -202,6 +202,7 @@ func (b *bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdat
 }
 
 func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+	var err error
 	// not relay our own messages
 	if m.Author.Username == b.Nick {
 		return
@@ -220,12 +221,19 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	var text string
 	if m.Content != "" {
 		flog.Debugf("Receiving message %#v", m.Message)
-		if len(m.MentionRoles) > 0 {
-			m.Message.Content = b.replaceRoleMentions(m.Message.Content)
-		}
+		/*
+			if len(m.MentionRoles) > 0 {
+				m.Message.Content = b.replaceRoleMentions(m.Message.Content)
+			}
+		*/
 		m.Message.Content = b.stripCustomoji(m.Message.Content)
 		m.Message.Content = b.replaceChannelMentions(m.Message.Content)
-		text = m.ContentWithMentionsReplaced()
+		text, err = m.ContentWithMoreMentionsReplaced(b.c)
+		if err != nil {
+			flog.Errorf("ContentWithMoreMentionsReplaced failed: %s", err)
+			text = m.ContentWithMentionsReplaced()
+		}
+		//	text = m.ContentWithMentionsReplaced()
 	}
 
 	rmsg := config.Message{Account: b.Account, Avatar: "https://cdn.discordapp.com/avatars/" + m.Author.ID + "/" + m.Author.Avatar + ".jpg",
