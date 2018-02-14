@@ -221,11 +221,6 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	var text string
 	if m.Content != "" {
 		flog.Debugf("Receiving message %#v", m.Message)
-		/*
-			if len(m.MentionRoles) > 0 {
-				m.Message.Content = b.replaceRoleMentions(m.Message.Content)
-			}
-		*/
 		m.Message.Content = b.stripCustomoji(m.Message.Content)
 		m.Message.Content = b.replaceChannelMentions(m.Message.Content)
 		text, err = m.ContentWithMoreMentionsReplaced(b.c)
@@ -233,7 +228,6 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 			flog.Errorf("ContentWithMoreMentionsReplaced failed: %s", err)
 			text = m.ContentWithMentionsReplaced()
 		}
-		//	text = m.ContentWithMentionsReplaced()
 	}
 
 	rmsg := config.Message{Account: b.Account, Avatar: "https://cdn.discordapp.com/avatars/" + m.Author.ID + "/" + m.Author.Avatar + ".jpg",
@@ -328,18 +322,6 @@ func (b *bdiscord) getChannelName(id string) string {
 		}
 	}
 	return ""
-}
-
-func (b *bdiscord) replaceRoleMentions(text string) string {
-	roles, err := b.c.GuildRoles(b.guildID)
-	if err != nil {
-		flog.Debugf("%#v", string(err.(*discordgo.RESTError).ResponseBody))
-		return text
-	}
-	for _, role := range roles {
-		text = strings.Replace(text, "<@&"+role.ID+">", "@"+role.Name, -1)
-	}
-	return text
 }
 
 func (b *bdiscord) replaceChannelMentions(text string) string {
