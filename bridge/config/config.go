@@ -40,6 +40,7 @@ type FileInfo struct {
 	Comment string
 	URL     string
 	Size    int64
+	Avatar  bool
 }
 
 type ChannelInfo struct {
