@@ -237,7 +237,7 @@ func (m *Message) ContentWithMoreMentionsReplaced(s *Session) (content string, e
 			continue
 		}
 
-		content = strings.Replace(content, "<&"+role.ID+">", "@"+role.Name, -1)
+		content = strings.Replace(content, "<@&"+role.ID+">", "@"+role.Name, -1)
 	}
 
 	content = patternChannels.ReplaceAllStringFunc(content, func(mention string) string {
