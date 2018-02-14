@@ -79,7 +79,7 @@ func main() {
 	ap.Name = Name
 	ap, err = dg.ApplicationCreate(ap)
 	if err != nil {
-		fmt.Println("error creating new applicaiton,", err)
+		fmt.Println("error creating new application,", err)
 		return
 	}
 

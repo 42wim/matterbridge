@@ -531,7 +531,7 @@ func (s *State) PrivateChannel(channelID string) (*Channel, error) {
 	return s.Channel(channelID)
 }
 
-// Channel gets a channel by ID, it will look in all guilds an private channels.
+// Channel gets a channel by ID, it will look in all guilds and private channels.
 func (s *State) Channel(channelID string) (*Channel, error) {
 	if s == nil {
 		return nil, ErrNilState
@@ -815,6 +815,13 @@ func (s *State) OnInterface(se *Session, i interface{}) (err error) {
 	case *GuildMemberRemove:
 		if s.TrackMembers {
 			err = s.MemberRemove(t.Member)
+		}
+	case *GuildMembersChunk:
+		if s.TrackMembers {
+			for i := range t.Members {
+				t.Members[i].GuildID = t.GuildID
+				err = s.MemberAdd(t.Members[i])
+			}
 		}
 	case *GuildRoleCreate:
 		if s.TrackRoles {

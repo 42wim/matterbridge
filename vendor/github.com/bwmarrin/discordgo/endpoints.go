@@ -71,7 +71,6 @@ var (
 	EndpointUserNotes          = func(uID string) string { return EndpointUsers + "@me/notes/" + uID }
 
 	EndpointGuild                = func(gID string) string { return EndpointGuilds + gID }
-	EndpointGuildInivtes         = func(gID string) string { return EndpointGuilds + gID + "/invites" }
 	EndpointGuildChannels        = func(gID string) string { return EndpointGuilds + gID + "/channels" }
 	EndpointGuildMembers         = func(gID string) string { return EndpointGuilds + gID + "/members" }
 	EndpointGuildMember          = func(gID, uID string) string { return EndpointGuilds + gID + "/members/" + uID }
@@ -98,7 +97,7 @@ var (
 	EndpointChannelMessages           = func(cID string) string { return EndpointChannels + cID + "/messages" }
 	EndpointChannelMessage            = func(cID, mID string) string { return EndpointChannels + cID + "/messages/" + mID }
 	EndpointChannelMessageAck         = func(cID, mID string) string { return EndpointChannels + cID + "/messages/" + mID + "/ack" }
-	EndpointChannelMessagesBulkDelete = func(cID string) string { return EndpointChannel(cID) + "/messages/bulk_delete" }
+	EndpointChannelMessagesBulkDelete = func(cID string) string { return EndpointChannel(cID) + "/messages/bulk-delete" }
 	EndpointChannelMessagesPins       = func(cID string) string { return EndpointChannel(cID) + "/pins" }
 	EndpointChannelMessagePin         = func(cID, mID string) string { return EndpointChannel(cID) + "/pins/" + mID }
 
@@ -121,6 +120,8 @@ var (
 	EndpointRelationships       = func() string { return EndpointUsers + "@me" + "/relationships" }
 	EndpointRelationship        = func(uID string) string { return EndpointRelationships() + "/" + uID }
 	EndpointRelationshipsMutual = func(uID string) string { return EndpointUsers + uID + "/relationships" }
+
+	EndpointGuildCreate = EndpointAPI + "guilds"
 
 	EndpointInvite = func(iID string) string { return EndpointAPI + "invite/" + iID }
 

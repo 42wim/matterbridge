@@ -6,7 +6,7 @@ type EventHandler interface {
 	Type() string
 
 	// Handle is called whenever an event of Type() happens.
-	// It is the recievers responsibility to type assert that the interface
+	// It is the receivers responsibility to type assert that the interface
 	// is the expected struct.
 	Handle(*Session, interface{})
 }

@@ -23,7 +23,7 @@ const (
 	LogError int = iota
 
 	// LogWarning level is used for very abnormal events and errors that are
-	// also returend to a calling function.
+	// also returned to a calling function.
 	LogWarning
 
 	// LogInformational level is used for normal non-error activity
@@ -34,26 +34,34 @@ const (
 	LogDebug
 )
 
+// Logger can be used to replace the standard logging for discordgo
+var Logger func(msgL, caller int, format string, a ...interface{})
+
 // msglog provides package wide logging consistancy for discordgo
 // the format, a...  portion this command follows that of fmt.Printf
 //   msgL   : LogLevel of the message
 //   caller : 1 + the number of callers away from the message source
 //   format : Printf style message format
-//   a ...  : comma seperated list of values to pass
+//   a ...  : comma separated list of values to pass
 func msglog(msgL, caller int, format string, a ...interface{}) {
 
-	pc, file, line, _ := runtime.Caller(caller)
+	if Logger != nil {
+		Logger(msgL, caller, format, a...)
+	} else {
 
-	files := strings.Split(file, "/")
-	file = files[len(files)-1]
+		pc, file, line, _ := runtime.Caller(caller)
 
-	name := runtime.FuncForPC(pc).Name()
-	fns := strings.Split(name, ".")
-	name = fns[len(fns)-1]
+		files := strings.Split(file, "/")
+		file = files[len(files)-1]
 
-	msg := fmt.Sprintf(format, a...)
+		name := runtime.FuncForPC(pc).Name()
+		fns := strings.Split(name, ".")
+		name = fns[len(fns)-1]
 
-	log.Printf("[DG%d] %s:%d:%s() %s\n", msgL, file, line, name, msg)
+		msg := fmt.Sprintf(format, a...)
+
+		log.Printf("[DG%d] %s:%d:%s() %s\n", msgL, file, line, name, msg)
+	}
 }
 
 // helper function that wraps msglog for the Session struct

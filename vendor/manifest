@@ -61,7 +61,7 @@
 			"importpath": "github.com/bwmarrin/discordgo",
 			"repository": "https://github.com/bwmarrin/discordgo",
 			"vcs": "git",
-			"revision": "2fda7ce223a66a5b70b66987c22c3c94d022ee66",
+			"revision": "8d5ab59c63e553fd2030706008a806a8b553188c",
 			"branch": "master",
 			"notests": true
 		},
