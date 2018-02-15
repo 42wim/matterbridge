@@ -362,6 +362,7 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 			durl := gw.Config.General.MediaServerDownload + "/" + sha1sum + "/" + fi.Name
 			extra := msg.Extra["file"][i].(config.FileInfo)
 			extra.URL = durl
+			extra.SHA = sha1sum
 			msg.Extra["file"][i] = extra
 			req, _ := http.NewRequest("PUT", url, reader)
 			req.Header.Set("Content-Type", "binary/octet-stream")

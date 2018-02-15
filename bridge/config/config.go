@@ -41,6 +41,7 @@ type FileInfo struct {
 	URL     string
 	Size    int64
 	Avatar  bool
+	SHA     string
 }
 
 type ChannelInfo struct {
