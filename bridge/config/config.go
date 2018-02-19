@@ -14,6 +14,7 @@ const (
 	EVENT_TOPIC_CHANGE      = "topic_change"
 	EVENT_FAILURE           = "failure"
 	EVENT_FILE_FAILURE_SIZE = "file_failure_size"
+	EVENT_AVATAR_DOWNLOAD   = "avatar_download"
 	EVENT_REJOIN_CHANNELS   = "rejoin_channels"
 	EVENT_USER_ACTION       = "user_action"
 	EVENT_MSG_DELETE        = "msg_delete"

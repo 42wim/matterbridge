@@ -54,3 +54,10 @@ func HandleExtra(msg *config.Message, general *config.Protocol) []config.Message
 	}
 	return rmsg
 }
+
+func GetAvatar(av map[string]string, userid string, general *config.Protocol) string {
+	if sha, ok := av[userid]; ok {
+		return general.MediaServerUpload + "/" + sha + "/" + userid + ".png"
+	}
+	return ""
+}

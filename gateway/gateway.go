@@ -178,6 +178,14 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			}
 		}
 	}
+
+	// Avatar downloads are only relevant for telegram and mattermost for now
+	if msg.Event == config.EVENT_AVATAR_DOWNLOAD {
+		if dest.Protocol != "mattermost" &&
+			dest.Protocol != "telegram" {
+			return brMsgIDs
+		}
+	}
 	// only relay join/part when configged
 	if msg.Event == config.EVENT_JOIN_LEAVE && !gw.Bridges[dest.Account].Config.ShowJoinPart {
 		return brMsgIDs
@@ -185,6 +193,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 	if msg.Event == config.EVENT_TOPIC_CHANGE && !gw.Bridges[dest.Account].Config.ShowTopicChange {
 		return brMsgIDs
 	}
+
 	// broadcast to every out channel (irc QUIT)
 	if msg.Channel == "" && msg.Event != config.EVENT_JOIN_LEAVE {
 		log.Debug("empty channel")
@@ -194,9 +203,16 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 	origmsg := msg
 	channels := gw.getDestChannel(&msg, *dest)
 	for _, channel := range channels {
-		// do not send to ourself
-		if channel.ID == getChannelID(origmsg) {
-			continue
+		// Only send the avatar download event to ourselves.
+		if msg.Event == config.EVENT_AVATAR_DOWNLOAD {
+			if channel.ID != getChannelID(origmsg) {
+				continue
+			}
+		} else {
+			// do not send to ourself for any other event
+			if channel.ID == getChannelID(origmsg) {
+				continue
+			}
 		}
 		log.Debugf("Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, originchannel, dest.Account, channel.Name)
 		msg.Channel = channel.Name
@@ -362,15 +378,17 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 			durl := gw.Config.General.MediaServerDownload + "/" + sha1sum + "/" + fi.Name
 			extra := msg.Extra["file"][i].(config.FileInfo)
 			extra.URL = durl
-			extra.SHA = sha1sum
-			msg.Extra["file"][i] = extra
 			req, _ := http.NewRequest("PUT", url, reader)
 			req.Header.Set("Content-Type", "binary/octet-stream")
 			_, err := client.Do(req)
 			if err != nil {
 				log.Errorf("mediaserver upload failed: %#v", err)
+				continue
 			}
 			log.Debugf("mediaserver download URL = %s", durl)
+			// we uploaded the file successfully. Add the SHA
+			extra.SHA = sha1sum
+			msg.Extra["file"][i] = extra
 		}
 	}
 }

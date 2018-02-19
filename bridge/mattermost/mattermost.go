@@ -35,6 +35,7 @@ type Bmattermost struct {
 	MMapi
 	TeamId string
 	*config.BridgeConfig
+	avatarMap map[string]string
 }
 
 var flog *log.Entry
@@ -45,7 +46,7 @@ func init() {
 }
 
 func New(cfg *config.BridgeConfig) *Bmattermost {
-	b := &Bmattermost{BridgeConfig: cfg}
+	b := &Bmattermost{BridgeConfig: cfg, avatarMap: make(map[string]string)}
 	b.mmMap = make(map[string]string)
 	return b
 }
@@ -149,6 +150,18 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 	message := msg.Text
 	channel := msg.Channel
 
+	// map the file SHA to our user (caches the avatar)
+	if msg.Event == config.EVENT_AVATAR_DOWNLOAD {
+		fi := msg.Extra["file"][0].(config.FileInfo)
+		/* if we have a sha we have successfully uploaded the file to the media server,
+		so we can now cache the sha */
+		if fi.SHA != "" {
+			flog.Debugf("Added %s to %s in avatarMap", fi.SHA, msg.UserID)
+			b.avatarMap[msg.UserID] = fi.SHA
+		}
+		return "", nil
+	}
+
 	if b.Config.PrefixMessagesWithNick {
 		message = nick + message
 	}
@@ -235,7 +248,8 @@ func (b *Bmattermost) handleMatter() {
 		go b.handleMatterClient(mchan)
 	}
 	for message := range mchan {
-		rmsg := config.Message{Username: message.Username, Channel: message.Channel, Account: b.Account, UserID: message.UserID, ID: message.ID, Event: message.Event, Extra: message.Extra}
+		avatar := helper.GetAvatar(b.avatarMap, message.UserID, b.General)
+		rmsg := config.Message{Username: message.Username, Channel: message.Channel, Account: b.Account, UserID: message.UserID, ID: message.ID, Event: message.Event, Extra: message.Extra, Avatar: avatar}
 		text, ok := b.replaceAction(message.Text)
 		if ok {
 			rmsg.Event = config.EVENT_USER_ACTION
@@ -259,6 +273,11 @@ func (b *Bmattermost) handleMatterClient(mchan chan *MMMessage) {
 		}
 		if (message.Raw.Event == "post_edited") && b.Config.EditDisable {
 			continue
+		}
+
+		// only download avatars if we have a place to upload them (configured mediaserver)
+		if b.General.MediaServerUpload != "" {
+			b.handleDownloadAvatar(message.UserID, message.Channel)
 		}
 
 		m := &MMMessage{Extra: make(map[string][]interface{})}
@@ -364,4 +383,28 @@ func (b *Bmattermost) replaceAction(text string) (string, bool) {
 		return strings.Replace(text, "*", "", -1), true
 	}
 	return text, false
+}
+
+// handleDownloadAvatar downloads the avatar of userid from channel
+// sends a EVENT_AVATAR_DOWNLOAD message to the gateway if successful.
+// logs an error message if it fails
+func (b *Bmattermost) handleDownloadAvatar(userid string, channel string) {
+	var name string
+	msg := config.Message{Username: "system", Text: "avatar", Channel: channel, Account: b.Account, UserID: userid, Event: config.EVENT_AVATAR_DOWNLOAD, Extra: make(map[string][]interface{})}
+	if _, ok := b.avatarMap[userid]; !ok {
+		data, resp := b.mc.Client.GetProfileImage(userid, "")
+		if resp.Error != nil {
+			flog.Errorf("ProfileImage download failed for %#v %s", userid, resp.Error)
+		}
+		if len(data) <= b.General.MediaDownloadSize {
+			name = userid + ".png"
+			flog.Debugf("download OK %#v %#v", name, len(data))
+			msg.Extra["file"] = append(msg.Extra["file"], config.FileInfo{Name: name, Data: &data, Avatar: true})
+			flog.Debugf("Sending avatar download message from %#v on %s to gateway", userid, b.Account)
+			flog.Debugf("Message is %#v", msg)
+			b.Remote <- msg
+		} else {
+			flog.Errorf("File %#v to large to download (%#v). MediaDownloadSize is %#v", name, len(data), b.General.MediaDownloadSize)
+		}
+	}
 }

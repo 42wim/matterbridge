@@ -14,6 +14,7 @@ import (
 type Btelegram struct {
 	c *tgbotapi.BotAPI
 	*config.BridgeConfig
+	avatarMap map[string]string // keep cache of userid and avatar sha
 }
 
 var flog *log.Entry
@@ -24,7 +25,7 @@ func init() {
 }
 
 func New(cfg *config.BridgeConfig) *Btelegram {
-	return &Btelegram{BridgeConfig: cfg}
+	return &Btelegram{BridgeConfig: cfg, avatarMap: make(map[string]string)}
 }
 
 func (b *Btelegram) Connect() error {
@@ -61,6 +62,18 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 	chatid, err := strconv.ParseInt(msg.Channel, 10, 64)
 	if err != nil {
 		return "", err
+	}
+
+	// map the file SHA to our user (caches the avatar)
+	if msg.Event == config.EVENT_AVATAR_DOWNLOAD {
+		fi := msg.Extra["file"][0].(config.FileInfo)
+		/* if we have a sha we have successfully uploaded the file to the media server,
+		so we can now cache the sha */
+		if fi.SHA != "" {
+			flog.Debugf("Added %s to %s in avatarMap", fi.SHA, msg.UserID)
+			b.avatarMap[msg.UserID] = fi.SHA
+		}
+		return "", nil
 	}
 
 	if b.Config.MessageFormat == "HTML" {
@@ -173,6 +186,10 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 			}
 			text = message.Text
 			channel = strconv.FormatInt(message.Chat.ID, 10)
+			// only download avatars if we have a place to upload them (configured mediaserver)
+			if b.General.MediaServerUpload != "" {
+				b.handleDownloadAvatar(message.From.ID, channel)
+			}
 		}
 
 		if username == "" {
@@ -235,8 +252,9 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		}
 
 		if text != "" || len(fmsg.Extra) > 0 {
+			avatar := helper.GetAvatar(b.avatarMap, strconv.Itoa(message.From.ID), b.General)
 			flog.Debugf("Sending message from %s on %s to gateway", username, b.Account)
-			msg := config.Message{Username: username, Text: text, Channel: channel, Account: b.Account, UserID: strconv.Itoa(message.From.ID), ID: strconv.Itoa(message.MessageID), Extra: fmsg.Extra}
+			msg := config.Message{Username: username, Text: text, Channel: channel, Account: b.Account, UserID: strconv.Itoa(message.From.ID), ID: strconv.Itoa(message.MessageID), Extra: fmsg.Extra, Avatar: avatar}
 			flog.Debugf("Message is %#v", msg)
 			b.Remote <- msg
 		}
@@ -249,6 +267,39 @@ func (b *Btelegram) getFileDirectURL(id string) string {
 		return ""
 	}
 	return res
+}
+
+// handleDownloadAvatar downloads the avatar of userid from channel
+// sends a EVENT_AVATAR_DOWNLOAD message to the gateway if successful.
+// logs an error message if it fails
+func (b *Btelegram) handleDownloadAvatar(userid int, channel string) {
+	msg := config.Message{Username: "system", Text: "avatar", Channel: channel, Account: b.Account, UserID: strconv.Itoa(userid), Event: config.EVENT_AVATAR_DOWNLOAD, Extra: make(map[string][]interface{})}
+	if _, ok := b.avatarMap[strconv.Itoa(userid)]; !ok {
+		photos, err := b.c.GetUserProfilePhotos(tgbotapi.UserProfilePhotosConfig{UserID: userid, Limit: 1})
+		if err != nil {
+			flog.Errorf("Userprofile download failed for %#v %s", userid, err)
+		}
+		if len(photos.Photos) > 0 {
+			photo := photos.Photos[0][0]
+			url := b.getFileDirectURL(photo.FileID)
+			name := strconv.Itoa(userid) + ".png"
+			flog.Debugf("trying to download %#v fileid %#v with size %#v", name, photo.FileID, photo.FileSize)
+			if photo.FileSize <= b.General.MediaDownloadSize {
+				data, err := helper.DownloadFile(url)
+				if err != nil {
+					flog.Errorf("download %s failed %#v", url, err)
+				} else {
+					flog.Debugf("download OK %#v %#v %#v", name, len(*data), len(url))
+					msg.Extra["file"] = append(msg.Extra["file"], config.FileInfo{Name: name, Data: data, Avatar: true})
+					flog.Debugf("Sending avatar download message from %#v on %s to gateway", userid, b.Account)
+					flog.Debugf("Message is %#v", msg)
+					b.Remote <- msg
+				}
+			} else {
+				flog.Errorf("File %#v to large to download (%#v). MediaDownloadSize is %#v", name, photo.FileSize, b.General.MediaDownloadSize)
+			}
+		}
+	}
 }
 
 func (b *Btelegram) handleDownload(file interface{}, comment string, msg *config.Message) {
@@ -311,7 +362,6 @@ func (b *Btelegram) handleDownload(file interface{}, comment string, msg *config
 		return
 	}
 	// if we have a file attached, download it (in memory) and put a pointer to it in msg.Extra
-	// limit to 1MB for now
 	flog.Debugf("trying to download %#v fileid %#v with size %#v", name, fileid, size)
 	if size <= b.General.MediaDownloadSize {
 		data, err := helper.DownloadFile(url)
