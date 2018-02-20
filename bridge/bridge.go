@@ -100,7 +100,7 @@ func (b *Bridge) JoinChannels() error {
 func (b *Bridge) joinChannels(channels map[string]config.ChannelInfo, exists map[string]bool) error {
 	for ID, channel := range channels {
 		if !exists[ID] {
-			log.Infof("%s: joining %s (%s)", b.Account, channel.Name, ID)
+			log.Infof("%s: joining %s (ID: %s)", b.Account, channel.Name, ID)
 			err := b.JoinChannel(channel)
 			if err != nil {
 				return err
