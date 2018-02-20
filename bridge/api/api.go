@@ -76,21 +76,18 @@ func (b *Api) Send(msg config.Message) (string, error) {
 }
 
 func (b *Api) handlePostMessage(c echo.Context) error {
-	message := &ApiMessage{}
-	if err := c.Bind(message); err != nil {
+	message := config.Message{}
+	if err := c.Bind(&message); err != nil {
 		return err
 	}
+	// these values are fixed
+	message.Channel = "api"
+	message.Protocol = "api"
+	message.Account = b.Account
+	message.ID = ""
+	message.Timestamp = time.Now()
 	flog.Debugf("Sending message from %s on %s to gateway", message.Username, "api")
-	b.Remote <- config.Message{
-		Text:     message.Text,
-		Username: message.Username,
-		UserID:   message.UserID,
-		Channel:  "api",
-		Avatar:   message.Avatar,
-		Account:  b.Account,
-		Gateway:  message.Gateway,
-		Protocol: "api",
-	}
+	b.Remote <- message
 	return c.JSON(http.StatusOK, message)
 }
 
