@@ -230,7 +230,7 @@
 			"importpath": "github.com/labstack/echo",
 			"repository": "https://github.com/labstack/echo",
 			"vcs": "git",
-			"revision": "0473c51f1dbd83487effce00702571d19033a6e5",
+			"revision": "7eec915044a15b70fbb5dd0225c819550b05d596",
 			"branch": "master",
 			"notests": true
 		},
