@@ -36,6 +36,12 @@ type Bridge struct {
 	Joined   map[string]bool
 }
 
+var flog *log.Entry
+
+func init() {
+	flog = log.WithFields(log.Fields{"prefix": "bridge"})
+}
+
 func New(cfg *config.Config, bridge *config.Bridge, c chan config.Message) *Bridge {
 	b := new(Bridge)
 	b.Channels = make(map[string]config.ChannelInfo)
@@ -100,7 +106,7 @@ func (b *Bridge) JoinChannels() error {
 func (b *Bridge) joinChannels(channels map[string]config.ChannelInfo, exists map[string]bool) error {
 	for ID, channel := range channels {
 		if !exists[ID] {
-			log.Infof("%s: joining %s (ID: %s)", b.Account, channel.Name, ID)
+			flog.Infof("%s: joining %s (ID: %s)", b.Account, channel.Name, ID)
 			err := b.JoinChannel(channel)
 			if err != nil {
 				return err

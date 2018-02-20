@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	log "github.com/sirupsen/logrus"
 	"github.com/lrstanley/girc"
 	"github.com/paulrosania/go-charset/charset"
 	_ "github.com/paulrosania/go-charset/data"
 	"github.com/saintfish/chardet"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"net"
@@ -37,7 +37,7 @@ var flog *log.Entry
 var protocol = "irc"
 
 func init() {
-	flog = log.WithFields(log.Fields{"module": protocol})
+	flog = log.WithFields(log.Fields{"prefix": protocol})
 }
 
 func New(cfg *config.BridgeConfig) *Birc {

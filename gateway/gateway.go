@@ -34,6 +34,12 @@ type BrMsgID struct {
 	ChannelID string
 }
 
+var flog *log.Entry
+
+func init() {
+	flog = log.WithFields(log.Fields{"prefix": "gateway"})
+}
+
 func New(cfg config.Gateway, r *Router) *Gateway {
 	gw := &Gateway{Channels: make(map[string]*config.ChannelInfo), Message: r.Message,
 		Router: r, Bridges: make(map[string]*bridge.Bridge), Config: r.Config}
@@ -78,10 +84,10 @@ func (gw *Gateway) reconnectBridge(br *bridge.Bridge) {
 	br.Disconnect()
 	time.Sleep(time.Second * 5)
 RECONNECT:
-	log.Infof("Reconnecting %s", br.Account)
+	flog.Infof("Reconnecting %s", br.Account)
 	err := br.Connect()
 	if err != nil {
-		log.Errorf("Reconnection failed: %s. Trying again in 60 seconds", err)
+		flog.Errorf("Reconnection failed: %s. Trying again in 60 seconds", err)
 		time.Sleep(time.Second * 60)
 		goto RECONNECT
 	}
@@ -145,7 +151,7 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 			continue
 		}
 
-		// do samechannelgateway logic
+		// do samechannelgateway flogic
 		if channel.SameChannel[msg.Gateway] {
 			if msg.Channel == channel.Name && msg.Account != dest.Account {
 				channels = append(channels, *channel)
@@ -196,7 +202,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 
 	// broadcast to every out channel (irc QUIT)
 	if msg.Channel == "" && msg.Event != config.EVENT_JOIN_LEAVE {
-		log.Debug("empty channel")
+		flog.Debug("empty channel")
 		return brMsgIDs
 	}
 	originchannel := msg.Channel
@@ -214,7 +220,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 				continue
 			}
 		}
-		log.Debugf("Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, originchannel, dest.Account, channel.Name)
+		flog.Debugf("Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, originchannel, dest.Account, channel.Name)
 		msg.Channel = channel.Name
 		msg.Avatar = gw.modifyAvatar(origmsg, dest)
 		msg.Username = gw.modifyUsername(origmsg, dest)
@@ -258,12 +264,12 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 				len(msg.Extra[config.EVENT_FILE_FAILURE_SIZE]) > 0) {
 			return false
 		}
-		log.Debugf("ignoring empty message %#v from %s", msg, msg.Account)
+		flog.Debugf("ignoring empty message %#v from %s", msg, msg.Account)
 		return true
 	}
 	for _, entry := range strings.Fields(gw.Bridges[msg.Account].Config.IgnoreNicks) {
 		if msg.Username == entry {
-			log.Debugf("ignoring %s from %s", msg.Username, msg.Account)
+			flog.Debugf("ignoring %s from %s", msg.Username, msg.Account)
 			return true
 		}
 	}
@@ -272,11 +278,11 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 		if entry != "" {
 			re, err := regexp.Compile(entry)
 			if err != nil {
-				log.Errorf("incorrect regexp %s for %s", entry, msg.Account)
+				flog.Errorf("incorrect regexp %s for %s", entry, msg.Account)
 				continue
 			}
 			if re.MatchString(msg.Text) {
-				log.Debugf("matching %s. ignoring %s from %s", entry, msg.Text, msg.Account)
+				flog.Debugf("matching %s. ignoring %s from %s", entry, msg.Text, msg.Account)
 				return true
 			}
 		}
@@ -303,7 +309,7 @@ func (gw *Gateway) modifyUsername(msg config.Message, dest *bridge.Bridge) strin
 		// TODO move compile to bridge init somewhere
 		re, err := regexp.Compile(search)
 		if err != nil {
-			log.Errorf("regexp in %s failed: %s", msg.Account, err)
+			flog.Errorf("regexp in %s failed: %s", msg.Account, err)
 			break
 		}
 		msg.Username = re.ReplaceAllString(msg.Username, replace)
@@ -351,7 +357,7 @@ func (gw *Gateway) modifyMessage(msg *config.Message) {
 		// TODO move compile to bridge init somewhere
 		re, err := regexp.Compile(search)
 		if err != nil {
-			log.Errorf("regexp in %s failed: %s", msg.Account, err)
+			flog.Errorf("regexp in %s failed: %s", msg.Account, err)
 			break
 		}
 		msg.Text = re.ReplaceAllString(msg.Text, replace)
@@ -383,10 +389,10 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 			req.Header.Set("Content-Type", "binary/octet-stream")
 			_, err := client.Do(req)
 			if err != nil {
-				log.Errorf("mediaserver upload failed: %#v", err)
+				flog.Errorf("mediaserver upload failed: %#v", err)
 				continue
 			}
-			log.Debugf("mediaserver download URL = %s", durl)
+			flog.Debugf("mediaserver download URL = %s", durl)
 			// we uploaded the file successfully. Add the SHA
 			extra.SHA = sha1sum
 			msg.Extra["file"][i] = extra

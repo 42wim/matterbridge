@@ -22,7 +22,7 @@ var flog *log.Entry
 var protocol = "xmpp"
 
 func init() {
-	flog = log.WithFields(log.Fields{"module": protocol})
+	flog = log.WithFields(log.Fields{"prefix": protocol})
 }
 
 func New(cfg *config.BridgeConfig) *Bxmpp {

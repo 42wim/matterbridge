@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	log "github.com/sirupsen/logrus"
 	"github.com/bwmarrin/discordgo"
+	log "github.com/sirupsen/logrus"
 	"regexp"
 	"strings"
 	"sync"
@@ -29,7 +29,7 @@ var flog *log.Entry
 var protocol = "discord"
 
 func init() {
-	flog = log.WithFields(log.Fields{"module": protocol})
+	flog = log.WithFields(log.Fields{"prefix": protocol})
 }
 
 func New(cfg *config.BridgeConfig) *bdiscord {

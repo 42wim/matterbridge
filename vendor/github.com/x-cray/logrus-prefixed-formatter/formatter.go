@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/mgutz/ansi"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -109,6 +109,11 @@ type TextFormatter struct {
 	// The value for this parameter will be the size of padding.
 	// Its default value is zero, which means no padding will be applied for msg.
 	SpacePadding int
+
+	// Pad prefix field with spaces on the right for display.
+	// The value for this parameter will be the size of padding.
+	// Its default value is zero, which means no padding will be applied for prefix.
+	PrefixPadding int
 
 	// Color scheme to use.
 	colorScheme *compiledColorScheme
@@ -253,14 +258,25 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys 
 	prefix := ""
 	message := entry.Message
 
+	adjustedPrefixPadding := f.PrefixPadding //compensate for ANSI color sequences
+
 	if prefixValue, ok := entry.Data["prefix"]; ok {
+		rawPrefixLength := len(prefixValue.(string))
 		prefix = colorScheme.PrefixColor(" " + prefixValue.(string) + ":")
+		adjustedPrefixPadding = f.PrefixPadding + (len(prefix) - rawPrefixLength - 1)
 	} else {
 		prefixValue, trimmedMsg := extractPrefix(entry.Message)
+		rawPrefixLength := len(prefixValue)
 		if len(prefixValue) > 0 {
 			prefix = colorScheme.PrefixColor(" " + prefixValue + ":")
 			message = trimmedMsg
 		}
+		adjustedPrefixPadding = f.PrefixPadding + (len(prefix) - rawPrefixLength - 1)
+	}
+
+	prefixFormat := "%s"
+	if f.PrefixPadding != 0 {
+		prefixFormat = fmt.Sprintf("%%-%ds", adjustedPrefixPadding)
 	}
 
 	messageFormat := "%s"
@@ -269,7 +285,7 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys 
 	}
 
 	if f.DisableTimestamp {
-		fmt.Fprintf(b, "%s%s "+messageFormat, level, prefix, message)
+		fmt.Fprintf(b, "%s"+prefixFormat+" "+messageFormat, level, prefix, message)
 	} else {
 		var timestamp string
 		if !f.FullTimestamp {
@@ -277,7 +293,7 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys 
 		} else {
 			timestamp = fmt.Sprintf("[%s]", entry.Time.Format(timestampFormat))
 		}
-		fmt.Fprintf(b, "%s %s%s "+messageFormat, colorScheme.TimestampColor(timestamp), level, prefix, message)
+		fmt.Fprintf(b, "%s %s"+prefixFormat+" "+messageFormat, colorScheme.TimestampColor(timestamp), level, prefix, message)
 	}
 	for _, k := range keys {
 		if k != "prefix" {

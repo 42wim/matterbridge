@@ -18,7 +18,8 @@ var (
 )
 
 func main() {
-	log.SetFormatter(&prefixed.TextFormatter{FullTimestamp: true})
+	log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 10, DisableColors: true, FullTimestamp: true})
+	flog := log.WithFields(log.Fields{"prefix": "main"})
 	flagConfig := flag.String("conf", "matterbridge.toml", "config file")
 	flagDebug := flag.Bool("debug", false, "enable debug")
 	flagVersion := flag.Bool("version", false, "show version")
@@ -33,24 +34,24 @@ func main() {
 		return
 	}
 	if *flagDebug || os.Getenv("DEBUG") == "1" {
-		log.SetFormatter(&prefixed.TextFormatter{FullTimestamp: false})
-		log.Info("Enabling debug")
+		log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 10, DisableColors: true, FullTimestamp: false})
+		flog.Info("Enabling debug")
 		log.SetLevel(log.DebugLevel)
 	}
-	log.Printf("Running version %s %s", version, githash)
+	flog.Printf("Running version %s %s", version, githash)
 	if strings.Contains(version, "-dev") {
-		log.Println("WARNING: THIS IS A DEVELOPMENT VERSION. Things may break.")
+		flog.Println("WARNING: THIS IS A DEVELOPMENT VERSION. Things may break.")
 	}
 	cfg := config.NewConfig(*flagConfig)
 	cfg.General.Debug = *flagDebug
 	r, err := gateway.NewRouter(cfg)
 	if err != nil {
-		log.Fatalf("Starting gateway failed: %s", err)
+		flog.Fatalf("Starting gateway failed: %s", err)
 	}
 	err = r.Start()
 	if err != nil {
-		log.Fatalf("Starting gateway failed: %s", err)
+		flog.Fatalf("Starting gateway failed: %s", err)
 	}
-	log.Printf("Gateway(s) started succesfully. Now relaying messages")
+	flog.Printf("Gateway(s) started succesfully. Now relaying messages")
 	select {}
 }

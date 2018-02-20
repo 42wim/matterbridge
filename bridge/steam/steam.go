@@ -25,7 +25,7 @@ var flog *log.Entry
 var protocol = "steam"
 
 func init() {
-	flog = log.WithFields(log.Fields{"module": protocol})
+	flog = log.WithFields(log.Fields{"prefix": protocol})
 }
 
 func New(cfg *config.BridgeConfig) *Bsteam {

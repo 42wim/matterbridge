@@ -21,7 +21,7 @@ var flog *log.Entry
 var protocol = "telegram"
 
 func init() {
-	flog = log.WithFields(log.Fields{"module": protocol})
+	flog = log.WithFields(log.Fields{"prefix": protocol})
 }
 
 func New(cfg *config.BridgeConfig) *Btelegram {
