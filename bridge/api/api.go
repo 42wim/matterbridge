@@ -3,9 +3,9 @@ package api
 import (
 	"encoding/json"
 	"github.com/42wim/matterbridge/bridge/config"
-	log "github.com/sirupsen/logrus"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	log "github.com/sirupsen/logrus"
 	"github.com/zfjagann/golang-ring"
 	"net/http"
 	"sync"
@@ -36,6 +36,8 @@ func init() {
 func New(cfg *config.BridgeConfig) *Api {
 	b := &Api{BridgeConfig: cfg}
 	e := echo.New()
+	e.HideBanner = true
+	e.HidePort = true
 	b.Messages = ring.Ring{}
 	b.Messages.SetCapacity(b.Config.Buffer)
 	if b.Config.Token != "" {
@@ -47,6 +49,10 @@ func New(cfg *config.BridgeConfig) *Api {
 	e.GET("/api/stream", b.handleStream)
 	e.POST("/api/message", b.handlePostMessage)
 	go func() {
+		if b.Config.BindAddress == "" {
+			flog.Fatalf("No BindAddress configured.")
+		}
+		flog.Infof("Listening on %s", b.Config.BindAddress)
 		flog.Fatal(e.Start(b.Config.BindAddress))
 	}()
 	return b
