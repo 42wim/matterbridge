@@ -117,9 +117,14 @@ ReplaceMessages=[ ["cat","dog"] ]
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
+#extra label that can be used in the RemoteNickFormat
+#optional (default empty)
+Label=""
+
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #The string "{NOPINGNICK}" (case sensitive) will be replaced by the actual nick / username, but with a ZWSP inside the nick, so the irc user with the same nick won't get pinged. See https://github.com/42wim/matterbridge/issues/175 for more information
 #OPTIONAL (default empty)
@@ -202,9 +207,14 @@ ReplaceMessages=[ ["cat","dog"] ]
 #OPTIONAL (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
+#extra label that can be used in the RemoteNickFormat
+#optional (default empty)
+Label=""
+
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
@@ -278,9 +288,14 @@ ReplaceMessages=[ ["cat","dog"] ]
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
+#extra label that can be used in the RemoteNickFormat
+#optional (default empty)
+Label=""
+
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}/{BRIDGE}] <{NICK}> "
@@ -414,9 +429,14 @@ ReplaceMessages=[ ["cat","dog"] ]
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
+#extra label that can be used in the RemoteNickFormat
+#optional (default empty)
+Label=""
+
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
@@ -480,9 +500,14 @@ ReplaceMessages=[ ["cat","dog"] ]
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
+#extra label that can be used in the RemoteNickFormat
+#optional (default empty)
+Label=""
+
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
@@ -537,6 +562,7 @@ WebhookBindAddress="0.0.0.0:9999"
 #Icon that will be showed in slack
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL
 IconURL="https://robohash.org/{NICK}.png?size=48x48"
@@ -593,9 +619,14 @@ ReplaceMessages=[ ["cat","dog"] ]
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
+#extra label that can be used in the RemoteNickFormat
+#optional (default empty)
+Label=""
+
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
@@ -683,9 +714,14 @@ ReplaceMessages=[ ["cat","dog"] ]
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
+#extra label that can be used in the RemoteNickFormat
+#optional (default empty)
+Label=""
+
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
@@ -772,9 +808,14 @@ ReplaceMessages=[ ["cat","dog"] ]
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
+#extra label that can be used in the RemoteNickFormat
+#optional (default empty)
+Label=""
+
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
@@ -862,9 +903,14 @@ ReplaceMessages=[ ["cat","dog"] ]
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
+#extra label that can be used in the RemoteNickFormat
+#optional (default empty)
+Label=""
+
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
@@ -944,9 +990,14 @@ ReplaceMessages=[ ["cat","dog"] ]
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
+#extra label that can be used in the RemoteNickFormat
+#optional (default empty)
+Label=""
+
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
@@ -1020,9 +1071,14 @@ ReplaceMessages=[ ["cat","dog"] ]
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
+#extra label that can be used in the RemoteNickFormat
+#optional (default empty)
+Label=""
+
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
@@ -1063,9 +1119,14 @@ Buffer=1000
 #OPTIONAL (no authorization if token is empty)
 Token="mytoken"
 
+#extra label that can be used in the RemoteNickFormat
+#optional (default empty)
+Label=""
+
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL (default empty)
 RemoteNickFormat="{NICK}"
@@ -1080,6 +1141,7 @@ RemoteNickFormat="{NICK}"
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
+#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "

@@ -66,6 +66,7 @@ type Protocol struct {
 	IgnoreNicks            string // all protocols
 	IgnoreMessages         string // all protocols
 	Jid                    string // xmpp
+	Label                  string // all protocols
 	Login                  string // mattermost, matrix
 	MediaDownloadSize      int    // all protocols
 	MediaServerDownload    string
