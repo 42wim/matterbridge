@@ -6,7 +6,7 @@ import (
 	"github.com/Philipp15b/go-steam"
 	"github.com/Philipp15b/go-steam/protocol/steamlang"
 	"github.com/Philipp15b/go-steam/steamid"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	//"io/ioutil"
 	"strconv"
 	"sync"

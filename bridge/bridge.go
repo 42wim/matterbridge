@@ -14,7 +14,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/steam"
 	"github.com/42wim/matterbridge/bridge/telegram"
 	"github.com/42wim/matterbridge/bridge/xmpp"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"strings"
 )

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/bwmarrin/discordgo"
 	"regexp"
 	"strings"

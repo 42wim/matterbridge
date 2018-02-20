@@ -5,7 +5,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/42wim/matterbridge/hook/rockethook"
 	"github.com/42wim/matterbridge/matterhook"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 type MMhook struct {

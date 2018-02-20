@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/gateway"
-	log "github.com/Sirupsen/logrus"
 	"github.com/google/gops/agent"
+	log "github.com/sirupsen/logrus"
+	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 	"os"
 	"strings"
 )
@@ -17,7 +18,7 @@ var (
 )
 
 func main() {
-	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
+	log.SetFormatter(&prefixed.TextFormatter{FullTimestamp: true})
 	flagConfig := flag.String("conf", "matterbridge.toml", "config file")
 	flagDebug := flag.Bool("debug", false, "enable debug")
 	flagVersion := flag.Bool("version", false, "show version")
@@ -32,7 +33,7 @@ func main() {
 		return
 	}
 	if *flagDebug || os.Getenv("DEBUG") == "1" {
-		log.SetFormatter(&log.TextFormatter{FullTimestamp: false})
+		log.SetFormatter(&prefixed.TextFormatter{FullTimestamp: false})
 		log.Info("Enabling debug")
 		log.SetLevel(log.DebugLevel)
 	}

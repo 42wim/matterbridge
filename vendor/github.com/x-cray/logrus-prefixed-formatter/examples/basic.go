@@ -1,23 +1,15 @@
 package main
 
 import (
-	"github.com/Sirupsen/logrus"
-	// "os"
+	"github.com/sirupsen/logrus"
+	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 )
 
 var log = logrus.New()
 
 func init() {
-	log.Formatter = new(logrus.JSONFormatter)
-	log.Formatter = new(logrus.TextFormatter) // default
-
-	// file, err := os.OpenFile("logrus.log", os.O_CREATE|os.O_WRONLY, 0666)
-	// if err == nil {
-	// 	log.Out = file
-	// } else {
-	// 	log.Info("Failed to log to file, using default stderr")
-	// }
-
+	formatter := new(prefixed.TextFormatter)
+	log.Formatter = formatter
 	log.Level = logrus.DebugLevel
 }
 
@@ -25,34 +17,42 @@ func main() {
 	defer func() {
 		err := recover()
 		if err != nil {
+			// Fatal message
 			log.WithFields(logrus.Fields{
 				"omg":    true,
-				"err":    err,
 				"number": 100,
-			}).Fatal("The ice breaks!")
+			}).Fatal("[main] The ice breaks!")
 		}
 	}()
 
+	// You could either provide a map key called `prefix` to add prefix
 	log.WithFields(logrus.Fields{
+		"prefix": "main",
 		"animal": "walrus",
 		"number": 8,
 	}).Debug("Started observing beach")
 
+	// Or you can simply add prefix in square brackets within message itself
 	log.WithFields(logrus.Fields{
 		"animal": "walrus",
 		"size":   10,
-	}).Info("A group of walrus emerges from the ocean")
+	}).Debug("[main] A group of walrus emerges from the ocean")
 
+	// Warning message
 	log.WithFields(logrus.Fields{
 		"omg":    true,
 		"number": 122,
-	}).Warn("The group's number increased tremendously!")
+	}).Warn("[main] The group's number increased tremendously!")
 
+	// Information message
 	log.WithFields(logrus.Fields{
+		"prefix":      "sensor",
 		"temperature": -4,
-	}).Debug("Temperature changes")
+	}).Info("Temperature changes")
 
+	// Panic message
 	log.WithFields(logrus.Fields{
+		"prefix": "sensor",
 		"animal": "orca",
 		"size":   9009,
 	}).Panic("It's over 9000!")

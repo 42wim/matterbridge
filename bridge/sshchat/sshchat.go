@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/shazow/ssh-chat/sshd"
 	"io"
 	"strings"

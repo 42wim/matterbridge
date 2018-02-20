@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	//	"github.com/davecgh/go-spew/spew"
 	"crypto/sha1"
 	"github.com/hashicorp/golang-lru"

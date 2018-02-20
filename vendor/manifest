@@ -42,14 +42,6 @@
 			"notests": true
 		},
 		{
-			"importpath": "github.com/Sirupsen/logrus",
-			"repository": "https://github.com/Sirupsen/logrus",
-			"vcs": "git",
-			"revision": "10f801ebc38b33738c9d17d50860f484a0988ff5",
-			"branch": "master",
-			"notests": true
-		},
-		{
 			"importpath": "github.com/alecthomas/log4go",
 			"repository": "https://github.com/alecthomas/log4go",
 			"vcs": "",
@@ -444,6 +436,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/mgutz/ansi",
+			"repository": "https://github.com/mgutz/ansi",
+			"vcs": "git",
+			"revision": "9520e82c474b0a04dd04f8a40959027271bab992",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/mreiferson/go-httpclient",
 			"repository": "https://github.com/mreiferson/go-httpclient",
 			"vcs": "git",
@@ -534,6 +534,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/sirupsen/logrus",
+			"repository": "https://github.com/sirupsen/logrus",
+			"vcs": "git",
+			"revision": "8c0189d9f6bbf301e5d055d34268156b317016af",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/sorcix/irc",
 			"repository": "https://github.com/sorcix/irc",
 			"vcs": "",
@@ -597,6 +605,14 @@
 			"repository": "https://github.com/valyala/fasttemplate",
 			"vcs": "git",
 			"revision": "dcecefd839c4193db0d35b88ec65b4c12d360ab0",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/x-cray/logrus-prefixed-formatter",
+			"repository": "https://github.com/x-cray/logrus-prefixed-formatter",
+			"vcs": "git",
+			"revision": "bb2702d423886830dee131692131d35648c382e2",
 			"branch": "master",
 			"notests": true
 		},

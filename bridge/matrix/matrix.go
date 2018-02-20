@@ -9,7 +9,7 @@ import (
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	matrix "github.com/matterbridge/gomatrix"
 )
 

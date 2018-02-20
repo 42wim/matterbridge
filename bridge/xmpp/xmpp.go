@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/jpillora/backoff"
 	"github.com/mattn/go-xmpp"
 

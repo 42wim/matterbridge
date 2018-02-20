@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/42wim/matterbridge/bridge/config"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/zfjagann/golang-ring"

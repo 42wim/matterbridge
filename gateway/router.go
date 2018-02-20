@@ -5,7 +5,7 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/gateway/samechannel"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	//	"github.com/davecgh/go-spew/spew"
 	"time"
 )
@@ -42,6 +42,7 @@ func NewRouter(cfg *config.Config) (*Router, error) {
 func (r *Router) Start() error {
 	m := make(map[string]*bridge.Bridge)
 	for _, gw := range r.Gateways {
+		log.Infof("Parsing gateway %s", gw.Name)
 		for _, br := range gw.Bridges {
 			m[br.Account] = br
 		}

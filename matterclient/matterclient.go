@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/gorilla/websocket"
 	"github.com/hashicorp/golang-lru"
