@@ -358,6 +358,7 @@ func (b *Btelegram) handleDownload(file interface{}, comment string, msg *config
 		fileid = v.FileID
 	}
 	if b.Config.UseInsecureURL {
+		flog.Debugf("Setting message text to :%s", text)
 		msg.Text = text
 		return
 	}
