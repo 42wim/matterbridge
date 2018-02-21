@@ -7,8 +7,8 @@ import (
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	log "github.com/sirupsen/logrus"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
+	log "github.com/sirupsen/logrus"
 )
 
 type Btelegram struct {
@@ -212,6 +212,11 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		}
 		if message.Audio != nil {
 			b.handleDownload(message.Audio, message.Caption, &fmsg)
+		}
+
+		// If UseInsecureURL is used we'll have a text in fmsg.Text
+		if fmsg.Text != "" {
+			text = text + fmsg.Text
 		}
 
 		if message.ForwardFrom != nil {
