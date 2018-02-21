@@ -1,3 +1,24 @@
+# v1.8.0
+## New features
+* general: Send chat notification if media is too big to be re-uploaded to MediaServer. See #359
+* general: Download (and upload) avatar images from mattermost and telegram when mediaserver is configured. Closes #362
+* general: Add label support in RemoteNickFormat
+* general: Prettier info/debug log output
+* mattermost: Download files and reupload to supported bridges (mattermost). Closes #357
+* slack: Add ShowTopicChange option. Allow/disable topic change messages (currently only from slack). Closes #353
+* slack: Add support for file comments (slack). Closes #346
+* telegram: Add comment to file upload from telegram. Show comments on all bridges. Closes #358
+* telegram: Add markdown support (telegram). #355
+* api: Give api access to whole config.Message (and events). Closes #374
+
+## Bugfix
+* discord: Check for a valid WebhookURL (discord). Closes #367
+* discord: Fix role mention replace issues
+* irc: Truncate messages sent to IRC based on byte count (#368)
+* mattermost: Add file download urls also to mattermost webhooks #356
+* telegram: Fix panic on nil messages (telegram). Closes #366
+* telegram: Fix the UseInsecureURL text (telegram). Closes #184
+
 # v1.7.1
 ## Bugfix
 * telegram: Enable Long Polling for Telegram. Reduces bandwidth consumption. (#350)
