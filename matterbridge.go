@@ -18,7 +18,7 @@ var (
 )
 
 func main() {
-	log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 10, DisableColors: true, FullTimestamp: true})
+	log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: true})
 	flog := log.WithFields(log.Fields{"prefix": "main"})
 	flagConfig := flag.String("conf", "matterbridge.toml", "config file")
 	flagDebug := flag.Bool("debug", false, "enable debug")
@@ -34,7 +34,7 @@ func main() {
 		return
 	}
 	if *flagDebug || os.Getenv("DEBUG") == "1" {
-		log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 10, DisableColors: true, FullTimestamp: false})
+		log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: false})
 		flog.Info("Enabling debug")
 		log.SetLevel(log.DebugLevel)
 	}

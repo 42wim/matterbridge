@@ -364,6 +364,9 @@ func (b *Bmattermost) apiLogin() error {
 
 	b.mc = matterclient.New(b.Config.Login, password,
 		b.Config.Team, b.Config.Server)
+	if b.General.Debug {
+		b.mc.SetLogLevel("debug")
+	}
 	b.mc.SkipTLSVerify = b.Config.SkipTLSVerify
 	b.mc.NoTLS = b.Config.NoTLS
 	flog.Infof("Connecting %s (team: %s) on %s", b.Config.Login, b.Config.Team, b.Config.Server)

@@ -14,6 +14,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 
 	"github.com/gorilla/websocket"
 	"github.com/hashicorp/golang-lru"
@@ -73,10 +74,14 @@ type MMClient struct {
 func New(login, pass, team, server string) *MMClient {
 	cred := &Credentials{Login: login, Pass: pass, Team: team, Server: server}
 	mmclient := &MMClient{Credentials: cred, MessageChan: make(chan *Message, 100), Users: make(map[string]*model.User)}
-	mmclient.log = log.WithFields(log.Fields{"module": "matterclient"})
-	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
+	log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true})
+	mmclient.log = log.WithFields(log.Fields{"prefix": "matterclient"})
 	mmclient.lruCache, _ = lru.New(500)
 	return mmclient
+}
+
+func (m *MMClient) SetDebugLog() {
+	log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: false})
 }
 
 func (m *MMClient) SetLogLevel(level string) {
