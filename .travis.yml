@@ -34,7 +34,7 @@ before_script:
 # flunk the build and immediately stop. It's sorta like having
 # set -e enabled in bash. 
 script:
-  - test -z $(gofmt -s -l $GO_FILES)  # Fail if a .go file hasn't been formatted with gofmt
+ #- test -z $(gofmt -s -l $GO_FILES)  # Fail if a .go file hasn't been formatted with gofmt
   - go test -v -race $PKGS            # Run all the tests with the race detector enabled
   - go vet $PKGS                      # go vet is the official Go static analyzer
   - megacheck $PKGS                   # "go vet on steroids" + linter
