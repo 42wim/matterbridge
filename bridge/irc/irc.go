@@ -276,7 +276,7 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 		flog.Debugf("handleJoinPart: empty Params? %#v", event)
 		return
 	}
-	channel := event.Params[0]
+	channel := strings.ToLower(event.Params[0])
 	if event.Command == "KICK" {
 		flog.Infof("Got kicked from %s by %s", channel, event.Source.Name)
 		time.Sleep(time.Duration(b.Config.RejoinDelay) * time.Second)
