@@ -7,8 +7,8 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/42wim/matterbridge/matterhook"
-	log "github.com/sirupsen/logrus"
 	"github.com/nlopes/slack"
+	log "github.com/sirupsen/logrus"
 	"html"
 	"io"
 	"net/http"
@@ -342,6 +342,10 @@ func (b *Bslack) handleSlackClient(mchan chan *MMMessage) {
 		}
 		switch ev := msg.Data.(type) {
 		case *slack.MessageEvent:
+			// update the userlist on a channel_join
+			if message.Raw.SubType == "channel_join" {
+				b.Users, _ = b.sc.GetUsers()
+			}
 			if ev.SubType == "pinned_item" || ev.SubType == "unpinned_item" {
 				continue
 			}
