@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/schema"
+	"github.com/nlopes/slack"
 	"io"
 	"io/ioutil"
 	"log"
@@ -22,7 +23,7 @@ type OMessage struct {
 	IconEmoji   string                 `json:"icon_emoji,omitempty"`
 	UserName    string                 `json:"username,omitempty"`
 	Text        string                 `json:"text"`
-	Attachments interface{}            `json:"attachments,omitempty"`
+	Attachments []slack.Attachment     `json:"attachments,omitempty"`
 	Type        string                 `json:"type,omitempty"`
 	Props       map[string]interface{} `json:"props"`
 }
