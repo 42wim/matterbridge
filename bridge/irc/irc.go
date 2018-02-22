@@ -108,7 +108,7 @@ func (b *Birc) Connect() error {
 
 	i.Handlers.Add(girc.RPL_WELCOME, b.handleNewConnection)
 	i.Handlers.Add(girc.RPL_ENDOFMOTD, b.handleOtherAuth)
-	i.Handlers.Add("*", b.handleOther)
+	i.Handlers.Add(girc.ALL_EVENTS, b.handleOther)
 	go func() {
 		for {
 			if err := i.Connect(); err != nil {
@@ -134,7 +134,9 @@ func (b *Birc) Connect() error {
 		return fmt.Errorf("connection timed out")
 	}
 	//i.Debug = false
-	i.Handlers.Clear("*")
+	if b.Config.DebugLevel == 0 {
+		i.Handlers.Clear(girc.ALL_EVENTS)
+	}
 	go b.doSend()
 	return nil
 }
@@ -307,6 +309,13 @@ func (b *Birc) handleNotice(client *girc.Client, event girc.Event) {
 }
 
 func (b *Birc) handleOther(client *girc.Client, event girc.Event) {
+	if b.Config.DebugLevel == 1 {
+		if event.Command != "CLIENT_STATE_UPDATED" &&
+			event.Command != "CLIENT_GENERAL_UPDATED" {
+			flog.Debugf("%#v", event.String())
+		}
+		return
+	}
 	switch event.Command {
 	case "372", "375", "376", "250", "251", "252", "253", "254", "255", "265", "266", "002", "003", "004", "005":
 		return
