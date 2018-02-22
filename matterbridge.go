@@ -34,7 +34,7 @@ func main() {
 		return
 	}
 	if *flagDebug || os.Getenv("DEBUG") == "1" {
-		log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: false})
+		log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: false, ForceFormatting: true})
 		flog.Info("Enabling debug")
 		log.SetLevel(log.DebugLevel)
 	}

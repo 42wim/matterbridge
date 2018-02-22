@@ -81,7 +81,7 @@ func New(login, pass, team, server string) *MMClient {
 }
 
 func (m *MMClient) SetDebugLog() {
-	log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: false})
+	log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: false, ForceFormatting: true})
 }
 
 func (m *MMClient) SetLogLevel(level string) {
