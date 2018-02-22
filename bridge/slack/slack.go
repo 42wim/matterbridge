@@ -137,8 +137,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	if b.Config.WebhookURL != "" {
 		if msg.Extra != nil {
 			for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-				matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL, Channel: channel, UserName: rmsg.Username,
-					Text: rmsg.Text}
+				matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL, Channel: channel, UserName: rmsg.Username, Text: rmsg.Text}
 				b.mh.Send(matterMessage)
 			}
 			if len(msg.Extra["file"]) > 0 {
@@ -150,8 +149,15 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 				}
 			}
 		}
+		// if we have native slack_attachments add them
+		var attachs []slack.Attachment
+		if len(msg.Extra["slack_attachment"]) > 0 {
+			for _, attach := range msg.Extra["slack_attachment"] {
+				attachs = append(attachs, attach.([]slack.Attachment)...)
+			}
+		}
 
-		matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL}
+		matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL, Attachments: attachs}
 		matterMessage.Channel = channel
 		matterMessage.UserName = nick
 		matterMessage.Type = ""
@@ -178,6 +184,11 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	}
 	np.Attachments = append(np.Attachments, slack.Attachment{CallbackID: "matterbridge"})
 	np.Attachments = append(np.Attachments, b.createAttach(msg.Extra)...)
+	if len(msg.Extra["slack_attachment"]) > 0 {
+		for _, attach := range msg.Extra["slack_attachment"] {
+			np.Attachments = append(np.Attachments, attach.([]slack.Attachment)...)
+		}
+	}
 
 	// replace mentions
 	np.LinkNames = 1
@@ -306,6 +317,11 @@ func (b *Bslack) handleSlack() {
 		}
 		if message.Raw.SubType == "channel_topic" || message.Raw.SubType == "channel_purpose" {
 			msg.Event = config.EVENT_TOPIC_CHANGE
+		}
+
+		// save the attachments, so that we can send them to other slack (compatible) bridges
+		if len(message.Raw.Attachments) > 0 {
+			msg.Extra["slack_attachment"] = append(msg.Extra["slack_attachment"], message.Raw.Attachments)
 		}
 
 		// if we have a file attached, download it (in memory) and put a pointer to it in msg.Extra
