@@ -290,7 +290,9 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 	}
 	if event.Source.Name != b.Nick {
 		flog.Debugf("Sending JOIN_LEAVE event from %s to gateway", b.Account)
-		b.Remote <- config.Message{Username: "system", Text: event.Source.Name + " " + strings.ToLower(event.Command) + "s", Channel: channel, Account: b.Account, Event: config.EVENT_JOIN_LEAVE}
+		msg := config.Message{Username: "system", Text: event.Source.Name + " " + strings.ToLower(event.Command) + "s", Channel: channel, Account: b.Account, Event: config.EVENT_JOIN_LEAVE}
+		flog.Debugf("Message is %#v", msg)
+		b.Remote <- msg
 		return
 	}
 	flog.Debugf("handle %#v", event)
