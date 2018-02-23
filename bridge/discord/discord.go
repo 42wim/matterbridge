@@ -2,6 +2,7 @@ package bdiscord
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/bwmarrin/discordgo"
@@ -56,7 +57,6 @@ func (b *bdiscord) Connect() error {
 	}
 	b.c, err = discordgo.New(b.Config.Token)
 	if err != nil {
-		flog.Debugf("%#v", err)
 		return err
 	}
 	flog.Info("Connection succeeded")
@@ -66,17 +66,14 @@ func (b *bdiscord) Connect() error {
 	b.c.AddHandler(b.messageDelete)
 	err = b.c.Open()
 	if err != nil {
-		flog.Debugf("%#v", err)
 		return err
 	}
 	guilds, err := b.c.UserGuilds(100, "", "")
 	if err != nil {
-		flog.Debugf("%#v", err)
 		return err
 	}
 	userinfo, err := b.c.User("@me")
 	if err != nil {
-		flog.Debugf("%#v", err)
 		return err
 	}
 	b.Nick = userinfo.Username
@@ -85,7 +82,6 @@ func (b *bdiscord) Connect() error {
 			b.Channels, err = b.c.GuildChannels(guild.ID)
 			b.guildID = guild.ID
 			if err != nil {
-				flog.Debugf("%#v", err)
 				return err
 			}
 		}
@@ -108,74 +104,77 @@ func (b *bdiscord) JoinChannel(channel config.ChannelInfo) error {
 
 func (b *bdiscord) Send(msg config.Message) (string, error) {
 	flog.Debugf("Receiving %#v", msg)
+
 	channelID := b.getChannelID(msg.Channel)
 	if channelID == "" {
-		flog.Errorf("Could not find channelID for %v", msg.Channel)
-		return "", nil
+		return "", fmt.Errorf("Could not find channelID for %v", msg.Channel)
 	}
+
+	// Make a action /me of the message
 	if msg.Event == config.EVENT_USER_ACTION {
 		msg.Text = "_" + msg.Text + "_"
 	}
 
+	// use initial webhook
 	wID := b.webhookID
 	wToken := b.webhookToken
+
+	// check if have a channel specific webhook
 	if ci, ok := b.channelInfoMap[msg.Channel+b.Account]; ok {
 		if ci.Options.WebhookURL != "" {
 			wID, wToken = b.splitURL(ci.Options.WebhookURL)
 		}
 	}
 
-	if wID == "" {
-		flog.Debugf("Broadcasting using token (API)")
-		if msg.Event == config.EVENT_MSG_DELETE {
-			if msg.ID == "" {
-				return "", nil
-			}
-			err := b.c.ChannelMessageDelete(channelID, msg.ID)
-			return "", err
-		}
-		if msg.ID != "" {
-			_, err := b.c.ChannelMessageEdit(channelID, msg.ID, msg.Username+msg.Text)
-			return msg.ID, err
-		}
-
-		if msg.Extra != nil {
-			for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-				b.c.ChannelMessageSend(channelID, rmsg.Username+rmsg.Text)
-			}
-			// check if we have files to upload (from slack, telegram or mattermost)
-			if len(msg.Extra["file"]) > 0 {
-				var err error
-				for _, f := range msg.Extra["file"] {
-					fi := f.(config.FileInfo)
-					files := []*discordgo.File{}
-					files = append(files, &discordgo.File{fi.Name, "", bytes.NewReader(*fi.Data)})
-					_, err = b.c.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{Content: msg.Username + fi.Comment, Files: files})
-					if err != nil {
-						flog.Errorf("file upload failed: %#v", err)
-					}
-				}
-				return "", nil
-			}
-		}
-
-		res, err := b.c.ChannelMessageSend(channelID, msg.Username+msg.Text)
-		if err != nil {
-			return "", err
-		}
-		return res.ID, err
+	// Use webhook to send the message
+	if wID != "" {
+		flog.Debugf("Broadcasting using Webhook")
+		err := b.c.WebhookExecute(
+			wID,
+			wToken,
+			true,
+			&discordgo.WebhookParams{
+				Content:   msg.Text,
+				Username:  msg.Username,
+				AvatarURL: msg.Avatar,
+			})
+		return "", err
 	}
-	flog.Debugf("Broadcasting using Webhook")
-	err := b.c.WebhookExecute(
-		wID,
-		wToken,
-		true,
-		&discordgo.WebhookParams{
-			Content:   msg.Text,
-			Username:  msg.Username,
-			AvatarURL: msg.Avatar,
-		})
-	return "", err
+
+	flog.Debugf("Broadcasting using token (API)")
+
+	// Delete message
+	if msg.Event == config.EVENT_MSG_DELETE {
+		if msg.ID == "" {
+			return "", nil
+		}
+		err := b.c.ChannelMessageDelete(channelID, msg.ID)
+		return "", err
+	}
+
+	// Upload a file if it exists
+	if msg.Extra != nil {
+		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+			b.c.ChannelMessageSend(channelID, rmsg.Username+rmsg.Text)
+		}
+		// check if we have files to upload (from slack, telegram or mattermost)
+		if len(msg.Extra["file"]) > 0 {
+			return b.handleUploadFile(&msg, channelID)
+		}
+	}
+
+	// Edit message
+	if msg.ID != "" {
+		_, err := b.c.ChannelMessageEdit(channelID, msg.ID, msg.Username+msg.Text)
+		return msg.ID, err
+	}
+
+	// Post normal message
+	res, err := b.c.ChannelMessageSend(channelID, msg.Username+msg.Text)
+	if err != nil {
+		return "", err
+	}
+	return res.ID, err
 }
 
 func (b *bdiscord) messageDelete(s *discordgo.Session, m *discordgo.MessageDelete) {
@@ -203,6 +202,7 @@ func (b *bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdat
 
 func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	var err error
+
 	// not relay our own messages
 	if m.Author.Username == b.Nick {
 		return
@@ -212,55 +212,58 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 		return
 	}
 
+	// add the url of the attachments to content
 	if len(m.Attachments) > 0 {
 		for _, attach := range m.Attachments {
 			m.Content = m.Content + "\n" + attach.URL
 		}
 	}
 
-	var text string
+	rmsg := config.Message{Account: b.Account, Avatar: "https://cdn.discordapp.com/avatars/" + m.Author.ID + "/" + m.Author.Avatar + ".jpg", UserID: m.Author.ID, ID: m.ID}
+
 	if m.Content != "" {
 		flog.Debugf("Receiving message %#v", m.Message)
 		m.Message.Content = b.stripCustomoji(m.Message.Content)
 		m.Message.Content = b.replaceChannelMentions(m.Message.Content)
-		text, err = m.ContentWithMoreMentionsReplaced(b.c)
+		rmsg.Text, err = m.ContentWithMoreMentionsReplaced(b.c)
 		if err != nil {
 			flog.Errorf("ContentWithMoreMentionsReplaced failed: %s", err)
-			text = m.ContentWithMentionsReplaced()
+			rmsg.Text = m.ContentWithMentionsReplaced()
 		}
 	}
 
-	rmsg := config.Message{Account: b.Account, Avatar: "https://cdn.discordapp.com/avatars/" + m.Author.ID + "/" + m.Author.Avatar + ".jpg",
-		UserID: m.Author.ID, ID: m.ID}
-
+	// set channel name
 	rmsg.Channel = b.getChannelName(m.ChannelID)
 	if b.UseChannelID {
 		rmsg.Channel = "ID:" + m.ChannelID
 	}
 
+	// set username
 	if !b.Config.UseUserName {
 		rmsg.Username = b.getNick(m.Author)
 	} else {
 		rmsg.Username = m.Author.Username
 	}
 
+	// if we have embedded content add it to text
 	if b.Config.ShowEmbeds && m.Message.Embeds != nil {
 		for _, embed := range m.Message.Embeds {
-			text = text + "embed: " + embed.Title + " - " + embed.Description + " - " + embed.URL + "\n"
+			rmsg.Text = rmsg.Text + "embed: " + embed.Title + " - " + embed.Description + " - " + embed.URL + "\n"
 		}
 	}
 
 	// no empty messages
-	if text == "" {
+	if rmsg.Text == "" {
 		return
 	}
 
-	text, ok := b.replaceAction(text)
+	// do we have a /me action
+	var ok bool
+	rmsg.Text, ok = b.replaceAction(rmsg.Text)
 	if ok {
 		rmsg.Event = config.EVENT_USER_ACTION
 	}
 
-	rmsg.Text = text
 	flog.Debugf("Sending message from %s on %s to gateway", m.Author.Username, b.Account)
 	flog.Debugf("Message is %#v", rmsg)
 	b.Remote <- rmsg
@@ -395,4 +398,19 @@ func (b *bdiscord) isWebhookID(id string) bool {
 		}
 	}
 	return false
+}
+
+// handleUploadFile handles native upload of files
+func (b *bdiscord) handleUploadFile(msg *config.Message, channelID string) (string, error) {
+	var err error
+	for _, f := range msg.Extra["file"] {
+		fi := f.(config.FileInfo)
+		files := []*discordgo.File{}
+		files = append(files, &discordgo.File{fi.Name, "", bytes.NewReader(*fi.Data)})
+		_, err = b.c.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{Content: msg.Username + fi.Comment, Files: files})
+		if err != nil {
+			return "", fmt.Errorf("file upload failed: %#v", err)
+		}
+	}
+	return "", nil
 }
