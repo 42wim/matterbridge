@@ -34,11 +34,13 @@ func (b *Bgitter) Connect() error {
 	b.c = gitter.New(b.Config.Token)
 	b.User, err = b.c.GetUser()
 	if err != nil {
-		flog.Debugf("%#v", err)
+		return err
+	}
+	b.Rooms, err = b.c.GetRooms()
+	if err != nil {
 		return err
 	}
 	flog.Info("Connection succeeded")
-	b.Rooms, _ = b.c.GetRooms()
 	return nil
 }
 
@@ -74,6 +76,7 @@ func (b *Bgitter) JoinChannel(channel config.ChannelInfo) error {
 		for event := range stream.Event {
 			switch ev := event.Data.(type) {
 			case *gitter.MessageReceived:
+				// ignore message sent from ourselves
 				if ev.Message.From.ID != b.User.ID {
 					flog.Debugf("Sending message from %s on %s to gateway", ev.Message.From.Username, b.Account)
 					rmsg := config.Message{Username: ev.Message.From.Username, Text: ev.Message.Text, Channel: room,
@@ -101,17 +104,31 @@ func (b *Bgitter) Send(msg config.Message) (string, error) {
 		flog.Errorf("Could not find roomID for %v", msg.Channel)
 		return "", nil
 	}
+
+	// Delete message
 	if msg.Event == config.EVENT_MSG_DELETE {
 		if msg.ID == "" {
 			return "", nil
 		}
-		// gitter has no delete message api
+		// gitter has no delete message api so we edit message to ""
 		_, err := b.c.UpdateMessage(roomID, msg.ID, "")
 		if err != nil {
 			return "", err
 		}
 		return "", nil
 	}
+
+	// Upload a file (in gitter case send the upload URL because gitter has no native upload support)
+	if msg.Extra != nil {
+		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+			b.c.SendMessage(roomID, rmsg.Username+rmsg.Text)
+		}
+		if len(msg.Extra["file"]) > 0 {
+			return b.handleUploadFile(&msg, roomID)
+		}
+	}
+
+	// Edit message
 	if msg.ID != "" {
 		flog.Debugf("updating message with id %s", msg.ID)
 		_, err := b.c.UpdateMessage(roomID, msg.ID, msg.Username+msg.Text)
@@ -121,28 +138,7 @@ func (b *Bgitter) Send(msg config.Message) (string, error) {
 		return "", nil
 	}
 
-	if msg.Extra != nil {
-		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			b.c.SendMessage(roomID, rmsg.Username+rmsg.Text)
-		}
-		if len(msg.Extra["file"]) > 0 {
-			for _, f := range msg.Extra["file"] {
-				fi := f.(config.FileInfo)
-				if fi.Comment != "" {
-					msg.Text += fi.Comment + ": "
-				}
-				if fi.URL != "" {
-					msg.Text = fi.URL
-				}
-				_, err := b.c.SendMessage(roomID, msg.Username+msg.Text)
-				if err != nil {
-					return "", err
-				}
-			}
-			return "", nil
-		}
-	}
-
+	// Post normal message
 	resp, err := b.c.SendMessage(roomID, msg.Username+msg.Text)
 	if err != nil {
 		return "", err
@@ -169,4 +165,21 @@ func (b *Bgitter) getAvatar(user string) string {
 		}
 	}
 	return avatar
+}
+
+func (b *Bgitter) handleUploadFile(msg *config.Message, roomID string) (string, error) {
+	for _, f := range msg.Extra["file"] {
+		fi := f.(config.FileInfo)
+		if fi.Comment != "" {
+			msg.Text += fi.Comment + ": "
+		}
+		if fi.URL != "" {
+			msg.Text = fi.URL
+		}
+		_, err := b.c.SendMessage(roomID, msg.Username+msg.Text)
+		if err != nil {
+			return "", err
+		}
+	}
+	return "", nil
 }
