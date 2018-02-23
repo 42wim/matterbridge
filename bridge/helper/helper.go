@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/42wim/matterbridge/bridge/config"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"time"
@@ -60,4 +61,23 @@ func GetAvatar(av map[string]string, userid string, general *config.Protocol) st
 		return general.MediaServerDownload + "/" + sha + "/" + userid + ".png"
 	}
 	return ""
+}
+
+func HandleDownloadSize(flog *log.Entry, msg *config.Message, name string, size int64, general *config.Protocol) error {
+	flog.Debugf("Trying to download %#v with size %#v", name, size)
+	if int(size) > general.MediaDownloadSize {
+		msg.Event = config.EVENT_FILE_FAILURE_SIZE
+		msg.Extra[msg.Event] = append(msg.Extra[msg.Event], config.FileInfo{Name: name, Comment: msg.Text, Size: size})
+		return fmt.Errorf("File %#v to large to download (%#v). MediaDownloadSize is %#v", name, size, general.MediaDownloadSize)
+	}
+	return nil
+}
+
+func HandleDownloadData(flog *log.Entry, msg *config.Message, name, comment, url string, data *[]byte, general *config.Protocol) {
+	var avatar bool
+	flog.Debugf("Download OK %#v %#v", name, len(*data))
+	if msg.Event == config.EVENT_AVATAR_DOWNLOAD {
+		avatar = true
+	}
+	msg.Extra["file"] = append(msg.Extra["file"], config.FileInfo{Name: name, Data: data, URL: url, Comment: comment, Avatar: avatar})
 }
