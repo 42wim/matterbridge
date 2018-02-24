@@ -11,11 +11,18 @@ import (
 )
 
 func DownloadFile(url string) (*[]byte, error) {
+	return DownloadFileAuth(url, "")
+}
+
+func DownloadFileAuth(url string, auth string) (*[]byte, error) {
 	var buf bytes.Buffer
 	client := &http.Client{
 		Timeout: time.Second * 5,
 	}
 	req, err := http.NewRequest("GET", url, nil)
+	if auth != "" {
+		req.Header.Add("Authorization", auth)
+	}
 	if err != nil {
 		return nil, err
 	}
