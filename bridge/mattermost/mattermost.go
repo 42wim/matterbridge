@@ -361,6 +361,11 @@ func (b *Bmattermost) handleUploadFile(msg *config.Message) (string, error) {
 
 // sendWebhook uses the configured WebhookURL to send the message
 func (b *Bmattermost) sendWebhook(msg config.Message) (string, error) {
+	// skip events
+	if msg.Event != "" {
+		return "", nil
+	}
+
 	if b.Config.PrefixMessagesWithNick {
 		msg.Text = msg.Username + msg.Text
 	}

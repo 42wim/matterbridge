@@ -128,6 +128,10 @@ func (b *bdiscord) Send(msg config.Message) (string, error) {
 
 	// Use webhook to send the message
 	if wID != "" {
+		// skip events
+		if msg.Event != "" {
+			return "", nil
+		}
 		flog.Debugf("Broadcasting using Webhook")
 		err := b.c.WebhookExecute(
 			wID,
