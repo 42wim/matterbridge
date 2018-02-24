@@ -162,11 +162,15 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 	if msg.Event == config.EVENT_MSG_DELETE {
 		return "", nil
 	}
+
 	flog.Debugf("Receiving %#v", msg)
+
+	// Execute a command
 	if strings.HasPrefix(msg.Text, "!") {
 		b.Command(&msg)
 	}
 
+	// convert to specified charset
 	if b.Config.Charset != "" {
 		buf := new(bytes.Buffer)
 		w, err := charset.NewWriter(b.Config.Charset, buf)
@@ -179,6 +183,7 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 		msg.Text = buf.String()
 	}
 
+	// Handle files
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
 			b.Local <- rmsg
@@ -330,40 +335,54 @@ func (b *Birc) handleOtherAuth(client *girc.Client, event girc.Event) {
 	}
 }
 
-func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
+func (b *Birc) skipPrivMsg(event girc.Event) bool {
+	// Our nick can be changed
 	b.Nick = b.i.GetNick()
+
 	// freenode doesn't send 001 as first reply
 	if event.Command == "NOTICE" {
-		return
+		return true
 	}
 	// don't forward queries to the bot
 	if event.Params[0] == b.Nick {
-		return
+		return true
 	}
 	// don't forward message from ourself
 	if event.Source.Name == b.Nick {
+		return true
+	}
+	return false
+}
+
+func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
+	if b.skipPrivMsg(event) {
 		return
 	}
 	rmsg := config.Message{Username: event.Source.Name, Channel: strings.ToLower(event.Params[0]), Account: b.Account, UserID: event.Source.Ident + "@" + event.Source.Host}
-	flog.Debugf("handlePrivMsg() %s %s %#v", event.Source.Name, event.Trailing, event)
-	msg := ""
+	flog.Debugf("Receiving PRIVMSG: %s %s %#v", event.Source.Name, event.Trailing, event)
+
+	// set action event
 	if event.IsAction() {
 		rmsg.Event = config.EVENT_USER_ACTION
 	}
-	msg += event.StripAction()
+
+	// strip action, we made an event if it was an action
+	rmsg.Text += event.StripAction()
+
 	// strip IRC colors
 	re := regexp.MustCompile(`[[:cntrl:]](?:\d{1,2}(?:,\d{1,2})?)?`)
-	msg = re.ReplaceAllString(msg, "")
+	rmsg.Text = re.ReplaceAllString(rmsg.Text, "")
 
+	// start detecting the charset
 	var r io.Reader
 	var err error
 	mycharset := b.Config.Charset
 	if mycharset == "" {
 		// detect what were sending so that we convert it to utf-8
 		detector := chardet.NewTextDetector()
-		result, err := detector.DetectBest([]byte(msg))
+		result, err := detector.DetectBest([]byte(rmsg.Text))
 		if err != nil {
-			flog.Infof("detection failed for msg: %#v", msg)
+			flog.Infof("detection failed for rmsg.Text: %#v", rmsg.Text)
 			return
 		}
 		flog.Debugf("detected %s confidence %#v", result.Charset, result.Confidence)
@@ -373,16 +392,15 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 			mycharset = "ISO-8859-1"
 		}
 	}
-	r, err = charset.NewReader(mycharset, strings.NewReader(msg))
+	r, err = charset.NewReader(mycharset, strings.NewReader(rmsg.Text))
 	if err != nil {
 		flog.Errorf("charset to utf-8 conversion failed: %s", err)
 		return
 	}
 	output, _ := ioutil.ReadAll(r)
-	msg = string(output)
+	rmsg.Text = string(output)
 
 	flog.Debugf("Sending message from %s on %s to gateway", event.Params[0], b.Account)
-	rmsg.Text = msg
 	b.Remote <- rmsg
 }
 
