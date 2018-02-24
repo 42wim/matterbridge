@@ -178,6 +178,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			dest.Protocol != "telegram" &&
 			dest.Protocol != "matrix" &&
 			dest.Protocol != "xmpp" &&
+			dest.Protocol != "irc" &&
 			len(msg.Extra[config.EVENT_FILE_FAILURE_SIZE]) == 0 {
 			if msg.Text == "" {
 				return brMsgIDs
@@ -241,7 +242,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		}
 		mID, err := dest.Send(msg)
 		if err != nil {
-			fmt.Println(err)
+			flog.Error(err)
 		}
 		// append the message ID (mID) from this bridge (dest) to our brMsgIDs slice
 		if mID != "" {
