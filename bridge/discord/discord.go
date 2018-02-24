@@ -12,7 +12,7 @@ import (
 	"sync"
 )
 
-type bdiscord struct {
+type Bdiscord struct {
 	c              *discordgo.Session
 	Channels       []*discordgo.Channel
 	Nick           string
@@ -33,8 +33,8 @@ func init() {
 	flog = log.WithFields(log.Fields{"prefix": protocol})
 }
 
-func New(cfg *config.BridgeConfig) *bdiscord {
-	b := &bdiscord{BridgeConfig: cfg}
+func New(cfg *config.BridgeConfig) *Bdiscord {
+	b := &Bdiscord{BridgeConfig: cfg}
 	b.userMemberMap = make(map[string]*discordgo.Member)
 	b.channelInfoMap = make(map[string]*config.ChannelInfo)
 	if b.Config.WebhookURL != "" {
@@ -44,7 +44,7 @@ func New(cfg *config.BridgeConfig) *bdiscord {
 	return b
 }
 
-func (b *bdiscord) Connect() error {
+func (b *Bdiscord) Connect() error {
 	var err error
 	flog.Info("Connecting")
 	if b.Config.WebhookURL == "" {
@@ -89,11 +89,11 @@ func (b *bdiscord) Connect() error {
 	return nil
 }
 
-func (b *bdiscord) Disconnect() error {
+func (b *Bdiscord) Disconnect() error {
 	return nil
 }
 
-func (b *bdiscord) JoinChannel(channel config.ChannelInfo) error {
+func (b *Bdiscord) JoinChannel(channel config.ChannelInfo) error {
 	b.channelInfoMap[channel.ID] = &channel
 	idcheck := strings.Split(channel.Name, "ID:")
 	if len(idcheck) > 1 {
@@ -102,7 +102,7 @@ func (b *bdiscord) JoinChannel(channel config.ChannelInfo) error {
 	return nil
 }
 
-func (b *bdiscord) Send(msg config.Message) (string, error) {
+func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	flog.Debugf("Receiving %#v", msg)
 
 	channelID := b.getChannelID(msg.Channel)
@@ -181,7 +181,7 @@ func (b *bdiscord) Send(msg config.Message) (string, error) {
 	return res.ID, err
 }
 
-func (b *bdiscord) messageDelete(s *discordgo.Session, m *discordgo.MessageDelete) {
+func (b *Bdiscord) messageDelete(s *discordgo.Session, m *discordgo.MessageDelete) {
 	rmsg := config.Message{Account: b.Account, ID: m.ID, Event: config.EVENT_MSG_DELETE, Text: config.EVENT_MSG_DELETE}
 	rmsg.Channel = b.getChannelName(m.ChannelID)
 	if b.UseChannelID {
@@ -192,7 +192,7 @@ func (b *bdiscord) messageDelete(s *discordgo.Session, m *discordgo.MessageDelet
 	b.Remote <- rmsg
 }
 
-func (b *bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdate) {
+func (b *Bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdate) {
 	if b.Config.EditDisable {
 		return
 	}
@@ -204,7 +204,7 @@ func (b *bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdat
 	}
 }
 
-func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	var err error
 
 	// not relay our own messages
@@ -273,7 +273,7 @@ func (b *bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	b.Remote <- rmsg
 }
 
-func (b *bdiscord) memberUpdate(s *discordgo.Session, m *discordgo.GuildMemberUpdate) {
+func (b *Bdiscord) memberUpdate(s *discordgo.Session, m *discordgo.GuildMemberUpdate) {
 	b.Lock()
 	if _, ok := b.userMemberMap[m.Member.User.ID]; ok {
 		flog.Debugf("%s: memberupdate: user %s (nick %s) changes nick to %s", b.Account, m.Member.User.Username, b.userMemberMap[m.Member.User.ID].Nick, m.Member.Nick)
@@ -282,7 +282,7 @@ func (b *bdiscord) memberUpdate(s *discordgo.Session, m *discordgo.GuildMemberUp
 	b.Unlock()
 }
 
-func (b *bdiscord) getNick(user *discordgo.User) string {
+func (b *Bdiscord) getNick(user *discordgo.User) string {
 	var err error
 	b.Lock()
 	defer b.Unlock()
@@ -309,7 +309,7 @@ func (b *bdiscord) getNick(user *discordgo.User) string {
 	return user.Username
 }
 
-func (b *bdiscord) getChannelID(name string) string {
+func (b *Bdiscord) getChannelID(name string) string {
 	idcheck := strings.Split(name, "ID:")
 	if len(idcheck) > 1 {
 		return idcheck[1]
@@ -322,7 +322,7 @@ func (b *bdiscord) getChannelID(name string) string {
 	return ""
 }
 
-func (b *bdiscord) getChannelName(id string) string {
+func (b *Bdiscord) getChannelName(id string) string {
 	for _, channel := range b.Channels {
 		if channel.ID == id {
 			return channel.Name
@@ -331,7 +331,7 @@ func (b *bdiscord) getChannelName(id string) string {
 	return ""
 }
 
-func (b *bdiscord) replaceChannelMentions(text string) string {
+func (b *Bdiscord) replaceChannelMentions(text string) string {
 	var err error
 	re := regexp.MustCompile("<#[0-9]+>")
 	text = re.ReplaceAllStringFunc(text, func(m string) string {
@@ -350,21 +350,21 @@ func (b *bdiscord) replaceChannelMentions(text string) string {
 	return text
 }
 
-func (b *bdiscord) replaceAction(text string) (string, bool) {
+func (b *Bdiscord) replaceAction(text string) (string, bool) {
 	if strings.HasPrefix(text, "_") && strings.HasSuffix(text, "_") {
 		return strings.Replace(text, "_", "", -1), true
 	}
 	return text, false
 }
 
-func (b *bdiscord) stripCustomoji(text string) string {
+func (b *Bdiscord) stripCustomoji(text string) string {
 	// <:doge:302803592035958784>
 	re := regexp.MustCompile("<(:.*?:)[0-9]+>")
 	return re.ReplaceAllString(text, `$1`)
 }
 
 // splitURL splits a webhookURL and returns the id and token
-func (b *bdiscord) splitURL(url string) (string, string) {
+func (b *Bdiscord) splitURL(url string) (string, string) {
 	webhookURLSplit := strings.Split(url, "/")
 	if len(webhookURLSplit) != 7 {
 		log.Fatalf("%s is no correct discord WebhookURL", url)
@@ -373,7 +373,7 @@ func (b *bdiscord) splitURL(url string) (string, string) {
 }
 
 // useWebhook returns true if we have a webhook defined somewhere
-func (b *bdiscord) useWebhook() bool {
+func (b *Bdiscord) useWebhook() bool {
 	if b.Config.WebhookURL != "" {
 		return true
 	}
@@ -386,7 +386,7 @@ func (b *bdiscord) useWebhook() bool {
 }
 
 // isWebhookID returns true if the specified id is used in a defined webhook
-func (b *bdiscord) isWebhookID(id string) bool {
+func (b *Bdiscord) isWebhookID(id string) bool {
 	if b.Config.WebhookURL != "" {
 		wID, _ := b.splitURL(b.Config.WebhookURL)
 		if wID == id {
@@ -405,7 +405,7 @@ func (b *bdiscord) isWebhookID(id string) bool {
 }
 
 // handleUploadFile handles native upload of files
-func (b *bdiscord) handleUploadFile(msg *config.Message, channelID string) (string, error) {
+func (b *Bdiscord) handleUploadFile(msg *config.Message, channelID string) (string, error) {
 	var err error
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo)

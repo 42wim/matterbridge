@@ -14,7 +14,7 @@ import (
 type Bmattermost struct {
 	mh     *matterhook.Client
 	mc     *matterclient.MMClient
-	TeamId string
+	TeamID string
 	*config.BridgeConfig
 	avatarMap map[string]string
 }
@@ -100,7 +100,7 @@ func (b *Bmattermost) Connect() error {
 		go b.handleMatter()
 	}
 	if b.Config.WebhookBindAddress == "" && b.Config.WebhookURL == "" && b.Config.Login == "" && b.Config.Token == "" {
-		return errors.New("No connection method found. See that you have WebhookBindAddress, WebhookURL or Token/Login/Password/Server/Team configured.")
+		return errors.New("no connection method found. See that you have WebhookBindAddress, WebhookURL or Token/Login/Password/Server/Team configured")
 	}
 	return nil
 }
@@ -274,7 +274,7 @@ func (b *Bmattermost) apiLogin() error {
 		return err
 	}
 	flog.Info("Connection succeeded")
-	b.TeamId = b.mc.GetTeamId()
+	b.TeamID = b.mc.GetTeamId()
 	go b.mc.WsReceiver()
 	go b.mc.StatusLoop()
 	return nil
@@ -327,7 +327,7 @@ func (b *Bmattermost) handleDownloadFile(rmsg *config.Message, id string) error 
 	if resp.Error != nil {
 		return resp.Error
 	}
-	err := helper.HandleDownloadSize(flog, rmsg, finfo.Name, int64(finfo.Size), b.General)
+	err := helper.HandleDownloadSize(flog, rmsg, finfo.Name, finfo.Size, b.General)
 	if err != nil {
 		return err
 	}
@@ -436,7 +436,7 @@ func (b *Bmattermost) skipMessage(message *matterclient.Message) bool {
 	}
 
 	// ignore messages from other teams than ours
-	if message.Raw.Data["team_id"].(string) != b.TeamId {
+	if message.Raw.Data["team_id"].(string) != b.TeamID {
 		return true
 	}
 
