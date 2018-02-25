@@ -6,11 +6,11 @@ import (
 	"html"
 )
 
-type customHtml struct {
+type customHTML struct {
 	blackfriday.Renderer
 }
 
-func (options *customHtml) Paragraph(out *bytes.Buffer, text func() bool) {
+func (options *customHTML) Paragraph(out *bytes.Buffer, text func() bool) {
 	marker := out.Len()
 
 	if !text() {
@@ -20,32 +20,32 @@ func (options *customHtml) Paragraph(out *bytes.Buffer, text func() bool) {
 	out.WriteString("\n")
 }
 
-func (options *customHtml) BlockCode(out *bytes.Buffer, text []byte, lang string) {
+func (options *customHTML) BlockCode(out *bytes.Buffer, text []byte, lang string) {
 	out.WriteString("<pre>")
 
 	out.WriteString(html.EscapeString(string(text)))
 	out.WriteString("</pre>\n")
 }
 
-func (options *customHtml) Header(out *bytes.Buffer, text func() bool, level int, id string) {
+func (options *customHTML) Header(out *bytes.Buffer, text func() bool, level int, id string) {
 	options.Paragraph(out, text)
 }
 
-func (options *customHtml) HRule(out *bytes.Buffer) {
+func (options *customHTML) HRule(out *bytes.Buffer) {
 	out.WriteByte('\n')
 }
 
-func (options *customHtml) BlockQuote(out *bytes.Buffer, text []byte) {
+func (options *customHTML) BlockQuote(out *bytes.Buffer, text []byte) {
 	out.WriteString("> ")
 	out.Write(text)
 	out.WriteByte('\n')
 }
 
-func (options *customHtml) List(out *bytes.Buffer, text func() bool, flags int) {
+func (options *customHTML) List(out *bytes.Buffer, text func() bool, flags int) {
 	options.Paragraph(out, text)
 }
 
-func (options *customHtml) ListItem(out *bytes.Buffer, text []byte, flags int) {
+func (options *customHTML) ListItem(out *bytes.Buffer, text []byte, flags int) {
 	out.WriteString("- ")
 	out.Write(text)
 	out.WriteByte('\n')
@@ -53,7 +53,7 @@ func (options *customHtml) ListItem(out *bytes.Buffer, text []byte, flags int) {
 
 func makeHTML(input string) string {
 	return string(blackfriday.Markdown([]byte(input),
-		&customHtml{blackfriday.HtmlRenderer(blackfriday.HTML_USE_XHTML|blackfriday.HTML_SKIP_IMAGES, "", "")},
+		&customHTML{blackfriday.HtmlRenderer(blackfriday.HTML_USE_XHTML|blackfriday.HTML_SKIP_IMAGES, "", "")},
 		blackfriday.EXTENSION_NO_INTRA_EMPHASIS|
 			blackfriday.EXTENSION_FENCED_CODE|
 			blackfriday.EXTENSION_AUTOLINK|
