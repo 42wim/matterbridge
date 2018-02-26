@@ -4,13 +4,26 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/42wim/matterbridge/bridge"
+	"github.com/42wim/matterbridge/bridge/api"
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/discord"
+	"github.com/42wim/matterbridge/bridge/gitter"
+	"github.com/42wim/matterbridge/bridge/irc"
+	"github.com/42wim/matterbridge/bridge/matrix"
+	"github.com/42wim/matterbridge/bridge/mattermost"
+	"github.com/42wim/matterbridge/bridge/rocketchat"
+	"github.com/42wim/matterbridge/bridge/slack"
+	"github.com/42wim/matterbridge/bridge/sshchat"
+	"github.com/42wim/matterbridge/bridge/steam"
+	"github.com/42wim/matterbridge/bridge/telegram"
+	"github.com/42wim/matterbridge/bridge/xmpp"
 	log "github.com/sirupsen/logrus"
 	//	"github.com/davecgh/go-spew/spew"
 	"crypto/sha1"
 	"github.com/hashicorp/golang-lru"
 	"github.com/peterhellberg/emojilib"
 	"net/http"
+	"reflect"
 	"regexp"
 	"strings"
 	"time"
@@ -36,6 +49,21 @@ type BrMsgID struct {
 
 var flog *log.Entry
 
+var bridgeMap = map[string]bridge.Factory{
+	"mattermost": bmattermost.New,
+	"irc":        birc.New,
+	"gitter":     bgitter.New,
+	"matrix":     bmatrix.New,
+	"slack":      bslack.New,
+	"api":        api.New,
+	"telegram":   btelegram.New,
+	"discord":    bdiscord.New,
+	"steam":      bsteam.New,
+	"sshchat":    bsshchat.New,
+	"rocketchat": brocketchat.New,
+	"xmpp":       bxmpp.New,
+}
+
 func init() {
 	flog = log.WithFields(log.Fields{"prefix": "gateway"})
 }
@@ -52,7 +80,17 @@ func New(cfg config.Gateway, r *Router) *Gateway {
 func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 	br := gw.Router.getBridge(cfg.Account)
 	if br == nil {
-		br = bridge.New(gw.Config, cfg, gw.Message)
+		br = bridge.New(cfg)
+		// set logging
+		br.Log = log.WithFields(log.Fields{"prefix": "bridge"})
+		// get the protocol configuration (eg irc)
+		pcfg := getField(gw.Config, strings.Title(br.Protocol))
+		// get the config for this name (eg freenode, from irc.freenode)
+		br.Config = pcfg[br.Name]
+		// create the bridge config
+		brconfig := &config.BridgeConfig{General: &gw.Config.General, Account: br.Account, Remote: gw.Message, Config: br.Config, Log: log.WithFields(log.Fields{"prefix": br.Protocol})}
+		// add the actual bridger for this protocol to this bridge using the bridgeMap
+		br.Bridger = bridgeMap[br.Protocol](brconfig)
 	}
 	gw.mapChannelsToBridge(br)
 	gw.Bridges[cfg.Account] = br
@@ -411,4 +449,12 @@ func (gw *Gateway) validGatewayDest(msg *config.Message, channel *config.Channel
 
 func isApi(account string) bool {
 	return strings.HasPrefix(account, "api.")
+}
+
+//getField returns the Protocol configuration for a specific protocol (field)
+func getField(cfg *config.Config, field string) map[string]config.Protocol {
+	r := reflect.ValueOf(cfg)
+	f := reflect.Indirect(r).FieldByName(field)
+	i := f.Interface()
+	return i.(map[string]config.Protocol)
 }

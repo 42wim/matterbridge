@@ -2,10 +2,10 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	log "github.com/sirupsen/logrus"
 	"github.com/zfjagann/golang-ring"
 	"net/http"
 	"sync"
@@ -26,14 +26,7 @@ type ApiMessage struct {
 	Gateway  string `json:"gateway"`
 }
 
-var flog *log.Entry
-var protocol = "api"
-
-func init() {
-	flog = log.WithFields(log.Fields{"prefix": protocol})
-}
-
-func New(cfg *config.BridgeConfig) *Api {
+func New(cfg *config.BridgeConfig) bridge.Bridger {
 	b := &Api{BridgeConfig: cfg}
 	e := echo.New()
 	e.HideBanner = true
@@ -50,10 +43,10 @@ func New(cfg *config.BridgeConfig) *Api {
 	e.POST("/api/message", b.handlePostMessage)
 	go func() {
 		if b.Config.BindAddress == "" {
-			flog.Fatalf("No BindAddress configured.")
+			b.Log.Fatalf("No BindAddress configured.")
 		}
-		flog.Infof("Listening on %s", b.Config.BindAddress)
-		flog.Fatal(e.Start(b.Config.BindAddress))
+		b.Log.Infof("Listening on %s", b.Config.BindAddress)
+		b.Log.Fatal(e.Start(b.Config.BindAddress))
 	}()
 	return b
 }
@@ -92,7 +85,7 @@ func (b *Api) handlePostMessage(c echo.Context) error {
 	message.Account = b.Account
 	message.ID = ""
 	message.Timestamp = time.Now()
-	flog.Debugf("Sending message from %s on %s to gateway", message.Username, "api")
+	b.Log.Debugf("Sending message from %s on %s to gateway", message.Username, "api")
 	b.Remote <- message
 	return c.JSON(http.StatusOK, message)
 }

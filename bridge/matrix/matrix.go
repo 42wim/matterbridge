@@ -3,10 +3,10 @@ package bmatrix
 import (
 	"bytes"
 	"fmt"
+	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	matrix "github.com/matterbridge/gomatrix"
-	log "github.com/sirupsen/logrus"
 	"mime"
 	"regexp"
 	"strings"
@@ -21,14 +21,7 @@ type Bmatrix struct {
 	*config.BridgeConfig
 }
 
-var flog *log.Entry
-var protocol = "matrix"
-
-func init() {
-	flog = log.WithFields(log.Fields{"prefix": protocol})
-}
-
-func New(cfg *config.BridgeConfig) *Bmatrix {
+func New(cfg *config.BridgeConfig) bridge.Bridger {
 	b := &Bmatrix{BridgeConfig: cfg}
 	b.RoomMap = make(map[string]string)
 	return b
@@ -36,7 +29,7 @@ func New(cfg *config.BridgeConfig) *Bmatrix {
 
 func (b *Bmatrix) Connect() error {
 	var err error
-	flog.Infof("Connecting %s", b.Config.Server)
+	b.Log.Infof("Connecting %s", b.Config.Server)
 	b.mc, err = matrix.NewClient(b.Config.Server, "", "")
 	if err != nil {
 		return err
@@ -51,7 +44,7 @@ func (b *Bmatrix) Connect() error {
 	}
 	b.mc.SetCredentials(resp.UserID, resp.AccessToken)
 	b.UserID = resp.UserID
-	flog.Info("Connection succeeded")
+	b.Log.Info("Connection succeeded")
 	go b.handlematrix()
 	return nil
 }
@@ -72,10 +65,10 @@ func (b *Bmatrix) JoinChannel(channel config.ChannelInfo) error {
 }
 
 func (b *Bmatrix) Send(msg config.Message) (string, error) {
-	flog.Debugf("Receiving %#v", msg)
+	b.Log.Debugf("Receiving %#v", msg)
 
 	channel := b.getRoomID(msg.Channel)
-	flog.Debugf("Channel %s maps to channel id %s", msg.Channel, channel)
+	b.Log.Debugf("Channel %s maps to channel id %s", msg.Channel, channel)
 
 	// Make a action /me of the message
 	if msg.Event == config.EVENT_USER_ACTION {
@@ -139,7 +132,7 @@ func (b *Bmatrix) handlematrix() error {
 	go func() {
 		for {
 			if err := b.mc.Sync(); err != nil {
-				flog.Println("Sync() returned ", err)
+				b.Log.Println("Sync() returned ", err)
 			}
 		}
 	}()
@@ -147,13 +140,13 @@ func (b *Bmatrix) handlematrix() error {
 }
 
 func (b *Bmatrix) handleEvent(ev *matrix.Event) {
-	flog.Debugf("Received: %#v", ev)
+	b.Log.Debugf("Received: %#v", ev)
 	if ev.Sender != b.UserID {
 		b.RLock()
 		channel, ok := b.RoomMap[ev.RoomID]
 		b.RUnlock()
 		if !ok {
-			flog.Debugf("Unknown room %s", ev.RoomID)
+			b.Log.Debugf("Unknown room %s", ev.RoomID)
 			return
 		}
 
@@ -164,7 +157,7 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 
 		// Text must be a string
 		if rmsg.Text, ok = ev.Content["body"].(string); !ok {
-			flog.Errorf("Content[body] wasn't a %T ?", rmsg.Text)
+			b.Log.Errorf("Content[body] wasn't a %T ?", rmsg.Text)
 			return
 		}
 
@@ -192,11 +185,11 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 		if b.containsAttachment(ev.Content) {
 			err := b.handleDownloadFile(&rmsg, ev.Content)
 			if err != nil {
-				flog.Errorf("download failed: %#v", err)
+				b.Log.Errorf("download failed: %#v", err)
 			}
 		}
 
-		flog.Debugf("Sending message from %s on %s to gateway", ev.Sender, b.Account)
+		b.Log.Debugf("Sending message from %s on %s to gateway", ev.Sender, b.Account)
 		b.Remote <- rmsg
 	}
 }
@@ -246,7 +239,7 @@ func (b *Bmatrix) handleDownloadFile(rmsg *config.Message, content map[string]in
 	}
 
 	// check if the size is ok
-	err := helper.HandleDownloadSize(flog, rmsg, name, int64(size), b.General)
+	err := helper.HandleDownloadSize(b.Log, rmsg, name, int64(size), b.General)
 	if err != nil {
 		return err
 	}
@@ -256,7 +249,7 @@ func (b *Bmatrix) handleDownloadFile(rmsg *config.Message, content map[string]in
 		return fmt.Errorf("download %s failed %#v", url, err)
 	}
 	// add the downloaded data to the message
-	helper.HandleDownloadData(flog, rmsg, name, "", url, data, b.General)
+	helper.HandleDownloadData(b.Log, rmsg, name, "", url, data, b.General)
 	return nil
 }
 
@@ -272,30 +265,30 @@ func (b *Bmatrix) handleUploadFile(msg *config.Message, channel string) (string,
 			if fi.Comment != "" {
 				_, err := b.mc.SendText(channel, msg.Username+fi.Comment)
 				if err != nil {
-					flog.Errorf("file comment failed: %#v", err)
+					b.Log.Errorf("file comment failed: %#v", err)
 				}
 			}
-			flog.Debugf("uploading file: %s %s", fi.Name, mtype)
+			b.Log.Debugf("uploading file: %s %s", fi.Name, mtype)
 			res, err := b.mc.UploadToContentRepo(content, mtype, int64(len(*fi.Data)))
 			if err != nil {
-				flog.Errorf("file upload failed: %#v", err)
+				b.Log.Errorf("file upload failed: %#v", err)
 				continue
 			}
 			if strings.Contains(mtype, "video") {
-				flog.Debugf("sendVideo %s", res.ContentURI)
+				b.Log.Debugf("sendVideo %s", res.ContentURI)
 				_, err = b.mc.SendVideo(channel, fi.Name, res.ContentURI)
 				if err != nil {
-					flog.Errorf("sendVideo failed: %#v", err)
+					b.Log.Errorf("sendVideo failed: %#v", err)
 				}
 			}
 			if strings.Contains(mtype, "image") {
-				flog.Debugf("sendImage %s", res.ContentURI)
+				b.Log.Debugf("sendImage %s", res.ContentURI)
 				_, err = b.mc.SendImage(channel, fi.Name, res.ContentURI)
 				if err != nil {
-					flog.Errorf("sendImage failed: %#v", err)
+					b.Log.Errorf("sendImage failed: %#v", err)
 				}
 			}
-			flog.Debugf("result: %#v", res)
+			b.Log.Debugf("result: %#v", res)
 		}
 	}
 	return "", nil

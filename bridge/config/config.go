@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/BurntSushi/toml"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"reflect"
 	"strings"
@@ -143,7 +143,7 @@ type SameChannelGateway struct {
 
 type Config struct {
 	Api                map[string]Protocol
-	IRC                map[string]Protocol
+	Irc                map[string]Protocol
 	Mattermost         map[string]Protocol
 	Matrix             map[string]Protocol
 	Slack              map[string]Protocol
@@ -164,6 +164,7 @@ type BridgeConfig struct {
 	General *Protocol
 	Account string
 	Remote  chan Message
+	Log     *log.Entry
 }
 
 func NewConfig(cfgfile string) *Config {

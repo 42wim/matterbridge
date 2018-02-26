@@ -2,11 +2,11 @@ package bxmpp
 
 import (
 	"crypto/tls"
+	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/jpillora/backoff"
 	"github.com/mattn/go-xmpp"
-	log "github.com/sirupsen/logrus"
 	"strings"
 	"time"
 )
@@ -17,14 +17,7 @@ type Bxmpp struct {
 	*config.BridgeConfig
 }
 
-var flog *log.Entry
-var protocol = "xmpp"
-
-func init() {
-	flog = log.WithFields(log.Fields{"prefix": protocol})
-}
-
-func New(cfg *config.BridgeConfig) *Bxmpp {
+func New(cfg *config.BridgeConfig) bridge.Bridger {
 	b := &Bxmpp{BridgeConfig: cfg}
 	b.xmppMap = make(map[string]string)
 	return b
@@ -32,13 +25,13 @@ func New(cfg *config.BridgeConfig) *Bxmpp {
 
 func (b *Bxmpp) Connect() error {
 	var err error
-	flog.Infof("Connecting %s", b.Config.Server)
+	b.Log.Infof("Connecting %s", b.Config.Server)
 	b.xc, err = b.createXMPP()
 	if err != nil {
-		flog.Debugf("%#v", err)
+		b.Log.Debugf("%#v", err)
 		return err
 	}
-	flog.Info("Connection succeeded")
+	b.Log.Info("Connection succeeded")
 	go func() {
 		initial := true
 		bf := &backoff.Backoff{
@@ -52,7 +45,7 @@ func (b *Bxmpp) Connect() error {
 				initial = false
 			}
 			d := bf.Duration()
-			flog.Infof("Disconnected. Reconnecting in %s", d)
+			b.Log.Infof("Disconnected. Reconnecting in %s", d)
 			time.Sleep(d)
 			b.xc, err = b.createXMPP()
 			if err == nil {
@@ -79,7 +72,7 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 	if msg.Event == config.EVENT_MSG_DELETE {
 		return "", nil
 	}
-	flog.Debugf("Receiving %#v", msg)
+	b.Log.Debugf("Receiving %#v", msg)
 
 	// Upload a file (in xmpp case send the upload URL because xmpp has no native upload support)
 	if msg.Extra != nil {
@@ -131,10 +124,10 @@ func (b *Bxmpp) xmppKeepAlive() chan bool {
 		for {
 			select {
 			case <-ticker.C:
-				flog.Debugf("PING")
+				b.Log.Debugf("PING")
 				err := b.xc.PingC2S("", "")
 				if err != nil {
-					flog.Debugf("PING failed %#v", err)
+					b.Log.Debugf("PING failed %#v", err)
 				}
 			case <-done:
 				return
@@ -167,8 +160,8 @@ func (b *Bxmpp) handleXMPP() error {
 				if ok {
 					rmsg.Event = config.EVENT_USER_ACTION
 				}
-				flog.Debugf("Sending message from %s on %s to gateway", rmsg.Username, b.Account)
-				flog.Debugf("Message is %#v", rmsg)
+				b.Log.Debugf("Sending message from %s on %s to gateway", rmsg.Username, b.Account)
+				b.Log.Debugf("Message is %#v", rmsg)
 				b.Remote <- rmsg
 			}
 		case xmpp.Presence:

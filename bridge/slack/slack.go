@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/42wim/matterbridge/matterhook"
 	"github.com/nlopes/slack"
-	log "github.com/sirupsen/logrus"
 	"html"
 	"regexp"
 	"strings"
@@ -25,16 +25,9 @@ type Bslack struct {
 	*config.BridgeConfig
 }
 
-var flog *log.Entry
-var protocol = "slack"
+const messageDeleted = "message_deleted"
 
-const messageDeleted = "messsage_deleted"
-
-func init() {
-	flog = log.WithFields(log.Fields{"prefix": protocol})
-}
-
-func New(cfg *config.BridgeConfig) *Bslack {
+func New(cfg *config.BridgeConfig) bridge.Bridger {
 	return &Bslack{BridgeConfig: cfg}
 }
 
@@ -45,21 +38,21 @@ func (b *Bslack) Command(cmd string) string {
 func (b *Bslack) Connect() error {
 	if b.Config.WebhookBindAddress != "" {
 		if b.Config.WebhookURL != "" {
-			flog.Info("Connecting using webhookurl (sending) and webhookbindaddress (receiving)")
+			b.Log.Info("Connecting using webhookurl (sending) and webhookbindaddress (receiving)")
 			b.mh = matterhook.New(b.Config.WebhookURL,
 				matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
 					BindAddress: b.Config.WebhookBindAddress})
 		} else if b.Config.Token != "" {
-			flog.Info("Connecting using token (sending)")
+			b.Log.Info("Connecting using token (sending)")
 			b.sc = slack.New(b.Config.Token)
 			b.rtm = b.sc.NewRTM()
 			go b.rtm.ManageConnection()
-			flog.Info("Connecting using webhookbindaddress (receiving)")
+			b.Log.Info("Connecting using webhookbindaddress (receiving)")
 			b.mh = matterhook.New(b.Config.WebhookURL,
 				matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
 					BindAddress: b.Config.WebhookBindAddress})
 		} else {
-			flog.Info("Connecting using webhookbindaddress (receiving)")
+			b.Log.Info("Connecting using webhookbindaddress (receiving)")
 			b.mh = matterhook.New(b.Config.WebhookURL,
 				matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
 					BindAddress: b.Config.WebhookBindAddress})
@@ -68,19 +61,19 @@ func (b *Bslack) Connect() error {
 		return nil
 	}
 	if b.Config.WebhookURL != "" {
-		flog.Info("Connecting using webhookurl (sending)")
+		b.Log.Info("Connecting using webhookurl (sending)")
 		b.mh = matterhook.New(b.Config.WebhookURL,
 			matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
 				DisableServer: true})
 		if b.Config.Token != "" {
-			flog.Info("Connecting using token (receiving)")
+			b.Log.Info("Connecting using token (receiving)")
 			b.sc = slack.New(b.Config.Token)
 			b.rtm = b.sc.NewRTM()
 			go b.rtm.ManageConnection()
 			go b.handleSlack()
 		}
 	} else if b.Config.Token != "" {
-		flog.Info("Connecting using token (sending and receiving)")
+		b.Log.Info("Connecting using token (sending and receiving)")
 		b.sc = slack.New(b.Config.Token)
 		b.rtm = b.sc.NewRTM()
 		go b.rtm.ManageConnection()
@@ -115,7 +108,7 @@ func (b *Bslack) JoinChannel(channel config.ChannelInfo) error {
 }
 
 func (b *Bslack) Send(msg config.Message) (string, error) {
-	flog.Debugf("Receiving %#v", msg)
+	b.Log.Debugf("Receiving %#v", msg)
 
 	// Make a action /me of the message
 	if msg.Event == config.EVENT_USER_ACTION {
@@ -197,6 +190,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	}
 
 	// Post normal message
+	b.Log.Debugf("NP IS %#v", np)
 	_, id, err := b.sc.PostMessage(schannel.ID, msg.Text, np)
 	if err != nil {
 		return "", err
@@ -243,16 +237,16 @@ func (b *Bslack) getChannelByID(ID string) (*slack.Channel, error) {
 func (b *Bslack) handleSlack() {
 	messages := make(chan *config.Message)
 	if b.Config.WebhookBindAddress != "" {
-		flog.Debugf("Choosing webhooks based receiving")
+		b.Log.Debugf("Choosing webhooks based receiving")
 		go b.handleMatterHook(messages)
 	} else {
-		flog.Debugf("Choosing token based receiving")
+		b.Log.Debugf("Choosing token based receiving")
 		go b.handleSlackClient(messages)
 	}
 	time.Sleep(time.Second)
-	flog.Debug("Start listening for Slack messages")
+	b.Log.Debug("Start listening for Slack messages")
 	for message := range messages {
-		flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)
+		b.Log.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)
 
 		// cleanup the message
 		message.Text = b.replaceURL(message.Text)
@@ -264,7 +258,7 @@ func (b *Bslack) handleSlack() {
 		// Add the avatar
 		message.Avatar = b.getAvatar(message.Username)
 
-		flog.Debugf("Message is %#v", message)
+		b.Log.Debugf("Message is %#v", message)
 		b.Remote <- *message
 	}
 }
@@ -272,22 +266,22 @@ func (b *Bslack) handleSlack() {
 func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 	for msg := range b.rtm.IncomingEvents {
 		if msg.Type != "user_typing" && msg.Type != "latency_report" {
-			flog.Debugf("Receiving from slackclient %#v", msg.Data)
+			b.Log.Debugf("Receiving from slackclient %#v", msg.Data)
 		}
 		switch ev := msg.Data.(type) {
 		case *slack.MessageEvent:
 			if b.skipMessageEvent(ev) {
-				flog.Debugf("Skipped message: %#v", ev)
+				b.Log.Debugf("Skipped message: %#v", ev)
 				continue
 			}
 			rmsg, err := b.handleMessageEvent(ev)
 			if err != nil {
-				flog.Errorf("%#v", err)
+				b.Log.Errorf("%#v", err)
 				continue
 			}
 			messages <- rmsg
 		case *slack.OutgoingErrorEvent:
-			flog.Debugf("%#v", ev.Error())
+			b.Log.Debugf("%#v", ev.Error())
 		case *slack.ChannelJoinedEvent:
 			b.Users, _ = b.sc.GetUsers()
 		case *slack.ConnectedEvent:
@@ -303,9 +297,9 @@ func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 				b.channels = append(b.channels, *channel)
 			}
 		case *slack.InvalidAuthEvent:
-			flog.Fatalf("Invalid Token %#v", ev)
+			b.Log.Fatalf("Invalid Token %#v", ev)
 		case *slack.ConnectionErrorEvent:
-			flog.Errorf("Connection failed %#v %#v", ev.Error(), ev.ErrorObj)
+			b.Log.Errorf("Connection failed %#v %#v", ev.Error(), ev.ErrorObj)
 		default:
 		}
 	}
@@ -314,7 +308,7 @@ func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 func (b *Bslack) handleMatterHook(messages chan *config.Message) {
 	for {
 		message := b.mh.Receive()
-		flog.Debugf("receiving from matterhook (slack) %#v", message)
+		b.Log.Debugf("receiving from matterhook (slack) %#v", message)
 		if message.UserName == "slackbot" {
 			continue
 		}
@@ -403,7 +397,7 @@ func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File) erro
 		comment = results[0][1]
 	}
 
-	err := helper.HandleDownloadSize(flog, rmsg, file.Name, int64(file.Size), b.General)
+	err := helper.HandleDownloadSize(b.Log, rmsg, file.Name, int64(file.Size), b.General)
 	if err != nil {
 		return err
 	}
@@ -413,7 +407,7 @@ func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File) erro
 		return fmt.Errorf("download %s failed %#v", file.URLPrivateDownload, err)
 	}
 	// add the downloaded data to the message
-	helper.HandleDownloadData(flog, rmsg, file.Name, comment, file.URLPrivateDownload, data, b.General)
+	helper.HandleDownloadData(b.Log, rmsg, file.Name, comment, file.URLPrivateDownload, data, b.General)
 	return nil
 }
 
@@ -429,7 +423,7 @@ func (b *Bslack) handleUploadFile(msg *config.Message, channelID string) (string
 			InitialComment: fi.Comment,
 		})
 		if err != nil {
-			flog.Errorf("uploadfile %#v", err)
+			b.Log.Errorf("uploadfile %#v", err)
 		}
 	}
 	return "", nil
@@ -444,7 +438,7 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 
 	// Edit message
 	if !b.Config.EditDisable && ev.SubMessage != nil && ev.SubMessage.ThreadTimestamp != ev.SubMessage.Timestamp {
-		flog.Debugf("SubMessage %#v", ev.SubMessage)
+		b.Log.Debugf("SubMessage %#v", ev.SubMessage)
 		ev.User = ev.SubMessage.User
 		ev.Text = ev.SubMessage.Text + b.Config.EditSuffix
 	}
@@ -543,7 +537,7 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 	if ev.File != nil {
 		err := b.handleDownloadFile(&rmsg, ev.File)
 		if err != nil {
-			flog.Errorf("download failed: %s", err)
+			b.Log.Errorf("download failed: %s", err)
 		}
 	}
 
@@ -593,7 +587,7 @@ func (b *Bslack) sendWebhook(msg config.Message) (string, error) {
 	}
 	err := b.mh.Send(matterMessage)
 	if err != nil {
-		flog.Error(err)
+		b.Log.Error(err)
 		return "", err
 	}
 	return "", nil

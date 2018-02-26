@@ -3,11 +3,11 @@ package bmattermost
 import (
 	"errors"
 	"fmt"
+	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/42wim/matterbridge/matterclient"
 	"github.com/42wim/matterbridge/matterhook"
-	log "github.com/sirupsen/logrus"
 	"strings"
 )
 
@@ -19,14 +19,7 @@ type Bmattermost struct {
 	avatarMap map[string]string
 }
 
-var flog *log.Entry
-var protocol = "mattermost"
-
-func init() {
-	flog = log.WithFields(log.Fields{"prefix": protocol})
-}
-
-func New(cfg *config.BridgeConfig) *Bmattermost {
+func New(cfg *config.BridgeConfig) bridge.Bridger {
 	b := &Bmattermost{BridgeConfig: cfg, avatarMap: make(map[string]string)}
 	return b
 }
@@ -38,24 +31,24 @@ func (b *Bmattermost) Command(cmd string) string {
 func (b *Bmattermost) Connect() error {
 	if b.Config.WebhookBindAddress != "" {
 		if b.Config.WebhookURL != "" {
-			flog.Info("Connecting using webhookurl (sending) and webhookbindaddress (receiving)")
+			b.Log.Info("Connecting using webhookurl (sending) and webhookbindaddress (receiving)")
 			b.mh = matterhook.New(b.Config.WebhookURL,
 				matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
 					BindAddress: b.Config.WebhookBindAddress})
 		} else if b.Config.Token != "" {
-			flog.Info("Connecting using token (sending)")
+			b.Log.Info("Connecting using token (sending)")
 			err := b.apiLogin()
 			if err != nil {
 				return err
 			}
 		} else if b.Config.Login != "" {
-			flog.Info("Connecting using login/password (sending)")
+			b.Log.Info("Connecting using login/password (sending)")
 			err := b.apiLogin()
 			if err != nil {
 				return err
 			}
 		} else {
-			flog.Info("Connecting using webhookbindaddress (receiving)")
+			b.Log.Info("Connecting using webhookbindaddress (receiving)")
 			b.mh = matterhook.New(b.Config.WebhookURL,
 				matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
 					BindAddress: b.Config.WebhookBindAddress})
@@ -64,19 +57,19 @@ func (b *Bmattermost) Connect() error {
 		return nil
 	}
 	if b.Config.WebhookURL != "" {
-		flog.Info("Connecting using webhookurl (sending)")
+		b.Log.Info("Connecting using webhookurl (sending)")
 		b.mh = matterhook.New(b.Config.WebhookURL,
 			matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
 				DisableServer: true})
 		if b.Config.Token != "" {
-			flog.Info("Connecting using token (receiving)")
+			b.Log.Info("Connecting using token (receiving)")
 			err := b.apiLogin()
 			if err != nil {
 				return err
 			}
 			go b.handleMatter()
 		} else if b.Config.Login != "" {
-			flog.Info("Connecting using login/password (receiving)")
+			b.Log.Info("Connecting using login/password (receiving)")
 			err := b.apiLogin()
 			if err != nil {
 				return err
@@ -85,14 +78,14 @@ func (b *Bmattermost) Connect() error {
 		}
 		return nil
 	} else if b.Config.Token != "" {
-		flog.Info("Connecting using token (sending and receiving)")
+		b.Log.Info("Connecting using token (sending and receiving)")
 		err := b.apiLogin()
 		if err != nil {
 			return err
 		}
 		go b.handleMatter()
 	} else if b.Config.Login != "" {
-		flog.Info("Connecting using login/password (sending and receiving)")
+		b.Log.Info("Connecting using login/password (sending and receiving)")
 		err := b.apiLogin()
 		if err != nil {
 			return err
@@ -122,7 +115,7 @@ func (b *Bmattermost) JoinChannel(channel config.ChannelInfo) error {
 }
 
 func (b *Bmattermost) Send(msg config.Message) (string, error) {
-	flog.Debugf("Receiving %#v", msg)
+	b.Log.Debugf("Receiving %#v", msg)
 
 	// Make a action /me of the message
 	if msg.Event == config.EVENT_USER_ACTION {
@@ -174,13 +167,13 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 func (b *Bmattermost) handleMatter() {
 	messages := make(chan *config.Message)
 	if b.Config.WebhookBindAddress != "" {
-		flog.Debugf("Choosing webhooks based receiving")
+		b.Log.Debugf("Choosing webhooks based receiving")
 		go b.handleMatterHook(messages)
 	} else {
 		if b.Config.Token != "" {
-			flog.Debugf("Choosing token based receiving")
+			b.Log.Debugf("Choosing token based receiving")
 		} else {
-			flog.Debugf("Choosing login/password based receiving")
+			b.Log.Debugf("Choosing login/password based receiving")
 		}
 		go b.handleMatterClient(messages)
 	}
@@ -192,18 +185,18 @@ func (b *Bmattermost) handleMatter() {
 		if ok {
 			message.Event = config.EVENT_USER_ACTION
 		}
-		flog.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)
-		flog.Debugf("Message is %#v", message)
+		b.Log.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)
+		b.Log.Debugf("Message is %#v", message)
 		b.Remote <- *message
 	}
 }
 
 func (b *Bmattermost) handleMatterClient(messages chan *config.Message) {
 	for message := range b.mc.MessageChan {
-		flog.Debugf("%#v", message.Raw.Data)
+		b.Log.Debugf("%#v", message.Raw.Data)
 
 		if b.skipMessage(message) {
-			flog.Debugf("Skipped message: %#v", message)
+			b.Log.Debugf("Skipped message: %#v", message)
 			continue
 		}
 
@@ -212,7 +205,7 @@ func (b *Bmattermost) handleMatterClient(messages chan *config.Message) {
 			b.handleDownloadAvatar(message.UserID, message.Channel)
 		}
 
-		flog.Debugf("Receiving from matterclient %#v", message)
+		b.Log.Debugf("Receiving from matterclient %#v", message)
 
 		rmsg := &config.Message{Username: message.Username, UserID: message.UserID, Channel: message.Channel, Text: message.Text, ID: message.Post.Id, Extra: make(map[string][]interface{})}
 
@@ -240,7 +233,7 @@ func (b *Bmattermost) handleMatterClient(messages chan *config.Message) {
 			for _, id := range message.Post.FileIds {
 				err := b.handleDownloadFile(rmsg, id)
 				if err != nil {
-					flog.Errorf("download failed: %s", err)
+					b.Log.Errorf("download failed: %s", err)
 				}
 			}
 		}
@@ -251,7 +244,7 @@ func (b *Bmattermost) handleMatterClient(messages chan *config.Message) {
 func (b *Bmattermost) handleMatterHook(messages chan *config.Message) {
 	for {
 		message := b.mh.Receive()
-		flog.Debugf("Receiving from matterhook %#v", message)
+		b.Log.Debugf("Receiving from matterhook %#v", message)
 		messages <- &config.Message{UserID: message.UserID, Username: message.UserName, Text: message.Text, Channel: message.ChannelName}
 	}
 }
@@ -268,12 +261,12 @@ func (b *Bmattermost) apiLogin() error {
 	}
 	b.mc.SkipTLSVerify = b.Config.SkipTLSVerify
 	b.mc.NoTLS = b.Config.NoTLS
-	flog.Infof("Connecting %s (team: %s) on %s", b.Config.Login, b.Config.Team, b.Config.Server)
+	b.Log.Infof("Connecting %s (team: %s) on %s", b.Config.Login, b.Config.Team, b.Config.Server)
 	err := b.mc.Login()
 	if err != nil {
 		return err
 	}
-	flog.Info("Connection succeeded")
+	b.Log.Info("Connection succeeded")
 	b.TeamID = b.mc.GetTeamId()
 	go b.mc.WsReceiver()
 	go b.mc.StatusLoop()
@@ -293,7 +286,7 @@ func (b *Bmattermost) cacheAvatar(msg *config.Message) (string, error) {
 	/* if we have a sha we have successfully uploaded the file to the media server,
 	so we can now cache the sha */
 	if fi.SHA != "" {
-		flog.Debugf("Added %s to %s in avatarMap", fi.SHA, msg.UserID)
+		b.Log.Debugf("Added %s to %s in avatarMap", fi.SHA, msg.UserID)
 		b.avatarMap[msg.UserID] = fi.SHA
 	}
 	return "", nil
@@ -307,15 +300,15 @@ func (b *Bmattermost) handleDownloadAvatar(userid string, channel string) {
 	if _, ok := b.avatarMap[userid]; !ok {
 		data, resp := b.mc.Client.GetProfileImage(userid, "")
 		if resp.Error != nil {
-			flog.Errorf("ProfileImage download failed for %#v %s", userid, resp.Error)
+			b.Log.Errorf("ProfileImage download failed for %#v %s", userid, resp.Error)
 			return
 		}
-		err := helper.HandleDownloadSize(flog, &rmsg, userid+".png", int64(len(data)), b.General)
+		err := helper.HandleDownloadSize(b.Log, &rmsg, userid+".png", int64(len(data)), b.General)
 		if err != nil {
-			flog.Error(err)
+			b.Log.Error(err)
 			return
 		}
-		helper.HandleDownloadData(flog, &rmsg, userid+".png", rmsg.Text, "", &data, b.General)
+		helper.HandleDownloadData(b.Log, &rmsg, userid+".png", rmsg.Text, "", &data, b.General)
 		b.Remote <- rmsg
 	}
 }
@@ -327,7 +320,7 @@ func (b *Bmattermost) handleDownloadFile(rmsg *config.Message, id string) error 
 	if resp.Error != nil {
 		return resp.Error
 	}
-	err := helper.HandleDownloadSize(flog, rmsg, finfo.Name, finfo.Size, b.General)
+	err := helper.HandleDownloadSize(b.Log, rmsg, finfo.Name, finfo.Size, b.General)
 	if err != nil {
 		return err
 	}
@@ -335,7 +328,7 @@ func (b *Bmattermost) handleDownloadFile(rmsg *config.Message, id string) error 
 	if resp.Error != nil {
 		return resp.Error
 	}
-	helper.HandleDownloadData(flog, rmsg, finfo.Name, rmsg.Text, url, &data, b.General)
+	helper.HandleDownloadData(b.Log, rmsg, finfo.Name, rmsg.Text, url, &data, b.General)
 	return nil
 }
 
@@ -395,7 +388,7 @@ func (b *Bmattermost) sendWebhook(msg config.Message) (string, error) {
 	matterMessage.Props["matterbridge"] = true
 	err := b.mh.Send(matterMessage)
 	if err != nil {
-		flog.Info(err)
+		b.Log.Info(err)
 		return "", err
 	}
 	return "", nil
@@ -407,7 +400,7 @@ func (b *Bmattermost) skipMessage(message *matterclient.Message) bool {
 	if message.Type == "system_join_leave" ||
 		message.Type == "system_join_channel" ||
 		message.Type == "system_leave_channel" {
-		flog.Debugf("Sending JOIN_LEAVE event from %s to gateway", b.Account)
+		b.Log.Debugf("Sending JOIN_LEAVE event from %s to gateway", b.Account)
 		b.Remote <- config.Message{Username: "system", Text: message.Text, Channel: message.Channel, Account: b.Account, Event: config.EVENT_JOIN_LEAVE}
 		return true
 	}
@@ -420,7 +413,7 @@ func (b *Bmattermost) skipMessage(message *matterclient.Message) bool {
 	// Ignore messages sent from matterbridge
 	if message.Post.Props != nil {
 		if _, ok := message.Post.Props["matterbridge"].(bool); ok {
-			flog.Debugf("sent by matterbridge, ignoring")
+			b.Log.Debugf("sent by matterbridge, ignoring")
 			return true
 		}
 	}

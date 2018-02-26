@@ -2,10 +2,11 @@ package bsshchat
 
 import (
 	"bufio"
+	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	log "github.com/sirupsen/logrus"
 	"github.com/shazow/ssh-chat/sshd"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"strings"
 )
@@ -16,20 +17,13 @@ type Bsshchat struct {
 	*config.BridgeConfig
 }
 
-var flog *log.Entry
-var protocol = "sshchat"
-
-func init() {
-	flog = log.WithFields(log.Fields{"prefix": protocol})
-}
-
-func New(cfg *config.BridgeConfig) *Bsshchat {
+func New(cfg *config.BridgeConfig) bridge.Bridger {
 	return &Bsshchat{BridgeConfig: cfg}
 }
 
 func (b *Bsshchat) Connect() error {
 	var err error
-	flog.Infof("Connecting %s", b.Config.Server)
+	b.Log.Infof("Connecting %s", b.Config.Server)
 	go func() {
 		err = sshd.ConnectShell(b.Config.Server, b.Config.Nick, func(r io.Reader, w io.WriteCloser) error {
 			b.r = bufio.NewScanner(r)
@@ -41,10 +35,10 @@ func (b *Bsshchat) Connect() error {
 		})
 	}()
 	if err != nil {
-		flog.Debugf("%#v", err)
+		b.Log.Debugf("%#v", err)
 		return err
 	}
-	flog.Info("Connection succeeded")
+	b.Log.Info("Connection succeeded")
 	return nil
 }
 
@@ -61,7 +55,7 @@ func (b *Bsshchat) Send(msg config.Message) (string, error) {
 	if msg.Event == config.EVENT_MSG_DELETE {
 		return "", nil
 	}
-	flog.Debugf("Receiving %#v", msg)
+	b.Log.Debugf("Receiving %#v", msg)
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
 			b.w.Write([]byte(rmsg.Username + rmsg.Text + "\r\n"))
@@ -93,10 +87,10 @@ func (b *Bsshchat) sshchatKeepAlive() chan bool {
 		for {
 			select {
 			case <-ticker.C:
-				flog.Debugf("PING")
+				b.Log.Debugf("PING")
 				err := b.xc.PingC2S("", "")
 				if err != nil {
-					flog.Debugf("PING failed %#v", err)
+					b.Log.Debugf("PING failed %#v", err)
 				}
 			case <-done:
 				return
@@ -130,7 +124,7 @@ func (b *Bsshchat) handleSshChat() error {
 				continue
 			}
 			if !wait {
-				flog.Debugf("message %#v", res)
+				b.Log.Debugf("message %#v", res)
 				rmsg := config.Message{Username: res[0], Text: strings.Join(res[1:], ":"), Channel: "sshchat", Account: b.Account, UserID: "nick"}
 				b.Remote <- rmsg
 			}

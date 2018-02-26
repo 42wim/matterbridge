@@ -3,10 +3,10 @@ package bdiscord
 import (
 	"bytes"
 	"fmt"
+	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/bwmarrin/discordgo"
-	log "github.com/sirupsen/logrus"
 	"regexp"
 	"strings"
 	"sync"
@@ -26,19 +26,12 @@ type Bdiscord struct {
 	*config.BridgeConfig
 }
 
-var flog *log.Entry
-var protocol = "discord"
-
-func init() {
-	flog = log.WithFields(log.Fields{"prefix": protocol})
-}
-
-func New(cfg *config.BridgeConfig) *Bdiscord {
+func New(cfg *config.BridgeConfig) bridge.Bridger {
 	b := &Bdiscord{BridgeConfig: cfg}
 	b.userMemberMap = make(map[string]*discordgo.Member)
 	b.channelInfoMap = make(map[string]*config.ChannelInfo)
 	if b.Config.WebhookURL != "" {
-		flog.Debug("Configuring Discord Incoming Webhook")
+		b.Log.Debug("Configuring Discord Incoming Webhook")
 		b.webhookID, b.webhookToken = b.splitURL(b.Config.WebhookURL)
 	}
 	return b
@@ -46,11 +39,11 @@ func New(cfg *config.BridgeConfig) *Bdiscord {
 
 func (b *Bdiscord) Connect() error {
 	var err error
-	flog.Info("Connecting")
+	b.Log.Info("Connecting")
 	if b.Config.WebhookURL == "" {
-		flog.Info("Connecting using token")
+		b.Log.Info("Connecting using token")
 	} else {
-		flog.Info("Connecting using webhookurl (for posting) and token")
+		b.Log.Info("Connecting using webhookurl (for posting) and token")
 	}
 	if !strings.HasPrefix(b.Config.Token, "Bot ") {
 		b.Config.Token = "Bot " + b.Config.Token
@@ -59,7 +52,7 @@ func (b *Bdiscord) Connect() error {
 	if err != nil {
 		return err
 	}
-	flog.Info("Connection succeeded")
+	b.Log.Info("Connection succeeded")
 	b.c.AddHandler(b.messageCreate)
 	b.c.AddHandler(b.memberUpdate)
 	b.c.AddHandler(b.messageUpdate)
@@ -103,7 +96,7 @@ func (b *Bdiscord) JoinChannel(channel config.ChannelInfo) error {
 }
 
 func (b *Bdiscord) Send(msg config.Message) (string, error) {
-	flog.Debugf("Receiving %#v", msg)
+	b.Log.Debugf("Receiving %#v", msg)
 
 	channelID := b.getChannelID(msg.Channel)
 	if channelID == "" {
@@ -132,7 +125,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 		if msg.Event != "" {
 			return "", nil
 		}
-		flog.Debugf("Broadcasting using Webhook")
+		b.Log.Debugf("Broadcasting using Webhook")
 		err := b.c.WebhookExecute(
 			wID,
 			wToken,
@@ -145,7 +138,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 		return "", err
 	}
 
-	flog.Debugf("Broadcasting using token (API)")
+	b.Log.Debugf("Broadcasting using token (API)")
 
 	// Delete message
 	if msg.Event == config.EVENT_MSG_DELETE {
@@ -187,8 +180,8 @@ func (b *Bdiscord) messageDelete(s *discordgo.Session, m *discordgo.MessageDelet
 	if b.UseChannelID {
 		rmsg.Channel = "ID:" + m.ChannelID
 	}
-	flog.Debugf("Sending message from %s to gateway", b.Account)
-	flog.Debugf("Message is %#v", rmsg)
+	b.Log.Debugf("Sending message from %s to gateway", b.Account)
+	b.Log.Debugf("Message is %#v", rmsg)
 	b.Remote <- rmsg
 }
 
@@ -198,7 +191,7 @@ func (b *Bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdat
 	}
 	// only when message is actually edited
 	if m.Message.EditedTimestamp != "" {
-		flog.Debugf("Sending edit message")
+		b.Log.Debugf("Sending edit message")
 		m.Content = m.Content + b.Config.EditSuffix
 		b.messageCreate(s, (*discordgo.MessageCreate)(m))
 	}
@@ -226,12 +219,12 @@ func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	rmsg := config.Message{Account: b.Account, Avatar: "https://cdn.discordapp.com/avatars/" + m.Author.ID + "/" + m.Author.Avatar + ".jpg", UserID: m.Author.ID, ID: m.ID}
 
 	if m.Content != "" {
-		flog.Debugf("Receiving message %#v", m.Message)
+		b.Log.Debugf("Receiving message %#v", m.Message)
 		m.Message.Content = b.stripCustomoji(m.Message.Content)
 		m.Message.Content = b.replaceChannelMentions(m.Message.Content)
 		rmsg.Text, err = m.ContentWithMoreMentionsReplaced(b.c)
 		if err != nil {
-			flog.Errorf("ContentWithMoreMentionsReplaced failed: %s", err)
+			b.Log.Errorf("ContentWithMoreMentionsReplaced failed: %s", err)
 			rmsg.Text = m.ContentWithMentionsReplaced()
 		}
 	}
@@ -268,15 +261,15 @@ func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 		rmsg.Event = config.EVENT_USER_ACTION
 	}
 
-	flog.Debugf("Sending message from %s on %s to gateway", m.Author.Username, b.Account)
-	flog.Debugf("Message is %#v", rmsg)
+	b.Log.Debugf("Sending message from %s on %s to gateway", m.Author.Username, b.Account)
+	b.Log.Debugf("Message is %#v", rmsg)
 	b.Remote <- rmsg
 }
 
 func (b *Bdiscord) memberUpdate(s *discordgo.Session, m *discordgo.GuildMemberUpdate) {
 	b.Lock()
 	if _, ok := b.userMemberMap[m.Member.User.ID]; ok {
-		flog.Debugf("%s: memberupdate: user %s (nick %s) changes nick to %s", b.Account, m.Member.User.Username, b.userMemberMap[m.Member.User.ID].Nick, m.Member.Nick)
+		b.Log.Debugf("%s: memberupdate: user %s (nick %s) changes nick to %s", b.Account, m.Member.User.Username, b.userMemberMap[m.Member.User.ID].Nick, m.Member.Nick)
 	}
 	b.userMemberMap[m.Member.User.ID] = m.Member
 	b.Unlock()
@@ -367,7 +360,7 @@ func (b *Bdiscord) stripCustomoji(text string) string {
 func (b *Bdiscord) splitURL(url string) (string, string) {
 	webhookURLSplit := strings.Split(url, "/")
 	if len(webhookURLSplit) != 7 {
-		log.Fatalf("%s is no correct discord WebhookURL", url)
+		b.Log.Fatalf("%s is no correct discord WebhookURL", url)
 	}
 	return webhookURLSplit[len(webhookURLSplit)-2], webhookURLSplit[len(webhookURLSplit)-1]
 }

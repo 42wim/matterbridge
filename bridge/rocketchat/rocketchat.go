@@ -1,11 +1,11 @@
 package brocketchat
 
 import (
+	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/42wim/matterbridge/hook/rockethook"
 	"github.com/42wim/matterbridge/matterhook"
-	log "github.com/sirupsen/logrus"
 )
 
 type MMhook struct {
@@ -18,14 +18,7 @@ type Brocketchat struct {
 	*config.BridgeConfig
 }
 
-var flog *log.Entry
-var protocol = "rocketchat"
-
-func init() {
-	flog = log.WithFields(log.Fields{"prefix": protocol})
-}
-
-func New(cfg *config.BridgeConfig) *Brocketchat {
+func New(cfg *config.BridgeConfig) bridge.Bridger {
 	return &Brocketchat{BridgeConfig: cfg}
 }
 
@@ -34,7 +27,7 @@ func (b *Brocketchat) Command(cmd string) string {
 }
 
 func (b *Brocketchat) Connect() error {
-	flog.Info("Connecting webhooks")
+	b.Log.Info("Connecting webhooks")
 	b.mh = matterhook.New(b.Config.WebhookURL,
 		matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
 			DisableServer: true})
@@ -57,7 +50,7 @@ func (b *Brocketchat) Send(msg config.Message) (string, error) {
 	if msg.Event == config.EVENT_MSG_DELETE {
 		return "", nil
 	}
-	flog.Debugf("Receiving %#v", msg)
+	b.Log.Debugf("Receiving %#v", msg)
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
 			matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL, Channel: rmsg.Channel, UserName: rmsg.Username,
@@ -81,7 +74,7 @@ func (b *Brocketchat) Send(msg config.Message) (string, error) {
 	matterMessage.Text = msg.Text
 	err := b.mh.Send(matterMessage)
 	if err != nil {
-		flog.Info(err)
+		b.Log.Info(err)
 		return "", err
 	}
 	return "", nil
@@ -90,12 +83,12 @@ func (b *Brocketchat) Send(msg config.Message) (string, error) {
 func (b *Brocketchat) handleRocketHook() {
 	for {
 		message := b.rh.Receive()
-		flog.Debugf("Receiving from rockethook %#v", message)
+		b.Log.Debugf("Receiving from rockethook %#v", message)
 		// do not loop
 		if message.UserName == b.Config.Nick {
 			continue
 		}
-		flog.Debugf("Sending message from %s on %s to gateway", message.UserName, b.Account)
+		b.Log.Debugf("Sending message from %s on %s to gateway", message.UserName, b.Account)
 		b.Remote <- config.Message{Text: message.Text, Username: message.UserName, Channel: message.ChannelName, Account: b.Account, UserID: message.UserID}
 	}
 }

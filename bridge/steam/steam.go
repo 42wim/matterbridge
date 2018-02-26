@@ -2,11 +2,11 @@ package bsteam
 
 import (
 	"fmt"
+	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/Philipp15b/go-steam"
 	"github.com/Philipp15b/go-steam/protocol/steamlang"
 	"github.com/Philipp15b/go-steam/steamid"
-	log "github.com/sirupsen/logrus"
 	//"io/ioutil"
 	"strconv"
 	"sync"
@@ -21,14 +21,7 @@ type Bsteam struct {
 	*config.BridgeConfig
 }
 
-var flog *log.Entry
-var protocol = "steam"
-
-func init() {
-	flog = log.WithFields(log.Fields{"prefix": protocol})
-}
-
-func New(cfg *config.BridgeConfig) *Bsteam {
+func New(cfg *config.BridgeConfig) bridge.Bridger {
 	b := &Bsteam{BridgeConfig: cfg}
 	b.userMap = make(map[steamid.SteamId]string)
 	b.connected = make(chan struct{})
@@ -36,13 +29,13 @@ func New(cfg *config.BridgeConfig) *Bsteam {
 }
 
 func (b *Bsteam) Connect() error {
-	flog.Info("Connecting")
+	b.Log.Info("Connecting")
 	b.c = steam.NewClient()
 	go b.handleEvents()
 	go b.c.Connect()
 	select {
 	case <-b.connected:
-		flog.Info("Connection succeeded")
+		b.Log.Info("Connection succeeded")
 	case <-time.After(time.Second * 30):
 		return fmt.Errorf("connection timed out")
 	}
@@ -95,11 +88,11 @@ func (b *Bsteam) handleEvents() {
 	// Maybe works
 	//myLoginInfo.SentryFileHash, _ = ioutil.ReadFile("sentry")
 	for event := range b.c.Events() {
-		//flog.Info(event)
+		//b.Log.Info(event)
 		switch e := event.(type) {
 		case *steam.ChatMsgEvent:
-			flog.Debugf("Receiving ChatMsgEvent: %#v", e)
-			flog.Debugf("Sending message from %s on %s to gateway", b.getNick(e.ChatterId), b.Account)
+			b.Log.Debugf("Receiving ChatMsgEvent: %#v", e)
+			b.Log.Debugf("Sending message from %s on %s to gateway", b.getNick(e.ChatterId), b.Account)
 			var channel int64
 			if e.ChatRoomId == 0 {
 				channel = int64(e.ChatterId)
@@ -110,7 +103,7 @@ func (b *Bsteam) handleEvents() {
 			msg := config.Message{Username: b.getNick(e.ChatterId), Text: e.Message, Channel: strconv.FormatInt(channel, 10), Account: b.Account, UserID: strconv.FormatInt(int64(e.ChatterId), 10)}
 			b.Remote <- msg
 		case *steam.PersonaStateEvent:
-			flog.Debugf("PersonaStateEvent: %#v\n", e)
+			b.Log.Debugf("PersonaStateEvent: %#v\n", e)
 			b.Lock()
 			b.userMap[e.FriendId] = e.Name
 			b.Unlock()
@@ -118,47 +111,47 @@ func (b *Bsteam) handleEvents() {
 			b.c.Auth.LogOn(myLoginInfo)
 		case *steam.MachineAuthUpdateEvent:
 			/*
-				flog.Info("authupdate", e)
-				flog.Info("hash", e.Hash)
+				b.Log.Info("authupdate", e)
+				b.Log.Info("hash", e.Hash)
 				ioutil.WriteFile("sentry", e.Hash, 0666)
 			*/
 		case *steam.LogOnFailedEvent:
-			flog.Info("Logon failed", e)
+			b.Log.Info("Logon failed", e)
 			switch e.Result {
 			case steamlang.EResult_AccountLogonDeniedNeedTwoFactorCode:
 				{
-					flog.Info("Steam guard isn't letting me in! Enter 2FA code:")
+					b.Log.Info("Steam guard isn't letting me in! Enter 2FA code:")
 					var code string
 					fmt.Scanf("%s", &code)
 					myLoginInfo.TwoFactorCode = code
 				}
 			case steamlang.EResult_AccountLogonDenied:
 				{
-					flog.Info("Steam guard isn't letting me in! Enter auth code:")
+					b.Log.Info("Steam guard isn't letting me in! Enter auth code:")
 					var code string
 					fmt.Scanf("%s", &code)
 					myLoginInfo.AuthCode = code
 				}
 			default:
-				log.Errorf("LogOnFailedEvent: %#v ", e.Result)
+				b.Log.Errorf("LogOnFailedEvent: %#v ", e.Result)
 				// TODO: Handle EResult_InvalidLoginAuthCode
 				return
 			}
 		case *steam.LoggedOnEvent:
-			flog.Debugf("LoggedOnEvent: %#v", e)
+			b.Log.Debugf("LoggedOnEvent: %#v", e)
 			b.connected <- struct{}{}
-			flog.Debugf("setting online")
+			b.Log.Debugf("setting online")
 			b.c.Social.SetPersonaState(steamlang.EPersonaState_Online)
 		case *steam.DisconnectedEvent:
-			flog.Info("Disconnected")
-			flog.Info("Attempting to reconnect...")
+			b.Log.Info("Disconnected")
+			b.Log.Info("Attempting to reconnect...")
 			b.c.Connect()
 		case steam.FatalErrorEvent:
-			flog.Error(e)
+			b.Log.Error(e)
 		case error:
-			flog.Error(e)
+			b.Log.Error(e)
 		default:
-			flog.Debugf("unknown event %#v", e)
+			b.Log.Debugf("unknown event %#v", e)
 		}
 	}
 }
