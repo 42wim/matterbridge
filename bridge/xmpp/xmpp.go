@@ -4,10 +4,9 @@ import (
 	"crypto/tls"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	log "github.com/sirupsen/logrus"
 	"github.com/jpillora/backoff"
 	"github.com/mattn/go-xmpp"
-
+	log "github.com/sirupsen/logrus"
 	"strings"
 	"time"
 )
@@ -49,7 +48,7 @@ func (b *Bxmpp) Connect() error {
 		}
 		for {
 			if initial {
-				b.handleXmpp()
+				b.handleXMPP()
 				initial = false
 			}
 			d := bf.Duration()
@@ -58,7 +57,7 @@ func (b *Bxmpp) Connect() error {
 			b.xc, err = b.createXMPP()
 			if err == nil {
 				b.Remote <- config.Message{Username: "system", Text: "rejoin", Channel: "", Account: b.Account, Event: config.EVENT_REJOIN_CHANNELS}
-				b.handleXmpp()
+				b.handleXMPP()
 				bf.Reset()
 			}
 		}
@@ -81,26 +80,22 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 		return "", nil
 	}
 	flog.Debugf("Receiving %#v", msg)
+
+	// Upload a file (in xmpp case send the upload URL because xmpp has no native upload support)
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
 			b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: rmsg.Channel + "@" + b.Config.Muc, Text: rmsg.Username + rmsg.Text})
 		}
 		if len(msg.Extra["file"]) > 0 {
-			for _, f := range msg.Extra["file"] {
-				fi := f.(config.FileInfo)
-				if fi.Comment != "" {
-					msg.Text += fi.Comment + ": "
-				}
-				if fi.URL != "" {
-					msg.Text += fi.URL
-				}
-				b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.Config.Muc, Text: msg.Username + msg.Text})
-			}
-			return "", nil
+			return b.handleUploadFile(&msg)
 		}
 	}
 
-	b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.Config.Muc, Text: msg.Username + msg.Text})
+	// Post normal message
+	_, err := b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.Config.Muc, Text: msg.Username + msg.Text})
+	if err != nil {
+		return "", err
+	}
 	return "", nil
 }
 
@@ -116,14 +111,12 @@ func (b *Bxmpp) createXMPP() (*xmpp.Client, error) {
 		StartTLS:  true,
 		TLSConfig: tc,
 
-		//StartTLS:      false,
 		Debug:                        b.General.Debug,
 		Session:                      true,
 		Status:                       "",
 		StatusMessage:                "",
 		Resource:                     "",
 		InsecureAllowUnencryptedAuth: false,
-		//InsecureAllowUnencryptedAuth: true,
 	}
 	var err error
 	b.xc, err = options.NewClient()
@@ -151,11 +144,10 @@ func (b *Bxmpp) xmppKeepAlive() chan bool {
 	return done
 }
 
-func (b *Bxmpp) handleXmpp() error {
+func (b *Bxmpp) handleXMPP() error {
 	var ok bool
 	done := b.xmppKeepAlive()
 	defer close(done)
-	nodelay := time.Time{}
 	for {
 		m, err := b.xc.Recv()
 		if err != nil {
@@ -163,25 +155,21 @@ func (b *Bxmpp) handleXmpp() error {
 		}
 		switch v := m.(type) {
 		case xmpp.Chat:
-			var channel, nick string
 			if v.Type == "groupchat" {
-				s := strings.Split(v.Remote, "@")
-				if len(s) >= 2 {
-					channel = s[0]
+				// skip invalid messages
+				if b.skipMessage(v) {
+					continue
 				}
-				s = strings.Split(s[1], "/")
-				if len(s) == 2 {
-					nick = s[1]
+				rmsg := config.Message{Username: b.parseNick(v.Remote), Text: v.Text, Channel: b.parseChannel(v.Remote), Account: b.Account, UserID: v.Remote}
+
+				// check if we have an action event
+				rmsg.Text, ok = b.replaceAction(rmsg.Text)
+				if ok {
+					rmsg.Event = config.EVENT_USER_ACTION
 				}
-				if nick != b.Config.Nick && v.Stamp == nodelay && v.Text != "" && !strings.Contains(v.Text, "</subject>") {
-					rmsg := config.Message{Username: nick, Text: v.Text, Channel: channel, Account: b.Account, UserID: v.Remote}
-					rmsg.Text, ok = b.replaceAction(rmsg.Text)
-					if ok {
-						rmsg.Event = config.EVENT_USER_ACTION
-					}
-					flog.Debugf("Sending message from %s on %s to gateway", nick, b.Account)
-					b.Remote <- rmsg
-				}
+				flog.Debugf("Sending message from %s on %s to gateway", rmsg.Username, b.Account)
+				flog.Debugf("Message is %#v", rmsg)
+				b.Remote <- rmsg
 			}
 		case xmpp.Presence:
 			// do nothing
@@ -194,4 +182,66 @@ func (b *Bxmpp) replaceAction(text string) (string, bool) {
 		return strings.Replace(text, "/me ", "", -1), true
 	}
 	return text, false
+}
+
+// handleUploadFile handles native upload of files
+func (b *Bxmpp) handleUploadFile(msg *config.Message) (string, error) {
+	for _, f := range msg.Extra["file"] {
+		fi := f.(config.FileInfo)
+		if fi.Comment != "" {
+			msg.Text += fi.Comment + ": "
+		}
+		if fi.URL != "" {
+			msg.Text += fi.URL
+		}
+		_, err := b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.Config.Muc, Text: msg.Username + msg.Text})
+		if err != nil {
+			return "", err
+		}
+	}
+	return "", nil
+}
+
+func (b *Bxmpp) parseNick(remote string) string {
+	s := strings.Split(remote, "@")
+	if len(s) > 0 {
+		s = strings.Split(s[1], "/")
+		if len(s) == 2 {
+			return s[1] // nick
+		}
+	}
+	return ""
+}
+
+func (b *Bxmpp) parseChannel(remote string) string {
+	s := strings.Split(remote, "@")
+	if len(s) >= 2 {
+		return s[0] // channel
+	}
+	return ""
+}
+
+// skipMessage skips messages that need to be skipped
+func (b *Bxmpp) skipMessage(message xmpp.Chat) bool {
+	// skip messages from ourselves
+	if b.parseNick(message.Remote) == b.Config.Nick {
+		return true
+	}
+
+	// skip empty messages
+	if message.Text == "" {
+		return true
+	}
+
+	// skip subject messages
+	if strings.Contains(message.Text, "</subject>") {
+		return true
+	}
+
+	// skip delayed messages
+	t := time.Time{}
+	if message.Stamp == t {
+		return true
+	}
+	return false
 }
