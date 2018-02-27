@@ -6,7 +6,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/jpillora/backoff"
-	"github.com/mattn/go-xmpp"
+	"github.com/matterbridge/go-xmpp"
 	"strings"
 	"time"
 )
@@ -105,6 +105,7 @@ func (b *Bxmpp) createXMPP() (*xmpp.Client, error) {
 		TLSConfig: tc,
 
 		Debug:                        b.General.Debug,
+		Logger:                       b.Log.Writer(),
 		Session:                      true,
 		Status:                       "",
 		StatusMessage:                "",

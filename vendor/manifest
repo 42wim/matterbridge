@@ -287,6 +287,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/matterbridge/go-xmpp",
+			"repository": "https://github.com/matterbridge/go-xmpp",
+			"vcs": "git",
+			"revision": "0aa93db586ce719b8793aace600ddea0fdc7e828",
+			"branch": "work",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/matterbridge/gomatrix",
 			"repository": "https://github.com/matterbridge/gomatrix",
 			"vcs": "git",
@@ -424,14 +432,6 @@
 			"repository": "https://github.com/mattn/go-isatty",
 			"vcs": "git",
 			"revision": "dda3de49cbfcec471bd7a70e6cc01fcc3ff90109",
-			"branch": "master",
-			"notests": true
-		},
-		{
-			"importpath": "github.com/mattn/go-xmpp",
-			"repository": "https://github.com/mattn/go-xmpp",
-			"vcs": "git",
-			"revision": "d0cdb99fae16437f69616ccc40662b6fe8ac6d47",
 			"branch": "master",
 			"notests": true
 		},
