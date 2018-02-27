@@ -208,18 +208,9 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrMsgID {
 	var brMsgIDs []*BrMsgID
 
-	// TODO refactor
-	// only slack now, check will have to be done in the different bridges.
-	// we need to check if we can't use fallback or text in other bridges
+	// if we have an attached file, or other info
 	if msg.Extra != nil {
-		if dest.Protocol != "discord" &&
-			dest.Protocol != "slack" &&
-			dest.Protocol != "mattermost" &&
-			dest.Protocol != "telegram" &&
-			dest.Protocol != "matrix" &&
-			dest.Protocol != "xmpp" &&
-			dest.Protocol != "irc" &&
-			len(msg.Extra[config.EVENT_FILE_FAILURE_SIZE]) == 0 {
+		if len(msg.Extra[config.EVENT_FILE_FAILURE_SIZE]) == 0 {
 			if msg.Text == "" {
 				return brMsgIDs
 			}
@@ -233,10 +224,13 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			return brMsgIDs
 		}
 	}
-	// only relay join/part when configged
+
+	// only relay join/part when configured
 	if msg.Event == config.EVENT_JOIN_LEAVE && !gw.Bridges[dest.Account].Config.ShowJoinPart {
 		return brMsgIDs
 	}
+
+	// only relay topic change when configured
 	if msg.Event == config.EVENT_TOPIC_CHANGE && !gw.Bridges[dest.Account].Config.ShowTopicChange {
 		return brMsgIDs
 	}
@@ -246,6 +240,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		flog.Debug("empty channel")
 		return brMsgIDs
 	}
+
 	originchannel := msg.Channel
 	origmsg := msg
 	channels := gw.getDestChannel(&msg, *dest)
@@ -297,8 +292,10 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 	if _, ok := gw.Bridges[msg.Account]; !ok {
 		return true
 	}
+
+	// check if we need to ignore a empty message
 	if msg.Text == "" {
-		// we have an attachment or actual bytes
+		// we have an attachment or actual bytes, do not ignore
 		if msg.Extra != nil &&
 			(msg.Extra["attachments"] != nil ||
 				len(msg.Extra["file"]) > 0 ||
@@ -308,12 +305,16 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 		flog.Debugf("ignoring empty message %#v from %s", msg, msg.Account)
 		return true
 	}
+
+	// is the username in IgnoreNicks field
 	for _, entry := range strings.Fields(gw.Bridges[msg.Account].Config.IgnoreNicks) {
 		if msg.Username == entry {
 			flog.Debugf("ignoring %s from %s", msg.Username, msg.Account)
 			return true
 		}
 	}
+
+	// does the message match regex in IgnoreMessages field
 	// TODO do not compile regexps everytime
 	for _, entry := range strings.Fields(gw.Bridges[msg.Account].Config.IgnoreMessages) {
 		if entry != "" {
@@ -368,6 +369,7 @@ func (gw *Gateway) modifyUsername(msg config.Message, dest *bridge.Bridge) strin
 		}
 		nick = strings.Replace(nick, "{NOPINGNICK}", msg.Username[:i]+"​"+msg.Username[i:], -1)
 	}
+
 	nick = strings.Replace(nick, "{BRIDGE}", br.Name, -1)
 	nick = strings.Replace(nick, "{PROTOCOL}", br.Protocol, -1)
 	nick = strings.Replace(nick, "{LABEL}", br.Config.Label, -1)
@@ -390,6 +392,7 @@ func (gw *Gateway) modifyAvatar(msg config.Message, dest *bridge.Bridge) string 
 func (gw *Gateway) modifyMessage(msg *config.Message) {
 	// replace :emoji: to unicode
 	msg.Text = emojilib.Replace(msg.Text)
+
 	br := gw.Bridges[msg.Account]
 	// loop to replace messages
 	for _, outer := range br.Config.ReplaceMessages {
@@ -411,9 +414,12 @@ func (gw *Gateway) modifyMessage(msg *config.Message) {
 }
 
 func (gw *Gateway) handleFiles(msg *config.Message) {
+	// if we don't have a attachfield or we don't have a mediaserver configured return
 	if msg.Extra == nil || gw.Config.General.MediaServerUpload == "" {
 		return
 	}
+
+	// if we actually have files, start uploading them to the mediaserver
 	if len(msg.Extra["file"]) > 0 {
 		client := &http.Client{
 			Timeout: time.Second * 5,
@@ -441,16 +447,12 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 	}
 }
 
-func getChannelID(msg config.Message) string {
-	return msg.Channel + msg.Account
-}
-
 func (gw *Gateway) validGatewayDest(msg *config.Message, channel *config.ChannelInfo) bool {
 	return msg.Gateway == gw.Name
 }
 
-func isApi(account string) bool {
-	return strings.HasPrefix(account, "api.")
+func getChannelID(msg config.Message) string {
+	return msg.Channel + msg.Account
 }
 
 //getField returns the Protocol configuration for a specific protocol (field)
@@ -459,4 +461,8 @@ func getField(cfg *config.Config, field string) map[string]config.Protocol {
 	f := reflect.Indirect(r).FieldByName(field)
 	i := f.Interface()
 	return i.(map[string]config.Protocol)
+}
+
+func isApi(account string) bool {
+	return strings.HasPrefix(account, "api.")
 }

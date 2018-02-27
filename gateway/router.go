@@ -5,7 +5,6 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/gateway/samechannel"
-	//log "github.com/sirupsen/logrus"
 	//	"github.com/davecgh/go-spew/spew"
 	"time"
 )
@@ -17,10 +16,7 @@ type Router struct {
 }
 
 func NewRouter(cfg *config.Config) (*Router, error) {
-	r := &Router{}
-	r.Config = cfg
-	r.Message = make(chan config.Message)
-	r.Gateways = make(map[string]*Gateway)
+	r := &Router{Message: make(chan config.Message), Gateways: make(map[string]*Gateway), Config: cfg}
 	sgw := samechannelgateway.New(cfg)
 	gwconfigs := sgw.GetConfig()
 
