@@ -234,8 +234,5 @@ func (b *Bxmpp) skipMessage(message xmpp.Chat) bool {
 
 	// skip delayed messages
 	t := time.Time{}
-	if message.Stamp == t {
-		return true
-	}
-	return false
+	return message.Stamp == t
 }
