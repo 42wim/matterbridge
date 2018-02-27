@@ -81,6 +81,8 @@ func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 	br := gw.Router.getBridge(cfg.Account)
 	if br == nil {
 		br = bridge.New(cfg)
+		// override config from environment
+		config.OverrideCfgFromEnv(gw.Config, br.Protocol, br.Name)
 		// set logging
 		br.Log = log.WithFields(log.Fields{"prefix": "bridge"})
 		// get the protocol configuration (eg irc)

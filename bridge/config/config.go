@@ -225,7 +225,9 @@ func OverrideCfgFromEnv(cfg *Config, protocol string, account string) {
 				if res != "" {
 					fieldVal := protoStruct.Field(i)
 					if fieldVal.Kind() == reflect.String {
-						log.Printf("config: overriding %s from env with %s\n", key, res)
+						log.WithFields(log.Fields{
+							"prefix": "config",
+						}).Infof("overriding %s from env with %s\n", key, res)
 						fieldVal.Set(reflect.ValueOf(res))
 					}
 				}
