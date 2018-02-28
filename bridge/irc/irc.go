@@ -156,7 +156,7 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 		return "", nil
 	}
 
-	b.Log.Debugf("Receiving %#v", msg)
+	b.Log.Debugf("=> Receiving %#v", msg)
 
 	// Execute a command
 	if strings.HasPrefix(msg.Text, "!") {
@@ -289,9 +289,9 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 		}
 	}
 	if event.Source.Name != b.Nick {
-		b.Log.Debugf("Sending JOIN_LEAVE event from %s to gateway", b.Account)
+		b.Log.Debugf("<= Sending JOIN_LEAVE event from %s to gateway", b.Account)
 		msg := config.Message{Username: "system", Text: event.Source.Name + " " + strings.ToLower(event.Command) + "s", Channel: channel, Account: b.Account, Event: config.EVENT_JOIN_LEAVE}
-		b.Log.Debugf("Message is %#v", msg)
+		b.Log.Debugf("<= Message is %#v", msg)
 		b.Remote <- msg
 		return
 	}
@@ -352,7 +352,7 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 		return
 	}
 	rmsg := config.Message{Username: event.Source.Name, Channel: strings.ToLower(event.Params[0]), Account: b.Account, UserID: event.Source.Ident + "@" + event.Source.Host}
-	b.Log.Debugf("Receiving PRIVMSG: %s %s %#v", event.Source.Name, event.Trailing, event)
+	b.Log.Debugf("== Receiving PRIVMSG: %s %s %#v", event.Source.Name, event.Trailing, event)
 
 	// set action event
 	if event.IsAction() {
@@ -393,7 +393,7 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 	output, _ := ioutil.ReadAll(r)
 	rmsg.Text = string(output)
 
-	b.Log.Debugf("Sending message from %s on %s to gateway", event.Params[0], b.Account)
+	b.Log.Debugf("<= Sending message from %s on %s to gateway", event.Params[0], b.Account)
 	b.Remote <- rmsg
 }
 

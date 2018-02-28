@@ -55,7 +55,7 @@ func (b *Bsshchat) Send(msg config.Message) (string, error) {
 	if msg.Event == config.EVENT_MSG_DELETE {
 		return "", nil
 	}
-	b.Log.Debugf("Receiving %#v", msg)
+	b.Log.Debugf("=> Receiving %#v", msg)
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
 			b.w.Write([]byte(rmsg.Username + rmsg.Text + "\r\n"))
@@ -124,7 +124,7 @@ func (b *Bsshchat) handleSshChat() error {
 				continue
 			}
 			if !wait {
-				b.Log.Debugf("message %#v", res)
+				b.Log.Debugf("<= Message %#v", res)
 				rmsg := config.Message{Username: res[0], Text: strings.Join(res[1:], ":"), Channel: "sshchat", Account: b.Account, UserID: "nick"}
 				b.Remote <- rmsg
 			}

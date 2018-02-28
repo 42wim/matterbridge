@@ -256,7 +256,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 				continue
 			}
 		}
-		flog.Debugf("Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, originchannel, dest.Account, channel.Name)
+		flog.Debugf("=> Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, originchannel, dest.Account, channel.Name)
 		msg.Channel = channel.Name
 		msg.Avatar = gw.modifyAvatar(origmsg, dest)
 		msg.Username = gw.modifyUsername(origmsg, dest)
@@ -281,6 +281,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		}
 		// append the message ID (mID) from this bridge (dest) to our brMsgIDs slice
 		if mID != "" {
+			flog.Debugf("mID %s: %s", dest.Account, mID)
 			brMsgIDs = append(brMsgIDs, &BrMsgID{dest, mID, channel.ID})
 		}
 	}

@@ -50,7 +50,7 @@ func (b *Btelegram) JoinChannel(channel config.ChannelInfo) error {
 }
 
 func (b *Btelegram) Send(msg config.Message) (string, error) {
-	b.Log.Debugf("Receiving %#v", msg)
+	b.Log.Debugf("=> Receiving %#v", msg)
 
 	// get the chatid
 	chatid, err := strconv.ParseInt(msg.Channel, 10, 64)
@@ -119,7 +119,7 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 
 func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 	for update := range updates {
-		b.Log.Debugf("Receiving from telegram: %#v", update.Message)
+		b.Log.Debugf("== Receiving event: %#v", update.Message)
 
 		if update.Message == nil && update.ChannelPost == nil {
 			b.Log.Error("Getting nil messages, this shouldn't happen.")
@@ -226,8 +226,8 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		if rmsg.Text != "" || len(rmsg.Extra) > 0 {
 			rmsg.Avatar = helper.GetAvatar(b.avatarMap, strconv.Itoa(message.From.ID), b.General)
 
-			b.Log.Debugf("Sending message from %s on %s to gateway", rmsg.Username, b.Account)
-			b.Log.Debugf("Message is %#v", rmsg)
+			b.Log.Debugf("<= Sending message from %s on %s to gateway", rmsg.Username, b.Account)
+			b.Log.Debugf("<= Message is %#v", rmsg)
 			b.Remote <- rmsg
 		}
 	}

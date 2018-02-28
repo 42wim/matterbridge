@@ -96,7 +96,7 @@ func (b *Bdiscord) JoinChannel(channel config.ChannelInfo) error {
 }
 
 func (b *Bdiscord) Send(msg config.Message) (string, error) {
-	b.Log.Debugf("Receiving %#v", msg)
+	b.Log.Debugf("=> Receiving %#v", msg)
 
 	channelID := b.getChannelID(msg.Channel)
 	if channelID == "" {
@@ -180,8 +180,8 @@ func (b *Bdiscord) messageDelete(s *discordgo.Session, m *discordgo.MessageDelet
 	if b.UseChannelID {
 		rmsg.Channel = "ID:" + m.ChannelID
 	}
-	b.Log.Debugf("Sending message from %s to gateway", b.Account)
-	b.Log.Debugf("Message is %#v", rmsg)
+	b.Log.Debugf("<= Sending message from %s to gateway", b.Account)
+	b.Log.Debugf("<= Message is %#v", rmsg)
 	b.Remote <- rmsg
 }
 
@@ -219,7 +219,7 @@ func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	rmsg := config.Message{Account: b.Account, Avatar: "https://cdn.discordapp.com/avatars/" + m.Author.ID + "/" + m.Author.Avatar + ".jpg", UserID: m.Author.ID, ID: m.ID}
 
 	if m.Content != "" {
-		b.Log.Debugf("Receiving message %#v", m.Message)
+		b.Log.Debugf("== Receiving event %#v", m.Message)
 		m.Message.Content = b.stripCustomoji(m.Message.Content)
 		m.Message.Content = b.replaceChannelMentions(m.Message.Content)
 		rmsg.Text, err = m.ContentWithMoreMentionsReplaced(b.c)
@@ -261,8 +261,8 @@ func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 		rmsg.Event = config.EVENT_USER_ACTION
 	}
 
-	b.Log.Debugf("Sending message from %s on %s to gateway", m.Author.Username, b.Account)
-	b.Log.Debugf("Message is %#v", rmsg)
+	b.Log.Debugf("<= Sending message from %s on %s to gateway", m.Author.Username, b.Account)
+	b.Log.Debugf("<= Message is %#v", rmsg)
 	b.Remote <- rmsg
 }
 

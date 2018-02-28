@@ -115,7 +115,7 @@ func (b *Bmattermost) JoinChannel(channel config.ChannelInfo) error {
 }
 
 func (b *Bmattermost) Send(msg config.Message) (string, error) {
-	b.Log.Debugf("Receiving %#v", msg)
+	b.Log.Debugf("=> Receiving %#v", msg)
 
 	// Make a action /me of the message
 	if msg.Event == config.EVENT_USER_ACTION {
@@ -185,8 +185,8 @@ func (b *Bmattermost) handleMatter() {
 		if ok {
 			message.Event = config.EVENT_USER_ACTION
 		}
-		b.Log.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)
-		b.Log.Debugf("Message is %#v", message)
+		b.Log.Debugf("<= Sending message from %s on %s to gateway", message.Username, b.Account)
+		b.Log.Debugf("<= Message is %#v", message)
 		b.Remote <- *message
 	}
 }
@@ -205,7 +205,7 @@ func (b *Bmattermost) handleMatterClient(messages chan *config.Message) {
 			b.handleDownloadAvatar(message.UserID, message.Channel)
 		}
 
-		b.Log.Debugf("Receiving from matterclient %#v", message)
+		b.Log.Debugf("== Receiving event %#v", message)
 
 		rmsg := &config.Message{Username: message.Username, UserID: message.UserID, Channel: message.Channel, Text: message.Text, ID: message.Post.Id, Extra: make(map[string][]interface{})}
 

@@ -50,7 +50,7 @@ func (b *Brocketchat) Send(msg config.Message) (string, error) {
 	if msg.Event == config.EVENT_MSG_DELETE {
 		return "", nil
 	}
-	b.Log.Debugf("Receiving %#v", msg)
+	b.Log.Debugf("=> Receiving %#v", msg)
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
 			matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL, Channel: rmsg.Channel, UserName: rmsg.Username,
@@ -88,7 +88,7 @@ func (b *Brocketchat) handleRocketHook() {
 		if message.UserName == b.Config.Nick {
 			continue
 		}
-		b.Log.Debugf("Sending message from %s on %s to gateway", message.UserName, b.Account)
+		b.Log.Debugf("<= Sending message from %s on %s to gateway", message.UserName, b.Account)
 		b.Remote <- config.Message{Text: message.Text, Username: message.UserName, Channel: message.ChannelName, Account: b.Account, UserID: message.UserID}
 	}
 }

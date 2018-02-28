@@ -71,7 +71,7 @@ func (b *Bgitter) JoinChannel(channel config.ChannelInfo) error {
 			case *gitter.MessageReceived:
 				// ignore message sent from ourselves
 				if ev.Message.From.ID != b.User.ID {
-					b.Log.Debugf("Sending message from %s on %s to gateway", ev.Message.From.Username, b.Account)
+					b.Log.Debugf("<= Sending message from %s on %s to gateway", ev.Message.From.Username, b.Account)
 					rmsg := config.Message{Username: ev.Message.From.Username, Text: ev.Message.Text, Channel: room,
 						Account: b.Account, Avatar: b.getAvatar(ev.Message.From.Username), UserID: ev.Message.From.ID,
 						ID: ev.Message.ID}
@@ -79,7 +79,7 @@ func (b *Bgitter) JoinChannel(channel config.ChannelInfo) error {
 						rmsg.Event = config.EVENT_USER_ACTION
 						rmsg.Text = strings.Replace(rmsg.Text, "@"+ev.Message.From.Username+" ", "", -1)
 					}
-					b.Log.Debugf("Message is %#v", rmsg)
+					b.Log.Debugf("<= Message is %#v", rmsg)
 					b.Remote <- rmsg
 				}
 			case *gitter.GitterConnectionClosed:
@@ -91,7 +91,7 @@ func (b *Bgitter) JoinChannel(channel config.ChannelInfo) error {
 }
 
 func (b *Bgitter) Send(msg config.Message) (string, error) {
-	b.Log.Debugf("Receiving %#v", msg)
+	b.Log.Debugf("=> Receiving %#v", msg)
 	roomID := b.getRoomID(msg.Channel)
 	if roomID == "" {
 		b.Log.Errorf("Could not find roomID for %v", msg.Channel)

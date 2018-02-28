@@ -72,7 +72,7 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 	if msg.Event == config.EVENT_MSG_DELETE {
 		return "", nil
 	}
-	b.Log.Debugf("Receiving %#v", msg)
+	b.Log.Debugf("=> Receiving %#v", msg)
 
 	// Upload a file (in xmpp case send the upload URL because xmpp has no native upload support)
 	if msg.Extra != nil {
@@ -161,8 +161,8 @@ func (b *Bxmpp) handleXMPP() error {
 				if ok {
 					rmsg.Event = config.EVENT_USER_ACTION
 				}
-				b.Log.Debugf("Sending message from %s on %s to gateway", rmsg.Username, b.Account)
-				b.Log.Debugf("Message is %#v", rmsg)
+				b.Log.Debugf("<= Sending message from %s on %s to gateway", rmsg.Username, b.Account)
+				b.Log.Debugf("<= Message is %#v", rmsg)
 				b.Remote <- rmsg
 			}
 		case xmpp.Presence:

@@ -92,7 +92,7 @@ func (b *Bsteam) handleEvents() {
 		switch e := event.(type) {
 		case *steam.ChatMsgEvent:
 			b.Log.Debugf("Receiving ChatMsgEvent: %#v", e)
-			b.Log.Debugf("Sending message from %s on %s to gateway", b.getNick(e.ChatterId), b.Account)
+			b.Log.Debugf("<= Sending message from %s on %s to gateway", b.getNick(e.ChatterId), b.Account)
 			var channel int64
 			if e.ChatRoomId == 0 {
 				channel = int64(e.ChatterId)

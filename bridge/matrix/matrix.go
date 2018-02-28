@@ -65,7 +65,7 @@ func (b *Bmatrix) JoinChannel(channel config.ChannelInfo) error {
 }
 
 func (b *Bmatrix) Send(msg config.Message) (string, error) {
-	b.Log.Debugf("Receiving %#v", msg)
+	b.Log.Debugf("=> Receiving %#v", msg)
 
 	channel := b.getRoomID(msg.Channel)
 	b.Log.Debugf("Channel %s maps to channel id %s", msg.Channel, channel)
@@ -140,7 +140,7 @@ func (b *Bmatrix) handlematrix() error {
 }
 
 func (b *Bmatrix) handleEvent(ev *matrix.Event) {
-	b.Log.Debugf("Received: %#v", ev)
+	b.Log.Debugf("== Receiving event: %#v", ev)
 	if ev.Sender != b.UserID {
 		b.RLock()
 		channel, ok := b.RoomMap[ev.RoomID]
@@ -189,7 +189,7 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 			}
 		}
 
-		b.Log.Debugf("Sending message from %s on %s to gateway", ev.Sender, b.Account)
+		b.Log.Debugf("<= Sending message from %s on %s to gateway", ev.Sender, b.Account)
 		b.Remote <- rmsg
 	}
 }

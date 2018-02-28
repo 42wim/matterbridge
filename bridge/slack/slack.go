@@ -108,7 +108,7 @@ func (b *Bslack) JoinChannel(channel config.ChannelInfo) error {
 }
 
 func (b *Bslack) Send(msg config.Message) (string, error) {
-	b.Log.Debugf("Receiving %#v", msg)
+	b.Log.Debugf("=> Receiving %#v", msg)
 
 	// Make a action /me of the message
 	if msg.Event == config.EVENT_USER_ACTION {
@@ -190,7 +190,6 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	}
 
 	// Post normal message
-	b.Log.Debugf("NP IS %#v", np)
 	_, id, err := b.sc.PostMessage(schannel.ID, msg.Text, np)
 	if err != nil {
 		return "", err
@@ -246,7 +245,7 @@ func (b *Bslack) handleSlack() {
 	time.Sleep(time.Second)
 	b.Log.Debug("Start listening for Slack messages")
 	for message := range messages {
-		b.Log.Debugf("Sending message from %s on %s to gateway", message.Username, b.Account)
+		b.Log.Debugf("<= Sending message from %s on %s to gateway", message.Username, b.Account)
 
 		// cleanup the message
 		message.Text = b.replaceURL(message.Text)
@@ -258,7 +257,7 @@ func (b *Bslack) handleSlack() {
 		// Add the avatar
 		message.Avatar = b.getAvatar(message.Username)
 
-		b.Log.Debugf("Message is %#v", message)
+		b.Log.Debugf("<= Message is %#v", message)
 		b.Remote <- *message
 	}
 }
@@ -266,7 +265,7 @@ func (b *Bslack) handleSlack() {
 func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 	for msg := range b.rtm.IncomingEvents {
 		if msg.Type != "user_typing" && msg.Type != "latency_report" {
-			b.Log.Debugf("Receiving from slackclient %#v", msg.Data)
+			b.Log.Debugf("== Receiving event %#v", msg.Data)
 		}
 		switch ev := msg.Data.(type) {
 		case *slack.MessageEvent:
