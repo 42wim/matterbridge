@@ -1,6 +1,7 @@
 package btelegram
 
 import (
+	"html"
 	"regexp"
 	"strconv"
 	"strings"
@@ -83,7 +84,7 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 	// Upload a file if it exists
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			b.sendMessage(chatid, rmsg.Username+rmsg.Text)
+			b.sendMessage(chatid, rmsg.Username, rmsg.Text)
 		}
 		// check if we have files to upload (from slack, telegram or mattermost)
 		if len(msg.Extra["file"]) > 0 {
@@ -114,7 +115,7 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 	}
 
 	// Post normal message
-	return b.sendMessage(chatid, msg.Username+msg.Text)
+	return b.sendMessage(chatid, msg.Username, msg.Text)
 }
 
 func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
@@ -372,16 +373,19 @@ func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64) (string,
 			b.Log.Errorf("file upload failed: %#v", err)
 		}
 		if fi.Comment != "" {
-			b.sendMessage(chatid, msg.Username+fi.Comment)
+			b.sendMessage(chatid, msg.Username, fi.Comment)
 		}
 	}
 	return "", nil
 }
 
-func (b *Btelegram) sendMessage(chatid int64, text string) (string, error) {
-	m := tgbotapi.NewMessage(chatid, text)
+func (b *Btelegram) sendMessage(chatid int64, username, text string) (string, error) {
+	m := tgbotapi.NewMessage(chatid, "")
+	m.Text = username + text
 	if b.Config.MessageFormat == "HTML" {
 		b.Log.Debug("Using mode HTML")
+		username = html.EscapeString(username)
+		m.Text = username + text
 		m.ParseMode = tgbotapi.ModeHTML
 	}
 	if b.Config.MessageFormat == "Markdown" {
