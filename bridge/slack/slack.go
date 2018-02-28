@@ -16,12 +16,13 @@ import (
 )
 
 type Bslack struct {
-	mh       *matterhook.Client
-	sc       *slack.Client
-	rtm      *slack.RTM
-	Users    []slack.User
-	si       *slack.Info
-	channels []slack.Channel
+	mh         *matterhook.Client
+	sc         *slack.Client
+	rtm        *slack.RTM
+	Users      []slack.User
+	Usergroups []slack.UserGroup
+	si         *slack.Info
+	channels   []slack.Channel
 	*config.BridgeConfig
 }
 
@@ -283,10 +284,12 @@ func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 			b.Log.Debugf("%#v", ev.Error())
 		case *slack.ChannelJoinedEvent:
 			b.Users, _ = b.sc.GetUsers()
+			b.Usergroups, _ = b.sc.GetUserGroups()
 		case *slack.ConnectedEvent:
 			b.channels = ev.Info.Channels
 			b.si = ev.Info
 			b.Users, _ = b.sc.GetUsers()
+			b.Usergroups, _ = b.sc.GetUserGroups()
 			// add private channels
 			groups, _ := b.sc.GetGroups(true)
 			for _, g := range groups {
@@ -327,11 +330,23 @@ func (b *Bslack) userName(id string) string {
 	return ""
 }
 
+func (b *Bslack) userGroupName(id string) string {
+	for _, u := range b.Usergroups {
+		if u.ID == id {
+			return u.Name
+		}
+	}
+	return ""
+}
+
 // @see https://api.slack.com/docs/message-formatting#linking_to_channels_and_users
 func (b *Bslack) replaceMention(text string) string {
 	results := regexp.MustCompile(`<@([a-zA-z0-9]+)>`).FindAllStringSubmatch(text, -1)
 	for _, r := range results {
 		text = strings.Replace(text, "<@"+r[1]+">", "@"+b.userName(r[1]), -1)
+	}
+	for _, r := range results {
+		text = strings.Replace(text, "<@"+r[1]+">", "@"+b.userGroupName(r[1]), -1)
 	}
 	return text
 }
