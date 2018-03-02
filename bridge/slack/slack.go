@@ -345,9 +345,6 @@ func (b *Bslack) replaceMention(text string) string {
 	for _, r := range results {
 		text = strings.Replace(text, "<@"+r[1]+">", "@"+b.userName(r[1]), -1)
 	}
-	for _, r := range results {
-		text = strings.Replace(text, "<@"+r[1]+">", "@"+b.userGroupName(r[1]), -1)
-	}
 	return text
 }
 
@@ -362,9 +359,13 @@ func (b *Bslack) replaceChannel(text string) string {
 
 // @see https://api.slack.com/docs/message-formatting#variables
 func (b *Bslack) replaceVariable(text string) string {
-	results := regexp.MustCompile(`<!([a-zA-Z0-9]+)(\|.+?)?>`).FindAllStringSubmatch(text, -1)
+	results := regexp.MustCompile(`<!((?:subteam\^)?[a-zA-Z0-9]+)(?:\|(.+?))?>`).FindAllStringSubmatch(text, -1)
 	for _, r := range results {
-		text = strings.Replace(text, r[0], "@"+r[1], -1)
+		if r[2] != "" {
+			text = strings.Replace(text, r[0], "@"+r[2], -1)
+		} else {
+			text = strings.Replace(text, r[0], "@"+r[1], -1)
+		}
 	}
 	return text
 }
