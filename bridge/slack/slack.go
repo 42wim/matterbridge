@@ -330,6 +330,7 @@ func (b *Bslack) userName(id string) string {
 	return ""
 }
 
+/*
 func (b *Bslack) userGroupName(id string) string {
 	for _, u := range b.Usergroups {
 		if u.ID == id {
@@ -338,6 +339,7 @@ func (b *Bslack) userGroupName(id string) string {
 	}
 	return ""
 }
+*/
 
 // @see https://api.slack.com/docs/message-formatting#linking_to_channels_and_users
 func (b *Bslack) replaceMention(text string) string {
