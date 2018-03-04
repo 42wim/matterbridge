@@ -23,7 +23,6 @@ import (
 	"github.com/hashicorp/golang-lru"
 	"github.com/peterhellberg/emojilib"
 	"net/http"
-	"reflect"
 	"regexp"
 	"strings"
 	"time"
@@ -448,14 +447,6 @@ func (gw *Gateway) validGatewayDest(msg *config.Message, channel *config.Channel
 
 func getChannelID(msg config.Message) string {
 	return msg.Channel + msg.Account
-}
-
-//getField returns the Protocol configuration for a specific protocol (field)
-func getField(cfg *config.Config, field string) map[string]config.Protocol {
-	r := reflect.ValueOf(cfg)
-	f := reflect.Indirect(r).FieldByName(field)
-	i := f.Interface()
-	return i.(map[string]config.Protocol)
 }
 
 func isApi(account string) bool {

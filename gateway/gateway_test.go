@@ -3,14 +3,13 @@ package gateway
 import (
 	"fmt"
 	"github.com/42wim/matterbridge/bridge/config"
-	"github.com/BurntSushi/toml"
 	"github.com/stretchr/testify/assert"
 	"strconv"
 
 	"testing"
 )
 
-var testconfig = `
+var testconfig = []byte(`
 [irc.freenode]
 [mattermost.test]
 [gitter.42wim]
@@ -37,9 +36,9 @@ var testconfig = `
     [[gateway.inout]]
     account="slack.test"
     channel="testing"
-	`
+	`)
 
-var testconfig2 = `
+var testconfig2 = []byte(`
 [irc.freenode]
 [mattermost.test]
 [gitter.42wim]
@@ -80,8 +79,9 @@ var testconfig2 = `
     [[gateway.out]]
     account = "discord.test"
     channel = "general2"
-	`
-var testconfig3 = `
+	`)
+
+var testconfig3 = []byte(`
 [irc.zzz]
 [telegram.zzz]
 [slack.zzz]
@@ -149,13 +149,10 @@ enable=true
     [[gateway.inout]]
     account="telegram.zzz"
     channel="--333333333333"
-`
+`)
 
-func maketestRouter(input string) *Router {
-	var cfg *config.Config
-	if _, err := toml.Decode(input, &cfg); err != nil {
-		fmt.Println(err)
-	}
+func maketestRouter(input []byte) *Router {
+	cfg := config.NewConfigFromString(input)
 	r, err := NewRouter(cfg)
 	if err != nil {
 		fmt.Println(err)
@@ -163,14 +160,7 @@ func maketestRouter(input string) *Router {
 	return r
 }
 func TestNewRouter(t *testing.T) {
-	var cfg *config.Config
-	if _, err := toml.Decode(testconfig, &cfg); err != nil {
-		fmt.Println(err)
-	}
-	r, err := NewRouter(cfg)
-	if err != nil {
-		fmt.Println(err)
-	}
+	r := maketestRouter(testconfig)
 	assert.Equal(t, 1, len(r.Gateways))
 	assert.Equal(t, 4, len(r.Gateways["bridge1"].Bridges))
 	assert.Equal(t, 4, len(r.Gateways["bridge1"].Channels))

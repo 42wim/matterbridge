@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
@@ -188,6 +189,23 @@ func NewConfig(cfgfile string) *Config {
 	if cfg.General.MediaDownloadSize == 0 {
 		cfg.General.MediaDownloadSize = 1000000
 	}
+	mycfg.ConfigValues = &cfg
+	return mycfg
+}
+
+func NewConfigFromString(input []byte) *Config {
+	var cfg ConfigValues
+	viper.SetConfigType("toml")
+	err := viper.ReadConfig(bytes.NewBuffer(input))
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = viper.Unmarshal(&cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	mycfg := new(Config)
+	mycfg.v = viper.GetViper()
 	mycfg.ConfigValues = &cfg
 	return mycfg
 }
