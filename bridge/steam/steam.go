@@ -18,11 +18,11 @@ type Bsteam struct {
 	connected chan struct{}
 	userMap   map[steamid.SteamId]string
 	sync.RWMutex
-	*config.BridgeConfig
+	*bridge.Config
 }
 
-func New(cfg *config.BridgeConfig) bridge.Bridger {
-	b := &Bsteam{BridgeConfig: cfg}
+func New(cfg *bridge.Config) bridge.Bridger {
+	b := &Bsteam{Config: cfg}
 	b.userMap = make(map[steamid.SteamId]string)
 	b.connected = make(chan struct{})
 	return b
@@ -81,9 +81,9 @@ func (b *Bsteam) getNick(id steamid.SteamId) string {
 
 func (b *Bsteam) handleEvents() {
 	myLoginInfo := new(steam.LogOnDetails)
-	myLoginInfo.Username = b.Config.Login
-	myLoginInfo.Password = b.Config.Password
-	myLoginInfo.AuthCode = b.Config.AuthCode
+	myLoginInfo.Username = b.GetString("Login")
+	myLoginInfo.Password = b.GetString("Password")
+	myLoginInfo.AuthCode = b.GetString("AuthCode")
 	// Attempt to read existing auth hash to avoid steam guard.
 	// Maybe works
 	//myLoginInfo.SentryFileHash, _ = ioutil.ReadFile("sentry")

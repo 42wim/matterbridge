@@ -14,17 +14,17 @@ type Bgitter struct {
 	User  *gitter.User
 	Users []gitter.User
 	Rooms []gitter.Room
-	*config.BridgeConfig
+	*bridge.Config
 }
 
-func New(cfg *config.BridgeConfig) bridge.Bridger {
-	return &Bgitter{BridgeConfig: cfg}
+func New(cfg *bridge.Config) bridge.Bridger {
+	return &Bgitter{Config: cfg}
 }
 
 func (b *Bgitter) Connect() error {
 	var err error
 	b.Log.Info("Connecting")
-	b.c = gitter.New(b.Config.Token)
+	b.c = gitter.New(b.GetString("Token"))
 	b.User, err = b.c.GetUser()
 	if err != nil {
 		return err

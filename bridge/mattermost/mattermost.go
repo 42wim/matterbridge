@@ -15,12 +15,13 @@ type Bmattermost struct {
 	mh     *matterhook.Client
 	mc     *matterclient.MMClient
 	TeamID string
-	*config.BridgeConfig
+	*bridge.Config
 	avatarMap map[string]string
 }
 
-func New(cfg *config.BridgeConfig) bridge.Bridger {
-	b := &Bmattermost{BridgeConfig: cfg, avatarMap: make(map[string]string)}
+func New(cfg *bridge.Config) bridge.Bridger {
+	b := &Bmattermost{Config: cfg, avatarMap: make(map[string]string)}
+	b.Log.Debugf("MATTERMOST %#v", b.General)
 	return b
 }
 
@@ -29,19 +30,19 @@ func (b *Bmattermost) Command(cmd string) string {
 }
 
 func (b *Bmattermost) Connect() error {
-	if b.Config.WebhookBindAddress != "" {
-		if b.Config.WebhookURL != "" {
+	if b.GetString("WebhookBindAddress") != "" {
+		if b.GetString("WebhookURL") != "" {
 			b.Log.Info("Connecting using webhookurl (sending) and webhookbindaddress (receiving)")
-			b.mh = matterhook.New(b.Config.WebhookURL,
-				matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
-					BindAddress: b.Config.WebhookBindAddress})
-		} else if b.Config.Token != "" {
+			b.mh = matterhook.New(b.GetString("WebhookURL"),
+				matterhook.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
+					BindAddress: b.GetString("WebhookBindAddress")})
+		} else if b.GetString("Token") != "" {
 			b.Log.Info("Connecting using token (sending)")
 			err := b.apiLogin()
 			if err != nil {
 				return err
 			}
-		} else if b.Config.Login != "" {
+		} else if b.GetString("Login") != "" {
 			b.Log.Info("Connecting using login/password (sending)")
 			err := b.apiLogin()
 			if err != nil {
@@ -49,26 +50,26 @@ func (b *Bmattermost) Connect() error {
 			}
 		} else {
 			b.Log.Info("Connecting using webhookbindaddress (receiving)")
-			b.mh = matterhook.New(b.Config.WebhookURL,
-				matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
-					BindAddress: b.Config.WebhookBindAddress})
+			b.mh = matterhook.New(b.GetString("WebhookURL"),
+				matterhook.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
+					BindAddress: b.GetString("WebhookBindAddress")})
 		}
 		go b.handleMatter()
 		return nil
 	}
-	if b.Config.WebhookURL != "" {
+	if b.GetString("WebhookURL") != "" {
 		b.Log.Info("Connecting using webhookurl (sending)")
-		b.mh = matterhook.New(b.Config.WebhookURL,
-			matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
+		b.mh = matterhook.New(b.GetString("WebhookURL"),
+			matterhook.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
 				DisableServer: true})
-		if b.Config.Token != "" {
+		if b.GetString("Token") != "" {
 			b.Log.Info("Connecting using token (receiving)")
 			err := b.apiLogin()
 			if err != nil {
 				return err
 			}
 			go b.handleMatter()
-		} else if b.Config.Login != "" {
+		} else if b.GetString("Login") != "" {
 			b.Log.Info("Connecting using login/password (receiving)")
 			err := b.apiLogin()
 			if err != nil {
@@ -77,14 +78,14 @@ func (b *Bmattermost) Connect() error {
 			go b.handleMatter()
 		}
 		return nil
-	} else if b.Config.Token != "" {
+	} else if b.GetString("Token") != "" {
 		b.Log.Info("Connecting using token (sending and receiving)")
 		err := b.apiLogin()
 		if err != nil {
 			return err
 		}
 		go b.handleMatter()
-	} else if b.Config.Login != "" {
+	} else if b.GetString("Login") != "" {
 		b.Log.Info("Connecting using login/password (sending and receiving)")
 		err := b.apiLogin()
 		if err != nil {
@@ -92,7 +93,7 @@ func (b *Bmattermost) Connect() error {
 		}
 		go b.handleMatter()
 	}
-	if b.Config.WebhookBindAddress == "" && b.Config.WebhookURL == "" && b.Config.Login == "" && b.Config.Token == "" {
+	if b.GetString("WebhookBindAddress") == "" && b.GetString("WebhookURL") == "" && b.GetString("Login") == "" && b.GetString("Token") == "" {
 		return errors.New("no connection method found. See that you have WebhookBindAddress, WebhookURL or Token/Login/Password/Server/Team configured")
 	}
 	return nil
@@ -104,7 +105,7 @@ func (b *Bmattermost) Disconnect() error {
 
 func (b *Bmattermost) JoinChannel(channel config.ChannelInfo) error {
 	// we can only join channels using the API
-	if b.Config.WebhookURL == "" && b.Config.WebhookBindAddress == "" {
+	if b.GetString("WebhookURL") == "" && b.GetString("WebhookBindAddress") == "" {
 		id := b.mc.GetChannelId(channel.Name, "")
 		if id == "" {
 			return fmt.Errorf("Could not find channel ID for channel %s", channel.Name)
@@ -128,7 +129,7 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 	}
 
 	// Use webhook to send the message
-	if b.Config.WebhookURL != "" {
+	if b.GetString("WebhookURL") != "" {
 		return b.sendWebhook(msg)
 	}
 
@@ -151,7 +152,7 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 	}
 
 	// Prepend nick if configured
-	if b.Config.PrefixMessagesWithNick {
+	if b.GetBool("PrefixMessagesWithNick") {
 		msg.Text = msg.Username + msg.Text
 	}
 
@@ -166,11 +167,11 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 
 func (b *Bmattermost) handleMatter() {
 	messages := make(chan *config.Message)
-	if b.Config.WebhookBindAddress != "" {
+	if b.GetString("WebhookBindAddress") != "" {
 		b.Log.Debugf("Choosing webhooks based receiving")
 		go b.handleMatterHook(messages)
 	} else {
-		if b.Config.Token != "" {
+		if b.GetString("Token") != "" {
 			b.Log.Debugf("Choosing token based receiving")
 		} else {
 			b.Log.Debugf("Choosing login/password based receiving")
@@ -221,8 +222,8 @@ func (b *Bmattermost) handleMatterClient(messages chan *config.Message) {
 		}
 
 		// create a text for bridges that don't support native editing
-		if message.Raw.Event == "post_edited" && !b.Config.EditDisable {
-			rmsg.Text = message.Text + b.Config.EditSuffix
+		if message.Raw.Event == "post_edited" && !b.GetBool("EditDisable") {
+			rmsg.Text = message.Text + b.GetString("EditSuffix")
 		}
 
 		if message.Raw.Event == "post_deleted" {
@@ -250,18 +251,18 @@ func (b *Bmattermost) handleMatterHook(messages chan *config.Message) {
 }
 
 func (b *Bmattermost) apiLogin() error {
-	password := b.Config.Password
-	if b.Config.Token != "" {
-		password = "MMAUTHTOKEN=" + b.Config.Token
+	password := b.GetString("Password")
+	if b.GetString("Token") != "" {
+		password = "MMAUTHTOKEN=" + b.GetString("Token")
 	}
 
-	b.mc = matterclient.New(b.Config.Login, password, b.Config.Team, b.Config.Server)
-	if b.General.Debug {
+	b.mc = matterclient.New(b.GetString("Login"), password, b.GetString("Team"), b.GetString("Server"))
+	if b.GetBool("debug") {
 		b.mc.SetLogLevel("debug")
 	}
-	b.mc.SkipTLSVerify = b.Config.SkipTLSVerify
-	b.mc.NoTLS = b.Config.NoTLS
-	b.Log.Infof("Connecting %s (team: %s) on %s", b.Config.Login, b.Config.Team, b.Config.Server)
+	b.mc.SkipTLSVerify = b.GetBool("SkipTLSVerify")
+	b.mc.NoTLS = b.GetBool("NoTLS")
+	b.Log.Infof("Connecting %s (team: %s) on %s", b.GetString("Login"), b.GetString("Team"), b.GetString("Server"))
 	err := b.mc.Login()
 	if err != nil {
 		return err
@@ -344,7 +345,7 @@ func (b *Bmattermost) handleUploadFile(msg *config.Message) (string, error) {
 			return "", err
 		}
 		msg.Text = fi.Comment
-		if b.Config.PrefixMessagesWithNick {
+		if b.GetBool("PrefixMessagesWithNick") {
 			msg.Text = msg.Username + msg.Text
 		}
 		res, err = b.mc.PostMessageWithFiles(channelID, msg.Text, []string{id})
@@ -359,13 +360,13 @@ func (b *Bmattermost) sendWebhook(msg config.Message) (string, error) {
 		return "", nil
 	}
 
-	if b.Config.PrefixMessagesWithNick {
+	if b.GetBool("PrefixMessagesWithNick") {
 		msg.Text = msg.Username + msg.Text
 	}
 	if msg.Extra != nil {
 		// this sends a message only if we received a config.EVENT_FILE_FAILURE_SIZE
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL, Channel: rmsg.Channel, UserName: rmsg.Username, Text: rmsg.Text, Props: make(map[string]interface{})}
+			matterMessage := matterhook.OMessage{IconURL: b.GetString("IconURL"), Channel: rmsg.Channel, UserName: rmsg.Username, Text: rmsg.Text, Props: make(map[string]interface{})}
 			matterMessage.Props["matterbridge"] = true
 			b.mh.Send(matterMessage)
 		}
@@ -381,7 +382,7 @@ func (b *Bmattermost) sendWebhook(msg config.Message) (string, error) {
 		}
 	}
 
-	matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL, Channel: msg.Channel, UserName: msg.Username, Text: msg.Text, Props: make(map[string]interface{})}
+	matterMessage := matterhook.OMessage{IconURL: b.GetString("IconURL"), Channel: msg.Channel, UserName: msg.Username, Text: msg.Text, Props: make(map[string]interface{})}
 	if msg.Avatar != "" {
 		matterMessage.IconURL = msg.Avatar
 	}
@@ -406,7 +407,7 @@ func (b *Bmattermost) skipMessage(message *matterclient.Message) bool {
 	}
 
 	// Handle edited messages
-	if (message.Raw.Event == "post_edited") && b.Config.EditDisable {
+	if (message.Raw.Event == "post_edited") && b.GetBool("EditDisable") {
 		return true
 	}
 

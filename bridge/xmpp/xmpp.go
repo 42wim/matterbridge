@@ -14,18 +14,18 @@ import (
 type Bxmpp struct {
 	xc      *xmpp.Client
 	xmppMap map[string]string
-	*config.BridgeConfig
+	*bridge.Config
 }
 
-func New(cfg *config.BridgeConfig) bridge.Bridger {
-	b := &Bxmpp{BridgeConfig: cfg}
+func New(cfg *bridge.Config) bridge.Bridger {
+	b := &Bxmpp{Config: cfg}
 	b.xmppMap = make(map[string]string)
 	return b
 }
 
 func (b *Bxmpp) Connect() error {
 	var err error
-	b.Log.Infof("Connecting %s", b.Config.Server)
+	b.Log.Infof("Connecting %s", b.GetString("Server"))
 	b.xc, err = b.createXMPP()
 	if err != nil {
 		b.Log.Debugf("%#v", err)
@@ -63,7 +63,7 @@ func (b *Bxmpp) Disconnect() error {
 }
 
 func (b *Bxmpp) JoinChannel(channel config.ChannelInfo) error {
-	b.xc.JoinMUCNoHistory(channel.Name+"@"+b.Config.Muc, b.Config.Nick)
+	b.xc.JoinMUCNoHistory(channel.Name+"@"+b.GetString("Muc"), b.GetString("Nick"))
 	return nil
 }
 
@@ -77,7 +77,7 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 	// Upload a file (in xmpp case send the upload URL because xmpp has no native upload support)
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: rmsg.Channel + "@" + b.Config.Muc, Text: rmsg.Username + rmsg.Text})
+			b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: rmsg.Channel + "@" + b.GetString("Muc"), Text: rmsg.Username + rmsg.Text})
 		}
 		if len(msg.Extra["file"]) > 0 {
 			return b.handleUploadFile(&msg)
@@ -85,7 +85,7 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 	}
 
 	// Post normal message
-	_, err := b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.Config.Muc, Text: msg.Username + msg.Text})
+	_, err := b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.GetString("Muc"), Text: msg.Username + msg.Text})
 	if err != nil {
 		return "", err
 	}
@@ -94,17 +94,16 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 
 func (b *Bxmpp) createXMPP() (*xmpp.Client, error) {
 	tc := new(tls.Config)
-	tc.InsecureSkipVerify = b.Config.SkipTLSVerify
-	tc.ServerName = strings.Split(b.Config.Server, ":")[0]
+	tc.InsecureSkipVerify = b.GetBool("SkipTLSVerify")
+	tc.ServerName = strings.Split(b.GetString("Server"), ":")[0]
 	options := xmpp.Options{
-		Host:      b.Config.Server,
-		User:      b.Config.Jid,
-		Password:  b.Config.Password,
-		NoTLS:     true,
-		StartTLS:  true,
-		TLSConfig: tc,
-
-		Debug:                        b.General.Debug,
+		Host:                         b.GetString("Server"),
+		User:                         b.GetString("Jid"),
+		Password:                     b.GetString("Password"),
+		NoTLS:                        true,
+		StartTLS:                     true,
+		TLSConfig:                    tc,
+		Debug:                        b.GetBool("debug"),
 		Logger:                       b.Log.Writer(),
 		Session:                      true,
 		Status:                       "",
@@ -150,6 +149,7 @@ func (b *Bxmpp) handleXMPP() error {
 		switch v := m.(type) {
 		case xmpp.Chat:
 			if v.Type == "groupchat" {
+				b.Log.Debugf("== Receiving %#v", v)
 				// skip invalid messages
 				if b.skipMessage(v) {
 					continue
@@ -188,7 +188,7 @@ func (b *Bxmpp) handleUploadFile(msg *config.Message) (string, error) {
 		if fi.URL != "" {
 			msg.Text += fi.URL
 		}
-		_, err := b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.Config.Muc, Text: msg.Username + msg.Text})
+		_, err := b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.GetString("Muc"), Text: msg.Username + msg.Text})
 		if err != nil {
 			return "", err
 		}
@@ -218,7 +218,7 @@ func (b *Bxmpp) parseChannel(remote string) string {
 // skipMessage skips messages that need to be skipped
 func (b *Bxmpp) skipMessage(message xmpp.Chat) bool {
 	// skip messages from ourselves
-	if b.parseNick(message.Remote) == b.Config.Nick {
+	if b.parseNick(message.Remote) == b.GetString("Nick") {
 		return true
 	}
 

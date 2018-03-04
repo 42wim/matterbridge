@@ -15,7 +15,7 @@ import (
 type Api struct {
 	Messages ring.Ring
 	sync.RWMutex
-	*config.BridgeConfig
+	*bridge.Config
 }
 
 type ApiMessage struct {
@@ -26,27 +26,27 @@ type ApiMessage struct {
 	Gateway  string `json:"gateway"`
 }
 
-func New(cfg *config.BridgeConfig) bridge.Bridger {
-	b := &Api{BridgeConfig: cfg}
+func New(cfg *bridge.Config) bridge.Bridger {
+	b := &Api{Config: cfg}
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
 	b.Messages = ring.Ring{}
-	b.Messages.SetCapacity(b.Config.Buffer)
-	if b.Config.Token != "" {
+	b.Messages.SetCapacity(b.GetInt("Buffer"))
+	if b.GetString("Token") != "" {
 		e.Use(middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
-			return key == b.Config.Token, nil
+			return key == b.GetString("Token"), nil
 		}))
 	}
 	e.GET("/api/messages", b.handleMessages)
 	e.GET("/api/stream", b.handleStream)
 	e.POST("/api/message", b.handlePostMessage)
 	go func() {
-		if b.Config.BindAddress == "" {
+		if b.GetString("BindAddress") == "" {
 			b.Log.Fatalf("No BindAddress configured.")
 		}
-		b.Log.Infof("Listening on %s", b.Config.BindAddress)
-		b.Log.Fatal(e.Start(b.Config.BindAddress))
+		b.Log.Infof("Listening on %s", b.GetString("BindAddress"))
+		b.Log.Fatal(e.Start(b.GetString("BindAddress")))
 	}()
 	return b
 }

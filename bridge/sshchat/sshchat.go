@@ -14,18 +14,18 @@ import (
 type Bsshchat struct {
 	r *bufio.Scanner
 	w io.WriteCloser
-	*config.BridgeConfig
+	*bridge.Config
 }
 
-func New(cfg *config.BridgeConfig) bridge.Bridger {
-	return &Bsshchat{BridgeConfig: cfg}
+func New(cfg *bridge.Config) bridge.Bridger {
+	return &Bsshchat{Config: cfg}
 }
 
 func (b *Bsshchat) Connect() error {
 	var err error
-	b.Log.Infof("Connecting %s", b.Config.Server)
+	b.Log.Infof("Connecting %s", b.GetString("Server"))
 	go func() {
-		err = sshd.ConnectShell(b.Config.Server, b.Config.Nick, func(r io.Reader, w io.WriteCloser) error {
+		err = sshd.ConnectShell(b.GetString("Server"), b.GetString("Nick"), func(r io.Reader, w io.WriteCloser) error {
 			b.r = bufio.NewScanner(r)
 			b.w = w
 			b.r.Scan()

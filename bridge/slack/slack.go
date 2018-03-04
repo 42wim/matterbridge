@@ -12,6 +12,7 @@ import (
 	"html"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -23,13 +24,14 @@ type Bslack struct {
 	Usergroups []slack.UserGroup
 	si         *slack.Info
 	channels   []slack.Channel
-	*config.BridgeConfig
+	*bridge.Config
+	sync.RWMutex
 }
 
 const messageDeleted = "message_deleted"
 
-func New(cfg *config.BridgeConfig) bridge.Bridger {
-	return &Bslack{BridgeConfig: cfg}
+func New(cfg *bridge.Config) bridge.Bridger {
+	return &Bslack{Config: cfg}
 }
 
 func (b *Bslack) Command(cmd string) string {
@@ -37,64 +39,65 @@ func (b *Bslack) Command(cmd string) string {
 }
 
 func (b *Bslack) Connect() error {
-	if b.Config.WebhookBindAddress != "" {
-		if b.Config.WebhookURL != "" {
+	b.RLock()
+	defer b.RUnlock()
+	if b.GetString("WebhookBindAddress") != "" {
+		if b.GetString("WebhookURL") != "" {
 			b.Log.Info("Connecting using webhookurl (sending) and webhookbindaddress (receiving)")
-			b.mh = matterhook.New(b.Config.WebhookURL,
-				matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
-					BindAddress: b.Config.WebhookBindAddress})
-		} else if b.Config.Token != "" {
+			b.mh = matterhook.New(b.GetString("WebhookURL"),
+				matterhook.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
+					BindAddress: b.GetString("WebhookBindAddress")})
+		} else if b.GetString("Token") != "" {
 			b.Log.Info("Connecting using token (sending)")
-			b.sc = slack.New(b.Config.Token)
+			b.sc = slack.New(b.GetString("Token"))
 			b.rtm = b.sc.NewRTM()
 			go b.rtm.ManageConnection()
 			b.Log.Info("Connecting using webhookbindaddress (receiving)")
-			b.mh = matterhook.New(b.Config.WebhookURL,
-				matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
-					BindAddress: b.Config.WebhookBindAddress})
+			b.mh = matterhook.New(b.GetString("WebhookURL"),
+				matterhook.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
+					BindAddress: b.GetString("WebhookBindAddress")})
 		} else {
 			b.Log.Info("Connecting using webhookbindaddress (receiving)")
-			b.mh = matterhook.New(b.Config.WebhookURL,
-				matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
-					BindAddress: b.Config.WebhookBindAddress})
+			b.mh = matterhook.New(b.GetString("WebhookURL"),
+				matterhook.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
+					BindAddress: b.GetString("WebhookBindAddress")})
 		}
 		go b.handleSlack()
 		return nil
 	}
-	if b.Config.WebhookURL != "" {
+	if b.GetString("WebhookURL") != "" {
 		b.Log.Info("Connecting using webhookurl (sending)")
-		b.mh = matterhook.New(b.Config.WebhookURL,
-			matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
+		b.mh = matterhook.New(b.GetString("WebhookURL"),
+			matterhook.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
 				DisableServer: true})
-		if b.Config.Token != "" {
+		if b.GetString("Token") != "" {
 			b.Log.Info("Connecting using token (receiving)")
-			b.sc = slack.New(b.Config.Token)
+			b.sc = slack.New(b.GetString("Token"))
 			b.rtm = b.sc.NewRTM()
 			go b.rtm.ManageConnection()
 			go b.handleSlack()
 		}
-	} else if b.Config.Token != "" {
+	} else if b.GetString("Token") != "" {
 		b.Log.Info("Connecting using token (sending and receiving)")
-		b.sc = slack.New(b.Config.Token)
+		b.sc = slack.New(b.GetString("Token"))
 		b.rtm = b.sc.NewRTM()
 		go b.rtm.ManageConnection()
 		go b.handleSlack()
 	}
-	if b.Config.WebhookBindAddress == "" && b.Config.WebhookURL == "" && b.Config.Token == "" {
+	if b.GetString("WebhookBindAddress") == "" && b.GetString("WebhookURL") == "" && b.GetString("Token") == "" {
 		return errors.New("no connection method found. See that you have WebhookBindAddress, WebhookURL or Token configured")
 	}
 	return nil
 }
 
 func (b *Bslack) Disconnect() error {
-	return nil
-
+	return b.rtm.Disconnect()
 }
 
 func (b *Bslack) JoinChannel(channel config.ChannelInfo) error {
 	// we can only join channels using the API
 	if b.sc != nil {
-		if strings.HasPrefix(b.Config.Token, "xoxb") {
+		if strings.HasPrefix(b.GetString("Token"), "xoxb") {
 			// TODO check if bot has already joined channel
 			return nil
 		}
@@ -117,7 +120,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	}
 
 	// Use webhook to send the message
-	if b.Config.WebhookURL != "" {
+	if b.GetString("WebhookURL") != "" {
 		return b.sendWebhook(msg)
 	}
 
@@ -143,7 +146,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	}
 
 	// Prepend nick if configured
-	if b.Config.PrefixMessagesWithNick {
+	if b.GetBool("PrefixMessagesWithNick") {
 		msg.Text = msg.Username + msg.Text
 	}
 
@@ -159,12 +162,12 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 
 	// create slack new post parameters
 	np := slack.NewPostMessageParameters()
-	if b.Config.PrefixMessagesWithNick {
+	if b.GetBool("PrefixMessagesWithNick") {
 		np.AsUser = true
 	}
 	np.Username = msg.Username
 	np.LinkNames = 1 // replace mentions
-	np.IconURL = config.GetIconURL(&msg, &b.Config)
+	np.IconURL = config.GetIconURL(&msg, b.GetString("iconurl"))
 	if msg.Avatar != "" {
 		np.IconURL = msg.Avatar
 	}
@@ -196,6 +199,10 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 		return "", err
 	}
 	return "slack " + id, nil
+}
+
+func (b *Bslack) Reload(cfg *bridge.Config) (string, error) {
+	return "", nil
 }
 
 func (b *Bslack) getAvatar(user string) string {
@@ -236,7 +243,7 @@ func (b *Bslack) getChannelByID(ID string) (*slack.Channel, error) {
 
 func (b *Bslack) handleSlack() {
 	messages := make(chan *config.Message)
-	if b.Config.WebhookBindAddress != "" {
+	if b.GetString("WebhookBindAddress") != "" {
 		b.Log.Debugf("Choosing webhooks based receiving")
 		go b.handleMatterHook(messages)
 	} else {
@@ -419,7 +426,7 @@ func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File) erro
 		return err
 	}
 	// actually download the file
-	data, err := helper.DownloadFileAuth(file.URLPrivateDownload, "Bearer "+b.Config.Token)
+	data, err := helper.DownloadFileAuth(file.URLPrivateDownload, "Bearer "+b.GetString("Token"))
 	if err != nil {
 		return fmt.Errorf("download %s failed %#v", file.URLPrivateDownload, err)
 	}
@@ -454,10 +461,10 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 	}
 
 	// Edit message
-	if !b.Config.EditDisable && ev.SubMessage != nil && ev.SubMessage.ThreadTimestamp != ev.SubMessage.Timestamp {
+	if !b.GetBool("EditDisable") && ev.SubMessage != nil && ev.SubMessage.ThreadTimestamp != ev.SubMessage.Timestamp {
 		b.Log.Debugf("SubMessage %#v", ev.SubMessage)
 		ev.User = ev.SubMessage.User
-		ev.Text = ev.SubMessage.Text + b.Config.EditSuffix
+		ev.Text = ev.SubMessage.Text + b.GetString("EditSuffix")
 	}
 
 	// use our own func because rtm.GetChannelInfo doesn't work for private channels
@@ -493,7 +500,7 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 	}
 
 	// when using webhookURL we can't check if it's our webhook or not for now
-	if ev.BotID != "" && b.Config.WebhookURL == "" {
+	if ev.BotID != "" && b.GetString("WebhookURL") == "" {
 		bot, err := b.rtm.GetBotInfo(ev.BotID)
 		if err != nil {
 			return nil, err
@@ -568,14 +575,14 @@ func (b *Bslack) sendWebhook(msg config.Message) (string, error) {
 		return "", nil
 	}
 
-	if b.Config.PrefixMessagesWithNick {
+	if b.GetBool("PrefixMessagesWithNick") {
 		msg.Text = msg.Username + msg.Text
 	}
 
 	if msg.Extra != nil {
 		// this sends a message only if we received a config.EVENT_FILE_FAILURE_SIZE
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL, Channel: msg.Channel, UserName: rmsg.Username, Text: rmsg.Text}
+			matterMessage := matterhook.OMessage{IconURL: b.GetString("IconURL"), Channel: msg.Channel, UserName: rmsg.Username, Text: rmsg.Text}
 			b.mh.Send(matterMessage)
 		}
 
@@ -598,7 +605,7 @@ func (b *Bslack) sendWebhook(msg config.Message) (string, error) {
 		}
 	}
 
-	matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL, Attachments: attachs, Channel: msg.Channel, UserName: msg.Username, Text: msg.Text}
+	matterMessage := matterhook.OMessage{IconURL: b.GetString("IconURL"), Attachments: attachs, Channel: msg.Channel, UserName: msg.Username, Text: msg.Text}
 	if msg.Avatar != "" {
 		matterMessage.IconURL = msg.Avatar
 	}
@@ -618,7 +625,7 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 	}
 
 	// do not send messages from ourself
-	if b.Config.WebhookURL == "" && b.Config.WebhookBindAddress == "" && ev.Username == b.si.User.Name {
+	if b.GetString("WebhookURL") == "" && b.GetString("WebhookBindAddress") == "" && ev.Username == b.si.User.Name {
 		return true
 	}
 
@@ -629,7 +636,7 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 		}
 	}
 
-	if !b.Config.EditDisable && ev.SubMessage != nil && ev.SubMessage.ThreadTimestamp != ev.SubMessage.Timestamp {
+	if !b.GetBool("EditDisable") && ev.SubMessage != nil && ev.SubMessage.ThreadTimestamp != ev.SubMessage.Timestamp {
 		// it seems ev.SubMessage.Edited == nil when slack unfurls
 		// do not forward these messages #266
 		if ev.SubMessage.Edited == nil {

@@ -50,17 +50,17 @@ type BrMsgID struct {
 var flog *log.Entry
 
 var bridgeMap = map[string]bridge.Factory{
-	"mattermost": bmattermost.New,
-	"irc":        birc.New,
-	"gitter":     bgitter.New,
-	"matrix":     bmatrix.New,
-	"slack":      bslack.New,
 	"api":        api.New,
-	"telegram":   btelegram.New,
 	"discord":    bdiscord.New,
-	"steam":      bsteam.New,
-	"sshchat":    bsshchat.New,
+	"gitter":     bgitter.New,
+	"irc":        birc.New,
+	"mattermost": bmattermost.New,
+	"matrix":     bmatrix.New,
 	"rocketchat": brocketchat.New,
+	"slack":      bslack.New,
+	"sshchat":    bsshchat.New,
+	"steam":      bsteam.New,
+	"telegram":   btelegram.New,
 	"xmpp":       bxmpp.New,
 }
 
@@ -81,16 +81,10 @@ func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 	br := gw.Router.getBridge(cfg.Account)
 	if br == nil {
 		br = bridge.New(cfg)
-		// override config from environment
-		config.OverrideCfgFromEnv(gw.Config, br.Protocol, br.Name)
+		br.Config = gw.Router.Config
 		// set logging
 		br.Log = log.WithFields(log.Fields{"prefix": "bridge"})
-		// get the protocol configuration (eg irc)
-		pcfg := getField(gw.Config, strings.Title(br.Protocol))
-		// get the config for this name (eg freenode, from irc.freenode)
-		br.Config = pcfg[br.Name]
-		// create the bridge config
-		brconfig := &config.BridgeConfig{General: &gw.Config.General, Account: br.Account, Remote: gw.Message, Config: br.Config, Log: log.WithFields(log.Fields{"prefix": br.Protocol})}
+		brconfig := &bridge.Config{Remote: gw.Message, Log: log.WithFields(log.Fields{"prefix": br.Protocol}), Bridge: br}
 		// add the actual bridger for this protocol to this bridge using the bridgeMap
 		br.Bridger = bridgeMap[br.Protocol](brconfig)
 	}
@@ -226,12 +220,12 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 	}
 
 	// only relay join/part when configured
-	if msg.Event == config.EVENT_JOIN_LEAVE && !gw.Bridges[dest.Account].Config.ShowJoinPart {
+	if msg.Event == config.EVENT_JOIN_LEAVE && !gw.Bridges[dest.Account].Config.GetBool("ShowJoinPart") {
 		return brMsgIDs
 	}
 
 	// only relay topic change when configured
-	if msg.Event == config.EVENT_TOPIC_CHANGE && !gw.Bridges[dest.Account].Config.ShowTopicChange {
+	if msg.Event == config.EVENT_TOPIC_CHANGE && !gw.Bridges[dest.Account].Config.GetBool("ShowTopicChange") {
 		return brMsgIDs
 	}
 
@@ -308,7 +302,7 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 	}
 
 	// is the username in IgnoreNicks field
-	for _, entry := range strings.Fields(gw.Bridges[msg.Account].Config.IgnoreNicks) {
+	for _, entry := range strings.Fields(gw.Bridges[msg.Account].GetString("IgnoreNicks")) {
 		if msg.Username == entry {
 			flog.Debugf("ignoring %s from %s", msg.Username, msg.Account)
 			return true
@@ -317,7 +311,7 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 
 	// does the message match regex in IgnoreMessages field
 	// TODO do not compile regexps everytime
-	for _, entry := range strings.Fields(gw.Bridges[msg.Account].Config.IgnoreMessages) {
+	for _, entry := range strings.Fields(gw.Bridges[msg.Account].GetString("IgnoreMessages")) {
 		if entry != "" {
 			re, err := regexp.Compile(entry)
 			if err != nil {
@@ -336,17 +330,17 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 func (gw *Gateway) modifyUsername(msg config.Message, dest *bridge.Bridge) string {
 	br := gw.Bridges[msg.Account]
 	msg.Protocol = br.Protocol
-	if gw.Config.General.StripNick || dest.Config.StripNick {
+	if gw.Config.General.StripNick || dest.Config.GetBool("StripNick") {
 		re := regexp.MustCompile("[^a-zA-Z0-9]+")
 		msg.Username = re.ReplaceAllString(msg.Username, "")
 	}
-	nick := dest.Config.RemoteNickFormat
+	nick := dest.GetString("RemoteNickFormat")
 	if nick == "" {
 		nick = gw.Config.General.RemoteNickFormat
 	}
 
 	// loop to replace nicks
-	for _, outer := range br.Config.ReplaceNicks {
+	for _, outer := range br.GetStringSlice2D("ReplaceNicks") {
 		search := outer[0]
 		replace := outer[1]
 		// TODO move compile to bridge init somewhere
@@ -373,7 +367,7 @@ func (gw *Gateway) modifyUsername(msg config.Message, dest *bridge.Bridge) strin
 
 	nick = strings.Replace(nick, "{BRIDGE}", br.Name, -1)
 	nick = strings.Replace(nick, "{PROTOCOL}", br.Protocol, -1)
-	nick = strings.Replace(nick, "{LABEL}", br.Config.Label, -1)
+	nick = strings.Replace(nick, "{LABEL}", br.GetString("Label"), -1)
 	nick = strings.Replace(nick, "{NICK}", msg.Username, -1)
 	return nick
 }
@@ -381,7 +375,7 @@ func (gw *Gateway) modifyUsername(msg config.Message, dest *bridge.Bridge) strin
 func (gw *Gateway) modifyAvatar(msg config.Message, dest *bridge.Bridge) string {
 	iconurl := gw.Config.General.IconURL
 	if iconurl == "" {
-		iconurl = dest.Config.IconURL
+		iconurl = dest.GetString("IconURL")
 	}
 	iconurl = strings.Replace(iconurl, "{NICK}", msg.Username, -1)
 	if msg.Avatar == "" {
@@ -396,7 +390,7 @@ func (gw *Gateway) modifyMessage(msg *config.Message) {
 
 	br := gw.Bridges[msg.Account]
 	// loop to replace messages
-	for _, outer := range br.Config.ReplaceMessages {
+	for _, outer := range br.GetStringSlice2D("ReplaceMessages") {
 		search := outer[0]
 		replace := outer[1]
 		// TODO move compile to bridge init somewhere

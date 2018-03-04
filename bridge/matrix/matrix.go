@@ -18,26 +18,26 @@ type Bmatrix struct {
 	UserID  string
 	RoomMap map[string]string
 	sync.RWMutex
-	*config.BridgeConfig
+	*bridge.Config
 }
 
-func New(cfg *config.BridgeConfig) bridge.Bridger {
-	b := &Bmatrix{BridgeConfig: cfg}
+func New(cfg *bridge.Config) bridge.Bridger {
+	b := &Bmatrix{Config: cfg}
 	b.RoomMap = make(map[string]string)
 	return b
 }
 
 func (b *Bmatrix) Connect() error {
 	var err error
-	b.Log.Infof("Connecting %s", b.Config.Server)
-	b.mc, err = matrix.NewClient(b.Config.Server, "", "")
+	b.Log.Infof("Connecting %s", b.GetString("Server"))
+	b.mc, err = matrix.NewClient(b.GetString("Server"), "", "")
 	if err != nil {
 		return err
 	}
 	resp, err := b.mc.Login(&matrix.ReqLogin{
 		Type:     "m.login.password",
-		User:     b.Config.Login,
-		Password: b.Config.Password,
+		User:     b.GetString("Login"),
+		Password: b.GetString("Password"),
 	})
 	if err != nil {
 		return err
@@ -162,7 +162,7 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 		}
 
 		// Remove homeserver suffix if configured
-		if b.Config.NoHomeServerSuffix {
+		if b.GetBool("NoHomeServerSuffix") {
 			re := regexp.MustCompile("(.*?):.*")
 			rmsg.Username = re.ReplaceAllString(rmsg.Username, `$1`)
 		}
@@ -207,7 +207,7 @@ func (b *Bmatrix) handleDownloadFile(rmsg *config.Message, content map[string]in
 	if url, ok = content["url"].(string); !ok {
 		return fmt.Errorf("url isn't a %T", url)
 	}
-	url = strings.Replace(url, "mxc://", b.Config.Server+"/_matrix/media/v1/download/", -1)
+	url = strings.Replace(url, "mxc://", b.GetString("Server")+"/_matrix/media/v1/download/", -1)
 
 	if info, ok = content["info"].(map[string]interface{}); !ok {
 		return fmt.Errorf("info isn't a %T", info)

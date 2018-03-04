@@ -23,32 +23,33 @@ type Bdiscord struct {
 	webhookToken   string
 	channelInfoMap map[string]*config.ChannelInfo
 	sync.RWMutex
-	*config.BridgeConfig
+	*bridge.Config
 }
 
-func New(cfg *config.BridgeConfig) bridge.Bridger {
-	b := &Bdiscord{BridgeConfig: cfg}
+func New(cfg *bridge.Config) bridge.Bridger {
+	b := &Bdiscord{Config: cfg}
 	b.userMemberMap = make(map[string]*discordgo.Member)
 	b.channelInfoMap = make(map[string]*config.ChannelInfo)
-	if b.Config.WebhookURL != "" {
+	if b.GetString("WebhookURL") != "" {
 		b.Log.Debug("Configuring Discord Incoming Webhook")
-		b.webhookID, b.webhookToken = b.splitURL(b.Config.WebhookURL)
+		b.webhookID, b.webhookToken = b.splitURL(b.GetString("WebhookURL"))
 	}
 	return b
 }
 
 func (b *Bdiscord) Connect() error {
 	var err error
+	var token string
 	b.Log.Info("Connecting")
-	if b.Config.WebhookURL == "" {
+	if b.GetString("WebhookURL") == "" {
 		b.Log.Info("Connecting using token")
 	} else {
 		b.Log.Info("Connecting using webhookurl (for posting) and token")
 	}
-	if !strings.HasPrefix(b.Config.Token, "Bot ") {
-		b.Config.Token = "Bot " + b.Config.Token
+	if !strings.HasPrefix(b.GetString("Token"), "Bot ") {
+		token = "Bot " + b.GetString("Token")
 	}
-	b.c, err = discordgo.New(b.Config.Token)
+	b.c, err = discordgo.New(token)
 	if err != nil {
 		return err
 	}
@@ -71,7 +72,7 @@ func (b *Bdiscord) Connect() error {
 	}
 	b.Nick = userinfo.Username
 	for _, guild := range guilds {
-		if guild.Name == b.Config.Server {
+		if guild.Name == b.GetString("Server") {
 			b.Channels, err = b.c.GuildChannels(guild.ID)
 			b.guildID = guild.ID
 			if err != nil {
@@ -83,7 +84,7 @@ func (b *Bdiscord) Connect() error {
 }
 
 func (b *Bdiscord) Disconnect() error {
-	return nil
+	return b.c.Close()
 }
 
 func (b *Bdiscord) JoinChannel(channel config.ChannelInfo) error {
@@ -186,13 +187,13 @@ func (b *Bdiscord) messageDelete(s *discordgo.Session, m *discordgo.MessageDelet
 }
 
 func (b *Bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdate) {
-	if b.Config.EditDisable {
+	if b.GetBool("EditDisable") {
 		return
 	}
 	// only when message is actually edited
 	if m.Message.EditedTimestamp != "" {
 		b.Log.Debugf("Sending edit message")
-		m.Content = m.Content + b.Config.EditSuffix
+		m.Content = m.Content + b.GetString("EditSuffix")
 		b.messageCreate(s, (*discordgo.MessageCreate)(m))
 	}
 }
@@ -236,14 +237,14 @@ func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	}
 
 	// set username
-	if !b.Config.UseUserName {
+	if !b.GetBool("UseUserName") {
 		rmsg.Username = b.getNick(m.Author)
 	} else {
 		rmsg.Username = m.Author.Username
 	}
 
 	// if we have embedded content add it to text
-	if b.Config.ShowEmbeds && m.Message.Embeds != nil {
+	if b.GetBool("ShowEmbeds") && m.Message.Embeds != nil {
 		for _, embed := range m.Message.Embeds {
 			rmsg.Text = rmsg.Text + "embed: " + embed.Title + " - " + embed.Description + " - " + embed.URL + "\n"
 		}
@@ -367,7 +368,7 @@ func (b *Bdiscord) splitURL(url string) (string, string) {
 
 // useWebhook returns true if we have a webhook defined somewhere
 func (b *Bdiscord) useWebhook() bool {
-	if b.Config.WebhookURL != "" {
+	if b.GetString("WebhookURL") != "" {
 		return true
 	}
 	for _, channel := range b.channelInfoMap {
@@ -380,8 +381,8 @@ func (b *Bdiscord) useWebhook() bool {
 
 // isWebhookID returns true if the specified id is used in a defined webhook
 func (b *Bdiscord) isWebhookID(id string) bool {
-	if b.Config.WebhookURL != "" {
-		wID, _ := b.splitURL(b.Config.WebhookURL)
+	if b.GetString("WebhookURL") != "" {
+		wID, _ := b.splitURL(b.GetString("WebhookURL"))
 		if wID == id {
 			return true
 		}

@@ -14,18 +14,18 @@ import (
 
 type Btelegram struct {
 	c *tgbotapi.BotAPI
-	*config.BridgeConfig
+	*bridge.Config
 	avatarMap map[string]string // keep cache of userid and avatar sha
 }
 
-func New(cfg *config.BridgeConfig) bridge.Bridger {
-	return &Btelegram{BridgeConfig: cfg, avatarMap: make(map[string]string)}
+func New(cfg *bridge.Config) bridge.Bridger {
+	return &Btelegram{Config: cfg, avatarMap: make(map[string]string)}
 }
 
 func (b *Btelegram) Connect() error {
 	var err error
 	b.Log.Info("Connecting")
-	b.c, err = tgbotapi.NewBotAPI(b.Config.Token)
+	b.c, err = tgbotapi.NewBotAPI(b.GetString("Token"))
 	if err != nil {
 		b.Log.Debugf("%#v", err)
 		return err
@@ -64,7 +64,7 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 		return b.cacheAvatar(&msg)
 	}
 
-	if b.Config.MessageFormat == "HTML" {
+	if b.GetString("MessageFormat") == "HTML" {
 		msg.Text = makeHTML(msg.Text)
 	}
 
@@ -99,11 +99,11 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 			return "", err
 		}
 		m := tgbotapi.NewEditMessageText(chatid, msgid, msg.Username+msg.Text)
-		if b.Config.MessageFormat == "HTML" {
+		if b.GetString("MessageFormat") == "HTML" {
 			b.Log.Debug("Using mode HTML")
 			m.ParseMode = tgbotapi.ModeHTML
 		}
-		if b.Config.MessageFormat == "Markdown" {
+		if b.GetString("MessageFormat") == "Markdown" {
 			b.Log.Debug("Using mode markdown")
 			m.ParseMode = tgbotapi.ModeMarkdown
 		}
@@ -137,9 +137,9 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		}
 
 		// edited channel message
-		if update.EditedChannelPost != nil && !b.Config.EditDisable {
+		if update.EditedChannelPost != nil && !b.GetBool("EditDisable") {
 			message = update.EditedChannelPost
-			rmsg.Text = rmsg.Text + message.Text + b.Config.EditSuffix
+			rmsg.Text = rmsg.Text + message.Text + b.GetString("EditSuffix")
 		}
 
 		// handle groups
@@ -148,9 +148,9 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		}
 
 		// edited group message
-		if update.EditedMessage != nil && !b.Config.EditDisable {
+		if update.EditedMessage != nil && !b.GetBool("EditDisable") {
 			message = update.EditedMessage
-			rmsg.Text = rmsg.Text + message.Text + b.Config.EditSuffix
+			rmsg.Text = rmsg.Text + message.Text + b.GetString("EditSuffix")
 		}
 
 		// set the ID's from the channel or group message
@@ -160,7 +160,7 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 
 		// handle username
 		if message.From != nil {
-			if b.Config.UseFirstName {
+			if b.GetBool("UseFirstName") {
 				rmsg.Username = message.From.FirstName
 			}
 			if rmsg.Username == "" {
@@ -189,7 +189,7 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		// handle forwarded messages
 		if message.ForwardFrom != nil {
 			usernameForward := ""
-			if b.Config.UseFirstName {
+			if b.GetBool("UseFirstName") {
 				usernameForward = message.ForwardFrom.FirstName
 			}
 			if usernameForward == "" {
@@ -208,7 +208,7 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		if message.ReplyToMessage != nil {
 			usernameReply := ""
 			if message.ReplyToMessage.From != nil {
-				if b.Config.UseFirstName {
+				if b.GetBool("UseFirstName") {
 					usernameReply = message.ReplyToMessage.From.FirstName
 				}
 				if usernameReply == "" {
@@ -338,7 +338,7 @@ func (b *Btelegram) handleDownload(message *tgbotapi.Message, rmsg *config.Messa
 		return nil
 	}
 	// use the URL instead of native upload
-	if b.Config.UseInsecureURL {
+	if b.GetBool("UseInsecureURL") {
 		b.Log.Debugf("Setting message text to :%s", text)
 		rmsg.Text = rmsg.Text + text
 		return nil
@@ -382,13 +382,13 @@ func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64) (string,
 func (b *Btelegram) sendMessage(chatid int64, username, text string) (string, error) {
 	m := tgbotapi.NewMessage(chatid, "")
 	m.Text = username + text
-	if b.Config.MessageFormat == "HTML" {
+	if b.GetString("MessageFormat") == "HTML" {
 		b.Log.Debug("Using mode HTML")
 		username = html.EscapeString(username)
 		m.Text = username + text
 		m.ParseMode = tgbotapi.ModeHTML
 	}
-	if b.Config.MessageFormat == "Markdown" {
+	if b.GetString("MessageFormat") == "Markdown" {
 		b.Log.Debug("Using mode markdown")
 		m.ParseMode = tgbotapi.ModeMarkdown
 	}

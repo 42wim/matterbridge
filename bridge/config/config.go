@@ -1,11 +1,11 @@
 package config
 
 import (
-	"github.com/BurntSushi/toml"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"os"
-	"reflect"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -141,7 +141,7 @@ type SameChannelGateway struct {
 	Accounts []string
 }
 
-type Config struct {
+type ConfigValues struct {
 	Api                map[string]Protocol
 	Irc                map[string]Protocol
 	Mattermost         map[string]Protocol
@@ -159,88 +159,78 @@ type Config struct {
 	SameChannelGateway []SameChannelGateway
 }
 
-type BridgeConfig struct {
-	Config  Protocol
-	General *Protocol
-	Account string
-	Remote  chan Message
-	Log     *log.Entry
+type Config struct {
+	v *viper.Viper
+	*ConfigValues
+	sync.RWMutex
 }
 
 func NewConfig(cfgfile string) *Config {
-	var cfg Config
-	if _, err := toml.DecodeFile(cfgfile, &cfg); err != nil {
+	var cfg ConfigValues
+	viper.SetConfigType("toml")
+	viper.SetEnvPrefix("matterbridge")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.AutomaticEnv()
+	f, err := os.Open(cfgfile)
+	if err != nil {
 		log.Fatal(err)
 	}
-	fail := false
-	for k, v := range cfg.Mattermost {
-		res := Deprecated(v, "mattermost."+k)
-		if res {
-			fail = res
-		}
+	err = viper.ReadConfig(f)
+	if err != nil {
+		log.Fatal(err)
 	}
-	for k, v := range cfg.Slack {
-		res := Deprecated(v, "slack."+k)
-		if res {
-			fail = res
-		}
+	err = viper.Unmarshal(&cfg)
+	if err != nil {
+		log.Fatal("blah", err)
 	}
-	for k, v := range cfg.Rocketchat {
-		res := Deprecated(v, "rocketchat."+k)
-		if res {
-			fail = res
-		}
-	}
-	if fail {
-		log.Fatalf("Fix your config. Please see changelog for more information")
-	}
+	mycfg := new(Config)
+	mycfg.v = viper.GetViper()
 	if cfg.General.MediaDownloadSize == 0 {
 		cfg.General.MediaDownloadSize = 1000000
 	}
-	return &cfg
+	mycfg.ConfigValues = &cfg
+	return mycfg
 }
 
-func OverrideCfgFromEnv(cfg *Config, protocol string, account string) {
-	var protoCfg Protocol
-	val := reflect.ValueOf(cfg).Elem()
-	// loop over the Config struct
-	for i := 0; i < val.NumField(); i++ {
-		typeField := val.Type().Field(i)
-		// look for the protocol map (both lowercase)
-		if strings.ToLower(typeField.Name) == protocol {
-			// get the Protocol struct from the map
-			data := val.Field(i).MapIndex(reflect.ValueOf(account))
-			protoCfg = data.Interface().(Protocol)
-			protoStruct := reflect.ValueOf(&protoCfg).Elem()
-			// loop over the found protocol struct
-			for i := 0; i < protoStruct.NumField(); i++ {
-				typeField := protoStruct.Type().Field(i)
-				// build our environment key (eg MATTERBRIDGE_MATTERMOST_WORK_LOGIN)
-				key := "matterbridge_" + protocol + "_" + account + "_" + typeField.Name
-				key = strings.ToUpper(key)
-				// search the environment
-				res := os.Getenv(key)
-				// if it exists and the current field is a string
-				// then update the current field
-				if res != "" {
-					fieldVal := protoStruct.Field(i)
-					if fieldVal.Kind() == reflect.String {
-						log.WithFields(log.Fields{
-							"prefix": "config",
-						}).Infof("overriding %s from env with %s\n", key, res)
-						fieldVal.Set(reflect.ValueOf(res))
-					}
-				}
-			}
-			// update the map with the modified Protocol (cfg.Protocol[account] = Protocol)
-			val.Field(i).SetMapIndex(reflect.ValueOf(account), reflect.ValueOf(protoCfg))
-			break
-		}
+func (c *Config) GetBool(key string) bool {
+	c.RLock()
+	defer c.RUnlock()
+	//	log.Debugf("getting bool %s = %#v", key, c.v.GetBool(key))
+	return c.v.GetBool(key)
+}
+
+func (c *Config) GetInt(key string) int {
+	c.RLock()
+	defer c.RUnlock()
+	//	log.Debugf("getting int %s = %d", key, c.v.GetInt(key))
+	return c.v.GetInt(key)
+}
+
+func (c *Config) GetString(key string) string {
+	c.RLock()
+	defer c.RUnlock()
+	//	log.Debugf("getting String %s = %s", key, c.v.GetString(key))
+	return c.v.GetString(key)
+}
+
+func (c *Config) GetStringSlice(key string) []string {
+	c.RLock()
+	defer c.RUnlock()
+	// log.Debugf("getting StringSlice %s = %#v", key, c.v.GetStringSlice(key))
+	return c.v.GetStringSlice(key)
+}
+
+func (c *Config) GetStringSlice2D(key string) [][]string {
+	c.RLock()
+	defer c.RUnlock()
+	if res, ok := c.v.Get(key).([][]string); ok {
+		return res
 	}
+	// log.Debugf("getting StringSlice2D %s = %#v", key, c.v.Get(key))
+	return [][]string{}
 }
 
-func GetIconURL(msg *Message, cfg *Protocol) string {
-	iconURL := cfg.IconURL
+func GetIconURL(msg *Message, iconURL string) string {
 	info := strings.Split(msg.Account, ".")
 	protocol := info[0]
 	name := info[1]
@@ -248,18 +238,4 @@ func GetIconURL(msg *Message, cfg *Protocol) string {
 	iconURL = strings.Replace(iconURL, "{BRIDGE}", name, -1)
 	iconURL = strings.Replace(iconURL, "{PROTOCOL}", protocol, -1)
 	return iconURL
-}
-
-func Deprecated(cfg Protocol, account string) bool {
-	if cfg.BindAddress != "" {
-		log.Printf("ERROR: %s BindAddress is deprecated, you need to change it to WebhookBindAddress.", account)
-	} else if cfg.URL != "" {
-		log.Printf("ERROR: %s URL is deprecated, you need to change it to WebhookURL.", account)
-	} else if cfg.UseAPI {
-		log.Printf("ERROR: %s UseAPI is deprecated, it's enabled by default, please remove it from your config file.", account)
-	} else {
-		return false
-	}
-	return true
-	//log.Fatalf("ERROR: Fix your config: %s", account)
 }

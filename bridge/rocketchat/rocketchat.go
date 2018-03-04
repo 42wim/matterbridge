@@ -15,11 +15,11 @@ type MMhook struct {
 
 type Brocketchat struct {
 	MMhook
-	*config.BridgeConfig
+	*bridge.Config
 }
 
-func New(cfg *config.BridgeConfig) bridge.Bridger {
-	return &Brocketchat{BridgeConfig: cfg}
+func New(cfg *bridge.Config) bridge.Bridger {
+	return &Brocketchat{Config: cfg}
 }
 
 func (b *Brocketchat) Command(cmd string) string {
@@ -28,10 +28,10 @@ func (b *Brocketchat) Command(cmd string) string {
 
 func (b *Brocketchat) Connect() error {
 	b.Log.Info("Connecting webhooks")
-	b.mh = matterhook.New(b.Config.WebhookURL,
-		matterhook.Config{InsecureSkipVerify: b.Config.SkipTLSVerify,
+	b.mh = matterhook.New(b.GetString("WebhookURL"),
+		matterhook.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
 			DisableServer: true})
-	b.rh = rockethook.New(b.Config.WebhookURL, rockethook.Config{BindAddress: b.Config.WebhookBindAddress})
+	b.rh = rockethook.New(b.GetString("WebhookURL"), rockethook.Config{BindAddress: b.GetString("WebhookBindAddress")})
 	go b.handleRocketHook()
 	return nil
 }
@@ -53,7 +53,7 @@ func (b *Brocketchat) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL, Channel: rmsg.Channel, UserName: rmsg.Username,
+			matterMessage := matterhook.OMessage{IconURL: b.GetString("IconURL"), Channel: rmsg.Channel, UserName: rmsg.Username,
 				Text: rmsg.Text}
 			b.mh.Send(matterMessage)
 		}
@@ -67,7 +67,7 @@ func (b *Brocketchat) Send(msg config.Message) (string, error) {
 		}
 	}
 
-	matterMessage := matterhook.OMessage{IconURL: b.Config.IconURL}
+	matterMessage := matterhook.OMessage{IconURL: b.GetString("IconURL")}
 	matterMessage.Channel = msg.Channel
 	matterMessage.UserName = msg.Username
 	matterMessage.Type = ""
@@ -85,7 +85,7 @@ func (b *Brocketchat) handleRocketHook() {
 		message := b.rh.Receive()
 		b.Log.Debugf("Receiving from rockethook %#v", message)
 		// do not loop
-		if message.UserName == b.Config.Nick {
+		if message.UserName == b.GetString("Nick") {
 			continue
 		}
 		b.Log.Debugf("<= Sending message from %s on %s to gateway", message.UserName, b.Account)

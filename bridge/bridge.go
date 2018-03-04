@@ -15,7 +15,6 @@ type Bridger interface {
 }
 
 type Bridge struct {
-	Config config.Protocol
 	Bridger
 	Name     string
 	Account  string
@@ -23,10 +22,19 @@ type Bridge struct {
 	Channels map[string]config.ChannelInfo
 	Joined   map[string]bool
 	Log      *log.Entry
+	Config   *config.Config
+	General  *config.Protocol
+}
+
+type Config struct {
+	//	General *config.Protocol
+	Remote chan config.Message
+	Log    *log.Entry
+	*Bridge
 }
 
 // Factory is the factory function to create a bridge
-type Factory func(*config.BridgeConfig) Bridger
+type Factory func(*Config) Bridger
 
 func New(bridge *config.Bridge) *Bridge {
 	b := new(Bridge)
@@ -58,4 +66,43 @@ func (b *Bridge) joinChannels(channels map[string]config.ChannelInfo, exists map
 		}
 	}
 	return nil
+}
+
+func (b *Bridge) ReloadConfig() {
+	return
+}
+
+func (b *Bridge) GetBool(key string) bool {
+	if b.Config.GetBool(b.Account+"."+key) != false {
+		return b.Config.GetBool(b.Account + "." + key)
+	}
+	return b.Config.GetBool("general." + key)
+}
+
+func (b *Bridge) GetInt(key string) int {
+	if b.Config.GetInt(b.Account+"."+key) != 0 {
+		return b.Config.GetInt(b.Account + "." + key)
+	}
+	return b.Config.GetInt("general." + key)
+}
+
+func (b *Bridge) GetString(key string) string {
+	if b.Config.GetString(b.Account+"."+key) != "" {
+		return b.Config.GetString(b.Account + "." + key)
+	}
+	return b.Config.GetString("general." + key)
+}
+
+func (b *Bridge) GetStringSlice(key string) []string {
+	if len(b.Config.GetStringSlice(b.Account+"."+key)) != 0 {
+		return b.Config.GetStringSlice(b.Account + "." + key)
+	}
+	return b.Config.GetStringSlice("general." + key)
+}
+
+func (b *Bridge) GetStringSlice2D(key string) [][]string {
+	if len(b.Config.GetStringSlice2D(b.Account+"."+key)) != 0 {
+		return b.Config.GetStringSlice2D(b.Account + "." + key)
+	}
+	return b.Config.GetStringSlice2D("general." + key)
 }

@@ -23,30 +23,31 @@ import (
 )
 
 type Birc struct {
-	i               *girc.Client
-	Nick            string
-	names           map[string][]string
-	connected       chan struct{}
-	Local           chan config.Message // local queue for flood control
-	FirstConnection bool
+	i                                         *girc.Client
+	Nick                                      string
+	names                                     map[string][]string
+	connected                                 chan struct{}
+	Local                                     chan config.Message // local queue for flood control
+	FirstConnection                           bool
+	MessageDelay, MessageQueue, MessageLength int
 
-	*config.BridgeConfig
+	*bridge.Config
 }
 
-func New(cfg *config.BridgeConfig) bridge.Bridger {
+func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Birc{}
-	b.BridgeConfig = cfg
-	b.Nick = b.Config.Nick
+	b.Config = cfg
+	b.Nick = b.GetString("Nick")
 	b.names = make(map[string][]string)
 	b.connected = make(chan struct{})
-	if b.Config.MessageDelay == 0 {
-		b.Config.MessageDelay = 1300
+	if b.GetInt("MessageDelay") == 0 {
+		b.MessageDelay = 1300
 	}
-	if b.Config.MessageQueue == 0 {
-		b.Config.MessageQueue = 30
+	if b.GetInt("MessageQueue") == 0 {
+		b.MessageQueue = 30
 	}
-	if b.Config.MessageLength == 0 {
-		b.Config.MessageLength = 400
+	if b.GetInt("MessageLength") == 0 {
+		b.MessageLength = 400
 	}
 	b.FirstConnection = true
 	return b
@@ -63,9 +64,9 @@ func (b *Birc) Command(msg *config.Message) string {
 }
 
 func (b *Birc) Connect() error {
-	b.Local = make(chan config.Message, b.Config.MessageQueue+10)
-	b.Log.Infof("Connecting %s", b.Config.Server)
-	server, portstr, err := net.SplitHostPort(b.Config.Server)
+	b.Local = make(chan config.Message, b.GetInt("MessageQueue")+10)
+	b.Log.Infof("Connecting %s", b.GetString("Server"))
+	server, portstr, err := net.SplitHostPort(b.GetString("Server"))
 	if err != nil {
 		return err
 	}
@@ -74,7 +75,7 @@ func (b *Birc) Connect() error {
 		return err
 	}
 	// fix strict user handling of girc
-	user := b.Config.Nick
+	user := b.GetString("Nick")
 	for !girc.IsValidUser(user) {
 		if len(user) == 1 {
 			user = "matterbridge"
@@ -85,18 +86,18 @@ func (b *Birc) Connect() error {
 
 	i := girc.New(girc.Config{
 		Server:     server,
-		ServerPass: b.Config.Password,
+		ServerPass: b.GetString("Password"),
 		Port:       port,
-		Nick:       b.Config.Nick,
+		Nick:       b.GetString("Nick"),
 		User:       user,
-		Name:       b.Config.Nick,
-		SSL:        b.Config.UseTLS,
-		TLSConfig:  &tls.Config{InsecureSkipVerify: b.Config.SkipTLSVerify, ServerName: server},
+		Name:       b.GetString("Nick"),
+		SSL:        b.GetBool("UseTLS"),
+		TLSConfig:  &tls.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"), ServerName: server},
 		PingDelay:  time.Minute,
 	})
 
-	if b.Config.UseSASL {
-		i.Config.SASL = &girc.SASLPlain{b.Config.NickServNick, b.Config.NickServPassword}
+	if b.GetBool("UseSASL") {
+		i.Config.SASL = &girc.SASLPlain{b.GetString("NickServNick"), b.GetString("NickServPassword")}
 	}
 
 	i.Handlers.Add(girc.RPL_WELCOME, b.handleNewConnection)
@@ -127,7 +128,7 @@ func (b *Birc) Connect() error {
 		return fmt.Errorf("connection timed out")
 	}
 	//i.Debug = false
-	if b.Config.DebugLevel == 0 {
+	if b.GetInt("DebugLevel") == 0 {
 		i.Handlers.Clear(girc.ALL_EVENTS)
 	}
 	go b.doSend()
@@ -135,7 +136,7 @@ func (b *Birc) Connect() error {
 }
 
 func (b *Birc) Disconnect() error {
-	//b.i.Disconnect()
+	b.i.Close()
 	close(b.Local)
 	return nil
 }
@@ -164,9 +165,9 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 	}
 
 	// convert to specified charset
-	if b.Config.Charset != "" {
+	if b.GetString("Charset") != "" {
 		buf := new(bytes.Buffer)
-		w, err := charset.NewWriter(b.Config.Charset, buf)
+		w, err := charset.NewWriter(b.GetString("Charset"), buf)
 		if err != nil {
 			b.Log.Errorf("charset from utf-8 conversion failed: %s", err)
 			return "", err
@@ -197,19 +198,19 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 	}
 
 	// split long messages on messageLength, to avoid clipped messages #281
-	if b.Config.MessageSplit {
-		msg.Text = helper.SplitStringLength(msg.Text, b.Config.MessageLength)
+	if b.GetBool("MessageSplit") {
+		msg.Text = helper.SplitStringLength(msg.Text, b.GetInt("MessageLength"))
 	}
 	for _, text := range strings.Split(msg.Text, "\n") {
-		if len(text) > b.Config.MessageLength {
-			text = text[:b.Config.MessageLength-len(" <message clipped>")]
+		if len(text) > b.MessageLength {
+			text = text[:b.MessageLength-len(" <message clipped>")]
 			if r, size := utf8.DecodeLastRuneInString(text); r == utf8.RuneError {
 				text = text[:len(text)-size]
 			}
 			text += " <message clipped>"
 		}
-		if len(b.Local) < b.Config.MessageQueue {
-			if len(b.Local) == b.Config.MessageQueue-1 {
+		if len(b.Local) < b.GetInt("MessageQueue") {
+			if len(b.Local) == b.GetInt("MessageQueue")-1 {
 				text = text + " <message clipped>"
 			}
 			b.Local <- config.Message{Text: text, Username: msg.Username, Channel: msg.Channel, Event: msg.Event}
@@ -221,13 +222,14 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 }
 
 func (b *Birc) doSend() {
-	rate := time.Millisecond * time.Duration(b.Config.MessageDelay)
+	rate := time.Millisecond * time.Duration(b.MessageDelay)
 	throttle := time.NewTicker(rate)
 	for msg := range b.Local {
 		<-throttle.C
 		if msg.Event == config.EVENT_USER_ACTION {
 			b.i.Cmd.Action(msg.Channel, msg.Username+msg.Text)
 		} else {
+			b.Log.Debugf("Sending to channel %s", msg.Channel)
 			b.i.Cmd.Message(msg.Channel, msg.Username+msg.Text)
 		}
 	}
@@ -277,7 +279,7 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 	channel := strings.ToLower(event.Params[0])
 	if event.Command == "KICK" {
 		b.Log.Infof("Got kicked from %s by %s", channel, event.Source.Name)
-		time.Sleep(time.Duration(b.Config.RejoinDelay) * time.Second)
+		time.Sleep(time.Duration(b.GetInt("RejoinDelay")) * time.Second)
 		b.Remote <- config.Message{Username: "system", Text: "rejoin", Channel: channel, Account: b.Account, Event: config.EVENT_REJOIN_CHANNELS}
 		return
 	}
@@ -299,15 +301,15 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 }
 
 func (b *Birc) handleNotice(client *girc.Client, event girc.Event) {
-	if strings.Contains(event.String(), "This nickname is registered") && event.Source.Name == b.Config.NickServNick {
-		b.i.Cmd.Message(b.Config.NickServNick, "IDENTIFY "+b.Config.NickServPassword)
+	if strings.Contains(event.String(), "This nickname is registered") && event.Source.Name == b.GetString("NickServNick") {
+		b.i.Cmd.Message(b.GetString("NickServNick"), "IDENTIFY "+b.GetString("NickServPassword"))
 	} else {
 		b.handlePrivMsg(client, event)
 	}
 }
 
 func (b *Birc) handleOther(client *girc.Client, event girc.Event) {
-	if b.Config.DebugLevel == 1 {
+	if b.GetInt("DebugLevel") == 1 {
 		if event.Command != "CLIENT_STATE_UPDATED" &&
 			event.Command != "CLIENT_GENERAL_UPDATED" {
 			b.Log.Debugf("%#v", event.String())
@@ -322,9 +324,9 @@ func (b *Birc) handleOther(client *girc.Client, event girc.Event) {
 }
 
 func (b *Birc) handleOtherAuth(client *girc.Client, event girc.Event) {
-	if strings.EqualFold(b.Config.NickServNick, "Q@CServe.quakenet.org") {
-		b.Log.Debugf("Authenticating %s against %s", b.Config.NickServUsername, b.Config.NickServNick)
-		b.i.Cmd.Message(b.Config.NickServNick, "AUTH "+b.Config.NickServUsername+" "+b.Config.NickServPassword)
+	if strings.EqualFold(b.GetString("NickServNick"), "Q@CServe.quakenet.org") {
+		b.Log.Debugf("Authenticating %s against %s", b.GetString("NickServUsername"), b.GetString("NickServNick"))
+		b.i.Cmd.Message(b.GetString("NickServNick"), "AUTH "+b.GetString("NickServUsername")+" "+b.GetString("NickServPassword"))
 	}
 }
 
@@ -369,7 +371,7 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 	// start detecting the charset
 	var r io.Reader
 	var err error
-	mycharset := b.Config.Charset
+	mycharset := b.GetString("Charset")
 	if mycharset == "" {
 		// detect what were sending so that we convert it to utf-8
 		detector := chardet.NewTextDetector()
