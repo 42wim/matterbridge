@@ -169,6 +169,7 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 					rmsg.Username = message.From.FirstName
 				}
 			}
+			rmsg.Text += message.Text
 			// only download avatars if we have a place to upload them (configured mediaserver)
 			if b.General.MediaServerUpload != "" {
 				b.handleDownloadAvatar(message.From.ID, rmsg.Channel)
