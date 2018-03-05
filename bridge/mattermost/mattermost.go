@@ -21,7 +21,6 @@ type Bmattermost struct {
 
 func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Bmattermost{Config: cfg, avatarMap: make(map[string]string)}
-	b.Log.Debugf("MATTERMOST %#v", b.General)
 	return b
 }
 
