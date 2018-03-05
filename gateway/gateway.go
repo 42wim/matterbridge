@@ -81,6 +81,7 @@ func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 	if br == nil {
 		br = bridge.New(cfg)
 		br.Config = gw.Router.Config
+		br.General = &gw.General
 		// set logging
 		br.Log = log.WithFields(log.Fields{"prefix": "bridge"})
 		brconfig := &bridge.Config{Remote: gw.Message, Log: log.WithFields(log.Fields{"prefix": br.Protocol}), Bridge: br}
