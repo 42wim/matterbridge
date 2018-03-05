@@ -256,11 +256,11 @@ func (b *Bslack) handleSlack() {
 		b.Log.Debugf("<= Sending message from %s on %s to gateway", message.Username, b.Account)
 
 		// cleanup the message
-		message.Text = b.replaceURL(message.Text)
-		message.Text = html.UnescapeString(message.Text)
 		message.Text = b.replaceMention(message.Text)
 		message.Text = b.replaceVariable(message.Text)
 		message.Text = b.replaceChannel(message.Text)
+		message.Text = b.replaceURL(message.Text)
+		message.Text = html.UnescapeString(message.Text)
 
 		// Add the avatar
 		message.Avatar = b.getAvatar(message.Username)

@@ -53,8 +53,7 @@ func (b *Brocketchat) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			matterMessage := matterhook.OMessage{IconURL: b.GetString("IconURL"), Channel: rmsg.Channel, UserName: rmsg.Username,
-				Text: rmsg.Text}
+			matterMessage := matterhook.OMessage{IconURL: b.GetString("IconURL"), Channel: rmsg.Channel, UserName: rmsg.Username, Text: rmsg.Text}
 			b.mh.Send(matterMessage)
 		}
 		if len(msg.Extra["file"]) > 0 {
