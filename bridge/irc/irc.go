@@ -64,7 +64,7 @@ func (b *Birc) Command(msg *config.Message) string {
 }
 
 func (b *Birc) Connect() error {
-	b.Local = make(chan config.Message, b.GetInt("MessageQueue")+10)
+	b.Local = make(chan config.Message, b.MessageQueue+10)
 	b.Log.Infof("Connecting %s", b.GetString("Server"))
 	server, portstr, err := net.SplitHostPort(b.GetString("Server"))
 	if err != nil {
@@ -204,7 +204,7 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 
 	// split long messages on messageLength, to avoid clipped messages #281
 	if b.GetBool("MessageSplit") {
-		msg.Text = helper.SplitStringLength(msg.Text, b.GetInt("MessageLength"))
+		msg.Text = helper.SplitStringLength(msg.Text, b.MessageLength)
 	}
 	for _, text := range strings.Split(msg.Text, "\n") {
 		if len(text) > b.MessageLength {
@@ -214,8 +214,8 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 			}
 			text += " <message clipped>"
 		}
-		if len(b.Local) < b.GetInt("MessageQueue") {
-			if len(b.Local) == b.GetInt("MessageQueue")-1 {
+		if len(b.Local) < b.MessageQueue {
+			if len(b.Local) == b.MessageQueue-1 {
 				text = text + " <message clipped>"
 			}
 			b.Local <- config.Message{Text: text, Username: msg.Username, Channel: msg.Channel, Event: msg.Event}
