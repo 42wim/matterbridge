@@ -220,12 +220,12 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 	}
 
 	// only relay join/part when configured
-	if msg.Event == config.EVENT_JOIN_LEAVE && !gw.Bridges[dest.Account].Config.GetBool("ShowJoinPart") {
+	if msg.Event == config.EVENT_JOIN_LEAVE && !gw.Bridges[dest.Account].GetBool("ShowJoinPart") {
 		return brMsgIDs
 	}
 
 	// only relay topic change when configured
-	if msg.Event == config.EVENT_TOPIC_CHANGE && !gw.Bridges[dest.Account].Config.GetBool("ShowTopicChange") {
+	if msg.Event == config.EVENT_TOPIC_CHANGE && !gw.Bridges[dest.Account].GetBool("ShowTopicChange") {
 		return brMsgIDs
 	}
 
@@ -330,7 +330,7 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 func (gw *Gateway) modifyUsername(msg config.Message, dest *bridge.Bridge) string {
 	br := gw.Bridges[msg.Account]
 	msg.Protocol = br.Protocol
-	if gw.Config.General.StripNick || dest.Config.GetBool("StripNick") {
+	if gw.Config.General.StripNick || dest.GetBool("StripNick") {
 		re := regexp.MustCompile("[^a-zA-Z0-9]+")
 		msg.Username = re.ReplaceAllString(msg.Username, "")
 	}
