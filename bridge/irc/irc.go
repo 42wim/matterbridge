@@ -42,12 +42,18 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	b.connected = make(chan struct{})
 	if b.GetInt("MessageDelay") == 0 {
 		b.MessageDelay = 1300
+	} else {
+		b.MessageDelay = b.GetInt("MessageDelay")
 	}
 	if b.GetInt("MessageQueue") == 0 {
 		b.MessageQueue = 30
+	} else {
+		b.MessageQueue = b.GetInt("MessageQueue")
 	}
 	if b.GetInt("MessageLength") == 0 {
 		b.MessageLength = 400
+	} else {
+		b.MessageLength = b.GetInt("MessageLength")
 	}
 	b.FirstConnection = true
 	return b
