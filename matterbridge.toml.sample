@@ -135,6 +135,11 @@ RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 #OPTIONAL (default false)
 ShowJoinPart=false
 
+#Do not send joins/parts to other bridges
+#Currently works for messages from the following bridges: irc, mattermost, slack
+#OPTIONAL (default false)
+NoSendJoinPart=false
+
 #StripNick only allows alphanumerical nicks. See https://github.com/42wim/matterbridge/issues/285
 #It will strip other characters from the nick
 #OPTIONAL (default false)
@@ -446,6 +451,11 @@ RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 #OPTIONAL (default false)
 ShowJoinPart=false
 
+#Do not send joins/parts to other bridges
+#Currently works for messages from the following bridges: irc, mattermost, slack
+#OPTIONAL (default false)
+NoSendJoinPart=false
+
 #StripNick only allows alphanumerical nicks. See https://github.com/42wim/matterbridge/issues/285
 #It will strip other characters from the nick
 #OPTIONAL (default false)
@@ -635,6 +645,11 @@ RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 #Currently works for messages from the following bridges: irc, mattermost, slack
 #OPTIONAL (default false)
 ShowJoinPart=false
+
+#Do not send joins/parts to other bridges
+#Currently works for messages from the following bridges: irc, mattermost, slack
+#OPTIONAL (default false)
+NoSendJoinPart=false
 
 #StripNick only allows alphanumerical nicks. See https://github.com/42wim/matterbridge/issues/285
 #It will strip other characters from the nick

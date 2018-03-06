@@ -400,6 +400,9 @@ func (b *Bmattermost) skipMessage(message *matterclient.Message) bool {
 	if message.Type == "system_join_leave" ||
 		message.Type == "system_join_channel" ||
 		message.Type == "system_leave_channel" {
+		if b.GetBool("nosendjoinpart") {
+			return true
+		}
 		b.Log.Debugf("Sending JOIN_LEAVE event from %s to gateway", b.Account)
 		b.Remote <- config.Message{Username: "system", Text: message.Text, Channel: message.Channel, Account: b.Account, Event: config.EVENT_JOIN_LEAVE}
 		return true

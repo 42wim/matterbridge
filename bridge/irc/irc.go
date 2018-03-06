@@ -302,6 +302,9 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 		}
 	}
 	if event.Source.Name != b.Nick {
+		if b.GetBool("nosendjoinpart") {
+			return
+		}
 		b.Log.Debugf("<= Sending JOIN_LEAVE event from %s to gateway", b.Account)
 		msg := config.Message{Username: "system", Text: event.Source.Name + " " + strings.ToLower(event.Command) + "s", Channel: channel, Account: b.Account, Event: config.EVENT_JOIN_LEAVE}
 		b.Log.Debugf("<= Message is %#v", msg)

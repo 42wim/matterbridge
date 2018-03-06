@@ -619,6 +619,10 @@ func (b *Bslack) sendWebhook(msg config.Message) (string, error) {
 
 // skipMessageEvent skips event that need to be skipped :-)
 func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
+	if ev.SubType == "channel_leave" || ev.SubType == "channel_join" {
+		return b.GetBool("nosendjoinpart")
+	}
+
 	// ignore pinned items
 	if ev.SubType == "pinned_item" || ev.SubType == "unpinned_item" {
 		return true
