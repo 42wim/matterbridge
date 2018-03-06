@@ -204,7 +204,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 
 	// if we have an attached file, or other info
 	if msg.Extra != nil {
-		if len(msg.Extra[config.EVENT_FILE_FAILURE_SIZE]) == 0 {
+		if len(msg.Extra[config.EVENT_FILE_FAILURE_SIZE]) != 0 {
 			if msg.Text == "" {
 				return brMsgIDs
 			}
