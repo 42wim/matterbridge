@@ -103,8 +103,12 @@ func (b *Bslack) JoinChannel(channel config.ChannelInfo) error {
 		}
 		_, err := b.sc.JoinChannel(channel.Name)
 		if err != nil {
-			if err.Error() != "name_taken" {
-				return err
+			switch err.Error() {
+			case "name_taken", "restricted_action":
+			case "default":
+				{
+					return err
+				}
 			}
 		}
 	}
