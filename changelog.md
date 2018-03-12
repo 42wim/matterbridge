@@ -1,3 +1,18 @@
+# v1.9.0 (the refactor release)
+## New features
+* general: better debug messages
+* general: better support for environment variables override
+* general: Ability to disable sending join/leave messages to other gateways. #382
+* slack: Allow Slack @usergroups to be parsed as human-friendly names #379
+* slack: Provide better context for shared posts from Slack<=>Slack enhancement #369
+* telegram: Convert nicks automatically into HTML when MessageFormat is set to HTML #378
+* irc: Add DebugLevel option 
+
+## Bugfix
+* slack: Ignore restricted_action on channel join (slack). Closes #387
+* slack: Add slack attachment support to matterhook
+* slack: Update userlist on join (slack). Closes #372
+
 # v1.8.0
 ## New features
 * general: Send chat notification if media is too big to be re-uploaded to MediaServer. See #359
