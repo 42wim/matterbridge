@@ -190,7 +190,11 @@ func (m *MMClient) Login() error {
 	}
 
 	if m.Team == nil {
-		return errors.New("team not found")
+		validTeamNames := make([]string, len(m.OtherTeams))
+		for i, t := range m.OtherTeams {
+			validTeamNames[i] = t.Team.Name
+		}
+		return fmt.Errorf("Team '%s' not found in %v", m.Credentials.Team, validTeamNames)
 	}
 
 	m.wsConnect()
