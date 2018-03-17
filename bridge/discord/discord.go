@@ -80,6 +80,9 @@ func (b *Bdiscord) Connect() error {
 			}
 		}
 	}
+	for _, channel := range b.Channels {
+		b.Log.Debugf("found channel %#v", channel)
+	}
 	return nil
 }
 
