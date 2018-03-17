@@ -1,7 +1,6 @@
 package btelegram
 
 import (
-	"html"
 	"regexp"
 	"strconv"
 	"strings"
