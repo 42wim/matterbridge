@@ -43,6 +43,8 @@ script:
 
 deploy:
   provider: bintray
+  edge:
+    branch: v1.8.47
   file: ci/deploy.json
   user: 42wim
   key:
