@@ -385,7 +385,6 @@ func (b *Btelegram) sendMessage(chatid int64, username, text string) (string, er
 	m.Text = username + text
 	if b.GetString("MessageFormat") == "HTML" {
 		b.Log.Debug("Using mode HTML")
-		username = html.EscapeString(username)
 		m.Text = username + text
 		m.ParseMode = tgbotapi.ModeHTML
 	}
