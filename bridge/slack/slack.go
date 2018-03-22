@@ -4,16 +4,17 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/42wim/matterbridge/bridge"
-	"github.com/42wim/matterbridge/bridge/config"
-	"github.com/42wim/matterbridge/bridge/helper"
-	"github.com/42wim/matterbridge/matterhook"
-	"github.com/nlopes/slack"
 	"html"
 	"regexp"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/42wim/matterbridge/bridge"
+	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/helper"
+	"github.com/42wim/matterbridge/matterhook"
+	"github.com/nlopes/slack"
 )
 
 type Bslack struct {
@@ -387,7 +388,11 @@ func (b *Bslack) replaceVariable(text string) string {
 func (b *Bslack) replaceURL(text string) string {
 	results := regexp.MustCompile(`<(.*?)(\|.*?)?>`).FindAllStringSubmatch(text, -1)
 	for _, r := range results {
-		text = strings.Replace(text, r[0], r[1], -1)
+		if len(strings.TrimSpace(r[2])) == 1 { // A display text separator was found, but the text was blank
+			text = strings.Replace(text, r[0], "", -1)
+		} else {
+			text = strings.Replace(text, r[0], r[1], -1)
+		}
 	}
 	return text
 }
@@ -480,7 +485,7 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 	rmsg := config.Message{Text: ev.Text, Channel: channel.Name, Account: b.Account, ID: "slack " + ev.Timestamp, Extra: make(map[string][]interface{})}
 
 	// find the user id and name
-	if ev.BotID == "" && ev.SubType != messageDeleted && ev.SubType != "file_comment" {
+	if (ev.BotID == "" && ev.SubType != messageDeleted && ev.SubType != "file_comment") || (ev.BotID != "" && ev.Text == "" && ev.Attachments != nil) {
 		user, err := b.rtm.GetUserInfo(ev.User)
 		if err != nil {
 			return nil, err
@@ -504,7 +509,7 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 	}
 
 	// when using webhookURL we can't check if it's our webhook or not for now
-	if ev.BotID != "" && b.GetString("WebhookURL") == "" {
+	if ev.BotID != "" && (b.GetString("WebhookURL") == "" && ev.Attachments == nil) {
 		bot, err := b.rtm.GetBotInfo(ev.BotID)
 		if err != nil {
 			return nil, err
