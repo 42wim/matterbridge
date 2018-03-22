@@ -4,16 +4,17 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/42wim/matterbridge/bridge"
-	"github.com/42wim/matterbridge/bridge/config"
-	"github.com/42wim/matterbridge/bridge/helper"
-	"github.com/42wim/matterbridge/matterhook"
-	"github.com/nlopes/slack"
 	"html"
 	"regexp"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/42wim/matterbridge/bridge"
+	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/helper"
+	"github.com/42wim/matterbridge/matterhook"
+	"github.com/nlopes/slack"
 )
 
 type Bslack struct {
@@ -387,7 +388,11 @@ func (b *Bslack) replaceVariable(text string) string {
 func (b *Bslack) replaceURL(text string) string {
 	results := regexp.MustCompile(`<(.*?)(\|.*?)?>`).FindAllStringSubmatch(text, -1)
 	for _, r := range results {
-		text = strings.Replace(text, r[0], r[1], -1)
+		if len(strings.TrimSpace(r[2])) == 1 { // A display text separator was found, but the text was blank
+			text = strings.Replace(text, r[0], "", -1)
+		} else {
+			text = strings.Replace(text, r[0], r[1], -1)
+		}
 	}
 	return text
 }
