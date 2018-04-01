@@ -772,6 +772,14 @@ func (m *MMClient) GetStatus(userId string) string {
 	return "offline"
 }
 
+func (m *MMClient) UpdateStatus(userId string, status string) error {
+	_, resp := m.Client.UpdateUserStatus(userId, &model.Status{Status: status})
+	if resp.Error != nil {
+		return resp.Error
+	}
+	return nil
+}
+
 func (m *MMClient) GetStatuses() map[string]string {
 	var ids []string
 	statuses := make(map[string]string)
