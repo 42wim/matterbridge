@@ -130,6 +130,12 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 			return "", nil
 		}
 		b.Log.Debugf("Broadcasting using Webhook")
+		for _, f := range msg.Extra["file"] {
+			fi := f.(config.FileInfo)
+			if fi.URL != "" {
+				msg.Text += fi.URL + " "
+			}
+		}
 		err := b.c.WebhookExecute(
 			wID,
 			wToken,
