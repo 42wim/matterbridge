@@ -177,7 +177,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 		np.IconURL = msg.Avatar
 	}
 	// add a callback ID so we can see we created it
-	np.Attachments = append(np.Attachments, slack.Attachment{CallbackID: "matterbridge"})
+	np.Attachments = append(np.Attachments, slack.Attachment{CallbackID: "matterbridge_" + b.si.User.ID})
 	// add file attachments
 	np.Attachments = append(np.Attachments, b.createAttach(msg.Extra)...)
 	// add slack attachments (from another slack bridge)
@@ -644,7 +644,7 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 
 	// skip messages we made ourselves
 	if len(ev.Attachments) > 0 {
-		if ev.Attachments[0].CallbackID == "matterbridge" {
+		if ev.Attachments[0].CallbackID == "matterbridge_"+b.si.User.ID {
 			return true
 		}
 	}

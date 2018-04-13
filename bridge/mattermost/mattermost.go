@@ -366,7 +366,7 @@ func (b *Bmattermost) sendWebhook(msg config.Message) (string, error) {
 		// this sends a message only if we received a config.EVENT_FILE_FAILURE_SIZE
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
 			matterMessage := matterhook.OMessage{IconURL: b.GetString("IconURL"), Channel: rmsg.Channel, UserName: rmsg.Username, Text: rmsg.Text, Props: make(map[string]interface{})}
-			matterMessage.Props["matterbridge"] = true
+			matterMessage.Props["matterbridge_"+b.mc.User.Id] = true
 			b.mh.Send(matterMessage)
 		}
 
@@ -385,7 +385,7 @@ func (b *Bmattermost) sendWebhook(msg config.Message) (string, error) {
 	if msg.Avatar != "" {
 		matterMessage.IconURL = msg.Avatar
 	}
-	matterMessage.Props["matterbridge"] = true
+	matterMessage.Props["matterbridge_"+b.mc.User.Id] = true
 	err := b.mh.Send(matterMessage)
 	if err != nil {
 		b.Log.Info(err)
@@ -415,7 +415,7 @@ func (b *Bmattermost) skipMessage(message *matterclient.Message) bool {
 
 	// Ignore messages sent from matterbridge
 	if message.Post.Props != nil {
-		if _, ok := message.Post.Props["matterbridge"].(bool); ok {
+		if _, ok := message.Post.Props["matterbridge_"+b.mc.User.Id].(bool); ok {
 			b.Log.Debugf("sent by matterbridge, ignoring")
 			return true
 		}
