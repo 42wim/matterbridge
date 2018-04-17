@@ -787,6 +787,10 @@ UseFirstName=false
 #OPTIONAL (default false)
 UseInsecureURL=false
 
+#Disable quoted/reply messages
+#OPTIONAL (default false)
+QuoteDisable=false
+
 #Disable sending of edits to other bridges
 #OPTIONAL (default false)
 EditDisable=false

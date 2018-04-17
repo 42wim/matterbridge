@@ -221,7 +221,16 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 			if usernameReply == "" {
 				usernameReply = "unknown"
 			}
-			rmsg.Text = rmsg.Text + " (re @" + usernameReply + ":" + message.ReplyToMessage.Text + ")"
+			if !b.GetBool("QuoteDisable") {
+				rmsg.Text = rmsg.Text + " (re @" + usernameReply + ":"
+				// remove empty lines
+				for _, m := range strings.Split(message.ReplyToMessage.Text, "\n") {
+					if m != "" {
+						rmsg.Text = rmsg.Text + m
+					}
+				}
+				rmsg.Text = rmsg.Text + ")"
+			}
 		}
 
 		if rmsg.Text != "" || len(rmsg.Extra) > 0 {

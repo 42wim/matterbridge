@@ -92,6 +92,7 @@ type Protocol struct {
 	Password               string     // IRC,mattermost,XMPP,matrix
 	PrefixMessagesWithNick bool       // mattemost, slack
 	Protocol               string     // all protocols
+	QuoteDisable           bool       // telegram
 	RejoinDelay            int        // IRC
 	ReplaceMessages        [][]string // all protocols
 	ReplaceNicks           [][]string // all protocols
