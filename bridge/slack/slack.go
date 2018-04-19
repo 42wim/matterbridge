@@ -521,6 +521,19 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 			}
 			rmsg.UserID = bot.ID
 		}
+
+		// fixes issues with matterircd users
+		if bot.Name == "Slack API Tester" {
+			user, err := b.rtm.GetUserInfo(ev.User)
+			if err != nil {
+				return nil, err
+			}
+			rmsg.UserID = user.ID
+			rmsg.Username = user.Name
+			if user.Profile.DisplayName != "" {
+				rmsg.Username = user.Profile.DisplayName
+			}
+		}
 	}
 
 	// file comments are set by the system (because there is no username given)
