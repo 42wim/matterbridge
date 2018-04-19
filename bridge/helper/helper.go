@@ -97,5 +97,6 @@ func RemoveEmptyNewLines(msg string) string {
 			lines += line + "\n"
 		}
 	}
+	lines = strings.TrimRight(lines, "\n")
 	return lines
 }
