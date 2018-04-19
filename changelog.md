@@ -1,3 +1,15 @@
+# v1.9.1
+## New features
+* telegram: Add QuoteDisable option (telegram). Closes #399. See QuoteDisable in matterbridge.toml.sample
+## Enhancements
+* discord: Send mediaserver link to Discord in Webhook mode (discord) (#405)
+* mattermost: Print list of valid team names when team not found (#390)
+* slack: Strip markdown URLs with blank text (slack) (#392)
+## Bugfix
+* slack/mattermost: Make our callbackid more unique. Fixes issue with running multiple matterbridge on the same channel (slack,mattermost)
+* telegram: fix newlines in multiline messages #399
+* telegram: Revert #378
+
 # v1.9.0 (the refactor release)
 ## New features
 * general: better debug messages
