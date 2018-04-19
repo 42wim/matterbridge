@@ -222,18 +222,12 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 				usernameReply = "unknown"
 			}
 			if !b.GetBool("QuoteDisable") {
-				rmsg.Text = rmsg.Text + " (re @" + usernameReply + ":"
-				// remove empty lines
-				for _, m := range strings.Split(message.ReplyToMessage.Text, "\n") {
-					if m != "" {
-						rmsg.Text = rmsg.Text + m
-					}
-				}
-				rmsg.Text = rmsg.Text + ")"
+				rmsg.Text = rmsg.Text + " (re @" + usernameReply + ":" + message.ReplyToMessage.Text + ")"
 			}
 		}
 
 		if rmsg.Text != "" || len(rmsg.Extra) > 0 {
+			rmsg.Text = helper.RemoveEmptyNewLines(rmsg.Text)
 			rmsg.Avatar = helper.GetAvatar(b.avatarMap, strconv.Itoa(message.From.ID), b.General)
 
 			b.Log.Debugf("<= Sending message from %s on %s to gateway", rmsg.Username, b.Account)

@@ -88,3 +88,13 @@ func HandleDownloadData(flog *log.Entry, msg *config.Message, name, comment, url
 	}
 	msg.Extra["file"] = append(msg.Extra["file"], config.FileInfo{Name: name, Data: data, URL: url, Comment: comment, Avatar: avatar})
 }
+
+func RemoveEmptyNewLines(msg string) string {
+	lines := ""
+	for _, line := range strings.Split(msg, "\n") {
+		if line != "" {
+			lines += line + "\n"
+		}
+	}
+	return lines
+}
