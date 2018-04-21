@@ -574,7 +574,7 @@ func (m *MMClient) GetFileLinks(filenames []string) []string {
 		res, resp := m.Client.GetFileLink(f)
 		if resp.Error != nil {
 			// public links is probably disabled, create the link ourselves
-			output = append(output, uriScheme+m.Credentials.Server+model.API_URL_SUFFIX_V3+"/files/"+f+"/get")
+			output = append(output, uriScheme+m.Credentials.Server+model.API_URL_SUFFIX_V4+"/files/"+f)
 			continue
 		}
 		output = append(output, res)
