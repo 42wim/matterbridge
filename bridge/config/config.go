@@ -243,11 +243,18 @@ func (c *Config) GetStringSlice(key string) []string {
 func (c *Config) GetStringSlice2D(key string) [][]string {
 	c.RLock()
 	defer c.RUnlock()
-	if res, ok := c.v.Get(key).([][]string); ok {
-		return res
+	result := [][]string{}
+	if res, ok := c.v.Get(key).([]interface{}); ok {
+		for _, entry := range res {
+			result2 := []string{}
+			for _, entry2 := range entry.([]interface{}) {
+				result2 = append(result2, entry2.(string))
+			}
+			result = append(result, result2)
+		}
+		return result
 	}
-	// log.Debugf("getting StringSlice2D %s = %#v", key, c.v.Get(key))
-	return [][]string{}
+	return result
 }
 
 func GetIconURL(msg *Message, iconURL string) string {
