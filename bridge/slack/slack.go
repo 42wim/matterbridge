@@ -485,7 +485,7 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 	rmsg := config.Message{Text: ev.Text, Channel: channel.Name, Account: b.Account, ID: "slack " + ev.Timestamp, Extra: make(map[string][]interface{})}
 
 	// find the user id and name
-	if (ev.BotID == "" && ev.SubType != messageDeleted && ev.SubType != "file_comment") || (ev.BotID != "" && ev.Text == "" && ev.Attachments != nil) {
+	if ev.User != "" && ev.SubType != messageDeleted && ev.SubType != "file_comment" {
 		user, err := b.rtm.GetUserInfo(ev.User)
 		if err != nil {
 			return nil, err
@@ -509,7 +509,7 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 	}
 
 	// when using webhookURL we can't check if it's our webhook or not for now
-	if ev.BotID != "" && (b.GetString("WebhookURL") == "" && ev.Attachments == nil) {
+	if rmsg.Username == "" && ev.BotID != "" && b.GetString("WebhookURL") == "" {
 		bot, err := b.rtm.GetBotInfo(ev.BotID)
 		if err != nil {
 			return nil, err
