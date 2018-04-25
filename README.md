@@ -7,12 +7,12 @@ Click on one of the badges below to join the chat
 
 ![matterbridge.gif](https://github.com/42wim/matterbridge/blob/master/img/matterbridge.gif)
 
-Simple bridge between IRC, XMPP, Gitter, Mattermost, Slack, Discord, Telegram, Rocket.Chat, Hipchat(via xmpp), Matrix, Steam and ssh-chat
-Has a REST API.  
+Simple bridge between IRC, XMPP, Gitter, Mattermost, Slack, Discord, Telegram, Rocket.Chat, Hipchat(via xmpp), Matrix, Steam and ssh-chat  
+Has a REST API.   
 Minecraft server chat support via [MatterLink](https://github.com/elytra/MatterLink)
 
 **Mattermost isn't required to run matterbridge. It bridges between any supported protocol.**   
-The name matterbridge is a remnant when it was only bridging mattermost)
+(The name matterbridge is a remnant when it was only bridging mattermost)
 
 # Table of Contents
  * [Features](https://github.com/42wim/matterbridge/wiki/Features)
