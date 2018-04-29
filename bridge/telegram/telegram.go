@@ -121,7 +121,7 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 	for update := range updates {
 		b.Log.Debugf("== Receiving event: %#v", update.Message)
 
-		if update.Message == nil && update.ChannelPost == nil {
+		if update.Message == nil && update.ChannelPost == nil && update.EditedMessage == nil && update.EditedChannelPost == nil {
 			b.Log.Error("Getting nil messages, this shouldn't happen.")
 			continue
 		}
@@ -133,6 +133,7 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		// handle channels
 		if update.ChannelPost != nil {
 			message = update.ChannelPost
+			rmsg.Text = message.Text
 		}
 
 		// edited channel message
@@ -144,6 +145,7 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		// handle groups
 		if update.Message != nil {
 			message = update.Message
+			rmsg.Text = message.Text
 		}
 
 		// edited group message
@@ -168,7 +170,6 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 					rmsg.Username = message.From.FirstName
 				}
 			}
-			rmsg.Text += message.Text
 			// only download avatars if we have a place to upload them (configured mediaserver)
 			if b.General.MediaServerUpload != "" {
 				b.handleDownloadAvatar(message.From.ID, rmsg.Channel)
