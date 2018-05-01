@@ -64,6 +64,9 @@ NickServPassword="secret"
 #OPTIONAL only used for quakenet auth
 NickServUsername="username"
 
+## RELOADABLE SETTINGS
+## Settings below can be reloaded by editing the file
+
 #Flood control
 #Delay in milliseconds between each message send to the IRC server
 #OPTIONAL (default 1300)
@@ -184,6 +187,9 @@ Nick="xmppbot"
 #OPTIONAL (default false)
 SkipTLSVerify=true
 
+## RELOADABLE SETTINGS
+## Settings below can be reloaded by editing the file
+
 #Nicks you want to ignore. 
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
@@ -264,6 +270,9 @@ Muc="conf.hipchat.com"
 #Room nickname
 #REQUIRED
 Nick="yourlogin"
+
+## RELOADABLE SETTINGS
+## Settings below can be reloaded by editing the file
 
 #Nicks you want to ignore. 
 #Messages from those users will not be sent to other bridges.
@@ -382,6 +391,9 @@ IconURL="http://youricon.png"
 #OPTIONAL (default false)
 SkipTLSVerify=true
 
+## RELOADABLE SETTINGS
+## Settings below can be reloaded by editing the file
+
 #how to format the list of IRC nicks when displayed in mattermost. 
 #Possible options are "table" and "plain"
 #OPTIONAL (default plain)
@@ -482,6 +494,9 @@ ShowTopicChange=false
 #REQUIRED
 Token="Yourtokenhere"
 
+## RELOADABLE SETTINGS
+## Settings below can be reloaded by editing the file
+
 #Nicks you want to ignore. 
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
@@ -576,6 +591,9 @@ WebhookBindAddress="0.0.0.0:9999"
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
 #OPTIONAL
 IconURL="https://robohash.org/{NICK}.png?size=48x48"
+
+## RELOADABLE SETTINGS
+## Settings below can be reloaded by editing the file
 
 #how to format the list of IRC nicks when displayed in slack
 #Possible options are "table" and "plain"
@@ -680,6 +698,9 @@ Token="Yourtokenhere"
 #REQUIRED
 Server="yourservername"
 
+## RELOADABLE SETTINGS
+## Settings below can be reloaded by editing the file
+
 #Shows title, description and URL of embedded messages (sent by other bots)
 #OPTIONAL (default false)
 ShowEmbeds=false
@@ -769,6 +790,9 @@ ShowTopicChange=false
 #See https://core.telegram.org/bots#6-botfather and https://www.linkedin.com/pulse/telegram-bots-beginners-marco-frau
 #REQUIRED
 Token="Yourtokenhere"
+
+## RELOADABLE SETTINGS
+## Settings below can be reloaded by editing the file
 
 #OPTIONAL (default empty)
 #Only supported format is "HTML", messages will be sent in html parsemode.
@@ -892,6 +916,9 @@ NoTLS=false
 #OPTIONAL (default false)
 SkipTLSVerify=true
 
+## RELOADABLE SETTINGS
+## Settings below can be reloaded by editing the file
+
 #Whether to prefix messages from other bridges to rocketchat with the sender's nick. 
 #Useful if username overrides for incoming webhooks isn't enabled on the 
 #rocketchat server. If you set PrefixMessagesWithNick to true, each message 
@@ -979,6 +1006,9 @@ Password="yourpass"
 #OPTIONAL (default false)
 NoHomeServerSuffix=false
 
+## RELOADABLE SETTINGS
+## Settings below can be reloaded by editing the file
+
 #Whether to prefix messages from other bridges to matrix with the sender's nick. 
 #Useful if username overrides for incoming webhooks isn't enabled on the 
 #matrix server. If you set PrefixMessagesWithNick to true, each message 
@@ -1059,6 +1089,9 @@ Password="yourpass"
 #steamguard mail authcode (not the 2FA code)
 #OPTIONAL 
 Authcode="ABCE12"
+
+## RELOADABLE SETTINGS
+## Settings below can be reloaded by editing the file
 
 #Whether to prefix messages from other bridges to matrix with the sender's nick. 
 #Useful if username overrides for incoming webhooks isn't enabled on the 
@@ -1162,6 +1195,10 @@ RemoteNickFormat="{NICK}"
 ###################################################################
 # Settings here are defaults that each protocol can override
 [general]
+
+## RELOADABLE SETTINGS
+## Settings below can be reloaded by editing the file
+
 #RemoteNickFormat defines how remote users appear on this bridge 
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge

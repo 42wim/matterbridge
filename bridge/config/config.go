@@ -2,8 +2,10 @@ package config
 
 import (
 	"bytes"
+	"github.com/fsnotify/fsnotify"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 	"os"
 	"strings"
 	"sync"
@@ -169,9 +171,13 @@ type Config struct {
 }
 
 func NewConfig(cfgfile string) *Config {
+	log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: false})
+	flog := log.WithFields(log.Fields{"prefix": "config"})
 	var cfg ConfigValues
 	viper.SetConfigType("toml")
+	viper.SetConfigFile(cfgfile)
 	viper.SetEnvPrefix("matterbridge")
+	viper.AddConfigPath(".")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 	f, err := os.Open(cfgfile)
@@ -191,6 +197,11 @@ func NewConfig(cfgfile string) *Config {
 	if cfg.General.MediaDownloadSize == 0 {
 		cfg.General.MediaDownloadSize = 1000000
 	}
+	viper.WatchConfig()
+	viper.OnConfigChange(func(e fsnotify.Event) {
+		flog.Println("Config file changed:", e.Name)
+	})
+
 	mycfg.ConfigValues = &cfg
 	return mycfg
 }
