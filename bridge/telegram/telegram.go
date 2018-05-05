@@ -229,7 +229,10 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 
 		if rmsg.Text != "" || len(rmsg.Extra) > 0 {
 			rmsg.Text = helper.RemoveEmptyNewLines(rmsg.Text)
-			rmsg.Avatar = helper.GetAvatar(b.avatarMap, strconv.Itoa(message.From.ID), b.General)
+			// channels don't have (always?) user information. see #410
+			if message.From != nil {
+				rmsg.Avatar = helper.GetAvatar(b.avatarMap, strconv.Itoa(message.From.ID), b.General)
+			}
 
 			b.Log.Debugf("<= Sending message from %s on %s to gateway", rmsg.Username, b.Account)
 			b.Log.Debugf("<= Message is %#v", rmsg)
