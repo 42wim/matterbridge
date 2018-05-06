@@ -427,9 +427,13 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 			durl := gw.Config.General.MediaServerDownload + "/" + sha1sum + "/" + fi.Name
 			extra := msg.Extra["file"][i].(config.FileInfo)
 			extra.URL = durl
-			req, _ := http.NewRequest("PUT", url, reader)
+			req, err := http.NewRequest("PUT", url, reader)
+			if err != nil {
+				flog.Errorf("mediaserver upload failed: %#v", err)
+				continue
+			}
 			req.Header.Set("Content-Type", "binary/octet-stream")
-			_, err := client.Do(req)
+			_, err = client.Do(req)
 			if err != nil {
 				flog.Errorf("mediaserver upload failed: %#v", err)
 				continue
