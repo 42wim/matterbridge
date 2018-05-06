@@ -2,8 +2,10 @@ package bsteam
 
 import (
 	"fmt"
+
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/Philipp15b/go-steam"
 	"github.com/Philipp15b/go-steam/protocol/steamlang"
 	"github.com/Philipp15b/go-steam/steamid"
@@ -66,6 +68,30 @@ func (b *Bsteam) Send(msg config.Message) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	// Handle files
+	if msg.Extra != nil {
+		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+			b.c.Social.SendMessage(id, steamlang.EChatEntryType_ChatMsg, rmsg.Username+rmsg.Text)
+		}
+		if len(msg.Extra["file"]) > 0 {
+			for _, f := range msg.Extra["file"] {
+				fi := f.(config.FileInfo)
+				if fi.Comment != "" {
+					msg.Text += fi.Comment + ": "
+				}
+				if fi.URL != "" {
+					msg.Text = fi.URL
+					if fi.Comment != "" {
+						msg.Text = fi.Comment + ": " + fi.URL
+					}
+				}
+				b.c.Social.SendMessage(id, steamlang.EChatEntryType_ChatMsg, msg.Username+msg.Text)
+			}
+			return "", nil
+		}
+	}
+
 	b.c.Social.SendMessage(id, steamlang.EChatEntryType_ChatMsg, msg.Username+msg.Text)
 	return "", nil
 }
