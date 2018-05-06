@@ -201,6 +201,9 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 				}
 				if fi.URL != "" {
 					msg.Text = fi.URL
+					if fi.Comment != "" {
+						msg.Text = fi.Comment + ": " + fi.URL
+					}
 				}
 				b.Local <- config.Message{Text: msg.Text, Username: msg.Username, Channel: msg.Channel, Event: msg.Event}
 			}

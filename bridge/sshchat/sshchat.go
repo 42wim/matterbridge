@@ -68,6 +68,9 @@ func (b *Bsshchat) Send(msg config.Message) (string, error) {
 				}
 				if fi.URL != "" {
 					msg.Text = fi.URL
+					if fi.Comment != "" {
+						msg.Text = fi.Comment + ": " + fi.URL
+					}
 				}
 				b.w.Write([]byte(msg.Username + msg.Text))
 			}

@@ -168,6 +168,9 @@ func (b *Bgitter) handleUploadFile(msg *config.Message, roomID string) (string, 
 		}
 		if fi.URL != "" {
 			msg.Text = fi.URL
+			if fi.Comment != "" {
+				msg.Text = fi.Comment + ": " + fi.URL
+			}
 		}
 		_, err := b.c.SendMessage(roomID, msg.Username+msg.Text)
 		if err != nil {

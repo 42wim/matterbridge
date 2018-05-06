@@ -186,7 +186,10 @@ func (b *Bxmpp) handleUploadFile(msg *config.Message) (string, error) {
 			msg.Text += fi.Comment + ": "
 		}
 		if fi.URL != "" {
-			msg.Text += fi.URL
+			msg.Text = fi.URL
+			if fi.Comment != "" {
+				msg.Text = fi.Comment + ": " + fi.URL
+			}
 		}
 		_, err := b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.GetString("Muc"), Text: msg.Username + msg.Text})
 		if err != nil {
