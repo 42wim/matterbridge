@@ -23,6 +23,7 @@ import (
 	"github.com/hashicorp/golang-lru"
 	"github.com/peterhellberg/emojilib"
 	"net/http"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -409,6 +410,7 @@ func (gw *Gateway) modifyMessage(msg *config.Message) {
 }
 
 func (gw *Gateway) handleFiles(msg *config.Message) {
+	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
 	// if we don't have a attachfield or we don't have a mediaserver configured return
 	if msg.Extra == nil || gw.Config.General.MediaServerUpload == "" {
 		return
@@ -421,6 +423,10 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 		}
 		for i, f := range msg.Extra["file"] {
 			fi := f.(config.FileInfo)
+			ext := filepath.Ext(fi.Name)
+			fi.Name = fi.Name[0 : len(fi.Name)-len(ext)]
+			fi.Name = reg.ReplaceAllString(fi.Name, "_")
+			fi.Name = fi.Name + ext
 			sha1sum := fmt.Sprintf("%x", sha1.Sum(*fi.Data))
 			reader := bytes.NewReader(*fi.Data)
 			url := gw.Config.General.MediaServerUpload + "/" + sha1sum + "/" + fi.Name
