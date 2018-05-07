@@ -406,6 +406,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/matterbridge/gozulipbot",
+			"repository": "https://github.com/matterbridge/gozulipbot",
+			"vcs": "git",
+			"revision": "b6bb12d33544893aa68904652704cf1a86ea3d18",
+			"branch": "work",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/mattermost/mattermost-server/einterfaces",
 			"repository": "https://github.com/mattermost/mattermost-server",
 			"vcs": "git",
