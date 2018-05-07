@@ -1,3 +1,22 @@
+# v1.10.0
+## New features
+* general: Add support for reloading all settings automatically after changing config except connection and gateway configuration. Closes #373
+* zulip: New protocol support added (https://zulipchat.com)
+
+## Enhancements
+* general: Handle file comment better
+* steam: Handle file uploads to mediaserver (steam)
+* slack: Properly set Slack user who initiated slash command (#394)
+
+## Bugfix
+* general: Use only alphanumeric for file uploads to mediaserver. Closes #416
+* general: Fix crash on invalid filenames
+* general: Fix regression in ReplaceMessages and ReplaceNicks. Closes #407
+* telegram: Fix possible nil when using channels (telegram). #410
+* telegram: Fix panic (telegram). Closes #410
+* telegram: Handle channel posts correctly
+* mattermost: Update GetFileLinks to API_V4
+
 # v1.9.1
 ## New features
 * telegram: Add QuoteDisable option (telegram). Closes #399. See QuoteDisable in matterbridge.toml.sample
