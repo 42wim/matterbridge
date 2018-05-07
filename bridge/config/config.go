@@ -107,6 +107,7 @@ type Protocol struct {
 	StripNick              bool       // all protocols
 	Team                   string     // mattermost
 	Token                  string     // gitter, slack, discord, api
+	Topic                  string     // zulip
 	URL                    string     // mattermost, slack // DEPRECATED
 	UseAPI                 bool       // mattermost, slack
 	UseSASL                bool       // IRC
@@ -159,6 +160,7 @@ type ConfigValues struct {
 	Telegram           map[string]Protocol
 	Rocketchat         map[string]Protocol
 	Sshchat            map[string]Protocol
+	Zulip              map[string]Protocol
 	General            Protocol
 	Gateway            []Gateway
 	SameChannelGateway []SameChannelGateway

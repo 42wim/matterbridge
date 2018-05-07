@@ -17,6 +17,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/steam"
 	"github.com/42wim/matterbridge/bridge/telegram"
 	"github.com/42wim/matterbridge/bridge/xmpp"
+	"github.com/42wim/matterbridge/bridge/zulip"
 	log "github.com/sirupsen/logrus"
 	//	"github.com/davecgh/go-spew/spew"
 	"crypto/sha1"
@@ -62,6 +63,7 @@ var bridgeMap = map[string]bridge.Factory{
 	"steam":      bsteam.New,
 	"telegram":   btelegram.New,
 	"xmpp":       bxmpp.New,
+	"zulip":      bzulip.New,
 }
 
 func init() {
