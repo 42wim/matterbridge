@@ -180,6 +180,7 @@ func (b *Bxmpp) replaceAction(text string) (string, bool) {
 
 // handleUploadFile handles native upload of files
 func (b *Bxmpp) handleUploadFile(msg *config.Message) (string, error) {
+	var urldesc = ""
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo)
 		if fi.Comment != "" {
@@ -189,11 +190,15 @@ func (b *Bxmpp) handleUploadFile(msg *config.Message) (string, error) {
 			msg.Text = fi.URL
 			if fi.Comment != "" {
 				msg.Text = fi.Comment + ": " + fi.URL
+				urldesc = fi.Comment
 			}
 		}
 		_, err := b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.GetString("Muc"), Text: msg.Username + msg.Text})
 		if err != nil {
 			return "", err
+		}
+		if fi.URL != "" {
+			b.xc.SendOOB(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.GetString("Muc"), Ooburl: fi.URL, Oobdesc: urldesc})
 		}
 	}
 	return "", nil
