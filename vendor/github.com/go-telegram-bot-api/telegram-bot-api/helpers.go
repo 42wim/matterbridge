@@ -19,6 +19,13 @@ func NewMessage(chatID int64, text string) MessageConfig {
 	}
 }
 
+func NewDeleteMessage(chatID int64, messageID int) DeleteMessageConfig {
+	return DeleteMessageConfig{
+		ChatID:    chatID,
+		MessageID: messageID,
+	}
+}
+
 // NewMessageToChannel creates a new Message that is sent to a channel
 // by username.
 //
@@ -641,7 +648,7 @@ func NewCallbackWithAlert(id, text string) CallbackConfig {
 	}
 }
 
-// NewInvoice created a new Invoice request to the user.
+// NewInvoice creates a new Invoice request to the user.
 func NewInvoice(chatID int64, title, description, payload, providerToken, startParameter, currency string, prices *[]LabeledPrice) InvoiceConfig {
 	return InvoiceConfig{
 		BaseChat:       BaseChat{ChatID: chatID},
@@ -652,4 +659,35 @@ func NewInvoice(chatID int64, title, description, payload, providerToken, startP
 		StartParameter: startParameter,
 		Currency:       currency,
 		Prices:         prices}
+}
+
+// NewSetChatPhotoUpload creates a new chat photo uploader.
+//
+// chatID is where to send it, file is a string path to the file,
+// FileReader, or FileBytes.
+//
+// Note that you must send animated GIFs as a document.
+func NewSetChatPhotoUpload(chatID int64, file interface{}) SetChatPhotoConfig {
+	return SetChatPhotoConfig{
+		BaseFile: BaseFile{
+			BaseChat:    BaseChat{ChatID: chatID},
+			File:        file,
+			UseExisting: false,
+		},
+	}
+}
+
+// NewSetChatPhotoShare shares an existing photo.
+// You may use this to reshare an existing photo without reuploading it.
+//
+// chatID is where to send it, fileID is the ID of the file
+// already uploaded.
+func NewSetChatPhotoShare(chatID int64, fileID string) SetChatPhotoConfig {
+	return SetChatPhotoConfig{
+		BaseFile: BaseFile{
+			BaseChat:    BaseChat{ChatID: chatID},
+			FileID:      fileID,
+			UseExisting: true,
+		},
+	}
 }
