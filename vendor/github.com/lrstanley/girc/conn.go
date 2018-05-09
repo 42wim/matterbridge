@@ -371,6 +371,12 @@ func (c *Client) readLoop(ctx context.Context, errs chan error, wg *sync.WaitGro
 				return
 			}
 
+			// Check if it's an echo-message.
+			if !c.Config.disableTracking {
+				event.Echo = (event.Command == PRIVMSG || event.Command == NOTICE) &&
+					event.Source != nil && event.Source.Name == c.GetNick()
+			}
+
 			c.rx <- event
 		}
 	}
@@ -500,7 +506,7 @@ type ErrTimedOut struct {
 	Delay time.Duration
 }
 
-func (ErrTimedOut) Error() string { return "timed out during ping to server" }
+func (ErrTimedOut) Error() string { return "timed out waiting for a requested PING response" }
 
 func (c *Client) pingLoop(ctx context.Context, errs chan error, wg *sync.WaitGroup) {
 	// Don't run the pingLoop if they want to disable it.

@@ -132,6 +132,10 @@ func (u User) Channels(c *Client) []*Channel {
 // Copy returns a deep copy of the user which can be modified without making
 // changes to the actual state.
 func (u *User) Copy() *User {
+	if u == nil {
+		return nil
+	}
+
 	nu := &User{}
 	*nu = *u
 
@@ -148,7 +152,7 @@ func (u *User) addChannel(name string) {
 	}
 
 	u.ChannelList = append(u.ChannelList, ToRFC1459(name))
-	sort.StringsAreSorted(u.ChannelList)
+	sort.Strings(u.ChannelList)
 
 	u.Perms.set(name, Perms{})
 }
@@ -321,6 +325,10 @@ func (ch *Channel) deleteUser(nick string) {
 
 // Copy returns a deep copy of a given channel.
 func (ch *Channel) Copy() *Channel {
+	if ch == nil {
+		return nil
+	}
+
 	nc := &Channel{}
 	*nc = *ch
 
@@ -483,6 +491,9 @@ func (s *state) renameUser(from, to string) {
 		for j := 0; j < len(s.channels[user.ChannelList[i]].UserList); j++ {
 			if s.channels[user.ChannelList[i]].UserList[j] == from {
 				s.channels[user.ChannelList[i]].UserList[j] = ToRFC1459(to)
+
+				sort.Strings(s.channels[user.ChannelList[i]].UserList)
+				break
 			}
 		}
 	}

@@ -113,7 +113,9 @@ func handlePING(c *Client, e Event) {
 }
 
 func handlePONG(c *Client, e Event) {
+	c.conn.mu.Lock()
 	c.conn.lastPong = time.Now()
+	c.conn.mu.Unlock()
 }
 
 // handleJOIN ensures that the state has updated users and channels.

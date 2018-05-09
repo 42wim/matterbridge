@@ -14,6 +14,7 @@ import (
 	"log"
 	"runtime"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 )
@@ -173,8 +174,8 @@ func (conf *Config) isValid() error {
 		conf.Port = 6667
 	}
 
-	if conf.Port < 21 || conf.Port > 65535 {
-		return &ErrInvalidConfig{Conf: *conf, err: errors.New("port outside valid range (21-65535)")}
+	if conf.Port < 1 || conf.Port > 65535 {
+		return &ErrInvalidConfig{Conf: *conf, err: errors.New("port outside valid range (1-65535)")}
 	}
 
 	if !IsValidNick(conf.Nick) {
@@ -432,7 +433,6 @@ func (c *Client) GetNick() string {
 	if c.state.nick == "" {
 		return c.Config.Nick
 	}
-
 	return c.state.nick
 }
 
@@ -448,140 +448,124 @@ func (c *Client) GetIdent() string {
 	if c.state.ident == "" {
 		return c.Config.User
 	}
-
 	return c.state.ident
 }
 
 // GetHost returns the current host of the active connection. Panics if
 // tracking is disabled. May be empty, as this is obtained from when we join
 // a channel, as there is no other more efficient method to return this info.
-func (c *Client) GetHost() string {
+func (c *Client) GetHost() (host string) {
 	c.panicIfNotTracking()
 
 	c.state.RLock()
-	defer c.state.RUnlock()
-
-	return c.state.host
+	host = c.state.host
+	c.state.RUnlock()
+	return host
 }
 
-// ChannelList returns the active list of channel names that the client is in.
-// Panics if tracking is disabled.
+// ChannelList returns the (sorted) active list of channel names that the client
+// is in. Panics if tracking is disabled.
 func (c *Client) ChannelList() []string {
 	c.panicIfNotTracking()
 
 	c.state.RLock()
-	channels := make([]string, len(c.state.channels))
-	var i int
+	channels := make([]string, 0, len(c.state.channels))
 	for channel := range c.state.channels {
-		channels[i] = c.state.channels[channel].Name
-		i++
+		channels = append(channels, c.state.channels[channel].Name)
 	}
 	c.state.RUnlock()
 	sort.Strings(channels)
-
 	return channels
 }
 
-// Channels returns the active channels that the client is in. Panics if
-// tracking is disabled.
+// Channels returns the (sorted) active channels that the client is in. Panics
+// if tracking is disabled.
 func (c *Client) Channels() []*Channel {
 	c.panicIfNotTracking()
 
 	c.state.RLock()
-	channels := make([]*Channel, len(c.state.channels))
-	var i int
+	channels := make([]*Channel, 0, len(c.state.channels))
 	for channel := range c.state.channels {
-		channels[i] = c.state.channels[channel].Copy()
-		i++
+		channels = append(channels, c.state.channels[channel].Copy())
 	}
 	c.state.RUnlock()
 
+	sort.Slice(channels, func(i, j int) bool {
+		return channels[i].Name < channels[j].Name
+	})
 	return channels
 }
 
-// UserList returns the active list of nicknames that the client is tracking
-// across all networks. Panics if tracking is disabled.
+// UserList returns the (sorted) active list of nicknames that the client is
+// tracking across all channels. Panics if tracking is disabled.
 func (c *Client) UserList() []string {
 	c.panicIfNotTracking()
 
 	c.state.RLock()
-	users := make([]string, len(c.state.users))
-	var i int
+	users := make([]string, 0, len(c.state.users))
 	for user := range c.state.users {
-		users[i] = c.state.users[user].Nick
-		i++
+		users = append(users, c.state.users[user].Nick)
 	}
 	c.state.RUnlock()
 	sort.Strings(users)
-
 	return users
 }
 
-// Users returns the active users that the client is tracking across all
-// networks. Panics if tracking is disabled.
+// Users returns the (sorted) active users that the client is tracking across
+// all channels. Panics if tracking is disabled.
 func (c *Client) Users() []*User {
 	c.panicIfNotTracking()
 
 	c.state.RLock()
-	users := make([]*User, len(c.state.users))
-	var i int
+	users := make([]*User, 0, len(c.state.users))
 	for user := range c.state.users {
-		users[i] = c.state.users[user].Copy()
-		i++
+		users = append(users, c.state.users[user].Copy())
 	}
 	c.state.RUnlock()
 
+	sort.Slice(users, func(i, j int) bool {
+		return users[i].Nick < users[j].Nick
+	})
 	return users
 }
 
 // LookupChannel looks up a given channel in state. If the channel doesn't
 // exist, nil is returned. Panics if tracking is disabled.
-func (c *Client) LookupChannel(name string) *Channel {
+func (c *Client) LookupChannel(name string) (channel *Channel) {
 	c.panicIfNotTracking()
 	if name == "" {
 		return nil
 	}
 
 	c.state.RLock()
-	defer c.state.RUnlock()
-
-	channel := c.state.lookupChannel(name)
-	if channel == nil {
-		return nil
-	}
-
-	return channel.Copy()
+	channel = c.state.lookupChannel(name).Copy()
+	c.state.RUnlock()
+	return channel
 }
 
 // LookupUser looks up a given user in state. If the user doesn't exist, nil
 // is returned. Panics if tracking is disabled.
-func (c *Client) LookupUser(nick string) *User {
+func (c *Client) LookupUser(nick string) (user *User) {
 	c.panicIfNotTracking()
 	if nick == "" {
 		return nil
 	}
 
 	c.state.RLock()
-	defer c.state.RUnlock()
-
-	user := c.state.lookupUser(nick)
-	if user == nil {
-		return nil
-	}
-
-	return user.Copy()
+	user = c.state.lookupUser(nick).Copy()
+	c.state.RUnlock()
+	return user
 }
 
 // IsInChannel returns true if the client is in channel. Panics if tracking
 // is disabled.
-func (c *Client) IsInChannel(channel string) bool {
+func (c *Client) IsInChannel(channel string) (in bool) {
 	c.panicIfNotTracking()
 
 	c.state.RLock()
-	_, inChannel := c.state.channels[ToRFC1459(channel)]
+	_, in = c.state.channels[ToRFC1459(channel)]
 	c.state.RUnlock()
-
-	return inChannel
+	return in
 }
 
 // GetServerOption retrieves a server capability setting that was retrieved
@@ -596,7 +580,6 @@ func (c *Client) GetServerOption(key string) (result string, ok bool) {
 	c.state.RLock()
 	result, ok = c.state.serverOptions[key]
 	c.state.RUnlock()
-
 	return result, ok
 }
 
@@ -607,7 +590,6 @@ func (c *Client) NetworkName() (name string) {
 	c.panicIfNotTracking()
 
 	name, _ = c.GetServerOption("NETWORK")
-
 	return name
 }
 
@@ -615,33 +597,31 @@ func (c *Client) NetworkName() (name string) {
 // supplied this information during connection. May be empty if the server
 // does not support RPL_MYINFO. Will panic if used when tracking has been
 // disabled.
-func (c *Client) ServerVersion() string {
+func (c *Client) ServerVersion() (version string) {
 	c.panicIfNotTracking()
 
-	version, _ := c.GetServerOption("VERSION")
-
+	version, _ = c.GetServerOption("VERSION")
 	return version
 }
 
 // ServerMOTD returns the servers message of the day, if the server has sent
 // it upon connect. Will panic if used when tracking has been disabled.
-func (c *Client) ServerMOTD() string {
+func (c *Client) ServerMOTD() (motd string) {
 	c.panicIfNotTracking()
 
 	c.state.RLock()
-	motd := c.state.motd
+	motd = c.state.motd
 	c.state.RUnlock()
-
 	return motd
 }
 
 // Latency is the latency between the server and the client. This is measured
 // by determining the difference in time between when we ping the server, and
 // when we receive a pong.
-func (c *Client) Latency() time.Duration {
+func (c *Client) Latency() (delta time.Duration) {
 	c.mu.RLock()
 	c.conn.mu.RLock()
-	delta := c.conn.lastPong.Sub(c.conn.lastPing)
+	delta = c.conn.lastPong.Sub(c.conn.lastPing)
 	c.conn.mu.RUnlock()
 	c.mu.RUnlock()
 
@@ -650,6 +630,30 @@ func (c *Client) Latency() time.Duration {
 	}
 
 	return delta
+}
+
+// HasCapability checks if the client connection has the given capability. If
+// you want the full list of capabilities, listen for the girc.CAP_ACK event.
+// Will panic if used when tracking has been disabled.
+func (c *Client) HasCapability(name string) (has bool) {
+	c.panicIfNotTracking()
+
+	if !c.IsConnected() {
+		return false
+	}
+
+	name = strings.ToLower(name)
+
+	c.state.RLock()
+	for i := 0; i < len(c.state.enabledCap); i++ {
+		if strings.ToLower(c.state.enabledCap[i]) == name {
+			has = true
+			break
+		}
+	}
+	c.state.RUnlock()
+
+	return has
 }
 
 // panicIfNotTracking will throw a panic when it's called, and tracking is

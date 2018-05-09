@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"fmt"
 	"strings"
+	"time"
 )
 
 const (
@@ -33,18 +34,35 @@ func cutCRFunc(r rune) bool {
 //                   CR or LF>
 //    <crlf>     :: CR LF
 type Event struct {
-	Source        *Source  `json:"source"`         // The source of the event.
-	Tags          Tags     `json:"tags"`           // IRCv3 style message tags. Only use if network supported.
-	Command       string   `json:"command"`        // the IRC command, e.g. JOIN, PRIVMSG, KILL.
-	Params        []string `json:"params"`         // parameters to the command. Commonly nickname, channel, etc.
-	Trailing      string   `json:"trailing"`       // any trailing data. e.g. with a PRIVMSG, this is the message text.
-	EmptyTrailing bool     `json:"empty_trailing"` // if true, trailing prefix (:) will be added even if Event.Trailing is empty.
-	Sensitive     bool     `json:"sensitive"`      // if the message is sensitive (e.g. and should not be logged).
+	// Source is the origin of the event.
+	Source *Source `json:"source"`
+	// Tags are the IRCv3 style message tags for the given event. Only use
+	// if network supported.
+	Tags Tags `json:"tags"`
+	// Timestamp is the time the event was received. This could optionally be
+	// used for client-stored sent messages too. If the server supports the
+	// "server-time" capability, this is synced to the UTC time that the server
+	// specifies.
+	Timestamp time.Time `json:"timestamp"`
+	// Command that represents the event, e.g. JOIN, PRIVMSG, KILL.
+	Command string `json:"command"`
+	// Params (parameters/args) to the command. Commonly nickname, channel, etc.
+	Params []string `json:"params"`
+	// Trailing text. e.g. with a PRIVMSG, this is the message text (part
+	// after the colon.)
+	Trailing string `json:"trailing"`
+	// EmptyTrailign, if true, the text prefix (:) will be added even if
+	// Event.Trailing is empty.
+	EmptyTrailing bool `json:"empty_trailing"`
+	// Sensitive should be true if the message is sensitive (e.g. and should
+	// not be logged/shown in debugging output).
+	Sensitive bool `json:"sensitive"`
+	// If the event is an echo-message response.
+	Echo bool `json:"echo"`
 }
 
-// ParseEvent takes a string and attempts to create a Event struct.
-//
-// Returns nil if the Event is invalid.
+// ParseEvent takes a string and attempts to create a Event struct. Returns
+// nil if the Event is invalid.
 func ParseEvent(raw string) (e *Event) {
 	// Ignore empty events.
 	if raw = strings.TrimFunc(raw, cutCRFunc); len(raw) < 2 {
@@ -52,7 +70,7 @@ func ParseEvent(raw string) (e *Event) {
 	}
 
 	var i, j int
-	e = &Event{}
+	e = &Event{Timestamp: time.Now()}
 
 	if raw[0] == prefixTag {
 		// Tags end with a space.
@@ -63,6 +81,13 @@ func ParseEvent(raw string) (e *Event) {
 		}
 
 		e.Tags = ParseTags(raw[1:i])
+		if rawServerTime, ok := e.Tags.Get("time"); ok {
+			// Attempt to parse server-time. If we can't parse it, we just
+			// fall back to the time we received the message (locally.)
+			if stime, err := time.Parse(capServerTimeFormat, rawServerTime); err == nil {
+				e.Timestamp = stime.Local()
+			}
+		}
 		raw = raw[i+1:]
 	}
 
@@ -151,10 +176,12 @@ func (e *Event) Copy() *Event {
 	}
 
 	newEvent := &Event{
+		Timestamp:     e.Timestamp,
 		Command:       e.Command,
 		Trailing:      e.Trailing,
 		EmptyTrailing: e.EmptyTrailing,
 		Sensitive:     e.Sensitive,
+		Echo:          e.Echo,
 	}
 
 	// Copy Source field, as it's a pointer and needs to be dereferenced.
@@ -177,6 +204,25 @@ func (e *Event) Copy() *Event {
 	}
 
 	return newEvent
+}
+
+// Equals compares two Events for equality.
+func (e *Event) Equals(ev *Event) bool {
+	if e.Command != ev.Command || e.Trailing != ev.Trailing || len(e.Params) != len(ev.Params) {
+		return false
+	}
+
+	for i := 0; i < len(e.Params); i++ {
+		if e.Params[i] != ev.Params[i] {
+			return false
+		}
+	}
+
+	if !e.Source.Equals(ev.Source) || !e.Tags.Equals(ev.Tags) {
+		return false
+	}
+
+	return true
 }
 
 // Len calculates the length of the string representation of event. Note that
@@ -276,7 +322,7 @@ func (e *Event) String() string {
 // an event prettier, but also to filter out events that most don't visually
 // see in normal IRC clients. e.g. most clients don't show WHO queries.
 func (e *Event) Pretty() (out string, ok bool) {
-	if e.Sensitive {
+	if e.Sensitive || e.Echo {
 		return "", false
 	}
 
@@ -377,6 +423,10 @@ func (e *Event) Pretty() (out string, ok bool) {
 		return fmt.Sprintf("[*] topic for %s is: %s", e.Params[len(e.Params)-1], e.Trailing), true
 	}
 
+	if e.Command == CAP && len(e.Params) == 2 && len(e.Trailing) > 1 && e.Params[1] == CAP_ACK {
+		return "[*] enabling capabilities: " + e.Trailing, true
+	}
+
 	return "", false
 }
 
@@ -447,6 +497,20 @@ type Source struct {
 	// Host is the hostname or IP address of the user/service. Is not accurate
 	// due to how IRC servers can spoof hostnames.
 	Host string `json:"host"`
+}
+
+// Equals compares two Sources for equality.
+func (s *Source) Equals(ss *Source) bool {
+	if s == nil && ss == nil {
+		return true
+	}
+	if s != nil && ss == nil || s == nil && ss != nil {
+		return false
+	}
+	if s.Name != ss.Name || s.Ident != ss.Ident || s.Host != ss.Host {
+		return false
+	}
+	return true
 }
 
 // Copy returns a deep copy of Source.
