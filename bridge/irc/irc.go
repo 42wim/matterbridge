@@ -11,6 +11,7 @@ import (
 	"github.com/paulrosania/go-charset/charset"
 	_ "github.com/paulrosania/go-charset/data"
 	"github.com/saintfish/chardet"
+	"hash/crc32"
 	"io"
 	"io/ioutil"
 	"net"
@@ -240,11 +241,13 @@ func (b *Birc) doSend() {
 	throttle := time.NewTicker(rate)
 	for msg := range b.Local {
 		<-throttle.C
+		checksum := crc32.ChecksumIEEE([]byte(msg.Username))
+		coloredUsername := string(0x03) + string(checksum%0x10) + msg.Username + string(0x03)
 		if msg.Event == config.EVENT_USER_ACTION {
-			b.i.Cmd.Action(msg.Channel, msg.Username+msg.Text)
+			b.i.Cmd.Action(msg.Channel, coloredUsername+msg.Text)
 		} else {
 			b.Log.Debugf("Sending to channel %s", msg.Channel)
-			b.i.Cmd.Message(msg.Channel, msg.Username+msg.Text)
+			b.i.Cmd.Message(msg.Channel, coloredUsername+msg.Text)
 		}
 	}
 }
