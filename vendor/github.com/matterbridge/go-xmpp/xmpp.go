@@ -573,6 +573,8 @@ type Chat struct {
 	Text      string
 	Subject   string
 	Thread    string
+	Ooburl    string
+	Oobdesc   string
 	Roster    Roster
 	Other     []string
 	OtherElem []XMLElement
@@ -654,14 +656,40 @@ func (c *Client) Recv() (stanza interface{}, err error) {
 func (c *Client) Send(chat Chat) (n int, err error) {
 	var subtext = ``
 	var thdtext = ``
+	var oobtext = ``
 	if chat.Subject != `` {
 		subtext = `<subject>` + xmlEscape(chat.Subject) + `</subject>`
 	}
 	if chat.Thread != `` {
 		thdtext = `<thread>` + xmlEscape(chat.Thread) + `</thread>`
 	}
-	return fmt.Fprintf(c.conn, "<message to='%s' type='%s' xml:lang='en'>"+subtext+"<body>%s</body>"+thdtext+"</message>",
+	if chat.Ooburl != `` {
+		oobtext = `<x xmlns="jabber:x:oob"><url>` + xmlEscape(chat.Ooburl) + `</url>`
+		if chat.Oobdesc != `` {
+			oobtext += `<desc>` + xmlEscape(chat.Oobdesc) + `</desc>`
+		}
+		oobtext += `</x>`
+	}
+	return fmt.Fprintf(c.conn, "<message to='%s' type='%s' xml:lang='en'>" + subtext + "<body>%s</body>" + oobtext + thdtext + "</message>",
 		xmlEscape(chat.Remote), xmlEscape(chat.Type), xmlEscape(chat.Text))
+}
+
+// SendOOB sends OOB data wrapped inside an XMPP message stanza, without actual body.
+func (c *Client) SendOOB(chat Chat) (n int, err error) {
+	var thdtext = ``
+	var oobtext = ``
+	if chat.Thread != `` {
+		thdtext = `<thread>` + xmlEscape(chat.Thread) + `</thread>`
+	}
+	if chat.Ooburl != `` {
+		oobtext = `<x xmlns="jabber:x:oob"><url>` + xmlEscape(chat.Ooburl) + `</url>`
+		if chat.Oobdesc != `` {
+			oobtext += `<desc>` + xmlEscape(chat.Oobdesc) + `</desc>`
+		}
+		oobtext += `</x>`
+	}
+	return fmt.Fprintf(c.conn, "<message to='%s' type='%s' xml:lang='en'>" + oobtext + thdtext + "</message>",
+		xmlEscape(chat.Remote), xmlEscape(chat.Type))
 }
 
 // SendOrg sends the original text without being wrapped in an XMPP message stanza.
