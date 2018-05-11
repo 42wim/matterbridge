@@ -223,7 +223,7 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 				usernameReply = "unknown"
 			}
 			if !b.GetBool("QuoteDisable") {
-				rmsg.Text = rmsg.Text + " (re @" + usernameReply + ":" + message.ReplyToMessage.Text + ")"
+				rmsg.Text = b.handleQuote(rmsg.Text, usernameReply, message.ReplyToMessage.Text)
 			}
 		}
 
@@ -414,4 +414,15 @@ func (b *Btelegram) cacheAvatar(msg *config.Message) (string, error) {
 		b.avatarMap[msg.UserID] = fi.SHA
 	}
 	return "", nil
+}
+
+func (b *Btelegram) handleQuote(message, quoteNick, quoteMessage string) string {
+	format := b.GetString("quoteformat")
+	if format == "" {
+		format = "{MESSAGE} (re @{QUOTENICK}: {QUOTEMESSAGE})"
+	}
+	format = strings.Replace(format, "{MESSAGE}", message, -1)
+	format = strings.Replace(format, "{QUOTENICK}", quoteNick, -1)
+	format = strings.Replace(format, "{QUOTEMESSAGE}", quoteMessage, -1)
+	return format
 }

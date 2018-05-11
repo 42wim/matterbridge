@@ -95,6 +95,7 @@ type Protocol struct {
 	PrefixMessagesWithNick bool       // mattemost, slack
 	Protocol               string     // all protocols
 	QuoteDisable           bool       // telegram
+	QuoteFormat            string     // telegram
 	RejoinDelay            int        // IRC
 	ReplaceMessages        [][]string // all protocols
 	ReplaceNicks           [][]string // all protocols

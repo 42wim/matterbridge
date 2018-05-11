@@ -815,6 +815,10 @@ UseInsecureURL=false
 #OPTIONAL (default false)
 QuoteDisable=false
 
+#Format quoted/reply messages
+#OPTIONAL (default "{MESSAGE} (re @{QUOTENICK}: {QUOTEMESSAGE})")
+QuoteFormat="{MESSAGE} (re @{QUOTENICK}: {QUOTEMESSAGE})"
+
 #Disable sending of edits to other bridges
 #OPTIONAL (default false)
 EditDisable=false
