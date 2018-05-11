@@ -241,13 +241,16 @@ func (b *Birc) doSend() {
 	throttle := time.NewTicker(rate)
 	for msg := range b.Local {
 		<-throttle.C
-		checksum := crc32.ChecksumIEEE([]byte(msg.Username))
-		coloredUsername := string(0x03) + string(checksum%0x10) + msg.Username + string(0x03)
+		username := msg.Username
+		if b.GetBool("Colornicks") {
+			checksum := crc32.ChecksumIEEE([]byte(msg.Username))
+			username = fmt.Sprintf("\x03%d%s\x03", checksum%0x10, msg.Username)
+		}
 		if msg.Event == config.EVENT_USER_ACTION {
-			b.i.Cmd.Action(msg.Channel, coloredUsername+msg.Text)
+			b.i.Cmd.Action(msg.Channel, username+msg.Text)
 		} else {
 			b.Log.Debugf("Sending to channel %s", msg.Channel)
-			b.i.Cmd.Message(msg.Channel, coloredUsername+msg.Text)
+			b.i.Cmd.Message(msg.Channel, username+msg.Text)
 		}
 	}
 }
