@@ -146,6 +146,15 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/dfordsoft/golib/ic",
+			"repository": "https://github.com/dfordsoft/golib",
+			"vcs": "git",
+			"revision": "2ea3495aee1d7f72bb7f388432f2fad974270e12",
+			"branch": "master",
+			"path": "/ic",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/dgrijalva/jwt-go",
 			"repository": "https://github.com/dgrijalva/jwt-go",
 			"vcs": "git",
@@ -1015,12 +1024,48 @@
 			"notests": true
 		},
 		{
+			"importpath": "golang.org/x/text/encoding",
+			"repository": "https://go.googlesource.com/text",
+			"vcs": "git",
+			"revision": "5c1cf69b5978e5a34c5f9ba09a83e56acc4b7877",
+			"branch": "master",
+			"path": "/encoding",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/text/internal/format",
+			"repository": "https://go.googlesource.com/text",
+			"vcs": "git",
+			"revision": "5c1cf69b5978e5a34c5f9ba09a83e56acc4b7877",
+			"branch": "master",
+			"path": "internal/format",
+			"notests": true
+		},
+		{
 			"importpath": "golang.org/x/text/internal/gen",
 			"repository": "https://go.googlesource.com/text",
 			"vcs": "git",
 			"revision": "b7ef84aaf62aa3e70962625c80a571ae7c17cb40",
 			"branch": "master",
 			"path": "internal/gen",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/text/internal/language",
+			"repository": "https://go.googlesource.com/text",
+			"vcs": "git",
+			"revision": "5c1cf69b5978e5a34c5f9ba09a83e56acc4b7877",
+			"branch": "master",
+			"path": "internal/language",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/text/internal/tag",
+			"repository": "https://go.googlesource.com/text",
+			"vcs": "git",
+			"revision": "5c1cf69b5978e5a34c5f9ba09a83e56acc4b7877",
+			"branch": "master",
+			"path": "internal/tag",
 			"notests": true
 		},
 		{
@@ -1039,6 +1084,33 @@
 			"revision": "b7ef84aaf62aa3e70962625c80a571ae7c17cb40",
 			"branch": "master",
 			"path": "internal/ucd",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/text/internal/utf8internal",
+			"repository": "https://go.googlesource.com/text",
+			"vcs": "git",
+			"revision": "5c1cf69b5978e5a34c5f9ba09a83e56acc4b7877",
+			"branch": "master",
+			"path": "internal/utf8internal",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/text/language",
+			"repository": "https://go.googlesource.com/text",
+			"vcs": "git",
+			"revision": "5c1cf69b5978e5a34c5f9ba09a83e56acc4b7877",
+			"branch": "master",
+			"path": "language",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/text/runes",
+			"repository": "https://go.googlesource.com/text",
+			"vcs": "git",
+			"revision": "5c1cf69b5978e5a34c5f9ba09a83e56acc4b7877",
+			"branch": "master",
+			"path": "runes",
 			"notests": true
 		},
 		{

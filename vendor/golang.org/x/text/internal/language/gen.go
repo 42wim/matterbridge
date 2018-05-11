@@ -57,7 +57,7 @@ Each 3-letter code is followed by its 1-byte langID.`,
 	`
 altLangIndex is used to convert indexes in altLangISO3 to langIDs.`,
 	`
-langAliasMap maps langIDs to their suggested replacements.`,
+AliasMap maps langIDs to their suggested replacements.`,
 	`
 script is an alphabetically sorted list of ISO 15924 codes. The index
 of the script in the string, divided by 4, is the internal scriptID.`,
@@ -68,7 +68,7 @@ the UN.M49 codes used for groups.)`,
 	`
 regionISO holds a list of alphabetically sorted 2-letter ISO region codes.
 Each 2-letter codes is followed by two bytes with the following meaning:
-    - [A-Z}{2}: the first letter of the 2-letter code plus these two 
+    - [A-Z}{2}: the first letter of the 2-letter code plus these two
                 letters form the 3-letter ISO code.
     - 0, n:     index into altRegionISO3.`,
 	`
@@ -113,13 +113,6 @@ likelyRegionList holds lists info associated with likelyRegion.`,
 	`
 likelyScript is a lookup table, indexed by scriptID, for the most likely
 languages and regions given a script.`,
-	`
-matchLang holds pairs of langIDs of base languages that are typically
-mutually intelligible. Each pair is associated with a confidence and
-whether the intelligibility goes one or both ways.`,
-	`
-matchScript holds pairs of scriptIDs where readers of one script
-can typically also read the other. Each is associated with a confidence.`,
 	`
 nRegionGroups is the number of region groups.`,
 	`
@@ -481,17 +474,17 @@ func (b *builder) writeSliceAddSize(name string, extraSize int, ss interface{}) 
 	b.p()
 }
 
-type fromTo struct {
-	from, to uint16
+type FromTo struct {
+	From, To uint16
 }
 
 func (b *builder) writeSortedMap(name string, ss *stringSet, index func(s string) uint16) {
 	ss.sortFunc(func(a, b string) bool {
 		return index(a) < index(b)
 	})
-	m := []fromTo{}
+	m := []FromTo{}
 	for _, s := range ss.s {
-		m = append(m, fromTo{index(s), index(ss.update[s])})
+		m = append(m, FromTo{index(s), index(ss.update[s])})
 	}
 	b.writeSlice(name, m)
 }
@@ -665,9 +658,9 @@ func (b *builder) parseIndices() {
 			b.langNoIndex.remove(s)
 		}
 	}
-	b.writeConst("numLanguages", len(b.lang.slice())+len(b.langNoIndex.slice()))
-	b.writeConst("numScripts", len(b.script.slice()))
-	b.writeConst("numRegions", len(b.region.slice()))
+	b.writeConst("NumLanguages", len(b.lang.slice())+len(b.langNoIndex.slice()))
+	b.writeConst("NumScripts", len(b.script.slice()))
+	b.writeConst("NumRegions", len(b.region.slice()))
 
 	// Add dummy codes at the start of each list to represent "unspecified".
 	b.lang.add("---")
@@ -698,8 +691,8 @@ func (b *builder) computeRegionGroups() {
 			b.groups[group] = index(len(b.groups))
 		}
 	}
-	if len(b.groups) > 32 {
-		log.Fatalf("only 32 groups supported, found %d", len(b.groups))
+	if len(b.groups) > 64 {
+		log.Fatalf("only 64 groups supported, found %d", len(b.groups))
 	}
 	b.writeConst("nRegionGroups", len(b.groups))
 }
@@ -729,7 +722,7 @@ func (b *builder) writeLanguage() {
 	// Get language codes that need to be mapped (overlong 3-letter codes,
 	// deprecated 2-letter codes, legacy and grandfathered tags.)
 	langAliasMap := stringSet{}
-	aliasTypeMap := map[string]langAliasType{}
+	aliasTypeMap := map[string]AliasType{}
 
 	// altLangISO3 get the alternative ISO3 names that need to be mapped.
 	altLangISO3 := stringSet{}
@@ -751,7 +744,7 @@ func (b *builder) writeLanguage() {
 		} else if len(a.Type) <= 3 {
 			switch a.Reason {
 			case "macrolanguage":
-				aliasTypeMap[a.Type] = langMacro
+				aliasTypeMap[a.Type] = Macro
 			case "deprecated":
 				// handled elsewhere
 				continue
@@ -759,7 +752,7 @@ func (b *builder) writeLanguage() {
 				if a.Type == "no" {
 					continue
 				}
-				aliasTypeMap[a.Type] = langLegacy
+				aliasTypeMap[a.Type] = Legacy
 			default:
 				log.Fatalf("new %s alias: %s", a.Reason, a.Type)
 			}
@@ -771,14 +764,14 @@ func (b *builder) writeLanguage() {
 	// This can be removed if CLDR adopts this change.
 	langAliasMap.add("nb")
 	langAliasMap.updateLater("nb", "no")
-	aliasTypeMap["nb"] = langMacro
+	aliasTypeMap["nb"] = Macro
 
 	for k, v := range b.registry {
 		// Also add deprecated values for 3-letter ISO codes, which CLDR omits.
 		if v.typ == "language" && v.deprecated != "" && v.preferred != "" {
 			langAliasMap.add(k)
 			langAliasMap.updateLater(k, v.preferred)
-			aliasTypeMap[k] = langDeprecated
+			aliasTypeMap[k] = Deprecated
 		}
 	}
 	// Fix CLDR mappings.
@@ -806,10 +799,10 @@ func (b *builder) writeLanguage() {
 		}
 	}
 
-	// Complete canonialized language tags.
+	// Complete canonicalized language tags.
 	lang.freeze()
 	for i, v := range lang.s {
-		// We can avoid these manual entries by using the IANI registry directly.
+		// We can avoid these manual entries by using the IANA registry directly.
 		// Seems easier to update the list manually, as changes are rare.
 		// The panic in this loop will trigger if we miss an entry.
 		add := ""
@@ -844,12 +837,12 @@ func (b *builder) writeLanguage() {
 	b.writeConst("altLangISO3", tag.Index(altLangISO3.join()))
 	b.writeSlice("altLangIndex", altLangIndex)
 
-	b.writeSortedMap("langAliasMap", &langAliasMap, b.langIndex)
-	types := make([]langAliasType, len(langAliasMap.s))
+	b.writeSortedMap("AliasMap", &langAliasMap, b.langIndex)
+	types := make([]AliasType, len(langAliasMap.s))
 	for i, s := range langAliasMap.s {
 		types[i] = aliasTypeMap[s]
 	}
-	b.writeSlice("langAliasTypes", types)
+	b.writeSlice("AliasTypes", types)
 }
 
 var scriptConsts = []string{
@@ -916,7 +909,7 @@ func (b *builder) writeRegion() {
 			i := b.region.index(s)
 			for _, d := range e.description {
 				if strings.Contains(d, "Private use") {
-					regionTypes[i] = iso3166UserAssgined
+					regionTypes[i] = iso3166UserAssigned
 				}
 			}
 			regionTypes[i] |= bcp47Region
@@ -1073,7 +1066,7 @@ const (
 )
 
 const (
-	iso3166UserAssgined = 1 << iota
+	iso3166UserAssigned = 1 << iota
 	ccTLD
 	bcp47Region
 )
@@ -1361,125 +1354,6 @@ func (b *builder) writeLikelyData() {
 	b.writeSlice("likelyRegionGroup", likelyRegionGroup)
 }
 
-type mutualIntelligibility struct {
-	want, have uint16
-	conf       uint8
-	oneway     bool
-}
-
-type scriptIntelligibility struct {
-	lang       uint16 // langID or 0 if *
-	want, have uint8
-	conf       uint8
-}
-
-type sortByConf []mutualIntelligibility
-
-func (l sortByConf) Less(a, b int) bool {
-	return l[a].conf > l[b].conf
-}
-
-func (l sortByConf) Swap(a, b int) {
-	l[a], l[b] = l[b], l[a]
-}
-
-func (l sortByConf) Len() int {
-	return len(l)
-}
-
-// toConf converts a percentage value [0, 100] to a confidence class.
-func toConf(pct uint8) uint8 {
-	switch {
-	case pct == 100:
-		return 3 // Exact
-	case pct >= 90:
-		return 2 // High
-	case pct > 50:
-		return 1 // Low
-	default:
-		return 0 // No
-	}
-}
-
-// writeMatchData writes tables with languages and scripts for which there is
-// mutual intelligibility. The data is based on CLDR's languageMatching data.
-// Note that we use a different algorithm than the one defined by CLDR and that
-// we slightly modify the data. For example, we convert scores to confidence levels.
-// We also drop all region-related data as we use a different algorithm to
-// determine region equivalence.
-func (b *builder) writeMatchData() {
-	b.writeType(mutualIntelligibility{})
-	b.writeType(scriptIntelligibility{})
-	lm := b.supp.LanguageMatching.LanguageMatches
-	cldr.MakeSlice(&lm).SelectAnyOf("type", "written")
-
-	matchLang := []mutualIntelligibility{}
-	matchScript := []scriptIntelligibility{}
-	// Convert the languageMatch entries in lists keyed by desired language.
-	for _, m := range lm[0].LanguageMatch {
-		// Different versions of CLDR use different separators.
-		desired := strings.Replace(m.Desired, "-", "_", -1)
-		supported := strings.Replace(m.Supported, "-", "_", -1)
-		d := strings.Split(desired, "_")
-		s := strings.Split(supported, "_")
-		if len(d) != len(s) || len(d) > 2 {
-			// Skip all entries with regions and work around CLDR bug.
-			continue
-		}
-		pct, _ := strconv.ParseInt(m.Percent, 10, 8)
-		if len(d) == 2 && d[0] == s[0] && len(d[1]) == 4 {
-			// language-script pair.
-			lang := uint16(0)
-			if d[0] != "*" {
-				lang = uint16(b.langIndex(d[0]))
-			}
-			matchScript = append(matchScript, scriptIntelligibility{
-				lang: lang,
-				want: uint8(b.script.index(d[1])),
-				have: uint8(b.script.index(s[1])),
-				conf: toConf(uint8(pct)),
-			})
-			if m.Oneway != "true" {
-				matchScript = append(matchScript, scriptIntelligibility{
-					lang: lang,
-					want: uint8(b.script.index(s[1])),
-					have: uint8(b.script.index(d[1])),
-					conf: toConf(uint8(pct)),
-				})
-			}
-		} else if len(d) == 1 && d[0] != "*" {
-			if pct == 100 {
-				// nb == no is already handled by macro mapping. Check there
-				// really is only this case.
-				if d[0] != "no" || s[0] != "nb" {
-					log.Fatalf("unhandled equivalence %s == %s", s[0], d[0])
-				}
-				continue
-			}
-			matchLang = append(matchLang, mutualIntelligibility{
-				want:   uint16(b.langIndex(d[0])),
-				have:   uint16(b.langIndex(s[0])),
-				conf:   uint8(pct),
-				oneway: m.Oneway == "true",
-			})
-		} else {
-			// TODO: Handle other mappings.
-			a := []string{"*;*", "*_*;*_*", "es_MX;es_419"}
-			s := strings.Join([]string{desired, supported}, ";")
-			if i := sort.SearchStrings(a, s); i == len(a) || a[i] != s {
-				log.Printf("%q not handled", s)
-			}
-		}
-	}
-	sort.Stable(sortByConf(matchLang))
-	// collapse percentage into confidence classes
-	for i, m := range matchLang {
-		matchLang[i].conf = toConf(m.conf)
-	}
-	b.writeSlice("matchLang", matchLang)
-	b.writeSlice("matchScript", matchScript)
-}
-
 func (b *builder) writeRegionInclusionData() {
 	var (
 		// mm holds for each group the set of groups with a distance of 1.
@@ -1507,7 +1381,7 @@ func (b *builder) writeRegionInclusionData() {
 		}
 	}
 
-	regionContainment := make([]uint32, len(b.groups))
+	regionContainment := make([]uint64, len(b.groups))
 	for _, g := range b.groups {
 		l := containment[g]
 
@@ -1521,15 +1395,14 @@ func (b *builder) writeRegionInclusionData() {
 		for _, v := range l {
 			regionContainment[g] |= 1 << v
 		}
-		// log.Printf("%d: %X", g, regionContainment[g])
 	}
 	b.writeSlice("regionContainment", regionContainment)
 
 	regionInclusion := make([]uint8, len(b.region.s))
-	bvs := make(map[uint32]index)
+	bvs := make(map[uint64]index)
 	// Make the first bitvector positions correspond with the groups.
 	for r, i := range b.groups {
-		bv := uint32(1 << i)
+		bv := uint64(1 << i)
 		for _, g := range mm[r] {
 			bv |= 1 << g
 		}
@@ -1538,7 +1411,7 @@ func (b *builder) writeRegionInclusionData() {
 	}
 	for r := 1; r < len(b.region.s); r++ {
 		if _, ok := b.groups[r]; !ok {
-			bv := uint32(0)
+			bv := uint64(0)
 			for _, g := range mm[r] {
 				bv |= 1 << g
 			}
@@ -1553,9 +1426,9 @@ func (b *builder) writeRegionInclusionData() {
 		}
 	}
 	b.writeSlice("regionInclusion", regionInclusion)
-	regionInclusionBits := make([]uint32, len(bvs))
+	regionInclusionBits := make([]uint64, len(bvs))
 	for k, v := range bvs {
-		regionInclusionBits[v] = uint32(k)
+		regionInclusionBits[v] = uint64(k)
 	}
 	// Add bit vectors for increasingly large distances until a fixed point is reached.
 	regionInclusionNext := []uint8{}
@@ -1634,7 +1507,7 @@ func main() {
 	gen.WriteCLDRVersion(w)
 
 	b.parseIndices()
-	b.writeType(fromTo{})
+	b.writeType(FromTo{})
 	b.writeLanguage()
 	b.writeScript()
 	b.writeRegion()
@@ -1642,7 +1515,6 @@ func main() {
 	// TODO: b.writeLocale()
 	b.computeRegionGroups()
 	b.writeLikelyData()
-	b.writeMatchData()
 	b.writeRegionInclusionData()
 	b.writeParents()
 }
