@@ -7,6 +7,7 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
+	"github.com/dfordsoft/golib/ic"
 	"github.com/lrstanley/girc"
 	"github.com/paulrosania/go-charset/charset"
 	_ "github.com/paulrosania/go-charset/data"
@@ -177,15 +178,20 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 
 	// convert to specified charset
 	if b.GetString("Charset") != "" {
-		buf := new(bytes.Buffer)
-		w, err := charset.NewWriter(b.GetString("Charset"), buf)
-		if err != nil {
-			b.Log.Errorf("charset from utf-8 conversion failed: %s", err)
-			return "", err
+		switch b.GetString("Charset") {
+		case "gbk", "gb18030", "gb2312", "big5", "euc-kr", "euc-jp", "shift-jis", "iso-2022-jp":
+			msg.Text = ic.ConvertString("utf-8", b.GetString("Charset"), msg.Text)
+		default:
+			buf := new(bytes.Buffer)
+			w, err := charset.NewWriter(b.GetString("Charset"), buf)
+			if err != nil {
+				b.Log.Errorf("charset from utf-8 conversion failed: %s", err)
+				return "", err
+			}
+			fmt.Fprintf(w, msg.Text)
+			w.Close()
+			msg.Text = buf.String()
 		}
-		fmt.Fprintf(w, msg.Text)
-		w.Close()
-		msg.Text = buf.String()
 	}
 
 	// Handle files
@@ -404,13 +410,18 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 			mycharset = "ISO-8859-1"
 		}
 	}
-	r, err = charset.NewReader(mycharset, strings.NewReader(rmsg.Text))
-	if err != nil {
-		b.Log.Errorf("charset to utf-8 conversion failed: %s", err)
-		return
+	switch mycharset {
+	case "gbk", "gb18030", "gb2312", "big5", "euc-kr", "euc-jp", "shift-jis", "iso-2022-jp":
+		rmsg.Text = ic.ConvertString("utf-8", b.GetString("Charset"), rmsg.Text)
+	default:
+		r, err = charset.NewReader(mycharset, strings.NewReader(rmsg.Text))
+		if err != nil {
+			b.Log.Errorf("charset to utf-8 conversion failed: %s", err)
+			return
+		}
+		output, _ := ioutil.ReadAll(r)
+		rmsg.Text = string(output)
 	}
-	output, _ := ioutil.ReadAll(r)
-	rmsg.Text = string(output)
 
 	b.Log.Debugf("<= Sending message from %s on %s to gateway", event.Params[0], b.Account)
 	b.Remote <- rmsg
