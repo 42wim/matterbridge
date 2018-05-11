@@ -92,6 +92,10 @@ MessageSplit=false
 #OPTIONAL (default 0)
 RejoinDelay=0
 
+#ColorNicks will show each nickname in a different color.
+#Only works in IRC right now.
+ColorNicks=false
+
 #Nicks you want to ignore. 
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
