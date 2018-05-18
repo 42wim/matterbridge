@@ -189,7 +189,7 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 				b.Log.Errorf("charset from utf-8 conversion failed: %s", err)
 				return "", err
 			}
-			fmt.Fprintf(w, msg.Text)
+			fmt.Fprint(w, msg.Text)
 			w.Close()
 			msg.Text = buf.String()
 		}
