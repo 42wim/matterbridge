@@ -185,6 +185,8 @@ Want to tip ?
 * btc: 1N7cKHj5SfqBHBzDJ6kad4BzeqUBBS2zhs
 
 # Thanks
+[![Digitalocean](https://snag.gy/nzP87X.jpg)](https://www.digitalocean.com/) for sponsoring demo/testing droplets.
+
 Matterbridge wouldn't exist without these libraries:
 * discord - https://github.com/bwmarrin/discordgo
 * echo - https://github.com/labstack/echo
@@ -198,3 +200,4 @@ Matterbridge wouldn't exist without these libraries:
 * steam - https://github.com/Philipp15b/go-steam
 * telegram - https://github.com/go-telegram-bot-api/telegram-bot-api
 * xmpp - https://github.com/mattn/go-xmpp
+* zulip - https://github.com/ifo/gozulipbot
