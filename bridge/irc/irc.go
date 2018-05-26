@@ -242,6 +242,25 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 	return "", nil
 }
 
+func colorizeString(s string, foreground int64, background int64) string {
+	return fmt.Sprintf("\x03%02d,%02d%s\x03", foreground, background, s)
+}
+
+func (b *Birc) colorizeUsername(username string) string {
+	ircNickColors := b.GetStringSlice2D("ColorNicksList")
+	checksum := int(crc32.ChecksumIEEE([]byte(username)))
+	selectedColorPair := ircNickColors[checksum%len(ircNickColors)]
+	foreground, err := strconv.ParseInt(selectedColorPair[0], 16, 64)
+	if err == nil {
+		panic(fmt.Sprintf("Bad IRC color code: %v", selectedColorPair[0]))
+	}
+	background, err := strconv.ParseInt(selectedColorPair[1], 16, 64)
+	if err == nil {
+		panic(fmt.Sprintf("Bad IRC color code: %v", selectedColorPair[1]))
+	}
+	return colorizeString(username, foreground, background)
+}
+
 func (b *Birc) doSend() {
 	rate := time.Millisecond * time.Duration(b.MessageDelay)
 	throttle := time.NewTicker(rate)
@@ -249,8 +268,7 @@ func (b *Birc) doSend() {
 		<-throttle.C
 		username := msg.Username
 		if b.GetBool("Colornicks") {
-			checksum := crc32.ChecksumIEEE([]byte(msg.Username))
-			username = fmt.Sprintf("\x03%02d%s\x0F", checksum%0x10, msg.Username)
+			username = b.colorizeUsername(msg.Username)
 		}
 		if msg.Event == config.EVENT_USER_ACTION {
 			b.i.Cmd.Action(msg.Channel, username+msg.Text)
