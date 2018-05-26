@@ -268,7 +268,7 @@ func (b *Bslack) handleSlack() {
 		message.Text = html.UnescapeString(message.Text)
 
 		// Add the avatar
-		message.Avatar = b.getAvatar(message.Username)
+		message.Avatar = b.getAvatar(strings.ToLower(message.Username))
 
 		b.Log.Debugf("<= Message is %#v", message)
 		b.Remote <- *message
