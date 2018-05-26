@@ -185,7 +185,7 @@ Want to tip ?
 * btc: 1N7cKHj5SfqBHBzDJ6kad4BzeqUBBS2zhs
 
 # Thanks
-[![Digitalocean](https://snag.gy/nzP87X.jpg)](https://www.digitalocean.com/) for sponsoring demo/testing droplets.
+[![Digitalocean](https://snag.gy/3LVifX.jpg)](https://www.digitalocean.com/) for sponsoring demo/testing droplets.
 
 Matterbridge wouldn't exist without these libraries:
 * discord - https://github.com/bwmarrin/discordgo
