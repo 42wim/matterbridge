@@ -15,6 +15,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/42wim/matterbridge/matterhook"
 	"github.com/nlopes/slack"
+	"github.com/rs/xid"
 )
 
 type Bslack struct {
@@ -25,6 +26,7 @@ type Bslack struct {
 	Usergroups []slack.UserGroup
 	si         *slack.Info
 	channels   []slack.Channel
+	uuid       string
 	*bridge.Config
 	sync.RWMutex
 }
@@ -32,7 +34,7 @@ type Bslack struct {
 const messageDeleted = "message_deleted"
 
 func New(cfg *bridge.Config) bridge.Bridger {
-	return &Bslack{Config: cfg}
+	return &Bslack{Config: cfg, uuid: xid.New().String()}
 }
 
 func (b *Bslack) Command(cmd string) string {
@@ -177,7 +179,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 		np.IconURL = msg.Avatar
 	}
 	// add a callback ID so we can see we created it
-	np.Attachments = append(np.Attachments, slack.Attachment{CallbackID: "matterbridge_" + b.si.User.ID})
+	np.Attachments = append(np.Attachments, slack.Attachment{CallbackID: "matterbridge_" + b.uuid})
 	// add file attachments
 	np.Attachments = append(np.Attachments, b.createAttach(msg.Extra)...)
 	// add slack attachments (from another slack bridge)
@@ -657,7 +659,7 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 
 	// skip messages we made ourselves
 	if len(ev.Attachments) > 0 {
-		if ev.Attachments[0].CallbackID == "matterbridge_"+b.si.User.ID {
+		if ev.Attachments[0].CallbackID == "matterbridge_"+b.uuid {
 			return true
 		}
 	}
