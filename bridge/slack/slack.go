@@ -573,6 +573,10 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 
 	// Only deleted messages can have a empty username and text
 	if (rmsg.Text == "" || rmsg.Username == "") && ev.SubType != messageDeleted {
+		// this is probably a webhook we couldn't resolve
+		if ev.BotID != "" {
+			return nil, fmt.Errorf("probably an incoming webhook we couldn't resolve (maybe ourselves)")
+		}
 		return nil, fmt.Errorf("empty message and not a deleted message")
 	}
 
