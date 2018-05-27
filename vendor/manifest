@@ -661,6 +661,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/rs/xid",
+			"repository": "https://github.com/rs/xid",
+			"vcs": "git",
+			"revision": "088c5cf1423a6c8bd65110ddb12818e4ee993c84",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/saintfish/chardet",
 			"repository": "https://github.com/saintfish/chardet",
 			"vcs": "git",
