@@ -69,7 +69,7 @@ See https://github.com/42wim/matterbridge/wiki
 
 # Installing
 ## Binaries
-* Latest stable release [v1.10.0](https://github.com/42wim/matterbridge/releases/latest)
+* Latest stable release [v1.10.1](https://github.com/42wim/matterbridge/releases/latest)
 * Development releases (follows master) can be downloaded [here](https://dl.bintray.com/42wim/nightly/)  
 
 ## Building
