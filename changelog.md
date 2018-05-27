@@ -1,14 +1,16 @@
 # v1.10.1
+## New features
+* irc: Colorize username sent to IRC using its crc32 IEEE checksum (#423). See `ColorNicks` in matterbridge.toml.sample
+* irc: Add support for CJK to/from utf-8 (irc). #400
+* telegram: Add QuoteFormat option (telegram). Closes #413. See `QuoteFormat` in matterbridge.toml.sample
+* xmpp: Send attached files to XMPP in different message with OOB data and without body (#421)
+
 ## Bugfix
 * general: updated irc/xmpp/telegram libraries
 * mattermost/slack/rocketchat: Fix iconurl regression. Closes #430
 * mattermost/slack: Use uuid instead of userid. Fixes #429
 * slack: Avatar spoofing from Slack to Discord with uppercase in nick doesn't work (#433)
 * irc: Fix format string bug (irc) (#428)
-* irc: Colorize username sent to IRC using its crc32 IEEE checksum (#423). See `ColorNicks` in matterbridge.toml.sample
-* irc: Add support for CJK to/from utf-8 (irc). #400
-* telegram: Add QuoteFormat option (telegram). Closes #41. See `QuoteFormat` in matterbridge.toml.sample
-* xmpp: Send attached files to XMPP in different message with OOB data and without body (#421)
 
 # v1.10.0
 ## New features
