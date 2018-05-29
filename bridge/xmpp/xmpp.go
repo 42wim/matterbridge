@@ -6,6 +6,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/jpillora/backoff"
+	"github.com/rs/xid"
 	"github.com/matterbridge/go-xmpp"
 	"strings"
 	"time"
@@ -68,6 +69,8 @@ func (b *Bxmpp) JoinChannel(channel config.ChannelInfo) error {
 }
 
 func (b *Bxmpp) Send(msg config.Message) (string, error) {
+	var msgid = ""
+	var msgreplaceid = ""
 	// ignore delete messages
 	if msg.Event == config.EVENT_MSG_DELETE {
 		return "", nil
@@ -84,12 +87,17 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 		}
 	}
 
+	msgid = xid.New().String()
+	if msg.ID != "" {
+		msgid = msg.ID
+		msgreplaceid = msg.ID
+	}
 	// Post normal message
-	_, err := b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.GetString("Muc"), Text: msg.Username + msg.Text})
+	_, err := b.xc.Send(xmpp.Chat{Type: "groupchat", Remote: msg.Channel + "@" + b.GetString("Muc"), Text: msg.Username + msg.Text, ID: msgid, ReplaceID: msgreplaceid})
 	if err != nil {
 		return "", err
 	}
-	return "", nil
+	return msgid, nil
 }
 
 func (b *Bxmpp) createXMPP() (*xmpp.Client, error) {
@@ -139,6 +147,7 @@ func (b *Bxmpp) xmppKeepAlive() chan bool {
 
 func (b *Bxmpp) handleXMPP() error {
 	var ok bool
+	var msgid string
 	done := b.xmppKeepAlive()
 	defer close(done)
 	for {
@@ -154,7 +163,11 @@ func (b *Bxmpp) handleXMPP() error {
 				if b.skipMessage(v) {
 					continue
 				}
-				rmsg := config.Message{Username: b.parseNick(v.Remote), Text: v.Text, Channel: b.parseChannel(v.Remote), Account: b.Account, UserID: v.Remote}
+				msgid = v.ID
+				if v.ReplaceID != "" {
+					msgid = v.ReplaceID
+				}
+				rmsg := config.Message{Username: b.parseNick(v.Remote), Text: v.Text, Channel: b.parseChannel(v.Remote), Account: b.Account, UserID: v.Remote, ID: msgid}
 
 				// check if we have an action event
 				rmsg.Text, ok = b.replaceAction(rmsg.Text)
@@ -181,6 +194,7 @@ func (b *Bxmpp) replaceAction(text string) (string, bool) {
 // handleUploadFile handles native upload of files
 func (b *Bxmpp) handleUploadFile(msg *config.Message) (string, error) {
 	var urldesc = ""
+
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo)
 		if fi.Comment != "" {
