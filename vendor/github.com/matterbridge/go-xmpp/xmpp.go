@@ -575,6 +575,8 @@ type Chat struct {
 	Thread    string
 	Ooburl    string
 	Oobdesc   string
+	ID        string
+	ReplaceID string
 	Roster    Roster
 	Other     []string
 	OtherElem []XMLElement
@@ -626,6 +628,8 @@ func (c *Client) Recv() (stanza interface{}, err error) {
 				Text:      v.Body,
 				Subject:   v.Subject,
 				Thread:    v.Thread,
+				ID:        v.ID,
+				ReplaceID: v.ReplaceID.ID,
 				Other:     v.OtherStrings(),
 				OtherElem: v.Other,
 				Stamp:     stamp,
@@ -657,6 +661,8 @@ func (c *Client) Send(chat Chat) (n int, err error) {
 	var subtext = ``
 	var thdtext = ``
 	var oobtext = ``
+	var msgidtext = ``
+	var msgcorrecttext = ``
 	if chat.Subject != `` {
 		subtext = `<subject>` + xmlEscape(chat.Subject) + `</subject>`
 	}
@@ -670,7 +676,13 @@ func (c *Client) Send(chat Chat) (n int, err error) {
 		}
 		oobtext += `</x>`
 	}
-	return fmt.Fprintf(c.conn, "<message to='%s' type='%s' xml:lang='en'>" + subtext + "<body>%s</body>" + oobtext + thdtext + "</message>",
+	if chat.ID != `` {
+		msgidtext = `id='` + xmlEscape(chat.ID) + `'`
+	}
+	if chat.ReplaceID != `` {
+		msgcorrecttext = `<replace id='` + xmlEscape(chat.ReplaceID) + `' xmlns='urn:xmpp:message-correct:0'/>`
+	}
+	return fmt.Fprintf(c.conn, "<message to='%s' type='%s' " + msgidtext + " xml:lang='en'>" + subtext + "<body>%s</body>" + msgcorrecttext + oobtext + thdtext + "</message>",
 		xmlEscape(chat.Remote), xmlEscape(chat.Type), xmlEscape(chat.Text))
 }
 
@@ -787,6 +799,11 @@ type bindBind struct {
 	Jid      string `xml:"jid"`
 }
 
+type clientMessageCorrect struct {
+	XMLName  xml.Name `xml:"urn:xmpp:message-correct:0 replace"`
+	ID       string   `xml:"id,attr"`
+}
+
 // RFC 3921  B.1  jabber:client
 type clientMessage struct {
 	XMLName xml.Name `xml:"jabber:client message"`
@@ -799,6 +816,7 @@ type clientMessage struct {
 	Subject string `xml:"subject"`
 	Body    string `xml:"body"`
 	Thread  string `xml:"thread"`
+	ReplaceID clientMessageCorrect
 
 	// Any hasn't matched element
 	Other []XMLElement `xml:",any"`

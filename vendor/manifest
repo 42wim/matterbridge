@@ -402,7 +402,7 @@
 			"importpath": "github.com/matterbridge/go-xmpp",
 			"repository": "https://github.com/matterbridge/go-xmpp",
 			"vcs": "git",
-			"revision": "3cceb718219057817b66c4bb55673f5f417c0bff",
+			"revision": "cd19799fba91790ac733655c546bce2107e5b838",
 			"branch": "work",
 			"notests": true
 		},
