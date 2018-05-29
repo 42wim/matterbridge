@@ -357,7 +357,7 @@ func (b *Bslack) userGroupName(id string) string {
 
 // @see https://api.slack.com/docs/message-formatting#linking_to_channels_and_users
 func (b *Bslack) replaceMention(text string) string {
-	results := regexp.MustCompile(`<@([a-zA-z0-9]+)>`).FindAllStringSubmatch(text, -1)
+	results := regexp.MustCompile(`<@([a-zA-Z0-9]+)>`).FindAllStringSubmatch(text, -1)
 	for _, r := range results {
 		text = strings.Replace(text, "<@"+r[1]+">", "@"+b.userName(r[1]), -1)
 	}
