@@ -250,7 +250,8 @@ func (b *Birc) doSend() {
 		username := msg.Username
 		if b.GetBool("Colornicks") {
 			checksum := crc32.ChecksumIEEE([]byte(msg.Username))
-			username = fmt.Sprintf("\x03%02d%s\x0F", checksum%0x10, msg.Username)
+			colorCode := checksum%14 + 2 // quick fix - prevent white or black color codes
+			username = fmt.Sprintf("\x03%02d%s\x0F", colorCode, msg.Username)
 		}
 		if msg.Event == config.EVENT_USER_ACTION {
 			b.i.Cmd.Action(msg.Channel, username+msg.Text)
