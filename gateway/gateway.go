@@ -3,6 +3,10 @@ package gateway
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/api"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -18,16 +22,16 @@ import (
 	"github.com/42wim/matterbridge/bridge/telegram"
 	"github.com/42wim/matterbridge/bridge/xmpp"
 	"github.com/42wim/matterbridge/bridge/zulip"
+	"github.com/hashicorp/golang-lru"
 	log "github.com/sirupsen/logrus"
 	//	"github.com/davecgh/go-spew/spew"
 	"crypto/sha1"
-	"github.com/hashicorp/golang-lru"
-	"github.com/peterhellberg/emojilib"
-	"net/http"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/peterhellberg/emojilib"
 )
 
 type Gateway struct {
@@ -414,7 +418,7 @@ func (gw *Gateway) modifyMessage(msg *config.Message) {
 func (gw *Gateway) handleFiles(msg *config.Message) {
 	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
 	// if we don't have a attachfield or we don't have a mediaserver configured return
-	if msg.Extra == nil || gw.Config.General.MediaServerUpload == "" {
+	if msg.Extra == nil || (gw.Config.General.MediaServerUpload == "" && gw.Config.General.MediaServerPath == "") {
 		return
 	}
 
@@ -430,26 +434,50 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 			fi.Name = reg.ReplaceAllString(fi.Name, "_")
 			fi.Name = fi.Name + ext
 			sha1sum := fmt.Sprintf("%x", sha1.Sum(*fi.Data))
-			reader := bytes.NewReader(*fi.Data)
-			url := gw.Config.General.MediaServerUpload + "/" + sha1sum + "/" + fi.Name
+
 			durl := gw.Config.General.MediaServerDownload + "/" + sha1sum + "/" + fi.Name
+			if gw.Config.General.MediaServerUpload != "" {
+				url := gw.Config.General.MediaServerUpload + "/" + sha1sum + "/" + fi.Name
+
+				req, err := http.NewRequest("PUT", url, bytes.NewReader(*fi.Data))
+				if err != nil {
+					flog.Errorf("mediaserver upload failed, could not create request: %#v", err)
+					continue
+				}
+
+				flog.Debugf("mediaserver upload url: %s", url)
+
+				req.Header.Set("Content-Type", "binary/octet-stream")
+				_, err = client.Do(req)
+				if err != nil {
+					flog.Errorf("mediaserver upload failed, could not Do request: %#v", err)
+					continue
+				}
+			} else {
+				dir := gw.Config.General.MediaServerPath + "/" + sha1sum
+				err := os.Mkdir(dir, os.ModePerm)
+				if err != nil && !os.IsExist(err) {
+					flog.Errorf("mediaserver path failed, could not mkdir: %s %#v", err, err)
+					continue
+				}
+
+				path := dir + "/" + fi.Name
+				flog.Debugf("mediaserver path placing file: %s", path)
+
+				err = ioutil.WriteFile(path, *fi.Data, os.ModePerm)
+				if err != nil {
+					flog.Errorf("mediaserver path failed, could not writefile: %s %#v", err, err)
+					continue
+				}
+			}
+
+			// We uploaded/placed the file successfully. Add the SHA and URL.
 			extra := msg.Extra["file"][i].(config.FileInfo)
 			extra.URL = durl
-			req, err := http.NewRequest("PUT", url, reader)
-			if err != nil {
-				flog.Errorf("mediaserver upload failed: %#v", err)
-				continue
-			}
-			req.Header.Set("Content-Type", "binary/octet-stream")
-			_, err = client.Do(req)
-			if err != nil {
-				flog.Errorf("mediaserver upload failed: %#v", err)
-				continue
-			}
-			flog.Debugf("mediaserver download URL = %s", durl)
-			// we uploaded the file successfully. Add the SHA
 			extra.SHA = sha1sum
 			msg.Extra["file"][i] = extra
+
+			flog.Debugf("mediaserver download URL = %s", durl)
 		}
 	}
 }
