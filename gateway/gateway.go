@@ -440,7 +440,8 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 		fi.Name = fi.Name[0 : len(fi.Name)-len(ext)]
 		fi.Name = reg.ReplaceAllString(fi.Name, "_")
 		fi.Name = fi.Name + ext
-		sha1sum := fmt.Sprintf("%x", sha1.Sum(*fi.Data))
+
+		sha1sum := fmt.Sprintf("%x", sha1.Sum(*fi.Data))[:8]
 
 		if gw.Config.General.MediaServerUpload != "" {
 			// Use MediaServerUpload. Upload using a PUT HTTP request and basicauth.
