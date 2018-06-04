@@ -415,70 +415,82 @@ func (gw *Gateway) modifyMessage(msg *config.Message) {
 	}
 }
 
+// handleFiles uploads or places all files on the given msg to the MediaServer and
+// adds the new URL of the file on the MediaServer onto the given msg.
 func (gw *Gateway) handleFiles(msg *config.Message) {
 	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
-	// if we don't have a attachfield or we don't have a mediaserver configured return
+
+	// If we don't have a attachfield or we don't have a mediaserver configured return
 	if msg.Extra == nil || (gw.Config.General.MediaServerUpload == "" && gw.Config.General.MediaServerPath == "") {
 		return
 	}
 
-	// if we actually have files, start uploading them to the mediaserver
-	if len(msg.Extra["file"]) > 0 {
-		client := &http.Client{
-			Timeout: time.Second * 5,
-		}
-		for i, f := range msg.Extra["file"] {
-			fi := f.(config.FileInfo)
-			ext := filepath.Ext(fi.Name)
-			fi.Name = fi.Name[0 : len(fi.Name)-len(ext)]
-			fi.Name = reg.ReplaceAllString(fi.Name, "_")
-			fi.Name = fi.Name + ext
-			sha1sum := fmt.Sprintf("%x", sha1.Sum(*fi.Data))
+	// If we don't have files, nothing to upload.
+	if len(msg.Extra["file"]) == 0 {
+		return
+	}
 
-			durl := gw.Config.General.MediaServerDownload + "/" + sha1sum + "/" + fi.Name
-			if gw.Config.General.MediaServerUpload != "" {
-				url := gw.Config.General.MediaServerUpload + "/" + sha1sum + "/" + fi.Name
+	client := &http.Client{
+		Timeout: time.Second * 5,
+	}
 
-				req, err := http.NewRequest("PUT", url, bytes.NewReader(*fi.Data))
-				if err != nil {
-					flog.Errorf("mediaserver upload failed, could not create request: %#v", err)
-					continue
-				}
+	for i, f := range msg.Extra["file"] {
+		fi := f.(config.FileInfo)
+		ext := filepath.Ext(fi.Name)
+		fi.Name = fi.Name[0 : len(fi.Name)-len(ext)]
+		fi.Name = reg.ReplaceAllString(fi.Name, "_")
+		fi.Name = fi.Name + ext
+		sha1sum := fmt.Sprintf("%x", sha1.Sum(*fi.Data))
 
-				flog.Debugf("mediaserver upload url: %s", url)
+		if gw.Config.General.MediaServerUpload != "" {
+			// Use MediaServerUpload. Upload using a PUT HTTP request and basicauth.
 
-				req.Header.Set("Content-Type", "binary/octet-stream")
-				_, err = client.Do(req)
-				if err != nil {
-					flog.Errorf("mediaserver upload failed, could not Do request: %#v", err)
-					continue
-				}
-			} else {
-				dir := gw.Config.General.MediaServerPath + "/" + sha1sum
-				err := os.Mkdir(dir, os.ModePerm)
-				if err != nil && !os.IsExist(err) {
-					flog.Errorf("mediaserver path failed, could not mkdir: %s %#v", err, err)
-					continue
-				}
+			url := gw.Config.General.MediaServerUpload + "/" + sha1sum + "/" + fi.Name
 
-				path := dir + "/" + fi.Name
-				flog.Debugf("mediaserver path placing file: %s", path)
-
-				err = ioutil.WriteFile(path, *fi.Data, os.ModePerm)
-				if err != nil {
-					flog.Errorf("mediaserver path failed, could not writefile: %s %#v", err, err)
-					continue
-				}
+			req, err := http.NewRequest("PUT", url, bytes.NewReader(*fi.Data))
+			if err != nil {
+				flog.Errorf("mediaserver upload failed, could not create request: %#v", err)
+				continue
 			}
 
-			// We uploaded/placed the file successfully. Add the SHA and URL.
-			extra := msg.Extra["file"][i].(config.FileInfo)
-			extra.URL = durl
-			extra.SHA = sha1sum
-			msg.Extra["file"][i] = extra
+			flog.Debugf("mediaserver upload url: %s", url)
 
-			flog.Debugf("mediaserver download URL = %s", durl)
+			req.Header.Set("Content-Type", "binary/octet-stream")
+			_, err = client.Do(req)
+			if err != nil {
+				flog.Errorf("mediaserver upload failed, could not Do request: %#v", err)
+				continue
+			}
+		} else {
+			// Use MediaServerPath. Place the file on the current filesystem.
+
+			dir := gw.Config.General.MediaServerPath + "/" + sha1sum
+			err := os.Mkdir(dir, os.ModePerm)
+			if err != nil && !os.IsExist(err) {
+				flog.Errorf("mediaserver path failed, could not mkdir: %s %#v", err, err)
+				continue
+			}
+
+			path := dir + "/" + fi.Name
+			flog.Debugf("mediaserver path placing file: %s", path)
+
+			err = ioutil.WriteFile(path, *fi.Data, os.ModePerm)
+			if err != nil {
+				flog.Errorf("mediaserver path failed, could not writefile: %s %#v", err, err)
+				continue
+			}
 		}
+
+		// Download URL.
+		durl := gw.Config.General.MediaServerDownload + "/" + sha1sum + "/" + fi.Name
+
+		flog.Debugf("mediaserver download URL = %s", durl)
+
+		// We uploaded/placed the file successfully. Add the SHA and URL.
+		extra := msg.Extra["file"][i].(config.FileInfo)
+		extra.URL = durl
+		extra.SHA = sha1sum
+		msg.Extra["file"][i] = extra
 	}
 }
 
