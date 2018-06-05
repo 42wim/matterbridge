@@ -799,8 +799,9 @@ Token="Yourtokenhere"
 ## Settings below can be reloaded by editing the file
 
 #OPTIONAL (default empty)
-#Only supported format is "HTML", messages will be sent in html parsemode.
+#Supported formats are "HTML" and "Markdown"
 #See https://core.telegram.org/bots/api#html-style
+#See https://core.telegram.org/bots/api#markdown-style
 MessageFormat=""
 
 #If enabled use the "First Name" as username. If this is empty use the Username
