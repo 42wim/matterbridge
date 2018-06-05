@@ -120,6 +120,10 @@ func (b *Bsshchat) handleSshChat() error {
 	wait := true
 	for {
 		if b.r.Scan() {
+			// ignore messages from ourselves
+			if !strings.Contains(b.r.Text(), "\033[K") {
+				continue
+			}
 			res := strings.Split(stripPrompt(b.r.Text()), ":")
 			if res[0] == "-> Set theme" {
 				wait = false
