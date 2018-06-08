@@ -2,14 +2,15 @@ package config
 
 import (
 	"bytes"
-	"github.com/fsnotify/fsnotify"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
-	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 	"os"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/fsnotify/fsnotify"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
+	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 )
 
 const (
@@ -76,6 +77,7 @@ type Protocol struct {
 	MediaDownloadSize      int    // all protocols
 	MediaServerDownload    string
 	MediaServerUpload      string
+	MediaDownloadPath      string     // Basically MediaServerUpload, but instead of uploading it, just write it to a file on the same server.
 	MessageDelay           int        // IRC, time in millisecond to wait between messages
 	MessageFormat          string     // telegram
 	MessageLength          int        // IRC, max length of a message allowed

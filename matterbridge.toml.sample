@@ -1306,16 +1306,21 @@ RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 StripNick=false
 
 
-#MediaServerUpload and MediaServerDownload are used for uploading images/files/video to
-#a remote "mediaserver" (a webserver like caddy for example).
-#When configured images/files uploaded on bridges like mattermost,slack, telegram will be downloaded
-#and uploaded again to MediaServerUpload URL
+#MediaServerUpload (or MediaDownloadPath) and MediaServerDownload are used for uploading
+#images/files/video to a remote "mediaserver" (a webserver like caddy for example).
+#When configured images/files uploaded on bridges like mattermost, slack, telegram will be
+#downloaded and uploaded again to MediaServerUpload URL
+#MediaDownloadPath is the filesystem path where the media file will be placed, instead of uploaded,
+#for if Matterbridge has write access to the directory your webserver is serving.
+#It is an alternative to MediaServerUpload.
 #The MediaServerDownload will be used so that bridges without native uploading support:
 #gitter, irc and xmpp will be shown links to the files on MediaServerDownload
 #
 #More information https://github.com/42wim/matterbridge/wiki/Mediaserver-setup-%5Badvanced%5D
 #OPTIONAL (default empty)
 MediaServerUpload="https://user:pass@yourserver.com/upload"
+#OPTIONAL (default empty)
+MediaDownloadPath="/srv/http/yourserver.com/public/download"
 #OPTIONAL (default empty)
 MediaServerDownload="https://youserver.com/download"
 
