@@ -421,7 +421,7 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
 
 	// If we don't have a attachfield or we don't have a mediaserver configured return
-	if msg.Extra == nil || (gw.Config.General.MediaServerUpload == "" && gw.Config.General.MediaServerPath == "") {
+	if msg.Extra == nil || (gw.Config.General.MediaServerUpload == "" && gw.Config.General.MediaDownloadPath == "") {
 		return
 	}
 
@@ -465,7 +465,7 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 		} else {
 			// Use MediaServerPath. Place the file on the current filesystem.
 
-			dir := gw.Config.General.MediaServerPath + "/" + sha1sum
+			dir := gw.Config.General.MediaDownloadPath + "/" + sha1sum
 			err := os.Mkdir(dir, os.ModePerm)
 			if err != nil && !os.IsExist(err) {
 				flog.Errorf("mediaserver path failed, could not mkdir: %s %#v", err, err)
