@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -73,6 +74,19 @@ func GetAvatar(av map[string]string, userid string, general *config.Protocol) st
 }
 
 func HandleDownloadSize(flog *log.Entry, msg *config.Message, name string, size int64, general *config.Protocol) error {
+	// check blacklist here
+	for _, entry := range general.MediaDownloadBlackList {
+		if entry != "" {
+			re, err := regexp.Compile(entry)
+			if err != nil {
+				flog.Errorf("incorrect regexp %s for %s", entry, msg.Account)
+				continue
+			}
+			if re.MatchString(name) {
+				return fmt.Errorf("Matching blacklist %s. Not downloading %s", entry, name)
+			}
+		}
+	}
 	flog.Debugf("Trying to download %#v with size %#v", name, size)
 	if int(size) > general.MediaDownloadSize {
 		msg.Event = config.EVENT_FILE_FAILURE_SIZE

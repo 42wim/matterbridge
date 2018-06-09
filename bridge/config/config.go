@@ -74,10 +74,11 @@ type Protocol struct {
 	Jid                    string // xmpp
 	Label                  string // all protocols
 	Login                  string // mattermost, matrix
+	MediaDownloadBlackList []string
+	MediaDownloadPath      string // Basically MediaServerUpload, but instead of uploading it, just write it to a file on the same server.
 	MediaDownloadSize      int    // all protocols
 	MediaServerDownload    string
 	MediaServerUpload      string
-	MediaDownloadPath      string     // Basically MediaServerUpload, but instead of uploading it, just write it to a file on the same server.
 	MessageDelay           int        // IRC, time in millisecond to wait between messages
 	MessageFormat          string     // telegram
 	MessageLength          int        // IRC, max length of a message allowed

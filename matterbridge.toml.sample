@@ -1331,8 +1331,14 @@ MediaServerDownload="https://youserver.com/download"
 #It will only download from bridges that don't have public links available, which are for the moment
 #slack, telegram, matrix and mattermost
 #
-#Optional (default 1000000 (1 megabyte))
+#OPTIONAL (default 1000000 (1 megabyte))
 MediaDownloadSize=1000000
+
+#MediaDownloadBlacklist allows you to blacklist specific files from being downloaded.
+#Filenames matching these regexp will not be download/uploaded to the mediaserver
+#You can use regex for this, see https://regex-golang.appspot.com/assets/html/index.html for more regex info
+#OPTIONAL (default empty)
+MediaDownloadBlacklist=[".html$",".htm$"]
 
 ###################################################################
 #Gateway configuration
