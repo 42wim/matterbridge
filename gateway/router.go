@@ -2,9 +2,10 @@ package gateway
 
 import (
 	"fmt"
+
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
-	"github.com/42wim/matterbridge/gateway/samechannel"
+	samechannelgateway "github.com/42wim/matterbridge/gateway/samechannel"
 	//	"github.com/davecgh/go-spew/spew"
 	"time"
 )

@@ -6,14 +6,15 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/schema"
-	"github.com/nlopes/slack"
 	"io"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/schema"
+	"github.com/nlopes/slack"
 )
 
 // OMessage for mattermost incoming webhook. (send to mattermost)

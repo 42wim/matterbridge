@@ -2,14 +2,15 @@ package bxmpp
 
 import (
 	"crypto/tls"
+	"strings"
+	"time"
+
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/jpillora/backoff"
-	"github.com/rs/xid"
 	"github.com/matterbridge/go-xmpp"
-	"strings"
-	"time"
+	"github.com/rs/xid"
 )
 
 type Bxmpp struct {

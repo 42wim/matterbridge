@@ -3,14 +3,15 @@ package bmatrix
 import (
 	"bytes"
 	"fmt"
-	"github.com/42wim/matterbridge/bridge"
-	"github.com/42wim/matterbridge/bridge/config"
-	"github.com/42wim/matterbridge/bridge/helper"
-	matrix "github.com/matterbridge/gomatrix"
 	"mime"
 	"regexp"
 	"strings"
 	"sync"
+
+	"github.com/42wim/matterbridge/bridge"
+	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/helper"
+	matrix "github.com/matterbridge/gomatrix"
 )
 
 type Bmatrix struct {

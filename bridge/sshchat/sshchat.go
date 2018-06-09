@@ -2,13 +2,14 @@ package bsshchat
 
 import (
 	"bufio"
+	"io"
+	"strings"
+
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/shazow/ssh-chat/sshd"
 	log "github.com/sirupsen/logrus"
-	"io"
-	"strings"
 )
 
 type Bsshchat struct {

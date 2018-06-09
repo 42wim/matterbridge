@@ -2,9 +2,10 @@ package gateway
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/stretchr/testify/assert"
-	"strconv"
 
 	"testing"
 )

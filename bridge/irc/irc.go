@@ -4,14 +4,6 @@ import (
 	"bytes"
 	"crypto/tls"
 	"fmt"
-	"github.com/42wim/matterbridge/bridge"
-	"github.com/42wim/matterbridge/bridge/config"
-	"github.com/42wim/matterbridge/bridge/helper"
-	"github.com/dfordsoft/golib/ic"
-	"github.com/lrstanley/girc"
-	"github.com/paulrosania/go-charset/charset"
-	_ "github.com/paulrosania/go-charset/data"
-	"github.com/saintfish/chardet"
 	"hash/crc32"
 	"io"
 	"io/ioutil"
@@ -22,6 +14,15 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"github.com/42wim/matterbridge/bridge"
+	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/helper"
+	"github.com/dfordsoft/golib/ic"
+	"github.com/lrstanley/girc"
+	"github.com/paulrosania/go-charset/charset"
+	_ "github.com/paulrosania/go-charset/data"
+	"github.com/saintfish/chardet"
 )
 
 type Birc struct {

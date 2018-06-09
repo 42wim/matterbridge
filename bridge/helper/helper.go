@@ -3,12 +3,13 @@ package helper
 import (
 	"bytes"
 	"fmt"
-	"github.com/42wim/matterbridge/bridge/config"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/42wim/matterbridge/bridge/config"
+	log "github.com/sirupsen/logrus"
 )
 
 func DownloadFile(url string) (*[]byte, error) {

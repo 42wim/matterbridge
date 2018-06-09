@@ -3,13 +3,14 @@ package bdiscord
 import (
 	"bytes"
 	"fmt"
+	"regexp"
+	"strings"
+	"sync"
+
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/bwmarrin/discordgo"
-	"regexp"
-	"strings"
-	"sync"
 )
 
 type Bdiscord struct {
