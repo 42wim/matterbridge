@@ -2,8 +2,9 @@ package btelegram
 
 import (
 	"bytes"
-	"github.com/russross/blackfriday"
 	"html"
+
+	"github.com/russross/blackfriday"
 )
 
 type customHTML struct {

@@ -3,13 +3,14 @@ package bmattermost
 import (
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/42wim/matterbridge/matterclient"
 	"github.com/42wim/matterbridge/matterhook"
 	"github.com/rs/xid"
-	"strings"
 )
 
 type Bmattermost struct {

@@ -2,6 +2,7 @@ package samechannelgateway
 
 import (
 	"fmt"
+
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/BurntSushi/toml"
 	"github.com/stretchr/testify/assert"

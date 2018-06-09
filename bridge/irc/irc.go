@@ -4,14 +4,6 @@ import (
 	"bytes"
 	"crypto/tls"
 	"fmt"
-	"github.com/42wim/matterbridge/bridge"
-	"github.com/42wim/matterbridge/bridge/config"
-	"github.com/42wim/matterbridge/bridge/helper"
-	"github.com/dfordsoft/golib/ic"
-	"github.com/lrstanley/girc"
-	"github.com/paulrosania/go-charset/charset"
-	_ "github.com/paulrosania/go-charset/data"
-	"github.com/saintfish/chardet"
 	"hash/crc32"
 	"io"
 	"io/ioutil"
@@ -22,6 +14,15 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"github.com/42wim/matterbridge/bridge"
+	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/helper"
+	"github.com/dfordsoft/golib/ic"
+	"github.com/lrstanley/girc"
+	"github.com/paulrosania/go-charset/charset"
+	_ "github.com/paulrosania/go-charset/data"
+	"github.com/saintfish/chardet"
 )
 
 type Birc struct {
@@ -114,18 +115,19 @@ func (b *Birc) Connect() error {
 	go func() {
 		for {
 			if err := i.Connect(); err != nil {
-				b.Log.Errorf("error: %s", err)
-				b.Log.Info("reconnecting in 30 seconds...")
-				time.Sleep(30 * time.Second)
-				i.Handlers.Clear(girc.RPL_WELCOME)
-				i.Handlers.Add(girc.RPL_WELCOME, func(client *girc.Client, event girc.Event) {
-					b.Remote <- config.Message{Username: "system", Text: "rejoin", Channel: "", Account: b.Account, Event: config.EVENT_REJOIN_CHANNELS}
-					// set our correct nick on reconnect if necessary
-					b.Nick = event.Source.Name
-				})
+				b.Log.Errorf("disconnect: error: %s", err)
 			} else {
-				return
+				b.Log.Info("disconnect: client requested quit")
 			}
+
+			b.Log.Info("reconnecting in 30 seconds...")
+			time.Sleep(30 * time.Second)
+			i.Handlers.Clear(girc.RPL_WELCOME)
+			i.Handlers.Add(girc.RPL_WELCOME, func(client *girc.Client, event girc.Event) {
+				b.Remote <- config.Message{Username: "system", Text: "rejoin", Channel: "", Account: b.Account, Event: config.EVENT_REJOIN_CHANNELS}
+				// set our correct nick on reconnect if necessary
+				b.Nick = event.Source.Name
+			})
 		}
 	}()
 	b.i = i

@@ -2,14 +2,15 @@ package api
 
 import (
 	"encoding/json"
+	"net/http"
+	"sync"
+	"time"
+
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/zfjagann/golang-ring"
-	"net/http"
-	"sync"
-	"time"
 )
 
 type Api struct {
