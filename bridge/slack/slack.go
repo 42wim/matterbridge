@@ -503,7 +503,10 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 	if rmsg.Text == "" {
 		for _, attach := range ev.Attachments {
 			if attach.Text != "" {
-				rmsg.Text = attach.Text
+				if attach.Title != "" {
+					rmsg.Text = attach.Title + "\n"
+				}
+				rmsg.Text += attach.Text
 			} else {
 				rmsg.Text = attach.Fallback
 			}
