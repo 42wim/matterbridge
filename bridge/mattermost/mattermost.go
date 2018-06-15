@@ -221,6 +221,18 @@ func (b *Bmattermost) handleMatterClient(messages chan *config.Message) {
 			}
 			if _, ok := props["attachments"].([]interface{}); ok {
 				rmsg.Extra["attachments"] = props["attachments"].([]interface{})
+				if rmsg.Text == "" {
+					for _, attachment := range rmsg.Extra["attachments"] {
+						attach := attachment.(map[string]interface{})
+						if attach["text"].(string) != "" {
+							rmsg.Text += attach["text"].(string)
+							continue
+						}
+						if attach["fallback"].(string) != "" {
+							rmsg.Text += attach["fallback"].(string)
+						}
+					}
+				}
 			}
 		}
 
