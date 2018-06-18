@@ -101,7 +101,6 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 		if strings.ToLower(b.GetString("MessageFormat")) == "htmlnick" {
 			b.Log.Debug("Using mode HTML - nick only")
 			msg.Text = html.EscapeString(msg.Text)
-			m.ParseMode = tgbotapi.ModeHTML
 		}
 		m := tgbotapi.NewEditMessageText(chatid, msgid, msg.Username+msg.Text)
 		if b.GetString("MessageFormat") == "HTML" {
@@ -111,6 +110,10 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 		if b.GetString("MessageFormat") == "Markdown" {
 			b.Log.Debug("Using mode markdown")
 			m.ParseMode = tgbotapi.ModeMarkdown
+		}
+		if strings.ToLower(b.GetString("MessageFormat")) == "htmlnick" {
+			b.Log.Debug("Using mode HTML - nick only")
+			m.ParseMode = tgbotapi.ModeHTML
 		}
 		_, err = b.c.Send(m)
 		if err != nil {
