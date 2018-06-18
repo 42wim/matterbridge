@@ -799,9 +799,10 @@ Token="Yourtokenhere"
 ## Settings below can be reloaded by editing the file
 
 #OPTIONAL (default empty)
-#Supported formats are "HTML" and "Markdown"
+#Supported formats are "HTML", "Markdown" and "HTMLNick"
 #See https://core.telegram.org/bots/api#html-style
 #See https://core.telegram.org/bots/api#markdown-style
+#HTMLNick only allows HTML for the nick, the message itself will be html-escaped
 MessageFormat=""
 
 #If enabled use the "First Name" as username. If this is empty use the Username

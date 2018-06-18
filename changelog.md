@@ -1,3 +1,22 @@
+# v1.11.0
+
+## New features
+* general: Add config option MediaDownloadPath (#443). See `MediaDownloadPath` in matterbridge.toml.sample
+* general: Add MediaDownloadBlacklist option. Closes #442. See `MediaDownloadBlacklist` in matterbridge.toml.sample
+* xmpp: Add channel password support for XMPP (#451)
+* xmpp: Add message correction support for XMPP (#437)
+* telegram: Add support for MessageFormat=htmlnick (telegram). #444
+* mattermost: Add support for mattermost 5.x
+
+## Enhancements
+* slack: Add Title from attachment slack message (#446)
+* irc: Prevent white or black color codes (irc) (#434)
+
+## Bugfix
+* slack: Fix regexp in replaceMention (slack). (#435)
+* irc: Reconnect on quit. (irc) See #431 (#445)
+* sshchat: Ignore messages from ourself. (sshchat) Closes #439
+
 # v1.10.1
 ## New features
 * irc: Colorize username sent to IRC using its crc32 IEEE checksum (#423). See `ColorNicks` in matterbridge.toml.sample

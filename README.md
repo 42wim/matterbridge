@@ -49,7 +49,7 @@ Used by at least 2 projects. Feel free to make a PR to add your project to this 
 
 # Requirements
 Accounts to one of the supported bridges
-* [Mattermost](https://github.com/mattermost/platform/) 3.8.x - 3.10.x, 4.x
+* [Mattermost](https://github.com/mattermost/platform/) 3.8.x - 3.10.x, 4.x, 5.x
 * [IRC](http://www.mirc.com/servers.html)
 * [XMPP](https://jabber.org)
 * [Gitter](https://gitter.im)
@@ -69,7 +69,7 @@ See https://github.com/42wim/matterbridge/wiki
 
 # Installing
 ## Binaries
-* Latest stable release [v1.10.1](https://github.com/42wim/matterbridge/releases/latest)
+* Latest stable release [v1.11.0](https://github.com/42wim/matterbridge/releases/latest)
 * Development releases (follows master) can be downloaded [here](https://dl.bintray.com/42wim/nightly/)  
 
 ## Building

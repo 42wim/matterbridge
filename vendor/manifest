@@ -601,7 +601,7 @@
 			"repository": "https://github.com/nlopes/slack",
 			"vcs": "git",
 			"revision": "107290b5bbaf3e634833346bb4ff389b1c782bc7",
-			"branch": "master",
+			"branch": "HEAD",
 			"notests": true
 		},
 		{
