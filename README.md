@@ -73,7 +73,9 @@ See https://github.com/42wim/matterbridge/wiki
 * Development releases (follows master) can be downloaded [here](https://dl.bintray.com/42wim/nightly/)  
 
 ## Building
-Go 1.8+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH] (https://golang.org/doc/code.html#GOPATH)
+Go 1.8+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH](https://golang.org/doc/code.html#GOPATH).
+
+After Go is setup, download matterbridge to your $GOPATH directory. 
 
 ```
 cd $GOPATH
