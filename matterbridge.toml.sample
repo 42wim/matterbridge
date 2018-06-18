@@ -1392,9 +1392,9 @@ enable=true
     #REQUIRED
     channel="#testing"
 
-        #OPTIONAL - only used for IRC protocol at the moment
+        #OPTIONAL - only used for IRC and XMPP protocols at the moment
         [gateway.in.options]
-        #OPTIONAL - your irc channel key
+        #OPTIONAL - your irc / xmpp channel key
         key="yourkey"
 
 
@@ -1403,9 +1403,9 @@ enable=true
     account="irc.freenode"
     channel="#testing"
 
-        #OPTIONAL - only used for IRC protocol at the moment
+        #OPTIONAL - only used for IRC and XMPP protocols at the moment
         [gateway.out.options]
-        #OPTIONAL - your irc channel key
+        #OPTIONAL - your irc / xmpp channel key
         key="yourkey"
 
     #[[gateway.inout]] can be used when then channel will be used to receive from 
@@ -1414,9 +1414,9 @@ enable=true
     account="mattermost.work"
     channel="off-topic"
 
-        #OPTIONAL - only used for IRC protocol at the moment
+        #OPTIONAL - only used for IRC and XMPP protocols at the moment
         [gateway.inout.options]
-        #OPTIONAL - your irc channel key
+        #OPTIONAL - your irc / xmpp channel key
         key="yourkey"
 
     [[gateway.inout]]
