@@ -1,6 +1,7 @@
 package btelegram
 
 import (
+	"html"
 	"regexp"
 	"strconv"
 	"strings"
@@ -96,6 +97,11 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 		msgid, err := strconv.Atoi(msg.ID)
 		if err != nil {
 			return "", err
+		}
+		if strings.ToLower(b.GetString("MessageFormat")) == "htmlnick" {
+			b.Log.Debug("Using mode HTML - nick only")
+			msg.Text = html.EscapeString(msg.Text)
+			m.ParseMode = tgbotapi.ModeHTML
 		}
 		m := tgbotapi.NewEditMessageText(chatid, msgid, msg.Username+msg.Text)
 		if b.GetString("MessageFormat") == "HTML" {
@@ -391,12 +397,16 @@ func (b *Btelegram) sendMessage(chatid int64, username, text string) (string, er
 	m.Text = username + text
 	if b.GetString("MessageFormat") == "HTML" {
 		b.Log.Debug("Using mode HTML")
-		m.Text = username + text
 		m.ParseMode = tgbotapi.ModeHTML
 	}
 	if b.GetString("MessageFormat") == "Markdown" {
 		b.Log.Debug("Using mode markdown")
 		m.ParseMode = tgbotapi.ModeMarkdown
+	}
+	if strings.ToLower(b.GetString("MessageFormat")) == "htmlnick" {
+		b.Log.Debug("Using mode HTML - nick only")
+		m.Text = username + html.EscapeString(text)
+		m.ParseMode = tgbotapi.ModeHTML
 	}
 	res, err := b.c.Send(m)
 	if err != nil {
