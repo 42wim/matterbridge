@@ -126,7 +126,7 @@ type Protocol struct {
 }
 
 type ChannelOptions struct {
-	Key        string // irc
+	Key        string // irc, xmpp
 	WebhookURL string // discord
 }
 

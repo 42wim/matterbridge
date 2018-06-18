@@ -65,7 +65,12 @@ func (b *Bxmpp) Disconnect() error {
 }
 
 func (b *Bxmpp) JoinChannel(channel config.ChannelInfo) error {
-	b.xc.JoinMUCNoHistory(channel.Name+"@"+b.GetString("Muc"), b.GetString("Nick"))
+	if channel.Options.Key != "" {
+		b.Log.Debugf("using key %s for channel %s", channel.Options.Key, channel.Name)
+		b.xc.JoinProtectedMUC(channel.Name+"@"+b.GetString("Muc"), b.GetString("Nick"), channel.Options.Key, xmpp.NoHistory, 0, nil)
+	} else {
+		b.xc.JoinMUCNoHistory(channel.Name+"@"+b.GetString("Muc"), b.GetString("Nick"))
+	}
 	return nil
 }
 
