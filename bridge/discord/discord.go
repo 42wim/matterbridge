@@ -127,7 +127,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	// Use webhook to send the message
 	if wID != "" {
 		// skip events
-		if msg.Event != "" {
+		if msg.Event != "" && msg.Event != EVENT_JOIN_LEAVE && msg.Event != EVENT_TOPIC_CHANGE {
 			return "", nil
 		}
 		b.Log.Debugf("Broadcasting using Webhook")
