@@ -310,6 +310,11 @@ func (m *MMClient) parseMessage(rmsg *Message) {
 	switch rmsg.Raw.Event {
 	case model.WEBSOCKET_EVENT_POSTED, model.WEBSOCKET_EVENT_POST_EDITED, model.WEBSOCKET_EVENT_POST_DELETED:
 		m.parseActionPost(rmsg)
+	case "user_updated":
+		user := rmsg.Raw.Data["user"].(map[string]interface{})
+		if _, ok := user["id"].(string); ok {
+			m.UpdateUser(user["id"].(string))
+		}
 		/*
 			case model.ACTION_USER_REMOVED:
 				m.handleWsActionUserRemoved(&rmsg)
@@ -750,10 +755,28 @@ func (m *MMClient) GetUser(userId string) *model.User {
 	return m.Users[userId]
 }
 
+func (m *MMClient) UpdateUser(userId string) {
+	m.Lock()
+	defer m.Unlock()
+	res, resp := m.Client.GetUser(userId, "")
+	if resp.Error != nil {
+		return
+	}
+	m.Users[userId] = res
+}
+
 func (m *MMClient) GetUserName(userId string) string {
 	user := m.GetUser(userId)
 	if user != nil {
 		return user.Username
+	}
+	return ""
+}
+
+func (m *MMClient) GetNickName(userId string) string {
+	user := m.GetUser(userId)
+	if user != nil {
+		return user.Nickname
 	}
 	return ""
 }
