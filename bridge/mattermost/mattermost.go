@@ -185,6 +185,9 @@ func (b *Bmattermost) handleMatter() {
 	for message := range messages {
 		message.Avatar = helper.GetAvatar(b.avatarMap, message.UserID, b.General)
 		message.Account = b.Account
+		if nick := b.mc.GetNickName(message.UserID); nick != "" {
+			message.Username = nick
+		}
 		message.Text, ok = b.replaceAction(message.Text)
 		if ok {
 			message.Event = config.EVENT_USER_ACTION
