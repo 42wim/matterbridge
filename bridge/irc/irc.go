@@ -397,7 +397,7 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 	rmsg.Text += event.StripAction()
 
 	// strip IRC colors
-	re := regexp.MustCompile(`[[:cntrl:]](?:\d{1,2}(?:,\d{1,2})?)?`)
+	re := regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
 	rmsg.Text = re.ReplaceAllString(rmsg.Text, "")
 
 	// start detecting the charset
