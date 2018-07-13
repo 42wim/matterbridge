@@ -235,6 +235,7 @@ func (b *Bslack) getAvatar(user string) string {
 	return avatar
 }
 
+/*
 func (b *Bslack) getChannelByName(name string) (*slack.Channel, error) {
 	if b.channels == nil {
 		return nil, fmt.Errorf("%s: channel %s not found (no channels found)", b.Account, name)
@@ -246,6 +247,7 @@ func (b *Bslack) getChannelByName(name string) (*slack.Channel, error) {
 	}
 	return nil, fmt.Errorf("%s: channel %s not found", b.Account, name)
 }
+*/
 
 func (b *Bslack) getChannelByID(ID string) (*slack.Channel, error) {
 	if b.channels == nil {
