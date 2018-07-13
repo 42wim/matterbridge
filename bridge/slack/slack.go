@@ -19,14 +19,15 @@ import (
 )
 
 type Bslack struct {
-	mh         *matterhook.Client
-	sc         *slack.Client
-	rtm        *slack.RTM
-	Users      []slack.User
-	Usergroups []slack.UserGroup
-	si         *slack.Info
-	channels   []slack.Channel
-	uuid       string
+	mh           *matterhook.Client
+	sc           *slack.Client
+	rtm          *slack.RTM
+	Users        []slack.User
+	Usergroups   []slack.UserGroup
+	si           *slack.Info
+	channels     []slack.Channel
+	UseChannelID bool
+	uuid         string
 	*bridge.Config
 	sync.RWMutex
 }
@@ -98,6 +99,20 @@ func (b *Bslack) Disconnect() error {
 }
 
 func (b *Bslack) JoinChannel(channel config.ChannelInfo) error {
+	// use ID:channelid and resolve it to the actual name
+	idcheck := strings.Split(channel.Name, "ID:")
+	if len(idcheck) > 1 {
+		b.UseChannelID = true
+		ch, err := b.sc.GetChannelInfo(idcheck[1])
+		if err != nil {
+			return err
+		}
+		channel.Name = ch.Name
+		if err != nil {
+			return err
+		}
+	}
+
 	// we can only join channels using the API
 	if b.sc != nil {
 		if strings.HasPrefix(b.GetString("Token"), "xoxb") {
@@ -131,11 +146,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 		return b.sendWebhook(msg)
 	}
 
-	// get the slack channel
-	schannel, err := b.getChannelByName(msg.Channel)
-	if err != nil {
-		return "", err
-	}
+	channelID := b.getChannelID(msg.Channel)
 
 	// Delete message
 	if msg.Event == config.EVENT_MSG_DELETE {
@@ -145,7 +156,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 		}
 		// we get a "slack <ID>", split it
 		ts := strings.Fields(msg.ID)
-		_, _, err := b.sc.DeleteMessage(schannel.ID, ts[1])
+		_, _, err := b.sc.DeleteMessage(channelID, ts[1])
 		if err != nil {
 			return msg.ID, err
 		}
@@ -160,7 +171,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	// Edit message if we have an ID
 	if msg.ID != "" {
 		ts := strings.Fields(msg.ID)
-		_, _, _, err := b.sc.UpdateMessage(schannel.ID, ts[1], msg.Text)
+		_, _, _, err := b.sc.UpdateMessage(channelID, ts[1], msg.Text)
 		if err != nil {
 			return msg.ID, err
 		}
@@ -192,16 +203,16 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	// Upload a file if it exists
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			b.sc.PostMessage(schannel.ID, rmsg.Username+rmsg.Text, np)
+			b.sc.PostMessage(channelID, rmsg.Username+rmsg.Text, np)
 		}
 		// check if we have files to upload (from slack, telegram or mattermost)
 		if len(msg.Extra["file"]) > 0 {
-			b.handleUploadFile(&msg, schannel.ID)
+			b.handleUploadFile(&msg, channelID)
 		}
 	}
 
 	// Post normal message
-	_, id, err := b.sc.PostMessage(schannel.ID, msg.Text, np)
+	_, id, err := b.sc.PostMessage(channelID, msg.Text, np)
 	if err != nil {
 		return "", err
 	}
@@ -486,6 +497,10 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 
 	rmsg := config.Message{Text: ev.Text, Channel: channel.Name, Account: b.Account, ID: "slack " + ev.Timestamp, Extra: make(map[string][]interface{})}
 
+	if b.UseChannelID {
+		rmsg.Channel = "ID:" + channel.ID
+	}
+
 	// find the user id and name
 	if ev.User != "" && ev.SubType != messageDeleted && ev.SubType != "file_comment" {
 		user, err := b.rtm.GetUserInfo(ev.User)
@@ -681,4 +696,17 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 		}
 	}
 	return false
+}
+
+func (b *Bslack) getChannelID(name string) string {
+	idcheck := strings.Split(name, "ID:")
+	if len(idcheck) > 1 {
+		return idcheck[1]
+	}
+	for _, channel := range b.channels {
+		if channel.Name == name {
+			return channel.ID
+		}
+	}
+	return ""
 }

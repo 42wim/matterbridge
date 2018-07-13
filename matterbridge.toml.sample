@@ -1377,6 +1377,7 @@ enable=true
     #gitter     - username/room 
     #xmpp       - channel
     #slack      - channel (without the #)
+    #           - ID:C123456 (where C123456 is the channel ID) does not work with webhook
     #discord    - channel (without the #)
     #           - ID:123456789 (where 123456789 is the channel ID) 
     #               (https://github.com/42wim/matterbridge/issues/57)
