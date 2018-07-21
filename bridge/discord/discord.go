@@ -13,6 +13,8 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+const MessageLength = 1950
+
 type Bdiscord struct {
 	c              *discordgo.Session
 	Channels       []*discordgo.Channel
@@ -141,6 +143,8 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 		if msg.Text == "" {
 			return "", nil
 		}
+
+		msg.Text = helper.ClipMessage(msg.Text, MessageLength)
 		err := b.c.WebhookExecute(
 			wID,
 			wToken,
@@ -167,6 +171,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	// Upload a file if it exists
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+			rmsg.Text = helper.ClipMessage(rmsg.Text, MessageLength)
 			b.c.ChannelMessageSend(channelID, rmsg.Username+rmsg.Text)
 		}
 		// check if we have files to upload (from slack, telegram or mattermost)
@@ -175,6 +180,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 		}
 	}
 
+	msg.Text = helper.ClipMessage(msg.Text, MessageLength)
 	// Edit message
 	if msg.ID != "" {
 		_, err := b.c.ChannelMessageEdit(channelID, msg.ID, msg.Username+msg.Text)

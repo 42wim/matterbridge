@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/42wim/matterbridge/bridge/config"
 	log "github.com/sirupsen/logrus"
@@ -114,4 +115,16 @@ func RemoveEmptyNewLines(msg string) string {
 	}
 	lines = strings.TrimRight(lines, "\n")
 	return lines
+}
+
+func ClipMessage(text string, length int) string {
+	// clip too long messages
+	if len(text) > length {
+		text = text[:length-len(" *message clipped*")]
+		if r, size := utf8.DecodeLastRuneInString(text); r == utf8.RuneError {
+			text = text[:len(text)-size]
+		}
+		text += " *message clipped*"
+	}
+	return text
 }
