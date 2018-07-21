@@ -137,6 +137,10 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 				msg.Text += " " + fi.URL
 			}
 		}
+		// skip empty messages
+		if msg.Text == "" {
+			return "", nil
+		}
 		err := b.c.WebhookExecute(
 			wID,
 			wToken,
