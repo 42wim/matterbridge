@@ -1,0 +1,3 @@
+[submodule "generator/SteamKit"]
+	path = generator/SteamKit
+	url = https://github.com/Philipp15b/SteamKit.git
