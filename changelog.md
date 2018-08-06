@@ -1,3 +1,19 @@
+# v1.11.1
+
+## New features
+* slack: Add support for slack channels by ID. Closes #436
+* discord: Clip too long messages sent to discord (discord). Closes #440
+
+## Bugfix
+* general: fix possible panic on downloads that are too big #448
+* general: Fix avatar uploads to work with MediaDownloadPath. Closes #454
+* discord: allow receiving of topic changes/channel leave/joins from other bridges through the webhook
+* discord: Add a space before url in file uploads (discord). Closes #461
+* discord:  Skip empty messages being sent with the webhook (discord). #469
+* mattermost: Use nickname instead of username if defined (mattermost). Closes #452
+* irc: Stop numbers being stripped after non-color control codes (irc) (#465)
+* slack: Use UserID to look for avatar instead of username (slack). Closes #472
+
 # v1.11.0
 
 ## New features
