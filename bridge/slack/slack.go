@@ -223,11 +223,11 @@ func (b *Bslack) Reload(cfg *bridge.Config) (string, error) {
 	return "", nil
 }
 
-func (b *Bslack) getAvatar(user string) string {
+func (b *Bslack) getAvatar(userid string) string {
 	var avatar string
 	if b.Users != nil {
 		for _, u := range b.Users {
-			if user == u.Name {
+			if userid == u.ID {
 				return u.Profile.Image48
 			}
 		}
@@ -283,7 +283,7 @@ func (b *Bslack) handleSlack() {
 		message.Text = html.UnescapeString(message.Text)
 
 		// Add the avatar
-		message.Avatar = b.getAvatar(strings.ToLower(message.Username))
+		message.Avatar = b.getAvatar(message.UserID)
 
 		b.Log.Debugf("<= Message is %#v", message)
 		b.Remote <- *message
