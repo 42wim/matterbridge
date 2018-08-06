@@ -13,8 +13,8 @@ import (
 	"sync"
 	"time"
 
+	prefixed "github.com/matterbridge/logrus-prefixed-formatter"
 	log "github.com/sirupsen/logrus"
-	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 
 	"github.com/gorilla/websocket"
 	"github.com/hashicorp/golang-lru"

@@ -399,6 +399,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/matterbridge/discordgo",
+			"repository": "https://github.com/matterbridge/discordgo",
+			"vcs": "git",
+			"revision": "ef40ff5ba64fced4133098c05527c090f1f4f611",
+			"branch": "work",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/matterbridge/go-xmpp",
 			"repository": "https://github.com/matterbridge/go-xmpp",
 			"vcs": "git",
@@ -419,6 +427,14 @@
 			"repository": "https://github.com/matterbridge/gozulipbot",
 			"vcs": "git",
 			"revision": "b6bb12d33544893aa68904652704cf1a86ea3d18",
+			"branch": "work",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/matterbridge/logrus-prefixed-formatter",
+			"repository": "https://github.com/matterbridge/logrus-prefixed-formatter",
+			"vcs": "git",
+			"revision": "01618749af61a7f764d7cc7f6baea6f940c188a1",
 			"branch": "work",
 			"notests": true
 		},
