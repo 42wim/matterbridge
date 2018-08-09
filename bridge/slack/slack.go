@@ -313,18 +313,14 @@ func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 			b.Users, _ = b.sc.GetUsers()
 			b.Usergroups, _ = b.sc.GetUserGroups()
 		case *slack.ConnectedEvent:
-			b.channels = ev.Info.Channels
+			var err error
+			b.channels, _, err = b.sc.GetConversations(&slack.GetConversationsParameters{})
+			if err != nil {
+				b.Log.Errorf("Channel list failed: %#v", err)
+			}
 			b.si = ev.Info
 			b.Users, _ = b.sc.GetUsers()
 			b.Usergroups, _ = b.sc.GetUserGroups()
-			// add private channels
-			groups, _ := b.sc.GetGroups(true)
-			for _, g := range groups {
-				channel := new(slack.Channel)
-				channel.ID = g.ID
-				channel.Name = g.Name
-				b.channels = append(b.channels, *channel)
-			}
 		case *slack.InvalidAuthEvent:
 			b.Log.Fatalf("Invalid Token %#v", ev)
 		case *slack.ConnectionErrorEvent:
@@ -444,7 +440,6 @@ func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File) erro
 	if len(results) > 0 {
 		comment = results[0][1]
 	}
-
 	err := helper.HandleDownloadSize(b.Log, rmsg, file.Name, int64(file.Size), b.General)
 	if err != nil {
 		return err
@@ -592,7 +587,7 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 	}
 
 	// Only deleted messages can have a empty username and text
-	if (rmsg.Text == "" || rmsg.Username == "") && ev.SubType != messageDeleted {
+	if (rmsg.Text == "" || rmsg.Username == "") && ev.SubType != messageDeleted && len(ev.Files) == 0 {
 		// this is probably a webhook we couldn't resolve
 		if ev.BotID != "" {
 			return nil, fmt.Errorf("probably an incoming webhook we couldn't resolve (maybe ourselves)")
@@ -606,10 +601,12 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 	}
 
 	// if we have a file attached, download it (in memory) and put a pointer to it in msg.Extra
-	if ev.File != nil {
-		err := b.handleDownloadFile(&rmsg, ev.File)
-		if err != nil {
-			b.Log.Errorf("download failed: %s", err)
+	if len(ev.Files) > 0 {
+		for _, f := range ev.Files {
+			err := b.handleDownloadFile(&rmsg, &f)
+			if err != nil {
+				b.Log.Errorf("download failed: %s", err)
+			}
 		}
 	}
 
