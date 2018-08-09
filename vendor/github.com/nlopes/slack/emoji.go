@@ -19,10 +19,11 @@ func (api *Client) GetEmoji() (map[string]string, error) {
 // GetEmojiContext retrieves all the emojis with a custom context
 func (api *Client) GetEmojiContext(ctx context.Context) (map[string]string, error) {
 	values := url.Values{
-		"token": {api.config.token},
+		"token": {api.token},
 	}
 	response := &emojiResponseFull{}
-	err := post(ctx, "emoji.list", values, response, api.debug)
+
+	err := postSlackMethod(ctx, api.httpclient, "emoji.list", values, response, api.debug)
 	if err != nil {
 		return nil, err
 	}

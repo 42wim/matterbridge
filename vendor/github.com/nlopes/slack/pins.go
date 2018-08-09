@@ -21,25 +21,24 @@ func (api *Client) AddPin(channel string, item ItemRef) error {
 func (api *Client) AddPinContext(ctx context.Context, channel string, item ItemRef) error {
 	values := url.Values{
 		"channel": {channel},
-		"token":   {api.config.token},
+		"token":   {api.token},
 	}
 	if item.Timestamp != "" {
-		values.Set("timestamp", string(item.Timestamp))
+		values.Set("timestamp", item.Timestamp)
 	}
 	if item.File != "" {
-		values.Set("file", string(item.File))
+		values.Set("file", item.File)
 	}
 	if item.Comment != "" {
-		values.Set("file_comment", string(item.Comment))
+		values.Set("file_comment", item.Comment)
 	}
+
 	response := &SlackResponse{}
-	if err := post(ctx, "pins.add", values, response, api.debug); err != nil {
+	if err := postSlackMethod(ctx, api.httpclient, "pins.add", values, response, api.debug); err != nil {
 		return err
 	}
-	if !response.Ok {
-		return errors.New(response.Error)
-	}
-	return nil
+
+	return response.Err()
 }
 
 // RemovePin un-pins an item from a channel
@@ -51,25 +50,24 @@ func (api *Client) RemovePin(channel string, item ItemRef) error {
 func (api *Client) RemovePinContext(ctx context.Context, channel string, item ItemRef) error {
 	values := url.Values{
 		"channel": {channel},
-		"token":   {api.config.token},
+		"token":   {api.token},
 	}
 	if item.Timestamp != "" {
-		values.Set("timestamp", string(item.Timestamp))
+		values.Set("timestamp", item.Timestamp)
 	}
 	if item.File != "" {
-		values.Set("file", string(item.File))
+		values.Set("file", item.File)
 	}
 	if item.Comment != "" {
-		values.Set("file_comment", string(item.Comment))
+		values.Set("file_comment", item.Comment)
 	}
+
 	response := &SlackResponse{}
-	if err := post(ctx, "pins.remove", values, response, api.debug); err != nil {
+	if err := postSlackMethod(ctx, api.httpclient, "pins.remove", values, response, api.debug); err != nil {
 		return err
 	}
-	if !response.Ok {
-		return errors.New(response.Error)
-	}
-	return nil
+
+	return response.Err()
 }
 
 // ListPins returns information about the items a user reacted to.
@@ -81,10 +79,11 @@ func (api *Client) ListPins(channel string) ([]Item, *Paging, error) {
 func (api *Client) ListPinsContext(ctx context.Context, channel string) ([]Item, *Paging, error) {
 	values := url.Values{
 		"channel": {channel},
-		"token":   {api.config.token},
+		"token":   {api.token},
 	}
+
 	response := &listPinsResponseFull{}
-	err := post(ctx, "pins.list", values, response, api.debug)
+	err := postSlackMethod(ctx, api.httpclient, "pins.list", values, response, api.debug)
 	if err != nil {
 		return nil, nil, err
 	}

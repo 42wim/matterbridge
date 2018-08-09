@@ -41,13 +41,14 @@ require (
 	github.com/mreiferson/go-httpclient v0.0.0-20160630210159-31f0106b4474 // indirect
 	github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff // indirect
 	github.com/nicksnyder/go-i18n v1.4.0 // indirect
-	github.com/nlopes/slack v0.0.0-20180101221843-107290b5bbaf
+	github.com/nlopes/slack v0.3.1-0.20180805133408-21749ab136a8
 	github.com/onsi/ginkgo v1.6.0 // indirect
 	github.com/onsi/gomega v1.4.1 // indirect
 	github.com/paulrosania/go-charset v0.0.0-20151028000031-621bb39fcc83
 	github.com/pborman/uuid v0.0.0-20160216163710-c55201b03606 // indirect
 	github.com/pelletier/go-toml v0.0.0-20180228233631-05bcc0fb0d3e // indirect
 	github.com/peterhellberg/emojilib v0.0.0-20170616163716-41920917e271
+	github.com/pkg/errors v0.8.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rs/xid v0.0.0-20180525034800-088c5cf1423a
 	github.com/russross/blackfriday v1.5.1

@@ -83,6 +83,8 @@ github.com/nicksnyder/go-i18n v1.4.0 h1:AgLl+Yq7kg5OYlzCgu9cKTZOyI4tD/NgukKqLqC8
 github.com/nicksnyder/go-i18n v1.4.0/go.mod h1:HrK7VCrbOvQoUAQ7Vpy7i87N7JZZZ7R2xBGjv0j365Q=
 github.com/nlopes/slack v0.0.0-20180101221843-107290b5bbaf h1:M+xGhDxie/MqC+tzs+3ZHBSY4Wsv+fEkrpIMCKy8PTg=
 github.com/nlopes/slack v0.0.0-20180101221843-107290b5bbaf/go.mod h1:jVI4BBK3lSktibKahxBF74txcK2vyvkza1z/+rRnVAM=
+github.com/nlopes/slack v0.3.1-0.20180805133408-21749ab136a8 h1:PSy8NkmkyldLmPPnNNw7mwfQFOHDqOI6bINpJ+/KV7Y=
+github.com/nlopes/slack v0.3.1-0.20180805133408-21749ab136a8/go.mod h1:jVI4BBK3lSktibKahxBF74txcK2vyvkza1z/+rRnVAM=
 github.com/onsi/ginkgo v1.6.0 h1:Ix8l273rp3QzYgXSR+c8d1fTG7UPgYkOSELPhiY/YGw=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/gomega v1.4.1 h1:PZSj/UFNaVp3KxrzHOcS7oyuWA7LoOY/77yCTEFu21U=
@@ -95,6 +97,8 @@ github.com/pelletier/go-toml v0.0.0-20180228233631-05bcc0fb0d3e h1:ZW8599OjioQsm
 github.com/pelletier/go-toml v0.0.0-20180228233631-05bcc0fb0d3e/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=
 github.com/peterhellberg/emojilib v0.0.0-20170616163716-41920917e271 h1:wQ9lVx75za6AT2kI0S9QID0uWuwTWnvcTfN+uw1F8vg=
 github.com/peterhellberg/emojilib v0.0.0-20170616163716-41920917e271/go.mod h1:G7LufuPajuIvdt9OitkNt2qh0mmvD4bfRgRM7bhDIOA=
+github.com/pkg/errors v0.8.0 h1:WdK/asTD0HN+q6hsWO3/vpuAkAr+tw6aNJNDFFf0+qw=
+github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/rs/xid v0.0.0-20180525034800-088c5cf1423a h1:UWKek6MK3K6/TpbsFcv+8rrO6rSc6KKSp2FbMOHWsq4=

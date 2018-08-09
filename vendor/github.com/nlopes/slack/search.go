@@ -11,7 +11,7 @@ const (
 	DEFAULT_SEARCH_SORT      = "score"
 	DEFAULT_SEARCH_SORT_DIR  = "desc"
 	DEFAULT_SEARCH_HIGHLIGHT = false
-	DEFAULT_SEARCH_COUNT     = 100
+	DEFAULT_SEARCH_COUNT     = 20
 	DEFAULT_SEARCH_PAGE      = 1
 )
 
@@ -37,17 +37,18 @@ type CtxMessage struct {
 }
 
 type SearchMessage struct {
-	Type      string     `json:"type"`
-	Channel   CtxChannel `json:"channel"`
-	User      string     `json:"user"`
-	Username  string     `json:"username"`
-	Timestamp string     `json:"ts"`
-	Text      string     `json:"text"`
-	Permalink string     `json:"permalink"`
-	Previous  CtxMessage `json:"previous"`
-	Previous2 CtxMessage `json:"previous_2"`
-	Next      CtxMessage `json:"next"`
-	Next2     CtxMessage `json:"next_2"`
+	Type        string       `json:"type"`
+	Channel     CtxChannel   `json:"channel"`
+	User        string       `json:"user"`
+	Username    string       `json:"username"`
+	Timestamp   string       `json:"ts"`
+	Text        string       `json:"text"`
+	Permalink   string       `json:"permalink"`
+	Attachments []Attachment `json:"attachments"`
+	Previous    CtxMessage   `json:"previous"`
+	Previous2   CtxMessage   `json:"previous_2"`
+	Next        CtxMessage   `json:"next"`
+	Next2       CtxMessage   `json:"next_2"`
 }
 
 type SearchMessages struct {
@@ -83,7 +84,7 @@ func NewSearchParameters() SearchParameters {
 
 func (api *Client) _search(ctx context.Context, path, query string, params SearchParameters, files, messages bool) (response *searchResponseFull, error error) {
 	values := url.Values{
-		"token": {api.config.token},
+		"token": {api.token},
 		"query": {query},
 	}
 	if params.Sort != DEFAULT_SEARCH_SORT {
@@ -101,8 +102,9 @@ func (api *Client) _search(ctx context.Context, path, query string, params Searc
 	if params.Page != DEFAULT_SEARCH_PAGE {
 		values.Add("page", strconv.Itoa(params.Page))
 	}
+
 	response = &searchResponseFull{}
-	err := post(ctx, path, values, response, api.debug)
+	err := postSlackMethod(ctx, api.httpclient, path, values, response, api.debug)
 	if err != nil {
 		return nil, err
 	}

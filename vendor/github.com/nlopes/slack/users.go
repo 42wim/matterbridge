@@ -5,41 +5,103 @@ import (
 	"encoding/json"
 	"errors"
 	"net/url"
+	"strconv"
 )
 
 const (
 	DEFAULT_USER_PHOTO_CROP_X = -1
 	DEFAULT_USER_PHOTO_CROP_Y = -1
 	DEFAULT_USER_PHOTO_CROP_W = -1
+	errPaginationComplete     = errorString("pagination complete")
 )
 
 // UserProfile contains all the information details of a given user
 type UserProfile struct {
-  FirstName             string `json:"first_name"`
-  LastName              string `json:"last_name"`
-  RealName              string `json:"real_name"`
-  RealNameNormalized    string `json:"real_name_normalized"`
-  DisplayName           string `json:"display_name"`
-  DisplayNameNormalized string `json:"display_name_normalized"`
-  Email                 string `json:"email"`
-  Skype                 string `json:"skype"`
-  Phone                 string `json:"phone"`
-  Image24               string `json:"image_24"`
-  Image32               string `json:"image_32"`
-  Image48               string `json:"image_48"`
-  Image72               string `json:"image_72"`
-  Image192              string `json:"image_192"`
-  ImageOriginal         string `json:"image_original"`
-  Title                 string `json:"title"`
-  BotID                 string `json:"bot_id,omitempty"`
-  ApiAppID              string `json:"api_app_id,omitempty"`
-  StatusText            string `json:"status_text,omitempty"`
-  StatusEmoji           string `json:"status_emoji,omitempty"`
+	FirstName             string                  `json:"first_name"`
+	LastName              string                  `json:"last_name"`
+	RealName              string                  `json:"real_name"`
+	RealNameNormalized    string                  `json:"real_name_normalized"`
+	DisplayName           string                  `json:"display_name"`
+	DisplayNameNormalized string                  `json:"display_name_normalized"`
+	Email                 string                  `json:"email"`
+	Skype                 string                  `json:"skype"`
+	Phone                 string                  `json:"phone"`
+	Image24               string                  `json:"image_24"`
+	Image32               string                  `json:"image_32"`
+	Image48               string                  `json:"image_48"`
+	Image72               string                  `json:"image_72"`
+	Image192              string                  `json:"image_192"`
+	ImageOriginal         string                  `json:"image_original"`
+	Title                 string                  `json:"title"`
+	BotID                 string                  `json:"bot_id,omitempty"`
+	ApiAppID              string                  `json:"api_app_id,omitempty"`
+	StatusText            string                  `json:"status_text,omitempty"`
+	StatusEmoji           string                  `json:"status_emoji,omitempty"`
+	Team                  string                  `json:"team"`
+	Fields                UserProfileCustomFields `json:"fields"`
+}
+
+// UserProfileCustomFields represents user profile's custom fields.
+// Slack API's response data type is inconsistent so we use the struct.
+// For detail, please see below.
+// https://github.com/nlopes/slack/pull/298#discussion_r185159233
+type UserProfileCustomFields struct {
+	fields map[string]UserProfileCustomField
+}
+
+// UnmarshalJSON is the implementation of the json.Unmarshaler interface.
+func (fields *UserProfileCustomFields) UnmarshalJSON(b []byte) error {
+	// https://github.com/nlopes/slack/pull/298#discussion_r185159233
+	if string(b) == "[]" {
+		return nil
+	}
+	return json.Unmarshal(b, &fields.fields)
+}
+
+// MarshalJSON is the implementation of the json.Marshaler interface.
+func (fields UserProfileCustomFields) MarshalJSON() ([]byte, error) {
+	if len(fields.fields) == 0 {
+		return []byte("[]"), nil
+	}
+	return json.Marshal(fields.fields)
+}
+
+// ToMap returns a map of custom fields.
+func (fields *UserProfileCustomFields) ToMap() map[string]UserProfileCustomField {
+	return fields.fields
+}
+
+// Len returns the number of custom fields.
+func (fields *UserProfileCustomFields) Len() int {
+	return len(fields.fields)
+}
+
+// SetMap sets a map of custom fields.
+func (fields *UserProfileCustomFields) SetMap(m map[string]UserProfileCustomField) {
+	fields.fields = m
+}
+
+// FieldsMap returns a map of custom fields.
+func (profile *UserProfile) FieldsMap() map[string]UserProfileCustomField {
+	return profile.Fields.ToMap()
+}
+
+// SetFieldsMap sets a map of custom fields.
+func (profile *UserProfile) SetFieldsMap(m map[string]UserProfileCustomField) {
+	profile.Fields.SetMap(m)
+}
+
+// UserProfileCustomField represents a custom user profile field
+type UserProfileCustomField struct {
+	Value string `json:"value"`
+	Alt   string `json:"alt"`
+	Label string `json:"label"`
 }
 
 // User contains all the information of a user
 type User struct {
 	ID                string      `json:"id"`
+	TeamID            string      `json:"team_id"`
 	Name              string      `json:"name"`
 	Deleted           bool        `json:"deleted"`
 	Color             string      `json:"color"`
@@ -54,9 +116,12 @@ type User struct {
 	IsPrimaryOwner    bool        `json:"is_primary_owner"`
 	IsRestricted      bool        `json:"is_restricted"`
 	IsUltraRestricted bool        `json:"is_ultra_restricted"`
+	IsStranger        bool        `json:"is_stranger"`
+	IsAppUser         bool        `json:"is_app_user"`
 	Has2FA            bool        `json:"has_2fa"`
 	HasFiles          bool        `json:"has_files"`
 	Presence          string      `json:"presence"`
+	Locale            string      `json:"locale"`
 }
 
 // UserPresence contains details about a user online status
@@ -103,10 +168,11 @@ type TeamIdentity struct {
 }
 
 type userResponseFull struct {
-	Members      []User                  `json:"members,omitempty"` // ListUsers
-	User         `json:"user,omitempty"` // GetUserInfo
-	UserPresence                         // GetUserPresence
+	Members []User `json:"members,omitempty"`
+	User    `json:"user,omitempty"`
+	UserPresence
 	SlackResponse
+	Metadata ResponseMetadata `json:"response_metadata"`
 }
 
 type UserSetPhotoParams struct {
@@ -123,9 +189,9 @@ func NewUserSetPhotoParams() UserSetPhotoParams {
 	}
 }
 
-func userRequest(ctx context.Context, path string, values url.Values, debug bool) (*userResponseFull, error) {
+func userRequest(ctx context.Context, client HTTPRequester, path string, values url.Values, debug bool) (*userResponseFull, error) {
 	response := &userResponseFull{}
-	err := post(ctx, path, values, response, debug)
+	err := postForm(ctx, client, SLACK_API+path, values, response, debug)
 	if err != nil {
 		return nil, err
 	}
@@ -143,10 +209,11 @@ func (api *Client) GetUserPresence(user string) (*UserPresence, error) {
 // GetUserPresenceContext will retrieve the current presence status of given user with a custom context.
 func (api *Client) GetUserPresenceContext(ctx context.Context, user string) (*UserPresence, error) {
 	values := url.Values{
-		"token": {api.config.token},
+		"token": {api.token},
 		"user":  {user},
 	}
-	response, err := userRequest(ctx, "users.getPresence", values, api.debug)
+
+	response, err := userRequest(ctx, api.httpclient, "users.getPresence", values, api.debug)
 	if err != nil {
 		return nil, err
 	}
@@ -161,14 +228,102 @@ func (api *Client) GetUserInfo(user string) (*User, error) {
 // GetUserInfoContext will retrieve the complete user information with a custom context
 func (api *Client) GetUserInfoContext(ctx context.Context, user string) (*User, error) {
 	values := url.Values{
-		"token": {api.config.token},
+		"token": {api.token},
 		"user":  {user},
 	}
-	response, err := userRequest(ctx, "users.info", values, api.debug)
+
+	response, err := userRequest(ctx, api.httpclient, "users.info", values, api.debug)
 	if err != nil {
 		return nil, err
 	}
 	return &response.User, nil
+}
+
+// GetUsersOption options for the GetUsers method call.
+type GetUsersOption func(*UserPagination)
+
+// GetUsersOptionLimit limit the number of users returned
+func GetUsersOptionLimit(n int) GetUsersOption {
+	return func(p *UserPagination) {
+		p.limit = n
+	}
+}
+
+// GetUsersOptionPresence include user presence
+func GetUsersOptionPresence(n bool) GetUsersOption {
+	return func(p *UserPagination) {
+		p.presence = n
+	}
+}
+
+func newUserPagination(c *Client, options ...GetUsersOption) (up UserPagination) {
+	up = UserPagination{
+		c:     c,
+		limit: 200, // per slack api documentation.
+	}
+
+	for _, opt := range options {
+		opt(&up)
+	}
+
+	return up
+}
+
+// UserPagination allows for paginating over the users
+type UserPagination struct {
+	Users        []User
+	limit        int
+	presence     bool
+	previousResp *ResponseMetadata
+	c            *Client
+}
+
+// Done checks if the pagination has completed
+func (UserPagination) Done(err error) bool {
+	return err == errPaginationComplete
+}
+
+// Failure checks if pagination failed.
+func (t UserPagination) Failure(err error) error {
+	if t.Done(err) {
+		return nil
+	}
+
+	return err
+}
+
+func (t UserPagination) Next(ctx context.Context) (_ UserPagination, err error) {
+	var (
+		resp *userResponseFull
+	)
+
+	if t.c == nil || (t.previousResp != nil && t.previousResp.Cursor == "") {
+		return t, errPaginationComplete
+	}
+
+	t.previousResp = t.previousResp.initialize()
+
+	values := url.Values{
+		"limit":    {strconv.Itoa(t.limit)},
+		"presence": {strconv.FormatBool(t.presence)},
+		"token":    {t.c.token},
+		"cursor":   {t.previousResp.Cursor},
+	}
+
+	if resp, err = userRequest(ctx, t.c.httpclient, "users.list", values, t.c.debug); err != nil {
+		return t, err
+	}
+
+	t.c.Debugf("GetUsersContext: got %d users; metadata %v", len(resp.Members), resp.Metadata)
+	t.Users = resp.Members
+	t.previousResp = &resp.Metadata
+
+	return t, nil
+}
+
+// GetUsersPaginated fetches users in a paginated fashion, see GetUsersContext for usage.
+func (api *Client) GetUsersPaginated(options ...GetUsersOption) UserPagination {
+	return newUserPagination(api, options...)
 }
 
 // GetUsers returns the list of users (with their detailed information)
@@ -177,16 +332,34 @@ func (api *Client) GetUsers() ([]User, error) {
 }
 
 // GetUsersContext returns the list of users (with their detailed information) with a custom context
-func (api *Client) GetUsersContext(ctx context.Context) ([]User, error) {
-	values := url.Values{
-		"token":    {api.config.token},
-		"presence": {"1"},
+func (api *Client) GetUsersContext(ctx context.Context) (results []User, err error) {
+	var (
+		p UserPagination
+	)
+
+	for p = api.GetUsersPaginated(); !p.Done(err); p, err = p.Next(ctx) {
+		results = append(results, p.Users...)
 	}
-	response, err := userRequest(ctx, "users.list", values, api.debug)
+
+	return results, p.Failure(err)
+}
+
+// GetUserByEmail will retrieve the complete user information by email
+func (api *Client) GetUserByEmail(email string) (*User, error) {
+	return api.GetUserByEmailContext(context.Background(), email)
+}
+
+// GetUserByEmailContext will retrieve the complete user information by email with a custom context
+func (api *Client) GetUserByEmailContext(ctx context.Context, email string) (*User, error) {
+	values := url.Values{
+		"token": {api.token},
+		"email": {email},
+	}
+	response, err := userRequest(ctx, api.httpclient, "users.lookupByEmail", values, api.debug)
 	if err != nil {
 		return nil, err
 	}
-	return response.Members, nil
+	return &response.User, nil
 }
 
 // SetUserAsActive marks the currently authenticated user as active
@@ -195,11 +368,12 @@ func (api *Client) SetUserAsActive() error {
 }
 
 // SetUserAsActiveContext marks the currently authenticated user as active with a custom context
-func (api *Client) SetUserAsActiveContext(ctx context.Context) error {
+func (api *Client) SetUserAsActiveContext(ctx context.Context) (err error) {
 	values := url.Values{
-		"token": {api.config.token},
+		"token": {api.token},
 	}
-	_, err := userRequest(ctx, "users.setActive", values, api.debug)
+
+	_, err = userRequest(ctx, api.httpclient, "users.setActive", values, api.debug)
 	return err
 }
 
@@ -211,15 +385,12 @@ func (api *Client) SetUserPresence(presence string) error {
 // SetUserPresenceContext changes the currently authenticated user presence with a custom context
 func (api *Client) SetUserPresenceContext(ctx context.Context, presence string) error {
 	values := url.Values{
-		"token":    {api.config.token},
+		"token":    {api.token},
 		"presence": {presence},
 	}
-	_, err := userRequest(ctx, "users.setPresence", values, api.debug)
-	if err != nil {
-		return err
-	}
-	return nil
 
+	_, err := userRequest(ctx, api.httpclient, "users.setPresence", values, api.debug)
+	return err
 }
 
 // GetUserIdentity will retrieve user info available per identity scopes
@@ -230,10 +401,11 @@ func (api *Client) GetUserIdentity() (*UserIdentityResponse, error) {
 // GetUserIdentityContext will retrieve user info available per identity scopes with a custom context
 func (api *Client) GetUserIdentityContext(ctx context.Context) (*UserIdentityResponse, error) {
 	values := url.Values{
-		"token": {api.config.token},
+		"token": {api.token},
 	}
 	response := &UserIdentityResponse{}
-	err := post(ctx, "users.identity", values, response, api.debug)
+
+	err := postForm(ctx, api.httpclient, SLACK_API+"users.identity", values, response, api.debug)
 	if err != nil {
 		return nil, err
 	}
@@ -252,25 +424,24 @@ func (api *Client) SetUserPhoto(image string, params UserSetPhotoParams) error {
 func (api *Client) SetUserPhotoContext(ctx context.Context, image string, params UserSetPhotoParams) error {
 	response := &SlackResponse{}
 	values := url.Values{
-		"token": {api.config.token},
+		"token": {api.token},
 	}
 	if params.CropX != DEFAULT_USER_PHOTO_CROP_X {
-		values.Add("crop_x", string(params.CropX))
+		values.Add("crop_x", strconv.Itoa(params.CropX))
 	}
 	if params.CropY != DEFAULT_USER_PHOTO_CROP_Y {
-		values.Add("crop_y", string(params.CropY))
+		values.Add("crop_y", strconv.Itoa(params.CropX))
 	}
 	if params.CropW != DEFAULT_USER_PHOTO_CROP_W {
-		values.Add("crop_w", string(params.CropW))
+		values.Add("crop_w", strconv.Itoa(params.CropW))
 	}
-	err := postLocalWithMultipartResponse(ctx, "users.setPhoto", image, "image", values, response, api.debug)
+
+	err := postLocalWithMultipartResponse(ctx, api.httpclient, "users.setPhoto", image, "image", values, response, api.debug)
 	if err != nil {
 		return err
 	}
-	if !response.Ok {
-		return errors.New(response.Error)
-	}
-	return nil
+
+	return response.Err()
 }
 
 // DeleteUserPhoto deletes the current authenticated user's profile image
@@ -282,16 +453,15 @@ func (api *Client) DeleteUserPhoto() error {
 func (api *Client) DeleteUserPhotoContext(ctx context.Context) error {
 	response := &SlackResponse{}
 	values := url.Values{
-		"token": {api.config.token},
+		"token": {api.token},
 	}
-	err := post(ctx, "users.deletePhoto", values, response, api.debug)
+
+	err := postForm(ctx, api.httpclient, SLACK_API+"users.deletePhoto", values, response, api.debug)
 	if err != nil {
 		return err
 	}
-	if !response.Ok {
-		return errors.New(response.Error)
-	}
-	return nil
+
+	return response.Err()
 }
 
 // SetUserCustomStatus will set a custom status and emoji for the currently
@@ -331,13 +501,12 @@ func (api *Client) SetUserCustomStatusContext(ctx context.Context, statusText, s
 	}
 
 	values := url.Values{
-		"token":   {api.config.token},
+		"token":   {api.token},
 		"profile": {string(profile)},
 	}
 
 	response := &userResponseFull{}
-
-	if err = post(ctx, "users.profile.set", values, response, api.debug); err != nil {
+	if err = postForm(ctx, api.httpclient, SLACK_API+"users.profile.set", values, response, api.debug); err != nil {
 		return err
 	}
 
@@ -358,4 +527,32 @@ func (api *Client) UnsetUserCustomStatus() error {
 // with a custom context. This is a convenience method that wraps (*Client).SetUserCustomStatus().
 func (api *Client) UnsetUserCustomStatusContext(ctx context.Context) error {
 	return api.SetUserCustomStatusContext(ctx, "", "")
+}
+
+// GetUserProfile retrieves a user's profile information.
+func (api *Client) GetUserProfile(userID string, includeLabels bool) (*UserProfile, error) {
+	return api.GetUserProfileContext(context.Background(), userID, includeLabels)
+}
+
+type getUserProfileResponse struct {
+	SlackResponse
+	Profile *UserProfile `json:"profile"`
+}
+
+// GetUserProfileContext retrieves a user's profile information with a context.
+func (api *Client) GetUserProfileContext(ctx context.Context, userID string, includeLabels bool) (*UserProfile, error) {
+	values := url.Values{"token": {api.token}, "user": {userID}}
+	if includeLabels {
+		values.Add("include_labels", "true")
+	}
+	resp := &getUserProfileResponse{}
+
+	err := postSlackMethod(ctx, api.httpclient, "users.profile.get", values, &resp, api.debug)
+	if err != nil {
+		return nil, err
+	}
+	if !resp.Ok {
+		return nil, errors.New(resp.Error)
+	}
+	return resp.Profile, nil
 }

@@ -55,7 +55,7 @@ func GetOAuthResponseContext(ctx context.Context, clientID, clientSecret, code, 
 		"redirect_uri":  {redirectURI},
 	}
 	response := &OAuthResponse{}
-	err = post(ctx, "oauth.access", values, response, debug)
+	err = postSlackMethod(ctx, customHTTPClient, "oauth.access", values, response, debug)
 	if err != nil {
 		return nil, err
 	}

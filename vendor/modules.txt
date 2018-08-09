@@ -95,7 +95,7 @@ github.com/nicksnyder/go-i18n/i18n
 github.com/nicksnyder/go-i18n/i18n/bundle
 github.com/nicksnyder/go-i18n/i18n/language
 github.com/nicksnyder/go-i18n/i18n/translation
-# github.com/nlopes/slack v0.0.0-20180101221843-107290b5bbaf
+# github.com/nlopes/slack v0.3.1-0.20180805133408-21749ab136a8
 github.com/nlopes/slack
 # github.com/paulrosania/go-charset v0.0.0-20151028000031-621bb39fcc83
 github.com/paulrosania/go-charset/charset
@@ -106,6 +106,8 @@ github.com/pborman/uuid
 github.com/pelletier/go-toml
 # github.com/peterhellberg/emojilib v0.0.0-20170616163716-41920917e271
 github.com/peterhellberg/emojilib
+# github.com/pkg/errors v0.8.0
+github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
 # github.com/rs/xid v0.0.0-20180525034800-088c5cf1423a
@@ -155,8 +157,6 @@ golang.org/x/crypto/ed25519
 golang.org/x/crypto/internal/chacha20
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/ed25519/internal/edwards25519
-# golang.org/x/net v0.0.0-20180108090419-434ec0c7fe37
-golang.org/x/net/websocket
 # golang.org/x/sys v0.0.0-20171130163741-8b4580aae2a0
 golang.org/x/sys/unix
 golang.org/x/sys/windows

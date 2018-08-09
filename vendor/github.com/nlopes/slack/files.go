@@ -136,9 +136,9 @@ func NewGetFilesParameters() GetFilesParameters {
 	}
 }
 
-func fileRequest(ctx context.Context, path string, values url.Values, debug bool) (*fileResponseFull, error) {
+func fileRequest(ctx context.Context, client HTTPRequester, path string, values url.Values, debug bool) (*fileResponseFull, error) {
 	response := &fileResponseFull{}
-	err := post(ctx, path, values, response, debug)
+	err := postForm(ctx, client, SLACK_API+path, values, response, debug)
 	if err != nil {
 		return nil, err
 	}
@@ -156,12 +156,13 @@ func (api *Client) GetFileInfo(fileID string, count, page int) (*File, []Comment
 // GetFileInfoContext retrieves a file and related comments with a custom context
 func (api *Client) GetFileInfoContext(ctx context.Context, fileID string, count, page int) (*File, []Comment, *Paging, error) {
 	values := url.Values{
-		"token": {api.config.token},
+		"token": {api.token},
 		"file":  {fileID},
 		"count": {strconv.Itoa(count)},
 		"page":  {strconv.Itoa(page)},
 	}
-	response, err := fileRequest(ctx, "files.info", values, api.debug)
+
+	response, err := fileRequest(ctx, api.httpclient, "files.info", values, api.debug)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -176,7 +177,7 @@ func (api *Client) GetFiles(params GetFilesParameters) ([]File, *Paging, error) 
 // GetFilesContext retrieves all files according to the parameters given with a custom context
 func (api *Client) GetFilesContext(ctx context.Context, params GetFilesParameters) ([]File, *Paging, error) {
 	values := url.Values{
-		"token": {api.config.token},
+		"token": {api.token},
 	}
 	if params.User != DEFAULT_FILES_USER {
 		values.Add("user", params.User)
@@ -199,7 +200,8 @@ func (api *Client) GetFilesContext(ctx context.Context, params GetFilesParameter
 	if params.Page != DEFAULT_FILES_PAGE {
 		values.Add("page", strconv.Itoa(params.Page))
 	}
-	response, err := fileRequest(ctx, "files.list", values, api.debug)
+
+	response, err := fileRequest(ctx, api.httpclient, "files.list", values, api.debug)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -221,7 +223,7 @@ func (api *Client) UploadFileContext(ctx context.Context, params FileUploadParam
 	}
 	response := &fileResponseFull{}
 	values := url.Values{
-		"token": {api.config.token},
+		"token": {api.token},
 	}
 	if params.Filetype != "" {
 		values.Add("filetype", params.Filetype)
@@ -240,11 +242,11 @@ func (api *Client) UploadFileContext(ctx context.Context, params FileUploadParam
 	}
 	if params.Content != "" {
 		values.Add("content", params.Content)
-		err = post(ctx, "files.upload", values, response, api.debug)
+		err = postForm(ctx, api.httpclient, SLACK_API+"files.upload", values, response, api.debug)
 	} else if params.File != "" {
-		err = postLocalWithMultipartResponse(ctx, "files.upload", params.File, "file", values, response, api.debug)
+		err = postLocalWithMultipartResponse(ctx, api.httpclient, "files.upload", params.File, "file", values, response, api.debug)
 	} else if params.Reader != nil {
-		err = postWithMultipartResponse(ctx, "files.upload", params.Filename, "file", values, params.Reader, response, api.debug)
+		err = postWithMultipartResponse(ctx, api.httpclient, "files.upload", params.Filename, "file", values, params.Reader, response, api.debug)
 	}
 	if err != nil {
 		return nil, err
@@ -255,20 +257,40 @@ func (api *Client) UploadFileContext(ctx context.Context, params FileUploadParam
 	return &response.File, nil
 }
 
+// DeleteFileComment deletes a file's comment
+func (api *Client) DeleteFileComment(commentID, fileID string) error {
+	return api.DeleteFileCommentContext(context.Background(), fileID, commentID)
+}
+
+// DeleteFileCommentContext deletes a file's comment with a custom context
+func (api *Client) DeleteFileCommentContext(ctx context.Context, fileID, commentID string) (err error) {
+	if fileID == "" || commentID == "" {
+		return errors.New("received empty parameters")
+	}
+
+	values := url.Values{
+		"token": {api.token},
+		"file":  {fileID},
+		"id":    {commentID},
+	}
+	_, err = fileRequest(ctx, api.httpclient, "files.comments.delete", values, api.debug)
+	return err
+}
+
 // DeleteFile deletes a file
 func (api *Client) DeleteFile(fileID string) error {
 	return api.DeleteFileContext(context.Background(), fileID)
 }
 
 // DeleteFileContext deletes a file with a custom context
-func (api *Client) DeleteFileContext(ctx context.Context, fileID string) error {
+func (api *Client) DeleteFileContext(ctx context.Context, fileID string) (err error) {
 	values := url.Values{
-		"token": {api.config.token},
+		"token": {api.token},
 		"file":  {fileID},
 	}
-	_, err := fileRequest(ctx, "files.delete", values, api.debug)
-	return err
 
+	_, err = fileRequest(ctx, api.httpclient, "files.delete", values, api.debug)
+	return err
 }
 
 // RevokeFilePublicURL disables public/external sharing for a file
@@ -279,10 +301,11 @@ func (api *Client) RevokeFilePublicURL(fileID string) (*File, error) {
 // RevokeFilePublicURLContext disables public/external sharing for a file with a custom context
 func (api *Client) RevokeFilePublicURLContext(ctx context.Context, fileID string) (*File, error) {
 	values := url.Values{
-		"token": {api.config.token},
+		"token": {api.token},
 		"file":  {fileID},
 	}
-	response, err := fileRequest(ctx, "files.revokePublicURL", values, api.debug)
+
+	response, err := fileRequest(ctx, api.httpclient, "files.revokePublicURL", values, api.debug)
 	if err != nil {
 		return nil, err
 	}
@@ -297,10 +320,11 @@ func (api *Client) ShareFilePublicURL(fileID string) (*File, []Comment, *Paging,
 // ShareFilePublicURLContext enabled public/external sharing for a file with a custom context
 func (api *Client) ShareFilePublicURLContext(ctx context.Context, fileID string) (*File, []Comment, *Paging, error) {
 	values := url.Values{
-		"token": {api.config.token},
+		"token": {api.token},
 		"file":  {fileID},
 	}
-	response, err := fileRequest(ctx, "files.sharedPublicURL", values, api.debug)
+
+	response, err := fileRequest(ctx, api.httpclient, "files.sharedPublicURL", values, api.debug)
 	if err != nil {
 		return nil, nil, nil, err
 	}
