@@ -334,6 +334,7 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 
 func (b *Birc) handleNotice(client *girc.Client, event girc.Event) {
 	if strings.Contains(event.String(), "This nickname is registered") && event.Source.Name == b.GetString("NickServNick") {
+		b.Log.Debugf("Sending identify to nickserv %s", b.GetString("NickServNick"))
 		b.i.Cmd.Message(b.GetString("NickServNick"), "IDENTIFY "+b.GetString("NickServPassword"))
 	} else {
 		b.handlePrivMsg(client, event)
