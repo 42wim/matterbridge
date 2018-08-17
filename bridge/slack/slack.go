@@ -14,6 +14,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/42wim/matterbridge/matterhook"
+	"github.com/hashicorp/golang-lru"
 	"github.com/nlopes/slack"
 	"github.com/rs/xid"
 )
@@ -26,6 +27,7 @@ type Bslack struct {
 	Usergroups   []slack.UserGroup
 	si           *slack.Info
 	channels     []slack.Channel
+	cache        *lru.Cache
 	UseChannelID bool
 	uuid         string
 	*bridge.Config
@@ -35,7 +37,9 @@ type Bslack struct {
 const messageDeleted = "message_deleted"
 
 func New(cfg *bridge.Config) bridge.Bridger {
-	return &Bslack{Config: cfg, uuid: xid.New().String()}
+	b := &Bslack{Config: cfg, uuid: xid.New().String()}
+	b.cache, _ = lru.New(5000)
+	return b
 }
 
 func (b *Bslack) Command(cmd string) string {
@@ -456,15 +460,26 @@ func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File) erro
 
 // handleUploadFile handles native upload of files
 func (b *Bslack) handleUploadFile(msg *config.Message, channelID string) (string, error) {
-	var err error
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo)
-		_, err = b.sc.UploadFile(slack.FileUploadParameters{
+		if msg.Text == fi.Comment {
+			msg.Text = ""
+		}
+		/* because the result of the UploadFile is slower than the MessageEvent from slack
+		we can't match on the file ID yet, so we have to match on the filename too
+		*/
+		b.Log.Debugf("Adding file %s to cache %s", fi.Name, time.Now().String())
+		b.cache.Add("filename"+fi.Name, time.Now())
+		res, err := b.sc.UploadFile(slack.FileUploadParameters{
 			Reader:         bytes.NewReader(*fi.Data),
 			Filename:       fi.Name,
 			Channels:       []string{channelID},
 			InitialComment: fi.Comment,
 		})
+		if res.ID != "" {
+			b.Log.Debugf("Adding fileid %s to cache %s", res.ID, time.Now().String())
+			b.cache.Add("file"+res.ID, time.Now())
+		}
 		if err != nil {
 			b.Log.Errorf("uploadfile %#v", err)
 		}
@@ -694,6 +709,24 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 			return true
 		}
 	}
+
+	if len(ev.Files) > 0 {
+		for _, f := range ev.Files {
+			// if the file is in the cache and isn't older then a minute, skip it
+			if ts, ok := b.cache.Get("file" + f.ID); ok && time.Since(ts.(time.Time)) < time.Minute {
+				b.Log.Debugf("Not downloading file id %s which we uploaded", f.ID)
+				return true
+			} else {
+				if ts, ok := b.cache.Get("filename" + f.Name); ok && time.Since(ts.(time.Time)) < time.Second*10 {
+					b.Log.Debugf("Not downloading file name %s which we uploaded", f.Name)
+					return true
+				} else {
+					b.Log.Debugf("Not skipping %s %s", f.Name, time.Now().String())
+				}
+			}
+		}
+	}
+
 	return false
 }
 
