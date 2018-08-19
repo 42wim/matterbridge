@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	version = "1.11.2-dev"
+	version = "1.11.2"
 	githash string
 )
 

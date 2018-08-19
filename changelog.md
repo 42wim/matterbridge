@@ -1,3 +1,8 @@
+# v1.11.2
+
+## Bugfix
+* slack: fix slack API changes regarding to files/images
+
 # v1.11.1
 
 ## New features
