@@ -318,7 +318,7 @@ func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 			b.Usergroups, _ = b.sc.GetUserGroups()
 		case *slack.ConnectedEvent:
 			var err error
-			b.channels, _, err = b.sc.GetConversations(&slack.GetConversationsParameters{})
+			b.channels, _, err = b.sc.GetConversations(&slack.GetConversationsParameters{Limit: 1000, Types: []string{"public_channel,private_channel,mpim,im"}})
 			if err != nil {
 				b.Log.Errorf("Channel list failed: %#v", err)
 			}
