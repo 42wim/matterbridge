@@ -1,3 +1,10 @@
+# v1.11.3
+
+## Bugfix
+* mattermost: fix panic when using webhooks #491
+* slack: fix issues regarding API changes and lots of channels #489
+* irc: fix rejoin on kick problem #488
+
 # v1.11.2
 
 ## Bugfix
