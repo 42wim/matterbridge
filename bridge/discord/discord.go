@@ -2,6 +2,7 @@ package bdiscord
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -181,6 +182,8 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	}
 
 	msg.Text = helper.ClipMessage(msg.Text, MessageLength)
+	msg.Text = b.replaceUserMentions(msg.Text)
+
 	// Edit message
 	if msg.ID != "" {
 		_, err := b.c.ChannelMessageEdit(channelID, msg.ID, msg.Username+msg.Text)
@@ -323,6 +326,37 @@ func (b *Bdiscord) getNick(user *discordgo.User) string {
 	return user.Username
 }
 
+func (b *Bdiscord) getGuildMemberByNick(nick string) (*discordgo.Member, error) {
+	// Check to see if we have the nick in userMemberMap
+	b.Log.Debugln("Checking the userMemberMap for cached user information")
+	for uid := range b.userMemberMap {
+		if b.getNick(b.userMemberMap[uid].User) == nick {
+			b.Log.Debugf("Found user with nick '" + nick + " in userMemberMap at uid=" + uid + "\n")
+			return b.userMemberMap[uid], nil
+		}
+	}
+
+	// The user wasn't in the map, so go ahead an make the API call to get it
+	members, err := b.c.GuildMembers(b.guildID, "", 1000)
+	if err != nil {
+		b.Log.Error("Error obtaining guild members", err)
+		return nil, err
+	}
+	for _, member := range members {
+		if member.User == nil {
+			member.User, err = b.c.User(nick)
+			if err != nil {
+				return nil, errors.New("Couldn't find guild member with nick " + nick)
+			}
+		}
+		b.Log.Debugf("Checking %s == %s", b.getNick(member.User), nick)
+		if b.getNick(member.User) == nick {
+			return member, nil
+		}
+	}
+	return nil, errors.New("Couldn't find guild member with nick " + nick) // This will most likely get ignored by the caller
+}
+
 func (b *Bdiscord) getChannelID(name string) string {
 	idcheck := strings.Split(name, "ID:")
 	if len(idcheck) > 1 {
@@ -361,6 +395,21 @@ func (b *Bdiscord) replaceChannelMentions(text string) string {
 		}
 		return "#" + channel
 	})
+	return text
+}
+
+func (b *Bdiscord) replaceUserMentions(text string) string {
+	re := regexp.MustCompile("@[^ ]+")
+	text = re.ReplaceAllStringFunc(text, func(m string) string {
+		mention := m[1:]
+		b.Log.Debugf("Testing mention: '%s'", mention)
+		member, err := b.getGuildMemberByNick(mention)
+		if err != nil {
+			return m
+		}
+		return member.User.Mention()
+	})
+	b.Log.Debugf("Message with mention replaced: %s", text)
 	return text
 }
 
