@@ -42,10 +42,11 @@ Minecraft server chat support via [MatterLink](https://github.com/elytra/MatterL
 ## API
 The API is very basic at the moment and rather undocumented.
 
-Used by at least 2 projects. Feel free to make a PR to add your project to this list.
+Used by at least 3 projects. Feel free to make a PR to add your project to this list.
 
 * [MatterLink](https://github.com/elytra/MatterLink) (Matterbridge link for Minecraft Server chat)
 * [pyCord](https://github.com/NikkyAI/pyCord) (crossplatform chatbot)
+* [Mattereddit](https://github.com/bonehurtingjuice/mattereddit) (Reddit chat support)
 
 # Requirements
 Accounts to one of the supported bridges
