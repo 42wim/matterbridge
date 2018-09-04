@@ -22,6 +22,7 @@ type Bdiscord struct {
 	Nick           string
 	UseChannelID   bool
 	userMemberMap  map[string]*discordgo.Member
+	nickMemberMap  map[string]*discordgo.Member
 	guildID        string
 	webhookID      string
 	webhookToken   string
@@ -319,6 +320,7 @@ func (b *Bdiscord) getNick(user *discordgo.User) string {
 		return user.Username
 	}
 	b.userMemberMap[user.ID] = member
+	b.nickMemberMap[member.Nick] = member
 	// only return if nick is set
 	if b.userMemberMap[user.ID].Nick != "" {
 		return b.userMemberMap[user.ID].Nick
@@ -327,33 +329,14 @@ func (b *Bdiscord) getNick(user *discordgo.User) string {
 }
 
 func (b *Bdiscord) getGuildMemberByNick(nick string) (*discordgo.Member, error) {
-	// Check to see if we have the nick in userMemberMap
-	b.Log.Debugln("Checking the userMemberMap for cached user information")
-	for uid := range b.userMemberMap {
-		if b.getNick(b.userMemberMap[uid].User) == nick {
-			b.Log.Debugf("Found user with nick '" + nick + " in userMemberMap at uid=" + uid + "\n")
-			return b.userMemberMap[uid], nil
+	b.Lock()
+	defer b.Unlock()
+	if _, ok := b.nickMemberMap[nick]; ok {
+		if b.nickMemberMap[nick] != nil {
+			return b.nickMemberMap[nick], nil
 		}
 	}
 
-	// The user wasn't in the map, so go ahead an make the API call to get it
-	members, err := b.c.GuildMembers(b.guildID, "", 1000)
-	if err != nil {
-		b.Log.Error("Error obtaining guild members", err)
-		return nil, err
-	}
-	for _, member := range members {
-		if member.User == nil {
-			member.User, err = b.c.User(nick)
-			if err != nil {
-				return nil, errors.New("Couldn't find guild member with nick " + nick)
-			}
-		}
-		b.Log.Debugf("Checking %s == %s", b.getNick(member.User), nick)
-		if b.getNick(member.User) == nick {
-			return member, nil
-		}
-	}
 	return nil, errors.New("Couldn't find guild member with nick " + nick) // This will most likely get ignored by the caller
 }
 
