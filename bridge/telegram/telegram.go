@@ -232,7 +232,13 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 				usernameReply = "unknown"
 			}
 			if !b.GetBool("QuoteDisable") {
-				rmsg.Text = b.handleQuote(rmsg.Text, usernameReply, message.ReplyToMessage.Text)
+				if message.ReplyToMessage.Text != "" {
+					rmsg.Text = b.handleQuote(rmsg.Text, usernameReply, message.ReplyToMessage.Text)
+				} else if message.ReplyToMessage.Caption != "" {
+					rmsg.Text = b.handleQuote(rmsg.Text, usernameReply, message.ReplyToMessage.Caption)
+				} else {
+					rmsg.Text = b.handleQuote(rmsg.Text, usernameReply, "matterbridge: Unsupported message content")
+				}
 			}
 		}
 
