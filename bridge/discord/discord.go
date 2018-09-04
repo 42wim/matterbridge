@@ -2,6 +2,7 @@ package bdiscord
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -21,6 +22,7 @@ type Bdiscord struct {
 	Nick           string
 	UseChannelID   bool
 	userMemberMap  map[string]*discordgo.Member
+	nickMemberMap  map[string]*discordgo.Member
 	guildID        string
 	webhookID      string
 	webhookToken   string
@@ -181,6 +183,8 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	}
 
 	msg.Text = helper.ClipMessage(msg.Text, MessageLength)
+	msg.Text = b.replaceUserMentions(msg.Text)
+
 	// Edit message
 	if msg.ID != "" {
 		_, err := b.c.ChannelMessageEdit(channelID, msg.ID, msg.Username+msg.Text)
@@ -316,11 +320,24 @@ func (b *Bdiscord) getNick(user *discordgo.User) string {
 		return user.Username
 	}
 	b.userMemberMap[user.ID] = member
+	b.nickMemberMap[member.Nick] = member
 	// only return if nick is set
 	if b.userMemberMap[user.ID].Nick != "" {
 		return b.userMemberMap[user.ID].Nick
 	}
 	return user.Username
+}
+
+func (b *Bdiscord) getGuildMemberByNick(nick string) (*discordgo.Member, error) {
+	b.Lock()
+	defer b.Unlock()
+	if _, ok := b.nickMemberMap[nick]; ok {
+		if b.nickMemberMap[nick] != nil {
+			return b.nickMemberMap[nick], nil
+		}
+	}
+
+	return nil, errors.New("Couldn't find guild member with nick " + nick) // This will most likely get ignored by the caller
 }
 
 func (b *Bdiscord) getChannelID(name string) string {
@@ -361,6 +378,21 @@ func (b *Bdiscord) replaceChannelMentions(text string) string {
 		}
 		return "#" + channel
 	})
+	return text
+}
+
+func (b *Bdiscord) replaceUserMentions(text string) string {
+	re := regexp.MustCompile("@[^ ]+")
+	text = re.ReplaceAllStringFunc(text, func(m string) string {
+		mention := m[1:]
+		b.Log.Debugf("Testing mention: '%s'", mention)
+		member, err := b.getGuildMemberByNick(mention)
+		if err != nil {
+			return m
+		}
+		return member.User.Mention()
+	})
+	b.Log.Debugf("Message with mention replaced: %s", text)
 	return text
 }
 
