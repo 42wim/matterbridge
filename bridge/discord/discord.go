@@ -297,6 +297,7 @@ func (b *Bdiscord) memberUpdate(s *discordgo.Session, m *discordgo.GuildMemberUp
 		b.Log.Debugf("%s: memberupdate: user %s (nick %s) changes nick to %s", b.Account, m.Member.User.Username, b.userMemberMap[m.Member.User.ID].Nick, m.Member.Nick)
 	}
 	b.userMemberMap[m.Member.User.ID] = m.Member
+	b.nickMemberMap[m.Member.Nick] = m.Member
 	b.Unlock()
 }
 
@@ -382,11 +383,23 @@ func (b *Bdiscord) replaceChannelMentions(text string) string {
 }
 
 func (b *Bdiscord) replaceUserMentions(text string) string {
-	re := regexp.MustCompile("@[^ ]+")
+	re := regexp.MustCompile("(@[^@]{1,32})\b")
 	text = re.ReplaceAllStringFunc(text, func(m string) string {
 		mention := m[1:]
 		b.Log.Debugf("Testing mention: '%s'", mention)
-		member, err := b.getGuildMemberByNick(mention)
+		var member *discordgo.Member
+		var err error
+		for {
+			member, err = b.getGuildMemberByNick(mention)
+			if err != nil {
+				mention = strings.TrimSpace(mention[0:strings.LastIndex(mention, " ")])
+				if len(mention) < 1 {
+					break
+				}
+			} else {
+				break
+			}
+		}
 		if err != nil {
 			return m
 		}
