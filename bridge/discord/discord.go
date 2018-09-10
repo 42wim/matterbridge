@@ -34,6 +34,7 @@ type Bdiscord struct {
 func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Bdiscord{Config: cfg}
 	b.userMemberMap = make(map[string]*discordgo.Member)
+	b.nickMemberMap = make(map[string]*discordgo.Member)
 	b.channelInfoMap = make(map[string]*config.ChannelInfo)
 	if b.GetString("WebhookURL") != "" {
 		b.Log.Debug("Configuring Discord Incoming Webhook")
@@ -321,7 +322,6 @@ func (b *Bdiscord) getNick(user *discordgo.User) string {
 		return user.Username
 	}
 	b.userMemberMap[user.ID] = member
-	b.nickMemberMap[member.Nick] = member
 	// only return if nick is set
 	if b.userMemberMap[user.ID].Nick != "" {
 		return b.userMemberMap[user.ID].Nick
@@ -383,19 +383,20 @@ func (b *Bdiscord) replaceChannelMentions(text string) string {
 }
 
 func (b *Bdiscord) replaceUserMentions(text string) string {
-	re := regexp.MustCompile("(@[^@]{1,32})\b")
+	re := regexp.MustCompile("@[^@]{1,32}")
 	text = re.ReplaceAllStringFunc(text, func(m string) string {
-		mention := m[1:]
-		b.Log.Debugf("Testing mention: '%s'", mention)
+		mention := strings.TrimSpace(m[1:])
 		var member *discordgo.Member
 		var err error
 		for {
+			b.Log.Debugf("Testing mention: '%s'", mention)
 			member, err = b.getGuildMemberByNick(mention)
 			if err != nil {
-				mention = strings.TrimSpace(mention[0:strings.LastIndex(mention, " ")])
-				if len(mention) < 1 {
+				lastSpace := strings.LastIndex(mention, " ")
+				if lastSpace == -1 {
 					break
 				}
+				mention = strings.TrimSpace(mention[0:lastSpace])
 			} else {
 				break
 			}
