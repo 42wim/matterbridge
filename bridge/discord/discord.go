@@ -2,6 +2,7 @@ package bdiscord
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -21,6 +22,7 @@ type Bdiscord struct {
 	Nick           string
 	UseChannelID   bool
 	userMemberMap  map[string]*discordgo.Member
+	nickMemberMap  map[string]*discordgo.Member
 	guildID        string
 	webhookID      string
 	webhookToken   string
@@ -32,6 +34,7 @@ type Bdiscord struct {
 func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Bdiscord{Config: cfg}
 	b.userMemberMap = make(map[string]*discordgo.Member)
+	b.nickMemberMap = make(map[string]*discordgo.Member)
 	b.channelInfoMap = make(map[string]*config.ChannelInfo)
 	if b.GetString("WebhookURL") != "" {
 		b.Log.Debug("Configuring Discord Incoming Webhook")
@@ -181,6 +184,8 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	}
 
 	msg.Text = helper.ClipMessage(msg.Text, MessageLength)
+	msg.Text = b.replaceUserMentions(msg.Text)
+
 	// Edit message
 	if msg.ID != "" {
 		_, err := b.c.ChannelMessageEdit(channelID, msg.ID, msg.Username+msg.Text)
@@ -293,6 +298,7 @@ func (b *Bdiscord) memberUpdate(s *discordgo.Session, m *discordgo.GuildMemberUp
 		b.Log.Debugf("%s: memberupdate: user %s (nick %s) changes nick to %s", b.Account, m.Member.User.Username, b.userMemberMap[m.Member.User.ID].Nick, m.Member.Nick)
 	}
 	b.userMemberMap[m.Member.User.ID] = m.Member
+	b.nickMemberMap[m.Member.Nick] = m.Member
 	b.Unlock()
 }
 
@@ -321,6 +327,18 @@ func (b *Bdiscord) getNick(user *discordgo.User) string {
 		return b.userMemberMap[user.ID].Nick
 	}
 	return user.Username
+}
+
+func (b *Bdiscord) getGuildMemberByNick(nick string) (*discordgo.Member, error) {
+	b.Lock()
+	defer b.Unlock()
+	if _, ok := b.nickMemberMap[nick]; ok {
+		if b.nickMemberMap[nick] != nil {
+			return b.nickMemberMap[nick], nil
+		}
+	}
+
+	return nil, errors.New("Couldn't find guild member with nick " + nick) // This will most likely get ignored by the caller
 }
 
 func (b *Bdiscord) getChannelID(name string) string {
@@ -361,6 +379,34 @@ func (b *Bdiscord) replaceChannelMentions(text string) string {
 		}
 		return "#" + channel
 	})
+	return text
+}
+
+func (b *Bdiscord) replaceUserMentions(text string) string {
+	re := regexp.MustCompile("@[^@]{1,32}")
+	text = re.ReplaceAllStringFunc(text, func(m string) string {
+		mention := strings.TrimSpace(m[1:])
+		var member *discordgo.Member
+		var err error
+		for {
+			b.Log.Debugf("Testing mention: '%s'", mention)
+			member, err = b.getGuildMemberByNick(mention)
+			if err != nil {
+				lastSpace := strings.LastIndex(mention, " ")
+				if lastSpace == -1 {
+					break
+				}
+				mention = strings.TrimSpace(mention[0:lastSpace])
+			} else {
+				break
+			}
+		}
+		if err != nil {
+			return m
+		}
+		return member.User.Mention()
+	})
+	b.Log.Debugf("Message with mention replaced: %s", text)
 	return text
 }
 
