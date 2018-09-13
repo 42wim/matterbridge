@@ -53,6 +53,8 @@ github.com/labstack/gommon v0.2.1 h1:C+I4NYknueQncqKYZQ34kHsLZJVeB5KwPUhnO0nmbpU
 github.com/labstack/gommon v0.2.1/go.mod h1:/tj9csK2iPSBvn+3NLM9e52usepMtrd5ilFYA+wQNJ4=
 github.com/lrstanley/girc v0.0.0-20180427160007-102f17f86306 h1:IqN61cmi7LM/IaYaP9a/KXFtHRS2a3+WHu8GhAXJT7c=
 github.com/lrstanley/girc v0.0.0-20180427160007-102f17f86306/go.mod h1:7cRs1SIBfKQ7e3Tam6GKTILSNHzR862JD0JpINaZoJk=
+github.com/lrstanley/girc v0.0.0-20180913221000-0fb5b684054e h1:RpktB2igr6nS1EN7bCvjldAEfngrM5GyAbmOa4/cafU=
+github.com/lrstanley/girc v0.0.0-20180913221000-0fb5b684054e/go.mod h1:7cRs1SIBfKQ7e3Tam6GKTILSNHzR862JD0JpINaZoJk=
 github.com/magiconair/properties v0.0.0-20180217134545-2c9e95027885 h1:HWxJJvF+QceKcql4r9PC93NtMEgEBfBxlQrZPvbcQvs=
 github.com/magiconair/properties v0.0.0-20180217134545-2c9e95027885/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
 github.com/matterbridge/discordgo v0.0.0-20180806170629-ef40ff5ba64f h1:9IIOO9Aznn8zJx3nokZ4U6nfuzWw5xAlygPvuRZMisQ=

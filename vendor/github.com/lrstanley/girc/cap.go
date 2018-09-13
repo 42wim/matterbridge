@@ -102,7 +102,7 @@ func handleCAP(c *Client, e Event) {
 
 	possible := possibleCapList(c)
 
-	if len(e.Params) >= 2 && len(e.Trailing) > 1 && e.Params[1] == CAP_LS {
+	if len(e.Params) >= 2 && e.Params[1] == CAP_LS {
 		c.state.Lock()
 
 		caps := parseCap(e.Trailing)

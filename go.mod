@@ -26,7 +26,7 @@ require (
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/labstack/echo v0.0.0-20180219162101-7eec915044a1
 	github.com/labstack/gommon v0.2.1 // indirect
-	github.com/lrstanley/girc v0.0.0-20180427160007-102f17f86306
+	github.com/lrstanley/girc v0.0.0-20180913221000-0fb5b684054e
 	github.com/magiconair/properties v0.0.0-20180217134545-2c9e95027885 // indirect
 	github.com/matterbridge/discordgo v0.0.0-20180806170629-ef40ff5ba64f
 	github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91

@@ -51,7 +51,7 @@ type Event struct {
 	// Trailing text. e.g. with a PRIVMSG, this is the message text (part
 	// after the colon.)
 	Trailing string `json:"trailing"`
-	// EmptyTrailign, if true, the text prefix (:) will be added even if
+	// EmptyTrailing, if true, the text prefix (:) will be added even if
 	// Event.Trailing is empty.
 	EmptyTrailing bool `json:"empty_trailing"`
 	// Sensitive should be true if the message is sensitive (e.g. and should
@@ -383,12 +383,30 @@ func (e *Event) Pretty() (out string, ok bool) {
 		return fmt.Sprintf("[*] %s has quit (%s)", e.Source.Name, e.Trailing), true
 	}
 
-	if e.Command == KICK && len(e.Params) == 2 {
+	if e.Command == INVITE && len(e.Params) == 1 {
+		return fmt.Sprintf("[*] %s invited to %s by %s", e.Params[0], e.Trailing, e.Source.Name), true
+	}
+
+	if e.Command == KICK && len(e.Params) >= 2 {
+		if e.Trailing == "" && len(e.Params) == 3 {
+			e.Trailing = e.Params[2]
+		}
+
 		return fmt.Sprintf("[%s] *** %s has kicked %s: %s", e.Params[0], e.Source.Name, e.Params[1], e.Trailing), true
 	}
 
-	if e.Command == NICK && len(e.Params) == 1 {
-		return fmt.Sprintf("[*] %s is now known as %s", e.Source.Name, e.Params[0]), true
+	if e.Command == NICK {
+		// Workaround, see https://github.com/lrstanley/girc/pull/15#issuecomment-413845482
+		var name string
+		if len(e.Params) == 1 {
+			name = e.Params[0]
+		} else if len(e.Trailing) > 0 {
+			name = e.Trailing
+		}
+
+		if name != "" {
+			return fmt.Sprintf("[*] %s is now known as %s", e.Source.Name, name), true
+		}
 	}
 
 	if e.Command == TOPIC && len(e.Params) > 0 {
