@@ -89,6 +89,21 @@ func (b *Bdiscord) Connect() error {
 	for _, channel := range b.Channels {
 		b.Log.Debugf("found channel %#v", channel)
 	}
+	// obtaining guild members and initializing nickname mapping
+	b.Lock()
+	members, err := b.c.GuildMembers(b.guildID, "", 1000)
+	if err != nil {
+		b.Log.Error("Error obtaining guild members", err)
+		return err
+	}
+	for _, member := range members {
+		b.userMemberMap[member.User.ID] = member
+		b.nickMemberMap[member.User.Username] = member
+		if member.Nick != "" {
+			b.nickMemberMap[member.Nick] = member
+		}
+	}
+	b.Unlock()
 	return nil
 }
 
@@ -298,7 +313,10 @@ func (b *Bdiscord) memberUpdate(s *discordgo.Session, m *discordgo.GuildMemberUp
 		b.Log.Debugf("%s: memberupdate: user %s (nick %s) changes nick to %s", b.Account, m.Member.User.Username, b.userMemberMap[m.Member.User.ID].Nick, m.Member.Nick)
 	}
 	b.userMemberMap[m.Member.User.ID] = m.Member
-	b.nickMemberMap[m.Member.Nick] = m.Member
+	b.nickMemberMap[m.Member.User.Username] = m.Member
+	if m.Member.Nick != "" {
+		b.nickMemberMap[m.Member.Nick] = m.Member
+	}
 	b.Unlock()
 }
 
