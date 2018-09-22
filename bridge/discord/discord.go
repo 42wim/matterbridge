@@ -163,6 +163,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 		}
 
 		msg.Text = helper.ClipMessage(msg.Text, MessageLength)
+		msg.Text = b.replaceUserMentions(msg.Text)
 		err := b.c.WebhookExecute(
 			wID,
 			wToken,
