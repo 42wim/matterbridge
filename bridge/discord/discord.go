@@ -407,11 +407,12 @@ func (b *Bdiscord) replaceUserMentions(text string) string {
 		mention := strings.TrimSpace(m[1:])
 		var member *discordgo.Member
 		var err error
+		var lastSpace int
 		for {
 			b.Log.Debugf("Testing mention: '%s'", mention)
 			member, err = b.getGuildMemberByNick(mention)
 			if err != nil {
-				lastSpace := strings.LastIndex(mention, " ")
+				lastSpace = strings.LastIndex(mention, " ")
 				if lastSpace == -1 {
 					break
 				}
@@ -423,7 +424,7 @@ func (b *Bdiscord) replaceUserMentions(text string) string {
 		if err != nil {
 			return m
 		}
-		return member.User.Mention()
+		return member.User.Mention() + " " + m[lastSpace+2:]
 	})
 	b.Log.Debugf("Message with mention replaced: %s", text)
 	return text
