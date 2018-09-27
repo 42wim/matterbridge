@@ -1,0 +1,29 @@
+name: m10e
+version: '1.11.3'
+summary: Matterbridge bridging between any protocol
+description: |
+  Matterbridge (https://github.com/42wim/matterbridge)
+  creates a bridge between IRC, XMPP, Gitter, Mattermost, Slack, Discord, Telegram, Rocket.Chat, Hipchat, Matrix, Steam, ssh-chat, and Zulip
+
+grade: stable
+confinement: strict
+
+apps:
+  m10e:
+    command: bin/matterbridge
+    environment:
+      LC_ALL: C.UTF-8
+    plugs: [network]
+
+
+parts:
+  go:
+    source-tag: go1.10.4
+
+  m10e-build:
+    after: [go]
+    source: .
+    plugin: go
+    go-importpath: github.com/42wim/matterbridge
+
+
