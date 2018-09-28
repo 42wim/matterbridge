@@ -25,6 +25,8 @@ import (
 	"github.com/hashicorp/golang-lru"
 	log "github.com/sirupsen/logrus"
 	//	"github.com/davecgh/go-spew/spew"
+	"cloud.google.com/go/translate"
+	"golang.org/x/text/language"
 	"crypto/sha1"
 	"path/filepath"
 	"regexp"
@@ -262,6 +264,9 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		msg.Avatar = gw.modifyAvatar(origmsg, dest)
 		msg.Username = gw.modifyUsername(origmsg, dest)
 		msg.ID = ""
+		if channel.Options.Locale != "" {
+			flog.Debugf("We're translating this message into: " + channel.Options.Locale)
+		}
 		if res, ok := gw.Messages.Get(origmsg.ID); ok {
 			IDs := res.([]*BrMsgID)
 			for _, id := range IDs {

@@ -1,6 +1,7 @@
 module github.com/42wim/matterbridge
 
 require (
+	cloud.google.com/go v0.28.0
 	github.com/42wim/go-gitter v0.0.0-20170828205020-017310c2d557
 	github.com/BurntSushi/toml v0.0.0-20170318202913-d94612f9fc14
 	github.com/Philipp15b/go-steam v0.0.0-20161020161927-e0f3bb9566e3
@@ -12,7 +13,6 @@ require (
 	github.com/dgrijalva/jwt-go v0.0.0-20170508165458-6c8dedd55f8a // indirect
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-telegram-bot-api/telegram-bot-api v0.0.0-20180428185002-212b1541150c
-	github.com/golang/protobuf v0.0.0-20170613224224-e325f446bebc // indirect
 	github.com/google/gops v0.0.0-20170319002943-62f833fc9f6c
 	github.com/gopherjs/gopherjs v0.0.0-20180628210949-0892b62f0d9f // indirect
 	github.com/gorilla/schema v0.0.0-20170317173100-f3c80893412c
@@ -69,11 +69,11 @@ require (
 	github.com/valyala/fasttemplate v0.0.0-20170224212429-dcecefd839c4 // indirect
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2 // indirect
 	github.com/zfjagann/golang-ring v0.0.0-20141111230621-17637388c9f6
+	go.opencensus.io v0.17.0 // indirect
 	golang.org/x/crypto v0.0.0-20180228161326-91a49db82a88 // indirect
-	golang.org/x/net v0.0.0-20180108090419-434ec0c7fe37 // indirect
-	golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f // indirect
-	golang.org/x/sys v0.0.0-20171130163741-8b4580aae2a0 // indirect
-	golang.org/x/text v0.0.0-20180511172408-5c1cf69b5978 // indirect
+	golang.org/x/text v0.3.0
+	google.golang.org/api v0.0.0-20180927231558-81028c6d7fe8 // indirect
+	google.golang.org/grpc v1.15.0 // indirect
 	gopkg.in/airbrake/gobrake.v2 v2.0.9 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
