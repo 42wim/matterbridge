@@ -91,6 +91,7 @@ func (b *Bdiscord) Connect() error {
 	}
 	// obtaining guild members and initializing nickname mapping
 	b.Lock()
+	defer b.Unlock()
 	members, err := b.c.GuildMembers(b.guildID, "", 1000)
 	if err != nil {
 		b.Log.Error("Error obtaining guild members", err)
@@ -103,7 +104,6 @@ func (b *Bdiscord) Connect() error {
 			b.nickMemberMap[member.Nick] = member
 		}
 	}
-	b.Unlock()
 	return nil
 }
 
@@ -488,9 +488,16 @@ func (b *Bdiscord) handleUploadFile(msg *config.Message, channelID string) (stri
 	var err error
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo)
-		files := []*discordgo.File{}
-		files = append(files, &discordgo.File{fi.Name, "", bytes.NewReader(*fi.Data)})
-		_, err = b.c.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{Content: msg.Username + fi.Comment, Files: files})
+		file := discordgo.File{
+			Name:        fi.Name,
+			ContentType: "",
+			Reader:      bytes.NewReader(*fi.Data),
+		}
+		m := discordgo.MessageSend{
+			Content: msg.Username + fi.Comment,
+			Files:   []*discordgo.File{&file},
+		}
+		_, err = b.c.ChannelMessageSendComplex(channelID, &m)
 		if err != nil {
 			return "", fmt.Errorf("file upload failed: %#v", err)
 		}

@@ -377,7 +377,10 @@ func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64) (string,
 	var c tgbotapi.Chattable
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo)
-		file := tgbotapi.FileBytes{fi.Name, *fi.Data}
+		file := tgbotapi.FileBytes{
+			Name:  fi.Name,
+			Bytes: *fi.Data,
+		}
 		re := regexp.MustCompile(".(jpg|png)$")
 		if re.MatchString(fi.Name) {
 			c = tgbotapi.NewPhotoUpload(chatid, file)
