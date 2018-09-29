@@ -423,7 +423,7 @@ func (b *Bdiscord) replaceUserMentions(text string) string {
 		if err != nil {
 			return m
 		}
-		return member.User.Mention()
+		return strings.Replace(m, "@"+mention, member.User.Mention(), -1)
 	})
 	b.Log.Debugf("Message with mention replaced: %s", text)
 	return text
