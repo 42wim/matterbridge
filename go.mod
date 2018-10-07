@@ -27,6 +27,8 @@ require (
 	github.com/labstack/echo v0.0.0-20180219162101-7eec915044a1
 	github.com/labstack/gommon v0.2.1 // indirect
 	github.com/lrstanley/girc v0.0.0-20180913221000-0fb5b684054e
+	github.com/lusis/go-slackbot v0.0.0-20180109053408-401027ccfef5 // indirect
+	github.com/lusis/slack-test v0.0.0-20180109053238-3c758769bfa6 // indirect
 	github.com/magiconair/properties v0.0.0-20180217134545-2c9e95027885 // indirect
 	github.com/matterbridge/discordgo v0.0.0-20180806170629-ef40ff5ba64f
 	github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91
@@ -41,7 +43,7 @@ require (
 	github.com/mreiferson/go-httpclient v0.0.0-20160630210159-31f0106b4474 // indirect
 	github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff // indirect
 	github.com/nicksnyder/go-i18n v1.4.0 // indirect
-	github.com/nlopes/slack v0.3.1-0.20180805133408-21749ab136a8
+	github.com/nlopes/slack v0.4.0
 	github.com/onsi/ginkgo v1.6.0 // indirect
 	github.com/onsi/gomega v1.4.1 // indirect
 	github.com/paulrosania/go-charset v0.0.0-20151028000031-621bb39fcc83

@@ -51,10 +51,12 @@ github.com/labstack/echo v0.0.0-20180219162101-7eec915044a1 h1:cOIt0LZKdfeirAfTP
 github.com/labstack/echo v0.0.0-20180219162101-7eec915044a1/go.mod h1:0INS7j/VjnFxD4E2wkz67b8cVwCLbBmJyDaka6Cmk1s=
 github.com/labstack/gommon v0.2.1 h1:C+I4NYknueQncqKYZQ34kHsLZJVeB5KwPUhnO0nmbpU=
 github.com/labstack/gommon v0.2.1/go.mod h1:/tj9csK2iPSBvn+3NLM9e52usepMtrd5ilFYA+wQNJ4=
-github.com/lrstanley/girc v0.0.0-20180427160007-102f17f86306 h1:IqN61cmi7LM/IaYaP9a/KXFtHRS2a3+WHu8GhAXJT7c=
-github.com/lrstanley/girc v0.0.0-20180427160007-102f17f86306/go.mod h1:7cRs1SIBfKQ7e3Tam6GKTILSNHzR862JD0JpINaZoJk=
 github.com/lrstanley/girc v0.0.0-20180913221000-0fb5b684054e h1:RpktB2igr6nS1EN7bCvjldAEfngrM5GyAbmOa4/cafU=
 github.com/lrstanley/girc v0.0.0-20180913221000-0fb5b684054e/go.mod h1:7cRs1SIBfKQ7e3Tam6GKTILSNHzR862JD0JpINaZoJk=
+github.com/lusis/go-slackbot v0.0.0-20180109053408-401027ccfef5 h1:AsEBgzv3DhuYHI/GiQh2HxvTP71HCCE9E/tzGUzGdtU=
+github.com/lusis/go-slackbot v0.0.0-20180109053408-401027ccfef5/go.mod h1:c2mYKRyMb1BPkO5St0c/ps62L4S0W2NAkaTXj9qEI+0=
+github.com/lusis/slack-test v0.0.0-20180109053238-3c758769bfa6 h1:iOAVXzZyXtW408TMYejlUPo6BIn92HmOacWtIfNyYns=
+github.com/lusis/slack-test v0.0.0-20180109053238-3c758769bfa6/go.mod h1:sFlOUpQL1YcjhFVXhg1CG8ZASEs/Mf1oVb6H75JL/zg=
 github.com/magiconair/properties v0.0.0-20180217134545-2c9e95027885 h1:HWxJJvF+QceKcql4r9PC93NtMEgEBfBxlQrZPvbcQvs=
 github.com/magiconair/properties v0.0.0-20180217134545-2c9e95027885/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
 github.com/matterbridge/discordgo v0.0.0-20180806170629-ef40ff5ba64f h1:9IIOO9Aznn8zJx3nokZ4U6nfuzWw5xAlygPvuRZMisQ=
@@ -83,10 +85,8 @@ github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff h1:HLGD5/9UxxfEuO9Dt
 github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff/go.mod h1:B8jLfIIPn2sKyWr0D7cL2v7tnrDD5z291s2Zypdu89E=
 github.com/nicksnyder/go-i18n v1.4.0 h1:AgLl+Yq7kg5OYlzCgu9cKTZOyI4tD/NgukKqLqC8E+I=
 github.com/nicksnyder/go-i18n v1.4.0/go.mod h1:HrK7VCrbOvQoUAQ7Vpy7i87N7JZZZ7R2xBGjv0j365Q=
-github.com/nlopes/slack v0.0.0-20180101221843-107290b5bbaf h1:M+xGhDxie/MqC+tzs+3ZHBSY4Wsv+fEkrpIMCKy8PTg=
-github.com/nlopes/slack v0.0.0-20180101221843-107290b5bbaf/go.mod h1:jVI4BBK3lSktibKahxBF74txcK2vyvkza1z/+rRnVAM=
-github.com/nlopes/slack v0.3.1-0.20180805133408-21749ab136a8 h1:PSy8NkmkyldLmPPnNNw7mwfQFOHDqOI6bINpJ+/KV7Y=
-github.com/nlopes/slack v0.3.1-0.20180805133408-21749ab136a8/go.mod h1:jVI4BBK3lSktibKahxBF74txcK2vyvkza1z/+rRnVAM=
+github.com/nlopes/slack v0.4.0 h1:OVnHm7lv5gGT5gkcHsZAyw++oHVFihbjWbL3UceUpiA=
+github.com/nlopes/slack v0.4.0/go.mod h1:jVI4BBK3lSktibKahxBF74txcK2vyvkza1z/+rRnVAM=
 github.com/onsi/ginkgo v1.6.0 h1:Ix8l273rp3QzYgXSR+c8d1fTG7UPgYkOSELPhiY/YGw=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/gomega v1.4.1 h1:PZSj/UFNaVp3KxrzHOcS7oyuWA7LoOY/77yCTEFu21U=

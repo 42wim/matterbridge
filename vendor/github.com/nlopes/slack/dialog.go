@@ -6,51 +6,46 @@ import (
 	"errors"
 )
 
+// InputType is the type of the dialog input type
+type InputType string
+
+const (
+	// InputTypeText textfield input
+	InputTypeText InputType = "text"
+	// InputTypeTextArea textarea input
+	InputTypeTextArea InputType = "textarea"
+	// InputTypeSelect textfield input
+	InputTypeSelect InputType = "select"
+)
+
+// DialogInput for dialogs input type text or menu
+type DialogInput struct {
+	Type        InputType `json:"type"`
+	Label       string    `json:"label"`
+	Name        string    `json:"name"`
+	Placeholder string    `json:"placeholder"`
+	Optional    bool      `json:"optional"`
+}
+
+// DialogTrigger ...
 type DialogTrigger struct {
-	TriggerId string `json:"trigger_id"` //Required. Must respond within 3 seconds.
+	TriggerID string `json:"trigger_id"` //Required. Must respond within 3 seconds.
 	Dialog    Dialog `json:"dialog"`     //Required.
 }
 
+// Dialog as in Slack dialogs
+// https://api.slack.com/dialogs#option_element_attributes#top-level_dialog_attributes
 type Dialog struct {
-	CallbackId     string          `json:"callback_id"`                //Required.
-	Title          string          `json:"title"`                      //Required.
-	SubmitLabel    string          `json:"submit_label,omitempty"`     //Optional. Default value is 'Submit'
-	NotifyOnCancel bool            `json:"notify_on_cancel,omitempty"` //Optional. Default value is false
-	Elements       []DialogElement `json:"elements"`                   //Required.
+	TriggerID      string          `json:"trigger_id"`  //Required
+	CallbackID     string          `json:"callback_id"` //Required
+	Title          string          `json:"title"`
+	SubmitLabel    string          `json:"submit_label,omitempty"`
+	NotifyOnCancel bool            `json:"notify_on_cancel"`
+	Elements       []DialogElement `json:"elements"`
 }
 
+// DialogElement abstract type for dialogs.
 type DialogElement interface{}
-
-type DialogTextElement struct {
-	Label       string `json:"label"`                 //Required.
-	Name        string `json:"name"`                  //Required.
-	Type        string `json:"type"`                  //Required. Allowed values: "text", "textarea", "select".
-	Placeholder string `json:"placeholder,omitempty"` //Optional.
-	Optional    bool   `json:"optional,omitempty"`    //Optional. Default value is false
-	Value       string `json:"value,omitempty"`       //Optional.
-	MaxLength   int    `json:"max_length,omitempty"`  //Optional.
-	MinLength   int    `json:"min_length,omitempty"`  //Optional,. Default value is 0
-	Hint        string `json:"hint,omitempty"`        //Optional.
-	Subtype     string `json:"subtype,omitempty"`     //Optional. Allowed values: "email", "number", "tel", "url".
-}
-
-type DialogSelectElement struct {
-	Label           string                `json:"label"`                      //Required.
-	Name            string                `json:"name"`                       //Required.
-	Type            string                `json:"type"`                       //Required. Allowed values: "text", "textarea", "select".
-	Placeholder     string                `json:"placeholder,omitempty"`      //Optional.
-	Optional        bool                  `json:"optional,omitempty"`         //Optional. Default value is false
-	Value           string                `json:"value,omitempty"`            //Optional.
-	DataSource      string                `json:"data_source,omitempty"`      //Optional. Allowed values: "users", "channels", "conversations", "external".
-	SelectedOptions string                `json:"selected_options,omitempty"` //Optional. Default value for "external" only
-	Options         []DialogElementOption `json:"options,omitempty"`          //One of options or option_groups is required.
-	OptionGroups    []DialogElementOption `json:"option_groups,omitempty"`    //Provide up to 100 options.
-}
-
-type DialogElementOption struct {
-	Label string `json:"label"` //Required.
-	Value string `json:"value"` //Required.
-}
 
 // DialogCallback is sent from Slack when a user submits a form from within a dialog
 type DialogCallback struct {
@@ -78,28 +73,43 @@ type DialogSuggestionCallback struct {
 	CallbackID  string  `json:"callback_id"`
 }
 
-// OpenDialog opens a dialog window where the triggerId originated from
-func (api *Client) OpenDialog(triggerId string, dialog Dialog) (err error) {
-	return api.OpenDialogContext(context.Background(), triggerId, dialog)
+// DialogOpenResponse response from `dialog.open`
+type DialogOpenResponse struct {
+	SlackResponse
+	DialogResponseMetadata DialogResponseMetadata `json:"response_metadata"`
+}
+
+// DialogResponseMetadata lists the error messages
+type DialogResponseMetadata struct {
+	Messages []string `json:"messages"`
+}
+
+// OpenDialog opens a dialog window where the triggerID originated from.
+// EXPERIMENTAL: dialog functionality is currently experimental, api is not considered stable.
+func (api *Client) OpenDialog(triggerID string, dialog Dialog) (err error) {
+	return api.OpenDialogContext(context.Background(), triggerID, dialog)
 }
 
 // OpenDialogContext opens a dialog window where the triggerId originated from with a custom context
-func (api *Client) OpenDialogContext(ctx context.Context, triggerId string, dialog Dialog) (err error) {
-	if triggerId == "" {
+// EXPERIMENTAL: dialog functionality is currently experimental, api is not considered stable.
+func (api *Client) OpenDialogContext(ctx context.Context, triggerID string, dialog Dialog) (err error) {
+	if triggerID == "" {
 		return errors.New("received empty parameters")
 	}
 
-	resp := DialogTrigger{
-		TriggerId: triggerId,
+	req := DialogTrigger{
+		TriggerID: triggerID,
 		Dialog:    dialog,
 	}
-	jsonResp, err := json.Marshal(resp)
+
+	encoded, err := json.Marshal(req)
 	if err != nil {
 		return err
 	}
-	response := &SlackResponse{}
+
+	response := &DialogOpenResponse{}
 	endpoint := SLACK_API + "dialog.open"
-	if err := postJSON(ctx, api.httpclient, endpoint, api.token, jsonResp, response, api.debug); err != nil {
+	if err := postJSON(ctx, api.httpclient, endpoint, api.token, encoded, response, api.debug); err != nil {
 		return err
 	}
 
