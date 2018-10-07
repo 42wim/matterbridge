@@ -524,4 +524,9 @@ var EventMapping = map[string]interface{}{
 
 	"member_joined_channel": MemberJoinedChannelEvent{},
 	"member_left_channel":   MemberLeftChannelEvent{},
+
+	"subteam_created":      SubteamCreatedEvent{},
+	"subteam_self_added":   SubteamSelfAddedEvent{},
+	"subteam_self_removed": SubteamSelfRemovedEvent{},
+	"subteam_updated":      SubteamUpdatedEvent{},
 }

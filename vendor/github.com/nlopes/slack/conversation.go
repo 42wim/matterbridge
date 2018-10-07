@@ -29,6 +29,8 @@ type conversation struct {
 	NameNormalized     string   `json:"name_normalized"`
 	NumMembers         int      `json:"num_members"`
 	Priority           float64  `json:"priority"`
+	User               string   `json:"user"`
+
 	// TODO support pending_shared
 	// TODO support previous_names
 }
@@ -62,6 +64,13 @@ type GetUsersInConversationParameters struct {
 	ChannelID string
 	Cursor    string
 	Limit     int
+}
+
+type GetConversationsForUserParameters struct {
+	UserID string
+	Cursor string
+	Types  []string
+	Limit  int
 }
 
 type responseMetaData struct {
@@ -98,6 +107,41 @@ func (api *Client) GetUsersInConversationContext(ctx context.Context, params *Ge
 		return nil, "", errors.New(response.Error)
 	}
 	return response.Members, response.ResponseMetaData.NextCursor, nil
+}
+
+// GetConversationsForUser returns the list conversations for a given user
+func (api *Client) GetConversationsForUser(params *GetConversationsForUserParameters) (channels []Channel, nextCursor string, err error) {
+	return api.GetConversationsForUserContext(context.Background(), params)
+}
+
+// GetConversationsForUserContext returns the list conversations for a given user with a custom context
+func (api *Client) GetConversationsForUserContext(ctx context.Context, params *GetConversationsForUserParameters) (channels []Channel, nextCursor string, err error) {
+	values := url.Values{
+		"token": {api.token},
+		"user":  {params.UserID},
+	}
+	if params.Cursor != "" {
+		values.Add("cursor", params.Cursor)
+	}
+	if params.Limit != 0 {
+		values.Add("limit", strconv.Itoa(params.Limit))
+	}
+	if params.Types != nil {
+		values.Add("types", strings.Join(params.Types, ","))
+	}
+	response := struct {
+		Channels         []Channel        `json:"channels"`
+		ResponseMetaData responseMetaData `json:"response_metadata"`
+		SlackResponse
+	}{}
+	err = postSlackMethod(ctx, api.httpclient, "users.conversations", values, &response, api.debug)
+	if err != nil {
+		return nil, "", err
+	}
+	if !response.Ok {
+		return nil, "", errors.New(response.Error)
+	}
+	return response.Channels, response.ResponseMetaData.NextCursor, nil
 }
 
 // ArchiveConversation archives a conversation

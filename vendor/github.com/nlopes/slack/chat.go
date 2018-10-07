@@ -4,7 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"net/url"
-	"strings"
+
+	"github.com/nlopes/slack/slackutilsx"
 )
 
 const (
@@ -164,22 +165,24 @@ func (api *Client) SendMessageContext(ctx context.Context, channelID string, opt
 		return "", "", "", err
 	}
 
-	if err = postSlackMethod(ctx, api.httpclient, string(config.mode), config.values, &response, api.debug); err != nil {
+	if err = postForm(ctx, api.httpclient, config.endpoint, config.values, &response, api.debug); err != nil {
 		return "", "", "", err
 	}
 
 	return response.Channel, response.getMessageTimestamp(), response.Text, response.Err()
 }
 
-// ApplyMsgOptions utility function for debugging/testing chat requests.
-func ApplyMsgOptions(token, channel string, options ...MsgOption) (string, url.Values, error) {
+// UnsafeApplyMsgOptions utility function for debugging/testing chat requests.
+// NOTE: USE AT YOUR OWN RISK: No issues relating to the use of this function
+// will be supported by the library.
+func UnsafeApplyMsgOptions(token, channel string, options ...MsgOption) (string, url.Values, error) {
 	config, err := applyMsgOptions(token, channel, options...)
-	return string(config.mode), config.values, err
+	return config.endpoint, config.values, err
 }
 
 func applyMsgOptions(token, channel string, options ...MsgOption) (sendConfig, error) {
 	config := sendConfig{
-		mode: chatPostMessage,
+		endpoint: SLACK_API + string(chatPostMessage),
 		values: url.Values{
 			"token":   {token},
 			"channel": {channel},
@@ -195,11 +198,6 @@ func applyMsgOptions(token, channel string, options ...MsgOption) (sendConfig, e
 	return config, nil
 }
 
-func escapeMessage(message string) string {
-	replacer := strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;")
-	return replacer.Replace(message)
-}
-
 type sendMode string
 
 const (
@@ -211,8 +209,8 @@ const (
 )
 
 type sendConfig struct {
-	mode   sendMode
-	values url.Values
+	endpoint string
+	values   url.Values
 }
 
 // MsgOption option provided when sending a message.
@@ -221,7 +219,7 @@ type MsgOption func(*sendConfig) error
 // MsgOptionPost posts a messages, this is the default.
 func MsgOptionPost() MsgOption {
 	return func(config *sendConfig) error {
-		config.mode = chatPostMessage
+		config.endpoint = SLACK_API + string(chatPostMessage)
 		config.values.Del("ts")
 		return nil
 	}
@@ -231,7 +229,7 @@ func MsgOptionPost() MsgOption {
 // posts an ephemeral message.
 func MsgOptionPostEphemeral() MsgOption {
 	return func(config *sendConfig) error {
-		config.mode = chatPostEphemeral
+		config.endpoint = SLACK_API + string(chatPostEphemeral)
 		config.values.Del("ts")
 		return nil
 	}
@@ -240,7 +238,7 @@ func MsgOptionPostEphemeral() MsgOption {
 // MsgOptionPostEphemeral2 - posts an ephemeral message to the provided user.
 func MsgOptionPostEphemeral2(userID string) MsgOption {
 	return func(config *sendConfig) error {
-		config.mode = chatPostEphemeral
+		config.endpoint = SLACK_API + string(chatPostEphemeral)
 		MsgOptionUser(userID)(config)
 		config.values.Del("ts")
 
@@ -251,7 +249,7 @@ func MsgOptionPostEphemeral2(userID string) MsgOption {
 // MsgOptionMeMessage posts a "me message" type from the calling user
 func MsgOptionMeMessage() MsgOption {
 	return func(config *sendConfig) error {
-		config.mode = chatMeMessage
+		config.endpoint = SLACK_API + string(chatMeMessage)
 		return nil
 	}
 }
@@ -259,7 +257,7 @@ func MsgOptionMeMessage() MsgOption {
 // MsgOptionUpdate updates a message based on the timestamp.
 func MsgOptionUpdate(timestamp string) MsgOption {
 	return func(config *sendConfig) error {
-		config.mode = chatUpdate
+		config.endpoint = SLACK_API + string(chatUpdate)
 		config.values.Add("ts", timestamp)
 		return nil
 	}
@@ -268,7 +266,7 @@ func MsgOptionUpdate(timestamp string) MsgOption {
 // MsgOptionDelete deletes a message based on the timestamp.
 func MsgOptionDelete(timestamp string) MsgOption {
 	return func(config *sendConfig) error {
-		config.mode = chatDelete
+		config.endpoint = SLACK_API + string(chatDelete)
 		config.values.Add("ts", timestamp)
 		return nil
 	}
@@ -297,7 +295,7 @@ func MsgOptionUser(userID string) MsgOption {
 func MsgOptionText(text string, escape bool) MsgOption {
 	return func(config *sendConfig) error {
 		if escape {
-			text = escapeMessage(text)
+			text = slackutilsx.EscapeMessage(text)
 		}
 		config.values.Add("text", text)
 		return nil
@@ -388,6 +386,18 @@ func MsgOptionParse(b bool) MsgOption {
 			v = "0"
 		}
 		c.values.Set("parse", v)
+		return nil
+	}
+}
+
+// UnsafeMsgOptionEndpoint deliver the message to the specified endpoint.
+// NOTE: USE AT YOUR OWN RISK: No issues relating to the use of this Option
+// will be supported by the library, it is subject to change without notice that
+// may result in compilation errors or runtime behaviour changes.
+func UnsafeMsgOptionEndpoint(endpoint string, update func(url.Values)) MsgOption {
+	return func(config *sendConfig) error {
+		config.endpoint = endpoint
+		update(config.values)
 		return nil
 	}
 }
