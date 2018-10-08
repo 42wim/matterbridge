@@ -265,7 +265,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		msg.Username = gw.modifyUsername(origmsg, dest)
 		msg.ID = ""
 		if channel.Options.Locale != "" {
-			flog.Debugf("We're translating this message into: " + channel.Options.Locale)
+			msg.Text = msg.Text + " --- powered by Google Translate"
 		}
 		if res, ok := gw.Messages.Get(origmsg.ID); ok {
 			IDs := res.([]*BrMsgID)
