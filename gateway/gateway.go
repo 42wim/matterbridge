@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"bytes"
+	b64 "encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -27,6 +28,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	//	"github.com/davecgh/go-spew/spew"
 	"cloud.google.com/go/translate"
+	"google.golang.org/api/option"
+	"golang.org/x/oauth2/google"
 	"golang.org/x/text/language"
 	"crypto/sha1"
 	"path/filepath"
@@ -268,11 +271,14 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		msg.Avatar = gw.modifyAvatar(origmsg, dest)
 		msg.Username = gw.modifyUsername(origmsg, dest)
 		msg.ID = ""
-		if channel.Options.Locale != "" {
+		credsEnc, ok := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS_BASE64")
+		if ok && channel.Options.Locale != "" {
 			ctx := context.Background()
 			lang, _ := language.Parse(channel.Options.Locale)
 
-			client, _ := translate.NewClient(ctx)
+			credsDec, _ := b64.StdEncoding.DecodeString(credsEnc)
+			creds, _ := google.CredentialsFromJSON(ctx, credsDec, translate.Scope)
+			client, _ := translate.NewClient(ctx, option.WithCredentials(creds))
 			defer client.Close()
 			resp, _ := client.Translate(ctx, []string{msg.Text}, lang, nil)
 
