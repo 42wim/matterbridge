@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"context"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/api"
@@ -46,6 +47,7 @@ type Gateway struct {
 	Message        chan config.Message
 	Name           string
 	Messages       *lru.Cache
+	GTClient       *translate.Client
 }
 
 type BrMsgID struct {
@@ -82,6 +84,8 @@ func New(cfg config.Gateway, r *Router) *Gateway {
 	cache, _ := lru.New(5000)
 	gw.Messages = cache
 	gw.AddConfig(&cfg)
+	ctx := context.Background()
+	gw.GTClient, _ = translate.NewClient(ctx)
 	return gw
 }
 
@@ -265,7 +269,14 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		msg.Username = gw.modifyUsername(origmsg, dest)
 		msg.ID = ""
 		if channel.Options.Locale != "" {
-			msg.Text = msg.Text + " --- powered by Google Translate"
+			ctx := context.Background()
+			lang, _ := language.Parse(channel.Options.Locale)
+
+			client, _ := translate.NewClient(ctx)
+			defer client.Close()
+			resp, _ := client.Translate(ctx, []string{msg.Text}, lang, nil)
+
+			msg.Text = resp[0].Text + " --- powered by Google Translate"
 		}
 		if res, ok := gw.Messages.Get(origmsg.ID); ok {
 			IDs := res.([]*BrMsgID)
