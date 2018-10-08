@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"context"
+	"html"
+	strip "github.com/grokify/html-strip-tags-go"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/api"
@@ -280,9 +282,33 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			creds, _ := google.CredentialsFromJSON(ctx, credsDec, translate.Scope)
 			client, _ := translate.NewClient(ctx, option.WithCredentials(creds))
 			defer client.Close()
-			resp, _ := client.Translate(ctx, []string{msg.Text}, lang, nil)
 
-			msg.Text = resp[0].Text + " --- powered by Google Translate"
+			text := msg.Text
+
+			results := regexp.MustCompile(`(@[a-zA-Z0-9-]+)`).FindAllStringSubmatch(text, -1)
+			for _, r := range results {
+				text = strings.Replace(text, r[1], "<span translate='no'>"+r[1]+"</span>", -1)
+			}
+
+			results = regexp.MustCompile(`(#[a-zA-Z0-9-]+)`).FindAllStringSubmatch(text, -1)
+			for _, r := range results {
+				text = strings.Replace(text, r[1], "<span translate='no'>"+r[1]+"</span>", -1)
+			}
+
+			resp, _ := client.Translate(ctx, []string{text}, lang, &translate.Options{
+				Format: "html",
+			})
+			text = resp[0].Text
+
+			results = regexp.MustCompile(`<[^>]*>(.+?)</[^>]*>`).FindAllStringSubmatch(text, -1)
+			for _, r := range results {
+				text = strings.Replace(text, r[1], " "+r[1]+" ", -1)
+			}
+
+			text = strip.StripTags(text)
+			text = html.UnescapeString(text)
+
+			msg.Text = text + " --- powered by Google Translate"
 		}
 		if res, ok := gw.Messages.Get(origmsg.ID); ok {
 			IDs := res.([]*BrMsgID)

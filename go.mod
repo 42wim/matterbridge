@@ -17,6 +17,7 @@ require (
 	github.com/gopherjs/gopherjs v0.0.0-20180628210949-0892b62f0d9f // indirect
 	github.com/gorilla/schema v0.0.0-20170317173100-f3c80893412c
 	github.com/gorilla/websocket v0.0.0-20170319172727-a91eba7f9777
+	github.com/grokify/html-strip-tags-go v0.0.0-20180907063347-e9e44961e26f
 	github.com/hashicorp/golang-lru v0.0.0-20160813221303-0a025b7e63ad
 	github.com/hashicorp/hcl v0.0.0-20171017181929-23c074d0eceb // indirect
 	github.com/hpcloud/tail v1.0.0 // indirect
@@ -71,8 +72,9 @@ require (
 	github.com/zfjagann/golang-ring v0.0.0-20141111230621-17637388c9f6
 	go.opencensus.io v0.17.0 // indirect
 	golang.org/x/crypto v0.0.0-20180228161326-91a49db82a88 // indirect
+	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
 	golang.org/x/text v0.3.0
-	google.golang.org/api v0.0.0-20180927231558-81028c6d7fe8 // indirect
+	google.golang.org/api v0.0.0-20180927231558-81028c6d7fe8
 	google.golang.org/grpc v1.15.0 // indirect
 	gopkg.in/airbrake/gobrake.v2 v2.0.9 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect

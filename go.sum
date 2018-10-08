@@ -41,6 +41,8 @@ github.com/gorilla/schema v0.0.0-20170317173100-f3c80893412c h1:mORYpib1aLu3M2Oi
 github.com/gorilla/schema v0.0.0-20170317173100-f3c80893412c/go.mod h1:kgLaKoK1FELgZqMAVxx/5cbj0kT+57qxUrAlIO2eleU=
 github.com/gorilla/websocket v0.0.0-20170319172727-a91eba7f9777 h1:JIM+OacoOJRU30xpjMf8sulYqjr0ViA3WDrTX6j/yDI=
 github.com/gorilla/websocket v0.0.0-20170319172727-a91eba7f9777/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoAMk2YaljkQ=
+github.com/grokify/html-strip-tags-go v0.0.0-20180907063347-e9e44961e26f h1:CTesHAvAG+NLVJQjbN26kTriSz5YMpeEN0iwVCA37x8=
+github.com/grokify/html-strip-tags-go v0.0.0-20180907063347-e9e44961e26f/go.mod h1:Xk7G0nwBiIloTMbLddk4WWJOqi4i/JLhadLd0HUXO30=
 github.com/hashicorp/golang-lru v0.0.0-20160813221303-0a025b7e63ad h1:eMxs9EL0PvIGS9TTtxg4R+JxuPGav82J8rA+GFnY7po=
 github.com/hashicorp/golang-lru v0.0.0-20160813221303-0a025b7e63ad/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
 github.com/hashicorp/hcl v0.0.0-20171017181929-23c074d0eceb h1:1OvvPvZkn/yCQ3xBcM8y4020wdkMXPHLB4+NfoGWh4U=
