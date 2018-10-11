@@ -298,17 +298,22 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			resp, _ := client.Translate(ctx, []string{text}, lang, &translate.Options{
 				Format: "html",
 			})
-			text = resp[0].Text
 
-			results = regexp.MustCompile(`<[^>]*>(.+?)</[^>]*>`).FindAllStringSubmatch(text, -1)
-			for _, r := range results {
-				text = strings.Replace(text, r[1], " "+r[1]+" ", -1)
+			if resp[0].Source != channel.Options.Locale {
+				// If the source language is the same as this channel,
+				// just use the original text and don't add attribution
+				text = resp[0].Text
+
+				results = regexp.MustCompile(`<[^>]*>(.+?)</[^>]*>`).FindAllStringSubmatch(text, -1)
+				for _, r := range results {
+					text = strings.Replace(text, r[1], " "+r[1]+" ", -1)
+				}
+
+				text = strip.StripTags(text)
+				text = html.UnescapeString(text)
+
+				msg.Text = text + " [translated by Google]"
 			}
-
-			text = strip.StripTags(text)
-			text = html.UnescapeString(text)
-
-			msg.Text = text + " --- powered by Google Translate"
 		}
 		if res, ok := gw.Messages.Get(origmsg.ID); ok {
 			IDs := res.([]*BrMsgID)
