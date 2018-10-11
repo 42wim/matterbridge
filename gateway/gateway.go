@@ -275,6 +275,12 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		msg.ID = ""
 		credsEnc, ok := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS_BASE64")
 		if ok && channel.Options.Locale != "" {
+
+			attribution, ok := os.LookupEnv("GOOGLE_TRANSLATE_ATTRIBUTION")
+			if !(ok) {
+				attribution = " [translated by Google]"
+			}
+
 			ctx := context.Background()
 			lang, _ := language.Parse(channel.Options.Locale)
 
@@ -317,7 +323,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 				text = strip.StripTags(text)
 				text = html.UnescapeString(text)
 
-				msg.Text = text + " [translated by Google]"
+				msg.Text = text + attribution
 			}
 		}
 		if res, ok := gw.Messages.Get(origmsg.ID); ok {
