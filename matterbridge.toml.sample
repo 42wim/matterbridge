@@ -129,12 +129,8 @@ ReplaceNicks=[ ["user--","user"] ]
 Label=""
 
 #RemoteNickFormat defines how remote users appear on this bridge 
-#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
-#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
-#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
-#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
+#See [general] config section for default options
 #The string "{NOPINGNICK}" (case sensitive) will be replaced by the actual nick / username, but with a ZWSP inside the nick, so the irc user with the same nick won't get pinged. See https://github.com/42wim/matterbridge/issues/175 for more information
-#OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges 
@@ -227,11 +223,7 @@ ReplaceNicks=[ ["user--","user"] ]
 Label=""
 
 #RemoteNickFormat defines how remote users appear on this bridge 
-#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
-#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
-#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
-#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
-#OPTIONAL (default empty)
+#See [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges 
@@ -311,11 +303,7 @@ ReplaceNicks=[ ["user--","user"] ]
 Label=""
 
 #RemoteNickFormat defines how remote users appear on this bridge 
-#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
-#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
-#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
-#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
-#OPTIONAL (default empty)
+#See [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}/{BRIDGE}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges 
@@ -455,11 +443,7 @@ ReplaceNicks=[ ["user--","user"] ]
 Label=""
 
 #RemoteNickFormat defines how remote users appear on this bridge 
-#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
-#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
-#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
-#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
-#OPTIONAL (default empty)
+#See [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges 
@@ -534,11 +518,7 @@ ReplaceNicks=[ ["user--","user"] ]
 Label=""
 
 #RemoteNickFormat defines how remote users appear on this bridge 
-#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
-#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
-#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
-#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
-#OPTIONAL (default empty)
+#See [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges 
@@ -656,11 +636,7 @@ ReplaceNicks=[ ["user--","user"] ]
 Label=""
 
 #RemoteNickFormat defines how remote users appear on this bridge 
-#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
-#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
-#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
-#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
-#OPTIONAL (default empty)
+#See [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges 
@@ -759,11 +735,7 @@ ReplaceNicks=[ ["user--","user"] ]
 Label=""
 
 #RemoteNickFormat defines how remote users appear on this bridge 
-#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
-#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
-#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
-#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
-#OPTIONAL (default empty)
+#See [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges 
@@ -866,16 +838,11 @@ ReplaceNicks=[ ["user--","user"] ]
 Label=""
 
 #RemoteNickFormat defines how remote users appear on this bridge 
-#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
-#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
-#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
-#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
+#See [general] config section for default options
 #
 #WARNING: if you have set MessageFormat="HTML" be sure that this format matches the guidelines
 #on https://core.telegram.org/bots/api#html-style otherwise the message will not go through to
 #telegram! eg <{NICK}> should be &lt;{NICK}&gt;
-#
-#OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges 
@@ -969,11 +936,7 @@ ReplaceNicks=[ ["user--","user"] ]
 Label=""
 
 #RemoteNickFormat defines how remote users appear on this bridge 
-#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
-#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
-#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
-#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
-#OPTIONAL (default empty)
+#See [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges 
@@ -1059,11 +1022,7 @@ ReplaceNicks=[ ["user--","user"] ]
 Label=""
 
 #RemoteNickFormat defines how remote users appear on this bridge 
-#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
-#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
-#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
-#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
-#OPTIONAL (default empty)
+#See [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges 
@@ -1143,11 +1102,7 @@ ReplaceNicks=[ ["user--","user"] ]
 Label=""
 
 #RemoteNickFormat defines how remote users appear on this bridge 
-#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
-#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
-#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
-#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
-#OPTIONAL (default empty)
+#See [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges 
@@ -1227,11 +1182,7 @@ ReplaceNicks=[ ["user--","user"] ]
 Label=""
 
 #RemoteNickFormat defines how remote users appear on this bridge 
-#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
-#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
-#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
-#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
-#OPTIONAL (default empty)
+#See [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges 
@@ -1275,11 +1226,7 @@ Token="mytoken"
 Label=""
 
 #RemoteNickFormat defines how remote users appear on this bridge 
-#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
-#The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
-#The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
-#The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
-#OPTIONAL (default empty)
+#See [general] config section for default options
 RemoteNickFormat="{NICK}"
 
 
@@ -1298,6 +1245,7 @@ RemoteNickFormat="{NICK}"
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
 #The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
+#The string "{CHANNEL}" (case sensitive) will be replaced by the origin channel name used by the bridge
 #OPTIONAL (default empty)
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
