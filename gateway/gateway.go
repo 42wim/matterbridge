@@ -299,7 +299,12 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 				Format: "html",
 			})
 
-			if resp[0].Source != channel.Options.Locale {
+			channelLang, err := language.Parse(channel.Options.Locale)
+			if err != nil {
+				flog.Error(err)
+			}
+
+			if resp[0].Source != channelLang {
 				// If the source language is the same as this channel,
 				// just use the original text and don't add attribution
 				text = resp[0].Text
