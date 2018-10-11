@@ -97,10 +97,16 @@ See [howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config
 ## Advanced configuration
 * [matterbridge.toml.sample](https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.sample) for documentation and an example.
 
+### Google Translation
+
 * If you'd like to allow channels to be Google Translated between
   languages, then simply set an environment variable called
 `GOOGLE_APPLICATION_CREDENTIALS_BASE64` to be the base64 encoded version
 of the JSON credentials file.
+* By default (in accordance with Google's terms of service), we add
+  "[translated by Google]" to the end of all translated messages. You
+may customize this attribution text via the environment variable
+`GOOGLE_TRANSLATE_ATTRIBUTION`.
 
 ## Examples 
 ### Bridge mattermost (off-topic) - irc (#testing)
