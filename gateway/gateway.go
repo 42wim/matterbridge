@@ -10,6 +10,7 @@ import (
 	"context"
 	"html"
 	strip "github.com/grokify/html-strip-tags-go"
+	"github.com/urakozz/go-emoji"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/api"
@@ -291,14 +292,28 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 
 			text := msg.Text
 
+			// @usernames
 			results := regexp.MustCompile(`(@[a-zA-Z0-9-]+)`).FindAllStringSubmatch(text, -1)
 			for _, r := range results {
 				text = strings.Replace(text, r[1], "<span translate='no'>"+r[1]+"</span>", -1)
 			}
 
+			// #channels
 			results = regexp.MustCompile(`(#[a-zA-Z0-9-]+)`).FindAllStringSubmatch(text, -1)
 			for _, r := range results {
 				text = strings.Replace(text, r[1], "<span translate='no'>"+r[1]+"</span>", -1)
+			}
+
+			// :emoji:
+			results = regexp.MustCompile(`(:[a-z0-9-_]+?:)`).FindAllStringSubmatch(text, -1)
+			for _, r := range results {
+				text = strings.Replace(text, r[1], "<span translate='no'>"+r[1]+"</span>", -1)
+			}
+
+			// :emoji: codepoints, ie. 💎
+			results = emoji.NewEmojiParser().FindAllStringSubmatch(text, -1)
+			for _, r := range results {
+				text = strings.Replace(text, r[0], " <span translate='no'>"+r[0]+"</span> ", -1)
 			}
 
 			resp, _ := client.Translate(ctx, []string{text}, lang, &translate.Options{
