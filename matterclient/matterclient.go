@@ -843,7 +843,7 @@ func (m *MMClient) StatusLoop() {
 	if m.OnWsConnect != nil {
 		m.OnWsConnect()
 	}
-	m.log.Debug("StatusLoop:", m.OnWsConnect)
+	m.log.Debugf("StatusLoop: %p", m.OnWsConnect)
 	for {
 		if m.WsQuit {
 			return
