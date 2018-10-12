@@ -172,18 +172,27 @@ func TestNewRouter(t *testing.T) {
 	assert.Equal(t, 3, len(r.Gateways["bridge2"].Bridges))
 	assert.Equal(t, 4, len(r.Gateways["bridge1"].Channels))
 	assert.Equal(t, 3, len(r.Gateways["bridge2"].Channels))
-	assert.Equal(t, &config.ChannelInfo{Name: "42wim/testroom", Direction: "out",
-		ID: "42wim/testroomgitter.42wim", Account: "gitter.42wim",
-		SameChannel: map[string]bool{"bridge2": false}},
-		r.Gateways["bridge2"].Channels["42wim/testroomgitter.42wim"])
-	assert.Equal(t, &config.ChannelInfo{Name: "42wim/testroom", Direction: "in",
-		ID: "42wim/testroomgitter.42wim", Account: "gitter.42wim",
-		SameChannel: map[string]bool{"bridge1": false}},
-		r.Gateways["bridge1"].Channels["42wim/testroomgitter.42wim"])
-	assert.Equal(t, &config.ChannelInfo{Name: "general", Direction: "inout",
-		ID: "generaldiscord.test", Account: "discord.test",
-		SameChannel: map[string]bool{"bridge1": false}},
-		r.Gateways["bridge1"].Channels["generaldiscord.test"])
+	assert.Equal(t, &config.ChannelInfo{
+		Name:        "42wim/testroom",
+		Direction:   "out",
+		ID:          "42wim/testroomgitter.42wim",
+		Account:     "gitter.42wim",
+		SameChannel: map[string]bool{"bridge2": false},
+	}, r.Gateways["bridge2"].Channels["42wim/testroomgitter.42wim"])
+	assert.Equal(t, &config.ChannelInfo{
+		Name:        "42wim/testroom",
+		Direction:   "in",
+		ID:          "42wim/testroomgitter.42wim",
+		Account:     "gitter.42wim",
+		SameChannel: map[string]bool{"bridge1": false},
+	}, r.Gateways["bridge1"].Channels["42wim/testroomgitter.42wim"])
+	assert.Equal(t, &config.ChannelInfo{
+		Name:        "general",
+		Direction:   "inout",
+		ID:          "generaldiscord.test",
+		Account:     "discord.test",
+		SameChannel: map[string]bool{"bridge1": false},
+	}, r.Gateways["bridge1"].Channels["generaldiscord.test"])
 }
 
 func TestGetDestChannel(t *testing.T) {
@@ -192,11 +201,23 @@ func TestGetDestChannel(t *testing.T) {
 	for _, br := range r.Gateways["bridge1"].Bridges {
 		switch br.Account {
 		case "discord.test":
-			assert.Equal(t, []config.ChannelInfo{{Name: "general", Account: "discord.test", Direction: "inout", ID: "generaldiscord.test", SameChannel: map[string]bool{"bridge1": false}, Options: config.ChannelOptions{Key: ""}}},
-				r.Gateways["bridge1"].getDestChannel(msg, *br))
+			assert.Equal(t, []config.ChannelInfo{{
+				Name:        "general",
+				Account:     "discord.test",
+				Direction:   "inout",
+				ID:          "generaldiscord.test",
+				SameChannel: map[string]bool{"bridge1": false},
+				Options:     config.ChannelOptions{Key: ""},
+			}}, r.Gateways["bridge1"].getDestChannel(msg, *br))
 		case "slack.test":
-			assert.Equal(t, []config.ChannelInfo{{Name: "testing", Account: "slack.test", Direction: "out", ID: "testingslack.test", SameChannel: map[string]bool{"bridge1": false}, Options: config.ChannelOptions{Key: ""}}},
-				r.Gateways["bridge1"].getDestChannel(msg, *br))
+			assert.Equal(t, []config.ChannelInfo{{
+				Name:        "testing",
+				Account:     "slack.test",
+				Direction:   "out",
+				ID:          "testingslack.test",
+				SameChannel: map[string]bool{"bridge1": false},
+				Options:     config.ChannelOptions{Key: ""},
+			}}, r.Gateways["bridge1"].getDestChannel(msg, *br))
 		case "gitter.42wim":
 			assert.Equal(t, []config.ChannelInfo(nil), r.Gateways["bridge1"].getDestChannel(msg, *br))
 		case "irc.freenode":
@@ -226,35 +247,87 @@ func TestGetDestChannelAdvanced(t *testing.T) {
 				}
 				switch gw.Name {
 				case "bridge":
-					if (msg.Channel == "#main" || msg.Channel == "-1111111111111" || msg.Channel == "irc") && (msg.Account == "irc.zzz" || msg.Account == "telegram.zzz" || msg.Account == "slack.zzz") {
+					if (msg.Channel == "#main" || msg.Channel == "-1111111111111" || msg.Channel == "irc") &&
+						(msg.Account == "irc.zzz" || msg.Account == "telegram.zzz" || msg.Account == "slack.zzz") {
 						hits[gw.Name]++
 						switch br.Account {
 						case "irc.zzz":
-							assert.Equal(t, []config.ChannelInfo{{Name: "#main", Account: "irc.zzz", Direction: "inout", ID: "#mainirc.zzz", SameChannel: map[string]bool{"bridge": false}, Options: config.ChannelOptions{Key: ""}}}, channels)
+							assert.Equal(t, []config.ChannelInfo{{
+								Name:        "#main",
+								Account:     "irc.zzz",
+								Direction:   "inout",
+								ID:          "#mainirc.zzz",
+								SameChannel: map[string]bool{"bridge": false},
+								Options:     config.ChannelOptions{Key: ""},
+							}}, channels)
 						case "telegram.zzz":
-							assert.Equal(t, []config.ChannelInfo{{Name: "-1111111111111", Account: "telegram.zzz", Direction: "inout", ID: "-1111111111111telegram.zzz", SameChannel: map[string]bool{"bridge": false}, Options: config.ChannelOptions{Key: ""}}}, channels)
+							assert.Equal(t, []config.ChannelInfo{{
+								Name:        "-1111111111111",
+								Account:     "telegram.zzz",
+								Direction:   "inout",
+								ID:          "-1111111111111telegram.zzz",
+								SameChannel: map[string]bool{"bridge": false},
+								Options:     config.ChannelOptions{Key: ""},
+							}}, channels)
 						case "slack.zzz":
-							assert.Equal(t, []config.ChannelInfo{{Name: "irc", Account: "slack.zzz", Direction: "inout", ID: "ircslack.zzz", SameChannel: map[string]bool{"bridge": false}, Options: config.ChannelOptions{Key: ""}}}, channels)
+							assert.Equal(t, []config.ChannelInfo{{
+								Name:        "irc",
+								Account:     "slack.zzz",
+								Direction:   "inout",
+								ID:          "ircslack.zzz",
+								SameChannel: map[string]bool{"bridge": false},
+								Options:     config.ChannelOptions{Key: ""},
+							}}, channels)
 						}
 					}
 				case "bridge2":
-					if (msg.Channel == "#main-help" || msg.Channel == "--444444444444") && (msg.Account == "irc.zzz" || msg.Account == "telegram.zzz") {
+					if (msg.Channel == "#main-help" || msg.Channel == "--444444444444") &&
+						(msg.Account == "irc.zzz" || msg.Account == "telegram.zzz") {
 						hits[gw.Name]++
 						switch br.Account {
 						case "irc.zzz":
-							assert.Equal(t, []config.ChannelInfo{{Name: "#main-help", Account: "irc.zzz", Direction: "inout", ID: "#main-helpirc.zzz", SameChannel: map[string]bool{"bridge2": false}, Options: config.ChannelOptions{Key: ""}}}, channels)
+							assert.Equal(t, []config.ChannelInfo{{
+								Name:        "#main-help",
+								Account:     "irc.zzz",
+								Direction:   "inout",
+								ID:          "#main-helpirc.zzz",
+								SameChannel: map[string]bool{"bridge2": false},
+								Options:     config.ChannelOptions{Key: ""},
+							}}, channels)
 						case "telegram.zzz":
-							assert.Equal(t, []config.ChannelInfo{{Name: "--444444444444", Account: "telegram.zzz", Direction: "inout", ID: "--444444444444telegram.zzz", SameChannel: map[string]bool{"bridge2": false}, Options: config.ChannelOptions{Key: ""}}}, channels)
+							assert.Equal(t, []config.ChannelInfo{{
+								Name:        "--444444444444",
+								Account:     "telegram.zzz",
+								Direction:   "inout",
+								ID:          "--444444444444telegram.zzz",
+								SameChannel: map[string]bool{"bridge2": false},
+								Options:     config.ChannelOptions{Key: ""},
+							}}, channels)
 						}
 					}
 				case "bridge3":
-					if (msg.Channel == "#main-telegram" || msg.Channel == "--333333333333") && (msg.Account == "irc.zzz" || msg.Account == "telegram.zzz") {
+					if (msg.Channel == "#main-telegram" || msg.Channel == "--333333333333") &&
+						(msg.Account == "irc.zzz" || msg.Account == "telegram.zzz") {
 						hits[gw.Name]++
 						switch br.Account {
 						case "irc.zzz":
-							assert.Equal(t, []config.ChannelInfo{{Name: "#main-telegram", Account: "irc.zzz", Direction: "inout", ID: "#main-telegramirc.zzz", SameChannel: map[string]bool{"bridge3": false}, Options: config.ChannelOptions{Key: ""}}}, channels)
+							assert.Equal(t, []config.ChannelInfo{{
+								Name:        "#main-telegram",
+								Account:     "irc.zzz",
+								Direction:   "inout",
+								ID:          "#main-telegramirc.zzz",
+								SameChannel: map[string]bool{"bridge3": false},
+								Options:     config.ChannelOptions{Key: ""},
+							}}, channels)
 						case "telegram.zzz":
-							assert.Equal(t, []config.ChannelInfo{{Name: "--333333333333", Account: "telegram.zzz", Direction: "inout", ID: "--333333333333telegram.zzz", SameChannel: map[string]bool{"bridge3": false}, Options: config.ChannelOptions{Key: ""}}}, channels)
+							assert.Equal(t, []config.ChannelInfo{{
+								Name:        "--333333333333",
+								Account:     "telegram.zzz",
+								Direction:   "inout",
+								ID:          "--333333333333telegram.zzz",
+								SameChannel: map[string]bool{"bridge3": false},
+								Options:     config.ChannelOptions{Key: ""},
+							}}, channels)
 						}
 					}
 				case "announcements":
@@ -265,11 +338,41 @@ func TestGetDestChannelAdvanced(t *testing.T) {
 					hits[gw.Name]++
 					switch br.Account {
 					case "irc.zzz":
-						assert.Equal(t, []config.ChannelInfo{{Name: "#main", Account: "irc.zzz", Direction: "out", ID: "#mainirc.zzz", SameChannel: map[string]bool{"announcements": false}, Options: config.ChannelOptions{Key: ""}}, {Name: "#main-help", Account: "irc.zzz", Direction: "out", ID: "#main-helpirc.zzz", SameChannel: map[string]bool{"announcements": false}, Options: config.ChannelOptions{Key: ""}}}, channels)
+						assert.Len(t, channels, 2)
+						assert.Contains(t, channels, config.ChannelInfo{
+							Name:        "#main",
+							Account:     "irc.zzz",
+							Direction:   "out",
+							ID:          "#mainirc.zzz",
+							SameChannel: map[string]bool{"announcements": false},
+							Options:     config.ChannelOptions{Key: ""},
+						})
+						assert.Contains(t, channels, config.ChannelInfo{
+							Name:        "#main-help",
+							Account:     "irc.zzz",
+							Direction:   "out",
+							ID:          "#main-helpirc.zzz",
+							SameChannel: map[string]bool{"announcements": false},
+							Options:     config.ChannelOptions{Key: ""},
+						})
 					case "slack.zzz":
-						assert.Equal(t, []config.ChannelInfo{{Name: "general", Account: "slack.zzz", Direction: "out", ID: "generalslack.zzz", SameChannel: map[string]bool{"announcements": false}, Options: config.ChannelOptions{Key: ""}}}, channels)
+						assert.Equal(t, []config.ChannelInfo{{
+							Name:        "general",
+							Account:     "slack.zzz",
+							Direction:   "out",
+							ID:          "generalslack.zzz",
+							SameChannel: map[string]bool{"announcements": false},
+							Options:     config.ChannelOptions{Key: ""},
+						}}, channels)
 					case "telegram.zzz":
-						assert.Equal(t, []config.ChannelInfo{{Name: "--333333333333", Account: "telegram.zzz", Direction: "out", ID: "--333333333333telegram.zzz", SameChannel: map[string]bool{"announcements": false}, Options: config.ChannelOptions{Key: ""}}}, channels)
+						assert.Equal(t, []config.ChannelInfo{{
+							Name:        "--333333333333",
+							Account:     "telegram.zzz",
+							Direction:   "out",
+							ID:          "--333333333333telegram.zzz",
+							SameChannel: map[string]bool{"announcements": false},
+							Options:     config.ChannelOptions{Key: ""},
+						}}, channels)
 					}
 				}
 			}
