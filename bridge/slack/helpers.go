@@ -38,27 +38,72 @@ func (b *Bslack) getChannel(channel string) (*slack.Channel, error) {
 }
 
 func (b *Bslack) getChannelByName(name string) (*slack.Channel, error) {
-	if b.channels == nil {
-		return nil, fmt.Errorf("%s: channel %s not found (no channels found)", b.Account, name)
-	}
-	for _, channel := range b.channels {
-		if channel.Name == name {
-			return &channel, nil
-		}
+	b.channelsMutex.RLock()
+	defer b.channelsMutex.RUnlock()
+
+	if channel, ok := b.channelsByName[name]; ok {
+		return channel, nil
 	}
 	return nil, fmt.Errorf("%s: channel %s not found", b.Account, name)
 }
 
 func (b *Bslack) getChannelByID(ID string) (*slack.Channel, error) {
-	if b.channels == nil {
-		return nil, fmt.Errorf("%s: channel %s not found (no channels found)", b.Account, ID)
-	}
-	for _, channel := range b.channels {
-		if channel.ID == ID {
-			return &channel, nil
-		}
+	b.channelsMutex.RLock()
+	defer b.channelsMutex.RUnlock()
+
+	if channel, ok := b.channelsByID[ID]; ok {
+		return channel, nil
 	}
 	return nil, fmt.Errorf("%s: channel %s not found", b.Account, ID)
+}
+
+func (b *Bslack) populateUsers() {
+	users, err := b.sc.GetUsers()
+	if err != nil {
+		b.Log.Errorf("Could not reload users: %#v", err)
+		return
+	}
+
+	newUsers := map[string]*slack.User{}
+	for _, user := range users {
+		newUsers[user.ID] = &user
+	}
+
+	b.usersMutex.Lock()
+	defer b.usersMutex.Unlock()
+	b.users = newUsers
+}
+
+func (b *Bslack) populateChannels() {
+	newChannelsByID := map[string]*slack.Channel{}
+	newChannelsByName := map[string]*slack.Channel{}
+
+	// We only retrieve public and private channels, not IMs
+	// and MPIMs as those do not have a channel name.
+	queryParams := &slack.GetConversationsParameters{
+		ExcludeArchived: "true",
+		Types:           []string{"public_channel,private_channel"},
+	}
+	for {
+		channels, nextCursor, err := b.sc.GetConversations(queryParams)
+		if err != nil {
+			b.Log.Errorf("Could not reload channels: %#v", err)
+			return
+		}
+		for i := 0; i < len(channels); i++ {
+			newChannelsByID[channels[i].ID] = &channels[i]
+			newChannelsByName[channels[i].Name] = &channels[i]
+		}
+		if nextCursor == "" {
+			break
+		}
+		queryParams.Cursor = nextCursor
+	}
+
+	b.channelsMutex.Lock()
+	defer b.channelsMutex.Unlock()
+	b.channelsByID = newChannelsByID
+	b.channelsByName = newChannelsByName
 }
 
 var (

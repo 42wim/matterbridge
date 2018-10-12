@@ -16,17 +16,24 @@ import (
 )
 
 type Bslack struct {
-	mh           *matterhook.Client
-	sc           *slack.Client
-	rtm          *slack.RTM
-	users        []slack.User
-	si           *slack.Info
-	channels     []slack.Channel
-	cache        *lru.Cache
-	useChannelID bool
-	uuid         string
-	*bridge.Config
 	sync.RWMutex
+	*bridge.Config
+
+	mh  *matterhook.Client
+	sc  *slack.Client
+	rtm *slack.RTM
+	si  *slack.Info
+
+	cache        *lru.Cache
+	uuid         string
+	useChannelID bool
+
+	users      map[string]*slack.User
+	usersMutex sync.RWMutex
+
+	channelsByID   map[string]*slack.Channel
+	channelsByName map[string]*slack.Channel
+	channelsMutex  sync.RWMutex
 }
 
 const (
@@ -61,9 +68,12 @@ func New(cfg *bridge.Config) bridge.Bridger {
 		cfg.Log.Fatalf("Could not create LRU cache for Slack bridge: %v", err)
 	}
 	b := &Bslack{
-		Config: cfg,
-		uuid:   xid.New().String(),
-		cache:  newCache,
+		Config:         cfg,
+		uuid:           xid.New().String(),
+		cache:          newCache,
+		users:          map[string]*slack.User{},
+		channelsByID:   map[string]*slack.Channel{},
+		channelsByName: map[string]*slack.Channel{},
 	}
 	return b
 }
@@ -132,37 +142,25 @@ func (b *Bslack) Disconnect() error {
 	return b.rtm.Disconnect()
 }
 
+// JoinChannel only acts as a verification method that checks whether Matterbridge's
+// Slack integration is already member of the channel. This is because Slack does not
+// allow apps or bots to join channels themselves and they need to be invited
+// manually by a user.
 func (b *Bslack) JoinChannel(channel config.ChannelInfo) error {
-	// use ID:channelid and resolve it to the actual name
-	idcheck := strings.Split(channel.Name, "ID:")
-	if len(idcheck) > 1 {
-		b.useChannelID = true
-		ch, err := b.sc.GetChannelInfo(idcheck[1])
-		if err != nil {
-			return err
-		}
-		channel.Name = ch.Name
-		if err != nil {
-			return err
-		}
+	b.populateChannels()
+
+	channelInfo, err := b.getChannel(channel.Name)
+	if err != nil {
+		return fmt.Errorf("could not join channel: %#v", err)
 	}
 
-	// we can only join channels using the API
-	if b.sc != nil {
-		if strings.HasPrefix(b.GetString(tokenConfig), "xoxb") {
-			// TODO check if bot has already joined channel
-			return nil
-		}
-		_, err := b.sc.JoinChannel(channel.Name)
-		if err != nil {
-			switch err.Error() {
-			case "name_taken", "restricted_action":
-			case "default":
-				{
-					return err
-				}
-			}
-		}
+	if strings.HasPrefix(channel.Name, "ID:") {
+		b.useChannelID = true
+		channel.Name = channelInfo.Name
+	}
+
+	if !channelInfo.IsMember {
+		return fmt.Errorf("slack integration that matterbridge is using is not member of channel '%s', please add it manually", channelInfo.Name)
 	}
 	return nil
 }
