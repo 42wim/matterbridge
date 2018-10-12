@@ -1,10 +1,12 @@
 package bslack
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -39,6 +41,8 @@ type Bslack struct {
 const (
 	sChannelJoin     = "channel_join"
 	sChannelLeave    = "channel_leave"
+	sChannelJoined   = "channel_joined"
+	sMemberJoined    = "member_joined_channel"
 	sMessageDeleted  = "message_deleted"
 	sSlackAttachment = "slack_attachment"
 	sPinnedItem      = "pinned_item"
@@ -50,6 +54,7 @@ const (
 	sUserTyping      = "user_typing"
 	sLatencyReport   = "latency_report"
 	sSystemUser      = "system"
+	sSlackBotUser    = "slackbot"
 
 	tokenConfig           = "Token"
 	incomingWebhookConfig = "WebhookBindAddress"
@@ -282,7 +287,7 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 
 	messageParameters := b.prepareMessageParameters(&msg)
 
-	// Upload a file if it exists
+	// Upload a file if it exists.
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
 			_, _, err = b.rtm.PostMessage(channelInfo.ID, rmsg.Username+rmsg.Text, *messageParameters)
@@ -300,6 +305,39 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 		return "", err
 	}
 	return "slack " + id, nil
+}
+
+// handleUploadFile handles native upload of files
+func (b *Bslack) handleUploadFile(msg *config.Message, channelID string) {
+	for _, f := range msg.Extra["file"] {
+		fi := f.(config.FileInfo)
+		if msg.Text == fi.Comment {
+			msg.Text = ""
+		}
+		// Because the result of the UploadFile is slower than the MessageEvent from slack
+		// we can't match on the file ID yet, so we have to match on the filename too.
+		ts := time.Now()
+		b.Log.Debugf("Adding file %s to cache at %s with timestamp", fi.Name, ts.String())
+		if !b.cache.Add("filename"+fi.Name, ts) {
+			b.Log.Warnf("Failed to add file %s to cache at %s with timestamp", fi.Name, ts.String())
+		}
+		res, err := b.sc.UploadFile(slack.FileUploadParameters{
+			Reader:         bytes.NewReader(*fi.Data),
+			Filename:       fi.Name,
+			Channels:       []string{channelID},
+			InitialComment: fi.Comment,
+		})
+		if err != nil {
+			b.Log.Errorf("uploadfile %#v", err)
+			return
+		}
+		if res.ID != "" {
+			b.Log.Debugf("Adding file ID %s to cache with timestamp %s", res.ID, ts.String())
+			if !b.cache.Add("file"+res.ID, ts) {
+				b.Log.Warnf("Failed to add file ID %s to cache with timestamp %s", res.ID, ts.String())
+			}
+		}
+	}
 }
 
 func (b *Bslack) prepareMessageParameters(msg *config.Message) *slack.PostMessageParameters {

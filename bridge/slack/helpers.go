@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/nlopes/slack"
 )
 
@@ -104,6 +105,67 @@ func (b *Bslack) populateChannels() {
 	defer b.channelsMutex.Unlock()
 	b.channelsByID = newChannelsByID
 	b.channelsByName = newChannelsByName
+}
+
+// populateReceivedMessage shapes the initial Matterbridge message that we will forward to the
+// router before we apply message-dependent modifications.
+func (b *Bslack) populateReceivedMessage(ev *slack.MessageEvent) (*config.Message, error) {
+	// Use our own func because rtm.GetChannelInfo doesn't work for private channels.
+	channel, err := b.getChannelByID(ev.Channel)
+	if err != nil {
+		return nil, err
+	}
+
+	rmsg := &config.Message{
+		Text:    ev.Text,
+		Channel: channel.Name,
+		Account: b.Account,
+		ID:      "slack " + ev.Timestamp,
+		Extra:   make(map[string][]interface{}),
+	}
+	if b.useChannelID {
+		rmsg.Channel = "ID:" + channel.ID
+	}
+
+	if err = b.populateMessageWithUserInfo(ev, rmsg); err != nil {
+		return nil, err
+	}
+	return rmsg, err
+}
+
+func (b *Bslack) populateMessageWithUserInfo(ev *slack.MessageEvent, rmsg *config.Message) error {
+	if ev.SubType == sMessageDeleted || ev.SubType != sFileComment {
+		return nil
+	}
+
+	if ev.BotID != "" && b.GetString(outgoingWebhookConfig) == "" {
+		bot, err := b.rtm.GetBotInfo(ev.BotID)
+		if err != nil {
+			return err
+		}
+		if bot != nil && bot.Name != "" && bot.Name != "Slack API Tester" {
+			rmsg.Username = bot.Name
+			if ev.Username != "" {
+				rmsg.Username = ev.Username
+			}
+			rmsg.UserID = bot.ID
+			return nil
+		}
+	}
+
+	// find the user id and name
+	if ev.User != "" {
+		user, err := b.rtm.GetUserInfo(ev.User)
+		if err != nil {
+			return err
+		}
+		rmsg.UserID = user.ID
+		rmsg.Username = user.Name
+		if user.Profile.DisplayName != "" {
+			rmsg.Username = user.Profile.DisplayName
+		}
+	}
+	return nil
 }
 
 var (
