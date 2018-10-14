@@ -231,6 +231,65 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 	return channels
 }
 
+type renderer struct {
+	*blackfriday.Html
+}
+
+func doubleSpace(out *bytes.Buffer) {
+	if out.Len() > 0 {
+		out.WriteByte('\n')
+	}
+}
+
+func escapeSingleChar(char byte) (string, bool) {
+	if char == '"' {
+		return "&quot;", true
+	}
+	if char == '&' {
+		return "&amp;", true
+	}
+	if char == '<' {
+		return "&lt;", true
+	}
+	if char == '>' {
+		return "&gt;", true
+	}
+	return "", false
+}
+
+func attrEscape(out *bytes.Buffer, src []byte) {
+	org := 0
+	for i, ch := range src {
+		if entity, ok := escapeSingleChar(ch); ok {
+			if i > org {
+				// copy all the normal characters since the last escape
+				out.Write(src[org:i])
+			}
+			org = i + 1
+			out.WriteString(entity)
+		}
+	}
+	if org < len(src) {
+		out.Write(src[org:])
+	}
+}
+
+// Using <code> rather than <pre> helpfully keeps Google Translate from trying to process it.
+func (*renderer) BlockCode(out *bytes.Buffer, text []byte, info string) {
+	doubleSpace(out)
+
+	endOfLang := strings.IndexAny(info, "\t ")
+	if endOfLang < 0 {
+		endOfLang = len(info)
+	}
+	lang := info[:endOfLang]
+	if len(lang) == 0 || lang == "." {
+		out.WriteString("<code>")
+	}
+	attrEscape(out, text)
+	out.WriteString("</code>\n")
+}
+
 func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrMsgID {
 	var brMsgIDs []*BrMsgID
 
@@ -312,8 +371,8 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			url_re := regexp.MustCompile(`(((http(s)?(\:\/\/))+(www\.)?([\w\-\.\/])*(\.[a-zA-Z]{2,3}\/?))[^\s\n|]*[^.,;:\?\!\@\^\$ -])`)
 			text = url_re.ReplaceAllString(text, "<span translate='no'>$0</span>")
 
-			htmlFlags := blackfriday.HTML_USE_XHTML
-			renderer := blackfriday.HtmlRenderer(htmlFlags, "", "")
+			const htmlFlags = 0
+			renderer := &renderer{Html: blackfriday.HtmlRenderer(htmlFlags, "", "").(*blackfriday.Html)}
 			const extensions = blackfriday.LINK_TYPE_NOT_AUTOLINK |
 			  blackfriday.EXTENSION_HARD_LINE_BREAK |
 				blackfriday.EXTENSION_STRIKETHROUGH |
@@ -386,6 +445,23 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 						if len(attrs) > 1 {
 							// Extra spaces so that Slack will process, even though Chinese characters don't get spaces
 							return html2md.WrapInlineTag(attrs[1], " ~", "~ ")
+						}
+						return ""
+					},
+				})
+				// Custom override of default code rule:
+				// This converts multiline code tags to codeblocks
+				html2md.AddRule("code", &html2md.Rule{
+					Patterns: []string{"code", "tt", "pre"},
+					Replacement: func(innerHTML string, attrs []string) string {
+						contents := attrs[1]
+						if strings.Contains(contents, "\n") {
+							r := regexp.MustCompile(`/^\t+`)
+							innerHTML = r.ReplaceAllString(contents, "  ")
+							return "\n\n```\n" + innerHTML + "```\n"
+						}
+						if len(attrs) > 1 {
+							return "`" + attrs[1] + "`"
 						}
 						return ""
 					},

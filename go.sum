@@ -116,6 +116,16 @@ github.com/patcon/html2md v0.0.0-20181014143505-919a839dda6f h1:+NUzuuLINRJwP3Xp
 github.com/patcon/html2md v0.0.0-20181014143505-919a839dda6f/go.mod h1:lPwXvF3BqK5Y9DLUOOnt8DrL3tnfHL01ScB1y60aKIw=
 github.com/patcon/html2md v0.0.0-20181014143736-370b673716b2 h1:Xgh4a4ltKx6L0swVSy6PosfxWOqlMyFtFggJlJ92exc=
 github.com/patcon/html2md v0.0.0-20181014143736-370b673716b2/go.mod h1:lPwXvF3BqK5Y9DLUOOnt8DrL3tnfHL01ScB1y60aKIw=
+github.com/patcon/html2md v0.0.0-20181014154545-6e925dc319d6 h1:8ojBYXM/GoBR+s2hTBMlbJg7Dd/0BCQ6a4RvTkvLaw0=
+github.com/patcon/html2md v0.0.0-20181014154545-6e925dc319d6/go.mod h1:lPwXvF3BqK5Y9DLUOOnt8DrL3tnfHL01ScB1y60aKIw=
+github.com/patcon/html2md v0.0.0-20181014154832-97706dcd2ccb h1:5iNfFRVq5ghn4syE6+dW67Y37uKDWg9TTuMfUNpFwek=
+github.com/patcon/html2md v0.0.0-20181014154832-97706dcd2ccb/go.mod h1:lPwXvF3BqK5Y9DLUOOnt8DrL3tnfHL01ScB1y60aKIw=
+github.com/patcon/html2md v0.0.0-20181014155555-be1815a53834 h1:VR/SxJuq9iU8yIrPDWNGUObf6NW4qj/XDb3PWV+g8ZM=
+github.com/patcon/html2md v0.0.0-20181014155555-be1815a53834/go.mod h1:lPwXvF3BqK5Y9DLUOOnt8DrL3tnfHL01ScB1y60aKIw=
+github.com/patcon/html2md v0.0.0-20181014155822-8202240e20c8 h1:KpoZHAtr7KzydT+nt+B0PpaObqey6jcXH4YwtOf7o/s=
+github.com/patcon/html2md v0.0.0-20181014155822-8202240e20c8/go.mod h1:lPwXvF3BqK5Y9DLUOOnt8DrL3tnfHL01ScB1y60aKIw=
+github.com/patcon/html2md v0.0.0-20181014160912-ceba9719ce98 h1:om9mX9OvXpMyRgpy1LBfJ2w+Y3u/TG0VCeUm2Qafx9U=
+github.com/patcon/html2md v0.0.0-20181014160912-ceba9719ce98/go.mod h1:lPwXvF3BqK5Y9DLUOOnt8DrL3tnfHL01ScB1y60aKIw=
 github.com/paulrosania/go-charset v0.0.0-20151028000031-621bb39fcc83 h1:XQonH5Iv5rbyIkMJOQ4xKmKHQTh8viXtRSmep5Ca5I4=
 github.com/paulrosania/go-charset v0.0.0-20151028000031-621bb39fcc83/go.mod h1:YnNlZP7l4MhyGQ4CBRwv6ohZTPrUJJZtEv4ZgADkbs4=
 github.com/pborman/uuid v0.0.0-20160216163710-c55201b03606 h1:/CPgDYrfeK2LMK6xcUhvI17yO9SlpAdDIJGkhDEgO8A=
