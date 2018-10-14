@@ -416,6 +416,8 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 
 				allowableTags := []string{
 					"p",
+					"i",
+					"b",
 					"em",
 					"strong",
 					"br",
@@ -436,6 +438,17 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 						if len(attrs) > 1 {
 							// Extra spaces so that Slack will process, even though Chinese characters don't get spaces
 							return html2md.WrapInlineTag(attrs[1], " ~", "~ ")
+						}
+						return ""
+					},
+				})
+				// Custom override for slackdown
+				html2md.AddRule("b", &html2md.Rule{
+					Patterns: []string{"b", "strong"},
+					Replacement: func(innerHTML string, attrs []string) string {
+						if len(attrs) > 1 {
+							// trailing whitespace due to Mandarin issues
+							return html2md.WrapInlineTag(attrs[1], "*", "* ")
 						}
 						return ""
 					},
