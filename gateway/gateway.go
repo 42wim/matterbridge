@@ -258,7 +258,9 @@ func attrEscape(out *bytes.Buffer, src []byte) {
 	}
 }
 
-// Using <code> rather than <pre> helpfully keeps Google Translate from trying to process it.
+// Using <code> rather than <pre> keeps Google Translate from trying to process it.
+// BUT it collapses code into one line for some reason, and <pre> preserves newlines.
+// #TODO Investigating the <pre><code> combo might work.
 func (*renderer) BlockCode(out *bytes.Buffer, text []byte, info string) {
 	doubleSpace(out)
 
@@ -268,10 +270,10 @@ func (*renderer) BlockCode(out *bytes.Buffer, text []byte, info string) {
 	}
 	lang := info[:endOfLang]
 	if len(lang) == 0 || lang == "." {
-		out.WriteString("<code>")
+		out.WriteString("<pre translate='no'>")
 	}
 	attrEscape(out, text)
-	out.WriteString("</code>\n")
+	out.WriteString("</pre>\n")
 }
 
 func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrMsgID {
