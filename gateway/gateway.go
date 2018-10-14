@@ -12,6 +12,7 @@ import (
 	"sort"
 	"github.com/darkoatanasovski/htmltags"
 	"github.com/urakozz/go-emoji"
+	"github.com/patcon/html2md"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/api"
@@ -29,6 +30,7 @@ import (
 	bxmpp "github.com/42wim/matterbridge/bridge/xmpp"
 	bzulip "github.com/42wim/matterbridge/bridge/zulip"
 	"github.com/hashicorp/golang-lru"
+	"github.com/russross/blackfriday"
 	log "github.com/sirupsen/logrus"
 	//	"github.com/davecgh/go-spew/spew"
 	"cloud.google.com/go/translate"
@@ -310,6 +312,16 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			url_re := regexp.MustCompile(`(((http(s)?(\:\/\/))+(www\.)?([\w\-\.\/])*(\.[a-zA-Z]{2,3}\/?))[^\s\n|]*[^.,;:\?\!\@\^\$ -])`)
 			text = url_re.ReplaceAllString(text, "<span translate='no'>$0</span>")
 
+			htmlFlags := blackfriday.HTML_USE_XHTML
+			renderer := blackfriday.HtmlRenderer(htmlFlags, "", "")
+			const extensions = blackfriday.LINK_TYPE_NOT_AUTOLINK |
+			  blackfriday.EXTENSION_HARD_LINE_BREAK |
+				blackfriday.EXTENSION_STRIKETHROUGH |
+				blackfriday.EXTENSION_FENCED_CODE |
+				blackfriday.EXTENSION_HARD_LINE_BREAK
+			output := blackfriday.Markdown([]byte(text), renderer, extensions)
+			text = string(output)
+
 			// @usernames
 			results = regexp.MustCompile(`(@[a-zA-Z0-9-]+)`).FindAllStringSubmatch(text, -1)
 			// Sort so that longest channel names are acted on first
@@ -341,6 +353,8 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 				Format: "html",
 			})
 
+			text = resp[0].Text
+
 			channelLang, err := language.Parse(channel.Options.Locale)
 			if err != nil {
 				flog.Error(err)
@@ -349,7 +363,6 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			if resp[0].Source != channelLang {
 				// If the source language is the same as this channel,
 				// just use the original text and don't add attribution
-				text = resp[0].Text
 
 				// Add space buffer after html <span> before stripping, or characters after tags get merged into urls or usernames
 				text = regexp.MustCompile(`<span translate='no'>.+?</span>`).ReplaceAllString(text, " $0 ")
@@ -367,6 +380,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 
 				stripped, _ := htmltags.Strip(text, allowableTags, false)
 				text = stripped.ToString()
+				text := html2md.Convert(text)
 
 				// colons: revert temp token
 				// See: previous comment on colons
