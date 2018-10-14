@@ -334,17 +334,12 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		msg.ID = ""
 		if (gw.Router.GTClient != nil) && (channel.Options.Locale != "") {
 
-			attribution, ok := os.LookupEnv("GOOGLE_TRANSLATE_ATTRIBUTION")
-			if !(ok) {
-				attribution = " [translated by Google]"
-			}
-
 			ctx := context.Background()
 
 			client := gw.Router.GTClient
 			defer client.Close()
 
-			text := msg.Text
+			text := origmsg.Text
 			var results [][]string
 
 			// colons: add temp token
@@ -479,7 +474,9 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 				text = regexp.MustCompile(`(ː)([ $])`).ReplaceAllString(text, ":$2")
 				text = html.UnescapeString(text)
 
-				msg.Text = text + attribution
+				text = text + gw.Router.General.TranslationAttribution
+
+				msg.Text = text
 			}
 		}
 		if res, ok := gw.Messages.Get(origmsg.ID); ok {

@@ -110,8 +110,7 @@ of the JSON credentials file.
 
 * By default (in accordance with Google's terms of service), we add
   "[translated by Google]" to the end of all translated messages. You
-may customize this attribution text via the environment variable
-`GOOGLE_TRANSLATE_ATTRIBUTION`.
+may customize this attribution via `TranslationAttribution` config key.
 
 ## Examples 
 ### Bridge mattermost (off-topic) - irc (#testing)

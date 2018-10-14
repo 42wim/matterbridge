@@ -124,6 +124,7 @@ type Protocol struct {
 	WebhookBindAddress     string     // mattermost, slack
 	WebhookURL             string     // mattermost, slack
 	WebhookUse             string     // mattermost, slack, discord
+	TranslationAttribution string     // all protocols
 }
 
 type ChannelOptions struct {

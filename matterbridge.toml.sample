@@ -1289,6 +1289,10 @@ MediaDownloadSize=1000000
 #OPTIONAL (default empty)
 MediaDownloadBlacklist=[".html$",".htm$"]
 
+# When Google Translate API feature is enabled, this will be appended to each
+# translated message. (This is required by Google's terms of service.)
+TranslationAttribution=" [translated by Google]"
+
 ###################################################################
 #Gateway configuration
 ###################################################################
