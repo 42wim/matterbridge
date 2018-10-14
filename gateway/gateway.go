@@ -298,9 +298,11 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			defer client.Close()
 
 			text := msg.Text
+			var results [][]string
+
 
 			// @usernames
-			results := regexp.MustCompile(`(@[a-zA-Z0-9-]+)`).FindAllStringSubmatch(text, -1)
+			results = regexp.MustCompile(`(@[a-zA-Z0-9-]+)`).FindAllStringSubmatch(text, -1)
 			for _, r := range results {
 				text = strings.Replace(text, r[1], "<span translate='no'>"+r[1]+"</span>", -1)
 			}
@@ -312,16 +314,10 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			}
 
 			// :emoji:
-			results = regexp.MustCompile(`(:[a-z0-9-_]+?:)`).FindAllStringSubmatch(text, -1)
-			for _, r := range results {
-				text = strings.Replace(text, r[1], "<span translate='no'>"+r[1]+"</span>", -1)
-			}
+			text = regexp.MustCompile(`:[a-z0-9-_]+?:`).ReplaceAllString(text, "<span translate='no'>$0</span>")
 
 			// :emoji: codepoints, ie. 💎
-			results = emoji.NewEmojiParser().FindAllStringSubmatch(text, -1)
-			for _, r := range results {
-				text = strings.Replace(text, r[0], " <span translate='no'>"+r[0]+"</span> ", -1)
-			}
+			text = emoji.NewEmojiParser().ReplaceAllString(text, "<span translate='no'>$0</span>")
 
 			resp, _ := client.Translate(ctx, []string{text}, lang, &translate.Options{
 				Format: "html",
