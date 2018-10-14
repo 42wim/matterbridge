@@ -103,6 +103,11 @@ See [howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config
   languages, then simply set an environment variable called
 `GOOGLE_APPLICATION_CREDENTIALS_BASE64` to be the base64 encoded version
 of the JSON credentials file.
+
+    ```
+    export GOOGLE_APPLICATION_CREDENTIALS_BASE64=$(cat credentials.json | base64)
+    ```
+
 * By default (in accordance with Google's terms of service), we add
   "[translated by Google]" to the end of all translated messages. You
 may customize this attribution text via the environment variable
