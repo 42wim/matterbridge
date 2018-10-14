@@ -371,7 +371,8 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			url_re := regexp.MustCompile(`(((http(s)?(\:\/\/))+(www\.)?([\w\-\.\/])*(\.[a-zA-Z]{2,3}\/?))[^\s\n|]*[^.,;:\?\!\@\^\$ -])`)
 			text = url_re.ReplaceAllString(text, "<span translate='no'>$0</span>")
 
-			const htmlFlags = 0
+			// Make sure we use closed <br/> tags
+			const htmlFlags = blackfriday.HTML_USE_XHTML
 			renderer := &renderer{Html: blackfriday.HtmlRenderer(htmlFlags, "", "").(*blackfriday.Html)}
 			const extensions = blackfriday.LINK_TYPE_NOT_AUTOLINK |
 			  blackfriday.EXTENSION_HARD_LINE_BREAK |
