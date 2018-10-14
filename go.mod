@@ -48,7 +48,7 @@ require (
 	github.com/nlopes/slack v0.3.1-0.20180805133408-21749ab136a8
 	github.com/onsi/ginkgo v1.6.0 // indirect
 	github.com/onsi/gomega v1.4.1 // indirect
-	github.com/patcon/html2md v0.0.0-20181014121949-a471df9ca0b1
+	github.com/patcon/html2md v0.0.0-20181014143736-370b673716b2
 	github.com/paulrosania/go-charset v0.0.0-20151028000031-621bb39fcc83
 	github.com/pborman/uuid v0.0.0-20160216163710-c55201b03606 // indirect
 	github.com/pelletier/go-toml v0.0.0-20180228233631-05bcc0fb0d3e // indirect

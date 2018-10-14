@@ -112,6 +112,10 @@ github.com/patcon/html2md v0.0.0-20180317074532-13aaeeae9fb2 h1:2R8DHpwHLIrC5RFT
 github.com/patcon/html2md v0.0.0-20180317074532-13aaeeae9fb2/go.mod h1:lPwXvF3BqK5Y9DLUOOnt8DrL3tnfHL01ScB1y60aKIw=
 github.com/patcon/html2md v0.0.0-20181014121949-a471df9ca0b1 h1:FXqX1+5vKCerDSVU8FHLwOYct5HDa7ju/UqaXA3vT+g=
 github.com/patcon/html2md v0.0.0-20181014121949-a471df9ca0b1/go.mod h1:lPwXvF3BqK5Y9DLUOOnt8DrL3tnfHL01ScB1y60aKIw=
+github.com/patcon/html2md v0.0.0-20181014143505-919a839dda6f h1:+NUzuuLINRJwP3Xp54noXFoUtDQHPtgnZLw1juw8vZU=
+github.com/patcon/html2md v0.0.0-20181014143505-919a839dda6f/go.mod h1:lPwXvF3BqK5Y9DLUOOnt8DrL3tnfHL01ScB1y60aKIw=
+github.com/patcon/html2md v0.0.0-20181014143736-370b673716b2 h1:Xgh4a4ltKx6L0swVSy6PosfxWOqlMyFtFggJlJ92exc=
+github.com/patcon/html2md v0.0.0-20181014143736-370b673716b2/go.mod h1:lPwXvF3BqK5Y9DLUOOnt8DrL3tnfHL01ScB1y60aKIw=
 github.com/paulrosania/go-charset v0.0.0-20151028000031-621bb39fcc83 h1:XQonH5Iv5rbyIkMJOQ4xKmKHQTh8viXtRSmep5Ca5I4=
 github.com/paulrosania/go-charset v0.0.0-20151028000031-621bb39fcc83/go.mod h1:YnNlZP7l4MhyGQ4CBRwv6ohZTPrUJJZtEv4ZgADkbs4=
 github.com/pborman/uuid v0.0.0-20160216163710-c55201b03606 h1:/CPgDYrfeK2LMK6xcUhvI17yO9SlpAdDIJGkhDEgO8A=

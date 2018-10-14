@@ -380,6 +380,16 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 
 				stripped, _ := htmltags.Strip(text, allowableTags, false)
 				text = stripped.ToString()
+				html2md.AddRule("del", &html2md.Rule{
+					Patterns: []string{"del"},
+					Replacement: func(innerHTML string, attrs []string) string {
+						if len(attrs) > 1 {
+							// Extra spaces so that Slack will process, even though Chinese characters don't get spaces
+							return html2md.WrapInlineTag(attrs[1], " ~", "~ ")
+						}
+						return ""
+					},
+				})
 				text := html2md.Convert(text)
 
 				// colons: revert temp token
