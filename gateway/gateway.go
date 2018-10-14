@@ -371,6 +371,9 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			url_re := regexp.MustCompile(`(((http(s)?(\:\/\/))+(www\.)?([\w\-\.\/])*(\.[a-zA-Z]{2,3}\/?))[^\s\n|]*[^.,;:\?\!\@\^\$ -])`)
 			text = url_re.ReplaceAllString(text, "<span translate='no'>$0</span>")
 
+			// Get rid of these wierdo bullets that Slack uses, which confuse translation
+			text = strings.Replace(text, "•", "-", -1)
+
 			// Make sure we use closed <br/> tags
 			const htmlFlags = blackfriday.HTML_USE_XHTML
 			renderer := &renderer{Html: blackfriday.HtmlRenderer(htmlFlags, "", "").(*blackfriday.Html)}
@@ -436,6 +439,9 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 					"blockquote",
 					"pre",
 					"code",
+					"li",
+					"ul",
+					"ol",
 				}
 
 				stripped, _ := htmltags.Strip(text, allowableTags, false)
