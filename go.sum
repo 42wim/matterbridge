@@ -16,6 +16,8 @@ github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24
 github.com/bwmarrin/discordgo v0.0.0-20180201002541-8d5ab59c63e5 h1:M7u44DKGpA5goDIBf0zRMYhT1Sp2Rd7hiTzXfeuw1UY=
 github.com/bwmarrin/discordgo v0.0.0-20180201002541-8d5ab59c63e5/go.mod h1:5NIvFv5Z7HddYuXbuQegZ684DleQaCFqChP2iuBivJ8=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
+github.com/darkoatanasovski/htmltags v1.0.0 h1:EP3O8c3vcEIotu9Dp6lDq8OWor4rYSf4mc/zORJbT5M=
+github.com/darkoatanasovski/htmltags v1.0.0/go.mod h1:FKYjT6COoJLfTjWbOcFW21/GCl8rHvgBQNZS2KpfPMU=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dfordsoft/golib v0.0.0-20180313113957-2ea3495aee1d h1:rONNnZDE5CYuaSFQk+gP4GEQTXEUcyQ5p6p/dgxIHas=

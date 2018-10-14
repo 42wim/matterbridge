@@ -9,7 +9,7 @@ import (
 	"os"
 	"context"
 	"html"
-	strip "github.com/grokify/html-strip-tags-go"
+	"github.com/darkoatanasovski/htmltags"
 	"github.com/urakozz/go-emoji"
 
 	"github.com/42wim/matterbridge/bridge"
@@ -341,12 +341,22 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 				// just use the original text and don't add attribution
 				text = resp[0].Text
 
-				results = regexp.MustCompile(`<[^>]*>(.+?)</[^>]*>`).FindAllStringSubmatch(text, -1)
-				for _, r := range results {
-					text = strings.Replace(text, r[1], " "+r[1]+" ", -1)
+				// Add space buffer after html <span> before stripping, or characters after tags get merged into urls or usernames
+				text = regexp.MustCompile(`<span translate='no'>.+?</span>`).ReplaceAllString(text, " $0 ")
+
+				allowableTags := []string{
+					"p",
+					"em",
+					"strong",
+					"br",
+					"del",
+					"blockquote",
+					"pre",
+					"code",
 				}
 
-				text = strip.StripTags(text)
+				stripped, _ := htmltags.Strip(text, allowableTags, false)
+				text = stripped.ToString()
 
 				// colons: revert temp token
 				// See: previous comment on colons

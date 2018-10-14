@@ -8,6 +8,7 @@ require (
 	github.com/Sirupsen/logrus v1.0.6 // indirect
 	github.com/alecthomas/log4go v0.0.0-20160307011253-e5dc62318d9b // indirect
 	github.com/bwmarrin/discordgo v0.0.0-20180201002541-8d5ab59c63e5 // indirect
+	github.com/darkoatanasovski/htmltags v1.0.0
 	github.com/davecgh/go-spew v1.1.0 // indirect
 	github.com/dfordsoft/golib v0.0.0-20180313113957-2ea3495aee1d
 	github.com/dgrijalva/jwt-go v0.0.0-20170508165458-6c8dedd55f8a // indirect
