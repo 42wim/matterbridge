@@ -2,7 +2,6 @@ package gateway
 
 import (
 	"bytes"
-	b64 "encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -34,8 +33,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	//	"github.com/davecgh/go-spew/spew"
 	"cloud.google.com/go/translate"
-	"google.golang.org/api/option"
-	"golang.org/x/oauth2/google"
 	"golang.org/x/text/language"
 	"crypto/sha1"
 	"path/filepath"
@@ -56,7 +53,6 @@ type Gateway struct {
 	Message        chan config.Message
 	Name           string
 	Messages       *lru.Cache
-	GTClient       *translate.Client
 }
 
 type BrMsgID struct {
@@ -93,18 +89,6 @@ func New(cfg config.Gateway, r *Router) *Gateway {
 	cache, _ := lru.New(5000)
 	gw.Messages = cache
 	gw.AddConfig(&cfg)
-
-	var err error
-	ctx := context.Background()
-	credsJson, _ := b64.StdEncoding.DecodeString(os.Getenv("GOOGLE_APPLICATION_CREDENTIALS_BASE64"))
-	creds, _ := google.CredentialsFromJSON(ctx, credsJson, translate.Scope)
-	gw.GTClient, err = translate.NewClient(ctx, option.WithCredentials(creds))
-	if err != nil {
-		flog.Warnf("Google Translate API failed to authorize: " + err.Error())
-	} else {
-		flog.Infof("Google Translation enabled.")
-  }
-
 	return gw
 }
 
@@ -346,7 +330,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		msg.Avatar = gw.modifyAvatar(origmsg, dest)
 		msg.Username = gw.modifyUsername(origmsg, dest)
 		msg.ID = ""
-		if (gw.GTClient != nil) && (channel.Options.Locale != "") {
+		if (gw.Router.GTClient != nil) && (channel.Options.Locale != "") {
 
 			attribution, ok := os.LookupEnv("GOOGLE_TRANSLATE_ATTRIBUTION")
 			if !(ok) {
@@ -356,7 +340,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			ctx := context.Background()
 			lang, _ := language.Parse(channel.Options.Locale)
 
-			client := gw.GTClient
+			client := gw.Router.GTClient
 			defer client.Close()
 
 			text := msg.Text

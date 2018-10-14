@@ -11,6 +11,7 @@ import (
 	prefixed "github.com/matterbridge/logrus-prefixed-formatter"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"cloud.google.com/go/translate"
 )
 
 const (
@@ -169,6 +170,7 @@ type ConfigValues struct {
 	Zulip              map[string]Protocol
 	General            Protocol
 	Gateway            []Gateway
+	GTClient           *translate.Client
 	SameChannelGateway []SameChannelGateway
 }
 
