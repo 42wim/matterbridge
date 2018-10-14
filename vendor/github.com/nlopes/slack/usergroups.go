@@ -25,6 +25,7 @@ type UserGroup struct {
 	DeletedBy   string         `json:"deleted_by"`
 	Prefs       UserGroupPrefs `json:"prefs"`
 	UserCount   int            `json:"user_count"`
+	Users       []string       `json:"users"`
 }
 
 // UserGroupPrefs contains default channels and groups (private channels)
@@ -121,15 +122,61 @@ func (api *Client) EnableUserGroupContext(ctx context.Context, userGroup string)
 	return response.UserGroup, nil
 }
 
+// GetUserGroupsOption options for the GetUserGroups method call.
+type GetUserGroupsOption func(*GetUserGroupsParams)
+
+// GetUserGroupsOptionIncludeCount include the number of users in each User Group (default: false)
+func GetUserGroupsOptionIncludeCount(b bool) GetUserGroupsOption {
+	return func(params *GetUserGroupsParams) {
+		params.IncludeCount = b
+	}
+}
+
+// GetUserGroupsOptionIncludeDisabled include disabled User Groups (default: false)
+func GetUserGroupsOptionIncludeDisabled(b bool) GetUserGroupsOption {
+	return func(params *GetUserGroupsParams) {
+		params.IncludeDisabled = b
+	}
+}
+
+// GetUserGroupsOptionIncludeUsers include the list of users for each User Group (default: false)
+func GetUserGroupsOptionIncludeUsers(b bool) GetUserGroupsOption {
+	return func(params *GetUserGroupsParams) {
+		params.IncludeUsers = b
+	}
+}
+
+// GetUserGroupsParams contains arguments for GetUserGroups method call
+type GetUserGroupsParams struct {
+	IncludeCount    bool
+	IncludeDisabled bool
+	IncludeUsers    bool
+}
+
 // GetUserGroups returns a list of user groups for the team
-func (api *Client) GetUserGroups() ([]UserGroup, error) {
-	return api.GetUserGroupsContext(context.Background())
+func (api *Client) GetUserGroups(options ...GetUserGroupsOption) ([]UserGroup, error) {
+	return api.GetUserGroupsContext(context.Background(), options...)
 }
 
 // GetUserGroupsContext returns a list of user groups for the team with a custom context
-func (api *Client) GetUserGroupsContext(ctx context.Context) ([]UserGroup, error) {
+func (api *Client) GetUserGroupsContext(ctx context.Context, options ...GetUserGroupsOption) ([]UserGroup, error) {
+	params := GetUserGroupsParams{}
+
+	for _, opt := range options {
+		opt(&params)
+	}
+
 	values := url.Values{
 		"token": {api.token},
+	}
+	if params.IncludeCount {
+		values.Add("include_count", "true")
+	}
+	if params.IncludeDisabled {
+		values.Add("include_disabled", "true")
+	}
+	if params.IncludeUsers {
+		values.Add("include_users", "true")
 	}
 
 	response, err := userGroupRequest(ctx, api.httpclient, "usergroups.list", values, api.debug)

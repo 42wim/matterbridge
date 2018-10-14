@@ -93,14 +93,15 @@ type File struct {
 // There are three ways to upload a file. You can either set Content if file is small, set Reader if file is large,
 // or provide a local file path in File to upload it from your filesystem.
 type FileUploadParameters struct {
-	File           string
-	Content        string
-	Reader         io.Reader
-	Filetype       string
-	Filename       string
-	Title          string
-	InitialComment string
-	Channels       []string
+	File            string
+	Content         string
+	Reader          io.Reader
+	Filetype        string
+	Filename        string
+	Title           string
+	InitialComment  string
+	Channels        []string
+	ThreadTimestamp string
 }
 
 // GetFilesParameters contains all the parameters necessary (including the optional ones) for a GetFiles() request
@@ -236,6 +237,9 @@ func (api *Client) UploadFileContext(ctx context.Context, params FileUploadParam
 	}
 	if params.InitialComment != "" {
 		values.Add("initial_comment", params.InitialComment)
+	}
+	if params.ThreadTimestamp != "" {
+		values.Add("thread_ts", params.ThreadTimestamp)
 	}
 	if len(params.Channels) != 0 {
 		values.Add("channels", strings.Join(params.Channels, ","))

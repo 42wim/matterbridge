@@ -45,7 +45,7 @@ require (
 	github.com/mreiferson/go-httpclient v0.0.0-20160630210159-31f0106b4474 // indirect
 	github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff // indirect
 	github.com/nicksnyder/go-i18n v1.4.0 // indirect
-	github.com/nlopes/slack v0.3.1-0.20180805133408-21749ab136a8
+	github.com/nlopes/slack v0.4.0
 	github.com/onsi/ginkgo v1.6.0 // indirect
 	github.com/onsi/gomega v1.4.1 // indirect
 	github.com/patcon/html2md v0.0.0-20181014143736-370b673716b2

@@ -1,14 +1,10 @@
 package bslack
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
-	"html"
-	"regexp"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -23,22 +19,52 @@ type Bslack struct {
 	mh           *matterhook.Client
 	sc           *slack.Client
 	rtm          *slack.RTM
-	Users        []slack.User
-	Usergroups   []slack.UserGroup
+	users        []slack.User
 	si           *slack.Info
 	channels     []slack.Channel
 	cache        *lru.Cache
-	UseChannelID bool
+	useChannelID bool
 	uuid         string
 	*bridge.Config
 	sync.RWMutex
 }
 
-const messageDeleted = "message_deleted"
+const (
+	sChannelJoin     = "channel_join"
+	sChannelLeave    = "channel_leave"
+	sMessageDeleted  = "message_deleted"
+	sSlackAttachment = "slack_attachment"
+	sPinnedItem      = "pinned_item"
+	sUnpinnedItem    = "unpinned_item"
+	sChannelTopic    = "channel_topic"
+	sChannelPurpose  = "channel_purpose"
+	sFileComment     = "file_comment"
+	sMeMessage       = "me_message"
+	sUserTyping      = "user_typing"
+	sLatencyReport   = "latency_report"
+	sSystemUser      = "system"
+
+	tokenConfig           = "Token"
+	incomingWebhookConfig = "WebhookBindAddress"
+	outgoingWebhookConfig = "WebhookURL"
+	skipTLSConfig         = "SkipTLSVerify"
+	useNickPrefixConfig   = "PrefixMessagesWithNick"
+	editDisableConfig     = "EditDisable"
+	editSuffixConfig      = "EditSuffix"
+	iconURLConfig         = "iconurl"
+	noSendJoinConfig      = "nosendjoinpart"
+)
 
 func New(cfg *bridge.Config) bridge.Bridger {
-	b := &Bslack{Config: cfg, uuid: xid.New().String()}
-	b.cache, _ = lru.New(5000)
+	newCache, err := lru.New(5000)
+	if err != nil {
+		cfg.Log.Fatalf("Could not create LRU cache for Slack bridge: %v", err)
+	}
+	b := &Bslack{
+		Config: cfg,
+		uuid:   xid.New().String(),
+		cache:  newCache,
+	}
 	return b
 }
 
@@ -49,50 +75,54 @@ func (b *Bslack) Command(cmd string) string {
 func (b *Bslack) Connect() error {
 	b.RLock()
 	defer b.RUnlock()
-	if b.GetString("WebhookBindAddress") != "" {
-		if b.GetString("WebhookURL") != "" {
+	if b.GetString(incomingWebhookConfig) != "" {
+		if b.GetString(outgoingWebhookConfig) != "" {
 			b.Log.Info("Connecting using webhookurl (sending) and webhookbindaddress (receiving)")
-			b.mh = matterhook.New(b.GetString("WebhookURL"),
-				matterhook.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
-					BindAddress: b.GetString("WebhookBindAddress")})
-		} else if b.GetString("Token") != "" {
+			b.mh = matterhook.New(b.GetString(outgoingWebhookConfig), matterhook.Config{
+				InsecureSkipVerify: b.GetBool(skipTLSConfig),
+				BindAddress:        b.GetString(incomingWebhookConfig),
+			})
+		} else if b.GetString(tokenConfig) != "" {
 			b.Log.Info("Connecting using token (sending)")
-			b.sc = slack.New(b.GetString("Token"))
+			b.sc = slack.New(b.GetString(tokenConfig))
 			b.rtm = b.sc.NewRTM()
 			go b.rtm.ManageConnection()
 			b.Log.Info("Connecting using webhookbindaddress (receiving)")
-			b.mh = matterhook.New(b.GetString("WebhookURL"),
-				matterhook.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
-					BindAddress: b.GetString("WebhookBindAddress")})
+			b.mh = matterhook.New(b.GetString(outgoingWebhookConfig), matterhook.Config{
+				InsecureSkipVerify: b.GetBool(skipTLSConfig),
+				BindAddress:        b.GetString(incomingWebhookConfig),
+			})
 		} else {
 			b.Log.Info("Connecting using webhookbindaddress (receiving)")
-			b.mh = matterhook.New(b.GetString("WebhookURL"),
-				matterhook.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
-					BindAddress: b.GetString("WebhookBindAddress")})
+			b.mh = matterhook.New(b.GetString(outgoingWebhookConfig), matterhook.Config{
+				InsecureSkipVerify: b.GetBool(skipTLSConfig),
+				BindAddress:        b.GetString(incomingWebhookConfig),
+			})
 		}
 		go b.handleSlack()
 		return nil
 	}
-	if b.GetString("WebhookURL") != "" {
+	if b.GetString(outgoingWebhookConfig) != "" {
 		b.Log.Info("Connecting using webhookurl (sending)")
-		b.mh = matterhook.New(b.GetString("WebhookURL"),
-			matterhook.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
-				DisableServer: true})
-		if b.GetString("Token") != "" {
+		b.mh = matterhook.New(b.GetString(outgoingWebhookConfig), matterhook.Config{
+			InsecureSkipVerify: b.GetBool(skipTLSConfig),
+			DisableServer:      true,
+		})
+		if b.GetString(tokenConfig) != "" {
 			b.Log.Info("Connecting using token (receiving)")
-			b.sc = slack.New(b.GetString("Token"))
+			b.sc = slack.New(b.GetString(tokenConfig))
 			b.rtm = b.sc.NewRTM()
 			go b.rtm.ManageConnection()
 			go b.handleSlack()
 		}
-	} else if b.GetString("Token") != "" {
+	} else if b.GetString(tokenConfig) != "" {
 		b.Log.Info("Connecting using token (sending and receiving)")
-		b.sc = slack.New(b.GetString("Token"))
+		b.sc = slack.New(b.GetString(tokenConfig))
 		b.rtm = b.sc.NewRTM()
 		go b.rtm.ManageConnection()
 		go b.handleSlack()
 	}
-	if b.GetString("WebhookBindAddress") == "" && b.GetString("WebhookURL") == "" && b.GetString("Token") == "" {
+	if b.GetString(incomingWebhookConfig) == "" && b.GetString(outgoingWebhookConfig) == "" && b.GetString(tokenConfig) == "" {
 		return errors.New("no connection method found. See that you have WebhookBindAddress, WebhookURL or Token configured")
 	}
 	return nil
@@ -106,7 +136,7 @@ func (b *Bslack) JoinChannel(channel config.ChannelInfo) error {
 	// use ID:channelid and resolve it to the actual name
 	idcheck := strings.Split(channel.Name, "ID:")
 	if len(idcheck) > 1 {
-		b.UseChannelID = true
+		b.useChannelID = true
 		ch, err := b.sc.GetChannelInfo(idcheck[1])
 		if err != nil {
 			return err
@@ -119,7 +149,7 @@ func (b *Bslack) JoinChannel(channel config.ChannelInfo) error {
 
 	// we can only join channels using the API
 	if b.sc != nil {
-		if strings.HasPrefix(b.GetString("Token"), "xoxb") {
+		if strings.HasPrefix(b.GetString(tokenConfig), "xoxb") {
 			// TODO check if bot has already joined channel
 			return nil
 		}
@@ -146,11 +176,14 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	}
 
 	// Use webhook to send the message
-	if b.GetString("WebhookURL") != "" {
+	if b.GetString(outgoingWebhookConfig) != "" {
 		return b.sendWebhook(msg)
 	}
 
-	channelID := b.getChannelID(msg.Channel)
+	channelInfo, err := b.getChannel(msg.Channel)
+	if err != nil {
+		return "", fmt.Errorf("could not send message: %v", err)
+	}
 
 	// Delete message
 	if msg.Event == config.EVENT_MSG_DELETE {
@@ -160,7 +193,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 		}
 		// we get a "slack <ID>", split it
 		ts := strings.Fields(msg.ID)
-		_, _, err := b.sc.DeleteMessage(channelID, ts[1])
+		_, _, err = b.sc.DeleteMessage(channelInfo.ID, ts[1])
 		if err != nil {
 			return msg.ID, err
 		}
@@ -168,14 +201,14 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	}
 
 	// Prepend nick if configured
-	if b.GetBool("PrefixMessagesWithNick") {
+	if b.GetBool(useNickPrefixConfig) {
 		msg.Text = msg.Username + msg.Text
 	}
 
 	// Edit message if we have an ID
 	if msg.ID != "" {
 		ts := strings.Fields(msg.ID)
-		_, _, _, err := b.sc.UpdateMessage(channelID, ts[1], msg.Text)
+		_, _, _, err = b.sc.UpdateMessage(channelInfo.ID, ts[1], msg.Text)
 		if err != nil {
 			return msg.ID, err
 		}
@@ -184,12 +217,12 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 
 	// create slack new post parameters
 	np := slack.NewPostMessageParameters()
-	if b.GetBool("PrefixMessagesWithNick") {
+	if b.GetBool(useNickPrefixConfig) {
 		np.AsUser = true
 	}
 	np.Username = msg.Username
 	np.LinkNames = 1 // replace mentions
-	np.IconURL = config.GetIconURL(&msg, b.GetString("iconurl"))
+	np.IconURL = config.GetIconURL(&msg, b.GetString(iconURLConfig))
 	if msg.Avatar != "" {
 		np.IconURL = msg.Avatar
 	}
@@ -198,8 +231,8 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	// add file attachments
 	np.Attachments = append(np.Attachments, b.createAttach(msg.Extra)...)
 	// add slack attachments (from another slack bridge)
-	if len(msg.Extra["slack_attachment"]) > 0 {
-		for _, attach := range msg.Extra["slack_attachment"] {
+	if msg.Extra != nil {
+		for _, attach := range msg.Extra[sSlackAttachment] {
 			np.Attachments = append(np.Attachments, attach.([]slack.Attachment)...)
 		}
 	}
@@ -207,16 +240,17 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	// Upload a file if it exists
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			b.sc.PostMessage(channelID, rmsg.Username+rmsg.Text, np)
+			_, _, err = b.sc.PostMessage(channelInfo.ID, rmsg.Username+rmsg.Text, np)
+			if err != nil {
+				b.Log.Error(err)
+			}
 		}
-		// check if we have files to upload (from slack, telegram or mattermost)
-		if len(msg.Extra["file"]) > 0 {
-			b.handleUploadFile(&msg, channelID)
-		}
+		// Upload files if necessary (from Slack, Telegram or Mattermost).
+		b.handleUploadFile(&msg, channelInfo.ID)
 	}
 
 	// Post normal message
-	_, id, err := b.sc.PostMessage(channelID, msg.Text, np)
+	_, id, err := b.sc.PostMessage(channelInfo.ID, msg.Text, np)
 	if err != nil {
 		return "", err
 	}
@@ -227,405 +261,37 @@ func (b *Bslack) Reload(cfg *bridge.Config) (string, error) {
 	return "", nil
 }
 
-func (b *Bslack) getAvatar(userid string) string {
-	var avatar string
-	if b.Users != nil {
-		for _, u := range b.Users {
-			if userid == u.ID {
-				return u.Profile.Image48
-			}
-		}
-	}
-	return avatar
-}
-
-/*
-func (b *Bslack) getChannelByName(name string) (*slack.Channel, error) {
-	if b.channels == nil {
-		return nil, fmt.Errorf("%s: channel %s not found (no channels found)", b.Account, name)
-	}
-	for _, channel := range b.channels {
-		if channel.Name == name {
-			return &channel, nil
-		}
-	}
-	return nil, fmt.Errorf("%s: channel %s not found", b.Account, name)
-}
-*/
-
-func (b *Bslack) getChannelByID(ID string) (*slack.Channel, error) {
-	if b.channels == nil {
-		return nil, fmt.Errorf("%s: channel %s not found (no channels found)", b.Account, ID)
-	}
-	for _, channel := range b.channels {
-		if channel.ID == ID {
-			return &channel, nil
-		}
-	}
-	return nil, fmt.Errorf("%s: channel %s not found", b.Account, ID)
-}
-
-func (b *Bslack) handleSlack() {
-	messages := make(chan *config.Message)
-	if b.GetString("WebhookBindAddress") != "" {
-		b.Log.Debugf("Choosing webhooks based receiving")
-		go b.handleMatterHook(messages)
-	} else {
-		b.Log.Debugf("Choosing token based receiving")
-		go b.handleSlackClient(messages)
-	}
-	time.Sleep(time.Second)
-	b.Log.Debug("Start listening for Slack messages")
-	for message := range messages {
-		b.Log.Debugf("<= Sending message from %s on %s to gateway", message.Username, b.Account)
-
-		// cleanup the message
-		message.Text = b.replaceMention(message.Text)
-		message.Text = b.replaceVariable(message.Text)
-		message.Text = b.replaceChannel(message.Text)
-		message.Text = b.replaceURL(message.Text)
-		message.Text = html.UnescapeString(message.Text)
-
-		// Add the avatar
-		message.Avatar = b.getAvatar(message.UserID)
-
-		b.Log.Debugf("<= Message is %#v", message)
-		b.Remote <- *message
-	}
-}
-
-func (b *Bslack) handleSlackClient(messages chan *config.Message) {
-	for msg := range b.rtm.IncomingEvents {
-		if msg.Type != "user_typing" && msg.Type != "latency_report" {
-			b.Log.Debugf("== Receiving event %#v", msg.Data)
-		}
-		switch ev := msg.Data.(type) {
-		case *slack.MessageEvent:
-			if b.skipMessageEvent(ev) {
-				b.Log.Debugf("Skipped message: %#v", ev)
-				continue
-			}
-			rmsg, err := b.handleMessageEvent(ev)
-			if err != nil {
-				b.Log.Errorf("%#v", err)
-				continue
-			}
-			messages <- rmsg
-		case *slack.OutgoingErrorEvent:
-			b.Log.Debugf("%#v", ev.Error())
-		case *slack.ChannelJoinedEvent:
-			b.Users, _ = b.sc.GetUsers()
-			b.Usergroups, _ = b.sc.GetUserGroups()
-		case *slack.ConnectedEvent:
-			var err error
-			b.channels, _, err = b.sc.GetConversations(&slack.GetConversationsParameters{Limit: 1000, Types: []string{"public_channel,private_channel,mpim,im"}})
-			if err != nil {
-				b.Log.Errorf("Channel list failed: %#v", err)
-			}
-			b.si = ev.Info
-			b.Users, _ = b.sc.GetUsers()
-			b.Usergroups, _ = b.sc.GetUserGroups()
-		case *slack.InvalidAuthEvent:
-			b.Log.Fatalf("Invalid Token %#v", ev)
-		case *slack.ConnectionErrorEvent:
-			b.Log.Errorf("Connection failed %#v %#v", ev.Error(), ev.ErrorObj)
-		default:
-		}
-	}
-}
-
-func (b *Bslack) handleMatterHook(messages chan *config.Message) {
-	for {
-		message := b.mh.Receive()
-		b.Log.Debugf("receiving from matterhook (slack) %#v", message)
-		if message.UserName == "slackbot" {
-			continue
-		}
-		messages <- &config.Message{Username: message.UserName, Text: message.Text, Channel: message.ChannelName}
-	}
-}
-
-func (b *Bslack) userName(id string) string {
-	for _, u := range b.Users {
-		if u.ID == id {
-			if u.Profile.DisplayName != "" {
-				return u.Profile.DisplayName
-			}
-			return u.Name
-		}
-	}
-	return ""
-}
-
-/*
-func (b *Bslack) userGroupName(id string) string {
-	for _, u := range b.Usergroups {
-		if u.ID == id {
-			return u.Name
-		}
-	}
-	return ""
-}
-*/
-
-// @see https://api.slack.com/docs/message-formatting#linking_to_channels_and_users
-func (b *Bslack) replaceMention(text string) string {
-	results := regexp.MustCompile(`<@([a-zA-Z0-9]+)>`).FindAllStringSubmatch(text, -1)
-	for _, r := range results {
-		text = strings.Replace(text, "<@"+r[1]+">", "@"+b.userName(r[1]), -1)
-	}
-	return text
-}
-
-// @see https://api.slack.com/docs/message-formatting#linking_to_channels_and_users
-func (b *Bslack) replaceChannel(text string) string {
-	results := regexp.MustCompile(`<#[a-zA-Z0-9]+\|(.+?)>`).FindAllStringSubmatch(text, -1)
-	for _, r := range results {
-		text = strings.Replace(text, r[0], "#"+r[1], -1)
-	}
-	return text
-}
-
-// @see https://api.slack.com/docs/message-formatting#variables
-func (b *Bslack) replaceVariable(text string) string {
-	results := regexp.MustCompile(`<!((?:subteam\^)?[a-zA-Z0-9]+)(?:\|@?(.+?))?>`).FindAllStringSubmatch(text, -1)
-	for _, r := range results {
-		if r[2] != "" {
-			text = strings.Replace(text, r[0], "@"+r[2], -1)
-		} else {
-			text = strings.Replace(text, r[0], "@"+r[1], -1)
-		}
-	}
-	return text
-}
-
-// @see https://api.slack.com/docs/message-formatting#linking_to_urls
-func (b *Bslack) replaceURL(text string) string {
-	results := regexp.MustCompile(`<(.*?)(\|.*?)?>`).FindAllStringSubmatch(text, -1)
-	for _, r := range results {
-		if len(strings.TrimSpace(r[2])) == 1 { // A display text separator was found, but the text was blank
-			text = strings.Replace(text, r[0], "", -1)
-		} else {
-			text = strings.Replace(text, r[0], r[1], -1)
-		}
-	}
-	return text
-}
-
 func (b *Bslack) createAttach(extra map[string][]interface{}) []slack.Attachment {
-	var attachs []slack.Attachment
+	var attachements []slack.Attachment
 	for _, v := range extra["attachments"] {
 		entry := v.(map[string]interface{})
-		s := slack.Attachment{}
-		s.Fallback = entry["fallback"].(string)
-		s.Color = entry["color"].(string)
-		s.Pretext = entry["pretext"].(string)
-		s.AuthorName = entry["author_name"].(string)
-		s.AuthorLink = entry["author_link"].(string)
-		s.AuthorIcon = entry["author_icon"].(string)
-		s.Title = entry["title"].(string)
-		s.TitleLink = entry["title_link"].(string)
-		s.Text = entry["text"].(string)
-		s.ImageURL = entry["image_url"].(string)
-		s.ThumbURL = entry["thumb_url"].(string)
-		s.Footer = entry["footer"].(string)
-		s.FooterIcon = entry["footer_icon"].(string)
-		attachs = append(attachs, s)
+		s := slack.Attachment{
+			Fallback:   extractStringField(entry, "fallback"),
+			Color:      extractStringField(entry, "color"),
+			Pretext:    extractStringField(entry, "pretext"),
+			AuthorName: extractStringField(entry, "author_name"),
+			AuthorLink: extractStringField(entry, "author_link"),
+			AuthorIcon: extractStringField(entry, "author_icon"),
+			Title:      extractStringField(entry, "title"),
+			TitleLink:  extractStringField(entry, "title_link"),
+			Text:       extractStringField(entry, "text"),
+			ImageURL:   extractStringField(entry, "image_url"),
+			ThumbURL:   extractStringField(entry, "thumb_url"),
+			Footer:     extractStringField(entry, "footer"),
+			FooterIcon: extractStringField(entry, "footer_icon"),
+		}
+		attachements = append(attachements, s)
 	}
-	return attachs
+	return attachements
 }
 
-// handleDownloadFile handles file download
-func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File) error {
-	// if we have a file attached, download it (in memory) and put a pointer to it in msg.Extra
-	// limit to 1MB for now
-	comment := ""
-	results := regexp.MustCompile(`.*?commented: (.*)`).FindAllStringSubmatch(rmsg.Text, -1)
-	if len(results) > 0 {
-		comment = results[0][1]
-	}
-	err := helper.HandleDownloadSize(b.Log, rmsg, file.Name, int64(file.Size), b.General)
-	if err != nil {
-		return err
-	}
-	// actually download the file
-	data, err := helper.DownloadFileAuth(file.URLPrivateDownload, "Bearer "+b.GetString("Token"))
-	if err != nil {
-		return fmt.Errorf("download %s failed %#v", file.URLPrivateDownload, err)
-	}
-	// add the downloaded data to the message
-	helper.HandleDownloadData(b.Log, rmsg, file.Name, comment, file.URLPrivateDownload, data, b.General)
-	return nil
-}
-
-// handleUploadFile handles native upload of files
-func (b *Bslack) handleUploadFile(msg *config.Message, channelID string) (string, error) {
-	for _, f := range msg.Extra["file"] {
-		fi := f.(config.FileInfo)
-		if msg.Text == fi.Comment {
-			msg.Text = ""
-		}
-		/* because the result of the UploadFile is slower than the MessageEvent from slack
-		we can't match on the file ID yet, so we have to match on the filename too
-		*/
-		b.Log.Debugf("Adding file %s to cache %s", fi.Name, time.Now().String())
-		b.cache.Add("filename"+fi.Name, time.Now())
-		res, err := b.sc.UploadFile(slack.FileUploadParameters{
-			Reader:         bytes.NewReader(*fi.Data),
-			Filename:       fi.Name,
-			Channels:       []string{channelID},
-			InitialComment: fi.Comment,
-		})
-		if res.ID != "" {
-			b.Log.Debugf("Adding fileid %s to cache %s", res.ID, time.Now().String())
-			b.cache.Add("file"+res.ID, time.Now())
-		}
-		if err != nil {
-			b.Log.Errorf("uploadfile %#v", err)
+func extractStringField(data map[string]interface{}, field string) string {
+	if rawValue, found := data[field]; found {
+		if value, ok := rawValue.(string); ok {
+			return value
 		}
 	}
-	return "", nil
-}
-
-// handleMessageEvent handles the message events
-func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, error) {
-	// update the userlist on a channel_join
-	if ev.SubType == "channel_join" {
-		b.Users, _ = b.sc.GetUsers()
-	}
-
-	// Edit message
-	if !b.GetBool("EditDisable") && ev.SubMessage != nil && ev.SubMessage.ThreadTimestamp != ev.SubMessage.Timestamp {
-		b.Log.Debugf("SubMessage %#v", ev.SubMessage)
-		ev.User = ev.SubMessage.User
-		ev.Text = ev.SubMessage.Text + b.GetString("EditSuffix")
-	}
-
-	// use our own func because rtm.GetChannelInfo doesn't work for private channels
-	channel, err := b.getChannelByID(ev.Channel)
-	if err != nil {
-		return nil, err
-	}
-
-	rmsg := config.Message{Text: ev.Text, Channel: channel.Name, Account: b.Account, ID: "slack " + ev.Timestamp, Extra: make(map[string][]interface{})}
-
-	if b.UseChannelID {
-		rmsg.Channel = "ID:" + channel.ID
-	}
-
-	// find the user id and name
-	if ev.User != "" && ev.SubType != messageDeleted && ev.SubType != "file_comment" {
-		user, err := b.rtm.GetUserInfo(ev.User)
-		if err != nil {
-			return nil, err
-		}
-		rmsg.UserID = user.ID
-		rmsg.Username = user.Name
-		if user.Profile.DisplayName != "" {
-			rmsg.Username = user.Profile.DisplayName
-		}
-	}
-
-	// See if we have some text in the attachments
-	if rmsg.Text == "" {
-		for _, attach := range ev.Attachments {
-			if attach.Text != "" {
-				if attach.Title != "" {
-					rmsg.Text = attach.Title + "\n"
-				}
-				rmsg.Text += attach.Text
-			} else {
-				rmsg.Text = attach.Fallback
-			}
-		}
-	}
-
-	// when using webhookURL we can't check if it's our webhook or not for now
-	if rmsg.Username == "" && ev.BotID != "" && b.GetString("WebhookURL") == "" {
-		bot, err := b.rtm.GetBotInfo(ev.BotID)
-		if err != nil {
-			return nil, err
-		}
-		if bot.Name != "" {
-			rmsg.Username = bot.Name
-			if ev.Username != "" {
-				rmsg.Username = ev.Username
-			}
-			rmsg.UserID = bot.ID
-		}
-
-		// fixes issues with matterircd users
-		if bot.Name == "Slack API Tester" {
-			user, err := b.rtm.GetUserInfo(ev.User)
-			if err != nil {
-				return nil, err
-			}
-			rmsg.UserID = user.ID
-			rmsg.Username = user.Name
-			if user.Profile.DisplayName != "" {
-				rmsg.Username = user.Profile.DisplayName
-			}
-		}
-	}
-
-	// file comments are set by the system (because there is no username given)
-	if ev.SubType == "file_comment" {
-		rmsg.Username = "system"
-	}
-
-	// do we have a /me action
-	if ev.SubType == "me_message" {
-		rmsg.Event = config.EVENT_USER_ACTION
-	}
-
-	// Handle join/leave
-	if ev.SubType == "channel_leave" || ev.SubType == "channel_join" {
-		rmsg.Username = "system"
-		rmsg.Event = config.EVENT_JOIN_LEAVE
-	}
-
-	// edited messages have a submessage, use this timestamp
-	if ev.SubMessage != nil {
-		rmsg.ID = "slack " + ev.SubMessage.Timestamp
-	}
-
-	// deleted message event
-	if ev.SubType == messageDeleted {
-		rmsg.Text = config.EVENT_MSG_DELETE
-		rmsg.Event = config.EVENT_MSG_DELETE
-		rmsg.ID = "slack " + ev.DeletedTimestamp
-	}
-
-	// topic change event
-	if ev.SubType == "channel_topic" || ev.SubType == "channel_purpose" {
-		rmsg.Event = config.EVENT_TOPIC_CHANGE
-	}
-
-	// Only deleted messages can have a empty username and text
-	if (rmsg.Text == "" || rmsg.Username == "") && ev.SubType != messageDeleted && len(ev.Files) == 0 {
-		// this is probably a webhook we couldn't resolve
-		if ev.BotID != "" {
-			return nil, fmt.Errorf("probably an incoming webhook we couldn't resolve (maybe ourselves)")
-		}
-		return nil, fmt.Errorf("empty message and not a deleted message")
-	}
-
-	// save the attachments, so that we can send them to other slack (compatible) bridges
-	if len(ev.Attachments) > 0 {
-		rmsg.Extra["slack_attachment"] = append(rmsg.Extra["slack_attachment"], ev.Attachments)
-	}
-
-	// if we have a file attached, download it (in memory) and put a pointer to it in msg.Extra
-	if len(ev.Files) > 0 {
-		for _, f := range ev.Files {
-			err := b.handleDownloadFile(&rmsg, &f)
-			if err != nil {
-				b.Log.Errorf("download failed: %s", err)
-			}
-		}
-	}
-
-	return &rmsg, nil
+	return ""
 }
 
 // sendWebhook uses the configured WebhookURL to send the message
@@ -635,39 +301,48 @@ func (b *Bslack) sendWebhook(msg config.Message) (string, error) {
 		return "", nil
 	}
 
-	if b.GetBool("PrefixMessagesWithNick") {
+	if b.GetBool(useNickPrefixConfig) {
 		msg.Text = msg.Username + msg.Text
 	}
 
 	if msg.Extra != nil {
 		// this sends a message only if we received a config.EVENT_FILE_FAILURE_SIZE
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			iconURL := config.GetIconURL(&rmsg, b.GetString("iconurl"))
-			matterMessage := matterhook.OMessage{IconURL: iconURL, Channel: msg.Channel, UserName: rmsg.Username, Text: rmsg.Text}
-			b.mh.Send(matterMessage)
+			iconURL := config.GetIconURL(&rmsg, b.GetString(iconURLConfig))
+			matterMessage := matterhook.OMessage{
+				IconURL:  iconURL,
+				Channel:  msg.Channel,
+				UserName: rmsg.Username,
+				Text:     rmsg.Text,
+			}
+			if err := b.mh.Send(matterMessage); err != nil {
+				b.Log.Errorf("Failed to send message: %v", err)
+			}
 		}
 
 		// webhook doesn't support file uploads, so we add the url manually
-		if len(msg.Extra["file"]) > 0 {
-			for _, f := range msg.Extra["file"] {
-				fi := f.(config.FileInfo)
-				if fi.URL != "" {
-					msg.Text += " " + fi.URL
-				}
+		for _, f := range msg.Extra["file"] {
+			fi := f.(config.FileInfo)
+			if fi.URL != "" {
+				msg.Text += " " + fi.URL
 			}
 		}
 	}
 
 	// if we have native slack_attachments add them
 	var attachs []slack.Attachment
-	if len(msg.Extra["slack_attachment"]) > 0 {
-		for _, attach := range msg.Extra["slack_attachment"] {
-			attachs = append(attachs, attach.([]slack.Attachment)...)
-		}
+	for _, attach := range msg.Extra[sSlackAttachment] {
+		attachs = append(attachs, attach.([]slack.Attachment)...)
 	}
 
-	iconURL := config.GetIconURL(&msg, b.GetString("iconurl"))
-	matterMessage := matterhook.OMessage{IconURL: iconURL, Attachments: attachs, Channel: msg.Channel, UserName: msg.Username, Text: msg.Text}
+	iconURL := config.GetIconURL(&msg, b.GetString(iconURLConfig))
+	matterMessage := matterhook.OMessage{
+		IconURL:     iconURL,
+		Attachments: attachs,
+		Channel:     msg.Channel,
+		UserName:    msg.Username,
+		Text:        msg.Text,
+	}
 	if msg.Avatar != "" {
 		matterMessage.IconURL = msg.Avatar
 	}
@@ -677,68 +352,4 @@ func (b *Bslack) sendWebhook(msg config.Message) (string, error) {
 		return "", err
 	}
 	return "", nil
-}
-
-// skipMessageEvent skips event that need to be skipped :-)
-func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
-	if ev.SubType == "channel_leave" || ev.SubType == "channel_join" {
-		return b.GetBool("nosendjoinpart")
-	}
-
-	// ignore pinned items
-	if ev.SubType == "pinned_item" || ev.SubType == "unpinned_item" {
-		return true
-	}
-
-	// do not send messages from ourself
-	if b.GetString("WebhookURL") == "" && b.GetString("WebhookBindAddress") == "" && ev.Username == b.si.User.Name {
-		return true
-	}
-
-	// skip messages we made ourselves
-	if len(ev.Attachments) > 0 {
-		if ev.Attachments[0].CallbackID == "matterbridge_"+b.uuid {
-			return true
-		}
-	}
-
-	if !b.GetBool("EditDisable") && ev.SubMessage != nil && ev.SubMessage.ThreadTimestamp != ev.SubMessage.Timestamp {
-		// it seems ev.SubMessage.Edited == nil when slack unfurls
-		// do not forward these messages #266
-		if ev.SubMessage.Edited == nil {
-			return true
-		}
-	}
-
-	if len(ev.Files) > 0 {
-		for _, f := range ev.Files {
-			// if the file is in the cache and isn't older then a minute, skip it
-			if ts, ok := b.cache.Get("file" + f.ID); ok && time.Since(ts.(time.Time)) < time.Minute {
-				b.Log.Debugf("Not downloading file id %s which we uploaded", f.ID)
-				return true
-			} else {
-				if ts, ok := b.cache.Get("filename" + f.Name); ok && time.Since(ts.(time.Time)) < time.Second*10 {
-					b.Log.Debugf("Not downloading file name %s which we uploaded", f.Name)
-					return true
-				} else {
-					b.Log.Debugf("Not skipping %s %s", f.Name, time.Now().String())
-				}
-			}
-		}
-	}
-
-	return false
-}
-
-func (b *Bslack) getChannelID(name string) string {
-	idcheck := strings.Split(name, "ID:")
-	if len(idcheck) > 1 {
-		return idcheck[1]
-	}
-	for _, channel := range b.channels {
-		if channel.Name == name {
-			return channel.ID
-		}
-	}
-	return ""
 }

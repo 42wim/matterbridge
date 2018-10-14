@@ -344,7 +344,7 @@ func (m *MMClient) parseActionPost(rmsg *Message) {
 	data := model.PostFromJson(strings.NewReader(rmsg.Raw.Data["post"].(string)))
 	// we don't have the user, refresh the userlist
 	if m.GetUser(data.UserId) == nil {
-		m.log.Infof("User %s is not known, ignoring message %s", data)
+		m.log.Infof("User %s is not known, ignoring message %s", data.UserId, data.Message)
 		return
 	}
 	rmsg.Username = m.GetUserName(data.UserId)
@@ -843,7 +843,7 @@ func (m *MMClient) StatusLoop() {
 	if m.OnWsConnect != nil {
 		m.OnWsConnect()
 	}
-	m.log.Debug("StatusLoop:", m.OnWsConnect)
+	m.log.Debugf("StatusLoop: %p", m.OnWsConnect)
 	for {
 		if m.WsQuit {
 			return
