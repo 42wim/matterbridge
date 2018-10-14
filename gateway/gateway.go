@@ -90,8 +90,18 @@ func New(cfg config.Gateway, r *Router) *Gateway {
 	cache, _ := lru.New(5000)
 	gw.Messages = cache
 	gw.AddConfig(&cfg)
+
+	var err error
 	ctx := context.Background()
-	gw.GTClient, _ = translate.NewClient(ctx)
+	credsJson, _ := b64.StdEncoding.DecodeString(os.Getenv("GOOGLE_APPLICATION_CREDENTIALS_BASE64"))
+	creds, _ := google.CredentialsFromJSON(ctx, credsJson, translate.Scope)
+	gw.GTClient, err = translate.NewClient(ctx, option.WithCredentials(creds))
+	if err != nil {
+		flog.Warnf("Google Translate API failed to authorize: " + err.Error())
+	} else {
+		flog.Infof("Google Translation enabled.")
+  }
+
 	return gw
 }
 
@@ -274,8 +284,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		msg.Avatar = gw.modifyAvatar(origmsg, dest)
 		msg.Username = gw.modifyUsername(origmsg, dest)
 		msg.ID = ""
-		credsEnc, ok := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS_BASE64")
-		if ok && channel.Options.Locale != "" {
+		if (gw.GTClient != nil) && (channel.Options.Locale != "") {
 
 			attribution, ok := os.LookupEnv("GOOGLE_TRANSLATE_ATTRIBUTION")
 			if !(ok) {
@@ -285,9 +294,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			ctx := context.Background()
 			lang, _ := language.Parse(channel.Options.Locale)
 
-			credsDec, _ := b64.StdEncoding.DecodeString(credsEnc)
-			creds, _ := google.CredentialsFromJSON(ctx, credsDec, translate.Scope)
-			client, _ := translate.NewClient(ctx, option.WithCredentials(creds))
+			client := gw.GTClient
 			defer client.Close()
 
 			text := msg.Text

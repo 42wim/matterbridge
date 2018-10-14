@@ -66,6 +66,7 @@ require (
 	github.com/spf13/viper v0.0.0-20171227194143-aafc9e6bc7b7
 	github.com/stretchr/testify v0.0.0-20170714215325-05e8a0eda380
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
+	github.com/urakozz/go-emoji v0.0.0-20151023072830-41ef589a5285
 	github.com/valyala/bytebufferpool v0.0.0-20160817181652-e746df99fe4a // indirect
 	github.com/valyala/fasttemplate v0.0.0-20170224212429-dcecefd839c4 // indirect
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2 // indirect

@@ -153,6 +153,8 @@ github.com/stretchr/testify v0.0.0-20170714215325-05e8a0eda380 h1:MsolbevHkd4Spb
 github.com/stretchr/testify v0.0.0-20170714215325-05e8a0eda380/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/technoweenie/multipartstreamer v1.0.1 h1:XRztA5MXiR1TIRHxH2uNxXxaIkKQDeX7m2XsSOlQEnM=
 github.com/technoweenie/multipartstreamer v1.0.1/go.mod h1:jNVxdtShOxzAsukZwTSw6MDx5eUJoiEBsSvzDU9uzog=
+github.com/urakozz/go-emoji v0.0.0-20151023072830-41ef589a5285 h1:zsUvs7Dg5tDVBwGbxY+6Hal2PSEH7p6vOiM/g9h2iW4=
+github.com/urakozz/go-emoji v0.0.0-20151023072830-41ef589a5285/go.mod h1:esxJGKpQ1iOwOuX/CGCm7zpH/NasLh4P/UIKWIq4NY8=
 github.com/valyala/bytebufferpool v0.0.0-20160817181652-e746df99fe4a h1:AOcehBWpFhYPYw0ioDTppQzgI8pAAahVCiMSKTp9rbo=
 github.com/valyala/bytebufferpool v0.0.0-20160817181652-e746df99fe4a/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 github.com/valyala/fasttemplate v0.0.0-20170224212429-dcecefd839c4 h1:gKMu1Bf6QINDnvyZuTaACm9ofY+PRh+5vFz4oxBZeF8=
