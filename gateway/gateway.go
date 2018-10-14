@@ -338,7 +338,6 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			}
 
 			ctx := context.Background()
-			lang, _ := language.Parse(channel.Options.Locale)
 
 			client := gw.Router.GTClient
 			defer client.Close()
@@ -396,16 +395,17 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			// :emoji: codepoints, ie. 💎
 			text = emoji.NewEmojiParser().ReplaceAllString(text, "<span translate='no'>$0</span>")
 
-			resp, _ := client.Translate(ctx, []string{text}, lang, &translate.Options{
-				Format: "html",
-			})
-
-			text = resp[0].Text
 
 			channelLang, err := language.Parse(channel.Options.Locale)
 			if err != nil {
 				flog.Error(err)
 			}
+
+			resp, _ := client.Translate(ctx, []string{text}, channelLang, &translate.Options{
+				Format: "html",
+			})
+
+			text = resp[0].Text
 
 			if resp[0].Source != channelLang {
 				// If the source language is the same as this channel,
