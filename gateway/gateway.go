@@ -300,6 +300,10 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			text := msg.Text
 			var results [][]string
 
+			// colons: add temp token
+			// This is an ugly hack to work around what seems to be a bug in the Google Translate API.
+			// See: https://github.com/42wim/matterbridge/pull/512#issuecomment-428910199
+			text = regexp.MustCompile(`(:)([ $])`).ReplaceAllString(text, "<span translate='no'>ː$2</span>")
 
 			// @usernames
 			results = regexp.MustCompile(`(@[a-zA-Z0-9-]+)`).FindAllStringSubmatch(text, -1)
@@ -339,6 +343,10 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 				}
 
 				text = strip.StripTags(text)
+
+				// colons: revert temp token
+				// See: previous comment on colons
+				text = regexp.MustCompile(`(ː)([ $])`).ReplaceAllString(text, ":$2")
 				text = html.UnescapeString(text)
 
 				msg.Text = text + attribution
