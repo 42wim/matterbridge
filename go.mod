@@ -14,11 +14,11 @@ require (
 	github.com/dgrijalva/jwt-go v0.0.0-20170508165458-6c8dedd55f8a // indirect
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-telegram-bot-api/telegram-bot-api v0.0.0-20180428185002-212b1541150c
+	github.com/google/go-cmp v0.2.0 // indirect
 	github.com/google/gops v0.0.0-20170319002943-62f833fc9f6c
 	github.com/gopherjs/gopherjs v0.0.0-20180628210949-0892b62f0d9f // indirect
 	github.com/gorilla/schema v0.0.0-20170317173100-f3c80893412c
 	github.com/gorilla/websocket v0.0.0-20170319172727-a91eba7f9777
-	github.com/grokify/html-strip-tags-go v0.0.0-20180907063347-e9e44961e26f
 	github.com/hashicorp/golang-lru v0.0.0-20160813221303-0a025b7e63ad
 	github.com/hashicorp/hcl v0.0.0-20171017181929-23c074d0eceb // indirect
 	github.com/hpcloud/tail v1.0.0 // indirect
@@ -29,6 +29,8 @@ require (
 	github.com/labstack/echo v0.0.0-20180219162101-7eec915044a1
 	github.com/labstack/gommon v0.2.1 // indirect
 	github.com/lrstanley/girc v0.0.0-20180913221000-0fb5b684054e
+	github.com/lusis/go-slackbot v0.0.0-20180109053408-401027ccfef5 // indirect
+	github.com/lusis/slack-test v0.0.0-20180109053238-3c758769bfa6 // indirect
 	github.com/magiconair/properties v0.0.0-20180217134545-2c9e95027885 // indirect
 	github.com/matterbridge/discordgo v0.0.0-20180806170629-ef40ff5ba64f
 	github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91
@@ -46,6 +48,7 @@ require (
 	github.com/nlopes/slack v0.3.1-0.20180805133408-21749ab136a8
 	github.com/onsi/ginkgo v1.6.0 // indirect
 	github.com/onsi/gomega v1.4.1 // indirect
+	github.com/patcon/html2md v0.0.0-20181014121949-a471df9ca0b1
 	github.com/paulrosania/go-charset v0.0.0-20151028000031-621bb39fcc83
 	github.com/pborman/uuid v0.0.0-20160216163710-c55201b03606 // indirect
 	github.com/pelletier/go-toml v0.0.0-20180228233631-05bcc0fb0d3e // indirect

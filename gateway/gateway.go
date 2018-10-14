@@ -9,6 +9,7 @@ import (
 	"os"
 	"context"
 	"html"
+	"sort"
 	"github.com/darkoatanasovski/htmltags"
 	"github.com/urakozz/go-emoji"
 
@@ -311,14 +312,23 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 
 			// @usernames
 			results = regexp.MustCompile(`(@[a-zA-Z0-9-]+)`).FindAllStringSubmatch(text, -1)
+			// Sort so that longest channel names are acted on first
+			sort.SliceStable(results, func(i, j int) bool {
+				return len(results[i][1]) > len(results[j][1])
+			})
 			for _, r := range results {
-				text = strings.Replace(text, r[1], "<span translate='no'>"+r[1]+"</span>", -1)
+				text = regexp.MustCompile(fmt.Sprintf(`([^>])(%s)`, r[1])).ReplaceAllString(text, "$1<span translate='no'>$2</span>")
 			}
 
 			// #channels
 			results = regexp.MustCompile(`(#[a-zA-Z0-9-]+)`).FindAllStringSubmatch(text, -1)
+			// Sort so that longest channel names are acted on first
+			sort.SliceStable(results, func(i, j int) bool {
+				return len(results[i][1]) > len(results[j][1])
+			})
 			for _, r := range results {
-				text = strings.Replace(text, r[1], "<span translate='no'>"+r[1]+"</span>", -1)
+				// If a channel that's a substring of another channel (processed earlier)  matches, it will abort due to the <tag> in front
+				text = regexp.MustCompile(fmt.Sprintf(`([^>])(%s)`, r[1])).ReplaceAllString(text, "$1<span translate='no'>$2</span>")
 			}
 
 			// :emoji:
