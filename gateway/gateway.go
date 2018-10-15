@@ -332,7 +332,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		msg.Avatar = gw.modifyAvatar(origmsg, dest)
 		msg.Username = gw.modifyUsername(origmsg, dest)
 		msg.ID = ""
-		if (gw.Router.GTClient != nil) && (channel.Options.Locale != "") {
+		if (gw.Router.GTClient != nil) && (channel.Options.Locale != "") && (origmsg.Text != "") {
 
 			ctx := context.Background()
 
