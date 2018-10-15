@@ -351,6 +351,8 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			url_re := regexp.MustCompile(`(((http(s)?(\:\/\/))+(www\.)?([\w\-\.\/])*(\.[a-zA-Z]{2,3}\/?))[^\s\n|]*[^.,;:\?\!\@\^\$ -])`)
 			text = url_re.ReplaceAllString(text, "<span translate='no'>$0</span>")
 
+			flog.Debugf("pre-parseMD:"+text)
+
 			// Get rid of these wierdo bullets that Slack uses, which confuse translation
 			text = strings.Replace(text, "•", "-", -1)
 
@@ -364,6 +366,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 				blackfriday.EXTENSION_HARD_LINE_BREAK
 			output := blackfriday.Markdown([]byte(text), renderer, extensions)
 			text = string(output)
+			flog.Debugf("post-parseMD:"+string(output))
 
 			// @usernames
 			results = regexp.MustCompile(`(@[a-zA-Z0-9-]+)`).FindAllStringSubmatch(text, -1)
@@ -374,6 +377,8 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			for _, r := range results {
 				text = regexp.MustCompile(fmt.Sprintf(`([^>])(%s)`, r[1])).ReplaceAllString(text, "$1<span translate='no'>$2</span>")
 			}
+
+			flog.Debugf("post cleanup:usernames:"+text)
 
 			// #channels
 			results = regexp.MustCompile(`(#[a-zA-Z0-9-]+)`).FindAllStringSubmatch(text, -1)
@@ -386,12 +391,15 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 				text = regexp.MustCompile(fmt.Sprintf(`([^>])(%s)`, r[1])).ReplaceAllString(text, "$1<span translate='no'>$2</span>")
 			}
 
+			flog.Debugf("post cleanup:channels:"+text)
+
 			// :emoji:
 			text = regexp.MustCompile(`:[a-z0-9-_]+?:`).ReplaceAllString(text, "<span translate='no'>$0</span>")
 
 			// :emoji: codepoints, ie. 💎
 			text = emoji.NewEmojiParser().ReplaceAllString(text, "<span translate='no'>$0</span>")
 
+			flog.Debugf("post cleanup:emojis:"+text)
 
 			channelLang, err := language.Parse(channel.Options.Locale)
 			if err != nil {
@@ -403,6 +411,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			})
 
 			text = resp[0].Text
+			flog.Debugf("post-translate:"+text)
 
 			if resp[0].Source != channelLang {
 				// If the source language is the same as this channel,
@@ -429,6 +438,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 
 				stripped, _ := htmltags.Strip(text, allowableTags, false)
 				text = stripped.ToString()
+				flog.Debugf("post-strip:"+text)
 				html2md.AddRule("del", &html2md.Rule{
 					Patterns: []string{"del"},
 					Replacement: func(innerHTML string, attrs []string) string {
@@ -472,7 +482,10 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 				// colons: revert temp token
 				// See: previous comment on colons
 				text = regexp.MustCompile(`(ː)([ $])`).ReplaceAllString(text, ":$2")
+
+				flog.Debugf("post-MDconvert:"+text)
 				text = html.UnescapeString(text)
+				flog.Debugf("post-unescaped:"+text)
 
 				text = text + gw.Router.General.TranslationAttribution
 
