@@ -332,14 +332,16 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		msg.Avatar = gw.modifyAvatar(origmsg, dest)
 		msg.Username = gw.modifyUsername(origmsg, dest)
 		msg.ID = ""
-		if (gw.Router.GTClient != nil) && (channel.Options.Locale != "") && (origmsg.Text != "") {
+		msg.Text = origmsg.Text
+
+		if (gw.Router.GTClient != nil) && (channel.Options.Locale != "") && (msg.Text != "") {
 
 			ctx := context.Background()
 
 			client := gw.Router.GTClient
 			defer client.Close()
 
-			text := origmsg.Text
+			text := msg.Text
 			var results [][]string
 
 			// colons: add temp token
