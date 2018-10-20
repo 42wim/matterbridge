@@ -305,7 +305,7 @@ func (b *Bslack) createTranslationAttach(msg config.Message) slack.Attachment {
 	}
 
 	attach := slack.Attachment{
-		Fallback: trimmed,
+		Fallback: untranslatedTextPreview,
 		Text: fmt.Sprintf("<%s|%s>", permalink, untranslatedTextPreview),
 		Footer: "g0v Translation Bridge"+b.Config.General.TranslationAttribution,
 		FooterIcon: "https://emoji.slack-edge.com/T02G2SXKM/g0v/541e38dfc833f04b.png",
