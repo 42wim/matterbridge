@@ -208,7 +208,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	// Edit message if we have an ID
 	if msg.ID != "" {
 		ts := strings.Fields(msg.ID)
-		_, _, _, err = b.sc.UpdateMessage(channelInfo.ID, ts[1], msg.Text)
+		_, _, _, err = b.sc.UpdateMessage(channelInfo.ID, ts[1], slack.MsgOptionText(msg.Text, false))
 		if err != nil {
 			return msg.ID, err
 		}
@@ -240,7 +240,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	// Upload a file if it exists
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			_, _, err = b.sc.PostMessage(channelInfo.ID, rmsg.Username+rmsg.Text, np)
+			_, _, err = b.sc.PostMessage(channelInfo.ID, slack.MsgOptionText(rmsg.Username+rmsg.Text, false), slack.MsgOptionAttachments(np.Attachments...))
 			if err != nil {
 				b.Log.Error(err)
 			}
@@ -250,7 +250,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	}
 
 	// Post normal message
-	_, id, err := b.sc.PostMessage(channelInfo.ID, msg.Text, np)
+	_, id, err := b.sc.PostMessage(channelInfo.ID, slack.MsgOptionText(msg.Text, false), slack.MsgOptionAttachments(np.Attachments...))
 	if err != nil {
 		return "", err
 	}
