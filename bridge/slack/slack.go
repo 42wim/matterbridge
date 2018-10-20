@@ -245,7 +245,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	// Upload a file if it exists
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			_, _, err = b.sc.PostMessage(channelInfo.ID, slack.MsgOptionText(rmsg.Username+rmsg.Text, false), slack.MsgOptionAttachments(np.Attachments...))
+			_, _, err = b.sc.PostMessage(channelInfo.ID, slack.MsgOptionText(rmsg.Username+rmsg.Text, false), slack.MsgOptionAttachments(np.Attachments...), slack.MsgOptionPostMessageParameters(np))
 			if err != nil {
 				b.Log.Error(err)
 			}
@@ -255,7 +255,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	}
 
 	// Post normal message
-	_, id, err := b.sc.PostMessage(channelInfo.ID, slack.MsgOptionText(msg.Text, false), slack.MsgOptionAttachments(np.Attachments...))
+	_, id, err := b.sc.PostMessage(channelInfo.ID, slack.MsgOptionText(msg.Text, false), slack.MsgOptionAttachments(np.Attachments...), slack.MsgOptionPostMessageParameters(np))
 	if err != nil {
 		return "", err
 	}
