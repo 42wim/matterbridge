@@ -45,10 +45,10 @@ require (
 	github.com/mreiferson/go-httpclient v0.0.0-20160630210159-31f0106b4474 // indirect
 	github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff // indirect
 	github.com/nicksnyder/go-i18n v1.4.0 // indirect
-	github.com/nlopes/slack v0.4.0
+	github.com/nlopes/slack v0.4.1-0.20181015134011-cd5e66cd0632
 	github.com/onsi/ginkgo v1.6.0 // indirect
 	github.com/onsi/gomega v1.4.1 // indirect
-	github.com/patcon/html2md v0.0.0-20181014143736-370b673716b2
+	github.com/lunny/html2md master
 	github.com/paulrosania/go-charset v0.0.0-20151028000031-621bb39fcc83
 	github.com/pborman/uuid v0.0.0-20160216163710-c55201b03606 // indirect
 	github.com/pelletier/go-toml v0.0.0-20180228233631-05bcc0fb0d3e // indirect

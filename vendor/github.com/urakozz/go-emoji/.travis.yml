@@ -1,0 +1,11 @@
+language: go
+go:
+  - 1.4.2
+  - 1.5.1
+  - tip
+  
+notifications:
+   email: false
+
+matrix:
+  fast_finish: true

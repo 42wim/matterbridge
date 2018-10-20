@@ -24,6 +24,7 @@ type DialogInputSelect struct {
 	SelectedOptions string               `json:"selected_options,omitempty"` //Optional. Default value for "external" only
 	Options         []DialogSelectOption `json:"options,omitempty"`          //One of options or option_groups is required.
 	OptionGroups    []DialogOptionGroup  `json:"option_groups,omitempty"`    //Provide up to 100 options.
+	MinQueryLength  int                  `json:"min_query_length,omitempty"` //Optional. minimum characters before query is sent.
 }
 
 // DialogSelectOption is an option for the user to select from the menu
