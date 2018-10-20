@@ -230,6 +230,11 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	np.Attachments = append(np.Attachments, slack.Attachment{CallbackID: "matterbridge_" + b.uuid})
 	// add file attachments
 	np.Attachments = append(np.Attachments, b.createAttach(msg.Extra)...)
+	// add translation attachment
+	if msg.TranslationSrcMsg != nil {
+		// If source, then we're doing a translation
+		np.Attachments = append(np.Attachments, b.createTranslationAttach(msg))
+	}
 	// add slack attachments (from another slack bridge)
 	if msg.Extra != nil {
 		for _, attach := range msg.Extra[sSlackAttachment] {
@@ -283,6 +288,30 @@ func (b *Bslack) createAttach(extra map[string][]interface{}) []slack.Attachment
 		attachements = append(attachements, s)
 	}
 	return attachements
+}
+
+func (b *Bslack) createTranslationAttach(msg config.Message) slack.Attachment {
+	untranslatedTextPreview := msg.TranslationSrcMsg.Text[:100]+"..."
+	ch, err := b.getChannelByName(msg.TranslationSrcMsg.Channel)
+	time := strings.Split(msg.TranslationSrcMsg.ID, " ")[1]
+	params := slack.PermalinkParameters{
+		Channel: ch.ID,
+		Ts: time,
+	}
+	b.Log.Debugf("Generating permalink...")
+	permalink, err := b.sc.GetPermalink(&params)
+	if err != nil {
+		b.Log.Println(err)
+	}
+
+	attach := slack.Attachment{
+		Fallback: trimmed,
+		Text: fmt.Sprintf("<%s|%s>", permalink, untranslatedTextPreview),
+		Footer: "g0v Translation Bridge"+b.Config.General.TranslationAttribution,
+		FooterIcon: "https://emoji.slack-edge.com/T02G2SXKM/g0v/541e38dfc833f04b.png",
+	}
+
+	return attach
 }
 
 func extractStringField(data map[string]interface{}, field string) string {

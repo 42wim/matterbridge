@@ -334,7 +334,9 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		msg.ID = ""
 		msg.Text = origmsg.Text
 
+		// Translation
 		if (gw.Router.GTClient != nil) && (channel.Options.Locale != "") && (msg.Text != "") {
+			msg.TranslationSrcMsg = &origmsg
 
 			ctx := context.Background()
 
@@ -489,7 +491,11 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 				text = html.UnescapeString(text)
 				flog.Debugf("post-unescaped:"+text)
 
-				text = text + gw.Router.General.TranslationAttribution
+				if dest.Protocol == "slack" {
+					// Attribution will be in attachment for Slack
+				} else {
+					text = text + gw.Router.General.TranslationAttribution
+				}
 
 				msg.Text = text
 			}

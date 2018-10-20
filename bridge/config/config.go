@@ -26,18 +26,19 @@ const (
 )
 
 type Message struct {
-	Text      string    `json:"text"`
-	Channel   string    `json:"channel"`
-	Username  string    `json:"username"`
-	UserID    string    `json:"userid"` // userid on the bridge
-	Avatar    string    `json:"avatar"`
-	Account   string    `json:"account"`
-	Event     string    `json:"event"`
-	Protocol  string    `json:"protocol"`
-	Gateway   string    `json:"gateway"`
-	Timestamp time.Time `json:"timestamp"`
-	ID        string    `json:"id"`
-	Extra     map[string][]interface{}
+	Text              string    `json:"text"`
+	Channel           string    `json:"channel"`
+	Username          string    `json:"username"`
+	UserID            string    `json:"userid"` // userid on the bridge
+	Avatar            string    `json:"avatar"`
+	Account           string    `json:"account"`
+	Event             string    `json:"event"`
+	Protocol          string    `json:"protocol"`
+	Gateway           string    `json:"gateway"`
+	Timestamp         time.Time `json:"timestamp"`
+	ID                string    `json:"id"`
+	Extra             map[string][]interface{}
+	TranslationSrcMsg *Message
 }
 
 type FileInfo struct {
