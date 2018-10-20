@@ -68,6 +68,8 @@ github.com/labstack/gommon v0.2.1 h1:C+I4NYknueQncqKYZQ34kHsLZJVeB5KwPUhnO0nmbpU
 github.com/labstack/gommon v0.2.1/go.mod h1:/tj9csK2iPSBvn+3NLM9e52usepMtrd5ilFYA+wQNJ4=
 github.com/lrstanley/girc v0.0.0-20180913221000-0fb5b684054e h1:RpktB2igr6nS1EN7bCvjldAEfngrM5GyAbmOa4/cafU=
 github.com/lrstanley/girc v0.0.0-20180913221000-0fb5b684054e/go.mod h1:7cRs1SIBfKQ7e3Tam6GKTILSNHzR862JD0JpINaZoJk=
+github.com/lunny/html2md v0.0.0-20181018071239-7d234de44546 h1:hqxaQP14eTbeZGHZhsDInzj9sJAnEufjVQL4bEA/p+8=
+github.com/lunny/html2md v0.0.0-20181018071239-7d234de44546/go.mod h1:lUUaVYlpAQ1Oo6vIZfec6CXQZjOvFZLyqaR8Dl7m+hk=
 github.com/lusis/go-slackbot v0.0.0-20180109053408-401027ccfef5 h1:AsEBgzv3DhuYHI/GiQh2HxvTP71HCCE9E/tzGUzGdtU=
 github.com/lusis/go-slackbot v0.0.0-20180109053408-401027ccfef5/go.mod h1:c2mYKRyMb1BPkO5St0c/ps62L4S0W2NAkaTXj9qEI+0=
 github.com/lusis/slack-test v0.0.0-20180109053238-3c758769bfa6 h1:iOAVXzZyXtW408TMYejlUPo6BIn92HmOacWtIfNyYns=

@@ -29,6 +29,7 @@ require (
 	github.com/labstack/echo v0.0.0-20180219162101-7eec915044a1
 	github.com/labstack/gommon v0.2.1 // indirect
 	github.com/lrstanley/girc v0.0.0-20180913221000-0fb5b684054e
+	github.com/lunny/html2md v0.0.0-20181018071239-7d234de44546
 	github.com/lusis/go-slackbot v0.0.0-20180109053408-401027ccfef5 // indirect
 	github.com/lusis/slack-test v0.0.0-20180109053238-3c758769bfa6 // indirect
 	github.com/magiconair/properties v0.0.0-20180217134545-2c9e95027885 // indirect
@@ -48,7 +49,7 @@ require (
 	github.com/nlopes/slack v0.4.1-0.20181015134011-cd5e66cd0632
 	github.com/onsi/ginkgo v1.6.0 // indirect
 	github.com/onsi/gomega v1.4.1 // indirect
-	github.com/lunny/html2md master
+	github.com/patcon/html2md v0.0.0-20180317074532-13aaeeae9fb2
 	github.com/paulrosania/go-charset v0.0.0-20151028000031-621bb39fcc83
 	github.com/pborman/uuid v0.0.0-20160216163710-c55201b03606 // indirect
 	github.com/pelletier/go-toml v0.0.0-20180228233631-05bcc0fb0d3e // indirect

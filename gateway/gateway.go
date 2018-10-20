@@ -11,7 +11,7 @@ import (
 	"sort"
 	"github.com/darkoatanasovski/htmltags"
 	"github.com/urakozz/go-emoji"
-	"github.com/patcon/html2md"
+	"github.com/lunny/html2md"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/api"
