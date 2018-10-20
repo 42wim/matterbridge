@@ -291,7 +291,11 @@ func (b *Bslack) createAttach(extra map[string][]interface{}) []slack.Attachment
 }
 
 func (b *Bslack) createTranslationAttach(msg config.Message) slack.Attachment {
-	untranslatedTextPreview := msg.TranslationSrcMsg.Text[:100]+"..."
+	untranslatedTextPreview := msg.TranslationSrcMsg.Text
+	previewCharCount := 100
+	if len(msg.TranslationSrcMsg.Text) > previewCharCount {
+		untranslatedTextPreview = untranslatedTextPreview[:previewCharCount]+"..."
+	}
 	ch, err := b.getChannelByName(msg.TranslationSrcMsg.Channel)
 	time := strings.Split(msg.TranslationSrcMsg.ID, " ")[1]
 	params := slack.PermalinkParameters{

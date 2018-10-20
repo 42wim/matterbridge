@@ -332,7 +332,9 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		msg.Avatar = gw.modifyAvatar(origmsg, dest)
 		msg.Username = gw.modifyUsername(origmsg, dest)
 		msg.ID = ""
+		// Don't keep artifacts in between processed translations
 		msg.Text = origmsg.Text
+		msg.TranslationSrcMsg = nil
 
 		// Translation
 		if (gw.Router.GTClient != nil) && (channel.Options.Locale != "") && (msg.Text != "") {
