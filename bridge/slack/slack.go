@@ -90,55 +90,43 @@ func (b *Bslack) Command(cmd string) string {
 func (b *Bslack) Connect() error {
 	b.RLock()
 	defer b.RUnlock()
-	if b.GetString(incomingWebhookConfig) != "" {
-		if b.GetString(outgoingWebhookConfig) != "" {
-			b.Log.Info("Connecting using webhookurl (sending) and webhookbindaddress (receiving)")
-			b.mh = matterhook.New(b.GetString(outgoingWebhookConfig), matterhook.Config{
-				InsecureSkipVerify: b.GetBool(skipTLSConfig),
-				BindAddress:        b.GetString(incomingWebhookConfig),
-			})
-		} else if b.GetString(tokenConfig) != "" {
-			b.Log.Info("Connecting using token (sending)")
-			b.sc = slack.New(b.GetString(tokenConfig))
-			b.rtm = b.sc.NewRTM()
-			go b.rtm.ManageConnection()
-			b.Log.Info("Connecting using webhookbindaddress (receiving)")
-			b.mh = matterhook.New(b.GetString(outgoingWebhookConfig), matterhook.Config{
-				InsecureSkipVerify: b.GetBool(skipTLSConfig),
-				BindAddress:        b.GetString(incomingWebhookConfig),
-			})
-		} else {
-			b.Log.Info("Connecting using webhookbindaddress (receiving)")
-			b.mh = matterhook.New(b.GetString(outgoingWebhookConfig), matterhook.Config{
-				InsecureSkipVerify: b.GetBool(skipTLSConfig),
-				BindAddress:        b.GetString(incomingWebhookConfig),
-			})
-		}
-		go b.handleSlack()
-		return nil
+
+	if b.GetString(incomingWebhookConfig) == "" && b.GetString(outgoingWebhookConfig) == "" && b.GetString(tokenConfig) == "" {
+		return errors.New("no connection method found: WebhookBindAddress, WebhookURL or Token need to be configured")
 	}
-	if b.GetString(outgoingWebhookConfig) != "" {
-		b.Log.Info("Connecting using webhookurl (sending)")
-		b.mh = matterhook.New(b.GetString(outgoingWebhookConfig), matterhook.Config{
-			InsecureSkipVerify: b.GetBool(skipTLSConfig),
-			DisableServer:      true,
-		})
-		if b.GetString(tokenConfig) != "" {
-			b.Log.Info("Connecting using token (receiving)")
-			b.sc = slack.New(b.GetString(tokenConfig))
-			b.rtm = b.sc.NewRTM()
-			go b.rtm.ManageConnection()
-			go b.handleSlack()
+
+	// If we have a token we use the Slack websocket-based RTM for both sending and receiving.
+	if token := b.GetString(tokenConfig); token != "" {
+		// Print a warning for legacy non-bot tokens (#527).
+		if !strings.HasPrefix(token, "xoxb") {
+			b.Log.Warnf("Using legacy-style non-bot user. It is STRONGLY recommended to use a proper bot-token instead.")
+			b.Log.Warnf("Slack may deprecate legacy tokens at short notice. See the Matterbridge GitHub wiki for a migration guide.")
+			return nil
 		}
-	} else if b.GetString(tokenConfig) != "" {
-		b.Log.Info("Connecting using token (sending and receiving)")
-		b.sc = slack.New(b.GetString(tokenConfig))
+
+		b.Log.Info("Connecting via websocket (receiving + sending) using token")
+		b.sc = slack.New(token)
 		b.rtm = b.sc.NewRTM()
 		go b.rtm.ManageConnection()
 		go b.handleSlack()
+		return nil
 	}
-	if b.GetString(incomingWebhookConfig) == "" && b.GetString(outgoingWebhookConfig) == "" && b.GetString(tokenConfig) == "" {
-		return errors.New("no connection method found. See that you have WebhookBindAddress, WebhookURL or Token configured")
+
+	// In absence of a token we fall back to incoming and outgoing Webhooks.
+	b.mh = matterhook.New(
+		"",
+		matterhook.Config{
+			InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
+			DisableServer:      true,
+		},
+	)
+	if b.GetString(outgoingWebhookConfig) != "" {
+		b.mh.Url = b.GetString(outgoingWebhookConfig)
+	}
+	if b.GetString(incomingWebhookConfig) != "" {
+		b.mh.BindAddress = b.GetString(incomingWebhookConfig)
+		b.mh.DisableServer = false
+		go b.handleSlack()
 	}
 	return nil
 }
