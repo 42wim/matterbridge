@@ -53,13 +53,16 @@ func (options *customHTML) ListItem(out *bytes.Buffer, text []byte, flags int) {
 }
 
 func makeHTML(input string) string {
-	return string(blackfriday.Markdown([]byte(input),
-		&customHTML{blackfriday.HtmlRenderer(blackfriday.HTML_USE_XHTML|blackfriday.HTML_SKIP_IMAGES, "", "")},
-		blackfriday.EXTENSION_NO_INTRA_EMPHASIS|
-			blackfriday.EXTENSION_FENCED_CODE|
-			blackfriday.EXTENSION_AUTOLINK|
-			blackfriday.EXTENSION_SPACE_HEADERS|
-			blackfriday.EXTENSION_HEADER_IDS|
-			blackfriday.EXTENSION_BACKSLASH_LINE_BREAK|
-			blackfriday.EXTENSION_DEFINITION_LISTS))
+	extensions := blackfriday.NoIntraEmphasis |
+		blackfriday.FencedCode |
+		blackfriday.Autolink |
+		blackfriday.SpaceHeadings |
+		blackfriday.HeadingIDs |
+		blackfriday.BackslashLineBreak |
+		blackfriday.DefinitionLists
+
+	renderer := &customHTML{blackfriday.NewHTMLRenderer(blackfriday.HTMLRendererParameters{
+		Flags: blackfriday.UseXHTML | blackfriday.SkipImages,
+	})}
+	return string(blackfriday.Run([]byte(input), blackfriday.WithExtensions(extensions), blackfriday.WithRenderer(renderer)))
 }
