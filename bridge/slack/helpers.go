@@ -65,8 +65,11 @@ func (b *Bslack) populateUsers() {
 	}
 
 	newUsers := map[string]*slack.User{}
-	for _, user := range users {
-		newUsers[user.ID] = &user
+	for i, _ := range users {
+		// Use array index for pointer, not the copy
+		// See: https://stackoverflow.com/a/29498133/504018
+		u := &users[i]
+		newUsers[u.ID] = u
 	}
 
 	b.usersMutex.Lock()
