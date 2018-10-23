@@ -277,6 +277,16 @@ func (*renderer) BlockCode(out *bytes.Buffer, text []byte, info string) {
 }
 
 func (gw *Gateway) handleTranslation(msg *config.Message, dest *bridge.Bridge, channel config.ChannelInfo) {
+	// Skip if channel locale not set
+	if channel.Options.Locale == "" {
+		return
+	}
+
+	// Don't try to translate empty messages
+	if msg.OrigMsg.Text == "" {
+		return
+	}
+
 	msg.IsTranslation = true
 	ctx := context.Background()
 
@@ -357,88 +367,88 @@ func (gw *Gateway) handleTranslation(msg *config.Message, dest *bridge.Bridge, c
 	text = resp[0].Text
 	flog.Debugf("post-translate:"+text)
 
-	if resp[0].Source != channelLang {
-		// If the source language is the same as this channel,
-		// just use the original text and don't add attribution
-
-		// Add space buffer after html <span> before stripping, or characters after tags get merged into urls or usernames
-		text = regexp.MustCompile(`<span translate='no'>.+?</span>`).ReplaceAllString(text, " $0 ")
-
-		allowableTags := []string{
-			"p",
-			"i",
-			"b",
-			"em",
-			"strong",
-			"br",
-			"del",
-			"blockquote",
-			"pre",
-			"code",
-			"li",
-			"ul",
-			"ol",
-		}
-
-		stripped, _ := htmltags.Strip(text, allowableTags, false)
-		text = stripped.ToString()
-		flog.Debugf("post-strip:"+text)
-		html2md.AddRule("del", &html2md.Rule{
-			Patterns: []string{"del"},
-			Replacement: func(innerHTML string, attrs []string) string {
-				if len(attrs) > 1 {
-					// Extra spaces so that Slack will process, even though Chinese characters don't get spaces
-					return html2md.WrapInlineTag(attrs[1], " ~", "~ ")
-				}
-				return ""
-			},
-		})
-		// Custom override for slackdown
-		html2md.AddRule("b", &html2md.Rule{
-			Patterns: []string{"b", "strong"},
-			Replacement: func(innerHTML string, attrs []string) string {
-				if len(attrs) > 1 {
-					// trailing whitespace due to Mandarin issues
-					return html2md.WrapInlineTag(attrs[1], "*", "* ")
-				}
-				return ""
-			},
-		})
-		// Custom override of default code rule:
-		// This converts multiline code tags to codeblocks
-		html2md.AddRule("code", &html2md.Rule{
-			Patterns: []string{"code", "tt", "pre"},
-			Replacement: func(innerHTML string, attrs []string) string {
-				contents := attrs[1]
-				if strings.Contains(contents, "\n") {
-					r := regexp.MustCompile(`/^\t+`)
-					innerHTML = r.ReplaceAllString(contents, "  ")
-					return "\n\n```\n" + innerHTML + "```\n"
-				}
-				if len(attrs) > 1 {
-					return "`" + attrs[1] + "`"
-				}
-				return ""
-			},
-		})
-		text := html2md.Convert(text)
-
-		// colons: revert temp token
-		// See: previous comment on colons
-		text = regexp.MustCompile(`(ː)([ $])`).ReplaceAllString(text, ":$2")
-
-		flog.Debugf("post-MDconvert:"+text)
-		text = html.UnescapeString(text)
-		flog.Debugf("post-unescaped:"+text)
-
-		if dest.Protocol == "slack" {
-			// Attribution will be in attachment for Slack
-		} else {
-			text = text + gw.Router.General.TranslationAttribution
-		}
-
-		msg.Text = text
+	if resp[0].Source == channelLang {
+		msg.IsTranslation = false
+		return
 	}
+
+	// Add space buffer after html <span> before stripping, or characters after tags get merged into urls or usernames
+	text = regexp.MustCompile(`<span translate='no'>.+?</span>`).ReplaceAllString(text, " $0 ")
+
+	allowableTags := []string{
+		"p",
+		"i",
+		"b",
+		"em",
+		"strong",
+		"br",
+		"del",
+		"blockquote",
+		"pre",
+		"code",
+		"li",
+		"ul",
+		"ol",
+	}
+
+	stripped, _ := htmltags.Strip(text, allowableTags, false)
+	text = stripped.ToString()
+	flog.Debugf("post-strip:"+text)
+	html2md.AddRule("del", &html2md.Rule{
+		Patterns: []string{"del"},
+		Replacement: func(innerHTML string, attrs []string) string {
+			if len(attrs) > 1 {
+				// Extra spaces so that Slack will process, even though Chinese characters don't get spaces
+				return html2md.WrapInlineTag(attrs[1], " ~", "~ ")
+			}
+			return ""
+		},
+	})
+	// Custom override for slackdown
+	html2md.AddRule("b", &html2md.Rule{
+		Patterns: []string{"b", "strong"},
+		Replacement: func(innerHTML string, attrs []string) string {
+			if len(attrs) > 1 {
+				// trailing whitespace due to Mandarin issues
+				return html2md.WrapInlineTag(attrs[1], "*", "* ")
+			}
+			return ""
+		},
+	})
+	// Custom override of default code rule:
+	// This converts multiline code tags to codeblocks
+	html2md.AddRule("code", &html2md.Rule{
+		Patterns: []string{"code", "tt", "pre"},
+		Replacement: func(innerHTML string, attrs []string) string {
+			contents := attrs[1]
+			if strings.Contains(contents, "\n") {
+				r := regexp.MustCompile(`/^\t+`)
+				innerHTML = r.ReplaceAllString(contents, "  ")
+				return "\n\n```\n" + innerHTML + "```\n"
+			}
+			if len(attrs) > 1 {
+				return "`" + attrs[1] + "`"
+			}
+			return ""
+		},
+	})
+	text = html2md.Convert(text)
+
+	// colons: revert temp token
+	// See: previous comment on colons
+	text = regexp.MustCompile(`(ː)([ $])`).ReplaceAllString(text, ":$2")
+
+	flog.Debugf("post-MDconvert:"+text)
+	text = html.UnescapeString(text)
+	flog.Debugf("post-unescaped:"+text)
+
+	if dest.Protocol == "slack" {
+		// Attribution will be in attachment for Slack
+	} else {
+		text = text + gw.Router.General.TranslationAttribution
+	}
+
+	msg.Text = text
 }
 
 func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrMsgID {
@@ -503,7 +513,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		msg.ID = ""
 
 		// Translation
-		if (gw.Router.GTClient != nil) && (channel.Options.Locale != "") && (msg.Text != "") {
+		if (gw.Router.GTClient != nil) {
 			gw.handleTranslation(&msg, dest, channel)
 		}
 

@@ -233,7 +233,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	// add translation attachment
 	if msg.IsTranslation {
 		// If source, then we're doing a translation
-		np.Attachments = append(np.Attachments, b.createTranslationAttach(msg))
+		np.Attachments = append(np.Attachments, b.createTranslationAttach(msg)...)
 	}
 	// add slack attachments (from another slack bridge)
 	if msg.Extra != nil {
@@ -290,7 +290,13 @@ func (b *Bslack) createAttach(extra map[string][]interface{}) []slack.Attachment
 	return attachements
 }
 
-func (b *Bslack) createTranslationAttach(msg config.Message) slack.Attachment {
+func (b *Bslack) createTranslationAttach(msg config.Message) []slack.Attachment {
+	var attachments []slack.Attachment
+
+	if msg.IsTranslation == false {
+		return attachments
+	}
+
 	untranslatedTextPreview := msg.OrigMsg.Text
 	previewCharCount := 100
 	if len(msg.OrigMsg.Text) > previewCharCount {
@@ -316,7 +322,9 @@ func (b *Bslack) createTranslationAttach(msg config.Message) slack.Attachment {
 		FooterIcon: "https://emoji.slack-edge.com/T02G2SXKM/g0v/541e38dfc833f04b.png",
 	}
 
-	return attach
+	attachments = append(attachments, attach)
+
+	return attachments
 }
 
 func extractStringField(data map[string]interface{}, field string) string {
