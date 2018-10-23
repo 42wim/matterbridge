@@ -19,6 +19,7 @@ import (
 type Router struct {
 	Gateways map[string]*Gateway
 	Message  chan config.Message
+	GTClient *translate.Client
 	*config.Config
 }
 
