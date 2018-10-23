@@ -296,6 +296,7 @@ func (b *Bslack) createTranslationAttach(msg config.Message) slack.Attachment {
 	if len(msg.TranslationSrcMsg.Text) > previewCharCount {
 		untranslatedTextPreview = untranslatedTextPreview[:previewCharCount]+"..."
 	}
+	untranslatedTextPreview = strings.Replace(untranslatedTextPreview, "\n", " ", -1)
 	ch, err := b.getChannelByName(msg.TranslationSrcMsg.Channel)
 	time := strings.Split(msg.TranslationSrcMsg.ID, " ")[1]
 	params := slack.PermalinkParameters{
