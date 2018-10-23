@@ -109,6 +109,7 @@ func (gw *Gateway) handleTranslation(msg *config.Message, dest *bridge.Bridge, c
 
 	resp, _ := client.Translate(ctx, []string{text}, channelLang, &translate.Options{
 		Format: "html",
+		Model: "nmt",
 	})
 
 	text = resp[0].Text
