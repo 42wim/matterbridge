@@ -231,7 +231,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	// add file attachments
 	np.Attachments = append(np.Attachments, b.createAttach(msg.Extra)...)
 	// add translation attachment
-	if msg.TranslationSrcMsg != nil {
+	if msg.IsTranslation {
 		// If source, then we're doing a translation
 		np.Attachments = append(np.Attachments, b.createTranslationAttach(msg))
 	}
@@ -291,14 +291,14 @@ func (b *Bslack) createAttach(extra map[string][]interface{}) []slack.Attachment
 }
 
 func (b *Bslack) createTranslationAttach(msg config.Message) slack.Attachment {
-	untranslatedTextPreview := msg.TranslationSrcMsg.Text
+	untranslatedTextPreview := msg.OrigMsg.Text
 	previewCharCount := 100
-	if len(msg.TranslationSrcMsg.Text) > previewCharCount {
+	if len(msg.OrigMsg.Text) > previewCharCount {
 		untranslatedTextPreview = untranslatedTextPreview[:previewCharCount]+"..."
 	}
 	untranslatedTextPreview = strings.Replace(untranslatedTextPreview, "\n", " ", -1)
-	ch, err := b.getChannelByName(msg.TranslationSrcMsg.Channel)
-	time := strings.Split(msg.TranslationSrcMsg.ID, " ")[1]
+	ch, err := b.getChannelByName(msg.OrigMsg.Channel)
+	time := strings.Split(msg.OrigMsg.ID, " ")[1]
 	params := slack.PermalinkParameters{
 		Channel: ch.ID,
 		Ts: time,

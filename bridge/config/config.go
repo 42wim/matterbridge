@@ -37,7 +37,8 @@ type Message struct {
 	Timestamp         time.Time `json:"timestamp"`
 	ID                string    `json:"id"`
 	Extra             map[string][]interface{}
-	TranslationSrcMsg *Message
+	OrigMsg           *Message
+	IsTranslation     bool
 }
 
 type FileInfo struct {
