@@ -286,7 +286,7 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
 			messageOptions = b.prepareMessageOptions(rmsg)
-			messageOptions = append(messageOptions, slack.MsgOptionText(msg.Username+msg.Text, false))
+			messageOptions = append(messageOptions, slack.MsgOptionText(rmsg.Username+rmsg.Text, false))
 			_, _, err = b.sc.PostMessage(channelInfo.ID, messageOptions...)
 
 			if err != nil {
