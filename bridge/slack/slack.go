@@ -16,17 +16,24 @@ import (
 )
 
 type Bslack struct {
-	mh           *matterhook.Client
-	sc           *slack.Client
-	rtm          *slack.RTM
-	users        []slack.User
-	si           *slack.Info
-	channels     []slack.Channel
-	cache        *lru.Cache
-	useChannelID bool
-	uuid         string
-	*bridge.Config
 	sync.RWMutex
+	*bridge.Config
+
+	mh  *matterhook.Client
+	sc  *slack.Client
+	rtm *slack.RTM
+	si  *slack.Info
+
+	cache        *lru.Cache
+	uuid         string
+	useChannelID bool
+
+	users      map[string]*slack.User
+	usersMutex sync.RWMutex
+
+	channelsByID   map[string]*slack.Channel
+	channelsByName map[string]*slack.Channel
+	channelsMutex  sync.RWMutex
 }
 
 const (
@@ -61,9 +68,12 @@ func New(cfg *bridge.Config) bridge.Bridger {
 		cfg.Log.Fatalf("Could not create LRU cache for Slack bridge: %v", err)
 	}
 	b := &Bslack{
-		Config: cfg,
-		uuid:   xid.New().String(),
-		cache:  newCache,
+		Config:         cfg,
+		uuid:           xid.New().String(),
+		cache:          newCache,
+		users:          map[string]*slack.User{},
+		channelsByID:   map[string]*slack.Channel{},
+		channelsByName: map[string]*slack.Channel{},
 	}
 	return b
 }
@@ -132,39 +142,31 @@ func (b *Bslack) Disconnect() error {
 	return b.rtm.Disconnect()
 }
 
+// JoinChannel only acts as a verification method that checks whether Matterbridge's
+// Slack integration is already member of the channel. This is because Slack does not
+// allow apps or bots to join channels themselves and they need to be invited
+// manually by a user.
 func (b *Bslack) JoinChannel(channel config.ChannelInfo) error {
-	// use ID:channelid and resolve it to the actual name
-	idcheck := strings.Split(channel.Name, "ID:")
-	if len(idcheck) > 1 {
-		b.useChannelID = true
-		ch, err := b.sc.GetChannelInfo(idcheck[1])
-		if err != nil {
-			return err
-		}
-		channel.Name = ch.Name
-		if err != nil {
-			return err
-		}
+	b.populateChannels()
+
+	channelInfo, err := b.getChannel(channel.Name)
+	if err != nil {
+		return fmt.Errorf("could not join channel: %#v", err)
 	}
 
-	// we can only join channels using the API
-	if b.sc != nil {
-		if strings.HasPrefix(b.GetString(tokenConfig), "xoxb") {
-			// TODO check if bot has already joined channel
-			return nil
-		}
-		_, err := b.sc.JoinChannel(channel.Name)
-		if err != nil {
-			switch err.Error() {
-			case "name_taken", "restricted_action":
-			case "default":
-				{
-					return err
-				}
-			}
-		}
+	if strings.HasPrefix(channel.Name, "ID:") {
+		b.useChannelID = true
+		channel.Name = channelInfo.Name
+	}
+
+	if !channelInfo.IsMember {
+		return fmt.Errorf("slack integration that matterbridge is using is not member of channel '%s', please add it manually", channelInfo.Name)
 	}
 	return nil
+}
+
+func (b *Bslack) Reload(cfg *bridge.Config) (string, error) {
+	return "", nil
 }
 
 func (b *Bslack) Send(msg config.Message) (string, error) {
@@ -179,161 +181,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	if b.GetString(outgoingWebhookConfig) != "" {
 		return b.sendWebhook(msg)
 	}
-
-	channelInfo, err := b.getChannel(msg.Channel)
-	if err != nil {
-		return "", fmt.Errorf("could not send message: %v", err)
-	}
-
-	// Delete message
-	if msg.Event == config.EVENT_MSG_DELETE {
-		// some protocols echo deletes, but with empty ID
-		if msg.ID == "" {
-			return "", nil
-		}
-		// we get a "slack <ID>", split it
-		ts := strings.Fields(msg.ID)
-		_, _, err = b.sc.DeleteMessage(channelInfo.ID, ts[1])
-		if err != nil {
-			return msg.ID, err
-		}
-		return msg.ID, nil
-	}
-
-	// Prepend nick if configured
-	if b.GetBool(useNickPrefixConfig) {
-		msg.Text = msg.Username + msg.Text
-	}
-
-	// Edit message if we have an ID
-	if msg.ID != "" {
-		ts := strings.Fields(msg.ID)
-		_, _, _, err = b.sc.UpdateMessage(channelInfo.ID, ts[1], slack.MsgOptionText(msg.Text, false))
-		if err != nil {
-			return msg.ID, err
-		}
-		return msg.ID, nil
-	}
-
-	// create slack new post parameters
-	np := slack.NewPostMessageParameters()
-	if b.GetBool(useNickPrefixConfig) {
-		np.AsUser = true
-	}
-	np.Username = msg.Username
-	np.LinkNames = 1 // replace mentions
-	np.IconURL = config.GetIconURL(&msg, b.GetString(iconURLConfig))
-	if msg.Avatar != "" {
-		np.IconURL = msg.Avatar
-	}
-	// add a callback ID so we can see we created it
-	np.Attachments = append(np.Attachments, slack.Attachment{CallbackID: "matterbridge_" + b.uuid})
-	// add file attachments
-	np.Attachments = append(np.Attachments, b.createAttach(msg.Extra)...)
-	// add translation attachment
-	if msg.IsTranslation {
-		// If source, then we're doing a translation
-		np.Attachments = append(np.Attachments, b.createTranslationAttach(msg)...)
-	}
-	// add slack attachments (from another slack bridge)
-	if msg.Extra != nil {
-		for _, attach := range msg.Extra[sSlackAttachment] {
-			np.Attachments = append(np.Attachments, attach.([]slack.Attachment)...)
-		}
-	}
-
-	// Upload a file if it exists
-	if msg.Extra != nil {
-		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			_, _, err = b.sc.PostMessage(channelInfo.ID, slack.MsgOptionText(rmsg.Username+rmsg.Text, false), slack.MsgOptionAttachments(np.Attachments...), slack.MsgOptionPostMessageParameters(np))
-			if err != nil {
-				b.Log.Error(err)
-			}
-		}
-		// Upload files if necessary (from Slack, Telegram or Mattermost).
-		b.handleUploadFile(&msg, channelInfo.ID)
-	}
-
-	// Post normal message
-	_, id, err := b.sc.PostMessage(channelInfo.ID, slack.MsgOptionText(msg.Text, false), slack.MsgOptionAttachments(np.Attachments...), slack.MsgOptionPostMessageParameters(np))
-	if err != nil {
-		return "", err
-	}
-	return "slack " + id, nil
-}
-
-func (b *Bslack) Reload(cfg *bridge.Config) (string, error) {
-	return "", nil
-}
-
-func (b *Bslack) createAttach(extra map[string][]interface{}) []slack.Attachment {
-	var attachements []slack.Attachment
-	for _, v := range extra["attachments"] {
-		entry := v.(map[string]interface{})
-		s := slack.Attachment{
-			Fallback:   extractStringField(entry, "fallback"),
-			Color:      extractStringField(entry, "color"),
-			Pretext:    extractStringField(entry, "pretext"),
-			AuthorName: extractStringField(entry, "author_name"),
-			AuthorLink: extractStringField(entry, "author_link"),
-			AuthorIcon: extractStringField(entry, "author_icon"),
-			Title:      extractStringField(entry, "title"),
-			TitleLink:  extractStringField(entry, "title_link"),
-			Text:       extractStringField(entry, "text"),
-			ImageURL:   extractStringField(entry, "image_url"),
-			ThumbURL:   extractStringField(entry, "thumb_url"),
-			Footer:     extractStringField(entry, "footer"),
-			FooterIcon: extractStringField(entry, "footer_icon"),
-		}
-		attachements = append(attachements, s)
-	}
-	return attachements
-}
-
-func (b *Bslack) createTranslationAttach(msg config.Message) []slack.Attachment {
-	var attachments []slack.Attachment
-
-	if msg.IsTranslation == false {
-		return attachments
-	}
-
-	untranslatedTextPreview := msg.OrigMsg.Text
-	previewCharCount := 100
-	if len(msg.OrigMsg.Text) > previewCharCount {
-		untranslatedTextPreview = untranslatedTextPreview[:previewCharCount]+"..."
-	}
-	untranslatedTextPreview = strings.Replace(untranslatedTextPreview, "\n", " ", -1)
-	ch, err := b.getChannelByName(msg.OrigMsg.Channel)
-	time := strings.Split(msg.OrigMsg.ID, " ")[1]
-	params := slack.PermalinkParameters{
-		Channel: ch.ID,
-		Ts: time,
-	}
-	b.Log.Debugf("Generating permalink...")
-	permalink, err := b.sc.GetPermalink(&params)
-	if err != nil {
-		b.Log.Println(err)
-	}
-
-	attach := slack.Attachment{
-		Fallback: untranslatedTextPreview,
-		Text: fmt.Sprintf("<%s|%s>", permalink, untranslatedTextPreview),
-		Footer: "g0v Translation Bridge"+b.Config.General.TranslationAttribution,
-		FooterIcon: "https://emoji.slack-edge.com/T02G2SXKM/g0v/541e38dfc833f04b.png",
-	}
-
-	attachments = append(attachments, attach)
-
-	return attachments
-}
-
-func extractStringField(data map[string]interface{}, field string) string {
-	if rawValue, found := data[field]; found {
-		if value, ok := rawValue.(string); ok {
-			return value
-		}
-	}
-	return ""
+	return b.sendRTM(msg)
 }
 
 // sendWebhook uses the configured WebhookURL to send the message
@@ -394,4 +242,169 @@ func (b *Bslack) sendWebhook(msg config.Message) (string, error) {
 		return "", err
 	}
 	return "", nil
+}
+
+func (b *Bslack) sendRTM(msg config.Message) (string, error) {
+	channelInfo, err := b.getChannel(msg.Channel)
+	if err != nil {
+		return "", fmt.Errorf("could not send message: %v", err)
+	}
+
+	// Delete message
+	if msg.Event == config.EVENT_MSG_DELETE {
+		// some protocols echo deletes, but with empty ID
+		if msg.ID == "" {
+			return "", nil
+		}
+		// we get a "slack <ID>", split it
+		ts := strings.Fields(msg.ID)
+		_, _, err = b.rtm.DeleteMessage(channelInfo.ID, ts[1])
+		if err != nil {
+			return msg.ID, err
+		}
+		return msg.ID, nil
+	}
+
+	// Prepend nick if configured
+	if b.GetBool(useNickPrefixConfig) {
+		msg.Text = msg.Username + msg.Text
+	}
+
+	// Edit message if we have an ID
+	if msg.ID != "" {
+		ts := strings.Fields(msg.ID)
+		_, _, _, err = b.sc.UpdateMessage(channelInfo.ID, ts[1], slack.MsgOptionText(msg.Text, false))
+		if err != nil {
+			return msg.ID, err
+		}
+		return msg.ID, nil
+	}
+
+	var messageOptions []slack.MsgOption
+
+	// Upload a file if it exists
+	if msg.Extra != nil {
+		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+			messageOptions = b.prepareMessageOptions(rmsg)
+			messageOptions = append(messageOptions, slack.MsgOptionText(msg.Username+msg.Text, false))
+			_, _, err = b.sc.PostMessage(channelInfo.ID, messageOptions...)
+
+			if err != nil {
+				b.Log.Error(err)
+			}
+		}
+		// Upload files if necessary (from Slack, Telegram or Mattermost).
+		b.handleUploadFile(&msg, channelInfo.ID)
+	}
+
+	// Post normal message
+	messageOptions = b.prepareMessageOptions(msg)
+	messageOptions = append(messageOptions, slack.MsgOptionText(msg.Text, false))
+	_, id, err := b.sc.PostMessage(channelInfo.ID, messageOptions...)
+	if err != nil {
+		return "", err
+	}
+	return "slack " + id, nil
+}
+
+func (b *Bslack) prepareMessageOptions(msg config.Message) []slack.MsgOption {
+	params := slack.NewPostMessageParameters()
+	if b.GetBool(useNickPrefixConfig) {
+		params.AsUser = true
+	}
+	params.Username = msg.Username
+	params.LinkNames = 1 // replace mentions
+	params.IconURL = config.GetIconURL(&msg, b.GetString(iconURLConfig))
+	if msg.Avatar != "" {
+		params.IconURL = msg.Avatar
+	}
+	// add a callback ID so we can see we created it
+	params.Attachments = append(params.Attachments, slack.Attachment{CallbackID: "matterbridge_" + b.uuid})
+	// add file attachments
+	params.Attachments = append(params.Attachments, b.createAttach(msg.Extra)...)
+	// add translation attachment
+	params.Attachments = append(params.Attachments, b.createTranslationAttach(&msg)...)
+	// add slack attachments (from another slack bridge)
+	if msg.Extra != nil {
+		for _, attach := range msg.Extra[sSlackAttachment] {
+			params.Attachments = append(params.Attachments, attach.([]slack.Attachment)...)
+		}
+	}
+
+	var opts []slack.MsgOption
+
+	opts = append(opts, slack.MsgOptionAttachments(params.Attachments...))
+	opts = append(opts, slack.MsgOptionPostMessageParameters(params))
+
+	return opts
+}
+
+func (b *Bslack) createAttach(extra map[string][]interface{}) []slack.Attachment {
+	var attachements []slack.Attachment
+	for _, v := range extra["attachments"] {
+		entry := v.(map[string]interface{})
+		s := slack.Attachment{
+			Fallback:   extractStringField(entry, "fallback"),
+			Color:      extractStringField(entry, "color"),
+			Pretext:    extractStringField(entry, "pretext"),
+			AuthorName: extractStringField(entry, "author_name"),
+			AuthorLink: extractStringField(entry, "author_link"),
+			AuthorIcon: extractStringField(entry, "author_icon"),
+			Title:      extractStringField(entry, "title"),
+			TitleLink:  extractStringField(entry, "title_link"),
+			Text:       extractStringField(entry, "text"),
+			ImageURL:   extractStringField(entry, "image_url"),
+			ThumbURL:   extractStringField(entry, "thumb_url"),
+			Footer:     extractStringField(entry, "footer"),
+			FooterIcon: extractStringField(entry, "footer_icon"),
+		}
+		attachements = append(attachements, s)
+	}
+	return attachements
+}
+
+func (b *Bslack) createTranslationAttach(msg *config.Message) []slack.Attachment {
+	var attachments []slack.Attachment
+
+	if msg.IsTranslation == false {
+		return attachments
+	}
+
+	untranslatedTextPreview := msg.OrigMsg.Text
+	previewCharCount := 100
+	if len(msg.OrigMsg.Text) > previewCharCount {
+		untranslatedTextPreview = untranslatedTextPreview[:previewCharCount]+"..."
+	}
+	untranslatedTextPreview = strings.Replace(untranslatedTextPreview, "\n", " ", -1)
+	ch, err := b.getChannelByName(msg.OrigMsg.Channel)
+	time := strings.Split(msg.OrigMsg.ID, " ")[1]
+	params := slack.PermalinkParameters{
+		Channel: ch.ID,
+		Ts: time,
+	}
+	b.Log.Debugf("Generating permalink...")
+	permalink, err := b.sc.GetPermalink(&params)
+	if err != nil {
+		b.Log.Println(err)
+	}
+
+	attach := slack.Attachment{
+		Fallback: untranslatedTextPreview,
+		Text: fmt.Sprintf("<%s|%s>", permalink, untranslatedTextPreview),
+		Footer: "g0v Translation Bridge"+b.Config.General.TranslationAttribution,
+		FooterIcon: "https://emoji.slack-edge.com/T02G2SXKM/g0v/541e38dfc833f04b.png",
+	}
+
+	attachments = append(attachments, attach)
+
+	return attachments
+}
+
+func extractStringField(data map[string]interface{}, field string) string {
+	if rawValue, found := data[field]; found {
+		if value, ok := rawValue.(string); ok {
+			return value
+		}
+	}
+	return ""
 }

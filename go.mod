@@ -57,10 +57,11 @@ require (
 	github.com/pkg/errors v0.8.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rs/xid v0.0.0-20180525034800-088c5cf1423a
-	github.com/russross/blackfriday v1.5.1
+	github.com/russross/blackfriday v2.0.0+incompatible
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca
 	github.com/shazow/rateio v0.0.0-20150116013248-e8e00881e5c1 // indirect
 	github.com/shazow/ssh-chat v0.0.0-20171012174035-2078e1381991
+	github.com/shurcooL/sanitized_anchor_name v0.0.0-20170918181015-86672fcb3f95 // indirect
 	github.com/sirupsen/logrus v0.0.0-20180213143110-8c0189d9f6bb
 	github.com/smartystreets/assertions v0.0.0-20180803164922-886ec427f6b9 // indirect
 	github.com/smartystreets/goconvey v0.0.0-20180222194500-ef6db91d284a // indirect

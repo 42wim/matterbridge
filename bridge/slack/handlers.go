@@ -61,25 +61,11 @@ func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 		case *slack.OutgoingErrorEvent:
 			b.Log.Debugf("%#v", ev.Error())
 		case *slack.ChannelJoinedEvent:
-			var err error
-			b.users, err = b.sc.GetUsers()
-			if err != nil {
-				b.Log.Errorf("Could not reload users: %#v", err)
-			}
+			b.populateUsers()
 		case *slack.ConnectedEvent:
-			var err error
-			b.channels, _, err = b.sc.GetConversations(&slack.GetConversationsParameters{
-				Limit: 1000,
-				Types: []string{"public_channel,private_channel,mpim,im"},
-			})
-			if err != nil {
-				b.Log.Errorf("Channel list failed: %#v", err)
-			}
 			b.si = ev.Info
-			b.users, err = b.sc.GetUsers()
-			if err != nil {
-				b.Log.Errorf("Could not reload users: %#v", err)
-			}
+			b.populateChannels()
+			b.populateUsers()
 		case *slack.InvalidAuthEvent:
 			b.Log.Fatalf("Invalid Token %#v", ev)
 		case *slack.ConnectionErrorEvent:
@@ -163,9 +149,7 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 
 	// update the userlist on a channel_join
 	if ev.SubType == sChannelJoin {
-		if b.users, err = b.sc.GetUsers(); err != nil {
-			return nil, err
-		}
+		b.populateUsers()
 	}
 
 	// Edit message

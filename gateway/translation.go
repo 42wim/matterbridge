@@ -58,14 +58,19 @@ func (gw *Gateway) handleTranslation(msg *config.Message, dest *bridge.Bridge, c
 	text = strings.Replace(text, "•", "-", -1)
 
 	// Make sure we use closed <br/> tags
-	const htmlFlags = blackfriday.HTML_USE_XHTML
-	renderer := &renderer{Html: blackfriday.HtmlRenderer(htmlFlags, "", "").(*blackfriday.Html)}
-	const extensions = blackfriday.LINK_TYPE_NOT_AUTOLINK |
-		blackfriday.EXTENSION_HARD_LINE_BREAK |
-		blackfriday.EXTENSION_STRIKETHROUGH |
-		blackfriday.EXTENSION_FENCED_CODE |
-		blackfriday.EXTENSION_HARD_LINE_BREAK
-	output := blackfriday.Markdown([]byte(text), renderer, extensions)
+	const htmlFlags = blackfriday.UseXHTML
+	const extensions = blackfriday.HardLineBreak |
+		blackfriday.Strikethrough |
+		blackfriday.FencedCode
+	renderer := blackfriday.NewHTMLRenderer(blackfriday.HTMLRendererParameters{
+		Flags: htmlFlags,
+	})
+	optList := []blackfriday.Option{
+		blackfriday.WithNoExtensions(),
+		blackfriday.WithExtensions(extensions),
+		blackfriday.WithRenderer(renderer),
+	}
+	output := blackfriday.Run([]byte(text), optList...)
 	text = string(output)
 	flog.Debugf("post-parseMD:"+string(output))
 
