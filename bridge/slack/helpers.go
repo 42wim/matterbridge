@@ -65,7 +65,7 @@ func (b *Bslack) populateUsers() {
 	}
 
 	newUsers := map[string]*slack.User{}
-	for i, _ := range users {
+	for i := range users {
 		// Use array index for pointer, not the copy
 		// See: https://stackoverflow.com/a/29498133/504018
     newUsers[users[i].ID] = &users[i]
