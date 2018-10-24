@@ -270,17 +270,19 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 		msg.Text = msg.Username + msg.Text
 	}
 
+	var messageOptions []slack.MsgOption
+
 	// Edit message if we have an ID
 	if msg.ID != "" {
 		ts := strings.Fields(msg.ID)
-		_, _, _, err = b.sc.UpdateMessage(channelInfo.ID, ts[1], slack.MsgOptionText(msg.Text, false))
+		messageOptions = b.prepareMessageOptions(msg)
+		messageOptions = append(messageOptions, slack.MsgOptionText(msg.Text, false))
+		_, _, _, err = b.sc.UpdateMessage(channelInfo.ID, ts[1], messageOptions...)
 		if err != nil {
 			return msg.ID, err
 		}
 		return msg.ID, nil
 	}
-
-	var messageOptions []slack.MsgOption
 
 	// Upload a file if it exists
 	if msg.Extra != nil {
