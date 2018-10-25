@@ -195,6 +195,13 @@ func (gw *Gateway) handleTranslation(msg *config.Message, dest *bridge.Bridge, c
 	text = html.UnescapeString(text)
 	flog.Debugf("post-unescaped:"+text)
 
+	// Don't show translation if only whitespace/caps different.
+	// eg. messages with only emoji, links, or untranslatable gibberish
+	if strings.ToLower(strings.Replace(text, " ", "", -1)) == strings.ToLower(strings.Replace(msg.Text, " ", "", -1)) {
+		msg.IsTranslation = false
+		return
+	}
+
 	if dest.Protocol == "slack" {
 		// Attribution will be in attachment for Slack
 	} else {
