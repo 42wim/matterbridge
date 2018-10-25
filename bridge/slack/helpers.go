@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/nlopes/slack"
 )
@@ -57,7 +59,25 @@ func (b *Bslack) getChannelByID(ID string) (*slack.Channel, error) {
 	return nil, fmt.Errorf("%s: channel %s not found", b.Account, ID)
 }
 
+const minimumRefreshInterval = 10 * time.Second
+
+var (
+	refreshMutex           sync.Mutex
+	refreshInProgress      bool
+	earliestChannelRefresh = time.Now()
+	earliestUserRefresh    = time.Now()
+)
+
 func (b *Bslack) populateUsers() {
+	refreshMutex.Lock()
+	if time.Now().Before(earliestUserRefresh) || refreshInProgress {
+		b.Log.Debugf("Not refreshing user list as it was done less than %d seconds ago.", int(minimumRefreshInterval.Seconds()))
+		refreshMutex.Unlock()
+		return
+	}
+	refreshInProgress = true
+	refreshMutex.Unlock()
+
 	users, err := b.sc.GetUsers()
 	if err != nil {
 		b.Log.Errorf("Could not reload users: %#v", err)
@@ -74,9 +94,21 @@ func (b *Bslack) populateUsers() {
 	b.usersMutex.Lock()
 	defer b.usersMutex.Unlock()
 	b.users = newUsers
+
+	earliestUserRefresh = time.Now().Add(minimumRefreshInterval)
+	refreshInProgress = false
 }
 
 func (b *Bslack) populateChannels() {
+	refreshMutex.Lock()
+	if time.Now().Before(earliestChannelRefresh) || refreshInProgress {
+		b.Log.Debugf("Not refreshing channel list as it was done less than %d seconds ago.", int(minimumRefreshInterval.Seconds()))
+		refreshMutex.Unlock()
+		return
+	}
+	refreshInProgress = true
+	refreshMutex.Unlock()
+
 	newChannelsByID := map[string]*slack.Channel{}
 	newChannelsByName := map[string]*slack.Channel{}
 
@@ -106,6 +138,9 @@ func (b *Bslack) populateChannels() {
 	defer b.channelsMutex.Unlock()
 	b.channelsByID = newChannelsByID
 	b.channelsByName = newChannelsByName
+
+	earliestChannelRefresh = time.Now().Add(minimumRefreshInterval)
+	refreshInProgress = false
 }
 
 var (
