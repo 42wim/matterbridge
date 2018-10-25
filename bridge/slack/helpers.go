@@ -124,7 +124,6 @@ func (b *Bslack) replaceMention(text string) string {
 		}
 		return match
 	}
-	b.Log.Debugf("FOUND USERNAME")
 	return mentionRE.ReplaceAllStringFunc(text, replaceFunc)
 }
 
