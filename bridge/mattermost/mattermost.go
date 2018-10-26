@@ -273,7 +273,7 @@ func (b *Bmattermost) handleMatterHook(messages chan *config.Message) {
 func (b *Bmattermost) apiLogin() error {
 	password := b.GetString("Password")
 	if b.GetString("Token") != "" {
-		password = "MMAUTHTOKEN=" + b.GetString("Token")
+		password = "token=" + b.GetString("Token")
 	}
 
 	b.mc = matterclient.New(b.GetString("Login"), password, b.GetString("Team"), b.GetString("Server"))
