@@ -26,6 +26,8 @@ type Credentials struct {
 	Login         string
 	Team          string
 	Pass          string
+	Token         string
+	CookieToken   bool
 	Server        string
 	NoTLS         bool
 	SkipTLSVerify bool
@@ -117,6 +119,23 @@ func (m *MMClient) Login() error {
 	m.Client.HttpClient.Transport = &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: m.SkipTLSVerify}, Proxy: http.ProxyFromEnvironment}
 	m.Client.HttpClient.Timeout = time.Second * 10
 
+	if strings.Contains(m.Credentials.Pass, model.SESSION_COOKIE_TOKEN) {
+		token := strings.Split(m.Credentials.Pass, model.SESSION_COOKIE_TOKEN+"=")
+		if len(token) != 2 {
+			return errors.New("incorrect MMAUTHTOKEN. valid input is MMAUTHTOKEN=yourtoken")
+		}
+		m.Credentials.Token = token[1]
+		m.Credentials.CookieToken = true
+	}
+
+	if strings.Contains(m.Credentials.Pass, "token=") {
+		token := strings.Split(m.Credentials.Pass, "token=")
+		if len(token) != 2 {
+			return errors.New("incorrect personal token. valid input is token=yourtoken")
+		}
+		m.Credentials.Token = token[1]
+	}
+
 	for {
 		d := b.Duration()
 		// bogus call to get the serverversion
@@ -144,22 +163,22 @@ func (m *MMClient) Login() error {
 	var logmsg = "trying login"
 	for {
 		m.log.Debugf("%s %s %s %s", logmsg, m.Credentials.Team, m.Credentials.Login, m.Credentials.Server)
-		if strings.Contains(m.Credentials.Pass, model.SESSION_COOKIE_TOKEN) {
-			m.log.Debugf(logmsg + " with token")
-			token := strings.Split(m.Credentials.Pass, model.SESSION_COOKIE_TOKEN+"=")
-			if len(token) != 2 {
-				return errors.New("incorrect MMAUTHTOKEN. valid input is MMAUTHTOKEN=yourtoken")
-			}
-			m.Client.HttpClient.Jar = m.createCookieJar(token[1])
-			m.Client.AuthToken = token[1]
+		if m.Credentials.Token != "" {
 			m.Client.AuthType = model.HEADER_BEARER
+			m.Client.AuthToken = m.Credentials.Token
+			if m.Credentials.CookieToken {
+				m.log.Debugf(logmsg + " with cookie (MMAUTH) token")
+				m.Client.HttpClient.Jar = m.createCookieJar(m.Credentials.Token)
+			} else {
+				m.log.Debugf(logmsg + " with personal token")
+			}
 			m.User, resp = m.Client.GetMe("")
 			if resp.Error != nil {
 				return resp.Error
 			}
 			if m.User == nil {
 				m.log.Errorf("LOGIN TOKEN: %s is invalid", m.Credentials.Pass)
-				return errors.New("invalid " + model.SESSION_COOKIE_TOKEN)
+				return errors.New("invalid token")
 			}
 		} else {
 			m.User, resp = m.Client.Login(m.Credentials.Login, m.Credentials.Pass)
