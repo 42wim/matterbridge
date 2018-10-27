@@ -334,6 +334,8 @@ func (m *MMClient) parseMessage(rmsg *Message) {
 		if _, ok := user["id"].(string); ok {
 			m.UpdateUser(user["id"].(string))
 		}
+	case "group_added":
+		m.UpdateChannels()
 		/*
 			case model.ACTION_USER_REMOVED:
 				m.handleWsActionUserRemoved(&rmsg)
@@ -431,6 +433,10 @@ func (m *MMClient) GetChannelName(channelId string) string {
 		if t.Channels != nil {
 			for _, channel := range t.Channels {
 				if channel.Id == channelId {
+					if channel.Type == model.CHANNEL_GROUP {
+						res := strings.Replace(channel.DisplayName, ",", "_", -1)
+						return strings.Replace(res, " ", "", -1)
+					}
 					return channel.Name
 				}
 			}
@@ -438,6 +444,10 @@ func (m *MMClient) GetChannelName(channelId string) string {
 		if t.MoreChannels != nil {
 			for _, channel := range t.MoreChannels {
 				if channel.Id == channelId {
+					if channel.Type == model.CHANNEL_GROUP {
+						res := strings.Replace(channel.DisplayName, ",", "_", -1)
+						return strings.Replace(res, " ", "", -1)
+					}
 					return channel.Name
 				}
 			}
