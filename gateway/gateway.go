@@ -83,6 +83,26 @@ func New(cfg config.Gateway, r *Router) *Gateway {
 	return gw
 }
 
+// Find the timestamp that the message is keyed under in cache
+func (gw *Gateway) FindUpstreamTimestamp(timestamp string) string {
+	if gw.Messages.Contains("slack "+timestamp) {
+		return timestamp
+	}
+
+	for _, k := range gw.Messages.Keys() {
+		upstreamMsgID := k.(string)
+		v, _ := gw.Messages.Peek(k)
+		ids := v.([]*BrMsgID)
+		for _, downstreamMsgObj := range ids {
+			downstreamTimestamp := strings.Fields(downstreamMsgObj.ID)[1]
+			if downstreamTimestamp == timestamp {
+				return strings.Fields(upstreamMsgID)[1]
+			}
+		}
+	}
+	return ""
+}
+
 func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 	br := gw.Router.getBridge(cfg.Account)
 	if br == nil {
@@ -242,6 +262,12 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		return brMsgIDs
 	}
 
+	// Get the upstreamTimestamp of the thread_ts
+	var upstreamTimestamp string
+	if msg.ThreadTs != "" {
+		upstreamTimestamp = gw.FindUpstreamTimestamp(msg.ThreadTs)
+	}
+
 	originchannel := msg.Channel
 	origmsg := msg
 	channels := gw.getDestChannel(&msg, *dest)
@@ -262,6 +288,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		msg.Avatar = gw.modifyAvatar(origmsg, dest)
 		msg.Username = gw.modifyUsername(origmsg, dest)
 		msg.ID = ""
+		msg.ThreadTs = ""
 		if res, ok := gw.Messages.Get(origmsg.ID); ok {
 			IDs := res.([]*BrMsgID)
 			for _, id := range IDs {
@@ -276,10 +303,26 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		if dest.Protocol == "api" {
 			msg.Channel = originchannel
 		}
+
+		if upstreamTimestamp != "" {
+			if res, ok := gw.Messages.Get("slack "+upstreamTimestamp); ok {
+				IDs := res.([]*BrMsgID)
+				for _, id := range IDs {
+					// check protocol, bridge name and channelname
+					// for people that reuse the same bridge multiple times. see #342
+					if dest.Protocol == id.br.Protocol && dest.Name == id.br.Name && channel.ID == id.ChannelID {
+						msg.ThreadTs = strings.Fields(id.ID)[1]
+					}
+				}
+				if msg.ThreadTs == "" { msg.ThreadTs = upstreamTimestamp }
+			}
+		}
+
 		mID, err := dest.Send(msg)
 		if err != nil {
 			flog.Error(err)
 		}
+
 		// append the message ID (mID) from this bridge (dest) to our brMsgIDs slice
 		if mID != "" {
 			flog.Debugf("mID %s: %s", dest.Account, mID)
