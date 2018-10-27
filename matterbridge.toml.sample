@@ -659,6 +659,12 @@ StripNick=false
 #OPTIONAL (default false)
 ShowTopicChange=false
 
+#Opportunistically preserve threaded replies between Slack channels.
+#This only works if the parent message is still in the cache.
+#Cache is flushed between restarts.
+#OPTIONAL (default false)
+PreserveThreading=false
+
 ###################################################################
 #discord section
 ###################################################################
