@@ -83,20 +83,19 @@ func New(cfg config.Gateway, r *Router) *Gateway {
 	return gw
 }
 
-// Find the timestamp that the message is keyed under in cache
-func (gw *Gateway) FindUpstreamTimestamp(timestamp string) string {
-	if gw.Messages.Contains("slack "+timestamp) {
-		return timestamp
+// Find the canonical ID that the message is keyed under in cache
+func (gw *Gateway) FindCanonicalMsgID(mID string) string {
+	if gw.Messages.Contains(mID) {
+		return mID
 	}
 
-	for _, k := range gw.Messages.Keys() {
-		upstreamMsgID := k.(string)
-		v, _ := gw.Messages.Peek(k)
+	// If not keyed, iterate through cache for downstream, and infer upstream.
+	for _, mid := range gw.Messages.Keys() {
+		v, _ := gw.Messages.Peek(mid)
 		ids := v.([]*BrMsgID)
 		for _, downstreamMsgObj := range ids {
-			downstreamTimestamp := strings.Fields(downstreamMsgObj.ID)[1]
-			if downstreamTimestamp == timestamp {
-				return strings.Fields(upstreamMsgID)[1]
+			if mID == downstreamMsgObj.ID {
+				return mid.(string)
 			}
 		}
 	}
@@ -262,10 +261,11 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		return brMsgIDs
 	}
 
-	// Get the upstreamTimestamp of the thread_ts
-	var upstreamTimestamp string
-	if msg.ThreadTs != "" {
-		upstreamTimestamp = gw.FindUpstreamTimestamp(msg.ThreadTs)
+	// Get the ID of the parent message in thread
+	var canonicalParentMsgID string
+	if msg.ParentID != "" {
+		thisParentMsgID := dest.Protocol + " " + msg.ParentID
+		canonicalParentMsgID = gw.FindCanonicalMsgID(thisParentMsgID)
 	}
 
 	originchannel := msg.Channel
@@ -284,11 +284,13 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			}
 		}
 		flog.Debugf("=> Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, originchannel, dest.Account, channel.Name)
+
 		msg.Channel = channel.Name
 		msg.Avatar = gw.modifyAvatar(origmsg, dest)
 		msg.Username = gw.modifyUsername(origmsg, dest)
 		msg.ID = ""
-		msg.ThreadTs = ""
+		msg.ParentID = ""
+
 		if res, ok := gw.Messages.Get(origmsg.ID); ok {
 			IDs := res.([]*BrMsgID)
 			for _, id := range IDs {
@@ -304,17 +306,22 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			msg.Channel = originchannel
 		}
 
-		if upstreamTimestamp != "" {
-			if res, ok := gw.Messages.Get("slack "+upstreamTimestamp); ok {
+		if canonicalParentMsgID != "" {
+			parentMsgID := ""
+			if res, ok := gw.Messages.Get(canonicalParentMsgID); ok {
 				IDs := res.([]*BrMsgID)
-				for _, id := range IDs {
+				for i, id := range IDs {
 					// check protocol, bridge name and channelname
 					// for people that reuse the same bridge multiple times. see #342
 					if dest.Protocol == id.br.Protocol && dest.Name == id.br.Name && channel.ID == id.ChannelID {
-						msg.ThreadTs = strings.Fields(id.ID)[1]
+						parentMsgID = IDs[i].ID
+						break
 					}
 				}
-				if msg.ThreadTs == "" { msg.ThreadTs = upstreamTimestamp }
+				if parentMsgID == "" {
+					parentMsgID = canonicalParentMsgID
+				}
+				msg.ParentID = strings.Fields(parentMsgID)[1]
 			}
 		}
 

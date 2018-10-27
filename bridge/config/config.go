@@ -35,7 +35,7 @@ type Message struct {
 	Event     string    `json:"event"`
 	Protocol  string    `json:"protocol"`
 	Gateway   string    `json:"gateway"`
-	ThreadTs  string    `json:"thread_timestamp"`
+	ParentID  string    `json:"parent_id"`
 	Timestamp time.Time `json:"timestamp"`
 	ID        string    `json:"id"`
 	Extra     map[string][]interface{}
