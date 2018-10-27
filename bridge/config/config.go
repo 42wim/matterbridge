@@ -99,6 +99,7 @@ type Protocol struct {
 	NoTLS                  bool       // mattermost
 	Password               string     // IRC,mattermost,XMPP,matrix
 	PrefixMessagesWithNick bool       // mattemost, slack
+	PreserveThreading      bool       // slack
 	Protocol               string     // all protocols
 	QuoteDisable           bool       // telegram
 	QuoteFormat            string     // telegram
