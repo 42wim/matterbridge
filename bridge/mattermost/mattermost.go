@@ -109,7 +109,7 @@ func (b *Bmattermost) Disconnect() error {
 func (b *Bmattermost) JoinChannel(channel config.ChannelInfo) error {
 	// we can only join channels using the API
 	if b.GetString("WebhookURL") == "" && b.GetString("WebhookBindAddress") == "" {
-		id := b.mc.GetChannelId(channel.Name, "")
+		id := b.mc.GetChannelId(channel.Name, b.TeamID)
 		if id == "" {
 			return fmt.Errorf("Could not find channel ID for channel %s", channel.Name)
 		}
@@ -147,7 +147,7 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 	// Upload a file if it exists
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			b.mc.PostMessage(b.mc.GetChannelId(rmsg.Channel, ""), rmsg.Username+rmsg.Text)
+			b.mc.PostMessage(b.mc.GetChannelId(rmsg.Channel, b.TeamID), rmsg.Username+rmsg.Text)
 		}
 		if len(msg.Extra["file"]) > 0 {
 			return b.handleUploadFile(&msg)
@@ -165,7 +165,7 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 	}
 
 	// Post normal message
-	return b.mc.PostMessage(b.mc.GetChannelId(msg.Channel, ""), msg.Text)
+	return b.mc.PostMessage(b.mc.GetChannelId(msg.Channel, b.TeamID), msg.Text)
 }
 
 func (b *Bmattermost) handleMatter() {
@@ -357,7 +357,7 @@ func (b *Bmattermost) handleDownloadFile(rmsg *config.Message, id string) error 
 func (b *Bmattermost) handleUploadFile(msg *config.Message) (string, error) {
 	var err error
 	var res, id string
-	channelID := b.mc.GetChannelId(msg.Channel, "")
+	channelID := b.mc.GetChannelId(msg.Channel, b.TeamID)
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo)
 		id, err = b.mc.UploadFile(*fi.Data, channelID, fi.Name)

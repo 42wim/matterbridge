@@ -434,8 +434,9 @@ func (m *MMClient) GetChannelName(channelId string) string {
 			for _, channel := range t.Channels {
 				if channel.Id == channelId {
 					if channel.Type == model.CHANNEL_GROUP {
-						res := strings.Replace(channel.DisplayName, ",", "_", -1)
-						return strings.Replace(res, " ", "", -1)
+						res := strings.Replace(channel.DisplayName, ", ", "-", -1)
+						res = strings.Replace(res, " ", "_", -1)
+						return res
 					}
 					return channel.Name
 				}
@@ -445,8 +446,9 @@ func (m *MMClient) GetChannelName(channelId string) string {
 			for _, channel := range t.MoreChannels {
 				if channel.Id == channelId {
 					if channel.Type == model.CHANNEL_GROUP {
-						res := strings.Replace(channel.DisplayName, ",", "_", -1)
-						return strings.Replace(res, " ", "", -1)
+						res := strings.Replace(channel.DisplayName, ", ", "-", -1)
+						res = strings.Replace(res, " ", "_", -1)
+						return res
 					}
 					return channel.Name
 				}
@@ -460,8 +462,20 @@ func (m *MMClient) GetChannelId(name string, teamId string) string {
 	m.RLock()
 	defer m.RUnlock()
 	if teamId == "" {
-		teamId = m.Team.Id
+		for _, t := range m.OtherTeams {
+			for _, channel := range append(t.Channels, t.MoreChannels...) {
+				if channel.Type == model.CHANNEL_GROUP {
+					res := strings.Replace(channel.DisplayName, ", ", "-", -1)
+					res = strings.Replace(res, " ", "_", -1)
+					if res == name {
+						return channel.Id
+					}
+				}
+
+			}
+		}
 	}
+
 	for _, t := range m.OtherTeams {
 		if t.Id == teamId {
 			for _, channel := range append(t.Channels, t.MoreChannels...) {
@@ -689,7 +703,7 @@ func (m *MMClient) SendDirectMessage(toUserId string, msg string) {
 
 	// build & send the message
 	msg = strings.Replace(msg, "\r", "", -1)
-	post := &model.Post{ChannelId: m.GetChannelId(channelName, ""), Message: msg}
+	post := &model.Post{ChannelId: m.GetChannelId(channelName, m.Team.Id), Message: msg}
 	m.Client.CreatePost(post)
 }
 
@@ -743,9 +757,13 @@ func (m *MMClient) GetTeamFromChannel(channelId string) string {
 		}
 		for _, c := range channels {
 			if c.Id == channelId {
+				if c.Type == model.CHANNEL_GROUP {
+					return "G"
+				}
 				return t.Id
 			}
 		}
+		channels = nil
 	}
 	return ""
 }
