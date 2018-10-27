@@ -639,13 +639,15 @@ func (m *MMClient) UpdateChannelHeader(channelId string, header string) {
 	}
 }
 
-func (m *MMClient) UpdateLastViewed(channelId string) {
+func (m *MMClient) UpdateLastViewed(channelId string) error {
 	m.log.Debugf("posting lastview %#v", channelId)
 	view := &model.ChannelView{ChannelId: channelId}
 	_, resp := m.Client.ViewChannel(m.User.Id, view)
 	if resp.Error != nil {
 		m.log.Errorf("ChannelView update for %s failed: %s", channelId, resp.Error)
+		return resp.Error
 	}
+	return nil
 }
 
 func (m *MMClient) UpdateUserNick(nick string) error {
@@ -896,8 +898,7 @@ func (m *MMClient) StatusLoop() {
 			return
 		}
 		if m.WsConnected {
-			m.log.Debug("WS PING")
-			m.sendWSRequest("ping", nil)
+			m.checkAlive()
 			select {
 			case <-m.WsPingChan:
 				m.log.Debug("WS PONG received")
@@ -970,6 +971,16 @@ func (m *MMClient) initUser() error {
 		}
 	}
 	return nil
+}
+
+func (m *MMClient) checkAlive() error {
+	// check if session still is valid
+	_, resp := m.Client.GetMe("")
+	if resp.Error != nil {
+		return resp.Error
+	}
+	m.log.Debug("WS PING")
+	return m.sendWSRequest("ping", nil)
 }
 
 func (m *MMClient) sendWSRequest(action string, data map[string]interface{}) error {
