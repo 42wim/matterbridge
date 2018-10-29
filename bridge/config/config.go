@@ -185,7 +185,7 @@ func NewConfig(cfgfile string) *Config {
 	viper.SetConfigFile(cfgfile)
 	viper.SetEnvPrefix("matterbridge")
 	viper.AddConfigPath(".")
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", ""))
 	viper.AutomaticEnv()
 	f, err := os.Open(cfgfile)
 	if err != nil {
