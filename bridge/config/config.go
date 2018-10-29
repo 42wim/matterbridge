@@ -171,6 +171,7 @@ type ConfigValues struct {
 	General            Protocol
 	Gateway            []Gateway
 	SameChannelGateway []SameChannelGateway
+	ConfigWebhookToken string
 }
 
 type Config struct {

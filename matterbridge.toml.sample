@@ -1,3 +1,8 @@
+# If you are serving the config reload webhook, you will need to set this
+# security token the will be needed to trigger reload.
+# OPTIONAL (default "")
+ConfigWebhookToken=1234567890
+
 #This is configuration for matterbridge.
 #WARNING: as this file contains credentials, be sure to set correct file permissions
 ###################################################################

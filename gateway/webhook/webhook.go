@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/spf13/viper"
 )
 
 func Serve() {
@@ -13,12 +14,9 @@ func Serve() {
 	e.Logger.Fatal(e.Start(":1323"))
 }
 
-var (
-	secretToken = "1234567890"
-)
-
 func reloadConfig(c echo.Context) error {
 	providedToken := c.QueryParam("token")
+	secretToken := viper.GetString("ConfigWebhookToken")
 	if providedToken != secretToken {
 		return c.String(http.StatusUnauthorized, "Unauthorized")
 	}

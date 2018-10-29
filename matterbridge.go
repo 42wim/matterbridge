@@ -10,6 +10,7 @@ import (
 	"github.com/42wim/matterbridge/gateway"
 	"github.com/42wim/matterbridge/gateway/webhook"
 	"github.com/google/gops/agent"
+	"github.com/spf13/viper"
 	prefixed "github.com/matterbridge/logrus-prefixed-formatter"
 	log "github.com/sirupsen/logrus"
 )
@@ -41,18 +42,22 @@ func main() {
 		flog.Info("Enabling debug")
 		log.SetLevel(log.DebugLevel)
 	}
-	if *flagWebhook {
-		fmt.Printf("Starting webhook for reloading remote config...")
-		fmt.Printf("Serving at: POST /webhook")
-		webhook.Serve()
-		return
-	}
 	flog.Printf("Running version %s %s", version, githash)
 	if strings.Contains(version, "-dev") {
 		flog.Println("WARNING: THIS IS A DEVELOPMENT VERSION. Things may break.")
 	}
 	cfg := config.NewConfig(*flagConfig)
 	cfg.General.Debug = *flagDebug
+	if *flagWebhook {
+		// TODO: Find out why this reverts after config load
+		log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: true})
+		flog.Println("Starting webhook for reloading remote config...")
+		if viper.GetString("ConfigWebhookToken") == "" {
+			flog.Fatalf("Must set config webhook's auth token to use.")
+		}
+		flog.Println("Serving at: POST /webhook")
+		webhook.Serve()
+	}
 	r, err := gateway.NewRouter(cfg)
 	if err != nil {
 		flog.Fatalf("Starting gateway failed: %s", err)
