@@ -8,6 +8,7 @@ import (
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/gateway"
+	"github.com/42wim/matterbridge/gateway/webhook"
 	"github.com/google/gops/agent"
 	prefixed "github.com/matterbridge/logrus-prefixed-formatter"
 	log "github.com/sirupsen/logrus"
@@ -25,6 +26,7 @@ func main() {
 	flagDebug := flag.Bool("debug", false, "enable debug")
 	flagVersion := flag.Bool("version", false, "show version")
 	flagGops := flag.Bool("gops", false, "enable gops agent")
+	flagWebhook := flag.Bool("webhook", false, "run webhook serve mode")
 	flag.Parse()
 	if *flagGops {
 		agent.Listen(&agent.Options{})
@@ -38,6 +40,12 @@ func main() {
 		log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: false, ForceFormatting: true})
 		flog.Info("Enabling debug")
 		log.SetLevel(log.DebugLevel)
+	}
+	if *flagWebhook {
+		fmt.Printf("Starting webhook for reloading remote config...")
+		fmt.Printf("Serving at: POST /webhook")
+		webhook.Serve()
+		return
 	}
 	flog.Printf("Running version %s %s", version, githash)
 	if strings.Contains(version, "-dev") {
