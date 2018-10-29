@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/42wim/go-gitter"
+	"github.com/sromku/go-gitter"
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
