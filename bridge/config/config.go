@@ -2,6 +2,8 @@ package config
 
 import (
 	"bytes"
+	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -182,19 +184,38 @@ func NewConfig(cfgfile string) *Config {
 	flog := log.WithFields(log.Fields{"prefix": "config"})
 	var cfg ConfigValues
 	viper.SetConfigType("toml")
-	viper.SetConfigFile(cfgfile)
+	_, err := url.ParseRequestURI(cfgfile)
+	if err == nil {
+		flog.Debugf("Using remote configuration file: " + cfgfile)
+		res, err := http.Get(cfgfile)
+		if err != nil {
+			flog.Fatal(err)
+		} else {
+			defer res.Body.Close()
+			err = viper.ReadConfig(res.Body)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	} else {
+		viper.SetConfigFile(cfgfile)
+		viper.WatchConfig()
+		viper.OnConfigChange(func(e fsnotify.Event) {
+			flog.Println("Config file changed:", e.Name)
+		})
+		f, err := os.Open(cfgfile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = viper.ReadConfig(f)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 	viper.SetEnvPrefix("matterbridge")
 	viper.AddConfigPath(".")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
-	f, err := os.Open(cfgfile)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = viper.ReadConfig(f)
-	if err != nil {
-		log.Fatal(err)
-	}
 	err = viper.Unmarshal(&cfg)
 	if err != nil {
 		log.Fatal("blah", err)
@@ -204,10 +225,6 @@ func NewConfig(cfgfile string) *Config {
 	if cfg.General.MediaDownloadSize == 0 {
 		cfg.General.MediaDownloadSize = 1000000
 	}
-	viper.WatchConfig()
-	viper.OnConfigChange(func(e fsnotify.Event) {
-		flog.Println("Config file changed:", e.Name)
-	})
 
 	mycfg.ConfigValues = &cfg
 	return mycfg
