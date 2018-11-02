@@ -22,6 +22,7 @@ const (
 	EVENT_REJOIN_CHANNELS   = "rejoin_channels"
 	EVENT_USER_ACTION       = "user_action"
 	EVENT_MSG_DELETE        = "msg_delete"
+	EVENT_API_CONNECTED     = "api_connected"
 )
 
 type Message struct {
