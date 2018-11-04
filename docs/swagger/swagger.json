@@ -20,6 +20,17 @@
                     "application/json"
                 ],
                 "summary": "Create/Update a message",
+                "parameters": [
+                    {
+                        "description": "Message object to create",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -36,7 +47,7 @@
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Lists messages",
+                "summary": "List of new messages",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -53,7 +64,7 @@
         "/stream": {
             "get": {
                 "produces": [
-                    "application/json"
+                    "application/x-json-stream"
                 ],
                 "summary": "Streams realtime messages",
                 "responses": {
@@ -73,40 +84,61 @@
             "type": "object",
             "properties": {
                 "account": {
-                    "type": "string"
+                    "description": "Unique account name of format \"\u003cprotocol\u003e.\u003cslug\u003e\"\n",
+                    "type": "string",
+                    "example": "slack.myteam"
                 },
                 "avatar": {
-                    "type": "string"
+                    "description": "URL to an avatar image\n",
+                    "type": "string",
+                    "example": "https://secure.gravatar.com/avatar/1234567890abcdef1234567890abcdef.jpg"
                 },
                 "channel": {
-                    "type": "string"
+                    "description": "Human-readable channel name\n",
+                    "type": "string",
+                    "example": "test-channel"
                 },
                 "event": {
+                    "description": "Can be blank.\n",
                     "type": "string"
                 },
                 "extra": {
+                    "description": "Extra data that doesn't fit in other fields. Used for processing incoming messages.\n",
                     "type": "object"
                 },
                 "gateway": {
-                    "type": "string"
+                    "description": "Name of the gateway\n",
+                    "type": "string",
+                    "example": "test-channel-gateway"
                 },
                 "id": {
-                    "type": "string"
+                    "description": "Unique ID of message on the gateway\n",
+                    "type": "string",
+                    "example": "slack 1541361213.030700"
                 },
                 "protocol": {
-                    "type": "string"
+                    "description": "Chat protocol of incoming message\n",
+                    "type": "string",
+                    "example": "slack"
                 },
                 "text": {
-                    "type": "string"
+                    "description": "Content of the message\n",
+                    "type": "string",
+                    "example": "Testing, testing, 1-2-3."
                 },
                 "timestamp": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "1541361213.030700"
                 },
                 "userid": {
-                    "type": "string"
+                    "description": "userid on the bridge\n",
+                    "type": "string",
+                    "example": "U4MCXJKNC"
                 },
                 "username": {
-                    "type": "string"
+                    "description": "Human-readable username\n",
+                    "type": "string",
+                    "example": "alice"
                 }
             }
         }

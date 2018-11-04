@@ -27,18 +27,30 @@ const (
 )
 
 type Message struct {
-	Text      string    `json:"text"`
-	Channel   string    `json:"channel"`
-	Username  string    `json:"username"`
-	UserID    string    `json:"userid"` // userid on the bridge
-	Avatar    string    `json:"avatar"`
-	Account   string    `json:"account"`
-	Event     string    `json:"event"`
-	Protocol  string    `json:"protocol"`
-	Gateway   string    `json:"gateway"`
+	// Content of the message
+	Text      string    `json:"text" example:"Testing, testing, 1-2-3."`
+	// Human-readable channel name
+	Channel   string    `json:"channel" example:"test-channel"`
+	// Human-readable username
+	Username  string    `json:"username" example:"alice"`
+	// userid on the bridge
+	UserID    string    `json:"userid" example:"U4MCXJKNC"`
+	// URL to an avatar image
+	Avatar    string    `json:"avatar" example:"https://secure.gravatar.com/avatar/1234567890abcdef1234567890abcdef.jpg"`
+	// Unique account name of format "<protocol>.<slug>"
+	Account   string    `json:"account" example:"slack.myteam"`
+	// Can be blank.
+	Event     string    `json:"event" example:""`
+	// Chat protocol of incoming message
+	Protocol  string    `json:"protocol" example:"slack"`
+	// Name of the gateway
+	Gateway   string    `json:"gateway" example:"test-channel-gateway"`
+	// Unique ID of a parent message, if threaded
 	ParentID  string    `json:"parent_id"`
-	Timestamp time.Time `json:"timestamp"`
-	ID        string    `json:"id"`
+	Timestamp time.Time `json:"timestamp" example:"1541361213.030700"`
+	// Unique ID of message on the gateway
+	ID        string    `json:"id" example:"slack 1541361213.030700"`
+	// Extra data that doesn't fit in other fields. Used for processing incoming messages.
 	Extra     map[string][]interface{}
 }
 

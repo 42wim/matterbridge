@@ -3,28 +3,60 @@ definitions:
   config.Message:
     properties:
       account:
+        description: |
+          Unique account name of format "<protocol>.<slug>"
+        example: slack.myteam
         type: string
       avatar:
+        description: |
+          URL to an avatar image
+        example: https://secure.gravatar.com/avatar/1234567890abcdef1234567890abcdef.jpg
         type: string
       channel:
+        description: |
+          Human-readable channel name
+        example: test-channel
         type: string
       event:
+        description: |
+          Can be blank.
         type: string
       extra:
+        description: |
+          Extra data that doesn't fit in other fields. Used for processing incoming messages.
         type: object
       gateway:
+        description: |
+          Name of the gateway
+        example: test-channel-gateway
         type: string
       id:
+        description: |
+          Unique ID of message on the gateway
+        example: slack 1541361213.030700
         type: string
       protocol:
+        description: |
+          Chat protocol of incoming message
+        example: slack
         type: string
       text:
+        description: |
+          Content of the message
+        example: Testing, testing, 1-2-3.
         type: string
       timestamp:
+        example: "1541361213.030700"
         type: string
       userid:
+        description: |
+          userid on the bridge
+        example: U4MCXJKNC
         type: string
       username:
+        description: |
+          Human-readable username
+        example: alice
         type: string
     type: object
 info:
@@ -39,6 +71,13 @@ paths:
     post:
       consumes:
       - application/json
+      parameters:
+      - description: Message object to create
+        in: body
+        name: body
+        required: true
+        schema:
+          type: object
       produces:
       - application/json
       responses:
@@ -59,11 +98,11 @@ paths:
             items:
               $ref: '#/definitions/config.Message'
             type: array
-      summary: Lists messages
+      summary: List of new messages
   /stream:
     get:
       produces:
-      - application/json
+      - application/x-json-stream
       responses:
         "200":
           description: OK
