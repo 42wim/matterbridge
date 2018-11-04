@@ -1,5 +1,32 @@
 basePath: /api
-host: TODO
+definitions:
+  config.Message:
+    properties:
+      account:
+        type: string
+      avatar:
+        type: string
+      channel:
+        type: string
+      event:
+        type: string
+      extra:
+        type: object
+      gateway:
+        type: string
+      id:
+        type: string
+      protocol:
+        type: string
+      text:
+        type: string
+      timestamp:
+        type: string
+      userid:
+        type: string
+      username:
+        type: string
+    type: object
 info:
   contact: {}
   description: A read/write API for the Matterbridge chat bridge.
@@ -7,6 +34,46 @@ info:
     name: Apache 2.0
     url: https://github.com/42wim/matterbridge/blob/master/LICENSE
   title: Matterbridge API
-  version: TODO
-paths: {}
+paths:
+  /message:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/config.Message'
+            type: object
+      summary: Create/Update a message
+  /messages:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/config.Message'
+            type: array
+      summary: Lists messages
+  /stream:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/config.Message'
+            type: object
+      summary: Streams realtime messages
+securityDefinitions:
+  "":
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

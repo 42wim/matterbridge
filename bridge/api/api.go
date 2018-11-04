@@ -16,13 +16,12 @@ import (
 )
 
 // @title Matterbridge API
-// @version TODO
 // @description A read/write API for the Matterbridge chat bridge.
 
 // @license.name Apache 2.0
 // @license.url https://github.com/42wim/matterbridge/blob/master/LICENSE
 
-// @host TODO
+// TODO @host
 // @basePath /api
 
 type API struct {
@@ -39,6 +38,9 @@ type Message struct {
 	Gateway  string `json:"gateway"`
 }
 
+// @securityDefinitions.apikey
+// @in header
+// @name Authorization
 func New(cfg *bridge.Config) bridge.Bridger {
 	b := &API{Config: cfg}
 	e := echo.New()
@@ -102,6 +104,12 @@ func (b *Api) handleDocsRedirect(c echo.Context) error {
 	return c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
 }
 
+// handlePostMessage godoc
+// @Summary Create/Update a message
+// @Accept json
+// @Produce json
+// @Success 200 {object} config.Message
+// @Router /message [post]
 func (b *API) handlePostMessage(c echo.Context) error {
 	message := config.Message{}
 	if err := c.Bind(&message); err != nil {
@@ -118,6 +126,11 @@ func (b *API) handlePostMessage(c echo.Context) error {
 	return c.JSON(http.StatusOK, message)
 }
 
+// handleMessages godoc
+// @Summary Lists messages
+// @Produce json
+// @Success 200 {array} config.Message
+// @Router /messages [get]
 func (b *API) handleMessages(c echo.Context) error {
 	b.Lock()
 	defer b.Unlock()
@@ -126,6 +139,11 @@ func (b *API) handleMessages(c echo.Context) error {
 	return nil
 }
 
+// handleStream godoc
+// @Summary Streams realtime messages
+// @Produce json
+// @Success 200 {object} config.Message
+// @Router /stream [get]
 func (b *API) handleStream(c echo.Context) error {
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	c.Response().WriteHeader(http.StatusOK)
