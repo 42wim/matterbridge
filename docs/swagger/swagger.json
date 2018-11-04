@@ -1,0 +1,16 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "A read/write API for the Matterbridge chat bridge.",
+        "title": "Matterbridge API",
+        "contact": {},
+        "license": {
+            "name": "Apache 2.0",
+            "url": "https://github.com/42wim/matterbridge/blob/master/LICENSE"
+        },
+        "version": "TODO"
+    },
+    "host": "TODO",
+    "basePath": "/api",
+    "paths": {}
+}

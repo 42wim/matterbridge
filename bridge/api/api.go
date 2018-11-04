@@ -11,7 +11,19 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/zfjagann/golang-ring"
+	"github.com/swaggo/echo-swagger"
+	_ "github.com/42wim/matterbridge/docs"
 )
+
+// @title Matterbridge API
+// @version TODO
+// @description A read/write API for the Matterbridge chat bridge.
+
+// @license.name Apache 2.0
+// @license.url https://github.com/42wim/matterbridge/blob/master/LICENSE
+
+// @host TODO
+// @basePath /api
 
 type API struct {
 	Messages ring.Ring
@@ -41,6 +53,10 @@ func New(cfg *bridge.Config) bridge.Bridger {
 			return key == b.GetString("Token"), nil
 		}))
 	}
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
+	e.GET("/swagger", b.handleDocsRedirect)
+	e.GET("/", b.handleDocsRedirect)
+	e.GET("/api", b.handleDocsRedirect)
 	e.GET("/api/health", b.handleHealthcheck)
 	e.GET("/api/messages", b.handleMessages)
 	e.GET("/api/stream", b.handleStream)
@@ -80,6 +96,10 @@ func (b *API) Send(msg config.Message) (string, error) {
 
 func (b *API) handleHealthcheck(c echo.Context) error {
 	return c.String(http.StatusOK, "OK")
+}
+
+func (b *Api) handleDocsRedirect(c echo.Context) error {
+	return c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
 }
 
 func (b *API) handlePostMessage(c echo.Context) error {

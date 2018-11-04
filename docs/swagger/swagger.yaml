@@ -1,0 +1,12 @@
+basePath: /api
+host: TODO
+info:
+  contact: {}
+  description: A read/write API for the Matterbridge chat bridge.
+  license:
+    name: Apache 2.0
+    url: https://github.com/42wim/matterbridge/blob/master/LICENSE
+  title: Matterbridge API
+  version: TODO
+paths: {}
+swagger: "2.0"
