@@ -225,6 +225,20 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 	return channels
 }
 
+func (gw *Gateway) getDestMsgID(msgID string, dest *bridge.Bridge, channel config.ChannelInfo) string {
+	if res, ok := gw.Messages.Get(msgID); ok {
+		IDs := res.([]*BrMsgID)
+		for _, id := range IDs {
+			// check protocol, bridge name and channelname
+			// for people that reuse the same bridge multiple times. see #342
+			if dest.Protocol == id.br.Protocol && dest.Name == id.br.Name && channel.ID == id.ChannelID {
+				return id.ID
+			}
+		}
+	}
+	return ""
+}
+
 func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrMsgID {
 	var brMsgIDs []*BrMsgID
 
@@ -291,37 +305,17 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		msg.ID = ""
 		msg.ParentID = ""
 
-		if res, ok := gw.Messages.Get(origmsg.ID); ok {
-			IDs := res.([]*BrMsgID)
-			for _, id := range IDs {
-				// check protocol, bridge name and channelname
-				// for people that reuse the same bridge multiple times. see #342
-				if dest.Protocol == id.br.Protocol && dest.Name == id.br.Name && channel.ID == id.ChannelID {
-					msg.ID = id.ID
-				}
-			}
-		}
+		msg.ID = gw.getDestMsgID(origmsg.ID, dest, channel)
+
 		// for api we need originchannel as channel
 		if dest.Protocol == "api" {
 			msg.Channel = originchannel
 		}
 
 		if canonicalParentMsgID != "" {
-			parentMsgID := ""
-			if res, ok := gw.Messages.Get(canonicalParentMsgID); ok {
-				IDs := res.([]*BrMsgID)
-				for i, id := range IDs {
-					// check protocol, bridge name and channelname
-					// for people that reuse the same bridge multiple times. see #342
-					if dest.Protocol == id.br.Protocol && dest.Name == id.br.Name && channel.ID == id.ChannelID {
-						parentMsgID = IDs[i].ID
-						break
-					}
-				}
-				if parentMsgID == "" {
-					parentMsgID = canonicalParentMsgID
-				}
-				msg.ParentID = strings.Fields(parentMsgID)[1]
+			msg.ParentID =  gw.getDestMsgID(canonicalParentMsgID, dest, channel)
+			if msg.ParentID == "" {
+			   msg.ParentID = canonicalParentMsgID
 			}
 		}
 
