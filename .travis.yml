@@ -11,7 +11,7 @@ git:
   depth: 200
 
 env:
-    - GOOS=linux GOARCH=amd64
+    - GOOS=linux GOARCH=amd64 GO111MODULE=on
       #    - GOOS=windows GOARCH=amd64
       #- GOOS=linux GOARCH=arm
 
