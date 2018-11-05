@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -54,6 +55,9 @@ func New(cfg *bridge.Config) bridge.Bridger {
 		e.Use(middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
 			return key == b.GetString("Token"), nil
 		}))
+	}
+	for _, path := range strings.Fields("/api /swagger /") {
+		e.GET(path, b.handleDocsRedirect)
 	}
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 	e.GET("/swagger", b.handleDocsRedirect)
