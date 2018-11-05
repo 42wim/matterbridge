@@ -62,7 +62,12 @@
 * [API](https://github.com/42wim/matterbridge/wiki/Features#api)
 
 ### API
-The API is very basic at the moment and rather undocumented.
+The API is very basic at the moment. It uses the [Swagger/OpenAPI
+specification](https://swagger.io/), and so will have documentation and
+an interactive web interface accessible on your instance. To view it,
+simply visit the top level root path.
+
+![Screenshot of Swagger API web interface](docs/screenshot-swagger-api.png)
 
 Used by at least 3 projects. Feel free to make a PR to add your project to this list.
 
