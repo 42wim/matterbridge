@@ -112,7 +112,7 @@ func (b *Api) handleDocsRedirect(c echo.Context) error {
 // @Summary Create/Update a message
 // @Accept json
 // @Produce json
-// @Param body body object true "Message object to create"
+// @Param message body config.Message true "Message object to create"
 // @Success 200 {object} config.Message
 // @Router /message [post]
 func (b *API) handlePostMessage(c echo.Context) error {
@@ -132,7 +132,7 @@ func (b *API) handlePostMessage(c echo.Context) error {
 }
 
 // handleMessages godoc
-// @Summary List of new messages
+// @Summary List new messages
 // @Produce json
 // @Success 200 {array} config.Message
 // @Router /messages [get]
@@ -145,7 +145,7 @@ func (b *API) handleMessages(c echo.Context) error {
 }
 
 // handleStream godoc
-// @Summary Streams realtime messages
+// @Summary Stream realtime messages
 // @Produce json-stream
 // @Success 200 {object} config.Message
 // @Router /stream [get]

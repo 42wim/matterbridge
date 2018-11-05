@@ -37,7 +37,7 @@ type Message struct {
 	UserID    string    `json:"userid" example:"U4MCXJKNC"`
 	// URL to an avatar image
 	Avatar    string    `json:"avatar" example:"https://secure.gravatar.com/avatar/1234567890abcdef1234567890abcdef.jpg"`
-	// Unique account name of format "<protocol>.<slug>"
+	// Unique account name of format "[protocol].[slug]"
 	Account   string    `json:"account" example:"slack.myteam"`
 	// Can be blank.
 	Event     string    `json:"event" example:""`

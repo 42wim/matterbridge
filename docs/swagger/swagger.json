@@ -23,11 +23,12 @@
                 "parameters": [
                     {
                         "description": "Message object to create",
-                        "name": "body",
+                        "name": "message",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object"
+                            "type": "object",
+                            "$ref": "#/definitions/config.Message"
                         }
                     }
                 ],
@@ -47,7 +48,7 @@
                 "produces": [
                     "application/json"
                 ],
-                "summary": "List of new messages",
+                "summary": "List new messages",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -66,7 +67,7 @@
                 "produces": [
                     "application/x-json-stream"
                 ],
-                "summary": "Streams realtime messages",
+                "summary": "Stream realtime messages",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -84,7 +85,7 @@
             "type": "object",
             "properties": {
                 "account": {
-                    "description": "Unique account name of format \"\u003cprotocol\u003e.\u003cslug\u003e\"\n",
+                    "description": "Unique account name of format \"[protocol].[slug]\"\n",
                     "type": "string",
                     "example": "slack.myteam"
                 },

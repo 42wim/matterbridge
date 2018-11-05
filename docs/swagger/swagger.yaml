@@ -4,7 +4,7 @@ definitions:
     properties:
       account:
         description: |
-          Unique account name of format "<protocol>.<slug>"
+          Unique account name of format "[protocol].[slug]"
         example: slack.myteam
         type: string
       avatar:
@@ -74,9 +74,10 @@ paths:
       parameters:
       - description: Message object to create
         in: body
-        name: body
+        name: message
         required: true
         schema:
+          $ref: '#/definitions/config.Message'
           type: object
       produces:
       - application/json
@@ -98,7 +99,7 @@ paths:
             items:
               $ref: '#/definitions/config.Message'
             type: array
-      summary: List of new messages
+      summary: List new messages
   /stream:
     get:
       produces:
@@ -109,7 +110,7 @@ paths:
           schema:
             $ref: '#/definitions/config.Message'
             type: object
-      summary: Streams realtime messages
+      summary: Stream realtime messages
 securityDefinitions:
   "":
     in: header
