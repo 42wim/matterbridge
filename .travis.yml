@@ -3,7 +3,9 @@ go:
     - 1.11.x
 
 # we have everything vendored
-install: true
+# if we're on a PR, then run go get and ignore vendoring
+install:
+  - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then go get -t -v ./...; fi'
 
 git:
   depth: 200
