@@ -303,7 +303,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		msg.Avatar = gw.modifyAvatar(origmsg, dest)
 		msg.Username = gw.modifyUsername(origmsg, dest)
 		msg.ID = ""
-		msg.ParentID = ""
+		msg.ParentID = gw.getDestMsgID(canonicalParentMsgID, dest, channel)
 
 		msg.ID = gw.getDestMsgID(origmsg.ID, dest, channel)
 
