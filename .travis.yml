@@ -32,8 +32,9 @@ before_script:
   - PKGS=$(go list ./... | grep -v /vendor/)             # All the import paths, excluding vendor/
 #  - go get github.com/golang/lint/golint                 # Linter
 #- go get honnef.co/go/tools/cmd/megacheck              # Badass static analyzer/linter
+  - go get -u github.com/swaggo/swag/cmd/swag            # CLI tool for auto-generating swagger docs
+  - ci/check_swagger_sync.sh                             # Script to check that Swagger docs are up-to-date
   - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b $GOPATH/bin v1.12.2
-
 
 # Anything in before_script: that returns a nonzero exit code will
 # flunk the build and immediately stop. It's sorta like having
