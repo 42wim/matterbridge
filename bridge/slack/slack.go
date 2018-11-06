@@ -187,7 +187,10 @@ func (b *Bslack) Reload(cfg *bridge.Config) (string, error) {
 }
 
 func (b *Bslack) Send(msg config.Message) (string, error) {
-	b.Log.Debugf("=> Receiving %#v", msg)
+	// Too noisy to log like other events
+	if msg.Event != config.EVENT_USER_TYPING {
+		b.Log.Debugf("=> Receiving %#v", msg)
+	}
 
 	// Make a action /me of the message
 	if msg.Event == config.EVENT_USER_ACTION {
@@ -262,6 +265,13 @@ func (b *Bslack) sendWebhook(msg config.Message) (string, error) {
 }
 
 func (b *Bslack) sendRTM(msg config.Message) (string, error) {
+	if msg.Event == config.EVENT_USER_TYPING {
+		if b.GetBool("ShowUserTyping") {
+			chanID := b.channelsByName[msg.Channel].ID
+			b.rtm.SendMessage(b.rtm.NewTypingMessage(chanID))
+		}
+		return "", nil
+	}
 	channelInfo, err := b.getChannel(msg.Channel)
 	if err != nil {
 		return "", fmt.Errorf("could not send message: %v", err)

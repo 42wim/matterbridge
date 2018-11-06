@@ -665,6 +665,12 @@ ShowTopicChange=false
 #OPTIONAL (default false)
 PreserveThreading=false
 
+#Enable showing "user_typing" events from across gateway when available.
+#Hint: Set your bot/user's "Full Name" to be "Someone",
+#and so the message will say "Someone is typing".
+#OPTIONAL (default true)
+ShowUserTyping=true
+
 ###################################################################
 #discord section
 ###################################################################
