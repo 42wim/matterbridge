@@ -8,13 +8,9 @@ import (
 	"github.com/42wim/matterbridge/matterhook"
 )
 
-type MMhook struct {
+type Brocketchat struct {
 	mh *matterhook.Client
 	rh *rockethook.Client
-}
-
-type Brocketchat struct {
-	MMhook
 	*bridge.Config
 }
 
