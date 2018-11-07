@@ -310,9 +310,9 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			msg.Channel = originchannel
 		}
 
-		msg.ParentID =  gw.getDestMsgID(canonicalParentMsgID, dest, channel)
+		msg.ParentID = gw.getDestMsgID(canonicalParentMsgID, dest, channel)
 		if msg.ParentID == "" {
-		   msg.ParentID = canonicalParentMsgID
+			msg.ParentID = canonicalParentMsgID
 		}
 
 		mID, err := dest.Send(msg)

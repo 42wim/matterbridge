@@ -161,7 +161,8 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 
 		// Text must be a string
 		if rmsg.Text, ok = ev.Content["body"].(string); !ok {
-			b.Log.Errorf("Content[body] wasn't a %T ?", rmsg.Text)
+			b.Log.Errorf("Content[body] is not a string: %T\n%#v",
+				ev.Content["body"], ev.Content)
 			return
 		}
 

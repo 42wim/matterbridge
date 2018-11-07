@@ -166,14 +166,13 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 	}
 
 	rmsg := config.Message{
-		Text:    ev.Text,
-		Channel: channelInfo.Name,
-		Account: b.Account,
-		ID:      "slack " + ev.Timestamp,
-		Extra:   map[string][]interface{}{},
+		Text:     ev.Text,
+		Channel:  channelInfo.Name,
+		Account:  b.Account,
+		ID:       "slack " + ev.Timestamp,
+		Extra:    map[string][]interface{}{},
 		ParentID: ev.ThreadTimestamp,
 	}
-
 
 	if b.useChannelID {
 		rmsg.Channel = "ID:" + channelInfo.ID
