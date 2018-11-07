@@ -3,6 +3,7 @@ package btelegram
 import (
 	"bytes"
 	"html"
+	"io"
 
 	"github.com/russross/blackfriday"
 )
@@ -32,7 +33,7 @@ func (options *customHTML) Header(out *bytes.Buffer, text func() bool, level int
 	options.Paragraph(out, text)
 }
 
-func (options *customHTML) HRule(out *bytes.Buffer) {
+func (options *customHTML) HRule(out io.ByteWriter) {
 	out.WriteByte('\n')
 }
 
