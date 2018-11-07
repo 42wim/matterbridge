@@ -44,7 +44,7 @@ func SplitStringLength(input string, length int) string {
 	a := []rune(input)
 	str := ""
 	for i, r := range a {
-		str = str + string(r)
+		str += string(r)
 		if i > 0 && (i+1)%length == 0 {
 			str += "\n"
 		}

@@ -63,8 +63,7 @@ func New(cfg *bridge.Config) bridge.Bridger {
 }
 
 func (b *Birc) Command(msg *config.Message) string {
-	switch msg.Text {
-	case "!users":
+	if msg.Text == "!users" {
 		b.i.Handlers.Add(girc.RPL_NAMREPLY, b.storeNames)
 		b.i.Handlers.Add(girc.RPL_ENDOFNAMES, b.endNames)
 		b.i.Cmd.SendRaw("NAMES " + msg.Channel)
@@ -237,7 +236,7 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 		}
 		if len(b.Local) < b.MessageQueue {
 			if len(b.Local) == b.MessageQueue-1 {
-				text = text + " <message clipped>"
+				text += " <message clipped>"
 			}
 			b.Local <- config.Message{Text: text, Username: msg.Username, Channel: msg.Channel, Event: msg.Event}
 		} else {

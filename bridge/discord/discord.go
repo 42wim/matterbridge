@@ -234,7 +234,7 @@ func (b *Bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdat
 	// only when message is actually edited
 	if m.Message.EditedTimestamp != "" {
 		b.Log.Debugf("Sending edit message")
-		m.Content = m.Content + b.GetString("EditSuffix")
+		m.Content += b.GetString("EditSuffix")
 		b.messageCreate(s, (*discordgo.MessageCreate)(m))
 	}
 }

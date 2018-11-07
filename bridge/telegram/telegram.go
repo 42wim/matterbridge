@@ -303,7 +303,7 @@ func (b *Btelegram) handleDownload(message *tgbotapi.Message, rmsg *config.Messa
 		urlPart := strings.Split(url, "/")
 		name = urlPart[len(urlPart)-1]
 		if !strings.HasSuffix(name, ".webp") {
-			name = name + ".webp"
+			name += ".webp"
 		}
 		text = " " + url
 	}
@@ -338,7 +338,7 @@ func (b *Btelegram) handleDownload(message *tgbotapi.Message, rmsg *config.Messa
 		name = urlPart[len(urlPart)-1]
 		text = " " + url
 		if !strings.HasSuffix(name, ".ogg") {
-			name = name + ".ogg"
+			name += ".ogg"
 		}
 	}
 	if message.Audio != nil {
@@ -356,7 +356,7 @@ func (b *Btelegram) handleDownload(message *tgbotapi.Message, rmsg *config.Messa
 	// use the URL instead of native upload
 	if b.GetBool("UseInsecureURL") {
 		b.Log.Debugf("Setting message text to :%s", text)
-		rmsg.Text = rmsg.Text + text
+		rmsg.Text += text
 		return nil
 	}
 	// if we have a file attached, download it (in memory) and put a pointer to it in msg.Extra

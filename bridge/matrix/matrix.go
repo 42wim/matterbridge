@@ -234,11 +234,11 @@ func (b *Bmatrix) handleDownloadFile(rmsg *config.Message, content map[string]in
 		if msgtype == "m.image" {
 			mext, _ := mime.ExtensionsByType(mtype)
 			if len(mext) > 0 {
-				name = name + mext[0]
+				name += mext[0]
 			}
 		} else {
 			// just a default .png extension if we don't have mime info
-			name = name + ".png"
+			name += ".png"
 		}
 	}
 
