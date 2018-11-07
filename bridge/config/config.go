@@ -173,7 +173,6 @@ type ConfigValues struct {
 	General            Protocol
 	Gateway            []Gateway
 	SameChannelGateway []SameChannelGateway
-	ConfigFile         string
 }
 
 type Config struct {
@@ -234,8 +233,8 @@ func NewConfigFromString(input []byte) *Config {
 	return mycfg
 }
 
-func (c *Config) GetConfigFile() string {
-	return c.v.GetString("ConfigFile")
+func (c *Config) ConfigFileUsed() string {
+	return c.v.ConfigFileUsed()
 }
 
 func (c *Config) GetBool(key string) bool {
