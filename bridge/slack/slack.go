@@ -147,6 +147,11 @@ func (b *Bslack) Disconnect() error {
 // allow apps or bots to join channels themselves and they need to be invited
 // manually by a user.
 func (b *Bslack) JoinChannel(channel config.ChannelInfo) error {
+	// We can only join a channel through the Slack API.
+	if b.sc == nil {
+		return nil
+	}
+
 	b.populateChannels()
 
 	channelInfo, err := b.getChannel(channel.Name)
