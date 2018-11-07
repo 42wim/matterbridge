@@ -23,7 +23,9 @@ func (b *Bslack) handleSlack() {
 	time.Sleep(time.Second)
 	b.Log.Debug("Start listening for Slack messages")
 	for message := range messages {
-		b.Log.Debugf("<= Sending message from %s on %s to gateway", message.Username, b.Account)
+		if message.Event != config.EVENT_USER_TYPING {
+			b.Log.Debugf("<= Sending message from %s on %s to gateway", message.Username, b.Account)
+		}
 
 		// cleanup the message
 		message.Text = b.replaceMention(message.Text)
