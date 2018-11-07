@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -34,6 +35,11 @@ type Bslack struct {
 	channelsByID   map[string]*slack.Channel
 	channelsByName map[string]*slack.Channel
 	channelsMutex  sync.RWMutex
+
+	refreshInProgress      bool
+	earliestChannelRefresh time.Time
+	earliestUserRefresh    time.Time
+	refreshMutex           sync.Mutex
 }
 
 const (
@@ -68,12 +74,14 @@ func New(cfg *bridge.Config) bridge.Bridger {
 		cfg.Log.Fatalf("Could not create LRU cache for Slack bridge: %v", err)
 	}
 	b := &Bslack{
-		Config:         cfg,
-		uuid:           xid.New().String(),
-		cache:          newCache,
-		users:          map[string]*slack.User{},
-		channelsByID:   map[string]*slack.Channel{},
-		channelsByName: map[string]*slack.Channel{},
+		Config:                 cfg,
+		uuid:                   xid.New().String(),
+		cache:                  newCache,
+		users:                  map[string]*slack.User{},
+		channelsByID:           map[string]*slack.Channel{},
+		channelsByName:         map[string]*slack.Channel{},
+		earliestChannelRefresh: time.Now(),
+		earliestUserRefresh:    time.Now(),
 	}
 	return b
 }

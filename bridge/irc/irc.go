@@ -106,7 +106,10 @@ func (b *Birc) Connect() error {
 	})
 
 	if b.GetBool("UseSASL") {
-		i.Config.SASL = &girc.SASLPlain{b.GetString("NickServNick"), b.GetString("NickServPassword")}
+		i.Config.SASL = &girc.SASLPlain{
+			User: b.GetString("NickServNick"),
+			Pass: b.GetString("NickServPassword"),
+		}
 	}
 
 	i.Handlers.Add(girc.RPL_WELCOME, b.handleNewConnection)

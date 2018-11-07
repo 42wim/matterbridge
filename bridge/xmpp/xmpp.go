@@ -75,8 +75,6 @@ func (b *Bxmpp) JoinChannel(channel config.ChannelInfo) error {
 }
 
 func (b *Bxmpp) Send(msg config.Message) (string, error) {
-	var msgid = ""
-	var msgreplaceid = ""
 	// ignore delete messages
 	if msg.Event == config.EVENT_MSG_DELETE {
 		return "", nil
@@ -93,7 +91,8 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 		}
 	}
 
-	msgid = xid.New().String()
+	var msgreplaceid string
+	msgid := xid.New().String()
 	if msg.ID != "" {
 		msgid = msg.ID
 		msgreplaceid = msg.ID
