@@ -265,7 +265,7 @@ func (b *Bslack) sendWebhook(msg config.Message) (string, error) {
 }
 
 func (b *Bslack) sendRTM(msg config.Message) (string, error) {
-	if msg.Event == config.EVENT_USER_TYPING {
+	if msg.Event == config.EVENT_USER_TYPING && b.GetBool("ShowUserTyping") {
 		if b.GetBool("ShowUserTyping") {
 			chanID := b.channelsByName[msg.Channel].ID
 			b.rtm.SendMessage(b.rtm.NewTypingMessage(chanID))
