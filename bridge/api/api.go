@@ -100,6 +100,11 @@ func (b *API) Send(msg config.Message) (string, error) {
 	return "", nil
 }
 
+// handleHealthcheck godoc
+// @Summary Checks if the server is alive.
+// @Description OK
+// @Success 200 {string} string
+// @Router /api/health [get]
 func (b *API) handleHealthcheck(c echo.Context) error {
 	return c.String(http.StatusOK, "OK")
 }
