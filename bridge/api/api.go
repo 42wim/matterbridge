@@ -2,7 +2,9 @@ package api
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 
@@ -41,7 +43,9 @@ func New(cfg *bridge.Config) bridge.Bridger {
 			return key == b.GetString("Token"), nil
 		}))
 	}
+
 	e.GET("/api/health", b.handleHealthcheck)
+	e.PUT("/api/reload", b.handleConfigReload)
 	e.GET("/api/messages", b.handleMessages)
 	e.GET("/api/stream", b.handleStream)
 	e.POST("/api/message", b.handlePostMessage)
@@ -80,6 +84,40 @@ func (b *Api) Send(msg config.Message) (string, error) {
 
 func (b *Api) handleHealthcheck(c echo.Context) error {
 	return c.String(http.StatusOK, "OK")
+}
+
+func (b *Api) handleConfigReload(c echo.Context) error {
+	cfgURL := b.GetString("ConfigURL")
+	if cfgURL == "" {
+		b.Log.Warning("Reload API triggered, but no config file url set.")
+		return c.String(http.StatusInternalServerError, "Internal Server Error")
+	}
+
+	b.Log.Debugf("Reloading config from remote file: " + cfgURL)
+	_, err := url.ParseRequestURI(cfgURL)
+	if err != nil {
+		b.Log.Error("Malformed config file url: ", err)
+		return c.String(http.StatusInternalServerError, "Internal Server Error")
+	}
+	res, err := http.Get(cfgURL)
+	defer res.Body.Close()
+	if err != nil {
+		b.Log.Error("Failed to fetch remote config file: ", err)
+		return c.String(http.StatusInternalServerError, "Internal Server Error")
+	}
+	content, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		b.Log.Error("Error reading remote config file: ", err)
+		return c.String(http.StatusInternalServerError, "Internal Server Error")
+	}
+	cfgfile := b.GetConfigFile()
+	err = ioutil.WriteFile(cfgfile, content, 0644)
+	if err != nil {
+		b.Log.Error("Failed to write remote config file: ", err)
+		return c.String(http.StatusInternalServerError, "Internal Server Error")
+	}
+
+	return c.String(http.StatusAccepted, "Accepted")
 }
 
 func (b *Api) handlePostMessage(c echo.Context) error {
