@@ -2,7 +2,7 @@ package config
 
 import (
 	"bytes"
-	"os"
+	"io/ioutil"
 	"strings"
 	"sync"
 	"time"
@@ -183,42 +183,38 @@ type Config struct {
 func NewConfig(cfgfile string) *Config {
 	log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: false})
 	flog := log.WithFields(log.Fields{"prefix": "config"})
-	var cfg ConfigValues
-	viper.SetConfigType("toml")
 	viper.SetConfigFile(cfgfile)
-	viper.SetEnvPrefix("matterbridge")
-	viper.AddConfigPath(".")
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
-	viper.AutomaticEnv()
-	f, err := os.Open(cfgfile)
+	input, err := getFileContents(cfgfile)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = viper.ReadConfig(f)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = viper.Unmarshal(&cfg)
-	if err != nil {
-		log.Fatal("blah", err)
-	}
-	mycfg := new(Config)
-	mycfg.v = viper.GetViper()
-	if cfg.General.MediaDownloadSize == 0 {
-		cfg.General.MediaDownloadSize = 1000000
+	mycfg := NewConfigFromString(input)
+	if mycfg.ConfigValues.General.MediaDownloadSize == 0 {
+		mycfg.ConfigValues.General.MediaDownloadSize = 1000000
 	}
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {
 		flog.Println("Config file changed:", e.Name)
 	})
-
-	mycfg.ConfigValues = &cfg
 	return mycfg
+}
+
+func getFileContents(filename string) ([]byte, error) {
+	input, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Fatal(err)
+		return []byte(nil), err
+	}
+	return input, nil
 }
 
 func NewConfigFromString(input []byte) *Config {
 	var cfg ConfigValues
 	viper.SetConfigType("toml")
+	viper.SetEnvPrefix("matterbridge")
+	viper.AddConfigPath(".")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
+	viper.AutomaticEnv()
 	err := viper.ReadConfig(bytes.NewBuffer(input))
 	if err != nil {
 		log.Fatal(err)
