@@ -271,14 +271,12 @@ func (b *Birc) endNames(client *girc.Client, event girc.Event) {
 	channel := event.Params[1]
 	sort.Strings(b.names[channel])
 	maxNamesPerPost := (300 / b.nicksPerRow()) * b.nicksPerRow()
-	continued := false
 	for len(b.names[channel]) > maxNamesPerPost {
-		b.Remote <- config.Message{Username: b.Nick, Text: b.formatnicks(b.names[channel][0:maxNamesPerPost], continued),
+		b.Remote <- config.Message{Username: b.Nick, Text: b.formatnicks(b.names[channel][0:maxNamesPerPost]),
 			Channel: channel, Account: b.Account}
 		b.names[channel] = b.names[channel][maxNamesPerPost:]
-		continued = true
 	}
-	b.Remote <- config.Message{Username: b.Nick, Text: b.formatnicks(b.names[channel], continued),
+	b.Remote <- config.Message{Username: b.Nick, Text: b.formatnicks(b.names[channel]),
 		Channel: channel, Account: b.Account}
 	b.names[channel] = nil
 	b.i.Handlers.Clear(girc.RPL_NAMREPLY)
@@ -464,6 +462,6 @@ func (b *Birc) storeNames(client *girc.Client, event girc.Event) {
 		strings.Split(strings.TrimSpace(event.Trailing), " ")...)
 }
 
-func (b *Birc) formatnicks(nicks []string, continued bool) string {
-	return plainformatter(nicks, b.nicksPerRow())
+func (b *Birc) formatnicks(nicks []string) string {
+	return plainformatter(nicks)
 }

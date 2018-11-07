@@ -32,7 +32,7 @@ func tableformatter(nicks []string, nicksPerRow int, continued bool) string {
 }
 */
 
-func plainformatter(nicks []string, nicksPerRow int) string {
+func plainformatter(nicks []string) string {
 	return strings.Join(nicks, ", ") + " currently on IRC"
 }
 

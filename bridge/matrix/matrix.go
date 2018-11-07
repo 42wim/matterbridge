@@ -129,7 +129,7 @@ func (b *Bmatrix) getRoomID(channel string) string {
 	return ""
 }
 
-func (b *Bmatrix) handlematrix() error {
+func (b *Bmatrix) handlematrix() {
 	syncer := b.mc.Syncer.(*matrix.DefaultSyncer)
 	syncer.OnEventType("m.room.redaction", b.handleEvent)
 	syncer.OnEventType("m.room.message", b.handleEvent)
@@ -140,7 +140,6 @@ func (b *Bmatrix) handlematrix() error {
 			}
 		}
 	}()
-	return nil
 }
 
 func (b *Bmatrix) handleEvent(ev *matrix.Event) {

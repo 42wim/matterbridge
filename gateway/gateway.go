@@ -218,7 +218,7 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 			}
 			continue
 		}
-		if strings.Contains(channel.Direction, "out") && channel.Account == dest.Account && gw.validGatewayDest(msg, channel) {
+		if strings.Contains(channel.Direction, "out") && channel.Account == dest.Account && gw.validGatewayDest(msg) {
 			channels = append(channels, *channel)
 		}
 	}
@@ -537,7 +537,7 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 	}
 }
 
-func (gw *Gateway) validGatewayDest(msg *config.Message, channel *config.ChannelInfo) bool {
+func (gw *Gateway) validGatewayDest(msg *config.Message) bool {
 	return msg.Gateway == gw.Name
 }
 
