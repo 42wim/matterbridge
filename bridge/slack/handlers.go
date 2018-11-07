@@ -254,10 +254,9 @@ func (b *Bslack) handleTypingEvent(ev *slack.UserTypingEvent) (*config.Message, 
 	}
 
 	rmsg := config.Message{
-		Username: b.getUsername(ev.User),
-		Channel:  channelInfo.Name,
-		Account:  b.Account,
-		Event:    config.EVENT_USER_TYPING,
+		Channel: channelInfo.Name,
+		Account: b.Account,
+		Event:   config.EVENT_USER_TYPING,
 	}
 
 	return &rmsg, nil
