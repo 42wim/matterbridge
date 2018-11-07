@@ -100,11 +100,11 @@ func (b *Api) handleConfigReload(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Internal Server Error")
 	}
 	res, err := http.Get(cfgURL)
-	defer res.Body.Close()
 	if err != nil {
 		b.Log.Error("Failed to fetch remote config file: ", err)
 		return c.String(http.StatusInternalServerError, "Internal Server Error")
 	}
+	defer res.Body.Close()
 	content, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		b.Log.Error("Error reading remote config file: ", err)
