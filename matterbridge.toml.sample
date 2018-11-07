@@ -1214,6 +1214,7 @@ ShowTopicChange=false
 BindAddress="127.0.0.1:4242"
 
 #Amount of messages to keep in memory
+#OPTIONAL (library default 10)
 Buffer=1000
 
 #Bearer token used for authentication

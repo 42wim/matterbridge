@@ -16,6 +16,7 @@ Minecraft server chat support via [MatterLink](https://github.com/elytra/MatterL
 
 # Table of Contents
  * [Features](https://github.com/42wim/matterbridge/wiki/Features)
+   * [API](#API)
  * [Requirements](#requirements)
  * [Screenshots](https://github.com/42wim/matterbridge/wiki/)
  * [Installing](#installing)
@@ -28,6 +29,8 @@ Minecraft server chat support via [MatterLink](https://github.com/elytra/MatterL
    * [Docker](#docker)
  * [Changelog](#changelog)
  * [FAQ](#faq)
+ * [Related projects](#related-projects)
+ * [Articles](#articles)
  * [Thanks](#thanks)
 
 # Features
@@ -201,6 +204,23 @@ See [FAQ](https://github.com/42wim/matterbridge/wiki/FAQ)
 Want to tip ? 
 * eth: 0xb3f9b5387c66ad6be892bcb7bbc67862f3abc16f
 * btc: 1N7cKHj5SfqBHBzDJ6kad4BzeqUBBS2zhs
+
+# Related projects
+* [matterbridge-heroku](https://github.com/cadecairos/matterbridge-heroku)
+* [matterbridge config viewer](https://github.com/patcon/matterbridge-heroku-viewer)
+* [matterbridge autoconfig](https://github.com/patcon/matterbridge-autoconfig)
+* [matterlink](https://github.com/elytra/MatterLink)
+* [mattereddit](https://github.com/bonehurtingjuice/mattereddit)
+* [pyCord](https://github.com/NikkyAI/pyCord) (crossplatform chatbot)
+
+# Articles
+* https://mattermost.com/blog/connect-irc-to-mattermost/
+* https://blog.valvin.fr/2016/09/17/mattermost-et-un-channel-irc-cest-possible/
+* https://blog.brightscout.com/top-10-mattermost-integrations/
+* http://bencey.co.nz/2018/09/17/bridge/
+* https://www.algoo.fr/blog/2018/01/19/recouvrez-votre-liberte-en-quittant-slack-pour-un-mattermost-auto-heberge/
+* https://kopano.com/blog/matterbridge-bridging-mattermost-chat/
+* https://www.stitcher.com/s/?eid=52382713
 
 # Thanks
 [![Digitalocean](https://snag.gy/3LVifX.jpg)](https://www.digitalocean.com/) for sponsoring demo/testing droplets.

@@ -33,7 +33,9 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	e.HideBanner = true
 	e.HidePort = true
 	b.Messages = ring.Ring{}
-	b.Messages.SetCapacity(b.GetInt("Buffer"))
+	if b.GetInt("Buffer") != 0 {
+		b.Messages.SetCapacity(b.GetInt("Buffer"))
+	}
 	if b.GetString("Token") != "" {
 		e.Use(middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
 			return key == b.GetString("Token"), nil
@@ -102,6 +104,14 @@ func (b *Api) handleMessages(c echo.Context) error {
 func (b *Api) handleStream(c echo.Context) error {
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	c.Response().WriteHeader(http.StatusOK)
+	greet := config.Message{
+		Event:config.EVENT_API_CONNECTED,
+		Timestamp:time.Now(),
+	}
+	if err := json.NewEncoder(c.Response()).Encode(greet); err != nil {
+		return err
+	}
+	c.Response().Flush()
 	closeNotifier := c.Response().CloseNotify()
 	for {
 		select {

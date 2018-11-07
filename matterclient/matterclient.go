@@ -26,6 +26,8 @@ type Credentials struct {
 	Login         string
 	Team          string
 	Pass          string
+	Token         string
+	CookieToken   bool
 	Server        string
 	NoTLS         bool
 	SkipTLSVerify bool
@@ -117,6 +119,23 @@ func (m *MMClient) Login() error {
 	m.Client.HttpClient.Transport = &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: m.SkipTLSVerify}, Proxy: http.ProxyFromEnvironment}
 	m.Client.HttpClient.Timeout = time.Second * 10
 
+	if strings.Contains(m.Credentials.Pass, model.SESSION_COOKIE_TOKEN) {
+		token := strings.Split(m.Credentials.Pass, model.SESSION_COOKIE_TOKEN+"=")
+		if len(token) != 2 {
+			return errors.New("incorrect MMAUTHTOKEN. valid input is MMAUTHTOKEN=yourtoken")
+		}
+		m.Credentials.Token = token[1]
+		m.Credentials.CookieToken = true
+	}
+
+	if strings.Contains(m.Credentials.Pass, "token=") {
+		token := strings.Split(m.Credentials.Pass, "token=")
+		if len(token) != 2 {
+			return errors.New("incorrect personal token. valid input is token=yourtoken")
+		}
+		m.Credentials.Token = token[1]
+	}
+
 	for {
 		d := b.Duration()
 		// bogus call to get the serverversion
@@ -144,22 +163,22 @@ func (m *MMClient) Login() error {
 	var logmsg = "trying login"
 	for {
 		m.log.Debugf("%s %s %s %s", logmsg, m.Credentials.Team, m.Credentials.Login, m.Credentials.Server)
-		if strings.Contains(m.Credentials.Pass, model.SESSION_COOKIE_TOKEN) {
-			m.log.Debugf(logmsg + " with token")
-			token := strings.Split(m.Credentials.Pass, model.SESSION_COOKIE_TOKEN+"=")
-			if len(token) != 2 {
-				return errors.New("incorrect MMAUTHTOKEN. valid input is MMAUTHTOKEN=yourtoken")
-			}
-			m.Client.HttpClient.Jar = m.createCookieJar(token[1])
-			m.Client.AuthToken = token[1]
+		if m.Credentials.Token != "" {
 			m.Client.AuthType = model.HEADER_BEARER
+			m.Client.AuthToken = m.Credentials.Token
+			if m.Credentials.CookieToken {
+				m.log.Debugf(logmsg + " with cookie (MMAUTH) token")
+				m.Client.HttpClient.Jar = m.createCookieJar(m.Credentials.Token)
+			} else {
+				m.log.Debugf(logmsg + " with personal token")
+			}
 			m.User, resp = m.Client.GetMe("")
 			if resp.Error != nil {
 				return resp.Error
 			}
 			if m.User == nil {
 				m.log.Errorf("LOGIN TOKEN: %s is invalid", m.Credentials.Pass)
-				return errors.New("invalid " + model.SESSION_COOKIE_TOKEN)
+				return errors.New("invalid token")
 			}
 		} else {
 			m.User, resp = m.Client.Login(m.Credentials.Login, m.Credentials.Pass)
@@ -315,6 +334,8 @@ func (m *MMClient) parseMessage(rmsg *Message) {
 		if _, ok := user["id"].(string); ok {
 			m.UpdateUser(user["id"].(string))
 		}
+	case "group_added":
+		m.UpdateChannels()
 		/*
 			case model.ACTION_USER_REMOVED:
 				m.handleWsActionUserRemoved(&rmsg)
@@ -412,6 +433,11 @@ func (m *MMClient) GetChannelName(channelId string) string {
 		if t.Channels != nil {
 			for _, channel := range t.Channels {
 				if channel.Id == channelId {
+					if channel.Type == model.CHANNEL_GROUP {
+						res := strings.Replace(channel.DisplayName, ", ", "-", -1)
+						res = strings.Replace(res, " ", "_", -1)
+						return res
+					}
 					return channel.Name
 				}
 			}
@@ -419,6 +445,11 @@ func (m *MMClient) GetChannelName(channelId string) string {
 		if t.MoreChannels != nil {
 			for _, channel := range t.MoreChannels {
 				if channel.Id == channelId {
+					if channel.Type == model.CHANNEL_GROUP {
+						res := strings.Replace(channel.DisplayName, ", ", "-", -1)
+						res = strings.Replace(res, " ", "_", -1)
+						return res
+					}
 					return channel.Name
 				}
 			}
@@ -431,8 +462,20 @@ func (m *MMClient) GetChannelId(name string, teamId string) string {
 	m.RLock()
 	defer m.RUnlock()
 	if teamId == "" {
-		teamId = m.Team.Id
+		for _, t := range m.OtherTeams {
+			for _, channel := range append(t.Channels, t.MoreChannels...) {
+				if channel.Type == model.CHANNEL_GROUP {
+					res := strings.Replace(channel.DisplayName, ", ", "-", -1)
+					res = strings.Replace(res, " ", "_", -1)
+					if res == name {
+						return channel.Id
+					}
+				}
+
+			}
+		}
 	}
+
 	for _, t := range m.OtherTeams {
 		if t.Id == teamId {
 			for _, channel := range append(t.Channels, t.MoreChannels...) {
@@ -596,13 +639,15 @@ func (m *MMClient) UpdateChannelHeader(channelId string, header string) {
 	}
 }
 
-func (m *MMClient) UpdateLastViewed(channelId string) {
+func (m *MMClient) UpdateLastViewed(channelId string) error {
 	m.log.Debugf("posting lastview %#v", channelId)
 	view := &model.ChannelView{ChannelId: channelId}
 	_, resp := m.Client.ViewChannel(m.User.Id, view)
 	if resp.Error != nil {
 		m.log.Errorf("ChannelView update for %s failed: %s", channelId, resp.Error)
+		return resp.Error
 	}
+	return nil
 }
 
 func (m *MMClient) UpdateUserNick(nick string) error {
@@ -646,6 +691,10 @@ func (m *MMClient) createCookieJar(token string) *cookiejar.Jar {
 
 // SendDirectMessage sends a direct message to specified user
 func (m *MMClient) SendDirectMessage(toUserId string, msg string) {
+	m.SendDirectMessageProps(toUserId, msg, nil)
+}
+
+func (m *MMClient) SendDirectMessageProps(toUserId string, msg string, props map[string]interface{}) {
 	m.log.Debugf("SendDirectMessage to %s, msg %s", toUserId, msg)
 	// create DM channel (only happens on first message)
 	_, resp := m.Client.CreateDirectChannel(m.User.Id, toUserId)
@@ -660,7 +709,7 @@ func (m *MMClient) SendDirectMessage(toUserId string, msg string) {
 
 	// build & send the message
 	msg = strings.Replace(msg, "\r", "", -1)
-	post := &model.Post{ChannelId: m.GetChannelId(channelName, ""), Message: msg}
+	post := &model.Post{ChannelId: m.GetChannelId(channelName, m.Team.Id), Message: msg, Props: props}
 	m.Client.CreatePost(post)
 }
 
@@ -714,9 +763,13 @@ func (m *MMClient) GetTeamFromChannel(channelId string) string {
 		}
 		for _, c := range channels {
 			if c.Id == channelId {
+				if c.Type == model.CHANNEL_GROUP {
+					return "G"
+				}
 				return t.Id
 			}
 		}
+		channels = nil
 	}
 	return ""
 }
@@ -849,8 +902,7 @@ func (m *MMClient) StatusLoop() {
 			return
 		}
 		if m.WsConnected {
-			m.log.Debug("WS PING")
-			m.sendWSRequest("ping", nil)
+			m.checkAlive()
 			select {
 			case <-m.WsPingChan:
 				m.log.Debug("WS PONG received")
@@ -923,6 +975,16 @@ func (m *MMClient) initUser() error {
 		}
 	}
 	return nil
+}
+
+func (m *MMClient) checkAlive() error {
+	// check if session still is valid
+	_, resp := m.Client.GetMe("")
+	if resp.Error != nil {
+		return resp.Error
+	}
+	m.log.Debug("WS PING")
+	return m.sendWSRequest("ping", nil)
 }
 
 func (m *MMClient) sendWSRequest(action string, data map[string]interface{}) error {

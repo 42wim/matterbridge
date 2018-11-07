@@ -22,6 +22,7 @@ const (
 	EVENT_REJOIN_CHANNELS   = "rejoin_channels"
 	EVENT_USER_ACTION       = "user_action"
 	EVENT_MSG_DELETE        = "msg_delete"
+	EVENT_API_CONNECTED     = "api_connected"
 )
 
 type Message struct {
@@ -189,7 +190,7 @@ func NewConfig(cfgfile string) *Config {
 	viper.SetConfigFile(cfgfile)
 	viper.SetEnvPrefix("matterbridge")
 	viper.AddConfigPath(".")
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
 	viper.AutomaticEnv()
 	f, err := os.Open(cfgfile)
 	if err != nil {
