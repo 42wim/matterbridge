@@ -39,7 +39,7 @@ func New(cfg *bridge.Config) bridge.Bridger {
 			return key == b.GetString("Token"), nil
 		}))
 	}
-	e.GET("/api/ping", b.handlePing)
+	e.GET("/api/health", b.handleHealthcheck)
 	e.GET("/api/messages", b.handleMessages)
 	e.GET("/api/stream", b.handleStream)
 	e.POST("/api/message", b.handlePostMessage)
@@ -76,8 +76,8 @@ func (b *Api) Send(msg config.Message) (string, error) {
 	return "", nil
 }
 
-func (b *Api) handlePing(c echo.Context) error {
-	return c.String(http.StatusOK, "pong")
+func (b *Api) handleHealthcheck(c echo.Context) error {
+	return c.String(http.StatusOK, "OK")
 }
 
 func (b *Api) handlePostMessage(c echo.Context) error {
