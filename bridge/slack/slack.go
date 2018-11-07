@@ -310,6 +310,10 @@ func (b *Bslack) prepareMessageParameters(msg *config.Message) *slack.PostMessag
 	params.Username = msg.Username
 	params.LinkNames = 1 // replace mentions
 	params.IconURL = config.GetIconURL(msg, b.GetString(iconURLConfig))
+	msgFields := strings.Fields(msg.ParentID)
+	if len(msgFields) >= 2 {
+		params.ThreadTimestamp = msgFields[1]
+	}
 	if msg.Avatar != "" {
 		params.IconURL = msg.Avatar
 	}

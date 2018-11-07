@@ -83,6 +83,25 @@ func New(cfg config.Gateway, r *Router) *Gateway {
 	return gw
 }
 
+// Find the canonical ID that the message is keyed under in cache
+func (gw *Gateway) FindCanonicalMsgID(mID string) string {
+	if gw.Messages.Contains(mID) {
+		return mID
+	}
+
+	// If not keyed, iterate through cache for downstream, and infer upstream.
+	for _, mid := range gw.Messages.Keys() {
+		v, _ := gw.Messages.Peek(mid)
+		ids := v.([]*BrMsgID)
+		for _, downstreamMsgObj := range ids {
+			if mID == downstreamMsgObj.ID {
+				return mid.(string)
+			}
+		}
+	}
+	return ""
+}
+
 func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 	br := gw.Router.getBridge(cfg.Account)
 	if br == nil {
@@ -206,6 +225,20 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 	return channels
 }
 
+func (gw *Gateway) getDestMsgID(msgID string, dest *bridge.Bridge, channel config.ChannelInfo) string {
+	if res, ok := gw.Messages.Get(msgID); ok {
+		IDs := res.([]*BrMsgID)
+		for _, id := range IDs {
+			// check protocol, bridge name and channelname
+			// for people that reuse the same bridge multiple times. see #342
+			if dest.Protocol == id.br.Protocol && dest.Name == id.br.Name && channel.ID == id.ChannelID {
+				return id.ID
+			}
+		}
+	}
+	return ""
+}
+
 func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrMsgID {
 	var brMsgIDs []*BrMsgID
 
@@ -242,6 +275,13 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		return brMsgIDs
 	}
 
+	// Get the ID of the parent message in thread
+	var canonicalParentMsgID string
+	if msg.ParentID != "" && (gw.Config.General.PreserveThreading || dest.GetBool("PreserveThreading")) {
+		thisParentMsgID := dest.Protocol + " " + msg.ParentID
+		canonicalParentMsgID = gw.FindCanonicalMsgID(thisParentMsgID)
+	}
+
 	originchannel := msg.Channel
 	origmsg := msg
 	channels := gw.getDestChannel(&msg, *dest)
@@ -258,28 +298,28 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			}
 		}
 		flog.Debugf("=> Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, originchannel, dest.Account, channel.Name)
+
 		msg.Channel = channel.Name
 		msg.Avatar = gw.modifyAvatar(origmsg, dest)
 		msg.Username = gw.modifyUsername(origmsg, dest)
-		msg.ID = ""
-		if res, ok := gw.Messages.Get(origmsg.ID); ok {
-			IDs := res.([]*BrMsgID)
-			for _, id := range IDs {
-				// check protocol, bridge name and channelname
-				// for people that reuse the same bridge multiple times. see #342
-				if dest.Protocol == id.br.Protocol && dest.Name == id.br.Name && channel.ID == id.ChannelID {
-					msg.ID = id.ID
-				}
-			}
-		}
+
+		msg.ID = gw.getDestMsgID(origmsg.ID, dest, channel)
+
 		// for api we need originchannel as channel
 		if dest.Protocol == "api" {
 			msg.Channel = originchannel
 		}
+
+		msg.ParentID =  gw.getDestMsgID(canonicalParentMsgID, dest, channel)
+		if msg.ParentID == "" {
+		   msg.ParentID = canonicalParentMsgID
+		}
+
 		mID, err := dest.Send(msg)
 		if err != nil {
 			flog.Error(err)
 		}
+
 		// append the message ID (mID) from this bridge (dest) to our brMsgIDs slice
 		if mID != "" {
 			flog.Debugf("mID %s: %s", dest.Account, mID)

@@ -35,6 +35,7 @@ type Message struct {
 	Event     string    `json:"event"`
 	Protocol  string    `json:"protocol"`
 	Gateway   string    `json:"gateway"`
+	ParentID  string    `json:"parent_id"`
 	Timestamp time.Time `json:"timestamp"`
 	ID        string    `json:"id"`
 	Extra     map[string][]interface{}
@@ -98,6 +99,7 @@ type Protocol struct {
 	NoTLS                  bool       // mattermost
 	Password               string     // IRC,mattermost,XMPP,matrix
 	PrefixMessagesWithNick bool       // mattemost, slack
+	PreserveThreading      bool       // slack
 	Protocol               string     // all protocols
 	QuoteDisable           bool       // telegram
 	QuoteFormat            string     // telegram

@@ -37,6 +37,7 @@ Minecraft server chat support via [MatterLink](https://github.com/elytra/MatterL
 * [Support bridging between any protocols](https://github.com/42wim/matterbridge/wiki/Features#support-bridging-between-any-protocols)
 * [Support multiple gateways(bridges) for your protocols](https://github.com/42wim/matterbridge/wiki/Features#support-multiple-gatewaysbridges-for-your-protocols)
 * [Message edits and deletes](https://github.com/42wim/matterbridge/wiki/Features#message-edits-and-deletes)
+* Preserves threading when possible
 * [Attachment / files handling](https://github.com/42wim/matterbridge/wiki/Features#attachment--files-handling)
 * [Username and avatar spoofing](https://github.com/42wim/matterbridge/wiki/Features#username-and-avatar-spoofing)
 * [Private groups](https://github.com/42wim/matterbridge/wiki/Features#private-groups)
