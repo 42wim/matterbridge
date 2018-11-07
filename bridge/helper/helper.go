@@ -56,13 +56,10 @@ func SplitStringLength(input string, length int) string {
 func HandleExtra(msg *config.Message, general *config.Protocol) []config.Message {
 	extra := msg.Extra
 	rmsg := []config.Message{}
-	if len(extra[config.EVENT_FILE_FAILURE_SIZE]) > 0 {
-		for _, f := range extra[config.EVENT_FILE_FAILURE_SIZE] {
-			fi := f.(config.FileInfo)
-			text := fmt.Sprintf("file %s too big to download (%#v > allowed size: %#v)", fi.Name, fi.Size, general.MediaDownloadSize)
-			rmsg = append(rmsg, config.Message{Text: text, Username: "<system> ", Channel: msg.Channel, Account: msg.Account})
-		}
-		return rmsg
+	for _, f := range extra[config.EVENT_FILE_FAILURE_SIZE] {
+		fi := f.(config.FileInfo)
+		text := fmt.Sprintf("file %s too big to download (%#v > allowed size: %#v)", fi.Name, fi.Size, general.MediaDownloadSize)
+		rmsg = append(rmsg, config.Message{Text: text, Username: "<system> ", Channel: msg.Channel, Account: msg.Account})
 	}
 	return rmsg
 }

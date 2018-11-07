@@ -6,27 +6,31 @@ import (
 	"strings"
 	"time"
 
+	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/nlopes/slack"
 )
 
+func (b *Bslack) getUser(id string) *slack.User {
+	b.usersMutex.RLock()
+	defer b.usersMutex.RUnlock()
+
+	return b.users[id]
+}
+
 func (b *Bslack) getUsername(id string) string {
-	for _, u := range b.users {
-		if u.ID == id {
-			if u.Profile.DisplayName != "" {
-				return u.Profile.DisplayName
-			}
-			return u.Name
+	if user := b.getUser(id); user != nil {
+		if user.Profile.DisplayName != "" {
+			return user.Profile.DisplayName
 		}
+		return user.Name
 	}
 	b.Log.Warnf("Could not find user with ID '%s'", id)
 	return ""
 }
 
-func (b *Bslack) getAvatar(userid string) string {
-	for _, u := range b.users {
-		if userid == u.ID {
-			return u.Profile.Image48
-		}
+func (b *Bslack) getAvatar(id string) string {
+	if user := b.getUser(id); user != nil {
+		return user.Profile.Image48
 	}
 	return ""
 }
@@ -140,6 +144,66 @@ func (b *Bslack) populateChannels() {
 	defer b.refreshMutex.Unlock()
 	b.earliestChannelRefresh = time.Now().Add(minimumRefreshInterval)
 	b.refreshInProgress = false
+}
+
+// populateReceivedMessage shapes the initial Matterbridge message that we will forward to the
+// router before we apply message-dependent modifications.
+func (b *Bslack) populateReceivedMessage(ev *slack.MessageEvent) (*config.Message, error) {
+	// Use our own func because rtm.GetChannelInfo doesn't work for private channels.
+	channel, err := b.getChannelByID(ev.Channel)
+	if err != nil {
+		return nil, err
+	}
+
+	rmsg := &config.Message{
+		Text:     ev.Text,
+		Channel:  channel.Name,
+		Account:  b.Account,
+		ID:       "slack " + ev.Timestamp,
+		Extra:    make(map[string][]interface{}),
+		ParentID: ev.ThreadTimestamp,
+	}
+	if b.useChannelID {
+		rmsg.Channel = "ID:" + channel.ID
+	}
+
+	if err = b.populateMessageWithUserInfo(ev, rmsg); err != nil {
+		return nil, err
+	}
+	return rmsg, err
+}
+
+func (b *Bslack) populateMessageWithUserInfo(ev *slack.MessageEvent, rmsg *config.Message) error {
+	if ev.SubType == sMessageDeleted || ev.SubType == sFileComment {
+		return nil
+	}
+
+	if ev.BotID != "" && b.GetString(outgoingWebhookConfig) == "" {
+		bot, err := b.rtm.GetBotInfo(ev.BotID)
+		if err != nil {
+			return err
+		}
+		if bot.Name != "" && bot.Name != "Slack API Tester" {
+			rmsg.Username = bot.Name
+			if ev.Username != "" {
+				rmsg.Username = ev.Username
+			}
+			rmsg.UserID = bot.ID
+		}
+	}
+
+	if ev.User != "" {
+		user := b.getUser(ev.User)
+		if user == nil {
+			return fmt.Errorf("could not find information for user with id %s", ev.User)
+		}
+		rmsg.UserID = user.ID
+		rmsg.Username = user.Name
+		if user.Profile.DisplayName != "" {
+			rmsg.Username = user.Profile.DisplayName
+		}
+	}
+	return nil
 }
 
 var (
