@@ -200,7 +200,7 @@ func NewConfig(cfgfile string) *Config {
 	})
 
 	mycfg.v.Set("ConfigFile", cfgfile)
-	mycfg.ConfigValues = &cfg
+
 	return mycfg
 }
 
