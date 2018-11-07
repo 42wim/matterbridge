@@ -265,16 +265,15 @@ func (b *Bslack) sendWebhook(msg config.Message) (string, error) {
 }
 
 func (b *Bslack) sendRTM(msg config.Message) (string, error) {
-	if msg.Event == config.EVENT_USER_TYPING && b.GetBool("ShowUserTyping") {
-		if b.GetBool("ShowUserTyping") {
-			chanID := b.channelsByName[msg.Channel].ID
-			b.rtm.SendMessage(b.rtm.NewTypingMessage(chanID))
-		}
-		return "", nil
-	}
 	channelInfo, err := b.getChannel(msg.Channel)
 	if err != nil {
 		return "", fmt.Errorf("could not send message: %v", err)
+	}
+	if msg.Event == config.EVENT_USER_TYPING {
+		if b.GetBool("ShowUserTyping") {
+			b.rtm.SendMessage(b.rtm.NewTypingMessage(channelInfo.ID))
+		}
+		return "", nil
 	}
 
 	// Delete message

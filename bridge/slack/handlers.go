@@ -256,8 +256,6 @@ func (b *Bslack) handleTypingEvent(ev *slack.UserTypingEvent) (*config.Message, 
 		Channel:  channelInfo.Name,
 		Account:  b.Account,
 		Event:    config.EVENT_USER_TYPING,
-		ID:       "slack " + time.Now().String(),
-		Extra:    map[string][]interface{}{},
 	}
 
 	return &rmsg, nil
