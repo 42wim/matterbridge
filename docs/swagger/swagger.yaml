@@ -35,6 +35,10 @@ definitions:
           Unique ID of message on the gateway
         example: slack 1541361213.030700
         type: string
+      parent_id:
+        description: |
+          Unique ID of a parent message, if threaded
+        type: string
       protocol:
         description: |
           Chat protocol of incoming message
@@ -61,12 +65,21 @@ definitions:
     type: object
 info:
   contact: {}
-  description: A read/write API for the Matterbridge chat bridge.
+  description: OK
   license:
     name: Apache 2.0
     url: https://github.com/42wim/matterbridge/blob/master/LICENSE
   title: Matterbridge API
 paths:
+  /api/health:
+    get:
+      description: OK
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Checks if the server is alive.
   /message:
     post:
       consumes:
@@ -87,6 +100,8 @@ paths:
           schema:
             $ref: '#/definitions/config.Message'
             type: object
+      security:
+      - ApiKeyAuth: []
       summary: Create/Update a message
   /messages:
     get:
@@ -99,6 +114,8 @@ paths:
             items:
               $ref: '#/definitions/config.Message'
             type: array
+      security:
+      - ApiKeyAuth: []
       summary: List new messages
   /stream:
     get:
@@ -110,9 +127,11 @@ paths:
           schema:
             $ref: '#/definitions/config.Message'
             type: object
+      security:
+      - ApiKeyAuth: []
       summary: Stream realtime messages
 securityDefinitions:
-  "":
+  ApiKeyAuth:
     in: header
     name: Authorization
     type: apiKey

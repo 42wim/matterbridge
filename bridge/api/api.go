@@ -39,7 +39,7 @@ type Message struct {
 	Gateway  string `json:"gateway"`
 }
 
-// @securityDefinitions.apikey
+// @securityDefinitions.apiKey ApiKeyAuth
 // @in header
 // @name Authorization
 func New(cfg *bridge.Config) bridge.Bridger {
@@ -52,11 +52,20 @@ func New(cfg *bridge.Config) bridge.Bridger {
 		b.Messages.SetCapacity(b.GetInt("Buffer"))
 	}
 	if b.GetString("Token") != "" {
-		e.Use(middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
-			return key == b.GetString("Token"), nil
+		e.Pre(middleware.RemoveTrailingSlash())
+		e.Use(middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
+			Validator: func(key string, c echo.Context) (bool, error) {
+				return key == b.GetString("Token"), nil
+			},
+			Skipper: func(c echo.Context) bool {
+				for _, path := range strings.Fields("/ /api /api/health /swagger /swagger/*") {
+					if c.Path() == path { return true }
+				}
+				return false
+			},
 		}))
 	}
-	for _, path := range strings.Fields("/api /swagger /") {
+	for _, path := range strings.Fields("/ /api /swagger") {
 		e.GET(path, b.handleDocsRedirect)
 	}
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
@@ -116,6 +125,7 @@ func (b *Api) handleDocsRedirect(c echo.Context) error {
 // @Produce json
 // @Param message body config.Message true "Message object to create"
 // @Success 200 {object} config.Message
+// @Security ApiKeyAuth
 // @Router /message [post]
 func (b *API) handlePostMessage(c echo.Context) error {
 	message := config.Message{}
@@ -137,6 +147,7 @@ func (b *API) handlePostMessage(c echo.Context) error {
 // @Summary List new messages
 // @Produce json
 // @Success 200 {array} config.Message
+// @Security ApiKeyAuth
 // @Router /messages [get]
 func (b *API) handleMessages(c echo.Context) error {
 	b.Lock()
@@ -150,6 +161,7 @@ func (b *API) handleMessages(c echo.Context) error {
 // @Summary Stream realtime messages
 // @Produce json-stream
 // @Success 200 {object} config.Message
+// @Security ApiKeyAuth
 // @Router /stream [get]
 func (b *API) handleStream(c echo.Context) error {
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)

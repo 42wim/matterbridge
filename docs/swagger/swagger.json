@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "A read/write API for the Matterbridge chat bridge.",
+        "description": "OK",
         "title": "Matterbridge API",
         "contact": {},
         "license": {
@@ -11,8 +11,27 @@
     },
     "basePath": "/api",
     "paths": {
+        "/api/health": {
+            "get": {
+                "description": "OK",
+                "summary": "Checks if the server is alive.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/message": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -45,6 +64,11 @@
         },
         "/messages": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -64,6 +88,11 @@
         },
         "/stream": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "produces": [
                     "application/x-json-stream"
                 ],
@@ -117,6 +146,10 @@
                     "type": "string",
                     "example": "slack 1541361213.030700"
                 },
+                "parent_id": {
+                    "description": "Unique ID of a parent message, if threaded\n",
+                    "type": "string"
+                },
                 "protocol": {
                     "description": "Chat protocol of incoming message\n",
                     "type": "string",
@@ -145,7 +178,7 @@
         }
     },
     "securityDefinitions": {
-        "": {
+        "ApiKeyAuth": {
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"
