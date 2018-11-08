@@ -60,9 +60,6 @@ func New(cfg *bridge.Config) bridge.Bridger {
 		e.GET(path, b.handleDocsRedirect)
 	}
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
-	e.GET("/swagger", b.handleDocsRedirect)
-	e.GET("/", b.handleDocsRedirect)
-	e.GET("/api", b.handleDocsRedirect)
 	e.GET("/api/health", b.handleHealthcheck)
 	e.GET("/api/messages", b.handleMessages)
 	e.GET("/api/stream", b.handleStream)
