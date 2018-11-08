@@ -74,11 +74,8 @@ const (
 	apiProtocol = "api"
 )
 
-func init() {
-	flog = log.WithFields(log.Fields{"prefix": "gateway"})
-}
-
 func New(cfg config.Gateway, r *Router) *Gateway {
+	flog = log.WithFields(log.Fields{"prefix": "gateway"})
 	gw := &Gateway{Channels: make(map[string]*config.ChannelInfo), Message: r.Message,
 		Router: r, Bridges: make(map[string]*bridge.Bridge), Config: r.Config}
 	cache, _ := lru.New(5000)
