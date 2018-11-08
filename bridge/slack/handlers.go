@@ -229,6 +229,7 @@ func (b *Bslack) handleAttachments(ev *slack.MessageEvent, rmsg *config.Message)
 
 	// If we have files attached, download them (in memory) and put a pointer to it in msg.Extra.
 	for _, f := range ev.Files {
+		f := f
 		err := b.handleDownloadFile(rmsg, &f)
 		if err != nil {
 			b.Log.Errorf("Could not download incoming file: %#v", err)

@@ -70,6 +70,7 @@ func (r *Router) getBridge(account string) *bridge.Bridge {
 
 func (r *Router) handleReceive() {
 	for msg := range r.Message {
+		msg := msg // scopelint
 		if msg.Event == config.EVENT_FAILURE {
 		Loop:
 			for _, gw := range r.Gateways {

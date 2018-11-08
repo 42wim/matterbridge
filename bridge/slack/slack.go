@@ -219,6 +219,7 @@ func (b *Bslack) sendWebhook(msg config.Message) (string, error) {
 	if msg.Extra != nil {
 		// this sends a message only if we received a config.EVENT_FILE_FAILURE_SIZE
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+			rmsg := rmsg // scopelint
 			iconURL := config.GetIconURL(&rmsg, b.GetString(iconURLConfig))
 			matterMessage := matterhook.OMessage{
 				IconURL:  iconURL,

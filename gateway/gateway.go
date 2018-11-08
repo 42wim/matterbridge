@@ -128,6 +128,7 @@ func (gw *Gateway) AddConfig(cfg *config.Gateway) error {
 	gw.MyConfig = cfg
 	gw.mapChannels()
 	for _, br := range append(gw.MyConfig.In, append(gw.MyConfig.InOut, gw.MyConfig.Out...)...) {
+		br := br //scopelint
 		err := gw.AddBridge(&br)
 		if err != nil {
 			return err
