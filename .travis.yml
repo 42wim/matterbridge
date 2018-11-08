@@ -23,19 +23,22 @@ notifications:
 
 before_script:
   - MY_VERSION=$(git describe --tags)
-  - GO_FILES=$(find . -iname '*.go' | grep -v /vendor/)  # All the .go files, excluding vendor/
+#  - GO_FILES=$(find . -iname '*.go' | grep -v /vendor/)  # All the .go files, excluding vendor/
   - PKGS=$(go list ./... | grep -v /vendor/)             # All the import paths, excluding vendor/
 #  - go get github.com/golang/lint/golint                 # Linter
-  - go get honnef.co/go/tools/cmd/megacheck              # Badass static analyzer/linter
+#- go get honnef.co/go/tools/cmd/megacheck              # Badass static analyzer/linter
+  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b $GOPATH/bin v1.12
+
 
 # Anything in before_script: that returns a nonzero exit code will
 # flunk the build and immediately stop. It's sorta like having
 # set -e enabled in bash. 
 script:
-  - test -z "$(go fmt ./...)"         # Fail if a .go file hasn't been formatted with gofmt
+  #- test -z "$(go fmt ./...)"         # Fail if a .go file hasn't been formatted with gofmt
   - go test -v -race $PKGS            # Run all the tests with the race detector enabled
-  - go vet $PKGS                      # go vet is the official Go static analyzer
-  - megacheck $PKGS                   # "go vet on steroids" + linter
+  #- go vet $PKGS                      # go vet is the official Go static analyzer
+  - golangci-lint run --enable-all -D golint -D lll -D errcheck -D goimports -D gosec -D maligned -D prealloc -D gocyclo -D gochecknoglobals
+  #- megacheck $PKGS                   # "go vet on steroids" + linter
   - /bin/bash ci/bintray.sh
   #- golint -set_exit_status $PKGS     # one last linter
 
