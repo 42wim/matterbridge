@@ -70,6 +70,10 @@ var bridgeMap = map[string]bridge.Factory{
 	"zulip":      bzulip.New,
 }
 
+const (
+	apiProtocol = "api"
+)
+
 func init() {
 	flog = log.WithFields(log.Fields{"prefix": "gateway"})
 }
@@ -158,7 +162,7 @@ RECONNECT:
 func (gw *Gateway) mapChannelConfig(cfg []config.Bridge, direction string) {
 	for _, br := range cfg {
 		if isApi(br.Account) {
-			br.Channel = "api"
+			br.Channel = apiProtocol
 		}
 		// make sure to lowercase irc channels in config #348
 		if strings.HasPrefix(br.Account, "irc.") {
@@ -191,7 +195,7 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 	var channels []config.ChannelInfo
 
 	// for messages received from the api check that the gateway is the specified one
-	if msg.Protocol == "api" && gw.Name != msg.Gateway {
+	if msg.Protocol == apiProtocol && gw.Name != msg.Gateway {
 		return channels
 	}
 
@@ -310,7 +314,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		msg.ID = gw.getDestMsgID(origmsg.ID, dest, channel)
 
 		// for api we need originchannel as channel
-		if dest.Protocol == "api" {
+		if dest.Protocol == apiProtocol {
 			msg.Channel = originchannel
 		}
 
@@ -459,7 +463,7 @@ func (gw *Gateway) modifyMessage(msg *config.Message) {
 	}
 
 	// messages from api have Gateway specified, don't overwrite
-	if msg.Protocol != "api" {
+	if msg.Protocol != apiProtocol {
 		msg.Gateway = gw.Name
 	}
 }

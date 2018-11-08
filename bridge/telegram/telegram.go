@@ -12,6 +12,12 @@ import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+const (
+	unknownUser = "unknown"
+	HTMLFormat  = "HTML"
+	HTMLNick    = "htmlnick"
+)
+
 type Btelegram struct {
 	c *tgbotapi.BotAPI
 	*bridge.Config
@@ -64,7 +70,7 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 		return b.cacheAvatar(&msg)
 	}
 
-	if b.GetString("MessageFormat") == "HTML" {
+	if b.GetString("MessageFormat") == HTMLFormat {
 		msg.Text = makeHTML(msg.Text)
 	}
 
@@ -98,12 +104,12 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		if strings.ToLower(b.GetString("MessageFormat")) == "htmlnick" {
+		if strings.ToLower(b.GetString("MessageFormat")) == HTMLNick {
 			b.Log.Debug("Using mode HTML - nick only")
 			msg.Text = html.EscapeString(msg.Text)
 		}
 		m := tgbotapi.NewEditMessageText(chatid, msgid, msg.Username+msg.Text)
-		if b.GetString("MessageFormat") == "HTML" {
+		if b.GetString("MessageFormat") == HTMLFormat {
 			b.Log.Debug("Using mode HTML")
 			m.ParseMode = tgbotapi.ModeHTML
 		}
@@ -111,7 +117,7 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 			b.Log.Debug("Using mode markdown")
 			m.ParseMode = tgbotapi.ModeMarkdown
 		}
-		if strings.ToLower(b.GetString("MessageFormat")) == "htmlnick" {
+		if strings.ToLower(b.GetString("MessageFormat")) == HTMLNick {
 			b.Log.Debug("Using mode HTML - nick only")
 			m.ParseMode = tgbotapi.ModeHTML
 		}
@@ -187,7 +193,7 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 
 		// if we really didn't find a username, set it to unknown
 		if rmsg.Username == "" {
-			rmsg.Username = "unknown"
+			rmsg.Username = unknownUser
 		}
 
 		// handle any downloads
@@ -209,7 +215,7 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 				}
 			}
 			if usernameForward == "" {
-				usernameForward = "unknown"
+				usernameForward = unknownUser
 			}
 			rmsg.Text = "Forwarded from " + usernameForward + ": " + rmsg.Text
 		}
@@ -229,7 +235,7 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 				}
 			}
 			if usernameReply == "" {
-				usernameReply = "unknown"
+				usernameReply = unknownUser
 			}
 			if !b.GetBool("QuoteDisable") {
 				rmsg.Text = b.handleQuote(rmsg.Text, usernameReply, message.ReplyToMessage.Text)
@@ -401,7 +407,7 @@ func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64) (string,
 func (b *Btelegram) sendMessage(chatid int64, username, text string) (string, error) {
 	m := tgbotapi.NewMessage(chatid, "")
 	m.Text = username + text
-	if b.GetString("MessageFormat") == "HTML" {
+	if b.GetString("MessageFormat") == HTMLFormat {
 		b.Log.Debug("Using mode HTML")
 		m.ParseMode = tgbotapi.ModeHTML
 	}
@@ -409,7 +415,7 @@ func (b *Btelegram) sendMessage(chatid int64, username, text string) (string, er
 		b.Log.Debug("Using mode markdown")
 		m.ParseMode = tgbotapi.ModeMarkdown
 	}
-	if strings.ToLower(b.GetString("MessageFormat")) == "htmlnick" {
+	if strings.ToLower(b.GetString("MessageFormat")) == HTMLNick {
 		b.Log.Debug("Using mode HTML - nick only")
 		m.Text = username + html.EscapeString(text)
 		m.ParseMode = tgbotapi.ModeHTML

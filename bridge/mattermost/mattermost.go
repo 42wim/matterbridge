@@ -10,6 +10,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/42wim/matterbridge/matterclient"
 	"github.com/42wim/matterbridge/matterhook"
+	"github.com/mattermost/platform/model"
 	"github.com/rs/xid"
 )
 
@@ -239,11 +240,11 @@ func (b *Bmattermost) handleMatterClient(messages chan *config.Message) {
 		}
 
 		// create a text for bridges that don't support native editing
-		if message.Raw.Event == "post_edited" && !b.GetBool("EditDisable") {
+		if message.Raw.Event == model.WEBSOCKET_EVENT_POST_EDITED && !b.GetBool("EditDisable") {
 			rmsg.Text = message.Text + b.GetString("EditSuffix")
 		}
 
-		if message.Raw.Event == "post_deleted" {
+		if message.Raw.Event == model.WEBSOCKET_EVENT_POST_DELETED {
 			rmsg.Event = config.EVENT_MSG_DELETE
 		}
 
@@ -434,7 +435,7 @@ func (b *Bmattermost) skipMessage(message *matterclient.Message) bool {
 	}
 
 	// Handle edited messages
-	if (message.Raw.Event == "post_edited") && b.GetBool("EditDisable") {
+	if (message.Raw.Event == model.WEBSOCKET_EVENT_POST_EDITED) && b.GetBool("EditDisable") {
 		return true
 	}
 
@@ -462,7 +463,7 @@ func (b *Bmattermost) skipMessage(message *matterclient.Message) bool {
 	}
 
 	// only handle posted, edited or deleted events
-	if !(message.Raw.Event == "posted" || message.Raw.Event == "post_edited" || message.Raw.Event == "post_deleted") {
+	if !(message.Raw.Event == "posted" || message.Raw.Event == model.WEBSOCKET_EVENT_POST_EDITED || message.Raw.Event == model.WEBSOCKET_EVENT_POST_DELETED) {
 		return true
 	}
 	return false
