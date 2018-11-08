@@ -167,6 +167,15 @@ func (b *Bslack) populateReceivedMessage(ev *slack.MessageEvent) (*config.Messag
 		rmsg.Channel = "ID:" + channel.ID
 	}
 
+	// Handle 'edit' messages.
+	if ev.SubMessage != nil && !b.GetBool(editDisableConfig) {
+		rmsg.ID = "slack " + ev.SubMessage.Timestamp
+		if ev.SubMessage.ThreadTimestamp != ev.SubMessage.Timestamp {
+			b.Log.Debugf("SubMessage %#v", ev.SubMessage)
+			rmsg.Text = ev.SubMessage.Text + b.GetString(editSuffixConfig)
+		}
+	}
+
 	if err = b.populateMessageWithUserInfo(ev, rmsg); err != nil {
 		return nil, err
 	}
@@ -178,6 +187,8 @@ func (b *Bslack) populateMessageWithUserInfo(ev *slack.MessageEvent, rmsg *confi
 		return nil
 	}
 
+	// First, deal with bot-originating messages but only do so when not using webhooks: we
+	// would not be able to distinguish which bot would be sending them.
 	if ev.BotID != "" && b.GetString(outgoingWebhookConfig) == "" {
 		bot, err := b.rtm.GetBotInfo(ev.BotID)
 		if err != nil {
@@ -192,16 +203,25 @@ func (b *Bslack) populateMessageWithUserInfo(ev *slack.MessageEvent, rmsg *confi
 		}
 	}
 
+	// Second, deal with "real" users if we have the necessary information.
+	var userID string
 	if ev.User != "" {
-		user := b.getUser(ev.User)
-		if user == nil {
-			return fmt.Errorf("could not find information for user with id %s", ev.User)
-		}
-		rmsg.UserID = user.ID
-		rmsg.Username = user.Name
-		if user.Profile.DisplayName != "" {
-			rmsg.Username = user.Profile.DisplayName
-		}
+		userID = ev.User
+	} else if ev.SubMessage != nil && ev.SubMessage.User != "" {
+		userID = ev.SubMessage.User
+	} else {
+		return nil
+	}
+
+	user := b.getUser(userID)
+	if user == nil {
+		return fmt.Errorf("could not find information for user with id %s", ev.User)
+	}
+
+	rmsg.UserID = user.ID
+	rmsg.Username = user.Name
+	if user.Profile.DisplayName != "" {
+		rmsg.Username = user.Profile.DisplayName
 	}
 	return nil
 }

@@ -150,16 +150,6 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 		return rmsg, nil
 	}
 
-	// Handle 'edit' messages.
-	if ev.SubMessage != nil && !b.GetBool(editDisableConfig) {
-		rmsg.ID = "slack " + ev.SubMessage.Timestamp
-		if ev.SubMessage.ThreadTimestamp != ev.SubMessage.Timestamp {
-			b.Log.Debugf("SubMessage %#v", ev.SubMessage)
-			rmsg.Username = ev.SubMessage.User
-			rmsg.Text = ev.SubMessage.Text + b.GetString(editSuffixConfig)
-		}
-	}
-
 	b.handleAttachments(ev, rmsg)
 
 	// Verify that we have the right information and the message
