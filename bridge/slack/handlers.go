@@ -49,6 +49,9 @@ func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 		}
 		switch ev := msg.Data.(type) {
 		case *slack.UserTypingEvent:
+			if !b.GetBool("ShowUserTyping") {
+				continue
+			}
 			rmsg, err := b.handleTypingEvent(ev)
 			if err != nil {
 				b.Log.Errorf("%#v", err)
