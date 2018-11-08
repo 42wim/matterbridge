@@ -23,6 +23,7 @@ const (
 	EVENT_USER_ACTION       = "user_action"
 	EVENT_MSG_DELETE        = "msg_delete"
 	EVENT_API_CONNECTED     = "api_connected"
+	EVENT_USER_TYPING       = "user_typing"
 )
 
 type Message struct {
@@ -110,6 +111,7 @@ type Protocol struct {
 	Server                 string     // IRC,mattermost,XMPP,discord
 	ShowJoinPart           bool       // all protocols
 	ShowTopicChange        bool       // slack
+	ShowUserTyping         bool       // slack
 	ShowEmbeds             bool       // discord
 	SkipTLSVerify          bool       // IRC, mattermost
 	StripNick              bool       // all protocols

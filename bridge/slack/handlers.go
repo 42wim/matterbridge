@@ -23,7 +23,9 @@ func (b *Bslack) handleSlack() {
 	time.Sleep(time.Second)
 	b.Log.Debug("Start listening for Slack messages")
 	for message := range messages {
-		b.Log.Debugf("<= Sending message from %s on %s to gateway", message.Username, b.Account)
+		if message.Event != config.EVENT_USER_TYPING {
+			b.Log.Debugf("<= Sending message from %s on %s to gateway", message.Username, b.Account)
+		}
 
 		// cleanup the message
 		message.Text = b.replaceMention(message.Text)
@@ -46,6 +48,14 @@ func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 			b.Log.Debugf("== Receiving event %#v", msg.Data)
 		}
 		switch ev := msg.Data.(type) {
+		case *slack.UserTypingEvent:
+			rmsg, err := b.handleTypingEvent(ev)
+			if err != nil {
+				b.Log.Errorf("%#v", err)
+				continue
+			}
+
+			messages <- rmsg
 		case *slack.MessageEvent:
 			if b.skipMessageEvent(ev) {
 				b.Log.Debugf("Skipped message: %#v", ev)
@@ -224,6 +234,24 @@ func (b *Bslack) handleAttachments(ev *slack.MessageEvent, rmsg *config.Message)
 }
 
 var commentRE = regexp.MustCompile(`.*?commented: (.*)`)
+
+func (b *Bslack) handleTypingEvent(ev *slack.UserTypingEvent) (*config.Message, error) {
+	var err error
+	// use our own func because rtm.GetChannelInfo doesn't work for private channels
+	channelInfo, err := b.getChannelByID(ev.Channel)
+	if err != nil {
+		return nil, err
+	}
+
+	rmsg := config.Message{
+		Channel: channelInfo.Name,
+		Account: b.Account,
+		Event:   config.EVENT_USER_TYPING,
+	}
+
+	return &rmsg, nil
+
+}
 
 // handleDownloadFile handles file download
 func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File) error {

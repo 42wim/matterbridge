@@ -297,7 +297,11 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 				continue
 			}
 		}
-		flog.Debugf("=> Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, originchannel, dest.Account, channel.Name)
+
+		// Too noisy to log like other events
+		if msg.Event != config.EVENT_USER_TYPING {
+			flog.Debugf("=> Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, originchannel, dest.Account, channel.Name)
+		}
 
 		msg.Channel = channel.Name
 		msg.Avatar = gw.modifyAvatar(origmsg, dest)
@@ -337,6 +341,9 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 
 	// check if we need to ignore a empty message
 	if msg.Text == "" {
+		if msg.Event == config.EVENT_USER_TYPING {
+			return false
+		}
 		// we have an attachment or actual bytes, do not ignore
 		if msg.Extra != nil &&
 			(msg.Extra["attachments"] != nil ||
