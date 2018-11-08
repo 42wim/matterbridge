@@ -11,9 +11,8 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	"github.com/zfjagann/golang-ring"
 	"github.com/swaggo/echo-swagger"
-	_ "github.com/42wim/matterbridge/docs"
+	"github.com/zfjagann/golang-ring"
 )
 
 // @title Matterbridge API
@@ -59,7 +58,9 @@ func New(cfg *bridge.Config) bridge.Bridger {
 			},
 			Skipper: func(c echo.Context) bool {
 				for _, path := range strings.Fields("/ /api /api/health /swagger /swagger/*") {
-					if c.Path() == path { return true }
+					if c.Path() == path {
+						return true
+					}
 				}
 				return false
 			},
