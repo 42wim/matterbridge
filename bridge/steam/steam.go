@@ -174,8 +174,6 @@ func (b *Bsteam) handleEvents() {
 			b.c.Connect()
 		case steam.FatalErrorEvent:
 			b.Log.Error(e)
-		case error:
-			b.Log.Error(e)
 		default:
 			b.Log.Debugf("unknown event %#v", e)
 		}

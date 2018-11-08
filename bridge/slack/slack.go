@@ -98,13 +98,14 @@ func (b *Bslack) Connect() error {
 	b.RLock()
 	defer b.RUnlock()
 	if b.GetString(incomingWebhookConfig) != "" {
-		if b.GetString(outgoingWebhookConfig) != "" {
+		switch {
+		case b.GetString(outgoingWebhookConfig) != "":
 			b.Log.Info("Connecting using webhookurl (sending) and webhookbindaddress (receiving)")
 			b.mh = matterhook.New(b.GetString(outgoingWebhookConfig), matterhook.Config{
 				InsecureSkipVerify: b.GetBool(skipTLSConfig),
 				BindAddress:        b.GetString(incomingWebhookConfig),
 			})
-		} else if b.GetString(tokenConfig) != "" {
+		case b.GetString(tokenConfig) != "":
 			b.Log.Info("Connecting using token (sending)")
 			b.sc = slack.New(b.GetString(tokenConfig))
 			b.rtm = b.sc.NewRTM()
@@ -114,7 +115,7 @@ func (b *Bslack) Connect() error {
 				InsecureSkipVerify: b.GetBool(skipTLSConfig),
 				BindAddress:        b.GetString(incomingWebhookConfig),
 			})
-		} else {
+		default:
 			b.Log.Info("Connecting using webhookbindaddress (receiving)")
 			b.mh = matterhook.New(b.GetString(outgoingWebhookConfig), matterhook.Config{
 				InsecureSkipVerify: b.GetBool(skipTLSConfig),

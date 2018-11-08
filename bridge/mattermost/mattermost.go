@@ -34,24 +34,25 @@ func (b *Bmattermost) Command(cmd string) string {
 
 func (b *Bmattermost) Connect() error {
 	if b.GetString("WebhookBindAddress") != "" {
-		if b.GetString("WebhookURL") != "" {
+		switch {
+		case b.GetString("WebhookURL") != "":
 			b.Log.Info("Connecting using webhookurl (sending) and webhookbindaddress (receiving)")
 			b.mh = matterhook.New(b.GetString("WebhookURL"),
 				matterhook.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
 					BindAddress: b.GetString("WebhookBindAddress")})
-		} else if b.GetString("Token") != "" {
+		case b.GetString("Token") != "":
 			b.Log.Info("Connecting using token (sending)")
 			err := b.apiLogin()
 			if err != nil {
 				return err
 			}
-		} else if b.GetString("Login") != "" {
+		case b.GetString("Login") != "":
 			b.Log.Info("Connecting using login/password (sending)")
 			err := b.apiLogin()
 			if err != nil {
 				return err
 			}
-		} else {
+		default:
 			b.Log.Info("Connecting using webhookbindaddress (receiving)")
 			b.mh = matterhook.New(b.GetString("WebhookURL"),
 				matterhook.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
@@ -60,7 +61,8 @@ func (b *Bmattermost) Connect() error {
 		go b.handleMatter()
 		return nil
 	}
-	if b.GetString("WebhookURL") != "" {
+	switch {
+	case b.GetString("WebhookURL") != "":
 		b.Log.Info("Connecting using webhookurl (sending)")
 		b.mh = matterhook.New(b.GetString("WebhookURL"),
 			matterhook.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
@@ -81,14 +83,14 @@ func (b *Bmattermost) Connect() error {
 			go b.handleMatter()
 		}
 		return nil
-	} else if b.GetString("Token") != "" {
+	case b.GetString("Token") != "":
 		b.Log.Info("Connecting using token (sending and receiving)")
 		err := b.apiLogin()
 		if err != nil {
 			return err
 		}
 		go b.handleMatter()
-	} else if b.GetString("Login") != "" {
+	case b.GetString("Login") != "":
 		b.Log.Info("Connecting using login/password (sending and receiving)")
 		err := b.apiLogin()
 		if err != nil {

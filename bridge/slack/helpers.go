@@ -205,11 +205,12 @@ func (b *Bslack) populateMessageWithUserInfo(ev *slack.MessageEvent, rmsg *confi
 
 	// Second, deal with "real" users if we have the necessary information.
 	var userID string
-	if ev.User != "" {
+	switch {
+	case ev.User != "":
 		userID = ev.User
-	} else if ev.SubMessage != nil && ev.SubMessage.User != "" {
+	case ev.SubMessage != nil && ev.SubMessage.User != "":
 		userID = ev.SubMessage.User
-	} else {
+	default:
 		return nil
 	}
 
