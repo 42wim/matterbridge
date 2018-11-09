@@ -68,10 +68,6 @@ func (b *Bridge) joinChannels(channels map[string]config.ChannelInfo, exists map
 	return nil
 }
 
-func (b *Bridge) ConfigFileUsed() string {
-	return b.Config.ConfigFileUsed()
-}
-
 func (b *Bridge) GetBool(key string) bool {
 	if b.Config.GetBool(b.Account + "." + key) {
 		return b.Config.GetBool(b.Account + "." + key)

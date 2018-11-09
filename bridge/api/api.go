@@ -110,7 +110,7 @@ func (b *Api) handleConfigReload(c echo.Context) error {
 		b.Log.Error("Error reading remote config file: ", err)
 		return c.String(http.StatusInternalServerError, "Internal Server Error")
 	}
-	cfgfile := b.ConfigFileUsed()
+	cfgfile := b.Config.ConfigFileUsed()
 	err = ioutil.WriteFile(cfgfile, content, 0644)
 	if err != nil {
 		b.Log.Error("Failed to write remote config file: ", err)
