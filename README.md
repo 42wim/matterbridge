@@ -5,7 +5,7 @@
 ![Matterbridge Logo](img/matterbridge-notext.gif)<br />
    **A simple chat bridge**<br />
    Letting people be where they want to be.<br />
-   <sub>Bridges between a growing number of protocols.</sub>
+   <sub>Bridges between a growing number of protocols. Click below to demo.</sub>
 
    <sup>
 
