@@ -135,7 +135,7 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 
 	for _, f := range ev.Files {
 		// If the file is in the cache and isn't older then a minute, skip it
-		if b.fileIsRecentlyCached(&f) {
+		if b.fileWasRecentlyCached(&f) {
 			b.Log.Debugf("Not downloading file id %s which we uploaded", f.ID)
 			return true
 		}
@@ -278,7 +278,7 @@ func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File) erro
 	return nil
 }
 
-func (b *Bslack) fileIsRecentlyCached(file *slack.File) bool {
+func (b *Bslack) fileWasRecentlyCached(file *slack.File) bool {
 	if ts, ok := b.cache.Get("file" + file.ID); ok && time.Since(ts.(time.Time)) < time.Minute {
 		return true
 	} else if ts, ok = b.cache.Get("filename" + file.Name); ok && time.Since(ts.(time.Time)) < 10*time.Second {
