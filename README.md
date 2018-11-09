@@ -121,7 +121,7 @@ See [howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config
 
 ### Examples
 #### Bridge mattermost (off-topic) - irc (#testing)
-```
+```toml
 [irc]
     [irc.freenode]
     Server="irc.freenode.net:6667"
@@ -149,7 +149,7 @@ enable=true
 ```
 
 #### Bridge slack (#general) - discord (general)
-```
+```toml
 [slack]
 [slack.test]
 Token="yourslacktoken"
