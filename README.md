@@ -1,20 +1,38 @@
+<div align="center">
+
 # matterbridge
-Click on one of the badges below to join the chat   
 
-[![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg?colorB=42f4242)](https://gitter.im/42wim/matterbridge) [![Join the IRC chat at https://webchat.freenode.net/?channels=matterbridgechat](https://img.shields.io/badge/IRC-matterbridgechat-green.svg?colorB=42f4242)](https://webchat.freenode.net/?channels=matterbridgechat) [![Discord](https://img.shields.io/badge/discord-matterbridge-green.svg?colorB=42f4242)](https://discord.gg/AkKPtrQ) [![Matrix](https://img.shields.io/badge/matrix-matterbridge-green.svg?colorB=42f4242)](https://riot.im/app/#/room/#matterbridge:matrix.org) [![Slack](https://img.shields.io/badge/slack-matterbridgechat-green.svg?colorB=42f4242)](https://join.slack.com/matterbridgechat/shared_invite/MjEwODMxNjU1NDMwLTE0OTk2MTU3NTMtMzZkZmRiNDZhOA) [![Mattermost](https://img.shields.io/badge/mattermost-matterbridge-green.svg?colorB=42f4242)](https://framateam.org/signup_user_complete/?id=tfqm33ggop8x3qgu4boeieta6e) [![Xmpp](https://img.shields.io/badge/xmpp-matterbridge@conference.jabber.de-green.svg?colorB=42f4242)](https://inverse.chat) [![Twitch](https://img.shields.io/badge/twitch-matterbridge-green.svg?colorB=42f4242)](https://www.twitch.tv/matterbridge) [![Zulip](https://img.shields.io/badge/zulip-matterbridge-green.svg?colorB=42f4242)](https://matterbridge.zulipchat.com/register/)
+![Matterbridge Logo](img/matterbridge-notext.gif)<br />
+   **A simple chat bridge**<br />
+   Letting people be where they want to be.<br />
+   <sub>Bridges between a growing number of protocols.</sub>
 
-[![Download stable](https://img.shields.io/github/release/42wim/matterbridge.svg?label=download%20stable)](https://github.com/42wim/matterbridge/releases/latest) [![Download dev](https://img.shields.io/bintray/v/42wim/nightly/Matterbridge.svg?label=download%20dev&colorB=007ec6)](https://bintray.com/42wim/nightly/Matterbridge/_latestVersion)
+   <sup>
 
-![matterbridge.gif](https://github.com/42wim/matterbridge/blob/master/img/matterbridge.gif)
+   [Gitter][mb-gitter] |
+   [IRC][mb-irc] |
+      [Discord][mb-discord] |
+      [Matrix][mb-matrix] |
+      [Slack][mb-slack] |
+      [Mattermost][mb-mattermost] |
+      [XMPP][mb-xmpp] |
+      [Twitch][mb-twitch] |
+      [Zulip][mb-zulip] |
+      And more...
+   </sup>
 
-Simple bridge between IRC, XMPP, Gitter, Mattermost, Slack, Discord, Telegram, Rocket.Chat, Hipchat(via xmpp), Matrix, Steam, ssh-chat and Zulip
-Has a REST API.   
-Minecraft server chat support via [MatterLink](https://github.com/elytra/MatterLink)
+----
+[![Download stable](https://img.shields.io/github/release/42wim/matterbridge.svg?label=download%20stable)](https://github.com/42wim/matterbridge/releases/latest)
+   [![Download dev](https://img.shields.io/bintray/v/42wim/nightly/Matterbridge.svg?label=download%20dev&colorB=007ec6)](https://bintray.com/42wim/nightly/Matterbridge/_latestVersion)
+   [![Maintainability](https://api.codeclimate.com/v1/badges/82dff70ef2ba85a6173a/maintainability)](https://codeclimate.com/github/42wim/matterbridge/maintainability)
+   [![Test Coverage](https://api.codeclimate.com/v1/badges/82dff70ef2ba85a6173a/test_coverage)](https://codeclimate.com/github/42wim/matterbridge/test_coverage)<br />
+  <hr />
+</div>
+<div align="right"><sup>
 
-**Mattermost isn't required to run matterbridge. It bridges between any supported protocol.**   
-(The name matterbridge is a remnant when it was only bridging mattermost)
+**Note:** Matter<em>most</em> isn't required to run matter<em>bridge</em>.</sup></div>
 
-# Table of Contents
+### Table of Contents
  * [Features](https://github.com/42wim/matterbridge/wiki/Features)
    * [API](#API)
  * [Requirements](#requirements)
@@ -24,7 +42,7 @@ Minecraft server chat support via [MatterLink](https://github.com/elytra/MatterL
    * [Building](#building)
  * [Configuration](#configuration)
    * [Howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config)
-   * [Examples](#examples) 
+   * [Examples](#examples)
  * [Running](#running)
    * [Docker](#docker)
  * [Changelog](#changelog)
@@ -33,7 +51,7 @@ Minecraft server chat support via [MatterLink](https://github.com/elytra/MatterL
  * [Articles](#articles)
  * [Thanks](#thanks)
 
-# Features
+## Features
 * [Support bridging between any protocols](https://github.com/42wim/matterbridge/wiki/Features#support-bridging-between-any-protocols)
 * [Support multiple gateways(bridges) for your protocols](https://github.com/42wim/matterbridge/wiki/Features#support-multiple-gatewaysbridges-for-your-protocols)
 * [Message edits and deletes](https://github.com/42wim/matterbridge/wiki/Features#message-edits-and-deletes)
@@ -43,7 +61,7 @@ Minecraft server chat support via [MatterLink](https://github.com/elytra/MatterL
 * [Private groups](https://github.com/42wim/matterbridge/wiki/Features#private-groups)
 * [API](https://github.com/42wim/matterbridge/wiki/Features#api)
 
-## API
+### API
 The API is very basic at the moment and rather undocumented.
 
 Used by at least 3 projects. Feel free to make a PR to add your project to this list.
@@ -52,7 +70,7 @@ Used by at least 3 projects. Feel free to make a PR to add your project to this 
 * [pyCord](https://github.com/NikkyAI/pyCord) (crossplatform chatbot)
 * [Mattereddit](https://github.com/bonehurtingjuice/mattereddit) (Reddit chat support)
 
-# Requirements
+## Requirements
 Accounts to one of the supported bridges
 * [Mattermost](https://github.com/mattermost/platform/) 3.8.x - 3.10.x, 4.x, 5.x
 * [IRC](http://www.mirc.com/servers.html)
@@ -69,18 +87,18 @@ Accounts to one of the supported bridges
 * [Ssh-chat](https://github.com/shazow/ssh-chat)
 * [Zulip](https://zulipchat.com)
 
-# Screenshots
+## Screenshots
 See https://github.com/42wim/matterbridge/wiki
 
-# Installing
-## Binaries
+## Installing
+### Binaries
 * Latest stable release [v1.11.3](https://github.com/42wim/matterbridge/releases/latest)
-* Development releases (follows master) can be downloaded [here](https://dl.bintray.com/42wim/nightly/)  
+* Development releases (follows master) can be downloaded [here](https://dl.bintray.com/42wim/nightly/)
 
-## Building
+### Building
 Go 1.8+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH](https://golang.org/doc/code.html#GOPATH).
 
-After Go is setup, download matterbridge to your $GOPATH directory. 
+After Go is setup, download matterbridge to your $GOPATH directory.
 
 ```
 cd $GOPATH
@@ -94,16 +112,16 @@ $ ls bin/
 matterbridge
 ```
 
-# Configuration
-## Basic configuration
+## Configuration
+### Basic configuration
 See [howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config) for a step by step walkthrough for creating your configuration.
 
-## Advanced configuration
+### Advanced configuration
 * [matterbridge.toml.sample](https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.sample) for documentation and an example.
 
-## Examples 
-### Bridge mattermost (off-topic) - irc (#testing)
-```
+### Examples
+#### Bridge mattermost (off-topic) - irc (#testing)
+```toml
 [irc]
     [irc.freenode]
     Server="irc.freenode.net:6667"
@@ -130,8 +148,8 @@ enable=true
     channel="off-topic"
 ```
 
-### Bridge slack (#general) - discord (general)
-```
+#### Bridge slack (#general) - discord (general)
+```toml
 [slack]
 [slack.test]
 Token="yourslacktoken"
@@ -158,7 +176,7 @@ RemoteNickFormat="[{PROTOCOL}/{BRIDGE}] <{NICK}> "
     channel = "general"
 ```
 
-# Running
+## Running
 
 See [howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config) for a step by step walkthrough for creating your configuration.
 
@@ -174,24 +192,24 @@ Usage of ./matterbridge:
         show version
 ```
 
-## Docker
-Create your matterbridge.toml file locally eg in ```/tmp/matterbridge.toml```
+### Docker
+Create your matterbridge.toml file locally eg in `/tmp/matterbridge.toml`
 ```
 docker run -ti -v /tmp/matterbridge.toml:/matterbridge.toml 42wim/matterbridge
 ```
 
-# Changelog
+## Changelog
 See [changelog.md](https://github.com/42wim/matterbridge/blob/master/changelog.md)
 
-# FAQ
+## FAQ
 
 See [FAQ](https://github.com/42wim/matterbridge/wiki/FAQ)
 
-Want to tip ? 
+Want to tip ?
 * eth: 0xb3f9b5387c66ad6be892bcb7bbc67862f3abc16f
 * btc: 1N7cKHj5SfqBHBzDJ6kad4BzeqUBBS2zhs
 
-# Related projects
+## Related projects
 * [matterbridge-heroku](https://github.com/cadecairos/matterbridge-heroku)
 * [matterbridge config viewer](https://github.com/patcon/matterbridge-heroku-viewer)
 * [matterbridge autoconfig](https://github.com/patcon/matterbridge-autoconfig)
@@ -199,7 +217,7 @@ Want to tip ?
 * [mattereddit](https://github.com/bonehurtingjuice/mattereddit)
 * [pyCord](https://github.com/NikkyAI/pyCord) (crossplatform chatbot)
 
-# Articles
+## Articles
 * https://mattermost.com/blog/connect-irc-to-mattermost/
 * https://blog.valvin.fr/2016/09/17/mattermost-et-un-channel-irc-cest-possible/
 * https://blog.brightscout.com/top-10-mattermost-integrations/
@@ -208,7 +226,7 @@ Want to tip ?
 * https://kopano.com/blog/matterbridge-bridging-mattermost-chat/
 * https://www.stitcher.com/s/?eid=52382713
 
-# Thanks
+## Thanks
 [![Digitalocean](https://snag.gy/3LVifX.jpg)](https://www.digitalocean.com/) for sponsoring demo/testing droplets.
 
 Matterbridge wouldn't exist without these libraries:
@@ -225,3 +243,15 @@ Matterbridge wouldn't exist without these libraries:
 * telegram - https://github.com/go-telegram-bot-api/telegram-bot-api
 * xmpp - https://github.com/mattn/go-xmpp
 * zulip - https://github.com/ifo/gozulipbot
+
+<!-- Links -->
+
+   [mb-gitter]: https://gitter.im/42wim/matterbridge
+   [mb-irc]: https://webchat.freenode.net/?channels=matterbridgechat
+   [mb-discord]: https://discord.gg/AkKPtrQ
+   [mb-matrix]: https://riot.im/app/#/room/#matterbridge:matrix.org
+   [mb-slack]: https://join.slack.com/matterbridgechat/shared_invite/MjEwODMxNjU1NDMwLTE0OTk2MTU3NTMtMzZkZmRiNDZhOA
+   [mb-mattermost]: https://framateam.org/signup_user_complete/?id=tfqm33ggop8x3qgu4boeieta6e
+   [mb-xmpp]: https://inverse.chat/
+   [mb-twitch]: https://www.twitch.tv/matterbridge
+   [mb-zulip]: https://matterbridge.zulipchat.com/register/
