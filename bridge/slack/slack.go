@@ -298,7 +298,7 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 	// Upload a file if it exists.
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			_, _, err = b.sc.PostMessage(channelInfo.ID, rmsg.Username+rmsg.Text, *messageParameters)
+			_, _, err = b.rtm.PostMessage(channelInfo.ID, rmsg.Username+rmsg.Text, *messageParameters)
 			if err != nil {
 				b.Log.Error(err)
 			}

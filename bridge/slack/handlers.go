@@ -132,6 +132,15 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 		ev.SubMessage.Edited == nil {
 		return true
 	}
+
+	for _, f := range ev.Files {
+		// If the file is in the cache and isn't older then a minute, skip it
+		if b.fileIsRecentlyCached(&f) {
+			b.Log.Debugf("Not downloading file id %s which we uploaded", f.ID)
+			return true
+		}
+	}
+
 	return false
 }
 
@@ -248,10 +257,6 @@ func (b *Bslack) handleTypingEvent(ev *slack.UserTypingEvent) (*config.Message, 
 
 // handleDownloadFile handles file download
 func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File) error {
-	if b.fileIsAvailable(file) {
-		return nil
-	}
-
 	// Check that the file is neither too large nor blacklisted.
 	if err := helper.HandleDownloadSize(b.Log, rmsg, file.Name, int64(file.Size), b.General); err != nil {
 		b.Log.WithError(err).Infof("Skipping download of incoming file.")
@@ -273,11 +278,10 @@ func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File) erro
 	return nil
 }
 
-func (b *Bslack) fileIsAvailable(file *slack.File) bool {
-	// Only download a file if it is not in the cache or if it has been entered more than a minute ago.
-	if ts, ok := b.cache.Get("file" + file.ID); ok && time.Since(ts.(time.Time)) > time.Minute {
+func (b *Bslack) fileIsRecentlyCached(file *slack.File) bool {
+	if ts, ok := b.cache.Get("file" + file.ID); ok && time.Since(ts.(time.Time)) < time.Minute {
 		return true
-	} else if ts, ok = b.cache.Get("filename" + file.Name); ok && time.Since(ts.(time.Time)) > 10*time.Second {
+	} else if ts, ok = b.cache.Get("filename" + file.Name); ok && time.Since(ts.(time.Time)) < 10*time.Second {
 		return true
 	}
 	return false
