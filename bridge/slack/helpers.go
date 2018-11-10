@@ -1,6 +1,7 @@
 package bslack
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
@@ -76,17 +77,26 @@ func (b *Bslack) populateUsers() {
 	b.refreshInProgress = true
 	b.refreshMutex.Unlock()
 
-	users, err := b.sc.GetUsers()
-	if err != nil {
-		b.Log.Errorf("Could not reload users: %#v", err)
-		return
-	}
-
 	newUsers := map[string]*slack.User{}
-	for i := range users {
-		// Use array index for pointer, not the copy
-		// See: https://stackoverflow.com/a/29498133/504018
-		newUsers[users[i].ID] = &users[i]
+	pagination := b.sc.GetUsersPaginated(slack.GetUsersOptionLimit(200))
+	for {
+		var err error
+		pagination, err = pagination.Next(context.Background())
+		if err != nil {
+			if pagination.Done(err) {
+				break
+			}
+
+			if err = b.handleRateLimit(err); err != nil {
+				b.Log.Errorf("Could not retrieve users: %#v", err)
+				return
+			}
+			continue
+		}
+
+		for i := range pagination.Users {
+			newUsers[pagination.Users[i].ID] = &pagination.Users[i]
+		}
 	}
 
 	b.usersMutex.Lock()
@@ -122,10 +132,14 @@ func (b *Bslack) populateChannels() {
 	for {
 		channels, nextCursor, err := b.sc.GetConversations(queryParams)
 		if err != nil {
-			b.Log.Errorf("Could not reload channels: %#v", err)
-			return
+			if err = b.handleRateLimit(err); err != nil {
+				b.Log.Errorf("Could not retrieve channels: %#v", err)
+				return
+			}
+			continue
 		}
-		for i := 0; i < len(channels); i++ {
+
+		for i := range channels {
 			newChannelsByID[channels[i].ID] = &channels[i]
 			newChannelsByName[channels[i].Name] = &channels[i]
 		}
@@ -189,18 +203,8 @@ func (b *Bslack) populateMessageWithUserInfo(ev *slack.MessageEvent, rmsg *confi
 
 	// First, deal with bot-originating messages but only do so when not using webhooks: we
 	// would not be able to distinguish which bot would be sending them.
-	if ev.BotID != "" && b.GetString(outgoingWebhookConfig) == "" {
-		bot, err := b.rtm.GetBotInfo(ev.BotID)
-		if err != nil {
-			return err
-		}
-		if bot.Name != "" && bot.Name != "Slack API Tester" {
-			rmsg.Username = bot.Name
-			if ev.Username != "" {
-				rmsg.Username = ev.Username
-			}
-			rmsg.UserID = bot.ID
-		}
+	if err := b.populateMessageWithBotInfo(ev, rmsg); err != nil {
+		return err
 	}
 
 	// Second, deal with "real" users if we have the necessary information.
@@ -223,6 +227,35 @@ func (b *Bslack) populateMessageWithUserInfo(ev *slack.MessageEvent, rmsg *confi
 	rmsg.Username = user.Name
 	if user.Profile.DisplayName != "" {
 		rmsg.Username = user.Profile.DisplayName
+	}
+	return nil
+}
+
+func (b *Bslack) populateMessageWithBotInfo(ev *slack.MessageEvent, rmsg *config.Message) error {
+	if ev.BotID == "" || b.GetString(outgoingWebhookConfig) != "" {
+		return nil
+	}
+
+	var err error
+	var bot *slack.Bot
+	for {
+		bot, err = b.rtm.GetBotInfo(ev.BotID)
+		if err == nil {
+			break
+		}
+
+		if err = b.handleRateLimit(err); err != nil {
+			b.Log.Errorf("Could not retrieve bot information: %#v", err)
+			return err
+		}
+	}
+
+	if bot.Name != "" && bot.Name != "Slack API Tester" {
+		rmsg.Username = bot.Name
+		if ev.Username != "" {
+			rmsg.Username = ev.Username
+		}
+		rmsg.UserID = bot.ID
 	}
 	return nil
 }
@@ -276,4 +309,14 @@ func (b *Bslack) replaceURL(text string) string {
 		}
 	}
 	return text
+}
+
+func (b *Bslack) handleRateLimit(err error) error {
+	rateLimit, ok := err.(*slack.RateLimitedError)
+	if !ok {
+		return err
+	}
+	b.Log.Infof("Rate-limited by Slack. Sleeping for %v", rateLimit.RetryAfter)
+	time.Sleep(rateLimit.RetryAfter)
+	return nil
 }
