@@ -5,6 +5,9 @@ go:
 # we have everything vendored
 install: true
 
+git:
+  depth: 200
+
 env:
     - GOOS=linux GOARCH=amd64
       #    - GOOS=windows GOARCH=amd64
