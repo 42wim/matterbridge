@@ -278,34 +278,20 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 		return "", nil
 	}
 
-	// Delete message
-	if msg.Event == config.EVENT_MSG_DELETE {
-		// some protocols echo deletes, but with empty ID
-		if msg.ID == "" {
-			return "", nil
-		}
-		// we get a "slack <ID>", split it
-		ts := strings.Fields(msg.ID)
-		_, _, err = b.rtm.DeleteMessage(channelInfo.ID, ts[1])
-		if err != nil {
-			return msg.ID, err
-		}
-		return msg.ID, nil
+	// Handle message deletions.
+	var handled bool
+	if handled, err = b.deleteMessage(&msg, channelInfo); handled {
+		return msg.ID, err
 	}
 
-	// Prepend nick if configured
+	// Prepend nickname if configured.
 	if b.GetBool(useNickPrefixConfig) {
 		msg.Text = msg.Username + msg.Text
 	}
 
-	// Edit message if we have an ID
-	if msg.ID != "" {
-		ts := strings.Fields(msg.ID)
-		_, _, _, err = b.rtm.UpdateMessage(channelInfo.ID, ts[1], msg.Text)
-		if err != nil {
-			return msg.ID, err
-		}
-		return msg.ID, nil
+	// Handle message edits.
+	if handled, err = b.editMessage(&msg, channelInfo); handled {
+		return msg.ID, err
 	}
 
 	messageParameters := b.prepareMessageParameters(&msg)
@@ -319,19 +305,73 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 			}
 		}
 		// Upload files if necessary (from Slack, Telegram or Mattermost).
-		b.handleUploadFile(&msg, channelInfo.ID)
+		b.uploadFile(&msg, channelInfo.ID)
 	}
 
-	// Post normal message
-	_, id, err := b.rtm.PostMessage(channelInfo.ID, msg.Text, *messageParameters)
-	if err != nil {
-		return "", err
-	}
-	return "slack " + id, nil
+	// Post message.
+	return b.postMessage(&msg, messageParameters, channelInfo)
 }
 
-// handleUploadFile handles native upload of files
-func (b *Bslack) handleUploadFile(msg *config.Message, channelID string) {
+func (b *Bslack) deleteMessage(msg *config.Message, channelInfo *slack.Channel) (bool, error) {
+	if msg.Event != config.EVENT_MSG_DELETE {
+		return false, nil
+	}
+
+	// Some protocols echo deletes, but with an empty ID.
+	if msg.ID == "" {
+		return true, nil
+	}
+
+	// If we get a "slack <ID>", split it.
+	ts := strings.Fields(msg.ID)
+	for {
+		_, _, err := b.rtm.DeleteMessage(channelInfo.ID, ts[1])
+		if err == nil {
+			return true, nil
+		}
+
+		if err = b.handleRateLimit(err); err != nil {
+			b.Log.Errorf("Failed to delete user message from Slack: %#v", err)
+			return true, err
+		}
+	}
+}
+
+func (b *Bslack) editMessage(msg *config.Message, channelInfo *slack.Channel) (bool, error) {
+	if msg.ID == "" {
+		return false, nil
+	}
+
+	ts := strings.Fields(msg.ID)
+	for {
+		_, _, _, err := b.rtm.UpdateMessage(channelInfo.ID, ts[1], msg.Text)
+		if err == nil {
+			return true, nil
+		}
+
+		if err = b.handleRateLimit(err); err != nil {
+			b.Log.Errorf("Failed to edit user message on Slack: %#v", err)
+			return true, err
+		}
+	}
+}
+
+func (b *Bslack) postMessage(msg *config.Message, messageParameters *slack.PostMessageParameters, channelInfo *slack.Channel) (string, error) {
+	for {
+		_, id, err := b.rtm.PostMessage(channelInfo.ID, msg.Text, *messageParameters)
+		if err == nil {
+			return "slack " + id, nil
+		}
+
+		if err = b.handleRateLimit(err); err != nil {
+			b.Log.Errorf("Failed to sent user message to Slack: %#v", err)
+			return "", err
+		}
+	}
+}
+
+// uploadFile handles native upload of files
+func (b *Bslack) uploadFile(msg *config.Message, channelID string) {
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo)
 		if msg.Text == fi.Comment {
