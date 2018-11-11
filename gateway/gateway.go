@@ -321,6 +321,12 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			msg.ParentID = canonicalParentMsgID
 		}
 
+		// if we are using mattermost plugin account, send messages to MattermostPlugin channel
+		// that can be picked up by the mattermost matterbridge plugin
+		if dest.Account == "mattermost.plugin" {
+			gw.Router.MattermostPlugin <- msg
+		}
+
 		mID, err := dest.Send(msg)
 		if err != nil {
 			flog.Error(err)

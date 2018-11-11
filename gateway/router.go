@@ -11,13 +11,14 @@ import (
 )
 
 type Router struct {
-	Gateways map[string]*Gateway
-	Message  chan config.Message
+	Gateways         map[string]*Gateway
+	Message          chan config.Message
+	MattermostPlugin chan config.Message
 	*config.Config
 }
 
 func NewRouter(cfg *config.Config) (*Router, error) {
-	r := &Router{Message: make(chan config.Message), Gateways: make(map[string]*Gateway), Config: cfg}
+	r := &Router{Message: make(chan config.Message), MattermostPlugin: make(chan config.Message), Gateways: make(map[string]*Gateway), Config: cfg}
 	sgw := samechannelgateway.New(cfg)
 	gwconfigs := sgw.GetConfig()
 
