@@ -216,6 +216,7 @@ Want to tip ?
 * [matterlink](https://github.com/elytra/MatterLink)
 * [mattereddit](https://github.com/bonehurtingjuice/mattereddit)
 * [pyCord](https://github.com/NikkyAI/pyCord) (crossplatform chatbot)
+* [mattermost-plugin](https://github.com/matterbridge/mattermost-plugin) - Run matterbridge as a plugin in mattermost
 
 ## Articles
 * https://mattermost.com/blog/connect-irc-to-mattermost/
