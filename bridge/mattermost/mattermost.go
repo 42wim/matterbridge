@@ -34,6 +34,9 @@ func (b *Bmattermost) Command(cmd string) string {
 }
 
 func (b *Bmattermost) Connect() error {
+	if b.Account == "mattermost.plugin" {
+		return nil
+	}
 	if b.GetString("WebhookBindAddress") != "" {
 		switch {
 		case b.GetString("WebhookURL") != "":
@@ -110,6 +113,9 @@ func (b *Bmattermost) Disconnect() error {
 }
 
 func (b *Bmattermost) JoinChannel(channel config.ChannelInfo) error {
+	if b.Account == "mattermost.plugin" {
+		return nil
+	}
 	// we can only join channels using the API
 	if b.GetString("WebhookURL") == "" && b.GetString("WebhookBindAddress") == "" {
 		id := b.mc.GetChannelId(channel.Name, b.TeamID)
@@ -122,6 +128,9 @@ func (b *Bmattermost) JoinChannel(channel config.ChannelInfo) error {
 }
 
 func (b *Bmattermost) Send(msg config.Message) (string, error) {
+	if b.Account == "mattermost.plugin" {
+		return "", nil
+	}
 	b.Log.Debugf("=> Receiving %#v", msg)
 
 	// Make a action /me of the message
