@@ -1,12 +1,12 @@
 language: go
 go:
-    - 1.7.x
-    - 1.8.x
     - 1.9.x
+    - 1.10.x
+    - 1.11.x
 install:
     - go get github.com/bwmarrin/discordgo
     - go get -v .
-    - go get -v github.com/golang/lint/golint
+    - go get -v golang.org/x/lint/golint
 script:
     - diff <(gofmt -d .) <(echo -n)
     - go vet -x ./...

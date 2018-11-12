@@ -1,4 +1,4 @@
-# DiscordGo 
+# DiscordGo
 
 [![GoDoc](https://godoc.org/github.com/bwmarrin/discordgo?status.svg)](https://godoc.org/github.com/bwmarrin/discordgo) [![Go report](http://goreportcard.com/badge/bwmarrin/discordgo)](http://goreportcard.com/report/bwmarrin/discordgo) [![Build Status](https://travis-ci.org/bwmarrin/discordgo.svg?branch=master)](https://travis-ci.org/bwmarrin/discordgo) [![Discord Gophers](https://img.shields.io/badge/Discord%20Gophers-%23discordgo-blue.svg)](https://discord.gg/0f1SbxBZjYoCtNPP) [![Discord API](https://img.shields.io/badge/Discord%20API-%23go_discordgo-blue.svg)](https://discord.gg/0SBTUU1wZTWT6sqd)
 
@@ -15,11 +15,11 @@ to add the official DiscordGo test bot **dgo** to your server. This provides
 indispensable help to this project.
 
 * See [dgVoice](https://github.com/bwmarrin/dgvoice) package for an example of
-additional voice helper functions and features for DiscordGo
+additional voice helper functions and features for DiscordGo.
 
 * See [dca](https://github.com/bwmarrin/dca) for an **experimental** stand alone
 tool that wraps `ffmpeg` to create opus encoded audio appropriate for use with
-Discord (and DiscordGo)
+Discord (and DiscordGo).
 
 **For help with this package or general Go discussion, please join the [Discord 
 Gophers](https://discord.gg/0f1SbxBZjYq9jLBk) chat server.**
@@ -39,9 +39,9 @@ the breaking changes get documented before pushing to master.
 
 *So, what should you use?*
 
-If you can accept the constant changing nature of *develop* then it is the 
+If you can accept the constant changing nature of *develop*, it is the 
 recommended branch to use.  Otherwise, if you want to tail behind development
-slightly and have a more stable package with documented releases then use *master*
+slightly and have a more stable package with documented releases, use *master*.
 
 ### Installing
 
@@ -96,10 +96,10 @@ that information in a nice format.
 ## Examples
 
 Below is a list of examples and other projects using DiscordGo.  Please submit 
-an issue if you would like your project added or removed from this list 
+an issue if you would like your project added or removed from this list. 
 
-- [DiscordGo Examples](https://github.com/bwmarrin/discordgo/tree/master/examples) A collection of example programs written with DiscordGo
-- [Awesome DiscordGo](https://github.com/bwmarrin/discordgo/wiki/Awesome-DiscordGo) A curated list of high quality projects using DiscordGo
+- [DiscordGo Examples](https://github.com/bwmarrin/discordgo/tree/master/examples) - A collection of example programs written with DiscordGo
+- [Awesome DiscordGo](https://github.com/bwmarrin/discordgo/wiki/Awesome-DiscordGo) - A curated list of high quality projects using DiscordGo
 
 ## Troubleshooting
 For help with common problems please reference the 
@@ -114,7 +114,7 @@ Contributions are very welcomed, however please follow the below guidelines.
 discussed.  
 - Fork the develop branch and make your changes.  
 - Try to match current naming conventions as closely as possible.  
-- This package is intended to be a low level direct mapping of the Discord API 
+- This package is intended to be a low level direct mapping of the Discord API, 
 so please avoid adding enhancements outside of that scope without first 
 discussing it.
 - Create a Pull Request with your changes against the develop branch.
@@ -127,4 +127,4 @@ comparison and list of other Discord API libraries.
 
 ## Special Thanks
 
-[Chris Rhodes](https://github.com/iopred) - For the DiscordGo logo and tons of PRs
+[Chris Rhodes](https://github.com/iopred) - For the DiscordGo logo and tons of PRs.

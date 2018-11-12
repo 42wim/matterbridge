@@ -98,7 +98,9 @@ func (s *Session) addEventHandlerOnce(eventHandler EventHandler) func() {
 
 // AddHandler allows you to add an event handler that will be fired anytime
 // the Discord WSAPI event that matches the function fires.
-// events.go contains all the Discord WSAPI events that can be fired.
+// The first parameter is a *Session, and the second parameter is a pointer
+// to a struct corresponding to the event for which you want to listen.
+//
 // eg:
 //     Session.AddHandler(func(s *discordgo.Session, m *discordgo.MessageCreate) {
 //     })
@@ -106,6 +108,13 @@ func (s *Session) addEventHandlerOnce(eventHandler EventHandler) func() {
 // or:
 //     Session.AddHandler(func(s *discordgo.Session, m *discordgo.PresenceUpdate) {
 //     })
+//
+// List of events can be found at this page, with corresponding names in the
+// library for each event: https://discordapp.com/developers/docs/topics/gateway#event-names
+// There are also synthetic events fired by the library internally which are
+// available for handling, like Connect, Disconnect, and RateLimit.
+// events.go contains all of the Discord WSAPI and synthetic events that can be handled.
+//
 // The return value of this method is a function, that when called will remove the
 // event handler.
 func (s *Session) AddHandler(handler interface{}) func() {

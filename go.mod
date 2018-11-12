@@ -6,7 +6,7 @@ require (
 	github.com/Philipp15b/go-steam v0.0.0-20161020161927-e0f3bb9566e3
 	github.com/Sirupsen/logrus v1.0.6 // indirect
 	github.com/alecthomas/log4go v0.0.0-20160307011253-e5dc62318d9b // indirect
-	github.com/bwmarrin/discordgo v0.0.0-20180201002541-8d5ab59c63e5 // indirect
+	github.com/bwmarrin/discordgo v0.19.0
 	github.com/davecgh/go-spew v1.1.0 // indirect
 	github.com/dfordsoft/golib v0.0.0-20180313113957-2ea3495aee1d
 	github.com/dgrijalva/jwt-go v0.0.0-20170508165458-6c8dedd55f8a // indirect
@@ -16,7 +16,7 @@ require (
 	github.com/google/gops v0.0.0-20170319002943-62f833fc9f6c
 	github.com/gopherjs/gopherjs v0.0.0-20180628210949-0892b62f0d9f // indirect
 	github.com/gorilla/schema v0.0.0-20170317173100-f3c80893412c
-	github.com/gorilla/websocket v0.0.0-20170319172727-a91eba7f9777
+	github.com/gorilla/websocket v1.4.0
 	github.com/hashicorp/golang-lru v0.0.0-20160813221303-0a025b7e63ad
 	github.com/hashicorp/hcl v0.0.0-20171017181929-23c074d0eceb // indirect
 	github.com/hpcloud/tail v1.0.0 // indirect
@@ -30,7 +30,6 @@ require (
 	github.com/lusis/go-slackbot v0.0.0-20180109053408-401027ccfef5 // indirect
 	github.com/lusis/slack-test v0.0.0-20180109053238-3c758769bfa6 // indirect
 	github.com/magiconair/properties v0.0.0-20180217134545-2c9e95027885 // indirect
-	github.com/matterbridge/discordgo v0.0.0-20180806170629-ef40ff5ba64f
 	github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91
 	github.com/matterbridge/gomatrix v0.0.0-20171224233421-78ac6a1a0f5f
 	github.com/matterbridge/gozulipbot v0.0.0-20180507190239-b6bb12d33544
@@ -72,7 +71,6 @@ require (
 	github.com/valyala/fasttemplate v0.0.0-20170224212429-dcecefd839c4 // indirect
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2 // indirect
 	github.com/zfjagann/golang-ring v0.0.0-20141111230621-17637388c9f6
-	golang.org/x/crypto v0.0.0-20180228161326-91a49db82a88 // indirect
 	golang.org/x/net v0.0.0-20180108090419-434ec0c7fe37 // indirect
 	golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f // indirect
 	golang.org/x/sys v0.0.0-20171130163741-8b4580aae2a0 // indirect

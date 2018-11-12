@@ -15,6 +15,8 @@ github.com/Philipp15b/go-steam/rwu
 github.com/Philipp15b/go-steam/socialcache
 # github.com/alecthomas/log4go v0.0.0-20160307011253-e5dc62318d9b
 github.com/alecthomas/log4go
+# github.com/bwmarrin/discordgo v0.19.0
+github.com/bwmarrin/discordgo
 # github.com/davecgh/go-spew v1.1.0
 github.com/davecgh/go-spew/spew
 # github.com/dfordsoft/golib v0.0.0-20180313113957-2ea3495aee1d
@@ -34,7 +36,7 @@ github.com/google/gops/internal
 github.com/google/gops/signal
 # github.com/gorilla/schema v0.0.0-20170317173100-f3c80893412c
 github.com/gorilla/schema
-# github.com/gorilla/websocket v0.0.0-20170319172727-a91eba7f9777
+# github.com/gorilla/websocket v1.4.0
 github.com/gorilla/websocket
 # github.com/hashicorp/golang-lru v0.0.0-20160813221303-0a025b7e63ad
 github.com/hashicorp/golang-lru
@@ -66,8 +68,6 @@ github.com/labstack/gommon/random
 github.com/lrstanley/girc
 # github.com/magiconair/properties v0.0.0-20180217134545-2c9e95027885
 github.com/magiconair/properties
-# github.com/matterbridge/discordgo v0.0.0-20180806170629-ef40ff5ba64f
-github.com/matterbridge/discordgo
 # github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91
 github.com/matterbridge/go-xmpp
 # github.com/matterbridge/gomatrix v0.0.0-20171224233421-78ac6a1a0f5f
@@ -146,19 +146,20 @@ github.com/valyala/bytebufferpool
 github.com/valyala/fasttemplate
 # github.com/zfjagann/golang-ring v0.0.0-20141111230621-17637388c9f6
 github.com/zfjagann/golang-ring
-# golang.org/x/crypto v0.0.0-20180228161326-91a49db82a88
+# golang.org/x/crypto v0.0.0-20181030102418-4d3f4d9ffa16
 golang.org/x/crypto/ssh/terminal
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/nacl/secretbox
-golang.org/x/crypto/ssh
 golang.org/x/crypto/bcrypt
+golang.org/x/crypto/ssh
 golang.org/x/crypto/acme
+golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/poly1305
 golang.org/x/crypto/salsa20/salsa
+golang.org/x/crypto/blowfish
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/internal/chacha20
-golang.org/x/crypto/blowfish
 golang.org/x/crypto/ed25519/internal/edwards25519
 # golang.org/x/sys v0.0.0-20171130163741-8b4580aae2a0
 golang.org/x/sys/unix

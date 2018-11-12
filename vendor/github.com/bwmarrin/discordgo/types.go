@@ -11,7 +11,6 @@ package discordgo
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -54,5 +53,5 @@ func newRestError(req *http.Request, resp *http.Response, body []byte) *RESTErro
 }
 
 func (r RESTError) Error() string {
-	return fmt.Sprintf("HTTP %s, %s", r.Response.Status, r.ResponseBody)
+	return "HTTP " + r.Response.Status + ", " + string(r.ResponseBody)
 }
