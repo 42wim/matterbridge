@@ -2,7 +2,9 @@ package config
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -177,13 +179,23 @@ type ConfigValues struct {
 	SameChannelGateway []SameChannelGateway
 }
 
-type Config struct {
-	v *viper.Viper
-	*ConfigValues
-	sync.RWMutex
+type Config interface {
+	ConfigValues() *ConfigValues
+	GetBool(key string) (bool, bool)
+	GetInt(key string) (int, bool)
+	GetString(key string) (string, bool)
+	GetStringSlice(key string) ([]string, bool)
+	GetStringSlice2D(key string) ([][]string, bool)
 }
 
-func NewConfig(cfgfile string) *Config {
+type config struct {
+	v *viper.Viper
+	sync.RWMutex
+
+	cv *ConfigValues
+}
+
+func NewConfig(cfgfile string) Config {
 	log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: false})
 	flog := log.WithFields(log.Fields{"prefix": "config"})
 	viper.SetConfigFile(cfgfile)
@@ -191,9 +203,9 @@ func NewConfig(cfgfile string) *Config {
 	if err != nil {
 		log.Fatal(err)
 	}
-	mycfg := NewConfigFromString(input)
-	if mycfg.ConfigValues.General.MediaDownloadSize == 0 {
-		mycfg.ConfigValues.General.MediaDownloadSize = 1000000
+	mycfg := newConfigFromString(input)
+	if mycfg.cv.General.MediaDownloadSize == 0 {
+		mycfg.cv.General.MediaDownloadSize = 1000000
 	}
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {
@@ -211,8 +223,11 @@ func getFileContents(filename string) ([]byte, error) {
 	return input, nil
 }
 
-func NewConfigFromString(input []byte) *Config {
-	var cfg ConfigValues
+func NewConfigFromString(input []byte) Config {
+	return newConfigFromString(input)
+}
+
+func newConfigFromString(input []byte) *config {
 	viper.SetConfigType("toml")
 	viper.SetEnvPrefix("matterbridge")
 	viper.AddConfigPath(".")
@@ -222,45 +237,51 @@ func NewConfigFromString(input []byte) *Config {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = viper.Unmarshal(&cfg)
+
+	cfg := &ConfigValues{}
+	err = viper.Unmarshal(cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
-	mycfg := new(Config)
-	mycfg.v = viper.GetViper()
-	mycfg.ConfigValues = &cfg
-	return mycfg
+	return &config{
+		v:  viper.GetViper(),
+		cv: cfg,
+	}
 }
 
-func (c *Config) GetBool(key string) bool {
+func (c *config) ConfigValues() *ConfigValues {
+	return c.cv
+}
+
+func (c *config) GetBool(key string) (bool, bool) {
 	c.RLock()
 	defer c.RUnlock()
 	//	log.Debugf("getting bool %s = %#v", key, c.v.GetBool(key))
-	return c.v.GetBool(key)
+	return c.v.GetBool(key), c.v.IsSet(key)
 }
 
-func (c *Config) GetInt(key string) int {
+func (c *config) GetInt(key string) (int, bool) {
 	c.RLock()
 	defer c.RUnlock()
 	//	log.Debugf("getting int %s = %d", key, c.v.GetInt(key))
-	return c.v.GetInt(key)
+	return c.v.GetInt(key), c.v.IsSet(key)
 }
 
-func (c *Config) GetString(key string) string {
+func (c *config) GetString(key string) (string, bool) {
 	c.RLock()
 	defer c.RUnlock()
 	//	log.Debugf("getting String %s = %s", key, c.v.GetString(key))
-	return c.v.GetString(key)
+	return c.v.GetString(key), c.v.IsSet(key)
 }
 
-func (c *Config) GetStringSlice(key string) []string {
+func (c *config) GetStringSlice(key string) ([]string, bool) {
 	c.RLock()
 	defer c.RUnlock()
 	// log.Debugf("getting StringSlice %s = %#v", key, c.v.GetStringSlice(key))
-	return c.v.GetStringSlice(key)
+	return c.v.GetStringSlice(key), c.v.IsSet(key)
 }
 
-func (c *Config) GetStringSlice2D(key string) [][]string {
+func (c *config) GetStringSlice2D(key string) ([][]string, bool) {
 	c.RLock()
 	defer c.RUnlock()
 	result := [][]string{}
@@ -272,9 +293,9 @@ func (c *Config) GetStringSlice2D(key string) [][]string {
 			}
 			result = append(result, result2)
 		}
-		return result
+		return result, true
 	}
-	return result
+	return result, false
 }
 
 func GetIconURL(msg *Message, iconURL string) string {
@@ -285,4 +306,47 @@ func GetIconURL(msg *Message, iconURL string) string {
 	iconURL = strings.Replace(iconURL, "{BRIDGE}", name, -1)
 	iconURL = strings.Replace(iconURL, "{PROTOCOL}", protocol, -1)
 	return iconURL
+}
+
+type TestConfig struct {
+	Config
+
+	Overrides map[string]interface{}
+}
+
+func (c *TestConfig) GetBool(key string) (bool, bool) {
+	val, ok := c.Overrides[key]
+	fmt.Fprintln(os.Stderr, "DEBUG:", c.Overrides, key, ok, val)
+	if ok {
+		return val.(bool), true
+	}
+	return c.Config.GetBool(key)
+}
+
+func (c *TestConfig) GetInt(key string) (int, bool) {
+	if val, ok := c.Overrides[key]; ok {
+		return val.(int), true
+	}
+	return c.Config.GetInt(key)
+}
+
+func (c *TestConfig) GetString(key string) (string, bool) {
+	if val, ok := c.Overrides[key]; ok {
+		return val.(string), true
+	}
+	return c.Config.GetString(key)
+}
+
+func (c *TestConfig) GetStringSlice(key string) ([]string, bool) {
+	if val, ok := c.Overrides[key]; ok {
+		return val.([]string), true
+	}
+	return c.Config.GetStringSlice(key)
+}
+
+func (c *TestConfig) GetStringSlice2D(key string) ([][]string, bool) {
+	if val, ok := c.Overrides[key]; ok {
+		return val.([][]string), true
+	}
+	return c.Config.GetStringSlice2D(key)
 }

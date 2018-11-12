@@ -2,27 +2,32 @@ package gateway
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	samechannelgateway "github.com/42wim/matterbridge/gateway/samechannel"
-	//	"github.com/davecgh/go-spew/spew"
-	"time"
 )
 
 type Router struct {
+	config.Config
+
 	Gateways         map[string]*Gateway
 	Message          chan config.Message
 	MattermostPlugin chan config.Message
-	*config.Config
 }
 
-func NewRouter(cfg *config.Config) (*Router, error) {
-	r := &Router{Message: make(chan config.Message), MattermostPlugin: make(chan config.Message), Gateways: make(map[string]*Gateway), Config: cfg}
+func NewRouter(cfg config.Config) (*Router, error) {
+	r := &Router{
+		Config:           cfg,
+		Message:          make(chan config.Message),
+		MattermostPlugin: make(chan config.Message),
+		Gateways:         make(map[string]*Gateway),
+	}
 	sgw := samechannelgateway.New(cfg)
 	gwconfigs := sgw.GetConfig()
 
-	for _, entry := range append(gwconfigs, cfg.Gateway...) {
+	for _, entry := range append(gwconfigs, cfg.ConfigValues().Gateway...) {
 		if !entry.Enable {
 			continue
 		}
