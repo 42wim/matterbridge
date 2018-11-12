@@ -13,7 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode/utf8"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -21,8 +20,11 @@ import (
 	"github.com/dfordsoft/golib/ic"
 	"github.com/lrstanley/girc"
 	"github.com/paulrosania/go-charset/charset"
-	_ "github.com/paulrosania/go-charset/data"
 	"github.com/saintfish/chardet"
+
+	// We need to import the 'data' package as an implicit dependency.
+	// See: https://godoc.org/github.com/paulrosania/go-charset/charset
+	_ "github.com/paulrosania/go-charset/data"
 )
 
 type Birc struct {
@@ -222,25 +224,23 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 		}
 	}
 
-	// split long messages on messageLength, to avoid clipped messages #281
+	var msgLines []string
 	if b.GetBool("MessageSplit") {
-		msg.Text = helper.SplitStringLength(msg.Text, b.MessageLength)
+		msgLines = helper.GetSubLines(msg.Text, b.MessageLength)
+	} else {
+		msgLines = helper.GetSubLines(msg.Text, 0)
 	}
-	for _, text := range strings.Split(msg.Text, "\n") {
-		if len(text) > b.MessageLength {
-			text = text[:b.MessageLength-len(" <message clipped>")]
-			if r, size := utf8.DecodeLastRuneInString(text); r == utf8.RuneError {
-				text = text[:len(text)-size]
-			}
-			text += " <message clipped>"
-		}
-		if len(b.Local) < b.MessageQueue {
-			if len(b.Local) == b.MessageQueue-1 {
-				text += " <message clipped>"
-			}
-			b.Local <- config.Message{Text: text, Username: msg.Username, Channel: msg.Channel, Event: msg.Event}
-		} else {
+	for i := range msgLines {
+		if len(b.Local) >= b.MessageQueue {
 			b.Log.Debugf("flooding, dropping message (queue at %d)", len(b.Local))
+			return "", nil
+		}
+
+		b.Local <- config.Message{
+			Text:     msgLines[i],
+			Username: msg.Username,
+			Channel:  msg.Channel,
+			Event:    msg.Event,
 		}
 	}
 	return "", nil
@@ -462,5 +462,5 @@ func (b *Birc) storeNames(client *girc.Client, event girc.Event) {
 }
 
 func (b *Birc) formatnicks(nicks []string) string {
-	return plainformatter(nicks)
+	return strings.Join(nicks, ", ") + " currently on IRC"
 }
