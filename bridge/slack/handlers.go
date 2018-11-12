@@ -3,7 +3,6 @@ package bslack
 import (
 	"fmt"
 	"html"
-	"regexp"
 	"time"
 
 	"github.com/42wim/matterbridge/bridge/config"
@@ -228,33 +227,23 @@ func (b *Bslack) handleAttachments(ev *slack.MessageEvent, rmsg *config.Message)
 	}
 
 	// If we have files attached, download them (in memory) and put a pointer to it in msg.Extra.
-	for _, f := range ev.Files {
-		f := f
-		err := b.handleDownloadFile(rmsg, &f)
-		if err != nil {
+	for i := range ev.Files {
+		if err := b.handleDownloadFile(rmsg, &ev.Files[i]); err != nil {
 			b.Log.Errorf("Could not download incoming file: %#v", err)
 		}
 	}
 }
 
-var commentRE = regexp.MustCompile(`.*?commented: (.*)`)
-
 func (b *Bslack) handleTypingEvent(ev *slack.UserTypingEvent) (*config.Message, error) {
-	var err error
-	// use our own func because rtm.GetChannelInfo doesn't work for private channels
 	channelInfo, err := b.getChannelByID(ev.Channel)
 	if err != nil {
 		return nil, err
 	}
-
-	rmsg := config.Message{
+	return &config.Message{
 		Channel: channelInfo.Name,
 		Account: b.Account,
 		Event:   config.EVENT_USER_TYPING,
-	}
-
-	return &rmsg, nil
-
+	}, nil
 }
 
 // handleDownloadFile handles file download
@@ -275,11 +264,11 @@ func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File) erro
 		return fmt.Errorf("download %s failed %#v", file.URLPrivateDownload, err)
 	}
 
-	// Add the downloaded data to the message.
-	var comment string
-	if results := commentRE.FindAllStringSubmatch(rmsg.Text, -1); len(results) > 0 {
-		comment = results[0][1]
-	}
+	// If a comment is attached to the file(s) it is in the 'Text' field of the Slack messge event
+	// and should be added as comment to only one of the files. We reset the 'Text' field to ensure
+	// that the comment is not duplicated.
+	comment := rmsg.Text
+	rmsg.Text = ""
 	helper.HandleDownloadData(b.Log, rmsg, file.Name, comment, file.URLPrivateDownload, data, b.General)
 	return nil
 }

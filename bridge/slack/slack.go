@@ -207,7 +207,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 
 // sendWebhook uses the configured WebhookURL to send the message
 func (b *Bslack) sendWebhook(msg config.Message) (string, error) {
-	// skip events
+	// Skip events.
 	if msg.Event != "" {
 		return "", nil
 	}
@@ -217,7 +217,7 @@ func (b *Bslack) sendWebhook(msg config.Message) (string, error) {
 	}
 
 	if msg.Extra != nil {
-		// this sends a message only if we received a config.EVENT_FILE_FAILURE_SIZE
+		// This sends a message only if we received a config.EVENT_FILE_FAILURE_SIZE.
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
 			rmsg := rmsg // scopelint
 			iconURL := config.GetIconURL(&rmsg, b.GetString(iconURLConfig))
@@ -232,16 +232,20 @@ func (b *Bslack) sendWebhook(msg config.Message) (string, error) {
 			}
 		}
 
-		// webhook doesn't support file uploads, so we add the url manually
+		// Webhook doesn't support file uploads, so we add the URL manually.
 		for _, f := range msg.Extra["file"] {
-			fi := f.(config.FileInfo)
+			fi, ok := f.(config.FileInfo)
+			if !ok {
+				b.Log.Errorf("Received a file with unexpected content: %#v", f)
+				continue
+			}
 			if fi.URL != "" {
 				msg.Text += " " + fi.URL
 			}
 		}
 	}
 
-	// if we have native slack_attachments add them
+	// If we have native slack_attachments add them.
 	var attachs []slack.Attachment
 	for _, attach := range msg.Extra[sSlackAttachment] {
 		attachs = append(attachs, attach.([]slack.Attachment)...)
@@ -258,9 +262,8 @@ func (b *Bslack) sendWebhook(msg config.Message) (string, error) {
 	if msg.Avatar != "" {
 		matterMessage.IconURL = msg.Avatar
 	}
-	err := b.mh.Send(matterMessage)
-	if err != nil {
-		b.Log.Error(err)
+	if err := b.mh.Send(matterMessage); err != nil {
+		b.Log.Errorf("Failed to send message via webhook: %#v", err)
 		return "", err
 	}
 	return "", nil
@@ -373,7 +376,11 @@ func (b *Bslack) postMessage(msg *config.Message, messageParameters *slack.PostM
 // uploadFile handles native upload of files
 func (b *Bslack) uploadFile(msg *config.Message, channelID string) {
 	for _, f := range msg.Extra["file"] {
-		fi := f.(config.FileInfo)
+		fi, ok := f.(config.FileInfo)
+		if !ok {
+			b.Log.Errorf("Received a file with unexpected content: %#v", f)
+			continue
+		}
 		if msg.Text == fi.Comment {
 			msg.Text = ""
 		}
