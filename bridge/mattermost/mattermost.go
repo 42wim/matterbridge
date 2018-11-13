@@ -23,6 +23,8 @@ type Bmattermost struct {
 	avatarMap map[string]string
 }
 
+const mattermostPlugin = "mattermost.plugin"
+
 func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Bmattermost{Config: cfg, avatarMap: make(map[string]string)}
 	b.uuid = xid.New().String()
@@ -34,7 +36,7 @@ func (b *Bmattermost) Command(cmd string) string {
 }
 
 func (b *Bmattermost) Connect() error {
-	if b.Account == "mattermost.plugin" {
+	if b.Account == mattermostPlugin {
 		return nil
 	}
 	if b.GetString("WebhookBindAddress") != "" {
@@ -113,7 +115,7 @@ func (b *Bmattermost) Disconnect() error {
 }
 
 func (b *Bmattermost) JoinChannel(channel config.ChannelInfo) error {
-	if b.Account == "mattermost.plugin" {
+	if b.Account == mattermostPlugin {
 		return nil
 	}
 	// we can only join channels using the API
@@ -128,7 +130,7 @@ func (b *Bmattermost) JoinChannel(channel config.ChannelInfo) error {
 }
 
 func (b *Bmattermost) Send(msg config.Message) (string, error) {
-	if b.Account == "mattermost.plugin" {
+	if b.Account == mattermostPlugin {
 		return "", nil
 	}
 	b.Log.Debugf("=> Receiving %#v", msg)
