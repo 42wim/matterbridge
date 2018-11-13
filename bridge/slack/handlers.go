@@ -133,15 +133,17 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 		return true
 	}
 
-	for _, f := range ev.Files {
-		// If the file is in the cache and isn't older then a minute, skip it
-		if b.fileWasRecentlyCached(&f) {
-			b.Log.Debugf("Not downloading file id %s which we uploaded", f.ID)
-			return true
-		}
-	}
+	return b.filesCached(ev.Files)
+}
 
-	return false
+func (b *Bslack) filesCached(files []slack.File) bool {
+    for _, f := range files {
+        f := f
+        if !b.fileCached(&f) {
+             return false
+        }
+    }
+    return true
 }
 
 // handleMessageEvent handles the message events. Together with any called sub-methods,
@@ -257,6 +259,9 @@ func (b *Bslack) handleTypingEvent(ev *slack.UserTypingEvent) (*config.Message, 
 
 // handleDownloadFile handles file download
 func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File) error {
+	if b.fileCached(file) {
+		return nil
+	}
 	// Check that the file is neither too large nor blacklisted.
 	if err := helper.HandleDownloadSize(b.Log, rmsg, file.Name, int64(file.Size), b.General); err != nil {
 		b.Log.WithError(err).Infof("Skipping download of incoming file.")
@@ -278,7 +283,15 @@ func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File) erro
 	return nil
 }
 
-func (b *Bslack) fileWasRecentlyCached(file *slack.File) bool {
+// fileCached implements Matterbridge's caching logic for files
+// shared via Slack.
+//
+// We consider that a file was cached if its ID was added in the last minute or
+// it's name was registered in the last 10 seconds. This ensures that an
+// identically named file but with different content will be uploaded correctly
+// (the assumption is that such name collisions will not occur within the given
+// timeframes).
+func (b *Bslack) fileCached(file *slack.File) bool {
 	if ts, ok := b.cache.Get("file" + file.ID); ok && time.Since(ts.(time.Time)) < time.Minute {
 		return true
 	} else if ts, ok = b.cache.Get("filename" + file.Name); ok && time.Since(ts.(time.Time)) < 10*time.Second {
