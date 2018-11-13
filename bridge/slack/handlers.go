@@ -137,13 +137,13 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 }
 
 func (b *Bslack) filesCached(files []slack.File) bool {
-    for _, f := range files {
-        f := f
-        if !b.fileCached(&f) {
-             return false
-        }
-    }
-    return true
+	for _, f := range files {
+		f := f
+		if !b.fileCached(&f) {
+			return false
+		}
+	}
+	return true
 }
 
 // handleMessageEvent handles the message events. Together with any called sub-methods,
