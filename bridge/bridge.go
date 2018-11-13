@@ -22,7 +22,7 @@ type Bridge struct {
 	Channels map[string]config.ChannelInfo
 	Joined   map[string]bool
 	Log      *log.Entry
-	Config   *config.Config
+	Config   config.Config
 	General  *config.Protocol
 }
 
@@ -69,36 +69,41 @@ func (b *Bridge) joinChannels(channels map[string]config.ChannelInfo, exists map
 }
 
 func (b *Bridge) GetBool(key string) bool {
-	if b.Config.GetBool(b.Account + "." + key) {
-		return b.Config.GetBool(b.Account + "." + key)
+	val, ok := b.Config.GetBool(b.Account + "." + key)
+	if !ok {
+		val, _ = b.Config.GetBool("general." + key)
 	}
-	return b.Config.GetBool("general." + key)
+	return val
 }
 
 func (b *Bridge) GetInt(key string) int {
-	if b.Config.GetInt(b.Account+"."+key) != 0 {
-		return b.Config.GetInt(b.Account + "." + key)
+	val, ok := b.Config.GetInt(b.Account + "." + key)
+	if !ok {
+		val, _ = b.Config.GetInt("general." + key)
 	}
-	return b.Config.GetInt("general." + key)
+	return val
 }
 
 func (b *Bridge) GetString(key string) string {
-	if b.Config.GetString(b.Account+"."+key) != "" {
-		return b.Config.GetString(b.Account + "." + key)
+	val, ok := b.Config.GetString(b.Account + "." + key)
+	if !ok {
+		val, _ = b.Config.GetString("general." + key)
 	}
-	return b.Config.GetString("general." + key)
+	return val
 }
 
 func (b *Bridge) GetStringSlice(key string) []string {
-	if len(b.Config.GetStringSlice(b.Account+"."+key)) != 0 {
-		return b.Config.GetStringSlice(b.Account + "." + key)
+	val, ok := b.Config.GetStringSlice(b.Account + "." + key)
+	if !ok {
+		val, _ = b.Config.GetStringSlice("general." + key)
 	}
-	return b.Config.GetStringSlice("general." + key)
+	return val
 }
 
 func (b *Bridge) GetStringSlice2D(key string) [][]string {
-	if len(b.Config.GetStringSlice2D(b.Account+"."+key)) != 0 {
-		return b.Config.GetStringSlice2D(b.Account + "." + key)
+	val, ok := b.Config.GetStringSlice2D(b.Account + "." + key)
+	if !ok {
+		val, _ = b.Config.GetStringSlice2D("general." + key)
 	}
-	return b.Config.GetStringSlice2D("general." + key)
+	return val
 }

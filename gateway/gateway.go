@@ -33,7 +33,8 @@ import (
 )
 
 type Gateway struct {
-	*config.Config
+	config.Config
+
 	Router         *Router
 	MyConfig       *config.Gateway
 	Bridges        map[string]*bridge.Bridge
@@ -107,7 +108,7 @@ func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 	if br == nil {
 		br = bridge.New(cfg)
 		br.Config = gw.Router.Config
-		br.General = &gw.General
+		br.General = &gw.ConfigValues().General
 		// set logging
 		br.Log = log.WithFields(log.Fields{"prefix": "bridge"})
 		brconfig := &bridge.Config{Remote: gw.Message, Log: log.WithFields(log.Fields{"prefix": br.Protocol}), Bridge: br}
@@ -278,7 +279,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 
 	// Get the ID of the parent message in thread
 	var canonicalParentMsgID string
-	if msg.ParentID != "" && (gw.Config.General.PreserveThreading || dest.GetBool("PreserveThreading")) {
+	if msg.ParentID != "" && (gw.ConfigValues().General.PreserveThreading || dest.GetBool("PreserveThreading")) {
 		thisParentMsgID := dest.Protocol + " " + msg.ParentID
 		canonicalParentMsgID = gw.FindCanonicalMsgID(thisParentMsgID)
 	}
@@ -391,13 +392,13 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 func (gw *Gateway) modifyUsername(msg config.Message, dest *bridge.Bridge) string {
 	br := gw.Bridges[msg.Account]
 	msg.Protocol = br.Protocol
-	if gw.Config.General.StripNick || dest.GetBool("StripNick") {
+	if gw.ConfigValues().General.StripNick || dest.GetBool("StripNick") {
 		re := regexp.MustCompile("[^a-zA-Z0-9]+")
 		msg.Username = re.ReplaceAllString(msg.Username, "")
 	}
 	nick := dest.GetString("RemoteNickFormat")
 	if nick == "" {
-		nick = gw.Config.General.RemoteNickFormat
+		nick = gw.ConfigValues().General.RemoteNickFormat
 	}
 
 	// loop to replace nicks
@@ -436,7 +437,7 @@ func (gw *Gateway) modifyUsername(msg config.Message, dest *bridge.Bridge) strin
 }
 
 func (gw *Gateway) modifyAvatar(msg config.Message, dest *bridge.Bridge) string {
-	iconurl := gw.Config.General.IconURL
+	iconurl := gw.ConfigValues().General.IconURL
 	if iconurl == "" {
 		iconurl = dest.GetString("IconURL")
 	}
@@ -477,7 +478,9 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
 
 	// If we don't have a attachfield or we don't have a mediaserver configured return
-	if msg.Extra == nil || (gw.Config.General.MediaServerUpload == "" && gw.Config.General.MediaDownloadPath == "") {
+	if msg.Extra == nil ||
+		(gw.ConfigValues().General.MediaServerUpload == "" &&
+			gw.ConfigValues().General.MediaDownloadPath == "") {
 		return
 	}
 
@@ -499,10 +502,10 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 
 		sha1sum := fmt.Sprintf("%x", sha1.Sum(*fi.Data))[:8]
 
-		if gw.Config.General.MediaServerUpload != "" {
+		if gw.ConfigValues().General.MediaServerUpload != "" {
 			// Use MediaServerUpload. Upload using a PUT HTTP request and basicauth.
 
-			url := gw.Config.General.MediaServerUpload + "/" + sha1sum + "/" + fi.Name
+			url := gw.ConfigValues().General.MediaServerUpload + "/" + sha1sum + "/" + fi.Name
 
 			req, err := http.NewRequest("PUT", url, bytes.NewReader(*fi.Data))
 			if err != nil {
@@ -521,7 +524,7 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 		} else {
 			// Use MediaServerPath. Place the file on the current filesystem.
 
-			dir := gw.Config.General.MediaDownloadPath + "/" + sha1sum
+			dir := gw.ConfigValues().General.MediaDownloadPath + "/" + sha1sum
 			err := os.Mkdir(dir, os.ModePerm)
 			if err != nil && !os.IsExist(err) {
 				flog.Errorf("mediaserver path failed, could not mkdir: %s %#v", err, err)
@@ -539,7 +542,7 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 		}
 
 		// Download URL.
-		durl := gw.Config.General.MediaServerDownload + "/" + sha1sum + "/" + fi.Name
+		durl := gw.ConfigValues().General.MediaServerDownload + "/" + sha1sum + "/" + fi.Name
 
 		flog.Debugf("mediaserver download URL = %s", durl)
 
