@@ -280,6 +280,24 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 		}
 		return "", nil
 	}
+	if (msg.Event == config.EVENT_TOPIC_CHANGE) && b.GetBool("SyncTopicChange") {
+		incomingChangeType, text := b.extractTopicOrPurpose(msg.Text)
+		switch incomingChangeType {
+		case "topic":
+			if strings.HasSuffix(channelInfo.Topic.Value, "[nosync]") {
+				break
+			}
+			b.rtm.SetTopicOfConversation(channelInfo.ID, text)
+		case "purpose":
+			if strings.HasSuffix(channelInfo.Purpose.Value, "[nosync]") {
+				break
+			}
+			b.rtm.SetPurposeOfConversation(channelInfo.ID, text)
+		case "nosync":
+			break
+		}
+		return "", nil
+	}
 
 	// Handle message deletions.
 	var handled bool
