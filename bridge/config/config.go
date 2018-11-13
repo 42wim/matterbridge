@@ -197,9 +197,6 @@ func NewConfig(cfgfile string) *Config {
 	viper.OnConfigChange(func(e fsnotify.Event) {
 		flog.Println("Config file changed:", e.Name)
 	})
-
-	mycfg.v.Set("ConfigFile", cfgfile)
-
 	return mycfg
 }
 
