@@ -293,8 +293,6 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 				break
 			}
 			b.rtm.SetPurposeOfConversation(channelInfo.ID, text)
-		case "nosync":
-			break
 		}
 		return "", nil
 	}

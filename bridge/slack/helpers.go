@@ -266,15 +266,12 @@ var (
 	channelRE  = regexp.MustCompile(`<#[a-zA-Z0-9]+\|(.+?)>`)
 	variableRE = regexp.MustCompile(`<!((?:subteam\^)?[a-zA-Z0-9]+)(?:\|@?(.+?))?>`)
 	urlRE      = regexp.MustCompile(`<(.*?)(\|.*?)?>`)
-	topicOrPurposeRE    = regexp.MustCompile(`(?s)^@.+ set the channel (topic|purpose): (.+?)(\[nosync\])?$`)
+	topicOrPurposeRE    = regexp.MustCompile(`(?s)^@.+ set the channel (topic|purpose): (.+?)$`)
 )
 
 func (b *Bslack) extractTopicOrPurpose(text string) (updateType string, extracted string) {
 	r := topicOrPurposeRE.FindStringSubmatch(text)
-	updateType, extracted, noSync := r[1], r[2], r[3]
-	if noSync != "" {
-		return "nosync", ""
-	}
+	updateType, extracted = r[1], r[2]
 	return updateType, extracted
 }
 

@@ -269,8 +269,16 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 
 	// only relay topic change when configured
 	if msg.Event == config.EventTopicChange && !gw.Bridges[dest.Account].GetBool("ShowTopicChange") {
-		return brMsgIDs
+		// don't relay topic/purpose change if disabled
+		if !gw.Bridges[dest.Account].GetBool("ShowTopicChange") {
+			return brMsgIDs
+		}
+		// don't relay topic/purpose update if sync is enabled, but msg marked as nosync
+		if gw.Bridges[dest.Account].GetBool("SyncTopicChange") && strings.HasSuffix(msg.Text, "[nosync]") {
+			return brMsgIDs
+		}
 	}
+
 
 	// broadcast to every out channel (irc QUIT)
 	if msg.Channel == "" && msg.Event != config.EventJoinLeave {
