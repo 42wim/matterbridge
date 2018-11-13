@@ -2,10 +2,15 @@ package gateway
 
 import (
 	"bytes"
+	"crypto/sha1"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
+	"time"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/api"
@@ -23,15 +28,8 @@ import (
 	bxmpp "github.com/42wim/matterbridge/bridge/xmpp"
 	bzulip "github.com/42wim/matterbridge/bridge/zulip"
 	"github.com/hashicorp/golang-lru"
-	log "github.com/sirupsen/logrus"
-	//	"github.com/davecgh/go-spew/spew"
-	"crypto/sha1"
-	"path/filepath"
-	"regexp"
-	"strings"
-	"time"
-
 	"github.com/peterhellberg/emojilib"
+	log "github.com/sirupsen/logrus"
 )
 
 type Gateway struct {
@@ -55,19 +53,20 @@ type BrMsgID struct {
 var flog *log.Entry
 
 var bridgeMap = map[string]bridge.Factory{
-	"api":        api.New,
-	"discord":    bdiscord.New,
-	"gitter":     bgitter.New,
-	"irc":        birc.New,
-	"mattermost": bmattermost.New,
-	"matrix":     bmatrix.New,
-	"rocketchat": brocketchat.New,
-	"slack":      bslack.New,
-	"sshchat":    bsshchat.New,
-	"steam":      bsteam.New,
-	"telegram":   btelegram.New,
-	"xmpp":       bxmpp.New,
-	"zulip":      bzulip.New,
+	"api":          api.New,
+	"discord":      bdiscord.New,
+	"gitter":       bgitter.New,
+	"irc":          birc.New,
+	"mattermost":   bmattermost.New,
+	"matrix":       bmatrix.New,
+	"rocketchat":   brocketchat.New,
+	"slack-legacy": bslack.NewLegacy,
+	"slack":        bslack.New,
+	"sshchat":      bsshchat.New,
+	"steam":        bsteam.New,
+	"telegram":     btelegram.New,
+	"xmpp":         bxmpp.New,
+	"zulip":        bzulip.New,
 }
 
 const (

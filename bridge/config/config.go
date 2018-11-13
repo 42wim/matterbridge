@@ -163,6 +163,7 @@ type ConfigValues struct {
 	Mattermost         map[string]Protocol
 	Matrix             map[string]Protocol
 	Slack              map[string]Protocol
+	SlackLegacy        map[string]Protocol
 	Steam              map[string]Protocol
 	Gitter             map[string]Protocol
 	Xmpp               map[string]Protocol
