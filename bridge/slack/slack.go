@@ -280,25 +280,15 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 		}
 		return "", nil
 	}
-	if (msg.Event == config.EVENT_TOPIC_CHANGE) && b.GetBool("SyncTopicChange") {
-		incomingChangeType, text := b.extractTopicOrPurpose(msg.Text)
-		switch incomingChangeType {
-		case "topic":
-			if strings.HasSuffix(channelInfo.Topic.Value, "[nosync]") {
-				break
-			}
-			b.rtm.SetTopicOfConversation(channelInfo.ID, text)
-		case "purpose":
-			if strings.HasSuffix(channelInfo.Purpose.Value, "[nosync]") {
-				break
-			}
-			b.rtm.SetPurposeOfConversation(channelInfo.ID, text)
-		}
-		return "", nil
+
+	var handled bool
+
+	// Handle topic/purpose updates.
+	if handled, err = b.updateTopicOrPurpose(&msg, channelInfo); handled {
+		return "", err
 	}
 
 	// Handle message deletions.
-	var handled bool
 	if handled, err = b.deleteMessage(&msg, channelInfo); handled {
 		return msg.ID, err
 	}
@@ -329,6 +319,39 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 
 	// Post message.
 	return b.postMessage(&msg, messageParameters, channelInfo)
+}
+
+func (b *Bslack) updateTopicOrPurpose(msg *config.Message, channelInfo *slack.Channel) (handled bool, err error) {
+	if msg.Event != config.EVENT_TOPIC_CHANGE {
+		return false, nil
+	}
+
+	if !b.GetBool("SyncTopicChange") {
+		return false, nil
+	}
+
+	incomingChangeType, text := b.extractTopicOrPurpose(msg.Text)
+	switch incomingChangeType {
+	case "topic":
+		if strings.HasSuffix(channelInfo.Topic.Value, "[nosync]") {
+			break
+		}
+		_, err = b.rtm.SetTopicOfConversation(channelInfo.ID, text)
+	case "purpose":
+		if strings.HasSuffix(channelInfo.Purpose.Value, "[nosync]") {
+			break
+		}
+		_, err = b.rtm.SetPurposeOfConversation(channelInfo.ID, text)
+	}
+
+	if err != nil {
+		if err = b.handleRateLimit(err); err != nil {
+			b.Log.Errorf("Failed to update channel topic/purpose on Slack: %#v", err)
+			return true, err
+		}
+	}
+
+	return true, nil
 }
 
 func (b *Bslack) deleteMessage(msg *config.Message, channelInfo *slack.Channel) (bool, error) {
