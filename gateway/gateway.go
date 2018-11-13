@@ -279,7 +279,6 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		}
 	}
 
-
 	// broadcast to every out channel (irc QUIT)
 	if msg.Channel == "" && msg.Event != config.EventJoinLeave {
 		flog.Debug("empty channel")

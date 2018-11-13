@@ -262,11 +262,11 @@ func (b *Bslack) populateMessageWithBotInfo(ev *slack.MessageEvent, rmsg *config
 }
 
 var (
-	mentionRE  = regexp.MustCompile(`<@([a-zA-Z0-9]+)>`)
-	channelRE  = regexp.MustCompile(`<#[a-zA-Z0-9]+\|(.+?)>`)
-	variableRE = regexp.MustCompile(`<!((?:subteam\^)?[a-zA-Z0-9]+)(?:\|@?(.+?))?>`)
-	urlRE      = regexp.MustCompile(`<(.*?)(\|.*?)?>`)
-	topicOrPurposeRE    = regexp.MustCompile(`(?s)^@.+ set the channel (topic|purpose): (.+?)$`)
+	mentionRE        = regexp.MustCompile(`<@([a-zA-Z0-9]+)>`)
+	channelRE        = regexp.MustCompile(`<#[a-zA-Z0-9]+\|(.+?)>`)
+	variableRE       = regexp.MustCompile(`<!((?:subteam\^)?[a-zA-Z0-9]+)(?:\|@?(.+?))?>`)
+	urlRE            = regexp.MustCompile(`<(.*?)(\|.*?)?>`)
+	topicOrPurposeRE = regexp.MustCompile(`(?s)^@.+ set the channel (topic|purpose): (.+?)$`)
 )
 
 func (b *Bslack) extractTopicOrPurpose(text string) (updateType string, extracted string) {
