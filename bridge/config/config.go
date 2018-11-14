@@ -2,9 +2,7 @@ package config
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -316,7 +314,6 @@ type TestConfig struct {
 
 func (c *TestConfig) GetBool(key string) (bool, bool) {
 	val, ok := c.Overrides[key]
-	fmt.Fprintln(os.Stderr, "DEBUG:", c.Overrides, key, ok, val)
 	if ok {
 		return val.(bool), true
 	}

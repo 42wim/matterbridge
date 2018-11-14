@@ -40,16 +40,42 @@ func DownloadFileAuth(url string, auth string) (*[]byte, error) {
 	return &data, nil
 }
 
-func SplitStringLength(input string, length int) string {
-	a := []rune(input)
-	str := ""
-	for i, r := range a {
-		str += string(r)
-		if i > 0 && (i+1)%length == 0 {
-			str += "\n"
+// GetSubLines splits messages in newline-delimited lines. If maxLineLength is
+// specified as non-zero GetSubLines will and also clip long lines to the
+// maximum length and insert a warning marker that the line was clipped.
+//
+// TODO: The current implementation has the inconvenient that it disregards
+// word boundaries when splitting but this is hard to solve without potentially
+// breaking formatting and other stylistic effects.
+func GetSubLines(message string, maxLineLength int) []string {
+	const clippingMessage = " <clipped message>"
+
+	var lines []string
+	for _, line := range strings.Split(strings.TrimSpace(message), "\n") {
+		if maxLineLength == 0 || len([]byte(line)) <= maxLineLength {
+			lines = append(lines, line)
+			continue
 		}
+
+		// !!! WARNING !!!
+		// Before touching the splitting logic below please ensure that you PROPERLY
+		// understand how strings, runes and range loops over strings work in Go.
+		// A good place to start is to read https://blog.golang.org/strings. :-)
+		var splitStart int
+		var startOfPreviousRune int
+		for i := range line {
+			if i-splitStart > maxLineLength-len([]byte(clippingMessage)) {
+				lines = append(lines, line[splitStart:startOfPreviousRune]+clippingMessage)
+				splitStart = startOfPreviousRune
+			}
+			startOfPreviousRune = i
+		}
+		// This last append is safe to do without looking at the remaining byte-length
+		// as we assume that the byte-length of the last rune will never exceed that of
+		// the byte-length of the clipping message.
+		lines = append(lines, line[splitStart:])
 	}
-	return str
+	return lines
 }
 
 // handle all the stuff we put into extra
