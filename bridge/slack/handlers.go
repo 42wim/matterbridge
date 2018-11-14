@@ -132,7 +132,16 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 		ev.SubMessage.Edited == nil {
 		return true
 	}
-	return false
+	return b.filesCached(ev.Files)
+}
+
+func (b *Bslack) filesCached(files []slack.File) bool {
+	for i := range files {
+		if !b.fileCached(&files[i]) {
+			return false
+		}
+	}
+	return true
 }
 
 // handleMessageEvent handles the message events. Together with any called sub-methods,
@@ -248,10 +257,9 @@ func (b *Bslack) handleTypingEvent(ev *slack.UserTypingEvent) (*config.Message, 
 
 // handleDownloadFile handles file download
 func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File) error {
-	if b.fileIsAvailable(file) {
+	if b.fileCached(file) {
 		return nil
 	}
-
 	// Check that the file is neither too large nor blacklisted.
 	if err := helper.HandleDownloadSize(b.Log, rmsg, file.Name, int64(file.Size), b.General); err != nil {
 		b.Log.WithError(err).Infof("Skipping download of incoming file.")
@@ -273,11 +281,18 @@ func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File) erro
 	return nil
 }
 
-func (b *Bslack) fileIsAvailable(file *slack.File) bool {
-	// Only download a file if it is not in the cache or if it has been entered more than a minute ago.
-	if ts, ok := b.cache.Get("file" + file.ID); ok && time.Since(ts.(time.Time)) > time.Minute {
+// fileCached implements Matterbridge's caching logic for files
+// shared via Slack.
+//
+// We consider that a file was cached if its ID was added in the last minute or
+// it's name was registered in the last 10 seconds. This ensures that an
+// identically named file but with different content will be uploaded correctly
+// (the assumption is that such name collisions will not occur within the given
+// timeframes).
+func (b *Bslack) fileCached(file *slack.File) bool {
+	if ts, ok := b.cache.Get("file" + file.ID); ok && time.Since(ts.(time.Time)) < time.Minute {
 		return true
-	} else if ts, ok = b.cache.Get("filename" + file.Name); ok && time.Since(ts.(time.Time)) > 10*time.Second {
+	} else if ts, ok = b.cache.Get("filename" + file.Name); ok && time.Since(ts.(time.Time)) < 10*time.Second {
 		return true
 	}
 	return false

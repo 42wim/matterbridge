@@ -384,9 +384,7 @@ func (b *Bslack) uploadFile(msg *config.Message, channelID string) {
 		// we can't match on the file ID yet, so we have to match on the filename too.
 		ts := time.Now()
 		b.Log.Debugf("Adding file %s to cache at %s with timestamp", fi.Name, ts.String())
-		if !b.cache.Add("filename"+fi.Name, ts) {
-			b.Log.Warnf("Failed to add file %s to cache at %s with timestamp", fi.Name, ts.String())
-		}
+		b.cache.Add("filename"+fi.Name, ts)
 		res, err := b.sc.UploadFile(slack.FileUploadParameters{
 			Reader:         bytes.NewReader(*fi.Data),
 			Filename:       fi.Name,
@@ -399,9 +397,7 @@ func (b *Bslack) uploadFile(msg *config.Message, channelID string) {
 		}
 		if res.ID != "" {
 			b.Log.Debugf("Adding file ID %s to cache with timestamp %s", res.ID, ts.String())
-			if !b.cache.Add("file"+res.ID, ts) {
-				b.Log.Warnf("Failed to add file ID %s to cache with timestamp %s", res.ID, ts.String())
-			}
+			b.cache.Add("file"+res.ID, ts)
 		}
 	}
 }
