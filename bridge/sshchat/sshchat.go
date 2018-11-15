@@ -31,7 +31,7 @@ func (b *Bsshchat) Connect() error {
 			b.w = w
 			b.r.Scan()
 			w.Write([]byte("/theme mono\r\n"))
-			b.handleSshChat()
+			b.handleSSHChat()
 			return nil
 		})
 	}()
@@ -53,7 +53,7 @@ func (b *Bsshchat) JoinChannel(channel config.ChannelInfo) error {
 
 func (b *Bsshchat) Send(msg config.Message) (string, error) {
 	// ignore delete messages
-	if msg.Event == config.EVENT_MSG_DELETE {
+	if msg.Event == config.EventMsgDelete {
 		return "", nil
 	}
 	b.Log.Debugf("=> Receiving %#v", msg)
@@ -113,7 +113,7 @@ func stripPrompt(s string) string {
 	return s[pos+3:]
 }
 
-func (b *Bsshchat) handleSshChat() error {
+func (b *Bsshchat) handleSSHChat() error {
 	/*
 		done := b.sshchatKeepAlive()
 		defer close(done)

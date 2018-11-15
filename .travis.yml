@@ -40,7 +40,7 @@ script:
   #- test -z "$(go fmt ./...)"         # Fail if a .go file hasn't been formatted with gofmt
   - go test -v -race $PKGS            # Run all the tests with the race detector enabled
   #- go vet $PKGS                      # go vet is the official Go static analyzer
-  - golangci-lint run --enable-all -D golint -D lll -D errcheck -D gosec -D maligned -D prealloc -D gocyclo -D gochecknoglobals
+  - golangci-lint run --enable-all -D lll -D errcheck -D gosec -D maligned -D prealloc -D gocyclo -D gochecknoglobals
   #- megacheck $PKGS                   # "go vet on steroids" + linter
   - /bin/bash ci/bintray.sh
   #- golint -set_exit_status $PKGS     # one last linter

@@ -129,7 +129,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	}
 
 	// Make a action /me of the message
-	if msg.Event == config.EVENT_USER_ACTION {
+	if msg.Event == config.EventUserAction {
 		msg.Text = "_" + msg.Text + "_"
 	}
 
@@ -147,7 +147,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	// Use webhook to send the message
 	if wID != "" {
 		// skip events
-		if msg.Event != "" && msg.Event != config.EVENT_JOIN_LEAVE && msg.Event != config.EVENT_TOPIC_CHANGE {
+		if msg.Event != "" && msg.Event != config.EventJoinLeave && msg.Event != config.EventTopicChange {
 			return "", nil
 		}
 		b.Log.Debugf("Broadcasting using Webhook")
@@ -179,7 +179,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("Broadcasting using token (API)")
 
 	// Delete message
-	if msg.Event == config.EVENT_MSG_DELETE {
+	if msg.Event == config.EventMsgDelete {
 		if msg.ID == "" {
 			return "", nil
 		}
@@ -217,7 +217,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 }
 
 func (b *Bdiscord) messageDelete(s *discordgo.Session, m *discordgo.MessageDelete) {
-	rmsg := config.Message{Account: b.Account, ID: m.ID, Event: config.EVENT_MSG_DELETE, Text: config.EVENT_MSG_DELETE}
+	rmsg := config.Message{Account: b.Account, ID: m.ID, Event: config.EventMsgDelete, Text: config.EventMsgDelete}
 	rmsg.Channel = b.getChannelName(m.ChannelID)
 	if b.UseChannelID {
 		rmsg.Channel = "ID:" + m.ChannelID
@@ -300,7 +300,7 @@ func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	var ok bool
 	rmsg.Text, ok = b.replaceAction(rmsg.Text)
 	if ok {
-		rmsg.Event = config.EVENT_USER_ACTION
+		rmsg.Event = config.EventUserAction
 	}
 
 	b.Log.Debugf("<= Sending message from %s on %s to gateway", m.Author.Username, b.Account)

@@ -8,15 +8,15 @@ import (
 	"github.com/nlopes/slack"
 )
 
-type BslackLegacy struct {
+type BLegacy struct {
 	*Bslack
 }
 
 func NewLegacy(cfg *bridge.Config) bridge.Bridger {
-	return &BslackLegacy{Bslack: newBridge(cfg)}
+	return &BLegacy{Bslack: newBridge(cfg)}
 }
 
-func (b *BslackLegacy) Connect() error {
+func (b *BLegacy) Connect() error {
 	b.RLock()
 	defer b.RUnlock()
 	if b.GetString(incomingWebhookConfig) != "" {

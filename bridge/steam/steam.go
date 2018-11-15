@@ -60,7 +60,7 @@ func (b *Bsteam) JoinChannel(channel config.ChannelInfo) error {
 
 func (b *Bsteam) Send(msg config.Message) (string, error) {
 	// ignore delete messages
-	if msg.Event == config.EVENT_MSG_DELETE {
+	if msg.Event == config.EventMsgDelete {
 		return "", nil
 	}
 	id, err := steamid.NewId(msg.Channel)

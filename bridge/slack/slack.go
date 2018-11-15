@@ -185,12 +185,12 @@ func (b *Bslack) Reload(cfg *bridge.Config) (string, error) {
 
 func (b *Bslack) Send(msg config.Message) (string, error) {
 	// Too noisy to log like other events
-	if msg.Event != config.EVENT_USER_TYPING {
+	if msg.Event != config.EventUserTyping {
 		b.Log.Debugf("=> Receiving %#v", msg)
 	}
 
 	// Make a action /me of the message
-	if msg.Event == config.EVENT_USER_ACTION {
+	if msg.Event == config.EventUserAction {
 		msg.Text = "_" + msg.Text + "_"
 	}
 
@@ -270,7 +270,7 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("could not send message: %v", err)
 	}
-	if msg.Event == config.EVENT_USER_TYPING {
+	if msg.Event == config.EventUserTyping {
 		if b.GetBool("ShowUserTyping") {
 			b.rtm.SendMessage(b.rtm.NewTypingMessage(channelInfo.ID))
 		}
@@ -312,7 +312,7 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 }
 
 func (b *Bslack) deleteMessage(msg *config.Message, channelInfo *slack.Channel) (bool, error) {
-	if msg.Event != config.EVENT_MSG_DELETE {
+	if msg.Event != config.EventMsgDelete {
 		return false, nil
 	}
 

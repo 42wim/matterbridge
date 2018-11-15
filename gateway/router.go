@@ -27,7 +27,7 @@ func NewRouter(cfg config.Config) (*Router, error) {
 	sgw := samechannelgateway.New(cfg)
 	gwconfigs := sgw.GetConfig()
 
-	for _, entry := range append(gwconfigs, cfg.ConfigValues().Gateway...) {
+	for _, entry := range append(gwconfigs, cfg.BridgeValues().Gateway...) {
 		if !entry.Enable {
 			continue
 		}
@@ -77,7 +77,7 @@ func (r *Router) getBridge(account string) *bridge.Bridge {
 func (r *Router) handleReceive() {
 	for msg := range r.Message {
 		msg := msg // scopelint
-		if msg.Event == config.EVENT_FAILURE {
+		if msg.Event == config.EventFailure {
 		Loop:
 			for _, gw := range r.Gateways {
 				for _, br := range gw.Bridges {
@@ -88,7 +88,7 @@ func (r *Router) handleReceive() {
 				}
 			}
 		}
-		if msg.Event == config.EVENT_REJOIN_CHANNELS {
+		if msg.Event == config.EventRejoinChannels {
 			for _, gw := range r.Gateways {
 				for _, br := range gw.Bridges {
 					if msg.Account == br.Account {

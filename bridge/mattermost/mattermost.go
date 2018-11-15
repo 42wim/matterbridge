@@ -136,12 +136,12 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
 
 	// Make a action /me of the message
-	if msg.Event == config.EVENT_USER_ACTION {
+	if msg.Event == config.EventUserAction {
 		msg.Text = "*" + msg.Text + "*"
 	}
 
 	// map the file SHA to our user (caches the avatar)
-	if msg.Event == config.EVENT_AVATAR_DOWNLOAD {
+	if msg.Event == config.EventAvatarDownload {
 		return b.cacheAvatar(&msg)
 	}
 
@@ -151,7 +151,7 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 	}
 
 	// Delete message
-	if msg.Event == config.EVENT_MSG_DELETE {
+	if msg.Event == config.EventMsgDelete {
 		if msg.ID == "" {
 			return "", nil
 		}
@@ -201,7 +201,7 @@ func (b *Bmattermost) handleMatter() {
 		message.Account = b.Account
 		message.Text, ok = b.replaceAction(message.Text)
 		if ok {
-			message.Event = config.EVENT_USER_ACTION
+			message.Event = config.EventUserAction
 		}
 		b.Log.Debugf("<= Sending message from %s on %s to gateway", message.Username, b.Account)
 		b.Log.Debugf("<= Message is %#v", message)
@@ -256,7 +256,7 @@ func (b *Bmattermost) handleMatterClient(messages chan *config.Message) {
 		}
 
 		if message.Raw.Event == model.WEBSOCKET_EVENT_POST_DELETED {
-			rmsg.Event = config.EVENT_MSG_DELETE
+			rmsg.Event = config.EventMsgDelete
 		}
 
 		if len(message.Post.FileIds) > 0 {
@@ -331,7 +331,7 @@ func (b *Bmattermost) cacheAvatar(msg *config.Message) (string, error) {
 // sends a EVENT_AVATAR_DOWNLOAD message to the gateway if successful.
 // logs an error message if it fails
 func (b *Bmattermost) handleDownloadAvatar(userid string, channel string) {
-	rmsg := config.Message{Username: "system", Text: "avatar", Channel: channel, Account: b.Account, UserID: userid, Event: config.EVENT_AVATAR_DOWNLOAD, Extra: make(map[string][]interface{})}
+	rmsg := config.Message{Username: "system", Text: "avatar", Channel: channel, Account: b.Account, UserID: userid, Event: config.EventAvatarDownload, Extra: make(map[string][]interface{})}
 	if _, ok := b.avatarMap[userid]; !ok {
 		data, resp := b.mc.Client.GetProfileImage(userid, "")
 		if resp.Error != nil {
@@ -442,7 +442,7 @@ func (b *Bmattermost) skipMessage(message *matterclient.Message) bool {
 			return true
 		}
 		b.Log.Debugf("Sending JOIN_LEAVE event from %s to gateway", b.Account)
-		b.Remote <- config.Message{Username: "system", Text: message.Text, Channel: message.Channel, Account: b.Account, Event: config.EVENT_JOIN_LEAVE}
+		b.Remote <- config.Message{Username: "system", Text: message.Text, Channel: message.Channel, Account: b.Account, Event: config.EventJoinLeave}
 		return true
 	}
 

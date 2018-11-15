@@ -82,7 +82,7 @@ func GetSubLines(message string, maxLineLength int) []string {
 func HandleExtra(msg *config.Message, general *config.Protocol) []config.Message {
 	extra := msg.Extra
 	rmsg := []config.Message{}
-	for _, f := range extra[config.EVENT_FILE_FAILURE_SIZE] {
+	for _, f := range extra[config.EventFileFailureSize] {
 		fi := f.(config.FileInfo)
 		text := fmt.Sprintf("file %s too big to download (%#v > allowed size: %#v)", fi.Name, fi.Size, general.MediaDownloadSize)
 		rmsg = append(rmsg, config.Message{Text: text, Username: "<system> ", Channel: msg.Channel, Account: msg.Account})
@@ -113,7 +113,7 @@ func HandleDownloadSize(flog *log.Entry, msg *config.Message, name string, size 
 	}
 	flog.Debugf("Trying to download %#v with size %#v", name, size)
 	if int(size) > general.MediaDownloadSize {
-		msg.Event = config.EVENT_FILE_FAILURE_SIZE
+		msg.Event = config.EventFileFailureSize
 		msg.Extra[msg.Event] = append(msg.Extra[msg.Event], config.FileInfo{Name: name, Comment: msg.Text, Size: size})
 		return fmt.Errorf("File %#v to large to download (%#v). MediaDownloadSize is %#v", name, size, general.MediaDownloadSize)
 	}
@@ -123,7 +123,7 @@ func HandleDownloadSize(flog *log.Entry, msg *config.Message, name string, size 
 func HandleDownloadData(flog *log.Entry, msg *config.Message, name, comment, url string, data *[]byte, general *config.Protocol) {
 	var avatar bool
 	flog.Debugf("Download OK %#v %#v", name, len(*data))
-	if msg.Event == config.EVENT_AVATAR_DOWNLOAD {
+	if msg.Event == config.EventAvatarDownload {
 		avatar = true
 	}
 	msg.Extra["file"] = append(msg.Extra["file"], config.FileInfo{Name: name, Data: data, URL: url, Comment: comment, Avatar: avatar})

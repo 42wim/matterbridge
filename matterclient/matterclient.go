@@ -43,6 +43,7 @@ type Message struct {
 	UserID   string
 }
 
+//nolint:golint
 type Team struct {
 	Team         *model.Team
 	Id           string
@@ -423,7 +424,7 @@ func (m *MMClient) UpdateChannels() error {
 	return nil
 }
 
-func (m *MMClient) GetChannelName(channelId string) string {
+func (m *MMClient) GetChannelName(channelId string) string { //nolint:golint
 	m.RLock()
 	defer m.RUnlock()
 	for _, t := range m.OtherTeams {
@@ -458,7 +459,7 @@ func (m *MMClient) GetChannelName(channelId string) string {
 	return ""
 }
 
-func (m *MMClient) GetChannelId(name string, teamId string) string {
+func (m *MMClient) GetChannelId(name string, teamId string) string { //nolint:golint
 	m.RLock()
 	defer m.RUnlock()
 	if teamId == "" {
@@ -488,7 +489,7 @@ func (m *MMClient) GetChannelId(name string, teamId string) string {
 	return ""
 }
 
-func (m *MMClient) GetChannelTeamId(id string) string {
+func (m *MMClient) GetChannelTeamId(id string) string { //nolint:golint
 	m.RLock()
 	defer m.RUnlock()
 	for _, t := range append(m.OtherTeams, m.Team) {
@@ -501,7 +502,7 @@ func (m *MMClient) GetChannelTeamId(id string) string {
 	return ""
 }
 
-func (m *MMClient) GetChannelHeader(channelId string) string {
+func (m *MMClient) GetChannelHeader(channelId string) string { //nolint:golint
 	m.RLock()
 	defer m.RUnlock()
 	for _, t := range m.OtherTeams {
@@ -515,7 +516,7 @@ func (m *MMClient) GetChannelHeader(channelId string) string {
 	return ""
 }
 
-func (m *MMClient) PostMessage(channelId string, text string) (string, error) {
+func (m *MMClient) PostMessage(channelId string, text string) (string, error) { //nolint:golint
 	post := &model.Post{ChannelId: channelId, Message: text}
 	res, resp := m.Client.CreatePost(post)
 	if resp.Error != nil {
@@ -524,7 +525,7 @@ func (m *MMClient) PostMessage(channelId string, text string) (string, error) {
 	return res.Id, nil
 }
 
-func (m *MMClient) PostMessageWithFiles(channelId string, text string, fileIds []string) (string, error) {
+func (m *MMClient) PostMessageWithFiles(channelId string, text string, fileIds []string) (string, error) { //nolint:golint
 	post := &model.Post{ChannelId: channelId, Message: text, FileIds: fileIds}
 	res, resp := m.Client.CreatePost(post)
 	if resp.Error != nil {
@@ -533,7 +534,7 @@ func (m *MMClient) PostMessageWithFiles(channelId string, text string, fileIds [
 	return res.Id, nil
 }
 
-func (m *MMClient) EditMessage(postId string, text string) (string, error) {
+func (m *MMClient) EditMessage(postId string, text string) (string, error) { //nolint:golint
 	post := &model.Post{Message: text}
 	res, resp := m.Client.UpdatePost(postId, post)
 	if resp.Error != nil {
@@ -542,7 +543,7 @@ func (m *MMClient) EditMessage(postId string, text string) (string, error) {
 	return res.Id, nil
 }
 
-func (m *MMClient) DeleteMessage(postId string) error {
+func (m *MMClient) DeleteMessage(postId string) error { //nolint:golint
 	_, resp := m.Client.DeletePost(postId)
 	if resp.Error != nil {
 		return resp.Error
@@ -550,7 +551,7 @@ func (m *MMClient) DeleteMessage(postId string) error {
 	return nil
 }
 
-func (m *MMClient) JoinChannel(channelId string) error {
+func (m *MMClient) JoinChannel(channelId string) error { //nolint:golint
 	m.RLock()
 	defer m.RUnlock()
 	for _, c := range m.Team.Channels {
@@ -567,7 +568,7 @@ func (m *MMClient) JoinChannel(channelId string) error {
 	return nil
 }
 
-func (m *MMClient) GetPostsSince(channelId string, time int64) *model.PostList {
+func (m *MMClient) GetPostsSince(channelId string, time int64) *model.PostList { //nolint:golint
 	res, resp := m.Client.GetPostsSince(channelId, time)
 	if resp.Error != nil {
 		return nil
@@ -583,7 +584,7 @@ func (m *MMClient) SearchPosts(query string) *model.PostList {
 	return res
 }
 
-func (m *MMClient) GetPosts(channelId string, limit int) *model.PostList {
+func (m *MMClient) GetPosts(channelId string, limit int) *model.PostList { //nolint:golint
 	res, resp := m.Client.GetPostsForChannel(channelId, 0, limit, "")
 	if resp.Error != nil {
 		return nil
@@ -630,7 +631,7 @@ func (m *MMClient) GetFileLinks(filenames []string) []string {
 	return output
 }
 
-func (m *MMClient) UpdateChannelHeader(channelId string, header string) {
+func (m *MMClient) UpdateChannelHeader(channelId string, header string) { //nolint:golint
 	channel := &model.Channel{Id: channelId, Header: header}
 	m.log.Debugf("updating channelheader %#v, %#v", channelId, header)
 	_, resp := m.Client.UpdateChannel(channel)
@@ -639,7 +640,7 @@ func (m *MMClient) UpdateChannelHeader(channelId string, header string) {
 	}
 }
 
-func (m *MMClient) UpdateLastViewed(channelId string) error {
+func (m *MMClient) UpdateLastViewed(channelId string) error { //nolint:golint
 	m.log.Debugf("posting lastview %#v", channelId)
 	view := &model.ChannelView{ChannelId: channelId}
 	_, resp := m.Client.ViewChannel(m.User.Id, view)
@@ -660,7 +661,7 @@ func (m *MMClient) UpdateUserNick(nick string) error {
 	return nil
 }
 
-func (m *MMClient) UsernamesInChannel(channelId string) []string {
+func (m *MMClient) UsernamesInChannel(channelId string) []string { //nolint:golint
 	res, resp := m.Client.GetChannelMembers(channelId, 0, 50000, "")
 	if resp.Error != nil {
 		m.log.Errorf("UsernamesInChannel(%s) failed: %s", channelId, resp.Error)
@@ -690,11 +691,11 @@ func (m *MMClient) createCookieJar(token string) *cookiejar.Jar {
 }
 
 // SendDirectMessage sends a direct message to specified user
-func (m *MMClient) SendDirectMessage(toUserId string, msg string) {
+func (m *MMClient) SendDirectMessage(toUserId string, msg string) { //nolint:golint
 	m.SendDirectMessageProps(toUserId, msg, nil)
 }
 
-func (m *MMClient) SendDirectMessageProps(toUserId string, msg string, props map[string]interface{}) {
+func (m *MMClient) SendDirectMessageProps(toUserId string, msg string, props map[string]interface{}) { //nolint:golint
 	m.log.Debugf("SendDirectMessage to %s, msg %s", toUserId, msg)
 	// create DM channel (only happens on first message)
 	_, resp := m.Client.CreateDirectChannel(m.User.Id, toUserId)
@@ -714,7 +715,7 @@ func (m *MMClient) SendDirectMessageProps(toUserId string, msg string, props map
 }
 
 // GetTeamName returns the name of the specified teamId
-func (m *MMClient) GetTeamName(teamId string) string {
+func (m *MMClient) GetTeamName(teamId string) string { //nolint:golint
 	m.RLock()
 	defer m.RUnlock()
 	for _, t := range m.OtherTeams {
@@ -752,7 +753,7 @@ func (m *MMClient) GetMoreChannels() []*model.Channel {
 }
 
 // GetTeamFromChannel returns teamId belonging to channel (DM channels have no teamId).
-func (m *MMClient) GetTeamFromChannel(channelId string) string {
+func (m *MMClient) GetTeamFromChannel(channelId string) string { //nolint:golint
 	m.RLock()
 	defer m.RUnlock()
 	var channels []*model.Channel
@@ -774,7 +775,7 @@ func (m *MMClient) GetTeamFromChannel(channelId string) string {
 	return ""
 }
 
-func (m *MMClient) GetLastViewedAt(channelId string) int64 {
+func (m *MMClient) GetLastViewedAt(channelId string) int64 { //nolint:golint
 	m.RLock()
 	defer m.RUnlock()
 	res, resp := m.Client.GetChannelMember(channelId, m.User.Id, "")
@@ -794,7 +795,7 @@ func (m *MMClient) GetUsers() map[string]*model.User {
 	return users
 }
 
-func (m *MMClient) GetUser(userId string) *model.User {
+func (m *MMClient) GetUser(userId string) *model.User { //nolint:golint
 	m.Lock()
 	defer m.Unlock()
 	_, ok := m.Users[userId]
@@ -808,7 +809,7 @@ func (m *MMClient) GetUser(userId string) *model.User {
 	return m.Users[userId]
 }
 
-func (m *MMClient) UpdateUser(userId string) {
+func (m *MMClient) UpdateUser(userId string) { //nolint:golint
 	m.Lock()
 	defer m.Unlock()
 	res, resp := m.Client.GetUser(userId, "")
@@ -818,7 +819,7 @@ func (m *MMClient) UpdateUser(userId string) {
 	m.Users[userId] = res
 }
 
-func (m *MMClient) GetUserName(userId string) string {
+func (m *MMClient) GetUserName(userId string) string { //nolint:golint
 	user := m.GetUser(userId)
 	if user != nil {
 		return user.Username
@@ -826,7 +827,7 @@ func (m *MMClient) GetUserName(userId string) string {
 	return ""
 }
 
-func (m *MMClient) GetNickName(userId string) string {
+func (m *MMClient) GetNickName(userId string) string { //nolint:golint
 	user := m.GetUser(userId)
 	if user != nil {
 		return user.Nickname
@@ -834,7 +835,7 @@ func (m *MMClient) GetNickName(userId string) string {
 	return ""
 }
 
-func (m *MMClient) GetStatus(userId string) string {
+func (m *MMClient) GetStatus(userId string) string { //nolint:golint
 	res, resp := m.Client.GetUserStatus(userId, "")
 	if resp.Error != nil {
 		return ""
@@ -848,7 +849,7 @@ func (m *MMClient) GetStatus(userId string) string {
 	return "offline"
 }
 
-func (m *MMClient) UpdateStatus(userId string, status string) error {
+func (m *MMClient) UpdateStatus(userId string, status string) error { //nolint:golint
 	_, resp := m.Client.UpdateUserStatus(userId, &model.Status{Status: status})
 	if resp.Error != nil {
 		return resp.Error
@@ -878,11 +879,11 @@ func (m *MMClient) GetStatuses() map[string]string {
 	return statuses
 }
 
-func (m *MMClient) GetTeamId() string {
+func (m *MMClient) GetTeamId() string { //nolint:golint
 	return m.Team.Id
 }
 
-func (m *MMClient) UploadFile(data []byte, channelId string, filename string) (string, error) {
+func (m *MMClient) UploadFile(data []byte, channelId string, filename string) (string, error) { //nolint:golint
 	f, resp := m.Client.UploadFile(data, channelId, filename)
 	if resp.Error != nil {
 		return "", resp.Error

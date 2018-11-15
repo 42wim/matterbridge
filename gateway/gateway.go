@@ -108,7 +108,7 @@ func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 	if br == nil {
 		br = bridge.New(cfg)
 		br.Config = gw.Router.Config
-		br.General = &gw.ConfigValues().General
+		br.General = &gw.BridgeValues().General
 		// set logging
 		br.Log = log.WithFields(log.Fields{"prefix": "bridge"})
 		brconfig := &bridge.Config{Remote: gw.Message, Log: log.WithFields(log.Fields{"prefix": br.Protocol}), Bridge: br}
@@ -159,7 +159,7 @@ RECONNECT:
 
 func (gw *Gateway) mapChannelConfig(cfg []config.Bridge, direction string) {
 	for _, br := range cfg {
-		if isApi(br.Account) {
+		if isAPI(br.Account) {
 			br.Channel = apiProtocol
 		}
 		// make sure to lowercase irc channels in config #348
@@ -246,7 +246,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 
 	// if we have an attached file, or other info
 	if msg.Extra != nil {
-		if len(msg.Extra[config.EVENT_FILE_FAILURE_SIZE]) != 0 {
+		if len(msg.Extra[config.EventFileFailureSize]) != 0 {
 			if msg.Text == "" {
 				return brMsgIDs
 			}
@@ -254,7 +254,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 	}
 
 	// Avatar downloads are only relevant for telegram and mattermost for now
-	if msg.Event == config.EVENT_AVATAR_DOWNLOAD {
+	if msg.Event == config.EventAvatarDownload {
 		if dest.Protocol != "mattermost" &&
 			dest.Protocol != "telegram" {
 			return brMsgIDs
@@ -262,24 +262,24 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 	}
 
 	// only relay join/part when configured
-	if msg.Event == config.EVENT_JOIN_LEAVE && !gw.Bridges[dest.Account].GetBool("ShowJoinPart") {
+	if msg.Event == config.EventJoinLeave && !gw.Bridges[dest.Account].GetBool("ShowJoinPart") {
 		return brMsgIDs
 	}
 
 	// only relay topic change when configured
-	if msg.Event == config.EVENT_TOPIC_CHANGE && !gw.Bridges[dest.Account].GetBool("ShowTopicChange") {
+	if msg.Event == config.EventTopicChange && !gw.Bridges[dest.Account].GetBool("ShowTopicChange") {
 		return brMsgIDs
 	}
 
 	// broadcast to every out channel (irc QUIT)
-	if msg.Channel == "" && msg.Event != config.EVENT_JOIN_LEAVE {
+	if msg.Channel == "" && msg.Event != config.EventJoinLeave {
 		flog.Debug("empty channel")
 		return brMsgIDs
 	}
 
 	// Get the ID of the parent message in thread
 	var canonicalParentMsgID string
-	if msg.ParentID != "" && (gw.ConfigValues().General.PreserveThreading || dest.GetBool("PreserveThreading")) {
+	if msg.ParentID != "" && (gw.BridgeValues().General.PreserveThreading || dest.GetBool("PreserveThreading")) {
 		thisParentMsgID := dest.Protocol + " " + msg.ParentID
 		canonicalParentMsgID = gw.FindCanonicalMsgID(thisParentMsgID)
 	}
@@ -289,7 +289,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 	channels := gw.getDestChannel(&msg, *dest)
 	for _, channel := range channels {
 		// Only send the avatar download event to ourselves.
-		if msg.Event == config.EVENT_AVATAR_DOWNLOAD {
+		if msg.Event == config.EventAvatarDownload {
 			if channel.ID != getChannelID(origmsg) {
 				continue
 			}
@@ -301,7 +301,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		}
 
 		// Too noisy to log like other events
-		if msg.Event != config.EVENT_USER_TYPING {
+		if msg.Event != config.EventUserTyping {
 			flog.Debugf("=> Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, originchannel, dest.Account, channel.Name)
 		}
 
@@ -349,14 +349,14 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 
 	// check if we need to ignore a empty message
 	if msg.Text == "" {
-		if msg.Event == config.EVENT_USER_TYPING {
+		if msg.Event == config.EventUserTyping {
 			return false
 		}
 		// we have an attachment or actual bytes, do not ignore
 		if msg.Extra != nil &&
 			(msg.Extra["attachments"] != nil ||
 				len(msg.Extra["file"]) > 0 ||
-				len(msg.Extra[config.EVENT_FILE_FAILURE_SIZE]) > 0) {
+				len(msg.Extra[config.EventFileFailureSize]) > 0) {
 			return false
 		}
 		flog.Debugf("ignoring empty message %#v from %s", msg, msg.Account)
@@ -392,13 +392,13 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 func (gw *Gateway) modifyUsername(msg config.Message, dest *bridge.Bridge) string {
 	br := gw.Bridges[msg.Account]
 	msg.Protocol = br.Protocol
-	if gw.ConfigValues().General.StripNick || dest.GetBool("StripNick") {
+	if gw.BridgeValues().General.StripNick || dest.GetBool("StripNick") {
 		re := regexp.MustCompile("[^a-zA-Z0-9]+")
 		msg.Username = re.ReplaceAllString(msg.Username, "")
 	}
 	nick := dest.GetString("RemoteNickFormat")
 	if nick == "" {
-		nick = gw.ConfigValues().General.RemoteNickFormat
+		nick = gw.BridgeValues().General.RemoteNickFormat
 	}
 
 	// loop to replace nicks
@@ -437,7 +437,7 @@ func (gw *Gateway) modifyUsername(msg config.Message, dest *bridge.Bridge) strin
 }
 
 func (gw *Gateway) modifyAvatar(msg config.Message, dest *bridge.Bridge) string {
-	iconurl := gw.ConfigValues().General.IconURL
+	iconurl := gw.BridgeValues().General.IconURL
 	if iconurl == "" {
 		iconurl = dest.GetString("IconURL")
 	}
@@ -479,8 +479,8 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 
 	// If we don't have a attachfield or we don't have a mediaserver configured return
 	if msg.Extra == nil ||
-		(gw.ConfigValues().General.MediaServerUpload == "" &&
-			gw.ConfigValues().General.MediaDownloadPath == "") {
+		(gw.BridgeValues().General.MediaServerUpload == "" &&
+			gw.BridgeValues().General.MediaDownloadPath == "") {
 		return
 	}
 
@@ -502,10 +502,10 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 
 		sha1sum := fmt.Sprintf("%x", sha1.Sum(*fi.Data))[:8]
 
-		if gw.ConfigValues().General.MediaServerUpload != "" {
+		if gw.BridgeValues().General.MediaServerUpload != "" {
 			// Use MediaServerUpload. Upload using a PUT HTTP request and basicauth.
 
-			url := gw.ConfigValues().General.MediaServerUpload + "/" + sha1sum + "/" + fi.Name
+			url := gw.BridgeValues().General.MediaServerUpload + "/" + sha1sum + "/" + fi.Name
 
 			req, err := http.NewRequest("PUT", url, bytes.NewReader(*fi.Data))
 			if err != nil {
@@ -524,7 +524,7 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 		} else {
 			// Use MediaServerPath. Place the file on the current filesystem.
 
-			dir := gw.ConfigValues().General.MediaDownloadPath + "/" + sha1sum
+			dir := gw.BridgeValues().General.MediaDownloadPath + "/" + sha1sum
 			err := os.Mkdir(dir, os.ModePerm)
 			if err != nil && !os.IsExist(err) {
 				flog.Errorf("mediaserver path failed, could not mkdir: %s %#v", err, err)
@@ -542,7 +542,7 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 		}
 
 		// Download URL.
-		durl := gw.ConfigValues().General.MediaServerDownload + "/" + sha1sum + "/" + fi.Name
+		durl := gw.BridgeValues().General.MediaServerDownload + "/" + sha1sum + "/" + fi.Name
 
 		flog.Debugf("mediaserver download URL = %s", durl)
 
@@ -562,6 +562,6 @@ func getChannelID(msg config.Message) string {
 	return msg.Channel + msg.Account
 }
 
-func isApi(account string) bool {
+func isAPI(account string) bool {
 	return strings.HasPrefix(account, "api.")
 }

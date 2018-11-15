@@ -72,7 +72,7 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("Channel %s maps to channel id %s", msg.Channel, channel)
 
 	// Make a action /me of the message
-	if msg.Event == config.EVENT_USER_ACTION {
+	if msg.Event == config.EventUserAction {
 		m := matrix.TextMessage{
 			MsgType: "m.emote",
 			Body:    msg.Username + msg.Text,
@@ -85,7 +85,7 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	}
 
 	// Delete message
-	if msg.Event == config.EVENT_MSG_DELETE {
+	if msg.Event == config.EventMsgDelete {
 		if msg.ID == "" {
 			return "", nil
 		}
@@ -173,16 +173,16 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 
 		// Delete event
 		if ev.Type == "m.room.redaction" {
-			rmsg.Event = config.EVENT_MSG_DELETE
+			rmsg.Event = config.EventMsgDelete
 			rmsg.ID = ev.Redacts
-			rmsg.Text = config.EVENT_MSG_DELETE
+			rmsg.Text = config.EventMsgDelete
 			b.Remote <- rmsg
 			return
 		}
 
 		// Do we have a /me action
 		if ev.Content["msgtype"].(string) == "m.emote" {
-			rmsg.Event = config.EVENT_USER_ACTION
+			rmsg.Event = config.EventUserAction
 		}
 
 		// Do we have attachments
