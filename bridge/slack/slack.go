@@ -269,6 +269,7 @@ func (b *Bslack) sendWebhook(msg config.Message) (string, error) {
 	return "", nil
 }
 
+// Note: returning an empty string skips the message
 func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 	channelInfo, err := b.getChannel(msg.Channel)
 	if err != nil {
@@ -284,7 +285,7 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 	var handled bool
 
 	// Handle topic/purpose updates.
-	if handled, err = b.updateTopicOrPurpose(&msg, channelInfo); handled {
+	if handled, err = b.handleTopicOrPurpose(&msg, channelInfo); handled {
 		return "", err
 	}
 
@@ -321,52 +322,45 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 	return b.postMessage(&msg, messageParameters, channelInfo)
 }
 
-func (b *Bslack) updateTopicOrPurpose(msg *config.Message, channelInfo *slack.Channel) (handled bool, err error) {
-	if msg.Event != config.EVENT_TOPIC_CHANGE {
-		return false, nil
-	}
-
-	if !b.GetBool("SyncTopic") {
-		return false, nil
-	}
+func (b *Bslack) updateTopicOrPurpose(msg *config.Message, channelInfo *slack.Channel) (bool, error) {
+	var updateFunc func(channelID string, value string) (*slack.Channel, error)
 
 	incomingChangeType, text := b.extractTopicOrPurpose(msg.Text)
 	switch incomingChangeType {
 	case "topic":
-		if strings.HasSuffix(channelInfo.Topic.Value, "[nosync]") {
-			break
-		}
-		for {
-			_, err = b.rtm.SetTopicOfConversation(channelInfo.ID, text)
-			if err == nil {
-				return true, nil
-			}
-			if err = b.handleRateLimit(err); err != nil {
-				return true, err
-			}
-		}
+		updateFunc = b.rtm.SetTopicOfConversation
 	case "purpose":
-		if strings.HasSuffix(channelInfo.Purpose.Value, "[nosync]") {
-			break
-		}
-		for {
-			_, err = b.rtm.SetTopicOfConversation(channelInfo.ID, text)
-			if err == nil {
-				return true, nil
-			}
-			if err = b.handleRateLimit(err); err != nil {
-				return true, err
-			}
-		}
+		updateFunc = b.rtm.SetPurposeOfConversation
+	default:
+		b.Log.Errorf("Unhandled type received from extractTopicOrPurpose: %s", incomingChangeType)
 	}
-
-	if err != nil {
+	for {
+		_, err := updateFunc(channelInfo.ID, text)
+		if err == nil {
+			return true, nil
+		}
 		if err = b.handleRateLimit(err); err != nil {
-			b.Log.Errorf("Failed to update channel topic/purpose on Slack: %#v", err)
 			return true, err
 		}
 	}
+}
 
+// handles updating topic/purpose and determining whether to further propagate update messages
+func (b *Bslack) handleTopicOrPurpose(msg *config.Message, channelInfo *slack.Channel) (bool, error) {
+	if msg.Event != config.EVENT_TOPIC_CHANGE {
+		return false, nil
+	}
+
+	if b.GetBool("SyncTopic") {
+		return b.updateTopicOrPurpose(msg, channelInfo)
+	}
+
+	// Pass along to normal message handlers
+	if b.GetBool("ShowTopicChange") {
+		return false, nil
+	}
+
+	// Swallow message as handled no-op
 	return true, nil
 }
 
