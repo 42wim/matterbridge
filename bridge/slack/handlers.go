@@ -132,7 +132,12 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 		ev.SubMessage.Edited == nil {
 		return true
 	}
-	return b.filesCached(ev.Files)
+
+	if len(ev.Files) > 0 {
+		return b.filesCached(ev.Files)
+	}
+
+	return false
 }
 
 func (b *Bslack) filesCached(files []slack.File) bool {
