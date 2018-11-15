@@ -13,13 +13,12 @@ import (
 	"sync"
 	"time"
 
-	prefixed "github.com/matterbridge/logrus-prefixed-formatter"
-	log "github.com/sirupsen/logrus"
-
 	"github.com/gorilla/websocket"
 	"github.com/hashicorp/golang-lru"
 	"github.com/jpillora/backoff"
+	prefixed "github.com/matterbridge/logrus-prefixed-formatter"
 	"github.com/mattermost/platform/model"
+	log "github.com/sirupsen/logrus"
 )
 
 type Credentials struct {
