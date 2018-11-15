@@ -117,7 +117,7 @@ type Protocol struct {
 	ShowEmbeds             bool       // discord
 	SkipTLSVerify          bool       // IRC, mattermost
 	StripNick              bool       // all protocols
-	SyncTopicChange        bool       // slack
+	SyncTopic              bool       // slack
 	Team                   string     // mattermost
 	Token                  string     // gitter, slack, discord, api
 	Topic                  string     // zulip

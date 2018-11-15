@@ -326,7 +326,7 @@ func (b *Bslack) updateTopicOrPurpose(msg *config.Message, channelInfo *slack.Ch
 		return false, nil
 	}
 
-	if !b.GetBool("SyncTopicChange") {
+	if !b.GetBool("SyncTopic") {
 		return false, nil
 	}
 

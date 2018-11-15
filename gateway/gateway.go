@@ -274,7 +274,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 			return brMsgIDs
 		}
 		// don't relay topic/purpose update if sync is enabled, but msg marked as nosync
-		if gw.Bridges[dest.Account].GetBool("SyncTopicChange") && strings.HasSuffix(msg.Text, "[nosync]") {
+		if gw.Bridges[dest.Account].GetBool("SyncTopic") && strings.HasSuffix(msg.Text, "[nosync]") {
 			return brMsgIDs
 		}
 	}

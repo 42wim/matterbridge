@@ -772,9 +772,8 @@ ShowTopicChange=false
 
 #Enable to sync topic/purpose changes from other bridges
 #Only works syncing topic changes from slack bridge for now
-#Appending "[nosync]" to the topic/purpose will protect it from being synced
 #OPTIONAL (default false)
-SyncTopicChange=false
+SyncTopic=false
 
 ###################################################################
 #telegram section
