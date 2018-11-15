@@ -266,13 +266,19 @@ var (
 	channelRE        = regexp.MustCompile(`<#[a-zA-Z0-9]+\|(.+?)>`)
 	variableRE       = regexp.MustCompile(`<!((?:subteam\^)?[a-zA-Z0-9]+)(?:\|@?(.+?))?>`)
 	urlRE            = regexp.MustCompile(`<(.*?)(\|.*?)?>`)
-	topicOrPurposeRE = regexp.MustCompile(`(?s)^@.+ set the channel (topic|purpose): (.+?)$`)
+	topicOrPurposeRE = regexp.MustCompile(`(?s)(@.+) (cleared|set)(?: the)? channel (topic|purpose)(?:: (.*))?`)
 )
 
-func (b *Bslack) extractTopicOrPurpose(text string) (updateType string, extracted string) {
+func (b *Bslack) extractTopicOrPurpose(text string) (string, string) {
 	r := topicOrPurposeRE.FindStringSubmatch(text)
-	updateType, extracted = r[1], r[2]
-	return updateType, extracted
+	action, updateType, extracted := r[2], r[3], r[4]
+	switch action {
+	case "set":
+		return updateType, extracted
+	case "cleared":
+		return updateType, ""
+	}
+	return "", ""
 }
 
 // @see https://api.slack.com/docs/message-formatting#linking_to_channels_and_users
