@@ -128,7 +128,7 @@ func (b *Birc) Connect() error {
 			time.Sleep(30 * time.Second)
 			i.Handlers.Clear(girc.RPL_WELCOME)
 			i.Handlers.Add(girc.RPL_WELCOME, func(client *girc.Client, event girc.Event) {
-				b.Remote <- config.Message{Username: "system", Text: "rejoin", Channel: "", Account: b.Account, Event: config.EVENT_REJOIN_CHANNELS}
+				b.Remote <- config.Message{Username: "system", Text: "rejoin", Channel: "", Account: b.Account, Event: config.EventRejoinChannels}
 				// set our correct nick on reconnect if necessary
 				b.Nick = event.Source.Name
 			})
@@ -167,7 +167,7 @@ func (b *Birc) JoinChannel(channel config.ChannelInfo) error {
 
 func (b *Birc) Send(msg config.Message) (string, error) {
 	// ignore delete messages
-	if msg.Event == config.EVENT_MSG_DELETE {
+	if msg.Event == config.EventMsgDelete {
 		return "", nil
 	}
 
@@ -257,7 +257,7 @@ func (b *Birc) doSend() {
 			colorCode := checksum%14 + 2 // quick fix - prevent white or black color codes
 			username = fmt.Sprintf("\x03%02d%s\x0F", colorCode, msg.Username)
 		}
-		if msg.Event == config.EVENT_USER_ACTION {
+		if msg.Event == config.EventUserAction {
 			b.i.Cmd.Action(msg.Channel, username+msg.Text)
 		} else {
 			b.Log.Debugf("Sending to channel %s", msg.Channel)
@@ -309,13 +309,13 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 	if event.Command == "KICK" && event.Params[1] == b.Nick {
 		b.Log.Infof("Got kicked from %s by %s", channel, event.Source.Name)
 		time.Sleep(time.Duration(b.GetInt("RejoinDelay")) * time.Second)
-		b.Remote <- config.Message{Username: "system", Text: "rejoin", Channel: channel, Account: b.Account, Event: config.EVENT_REJOIN_CHANNELS}
+		b.Remote <- config.Message{Username: "system", Text: "rejoin", Channel: channel, Account: b.Account, Event: config.EventRejoinChannels}
 		return
 	}
 	if event.Command == "QUIT" {
 		if event.Source.Name == b.Nick && strings.Contains(event.Trailing, "Ping timeout") {
 			b.Log.Infof("%s reconnecting ..", b.Account)
-			b.Remote <- config.Message{Username: "system", Text: "reconnect", Channel: channel, Account: b.Account, Event: config.EVENT_FAILURE}
+			b.Remote <- config.Message{Username: "system", Text: "reconnect", Channel: channel, Account: b.Account, Event: config.EventFailure}
 			return
 		}
 	}
@@ -324,7 +324,7 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 			return
 		}
 		b.Log.Debugf("<= Sending JOIN_LEAVE event from %s to gateway", b.Account)
-		msg := config.Message{Username: "system", Text: event.Source.Name + " " + strings.ToLower(event.Command) + "s", Channel: channel, Account: b.Account, Event: config.EVENT_JOIN_LEAVE}
+		msg := config.Message{Username: "system", Text: event.Source.Name + " " + strings.ToLower(event.Command) + "s", Channel: channel, Account: b.Account, Event: config.EventJoinLeave}
 		b.Log.Debugf("<= Message is %#v", msg)
 		b.Remote <- msg
 		return
@@ -391,7 +391,7 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 
 	// set action event
 	if event.IsAction() {
-		rmsg.Event = config.EVENT_USER_ACTION
+		rmsg.Event = config.EventUserAction
 	}
 
 	// strip action, we made an event if it was an action

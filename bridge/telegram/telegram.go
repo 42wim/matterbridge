@@ -66,7 +66,7 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 	}
 
 	// map the file SHA to our user (caches the avatar)
-	if msg.Event == config.EVENT_AVATAR_DOWNLOAD {
+	if msg.Event == config.EventAvatarDownload {
 		return b.cacheAvatar(&msg)
 	}
 
@@ -75,7 +75,7 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 	}
 
 	// Delete message
-	if msg.Event == config.EVENT_MSG_DELETE {
+	if msg.Event == config.EventMsgDelete {
 		if msg.ID == "" {
 			return "", nil
 		}
@@ -268,7 +268,7 @@ func (b *Btelegram) getFileDirectURL(id string) string {
 // sends a EVENT_AVATAR_DOWNLOAD message to the gateway if successful.
 // logs an error message if it fails
 func (b *Btelegram) handleDownloadAvatar(userid int, channel string) {
-	rmsg := config.Message{Username: "system", Text: "avatar", Channel: channel, Account: b.Account, UserID: strconv.Itoa(userid), Event: config.EVENT_AVATAR_DOWNLOAD, Extra: make(map[string][]interface{})}
+	rmsg := config.Message{Username: "system", Text: "avatar", Channel: channel, Account: b.Account, UserID: strconv.Itoa(userid), Event: config.EventAvatarDownload, Extra: make(map[string][]interface{})}
 	if _, ok := b.avatarMap[strconv.Itoa(userid)]; !ok {
 		photos, err := b.c.GetUserProfilePhotos(tgbotapi.UserProfilePhotosConfig{UserID: userid, Limit: 1})
 		if err != nil {

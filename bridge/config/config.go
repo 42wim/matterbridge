@@ -14,16 +14,16 @@ import (
 )
 
 const (
-	EVENT_JOIN_LEAVE        = "join_leave"
-	EVENT_TOPIC_CHANGE      = "topic_change"
-	EVENT_FAILURE           = "failure"
-	EVENT_FILE_FAILURE_SIZE = "file_failure_size"
-	EVENT_AVATAR_DOWNLOAD   = "avatar_download"
-	EVENT_REJOIN_CHANNELS   = "rejoin_channels"
-	EVENT_USER_ACTION       = "user_action"
-	EVENT_MSG_DELETE        = "msg_delete"
-	EVENT_API_CONNECTED     = "api_connected"
-	EVENT_USER_TYPING       = "user_typing"
+	EventJoinLeave       = "join_leave"
+	EventTopicChange     = "topic_change"
+	EventFailure         = "failure"
+	EventFileFailureSize = "file_failure_size"
+	EventAvatarDownload  = "avatar_download"
+	EventRejoinChannels  = "rejoin_channels"
+	EventUserAction      = "user_action"
+	EventMsgDelete       = "msg_delete"
+	EventAPIConnected    = "api_connected"
+	EventUserTyping      = "user_typing"
 )
 
 type Message struct {
@@ -157,20 +157,20 @@ type SameChannelGateway struct {
 	Accounts []string
 }
 
-type ConfigValues struct {
-	Api                map[string]Protocol
-	Irc                map[string]Protocol
+type BridgeValues struct {
+	API                map[string]Protocol
+	IRC                map[string]Protocol
 	Mattermost         map[string]Protocol
 	Matrix             map[string]Protocol
 	Slack              map[string]Protocol
 	SlackLegacy        map[string]Protocol
 	Steam              map[string]Protocol
 	Gitter             map[string]Protocol
-	Xmpp               map[string]Protocol
+	XMPP               map[string]Protocol
 	Discord            map[string]Protocol
 	Telegram           map[string]Protocol
 	Rocketchat         map[string]Protocol
-	Sshchat            map[string]Protocol
+	SSHChat            map[string]Protocol
 	Zulip              map[string]Protocol
 	General            Protocol
 	Gateway            []Gateway
@@ -178,7 +178,7 @@ type ConfigValues struct {
 }
 
 type Config interface {
-	ConfigValues() *ConfigValues
+	BridgeValues() *BridgeValues
 	GetBool(key string) (bool, bool)
 	GetInt(key string) (int, bool)
 	GetString(key string) (string, bool)
@@ -190,7 +190,7 @@ type config struct {
 	v *viper.Viper
 	sync.RWMutex
 
-	cv *ConfigValues
+	cv *BridgeValues
 }
 
 func NewConfig(cfgfile string) Config {
@@ -236,7 +236,7 @@ func newConfigFromString(input []byte) *config {
 		log.Fatal(err)
 	}
 
-	cfg := &ConfigValues{}
+	cfg := &BridgeValues{}
 	err = viper.Unmarshal(cfg)
 	if err != nil {
 		log.Fatal(err)
@@ -247,7 +247,7 @@ func newConfigFromString(input []byte) *config {
 	}
 }
 
-func (c *config) ConfigValues() *ConfigValues {
+func (c *config) BridgeValues() *BridgeValues {
 	return c.cv
 }
 

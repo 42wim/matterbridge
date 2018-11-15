@@ -22,7 +22,7 @@ func (b *Bslack) handleSlack() {
 	time.Sleep(time.Second)
 	b.Log.Debug("Start listening for Slack messages")
 	for message := range messages {
-		if message.Event != config.EVENT_USER_TYPING {
+		if message.Event != config.EventUserTyping {
 			b.Log.Debugf("<= Sending message from %s on %s to gateway", message.Username, b.Account)
 		}
 
@@ -199,18 +199,18 @@ func (b *Bslack) handleStatusEvent(ev *slack.MessageEvent, rmsg *config.Message)
 		return true
 	case sChannelJoin, sChannelLeave:
 		rmsg.Username = sSystemUser
-		rmsg.Event = config.EVENT_JOIN_LEAVE
+		rmsg.Event = config.EventJoinLeave
 	case sChannelTopic, sChannelPurpose:
-		rmsg.Event = config.EVENT_TOPIC_CHANGE
+		rmsg.Event = config.EventTopicChange
 	case sMessageDeleted:
-		rmsg.Text = config.EVENT_MSG_DELETE
-		rmsg.Event = config.EVENT_MSG_DELETE
+		rmsg.Text = config.EventMsgDelete
+		rmsg.Event = config.EventMsgDelete
 		rmsg.ID = "slack " + ev.DeletedTimestamp
 		// If a message is being deleted we do not need to process
 		// the event any further so we return 'true'.
 		return true
 	case sMeMessage:
-		rmsg.Event = config.EVENT_USER_ACTION
+		rmsg.Event = config.EventUserAction
 	}
 	return false
 }
@@ -256,7 +256,7 @@ func (b *Bslack) handleTypingEvent(ev *slack.UserTypingEvent) (*config.Message, 
 	return &config.Message{
 		Channel: channelInfo.Name,
 		Account: b.Account,
-		Event:   config.EVENT_USER_TYPING,
+		Event:   config.EventUserTyping,
 	}, nil
 }
 
