@@ -195,7 +195,7 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 	return rmsg, nil
 }
 
-func (b *Bslack) handleStatusEvent(ev *slack.MessageEvent, rmsg *config.Message) (doneProcessing bool) {
+func (b *Bslack) handleStatusEvent(ev *slack.MessageEvent, rmsg *config.Message) bool {
 	switch ev.SubType {
 	case sChannelJoined, sMemberJoined:
 		b.populateUsers()
