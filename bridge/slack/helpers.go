@@ -269,16 +269,18 @@ var (
 	topicOrPurposeRE = regexp.MustCompile(`(?s)(@.+) (cleared|set)(?: the)? channel (topic|purpose)(?:: (.*))?`)
 )
 
-func (b *Bslack) extractTopicOrPurpose(text string) (string, string) {
+func extractTopicOrPurpose(text string) (string, string) {
 	r := topicOrPurposeRE.FindStringSubmatch(text)
-	action, updateType, extracted := r[2], r[3], r[4]
-	switch action {
-	case "set":
-		return updateType, extracted
-	case "cleared":
-		return updateType, ""
+	if len(r) >= 5 {
+		action, updateType, extracted := r[2], r[3], r[4]
+		switch action {
+		case "set":
+			return updateType, extracted
+		case "cleared":
+			return updateType, ""
+		}
 	}
-	return "", ""
+	return "unknown", ""
 }
 
 // @see https://api.slack.com/docs/message-formatting#linking_to_channels_and_users
