@@ -269,7 +269,6 @@ func (b *Bslack) sendWebhook(msg config.Message) (string, error) {
 	return "", nil
 }
 
-// Note: returning an empty string skips the message
 func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 	channelInfo, err := b.getChannel(msg.Channel)
 	if err != nil {
@@ -345,7 +344,7 @@ func (b *Bslack) updateTopicOrPurpose(msg *config.Message, channelInfo *slack.Ch
 	}
 }
 
-// handles updating topic/purpose and determining whether to further propagate update messages
+// handles updating topic/purpose and determining whether to further propagate update messages.
 func (b *Bslack) handleTopicOrPurpose(msg *config.Message, channelInfo *slack.Channel) (bool, error) {
 	if msg.Event != config.EVENT_TOPIC_CHANGE {
 		return false, nil
@@ -355,12 +354,12 @@ func (b *Bslack) handleTopicOrPurpose(msg *config.Message, channelInfo *slack.Ch
 		return b.updateTopicOrPurpose(msg, channelInfo)
 	}
 
-	// Pass along to normal message handlers
+	// Pass along to normal message handlers.
 	if b.GetBool("ShowTopicChange") {
 		return false, nil
 	}
 
-	// Swallow message as handled no-op
+	// Swallow message as handled no-op.
 	return true, nil
 }
 
