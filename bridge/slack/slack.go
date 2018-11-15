@@ -336,7 +336,15 @@ func (b *Bslack) updateTopicOrPurpose(msg *config.Message, channelInfo *slack.Ch
 		if strings.HasSuffix(channelInfo.Topic.Value, "[nosync]") {
 			break
 		}
-		_, err = b.rtm.SetTopicOfConversation(channelInfo.ID, text)
+		for {
+			_, err = b.rtm.SetTopicOfConversation(channelInfo.ID, text)
+			if err == nil {
+				return true, nil
+			}
+			if err = b.handleRateLimit(err); err != nil {
+				return true, err
+			}
+		}
 	case "purpose":
 		if strings.HasSuffix(channelInfo.Purpose.Value, "[nosync]") {
 			break
