@@ -321,10 +321,8 @@ func (b *Bslack) deleteMessage(msg *config.Message, channelInfo *slack.Channel) 
 		return true, nil
 	}
 
-	// If we get a "slack <ID>", split it.
-	ts := strings.Fields(msg.ID)
 	for {
-		_, _, err := b.rtm.DeleteMessage(channelInfo.ID, ts[1])
+		_, _, err := b.rtm.DeleteMessage(channelInfo.ID, msg.ID)
 		if err == nil {
 			return true, nil
 		}
@@ -341,9 +339,8 @@ func (b *Bslack) editMessage(msg *config.Message, channelInfo *slack.Channel) (b
 		return false, nil
 	}
 
-	ts := strings.Fields(msg.ID)
 	for {
-		_, _, _, err := b.rtm.UpdateMessage(channelInfo.ID, ts[1], msg.Text)
+		_, _, _, err := b.rtm.UpdateMessage(channelInfo.ID, msg.ID, msg.Text)
 		if err == nil {
 			return true, nil
 		}
@@ -359,7 +356,7 @@ func (b *Bslack) postMessage(msg *config.Message, messageParameters *slack.PostM
 	for {
 		_, id, err := b.rtm.PostMessage(channelInfo.ID, msg.Text, *messageParameters)
 		if err == nil {
-			return "slack " + id, nil
+			return id, nil
 		}
 
 		if err = b.handleRateLimit(err); err != nil {
