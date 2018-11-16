@@ -346,7 +346,7 @@ func (b *Bslack) updateTopicOrPurpose(msg *config.Message, channelInfo *slack.Ch
 
 // handles updating topic/purpose and determining whether to further propagate update messages.
 func (b *Bslack) handleTopicOrPurpose(msg *config.Message, channelInfo *slack.Channel) (bool, error) {
-	if msg.Event != config.EVENT_TOPIC_CHANGE {
+	if msg.Event != config.EventTopicChange {
 		return false, nil
 	}
 
