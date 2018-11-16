@@ -141,7 +141,6 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 	if len(ev.Files) > 0 {
 		return b.filesCached(ev.Files)
 	}
-
 	return false
 }
 
