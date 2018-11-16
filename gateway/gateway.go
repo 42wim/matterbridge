@@ -41,7 +41,8 @@ type BrMsgID struct {
 var flog *log.Entry
 
 const (
-	apiProtocol = "api"
+	apiProtocol       = "api"
+	threadReplyPrefix = "thread reply"
 )
 
 func New(cfg config.Gateway, r *Router) *Gateway {
@@ -286,6 +287,11 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		// for api we need originchannel as channel
 		if dest.Protocol == apiProtocol {
 			msg.Channel = originchannel
+		}
+
+		// Add prefix if reply message is being unthreaded.
+		if msg.ParentID != "" && canonicalParentMsgID == "" {
+			msg.Text = fmt.Sprintf("%s: %s", threadReplyPrefix, msg.Text)
 		}
 
 		msg.ParentID = gw.getDestMsgID(origmsg.Protocol+" "+canonicalParentMsgID, dest, channel)
