@@ -85,8 +85,9 @@ func New(cfg config.Gateway, r *Router) *Gateway {
 }
 
 // Find the canonical ID that the message is keyed under in cache
-func (gw *Gateway) FindCanonicalMsgID(mID string) string {
-	if gw.Messages.Contains(mID) {
+func (gw *Gateway) FindCanonicalMsgID(protocol string, mID string) string {
+	ID := protocol + " " + mID
+	if gw.Messages.Contains(ID) {
 		return mID
 	}
 
@@ -95,8 +96,8 @@ func (gw *Gateway) FindCanonicalMsgID(mID string) string {
 		v, _ := gw.Messages.Peek(mid)
 		ids := v.([]*BrMsgID)
 		for _, downstreamMsgObj := range ids {
-			if mID == downstreamMsgObj.ID {
-				return mid.(string)
+			if ID == downstreamMsgObj.ID {
+				return strings.Replace(mid.(string), protocol+" ", "", 1)
 			}
 		}
 	}
@@ -234,7 +235,7 @@ func (gw *Gateway) getDestMsgID(msgID string, dest *bridge.Bridge, channel confi
 			// check protocol, bridge name and channelname
 			// for people that reuse the same bridge multiple times. see #342
 			if dest.Protocol == id.br.Protocol && dest.Name == id.br.Name && channel.ID == id.ChannelID {
-				return id.ID
+				return strings.Replace(id.ID, dest.Protocol+" ", "", 1)
 			}
 		}
 	}
@@ -280,8 +281,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 	// Get the ID of the parent message in thread
 	var canonicalParentMsgID string
 	if msg.ParentID != "" && (gw.BridgeValues().General.PreserveThreading || dest.GetBool("PreserveThreading")) {
-		thisParentMsgID := dest.Protocol + " " + msg.ParentID
-		canonicalParentMsgID = gw.FindCanonicalMsgID(thisParentMsgID)
+		canonicalParentMsgID = gw.FindCanonicalMsgID(msg.Protocol, msg.ParentID)
 	}
 
 	originchannel := msg.Channel
@@ -309,14 +309,14 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		msg.Avatar = gw.modifyAvatar(origmsg, dest)
 		msg.Username = gw.modifyUsername(origmsg, dest)
 
-		msg.ID = gw.getDestMsgID(origmsg.ID, dest, channel)
+		msg.ID = gw.getDestMsgID(origmsg.Protocol+" "+origmsg.ID, dest, channel)
 
 		// for api we need originchannel as channel
 		if dest.Protocol == apiProtocol {
 			msg.Channel = originchannel
 		}
 
-		msg.ParentID = gw.getDestMsgID(canonicalParentMsgID, dest, channel)
+		msg.ParentID = gw.getDestMsgID(origmsg.Protocol+" "+canonicalParentMsgID, dest, channel)
 		if msg.ParentID == "" {
 			msg.ParentID = canonicalParentMsgID
 		}
@@ -335,7 +335,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		// append the message ID (mID) from this bridge (dest) to our brMsgIDs slice
 		if mID != "" {
 			flog.Debugf("mID %s: %s", dest.Account, mID)
-			brMsgIDs = append(brMsgIDs, &BrMsgID{dest, mID, channel.ID})
+			brMsgIDs = append(brMsgIDs, &BrMsgID{dest, dest.Protocol + " " + mID, channel.ID})
 		}
 	}
 	return brMsgIDs

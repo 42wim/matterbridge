@@ -205,7 +205,7 @@ func (b *Bslack) handleStatusEvent(ev *slack.MessageEvent, rmsg *config.Message)
 	case sMessageDeleted:
 		rmsg.Text = config.EventMsgDelete
 		rmsg.Event = config.EventMsgDelete
-		rmsg.ID = "slack " + ev.DeletedTimestamp
+		rmsg.ID = ev.DeletedTimestamp
 		// If a message is being deleted we do not need to process
 		// the event any further so we return 'true'.
 		return true
