@@ -386,3 +386,29 @@ func TestGetDestChannelAdvanced(t *testing.T) {
 	}
 	assert.Equal(t, map[string]int{"bridge3": 4, "bridge": 9, "announcements": 3, "bridge2": 4}, hits)
 }
+
+func TestFindCanonicalMsgID(t *testing.T) {
+	checkFindCanonicalMsgID := func(t *testing.T, cacheID string, wantMsgID string, wantError bool) {
+		t.Helper()
+		r := maketestRouter(testconfig)
+		gw := r.Gateways["bridge1"]
+		gotMsgID, err := gw.findCanonicalMsgID(cacheID)
+		gotError := (err != nil)
+		assert.Equal(t, wantMsgID, gotMsgID)
+		assert.Equal(t, wantError, gotError, fmt.Sprintf("Expected isError to be %t, but got %t", wantError, gotError))
+	}
+
+	testcases := []struct{
+		cacheID string
+		msgID   string
+		isError bool
+	}{
+		{"",                   "", true},
+		{"protocol 123456789", "", false},
+		{"protocol id1 id2",   "", true},
+	}
+
+	for _, testcase := range testcases {
+		checkFindCanonicalMsgID(t, testcase.cacheID, testcase.msgID, testcase.isError)
+	}
+}

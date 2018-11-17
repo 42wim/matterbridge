@@ -3,6 +3,7 @@ package gateway
 import (
 	"bytes"
 	"crypto/sha1"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -85,22 +86,30 @@ func New(cfg config.Gateway, r *Router) *Gateway {
 }
 
 // Find the canonical ID that the message is keyed under in cache
-func (gw *Gateway) FindCanonicalMsgID(mID string) string {
-	if gw.Messages.Contains(mID) {
-		return mID
+func (gw *Gateway) findCanonicalMsgID(cacheID string) (string, error) {
+	var msgID string
+	if len(strings.Fields(cacheID)) != 2 {
+		return "", errors.New(fmt.Sprintf("cacheID must be of form `<protocol> <id>`, received: %s", cacheID))
 	}
 
-	// If not keyed, iterate through cache for downstream, and infer upstream.
-	for _, mid := range gw.Messages.Keys() {
-		v, _ := gw.Messages.Peek(mid)
-		ids := v.([]*BrMsgID)
-		for _, downstreamMsgObj := range ids {
-			if mID == downstreamMsgObj.ID {
-				return mid.(string)
+	if gw.Messages.Contains(cacheID) {
+		msgID = strings.Fields(cacheID)[1]
+		return msgID, nil
+	} else {
+		// If not keyed, iterate through cache for downstream, and infer upstream.
+		for _, cid := range gw.Messages.Keys() {
+			v, _ := gw.Messages.Peek(cid)
+			ids := v.([]*BrMsgID)
+			for _, downstreamMsgObj := range ids {
+				mID := strings.Fields(cacheID)[1]
+				if mID == downstreamMsgObj.ID {
+					msgID = strings.Fields(cid.(string))[1]
+					return msgID, nil
+				}
 			}
 		}
 	}
-	return ""
+	return "", nil
 }
 
 func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
@@ -279,9 +288,13 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 
 	// Get the ID of the parent message in thread
 	var canonicalParentMsgID string
+	var err error
 	if msg.ParentID != "" && (gw.BridgeValues().General.PreserveThreading || dest.GetBool("PreserveThreading")) {
 		thisParentMsgID := dest.Protocol + " " + msg.ParentID
-		canonicalParentMsgID = gw.FindCanonicalMsgID(thisParentMsgID)
+		canonicalParentMsgID, err = gw.findCanonicalMsgID(thisParentMsgID)
+		if err != nil {
+			flog.Warn(err)
+		}
 	}
 
 	originchannel := msg.Channel
