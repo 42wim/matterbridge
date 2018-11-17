@@ -176,6 +176,7 @@ func (b *Bslack) populateReceivedMessage(ev *slack.MessageEvent) (*config.Messag
 		ID:       ev.Timestamp,
 		Extra:    make(map[string][]interface{}),
 		ParentID: ev.ThreadTimestamp,
+		Protocol: b.Protocol,
 	}
 	if b.useChannelID {
 		rmsg.Channel = "ID:" + channel.ID
