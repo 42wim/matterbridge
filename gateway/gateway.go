@@ -3,7 +3,6 @@ package gateway
 import (
 	"bytes"
 	"crypto/sha1"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -89,23 +88,23 @@ func New(cfg config.Gateway, r *Router) *Gateway {
 func (gw *Gateway) findCanonicalMsgID(cacheID string) (string, error) {
 	var msgID string
 	if len(strings.Fields(cacheID)) != 2 {
-		return "", errors.New(fmt.Sprintf("cacheID must be of form `<protocol> <id>`, received: %s", cacheID))
+		return "", fmt.Errorf("cacheID must be of form `<protocol> <id>`, received: %s", cacheID)
 	}
 
 	if gw.Messages.Contains(cacheID) {
 		msgID = strings.Fields(cacheID)[1]
 		return msgID, nil
-	} else {
-		// If not keyed, iterate through cache for downstream, and infer upstream.
-		for _, cid := range gw.Messages.Keys() {
-			v, _ := gw.Messages.Peek(cid)
-			ids := v.([]*BrMsgID)
-			for _, downstreamMsgObj := range ids {
-				mID := strings.Fields(cacheID)[1]
-				if mID == downstreamMsgObj.ID {
-					msgID = strings.Fields(cid.(string))[1]
-					return msgID, nil
-				}
+	}
+
+	// If not keyed, iterate through cache for downstream, and infer upstream.
+	for _, cid := range gw.Messages.Keys() {
+		v, _ := gw.Messages.Peek(cid)
+		ids := v.([]*BrMsgID)
+		for _, downstreamMsgObj := range ids {
+			mID := strings.Fields(cacheID)[1]
+			if mID == downstreamMsgObj.ID {
+				msgID = strings.Fields(cid.(string))[1]
+				return msgID, nil
 			}
 		}
 	}

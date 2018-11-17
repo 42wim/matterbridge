@@ -398,14 +398,14 @@ func TestFindCanonicalMsgID(t *testing.T) {
 		assert.Equal(t, wantError, gotError, fmt.Sprintf("Expected isError to be %t, but got %t", wantError, gotError))
 	}
 
-	testcases := []struct{
+	testcases := []struct {
 		cacheID string
 		msgID   string
 		isError bool
 	}{
-		{"",                   "", true},
+		{"", "", true},
 		{"protocol 123456789", "", false},
-		{"protocol id1 id2",   "", true},
+		{"protocol id1 id2", "", true},
 	}
 
 	for _, testcase := range testcases {
