@@ -1,3 +1,37 @@
+# v1.12.0-dev
+
+## Breaking changes
+The slack bridge has been split in a `slack-legacy` and `slack` bridge.
+If you're still using `legacy tokens` and want to keep using them you'll have to rename `slack` to `slack-legacy` in your configuration. See [wiki](https://github.com/42wim/matterbridge/wiki/Section-Slack-(basic)#legacy-configuration) for more information.
+
+To migrate to the new bot-token based setup you can follow the instructions [here](https://github.com/42wim/matterbridge/wiki/Slack-bot-setup).
+
+Slack legacy tokens may be deprecated by Slack at short notice, so it is STRONGLY recommended to use a proper bot-token instead.
+
+## Bugfix
+* slack: Refactoring and making it better.
+* slack: Restore file comments coming from Slack. #583
+* irc: Fix IRC line splitting. #587
+* mattermost: Fix cookie and personal token behaviour. #530
+* mattermost: Check for expiring sessions and reconnect.
+
+## New features
+* general: New {GATEWAY} variable for `RemoteNickFormat`. See `RemoteNickFormat` in matterbridge.toml.sample. #501
+* general: New {CHANNEL} variable for `RemoteNickFormat`. See `RemoteNickFormat` in matterbridge.toml.sample. #515
+* general: Remove hyphens when auto-loading envvars from viper config #545
+* discord: You can mention discord-users from other bridges.
+* slack: Add ability to show when user is typing across Slack bridges #559
+* slack: Add rate-limiting
+* mattermost: Add support for mattermost [matterbridge plugin](https://github.com/matterbridge/mattermost-plugin)
+* api: Respond with message on connect. #550
+* api: Add a health endpoint to API #554
+
+## Contributors
+This release couldn't exist without the following contributors:
+@jheiselman, @NikkyAI, @dajohi, @NetwideRogue, @patcon and @Helcaraxan
+
+Special thanks to @Helcaraxan and @patcon for their work on improving/refactoring slack.
+
 # v1.11.3
 
 ## Bugfix
