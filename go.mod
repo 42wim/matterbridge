@@ -2,12 +2,10 @@ module github.com/42wim/matterbridge
 
 require (
 	github.com/42wim/go-gitter v0.0.0-20170828205020-017310c2d557
-	github.com/BurntSushi/toml v0.0.0-20170318202913-d94612f9fc14
+	github.com/BurntSushi/toml v0.0.0-20170318202913-d94612f9fc14 // indirect
 	github.com/Philipp15b/go-steam v0.0.0-20161020161927-e0f3bb9566e3
-	github.com/Sirupsen/logrus v1.0.6 // indirect
 	github.com/alecthomas/log4go v0.0.0-20160307011253-e5dc62318d9b // indirect
 	github.com/bwmarrin/discordgo v0.19.0
-	github.com/davecgh/go-spew v1.1.0 // indirect
 	github.com/dfordsoft/golib v0.0.0-20180313113957-2ea3495aee1d
 	github.com/dgrijalva/jwt-go v0.0.0-20170508165458-6c8dedd55f8a // indirect
 	github.com/fsnotify/fsnotify v1.4.7
@@ -50,14 +48,13 @@ require (
 	github.com/pelletier/go-toml v0.0.0-20180228233631-05bcc0fb0d3e // indirect
 	github.com/peterhellberg/emojilib v0.0.0-20170616163716-41920917e271
 	github.com/pkg/errors v0.8.0 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rs/xid v0.0.0-20180525034800-088c5cf1423a
 	github.com/russross/blackfriday v2.0.0+incompatible
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca
 	github.com/shazow/rateio v0.0.0-20150116013248-e8e00881e5c1 // indirect
 	github.com/shazow/ssh-chat v0.0.0-20171012174035-2078e1381991
 	github.com/shurcooL/sanitized_anchor_name v0.0.0-20170918181015-86672fcb3f95 // indirect
-	github.com/sirupsen/logrus v0.0.0-20180213143110-8c0189d9f6bb
+	github.com/sirupsen/logrus v1.2.0
 	github.com/smartystreets/assertions v0.0.0-20180803164922-886ec427f6b9 // indirect
 	github.com/smartystreets/goconvey v0.0.0-20180222194500-ef6db91d284a // indirect
 	github.com/spf13/afero v0.0.0-20180211162714-bbf41cb36dff // indirect
@@ -65,20 +62,19 @@ require (
 	github.com/spf13/jwalterweatherman v0.0.0-20180109140146-7c0cea34c8ec // indirect
 	github.com/spf13/pflag v0.0.0-20180220143236-ee5fd03fd6ac // indirect
 	github.com/spf13/viper v0.0.0-20171227194143-aafc9e6bc7b7
-	github.com/stretchr/testify v0.0.0-20170714215325-05e8a0eda380
+	github.com/stretchr/testify v1.2.2
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/valyala/bytebufferpool v0.0.0-20160817181652-e746df99fe4a // indirect
 	github.com/valyala/fasttemplate v0.0.0-20170224212429-dcecefd839c4 // indirect
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2 // indirect
 	github.com/zfjagann/golang-ring v0.0.0-20141111230621-17637388c9f6
+	golang.org/x/crypto v0.0.0-20181112202954-3d3f9f413869 // indirect
 	golang.org/x/net v0.0.0-20180108090419-434ec0c7fe37 // indirect
 	golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f // indirect
-	golang.org/x/sys v0.0.0-20171130163741-8b4580aae2a0 // indirect
+	golang.org/x/sys v0.0.0-20181116161606-93218def8b18 // indirect
 	golang.org/x/text v0.0.0-20180511172408-5c1cf69b5978 // indirect
-	gopkg.in/airbrake/gobrake.v2 v2.0.9 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
-	gopkg.in/gemnasium/logrus-airbrake-hook.v2 v2.1.1 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.0.0-20160301204022-a83829b6f129 // indirect
 )
