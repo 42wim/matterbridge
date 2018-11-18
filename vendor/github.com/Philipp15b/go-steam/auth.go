@@ -2,13 +2,14 @@ package steam
 
 import (
 	"crypto/sha1"
+	"sync/atomic"
+	"time"
+
 	. "github.com/Philipp15b/go-steam/protocol"
 	. "github.com/Philipp15b/go-steam/protocol/protobuf"
 	. "github.com/Philipp15b/go-steam/protocol/steamlang"
 	. "github.com/Philipp15b/go-steam/steamid"
 	"github.com/golang/protobuf/proto"
-	"sync/atomic"
-	"time"
 )
 
 type Auth struct {
@@ -19,23 +20,41 @@ type Auth struct {
 type SentryHash []byte
 
 type LogOnDetails struct {
-	Username       string
-	Password       string
-	AuthCode       string
+	Username string
+
+	// If logging into an account without a login key, the account's password.
+	Password string
+
+	// If you have a Steam Guard email code, you can provide it here.
+	AuthCode string
+
+	// If you have a Steam Guard mobile two-factor authentication code, you can provide it here.
 	TwoFactorCode  string
 	SentryFileHash SentryHash
+	LoginKey       string
+
+	// true if you want to get a login key which can be used in lieu of
+	// a password for subsequent logins. false or omitted otherwise.
+	ShouldRememberPassword bool
 }
 
 // Log on with the given details. You must always specify username and
-// password. For the first login, don't set an authcode or a hash and you'll receive an error
+// password OR username and loginkey. For the first login, don't set an authcode or a hash and you'll
+//  receive an error (EResult_AccountLogonDenied)
 // and Steam will send you an authcode. Then you have to login again, this time with the authcode.
 // Shortly after logging in, you'll receive a MachineAuthUpdateEvent with a hash which allows
 // you to login without using an authcode in the future.
 //
 // If you don't use Steam Guard, username and password are enough.
+//
+// After the event EMsg_ClientNewLoginKey is received you can use the LoginKey
+// to login instead of using the password.
 func (a *Auth) LogOn(details *LogOnDetails) {
-	if len(details.Username) == 0 || len(details.Password) == 0 {
-		panic("Username and password must be set!")
+	if details.Username == "" {
+		panic("Username must be set!")
+	}
+	if details.Password == "" && details.LoginKey == "" {
+		panic("Password or LoginKey must be set!")
 	}
 
 	logon := new(CMsgClientLogon)
@@ -50,6 +69,12 @@ func (a *Auth) LogOn(details *LogOnDetails) {
 	logon.ClientLanguage = proto.String("english")
 	logon.ProtocolVersion = proto.Uint32(MsgClientLogon_CurrentProtocol)
 	logon.ShaSentryfile = details.SentryFileHash
+	if details.LoginKey != "" {
+		logon.LoginKey = proto.String(details.LoginKey)
+	}
+	if details.ShouldRememberPassword {
+		logon.ShouldRememberPassword = proto.Bool(details.ShouldRememberPassword)
+	}
 
 	atomic.StoreUint64(&a.client.steamId, uint64(NewIdAdv(0, 1, int32(EUniverse_Public), int32(EAccountType_Individual))))
 

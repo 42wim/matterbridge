@@ -2,8 +2,8 @@
 
 package xid
 
-import "golang.org/x/sys/unix"
+import "syscall"
 
 func readPlatformMachineID() (string, error) {
-	return unix.Sysctl("kern.uuid")
+	return syscall.Sysctl("kern.uuid")
 }

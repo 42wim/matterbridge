@@ -72,7 +72,7 @@ Used by at least 3 projects. Feel free to make a PR to add your project to this 
 
 ## Requirements
 Accounts to one of the supported bridges
-* [Mattermost](https://github.com/mattermost/platform/) 3.8.x - 3.10.x, 4.x, 5.x
+* [Mattermost](https://github.com/mattermost/mattermost-server/) 3.8.x - 3.10.x, 4.x, 5.x
 * [IRC](http://www.mirc.com/servers.html)
 * [XMPP](https://jabber.org)
 * [Gitter](https://gitter.im)
@@ -237,7 +237,7 @@ Matterbridge wouldn't exist without these libraries:
 * gops - https://github.com/google/gops
 * gozulipbot - https://github.com/ifo/gozulipbot
 * irc - https://github.com/lrstanley/girc
-* mattermost - https://github.com/mattermost/platform
+* mattermost - https://github.com/mattermost/mattermost-server
 * matrix - https://github.com/matrix-org/gomatrix
 * slack - https://github.com/nlopes/slack
 * steam - https://github.com/Philipp15b/go-steam

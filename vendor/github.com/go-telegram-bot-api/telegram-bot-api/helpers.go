@@ -1,7 +1,6 @@
 package tgbotapi
 
 import (
-	"log"
 	"net/url"
 )
 
@@ -14,11 +13,12 @@ func NewMessage(chatID int64, text string) MessageConfig {
 			ChatID:           chatID,
 			ReplyToMessageID: 0,
 		},
-		Text: text,
+		Text:                  text,
 		DisableWebPagePreview: false,
 	}
 }
 
+// NewDeleteMessage creates a request to delete a message.
 func NewDeleteMessage(chatID int64, messageID int) DeleteMessageConfig {
 	return DeleteMessageConfig{
 		ChatID:    chatID,
@@ -201,6 +201,35 @@ func NewVideoShare(chatID int64, fileID string) VideoConfig {
 	}
 }
 
+// NewAnimationUpload creates a new animation uploader.
+//
+// chatID is where to send it, file is a string path to the file,
+// FileReader, or FileBytes.
+func NewAnimationUpload(chatID int64, file interface{}) AnimationConfig {
+	return AnimationConfig{
+		BaseFile: BaseFile{
+			BaseChat:    BaseChat{ChatID: chatID},
+			File:        file,
+			UseExisting: false,
+		},
+	}
+}
+
+// NewAnimationShare shares an existing animation.
+// You may use this to reshare an existing animation without reuploading it.
+//
+// chatID is where to send it, fileID is the ID of the animation
+// already uploaded.
+func NewAnimationShare(chatID int64, fileID string) AnimationConfig {
+	return AnimationConfig{
+		BaseFile: BaseFile{
+			BaseChat:    BaseChat{ChatID: chatID},
+			FileID:      fileID,
+			UseExisting: true,
+		},
+	}
+}
+
 // NewVideoNoteUpload creates a new video note uploader.
 //
 // chatID is where to send it, file is a string path to the file,
@@ -258,6 +287,33 @@ func NewVoiceShare(chatID int64, fileID string) VoiceConfig {
 			FileID:      fileID,
 			UseExisting: true,
 		},
+	}
+}
+
+// NewMediaGroup creates a new media group. Files should be an array of
+// two to ten InputMediaPhoto or InputMediaVideo.
+func NewMediaGroup(chatID int64, files []interface{}) MediaGroupConfig {
+	return MediaGroupConfig{
+		BaseChat: BaseChat{
+			ChatID: chatID,
+		},
+		InputMedia: files,
+	}
+}
+
+// NewInputMediaPhoto creates a new InputMediaPhoto.
+func NewInputMediaPhoto(media string) InputMediaPhoto {
+	return InputMediaPhoto{
+		Type:  "photo",
+		Media: media,
+	}
+}
+
+// NewInputMediaVideo creates a new InputMediaVideo.
+func NewInputMediaVideo(media string) InputMediaVideo {
+	return InputMediaVideo{
+		Type:  "video",
+		Media: media,
 	}
 }
 

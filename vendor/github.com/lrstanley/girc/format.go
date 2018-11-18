@@ -113,7 +113,7 @@ func Fmt(text string) string {
 
 		if last > -1 {
 			// A-Z, a-z, and ","
-			if text[i] != ',' && (text[i] <= 'A' || text[i] >= 'Z') && (text[i] <= 'a' || text[i] >= 'z') {
+			if text[i] != ',' && (text[i] < 'A' || text[i] > 'Z') && (text[i] < 'a' || text[i] > 'z') {
 				last = -1
 				continue
 			}

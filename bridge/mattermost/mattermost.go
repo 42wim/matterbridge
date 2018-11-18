@@ -10,7 +10,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/42wim/matterbridge/matterclient"
 	"github.com/42wim/matterbridge/matterhook"
-	"github.com/mattermost/platform/model"
+	"github.com/mattermost/mattermost-server/model"
 	"github.com/rs/xid"
 )
 

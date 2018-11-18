@@ -355,9 +355,13 @@ func (e *Event) Pretty() (out string, ok bool) {
 	}
 
 	if (e.Command == PRIVMSG || e.Command == NOTICE) && len(e.Params) > 0 {
-		if ctcp := decodeCTCP(e); ctcp != nil {
+		if ctcp := DecodeCTCP(e); ctcp != nil {
 			if ctcp.Reply {
 				return
+			}
+
+			if ctcp.Command == CTCP_ACTION {
+				return fmt.Sprintf("[%s] **%s** %s", strings.Join(e.Params, ","), ctcp.Source.Name, ctcp.Text), true
 			}
 
 			return fmt.Sprintf("[*] CTCP query from %s: %s%s", ctcp.Source.Name, ctcp.Command, " "+ctcp.Text), true
@@ -448,23 +452,27 @@ func (e *Event) Pretty() (out string, ok bool) {
 	return "", false
 }
 
-// IsAction checks to see if the event is a PRIVMSG, and is an ACTION (/me).
+// IsAction checks to see if the event is an ACTION (/me).
 func (e *Event) IsAction() bool {
-	if e.Source == nil || e.Command != PRIVMSG || len(e.Trailing) < 9 {
+	if e.Command != PRIVMSG {
 		return false
 	}
 
-	if !strings.HasPrefix(e.Trailing, "\001ACTION") || e.Trailing[len(e.Trailing)-1] != ctcpDelim {
-		return false
-	}
+	ok, ctcp := e.IsCTCP()
+	return ok && ctcp.Command == CTCP_ACTION
+}
 
-	return true
+// IsCTCP checks to see if the event is a CTCP event, and if so, returns the
+// converted CTCP event.
+func (e *Event) IsCTCP() (ok bool, ctcp *CTCPEvent) {
+	ctcp = DecodeCTCP(e)
+	return ctcp != nil, ctcp
 }
 
 // IsFromChannel checks to see if a message was from a channel (rather than
 // a private message).
 func (e *Event) IsFromChannel() bool {
-	if e.Source == nil || e.Command != PRIVMSG || len(e.Params) < 1 {
+	if e.Source == nil || (e.Command != PRIVMSG && e.Command != NOTICE) || len(e.Params) < 1 {
 		return false
 	}
 
@@ -478,7 +486,7 @@ func (e *Event) IsFromChannel() bool {
 // IsFromUser checks to see if a message was from a user (rather than a
 // channel).
 func (e *Event) IsFromUser() bool {
-	if e.Source == nil || e.Command != PRIVMSG || len(e.Params) < 1 {
+	if e.Source == nil || (e.Command != PRIVMSG && e.Command != NOTICE) || len(e.Params) < 1 {
 		return false
 	}
 
