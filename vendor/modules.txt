@@ -1,7 +1,5 @@
 # github.com/42wim/go-gitter v0.0.0-20170828205020-017310c2d557
 github.com/42wim/go-gitter
-# github.com/BurntSushi/toml v0.0.0-20170318202913-d94612f9fc14
-github.com/BurntSushi/toml
 # github.com/Philipp15b/go-steam v0.0.0-20161020161927-e0f3bb9566e3
 github.com/Philipp15b/go-steam
 github.com/Philipp15b/go-steam/protocol/steamlang
@@ -17,7 +15,7 @@ github.com/Philipp15b/go-steam/socialcache
 github.com/alecthomas/log4go
 # github.com/bwmarrin/discordgo v0.19.0
 github.com/bwmarrin/discordgo
-# github.com/davecgh/go-spew v1.1.0
+# github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/dfordsoft/golib v0.0.0-20180313113957-2ea3495aee1d
 github.com/dfordsoft/golib/ic
@@ -56,6 +54,8 @@ github.com/hashicorp/hcl/json/token
 github.com/jpillora/backoff
 # github.com/kardianos/osext v0.0.0-20170207191655-9b883c5eb462
 github.com/kardianos/osext
+# github.com/konsorten/go-windows-terminal-sequences v1.0.1
+github.com/konsorten/go-windows-terminal-sequences
 # github.com/labstack/echo v0.0.0-20180219162101-7eec915044a1
 github.com/labstack/echo
 github.com/labstack/echo/middleware
@@ -123,7 +123,7 @@ github.com/shazow/rateio
 github.com/shazow/ssh-chat/sshd
 # github.com/shurcooL/sanitized_anchor_name v0.0.0-20170918181015-86672fcb3f95
 github.com/shurcooL/sanitized_anchor_name
-# github.com/sirupsen/logrus v0.0.0-20180213143110-8c0189d9f6bb
+# github.com/sirupsen/logrus v1.2.0
 github.com/sirupsen/logrus
 # github.com/spf13/afero v0.0.0-20180211162714-bbf41cb36dff
 github.com/spf13/afero
@@ -136,7 +136,7 @@ github.com/spf13/jwalterweatherman
 github.com/spf13/pflag
 # github.com/spf13/viper v0.0.0-20171227194143-aafc9e6bc7b7
 github.com/spf13/viper
-# github.com/stretchr/testify v0.0.0-20170714215325-05e8a0eda380
+# github.com/stretchr/testify v1.2.2
 github.com/stretchr/testify/assert
 # github.com/technoweenie/multipartstreamer v1.0.1
 github.com/technoweenie/multipartstreamer
@@ -146,7 +146,7 @@ github.com/valyala/bytebufferpool
 github.com/valyala/fasttemplate
 # github.com/zfjagann/golang-ring v0.0.0-20141111230621-17637388c9f6
 github.com/zfjagann/golang-ring
-# golang.org/x/crypto v0.0.0-20181030102418-4d3f4d9ffa16
+# golang.org/x/crypto v0.0.0-20181112202954-3d3f9f413869
 golang.org/x/crypto/ssh/terminal
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/nacl/secretbox
@@ -161,7 +161,7 @@ golang.org/x/crypto/curve25519
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/internal/chacha20
 golang.org/x/crypto/ed25519/internal/edwards25519
-# golang.org/x/sys v0.0.0-20171130163741-8b4580aae2a0
+# golang.org/x/sys v0.0.0-20181116161606-93218def8b18
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 # golang.org/x/text v0.0.0-20180511172408-5c1cf69b5978
