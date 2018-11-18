@@ -78,7 +78,10 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	if token != "" && !strings.HasPrefix(token, "xoxb") {
 		cfg.Log.Error("Non-bot token detected. It is STRONGLY recommended to use a proper bot-token instead.")
 		cfg.Log.Error("Legacy tokens may be deprecated by Slack at short notice. See the Matterbridge GitHub wiki for a migration guide.")
+		cfg.Log.Error("See https://github.com/42wim/matterbridge/wiki/Slack-bot-setup")
+		cfg.Log.Error("")
 		cfg.Log.Error("To continue using a legacy token please move your configuration to a \"slack-legacy\" bridge instead.")
+		cfg.Log.Error("See https://github.com/42wim/matterbridge/wiki/Section-Slack-(basic)#legacy-configuration)")
 		cfg.Log.Error("Delaying start of bridge by 30 seconds. Future Matterbridge release will fail here unless you use a \"slack-legacy\" bridge.")
 		time.Sleep(30 * time.Second)
 		return NewLegacy(cfg)
