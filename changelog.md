@@ -1,4 +1,4 @@
-# v1.12.0-dev
+# v1.12.0
 
 ## Breaking changes
 The slack bridge has been split in a `slack-legacy` and `slack` bridge.
@@ -8,6 +8,18 @@ To migrate to the new bot-token based setup you can follow the instructions [her
 
 Slack legacy tokens may be deprecated by Slack at short notice, so it is STRONGLY recommended to use a proper bot-token instead.
 
+## New features
+* general: New {GATEWAY} variable for `RemoteNickFormat` #501. See `RemoteNickFormat` in matterbridge.toml.sample.
+* general: New {CHANNEL} variable for `RemoteNickFormat` #515. See `RemoteNickFormat` in matterbridge.toml.sample.
+* general: Remove hyphens when auto-loading envvars from viper config #545
+* discord: You can mention discord-users from other bridges.
+* slack: Preserve threading between Slack instances #529. See `PreserveThreading` in matterbridge.toml.sample.
+* slack: Add ability to show when user is typing across Slack bridges #559
+* slack: Add rate-limiting
+* mattermost: Add support for mattermost [matterbridge plugin](https://github.com/matterbridge/mattermost-plugin)
+* api: Respond with message on connect. #550
+* api: Add a health endpoint to API #554
+
 ## Bugfix
 * slack: Refactoring and making it better.
 * slack: Restore file comments coming from Slack. #583
@@ -15,16 +27,6 @@ Slack legacy tokens may be deprecated by Slack at short notice, so it is STRONGL
 * mattermost: Fix cookie and personal token behaviour. #530
 * mattermost: Check for expiring sessions and reconnect.
 
-## New features
-* general: New {GATEWAY} variable for `RemoteNickFormat`. See `RemoteNickFormat` in matterbridge.toml.sample. #501
-* general: New {CHANNEL} variable for `RemoteNickFormat`. See `RemoteNickFormat` in matterbridge.toml.sample. #515
-* general: Remove hyphens when auto-loading envvars from viper config #545
-* discord: You can mention discord-users from other bridges.
-* slack: Add ability to show when user is typing across Slack bridges #559
-* slack: Add rate-limiting
-* mattermost: Add support for mattermost [matterbridge plugin](https://github.com/matterbridge/mattermost-plugin)
-* api: Respond with message on connect. #550
-* api: Add a health endpoint to API #554
 
 ## Contributors
 This release couldn't exist without the following contributors:
