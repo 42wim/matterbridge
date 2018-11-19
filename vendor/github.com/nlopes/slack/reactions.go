@@ -155,7 +155,7 @@ func (api *Client) AddReactionContext(ctx context.Context, name string, item Ite
 	}
 
 	response := &SlackResponse{}
-	if err := postSlackMethod(ctx, api.httpclient, "reactions.add", values, response, api.debug); err != nil {
+	if err := postSlackMethod(ctx, api.httpclient, "reactions.add", values, response, api); err != nil {
 		return err
 	}
 
@@ -189,7 +189,7 @@ func (api *Client) RemoveReactionContext(ctx context.Context, name string, item 
 	}
 
 	response := &SlackResponse{}
-	if err := postSlackMethod(ctx, api.httpclient, "reactions.remove", values, response, api.debug); err != nil {
+	if err := postSlackMethod(ctx, api.httpclient, "reactions.remove", values, response, api); err != nil {
 		return err
 	}
 
@@ -223,7 +223,7 @@ func (api *Client) GetReactionsContext(ctx context.Context, item ItemRef, params
 	}
 
 	response := &getReactionsResponseFull{}
-	if err := postSlackMethod(ctx, api.httpclient, "reactions.get", values, response, api.debug); err != nil {
+	if err := postSlackMethod(ctx, api.httpclient, "reactions.get", values, response, api); err != nil {
 		return nil, err
 	}
 	if !response.Ok {
@@ -256,7 +256,7 @@ func (api *Client) ListReactionsContext(ctx context.Context, params ListReaction
 	}
 
 	response := &listReactionsResponseFull{}
-	err := postSlackMethod(ctx, api.httpclient, "reactions.list", values, response, api.debug)
+	err := postSlackMethod(ctx, api.httpclient, "reactions.list", values, response, api)
 	if err != nil {
 		return nil, nil, err
 	}

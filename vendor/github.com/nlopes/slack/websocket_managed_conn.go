@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	stdurl "net/url"
 	"reflect"
 	"time"
 
@@ -157,6 +158,14 @@ func (rtm *RTM) startRTMAndDial(useRTMStart bool) (info *Info, _ *websocket.Conn
 		return nil, nil, err
 	}
 
+	// install connection parameters
+	u, err := stdurl.Parse(url)
+	if err != nil {
+		return nil, nil, err
+	}
+	u.RawQuery = rtm.connParams.Encode()
+	url = u.String()
+
 	rtm.Debugf("Dialing to websocket on url %s", url)
 	// Only use HTTPS for connections to prevent MITM attacks on the connection.
 	upgradeHeader := http.Header{}
@@ -274,7 +283,7 @@ func (rtm *RTM) sendWithDeadline(msg interface{}) error {
 // and instead lets a future failed 'PING' detect the failed connection.
 func (rtm *RTM) sendOutgoingMessage(msg OutgoingMessage) {
 	rtm.Debugln("Sending message:", msg)
-	if len(msg.Text) > MaxMessageTextLength {
+	if len([]rune(msg.Text)) > MaxMessageTextLength {
 		rtm.IncomingEvents <- RTMEvent{"outgoing_error", &MessageTooLongEvent{
 			Message:   msg,
 			MaxLength: MaxMessageTextLength,
@@ -405,8 +414,7 @@ func (rtm *RTM) handlePong(event json.RawMessage) {
 	rtm.resetDeadman()
 
 	if err := json.Unmarshal(event, &p); err != nil {
-		logger.Println("RTM Error unmarshalling 'pong' event:", err)
-		rtm.Debugln(" -> Erroneous 'ping' event:", string(event))
+		rtm.Client.log.Println("RTM Error unmarshalling 'pong' event:", err)
 		return
 	}
 
@@ -423,8 +431,8 @@ func (rtm *RTM) handlePong(event json.RawMessage) {
 func (rtm *RTM) handleEvent(typeStr string, event json.RawMessage) {
 	v, exists := EventMapping[typeStr]
 	if !exists {
-		rtm.Debugf("RTM Error, received unmapped event %q: %s\n", typeStr, string(event))
-		err := fmt.Errorf("RTM Error: Received unmapped event %q: %s\n", typeStr, string(event))
+		rtm.Debugf("RTM Error - received unmapped event %q: %s\n", typeStr, string(event))
+		err := fmt.Errorf("RTM Error: Received unmapped event %q: %s", typeStr, string(event))
 		rtm.IncomingEvents <- RTMEvent{"unmarshalling_error", &UnmarshallingErrorEvent{err}}
 		return
 	}
@@ -433,7 +441,7 @@ func (rtm *RTM) handleEvent(typeStr string, event json.RawMessage) {
 	err := json.Unmarshal(event, recvEvent)
 	if err != nil {
 		rtm.Debugf("RTM Error, could not unmarshall event %q: %s\n", typeStr, string(event))
-		err := fmt.Errorf("RTM Error: Could not unmarshall event %q: %s\n", typeStr, string(event))
+		err := fmt.Errorf("RTM Error: Could not unmarshall event %q: %s", typeStr, string(event))
 		rtm.IncomingEvents <- RTMEvent{"unmarshalling_error", &UnmarshallingErrorEvent{err}}
 		return
 	}

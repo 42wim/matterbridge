@@ -4,11 +4,12 @@ package slack
 type OutgoingMessage struct {
 	ID int `json:"id"`
 	// channel ID
-	Channel         string `json:"channel,omitempty"`
-	Text            string `json:"text,omitempty"`
-	Type            string `json:"type,omitempty"`
-	ThreadTimestamp string `json:"thread_ts,omitempty"`
-	ThreadBroadcast bool   `json:"reply_broadcast,omitempty"`
+	Channel         string   `json:"channel,omitempty"`
+	Text            string   `json:"text,omitempty"`
+	Type            string   `json:"type,omitempty"`
+	ThreadTimestamp string   `json:"thread_ts,omitempty"`
+	ThreadBroadcast bool     `json:"reply_broadcast,omitempty"`
+	IDs             []string `json:"ids,omitempty"`
 }
 
 // Message is an auxiliary type to allow us to have a message containing sub messages
@@ -147,6 +148,15 @@ func (rtm *RTM) NewOutgoingMessage(text string, channelID string, options ...RTM
 	return &msg
 }
 
+// NewSubscribeUserPresence prepares an OutgoingMessage that the user can
+// use to subscribe presence events for the specified users.
+func (rtm *RTM) NewSubscribeUserPresence(ids []string) *OutgoingMessage {
+	return &OutgoingMessage{
+		Type: "presence_sub",
+		IDs:  ids,
+	}
+}
+
 // NewTypingMessage prepares an OutgoingMessage that the user can
 // use to send as a typing indicator. Use this function to properly set the
 // messageID.
@@ -174,5 +184,4 @@ func RTMsgOptionBroadcast() RTMsgOption {
 	return func(msg *OutgoingMessage) {
 		msg.ThreadBroadcast = true
 	}
-
 }

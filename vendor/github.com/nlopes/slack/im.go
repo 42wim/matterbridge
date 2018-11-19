@@ -2,7 +2,6 @@ package slack
 
 import (
 	"context"
-	"errors"
 	"net/url"
 	"strconv"
 )
@@ -29,16 +28,14 @@ type IM struct {
 	IsUserDeleted bool   `json:"is_user_deleted"`
 }
 
-func imRequest(ctx context.Context, client HTTPRequester, path string, values url.Values, debug bool) (*imResponseFull, error) {
+func imRequest(ctx context.Context, client httpClient, path string, values url.Values, d debug) (*imResponseFull, error) {
 	response := &imResponseFull{}
-	err := postSlackMethod(ctx, client, path, values, response, debug)
+	err := postSlackMethod(ctx, client, path, values, response, d)
 	if err != nil {
 		return nil, err
 	}
-	if !response.Ok {
-		return nil, errors.New(response.Error)
-	}
-	return response, nil
+
+	return response, response.Err()
 }
 
 // CloseIMChannel closes the direct message channel
@@ -53,7 +50,7 @@ func (api *Client) CloseIMChannelContext(ctx context.Context, channel string) (b
 		"channel": {channel},
 	}
 
-	response, err := imRequest(ctx, api.httpclient, "im.close", values, api.debug)
+	response, err := imRequest(ctx, api.httpclient, "im.close", values, api)
 	if err != nil {
 		return false, false, err
 	}
@@ -74,7 +71,7 @@ func (api *Client) OpenIMChannelContext(ctx context.Context, user string) (bool,
 		"user":  {user},
 	}
 
-	response, err := imRequest(ctx, api.httpclient, "im.open", values, api.debug)
+	response, err := imRequest(ctx, api.httpclient, "im.open", values, api)
 	if err != nil {
 		return false, false, "", err
 	}
@@ -94,7 +91,7 @@ func (api *Client) MarkIMChannelContext(ctx context.Context, channel, ts string)
 		"ts":      {ts},
 	}
 
-	_, err := imRequest(ctx, api.httpclient, "im.mark", values, api.debug)
+	_, err := imRequest(ctx, api.httpclient, "im.mark", values, api)
 	return err
 }
 
@@ -133,7 +130,7 @@ func (api *Client) GetIMHistoryContext(ctx context.Context, channel string, para
 		}
 	}
 
-	response, err := imRequest(ctx, api.httpclient, "im.history", values, api.debug)
+	response, err := imRequest(ctx, api.httpclient, "im.history", values, api)
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +148,7 @@ func (api *Client) GetIMChannelsContext(ctx context.Context) ([]IM, error) {
 		"token": {api.token},
 	}
 
-	response, err := imRequest(ctx, api.httpclient, "im.list", values, api.debug)
+	response, err := imRequest(ctx, api.httpclient, "im.list", values, api)
 	if err != nil {
 		return nil, err
 	}

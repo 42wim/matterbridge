@@ -86,8 +86,6 @@ github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff h1:HLGD5/9UxxfEuO9Dt
 github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff/go.mod h1:B8jLfIIPn2sKyWr0D7cL2v7tnrDD5z291s2Zypdu89E=
 github.com/nicksnyder/go-i18n v1.4.0 h1:AgLl+Yq7kg5OYlzCgu9cKTZOyI4tD/NgukKqLqC8E+I=
 github.com/nicksnyder/go-i18n v1.4.0/go.mod h1:HrK7VCrbOvQoUAQ7Vpy7i87N7JZZZ7R2xBGjv0j365Q=
-github.com/nlopes/slack v0.4.0 h1:OVnHm7lv5gGT5gkcHsZAyw++oHVFihbjWbL3UceUpiA=
-github.com/nlopes/slack v0.4.0/go.mod h1:jVI4BBK3lSktibKahxBF74txcK2vyvkza1z/+rRnVAM=
 github.com/nlopes/slack v0.4.1-0.20181111125009-5963eafd777b h1:8ncrr7Xps0GafXIxBzrq1qSjy1zhiCDp/9C4cOrE+GU=
 github.com/nlopes/slack v0.4.1-0.20181111125009-5963eafd777b/go.mod h1:jVI4BBK3lSktibKahxBF74txcK2vyvkza1z/+rRnVAM=
 github.com/onsi/ginkgo v1.6.0 h1:Ix8l273rp3QzYgXSR+c8d1fTG7UPgYkOSELPhiY/YGw=

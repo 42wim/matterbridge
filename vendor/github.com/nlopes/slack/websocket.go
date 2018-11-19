@@ -3,6 +3,7 @@ package slack
 import (
 	"encoding/json"
 	"errors"
+	"net/url"
 	"sync"
 	"time"
 
@@ -20,6 +21,9 @@ const (
 //
 // Create this element with Client's NewRTM() or NewRTMWithOptions(*RTMOptions)
 type RTM struct {
+	// Client is the main API, embedded
+	Client
+
 	idGen        IDGenerator
 	pingInterval time.Duration
 	pingDeadman  *time.Timer
@@ -35,8 +39,6 @@ type RTM struct {
 	wasIntentional   bool
 	isConnected      bool
 
-	// Client is the main API, embedded
-	Client
 	websocketURL string
 
 	// UserDetails upon connection
@@ -53,18 +55,9 @@ type RTM struct {
 
 	// mu is mutex used to prevent RTM connection race conditions
 	mu *sync.Mutex
-}
 
-// RTMOptions allows configuration of various options available for RTM messaging
-//
-// This structure will evolve in time so please make sure you are always using the
-// named keys for every entry available as per Go 1 compatibility promise adding fields
-// to this structure should not be considered a breaking change.
-type RTMOptions struct {
-	// UseRTMStart set to true in order to use rtm.start or false to use rtm.connect
-	// As of 11th July 2017 you should prefer setting this to false, see:
-	// https://api.slack.com/changelog/2017-04-start-using-rtm-connect-and-stop-using-rtm-start
-	UseRTMStart bool
+	// connParams is a map of flags for connection parameters.
+	connParams url.Values
 }
 
 // Disconnect and wait, blocking until a successful disconnection.

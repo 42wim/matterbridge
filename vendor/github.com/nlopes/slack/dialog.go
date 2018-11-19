@@ -36,8 +36,9 @@ type DialogTrigger struct {
 // Dialog as in Slack dialogs
 // https://api.slack.com/dialogs#option_element_attributes#top-level_dialog_attributes
 type Dialog struct {
-	TriggerID      string          `json:"trigger_id"`  //Required
-	CallbackID     string          `json:"callback_id"` //Required
+	TriggerID      string          `json:"trigger_id"`      // Required
+	CallbackID     string          `json:"callback_id"`     // Required
+	State          string          `json:"state,omitempty"` // Optional
 	Title          string          `json:"title"`
 	SubmitLabel    string          `json:"submit_label,omitempty"`
 	NotifyOnCancel bool            `json:"notify_on_cancel"`
@@ -47,30 +48,13 @@ type Dialog struct {
 // DialogElement abstract type for dialogs.
 type DialogElement interface{}
 
-// DialogCallback is sent from Slack when a user submits a form from within a dialog
-type DialogCallback struct {
-	Type        string            `json:"type"`
-	CallbackID  string            `json:"callback_id"`
-	Team        Team              `json:"team"`
-	Channel     Channel           `json:"channel"`
-	User        User              `json:"user"`
-	ActionTs    string            `json:"action_ts"`
-	Token       string            `json:"token"`
-	ResponseURL string            `json:"response_url"`
-	Submission  map[string]string `json:"submission"`
-}
+// DialogCallback DEPRECATED use InteractionCallback
+type DialogCallback InteractionCallback
 
-// DialogSuggestionCallback is sent from Slack when a user types in a select field with an external data source
-type DialogSuggestionCallback struct {
-	Type        string  `json:"type"`
-	Token       string  `json:"token"`
-	ActionTs    string  `json:"action_ts"`
-	Team        Team    `json:"team"`
-	User        User    `json:"user"`
-	Channel     Channel `json:"channel"`
-	ElementName string  `json:"name"`
-	Value       string  `json:"value"`
-	CallbackID  string  `json:"callback_id"`
+// DialogSubmissionCallback is sent from Slack when a user submits a form from within a dialog
+type DialogSubmissionCallback struct {
+	State      string            `json:"state,omitempty"`
+	Submission map[string]string `json:"submission"`
 }
 
 // DialogOpenResponse response from `dialog.open`
@@ -108,8 +92,8 @@ func (api *Client) OpenDialogContext(ctx context.Context, triggerID string, dial
 	}
 
 	response := &DialogOpenResponse{}
-	endpoint := SLACK_API + "dialog.open"
-	if err := postJSON(ctx, api.httpclient, endpoint, api.token, encoded, response, api.debug); err != nil {
+	endpoint := APIURL + "dialog.open"
+	if err := postJSON(ctx, api.httpclient, endpoint, api.token, encoded, response, api); err != nil {
 		return err
 	}
 
