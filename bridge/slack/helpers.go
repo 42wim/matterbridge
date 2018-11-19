@@ -173,9 +173,10 @@ func (b *Bslack) populateReceivedMessage(ev *slack.MessageEvent) (*config.Messag
 		Text:     ev.Text,
 		Channel:  channel.Name,
 		Account:  b.Account,
-		ID:       "slack " + ev.Timestamp,
+		ID:       ev.Timestamp,
 		Extra:    make(map[string][]interface{}),
 		ParentID: ev.ThreadTimestamp,
+		Protocol: b.Protocol,
 	}
 	if b.useChannelID {
 		rmsg.Channel = "ID:" + channel.ID
@@ -183,7 +184,7 @@ func (b *Bslack) populateReceivedMessage(ev *slack.MessageEvent) (*config.Messag
 
 	// Handle 'edit' messages.
 	if ev.SubMessage != nil && !b.GetBool(editDisableConfig) {
-		rmsg.ID = "slack " + ev.SubMessage.Timestamp
+		rmsg.ID = ev.SubMessage.Timestamp
 		if ev.SubMessage.ThreadTimestamp != ev.SubMessage.Timestamp {
 			b.Log.Debugf("SubMessage %#v", ev.SubMessage)
 			rmsg.Text = ev.SubMessage.Text + b.GetString(editSuffixConfig)
