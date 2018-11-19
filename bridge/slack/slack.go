@@ -309,8 +309,8 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
 			messageOptions = b.prepareMessageOptions(&rmsg)
-			messageOptions = append(messageOptions, slack.MsgOptionText(rmsg.Username+rmsg.Text, false))
-			_, _, err = b.rtm.PostMessage(channelInfo.ID, messageOptions...)
+			rmsg.Text = rmsg.Username + rmsg.Text
+			_, err = b.postMessage(&rmsg, messageOptions, channelInfo)
 			if err != nil {
 				b.Log.Error(err)
 			}
@@ -321,7 +321,6 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 
 	// Post message.
 	messageOptions = b.prepareMessageOptions(&msg)
-	messageOptions = append(messageOptions, slack.MsgOptionText(msg.Text, false))
 	return b.postMessage(&msg, messageOptions, channelInfo)
 }
 
@@ -416,6 +415,7 @@ func (b *Bslack) postMessage(msg *config.Message, messageOptions []slack.MsgOpti
 	if msg.Text == "" {
 		return "", nil
 	}
+	messageOptions = append(messageOptions, slack.MsgOptionText(msg.Text, false))
 	for {
 		_, id, err := b.rtm.PostMessage(channelInfo.ID, messageOptions...)
 		if err == nil {
