@@ -267,16 +267,11 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		return brMsgIDs
 	}
 
-	// only relay topic change when configured
-	if msg.Event == config.EventTopicChange && !gw.Bridges[dest.Account].GetBool("ShowTopicChange") {
-		// don't relay topic/purpose change if disabled
-		if !gw.Bridges[dest.Account].GetBool("ShowTopicChange") {
-			return brMsgIDs
-		}
-		// don't relay topic/purpose update if sync is enabled
-		if gw.Bridges[dest.Account].GetBool("SyncTopic") {
-			return brMsgIDs
-		}
+	// only relay topic change when used in some way on other side
+	if msg.Event == config.EventTopicChange &&
+		!gw.Bridges[dest.Account].GetBool("ShowTopicChange") &&
+		!gw.Bridges[dest.Account].GetBool("SyncTopic") {
+		return brMsgIDs
 	}
 
 	// broadcast to every out channel (irc QUIT)
