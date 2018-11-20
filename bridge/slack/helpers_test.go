@@ -2,13 +2,15 @@ package bslack
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestExtractTopicOrPurpose(t *testing.T) {
-	tables := []struct{
+	testcases := []struct{
 		input string
-		changeType string
-		output string
+		wantChangeType string
+		wantOutput string
 	}{
 		{"@someone set channel topic: one liner",    "topic",   "one liner"},
 		{"@someone set channel purpose: one liner",  "purpose", "one liner"},
@@ -17,10 +19,10 @@ func TestExtractTopicOrPurpose(t *testing.T) {
 		{"some unmatched message",                   "unknown", ""},
 	}
 
-	for _, table := range tables {
-		changeType, output := extractTopicOrPurpose(table.input)
-		if changeType != table.changeType || output != table.output {
-			t.Error()
-		}
+	for _, tc := range testcases {
+		gotChangeType, gotOutput := extractTopicOrPurpose(tc.input)
+
+		assert.Equal(t, tc.wantChangeType , gotChangeType)
+		assert.Equal(t, tc.wantOutput , gotOutput)
 	}
 }
