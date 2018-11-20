@@ -332,6 +332,7 @@ func (b *Bslack) updateTopicOrPurpose(msg *config.Message, channelInfo *slack.Ch
 		updateFunc = b.rtm.SetPurposeOfConversation
 	default:
 		b.Log.Errorf("Unhandled type received from extractTopicOrPurpose: %s", incomingChangeType)
+		return true, nil
 	}
 	for {
 		_, err := updateFunc(channelInfo.ID, text)
