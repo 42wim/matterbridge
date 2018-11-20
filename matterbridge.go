@@ -8,6 +8,8 @@ import (
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/gateway"
+	"github.com/42wim/matterbridge/gateway/bmap"
+
 	"github.com/google/gops/agent"
 	prefixed "github.com/matterbridge/logrus-prefixed-formatter"
 	log "github.com/sirupsen/logrus"
@@ -45,7 +47,7 @@ func main() {
 	}
 	cfg := config.NewConfig(*flagConfig)
 	cfg.BridgeValues().General.Debug = *flagDebug
-	r, err := gateway.NewRouter(cfg)
+	r, err := gateway.NewRouter(cfg, bmap.FullBridgeMap)
 	if err != nil {
 		flog.Fatalf("Starting gateway failed: %s", err)
 	}
