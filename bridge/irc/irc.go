@@ -31,9 +31,9 @@ type Birc struct {
 	i                                         *girc.Client
 	Nick                                      string
 	names                                     map[string][]string
-	connected                                 chan struct{}
+	connected                                 chan error
 	Local                                     chan config.Message // local queue for flood control
-	FirstConnection                           bool
+	FirstConnection, authDone                 bool
 	MessageDelay, MessageQueue, MessageLength int
 
 	*bridge.Config
@@ -44,7 +44,7 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	b.Config = cfg
 	b.Nick = b.GetString("Nick")
 	b.names = make(map[string][]string)
-	b.connected = make(chan struct{})
+	b.connected = make(chan error)
 	if b.GetInt("MessageDelay") == 0 {
 		b.MessageDelay = 1300
 	} else {
@@ -116,14 +116,18 @@ func (b *Birc) Connect() error {
 	i.Handlers.Add(girc.RPL_WELCOME, b.handleNewConnection)
 	i.Handlers.Add(girc.RPL_ENDOFMOTD, b.handleOtherAuth)
 	i.Handlers.Add(girc.ALL_EVENTS, b.handleOther)
+
 	go func() {
 		for {
 			if err := i.Connect(); err != nil {
 				b.Log.Errorf("disconnect: error: %s", err)
+				if b.FirstConnection {
+					b.connected <- err
+					return
+				}
 			} else {
 				b.Log.Info("disconnect: client requested quit")
 			}
-
 			b.Log.Info("reconnecting in 30 seconds...")
 			time.Sleep(30 * time.Second)
 			i.Handlers.Clear(girc.RPL_WELCOME)
@@ -135,13 +139,12 @@ func (b *Birc) Connect() error {
 		}
 	}()
 	b.i = i
-	select {
-	case <-b.connected:
-		b.Log.Info("Connection succeeded")
-	case <-time.After(time.Second * 30):
-		return fmt.Errorf("connection timed out")
+	err = <-b.connected
+	if err != nil {
+		return fmt.Errorf("connection failed %s", err)
 	}
-	//i.Debug = false
+	b.Log.Info("Connection succeeded")
+	b.FirstConnection = false
 	if b.GetInt("DebugLevel") == 0 {
 		i.Handlers.Clear(girc.ALL_EVENTS)
 	}
@@ -156,12 +159,20 @@ func (b *Birc) Disconnect() error {
 }
 
 func (b *Birc) JoinChannel(channel config.ChannelInfo) error {
+	// need to check if we have nickserv auth done before joining channels
+	for {
+		if b.authDone {
+			break
+		}
+		time.Sleep(time.Second)
+	}
 	if channel.Options.Key != "" {
 		b.Log.Debugf("using key %s for channel %s", channel.Options.Key, channel.Name)
 		b.i.Cmd.JoinKey(channel.Name, channel.Options.Key)
 	} else {
 		b.i.Cmd.Join(channel.Name)
 	}
+	b.authDone = false
 	return nil
 }
 
@@ -354,10 +365,8 @@ func (b *Birc) handleOther(client *girc.Client, event girc.Event) {
 
 func (b *Birc) handleOtherAuth(client *girc.Client, event girc.Event) {
 	b.handleNickServ()
-	// give nickserv some slack
-	time.Sleep(time.Second * 5)
 	// we are now fully connected
-	b.connected <- struct{}{}
+	b.connected <- nil
 }
 
 func (b *Birc) skipPrivMsg(event girc.Event) bool {
@@ -471,5 +480,7 @@ func (b *Birc) handleNickServ() {
 		b.Log.Debugf("Authenticating %s against %s", b.GetString("NickServUsername"), b.GetString("NickServNick"))
 		b.i.Cmd.Message(b.GetString("NickServNick"), "AUTH "+b.GetString("NickServUsername")+" "+b.GetString("NickServPassword"))
 	}
-
+	// give nickserv some slack
+	time.Sleep(time.Second * 5)
+	b.authDone = true
 }
