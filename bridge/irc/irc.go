@@ -287,7 +287,6 @@ func (b *Birc) handleNewConnection(client *girc.Client, event girc.Event) {
 	i := b.i
 	b.Nick = event.Params[0]
 
-	i.Handlers.Add(girc.RPL_ENDOFMOTD, b.handleOtherAuth)
 	i.Handlers.Add("PRIVMSG", b.handlePrivMsg)
 	i.Handlers.Add("CTCP_ACTION", b.handlePrivMsg)
 	i.Handlers.Add(girc.RPL_TOPICWHOTIME, b.handleTopicWhoTime)
@@ -296,8 +295,6 @@ func (b *Birc) handleNewConnection(client *girc.Client, event girc.Event) {
 	i.Handlers.Add("PART", b.handleJoinPart)
 	i.Handlers.Add("QUIT", b.handleJoinPart)
 	i.Handlers.Add("KICK", b.handleJoinPart)
-	// we are now fully connected
-	b.connected <- struct{}{}
 }
 
 func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
@@ -334,8 +331,7 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 
 func (b *Birc) handleNotice(client *girc.Client, event girc.Event) {
 	if strings.Contains(event.String(), "This nickname is registered") && event.Source.Name == b.GetString("NickServNick") {
-		b.Log.Debugf("Sending identify to nickserv %s", b.GetString("NickServNick"))
-		b.i.Cmd.Message(b.GetString("NickServNick"), "IDENTIFY "+b.GetString("NickServPassword"))
+		b.handleNickServ()
 	} else {
 		b.handlePrivMsg(client, event)
 	}
@@ -357,10 +353,11 @@ func (b *Birc) handleOther(client *girc.Client, event girc.Event) {
 }
 
 func (b *Birc) handleOtherAuth(client *girc.Client, event girc.Event) {
-	if strings.EqualFold(b.GetString("NickServNick"), "Q@CServe.quakenet.org") {
-		b.Log.Debugf("Authenticating %s against %s", b.GetString("NickServUsername"), b.GetString("NickServNick"))
-		b.i.Cmd.Message(b.GetString("NickServNick"), "AUTH "+b.GetString("NickServUsername")+" "+b.GetString("NickServPassword"))
-	}
+	b.handleNickServ()
+	// give nickserv some slack
+	time.Sleep(time.Second * 5)
+	// we are now fully connected
+	b.connected <- struct{}{}
 }
 
 func (b *Birc) skipPrivMsg(event girc.Event) bool {
@@ -463,4 +460,16 @@ func (b *Birc) storeNames(client *girc.Client, event girc.Event) {
 
 func (b *Birc) formatnicks(nicks []string) string {
 	return strings.Join(nicks, ", ") + " currently on IRC"
+}
+
+func (b *Birc) handleNickServ() {
+	if !b.GetBool("UseSASL") && b.GetString("NickServNick") != "" && b.GetString("NickServPassword") != "" {
+		b.Log.Debugf("Sending identify to nickserv %s", b.GetString("NickServNick"))
+		b.i.Cmd.Message(b.GetString("NickServNick"), "IDENTIFY "+b.GetString("NickServPassword"))
+	}
+	if strings.EqualFold(b.GetString("NickServNick"), "Q@CServe.quakenet.org") {
+		b.Log.Debugf("Authenticating %s against %s", b.GetString("NickServUsername"), b.GetString("NickServNick"))
+		b.i.Cmd.Message(b.GetString("NickServNick"), "AUTH "+b.GetString("NickServUsername")+" "+b.GetString("NickServPassword"))
+	}
+
 }
