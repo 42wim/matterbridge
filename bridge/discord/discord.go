@@ -164,6 +164,10 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 
 		msg.Text = helper.ClipMessage(msg.Text, MessageLength)
 		msg.Text = b.replaceUserMentions(msg.Text)
+		// discord username must be [0..32] max
+		if len(msg.Username) > 32 {
+			msg.Username = msg.Username[0:32]
+		}
 		err := b.c.WebhookExecute(
 			wID,
 			wToken,
