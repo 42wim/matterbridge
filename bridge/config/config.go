@@ -72,6 +72,7 @@ type Protocol struct {
 	EditSuffix             string // mattermost, slack, discord, telegram, gitter
 	EditDisable            bool   // mattermost, slack, discord, telegram, gitter
 	IconURL                string // mattermost, slack
+	IgnoreFailureOnStart   bool   // general
 	IgnoreNicks            string // all protocols
 	IgnoreMessages         string // all protocols
 	Jid                    string // xmpp
