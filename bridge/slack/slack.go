@@ -48,6 +48,7 @@ const (
 	sChannelLeave    = "channel_leave"
 	sChannelJoined   = "channel_joined"
 	sMemberJoined    = "member_joined_channel"
+	sMessageChanged  = "message_changed"
 	sMessageDeleted  = "message_deleted"
 	sSlackAttachment = "slack_attachment"
 	sPinnedItem      = "pinned_item"

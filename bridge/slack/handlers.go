@@ -202,6 +202,14 @@ func (b *Bslack) handleStatusEvent(ev *slack.MessageEvent, rmsg *config.Message)
 		rmsg.Event = config.EventJoinLeave
 	case sChannelTopic, sChannelPurpose:
 		rmsg.Event = config.EventTopicChange
+	case sMessageChanged:
+		rmsg.Text = ev.SubMessage.Text
+		// handle deleted thread starting messages
+		if ev.SubMessage.Text == "This message was deleted." {
+			rmsg.Event = config.EventMsgDelete
+			return true
+		}
+
 	case sMessageDeleted:
 		rmsg.Text = config.EventMsgDelete
 		rmsg.Event = config.EventMsgDelete
