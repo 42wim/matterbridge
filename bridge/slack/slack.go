@@ -357,6 +357,10 @@ func (b *Bslack) editMessage(msg *config.Message, channelInfo *slack.Channel) (b
 }
 
 func (b *Bslack) postMessage(msg *config.Message, messageParameters *slack.PostMessageParameters, channelInfo *slack.Channel) (string, error) {
+	// don't post empty messages
+	if msg.Text == "" {
+		return "", nil
+	}
 	for {
 		_, id, err := b.rtm.PostMessage(channelInfo.ID, msg.Text, *messageParameters)
 		if err == nil {
