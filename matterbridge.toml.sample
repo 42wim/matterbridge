@@ -1395,7 +1395,7 @@ enable=true
 
         #OPTIONAL - webhookurl only works for discord (it needs a different URL for each cahnnel)
         [gateway.inout.options]
-        webhookurl=""https://discordapp.com/api/webhooks/123456789123456789/C9WPqExYWONPDZabcdef-def1434FGFjstasJX9pYht73y"
+        webhookurl="https://discordapp.com/api/webhooks/123456789123456789/C9WPqExYWONPDZabcdef-def1434FGFjstasJX9pYht73y"
 
     #API example
     #[[gateway.inout]]
