@@ -109,6 +109,7 @@ type Protocol struct {
 	ReplaceMessages        [][]string // all protocols
 	ReplaceNicks           [][]string // all protocols
 	RemoteNickFormat       string     // all protocols
+	RunCommands            []string   // irc
 	Server                 string     // IRC,mattermost,XMPP,discord
 	ShowJoinPart           bool       // all protocols
 	ShowTopicChange        bool       // slack

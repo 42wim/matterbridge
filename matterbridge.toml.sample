@@ -96,6 +96,11 @@ RejoinDelay=0
 #Only works in IRC right now.
 ColorNicks=false
 
+#RunCommands allows you to send RAW irc commands after connection
+#Array of strings
+#OPTIONAL (default empty)
+RunCommands=["PRIVMSG user hello","PRIVMSG chanserv something"]
+
 #Nicks you want to ignore. 
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL

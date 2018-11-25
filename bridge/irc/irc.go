@@ -365,6 +365,7 @@ func (b *Birc) handleOther(client *girc.Client, event girc.Event) {
 
 func (b *Birc) handleOtherAuth(client *girc.Client, event girc.Event) {
 	b.handleNickServ()
+	b.handleRunCommands()
 	// we are now fully connected
 	b.connected <- nil
 }
@@ -469,6 +470,15 @@ func (b *Birc) storeNames(client *girc.Client, event girc.Event) {
 
 func (b *Birc) formatnicks(nicks []string) string {
 	return strings.Join(nicks, ", ") + " currently on IRC"
+}
+
+func (b *Birc) handleRunCommands() {
+	for _, cmd := range b.GetStringSlice("RunCommands") {
+		if err := b.i.Cmd.SendRaw(cmd); err != nil {
+			b.Log.Errorf("RunCommands %s failed: %s", cmd, err)
+		}
+		time.Sleep(time.Second)
+	}
 }
 
 func (b *Birc) handleNickServ() {
