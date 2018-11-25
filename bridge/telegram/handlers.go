@@ -10,20 +10,29 @@ import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-// handleChannels checks if it's a channel message and if the message is a new or edited messages
-func (b *Btelegram) handleChannels(rmsg *config.Message, message *tgbotapi.Message, update tgbotapi.Update) *tgbotapi.Message {
+func (b *Btelegram) handleUpdate(rmsg *config.Message, message, posted, edited *tgbotapi.Message) *tgbotapi.Message {
 	// handle channels
-	if update.ChannelPost != nil {
-		message = update.ChannelPost
+	if posted != nil {
+		message = posted
 		rmsg.Text = message.Text
 	}
 
 	// edited channel message
-	if update.EditedChannelPost != nil && !b.GetBool("EditDisable") {
-		message = update.EditedChannelPost
+	if edited != nil && !b.GetBool("EditDisable") {
+		message = edited
 		rmsg.Text = rmsg.Text + message.Text + b.GetString("EditSuffix")
 	}
 	return message
+}
+
+// handleChannels checks if it's a channel message and if the message is a new or edited messages
+func (b *Btelegram) handleChannels(rmsg *config.Message, message *tgbotapi.Message, update tgbotapi.Update) *tgbotapi.Message {
+	return b.handleUpdate(rmsg, message, update.ChannelPost, update.EditedChannelPost)
+}
+
+// handleGroups checks if it's a group message and if the message is a new or edited messages
+func (b *Btelegram) handleGroups(rmsg *config.Message, message *tgbotapi.Message, update tgbotapi.Update) *tgbotapi.Message {
+	return b.handleUpdate(rmsg, message, update.Message, update.EditedMessage)
 }
 
 // handleForwarded handles forwarded messages
@@ -44,21 +53,6 @@ func (b *Btelegram) handleForwarded(rmsg *config.Message, message *tgbotapi.Mess
 		}
 		rmsg.Text = "Forwarded from " + usernameForward + ": " + rmsg.Text
 	}
-}
-
-// handleGroups checks if it's a group message and if the message is a new or edited messages
-func (b *Btelegram) handleGroups(rmsg *config.Message, message *tgbotapi.Message, update tgbotapi.Update) *tgbotapi.Message {
-	if update.Message != nil {
-		message = update.Message
-		rmsg.Text = message.Text
-	}
-
-	// edited group message
-	if update.EditedMessage != nil && !b.GetBool("EditDisable") {
-		message = update.EditedMessage
-		rmsg.Text = rmsg.Text + message.Text + b.GetString("EditSuffix")
-	}
-	return message
 }
 
 // handleQuoting handles quoting of previous messages
@@ -207,60 +201,30 @@ func (b *Btelegram) handleDownloadAvatar(userid int, channel string) {
 func (b *Btelegram) handleDownload(rmsg *config.Message, message *tgbotapi.Message) error {
 	size := 0
 	var url, name, text string
-
-	if message.Sticker != nil {
-		v := message.Sticker
-		size = v.FileSize
-		url = b.getFileDirectURL(v.FileID)
-		urlPart := strings.Split(url, "/")
-		name = urlPart[len(urlPart)-1]
-		if !strings.HasSuffix(name, ".webp") {
-			name += ".webp"
-		}
-		text = " " + url
-	}
-	if message.Video != nil {
-		v := message.Video
-		size = v.FileSize
-		url = b.getFileDirectURL(v.FileID)
-		urlPart := strings.Split(url, "/")
-		name = urlPart[len(urlPart)-1]
-		text = " " + url
-	}
-	if message.Photo != nil {
+	switch {
+	case message.Sticker != nil:
+		text, name, url = b.getDownloadInfo(message.Sticker.FileID, ".webp", true)
+		size = message.Sticker.FileSize
+	case message.Voice != nil:
+		text, name, url = b.getDownloadInfo(message.Voice.FileID, ".ogg", true)
+		size = message.Voice.FileSize
+	case message.Video != nil:
+		text, name, url = b.getDownloadInfo(message.Video.FileID, "", true)
+		size = message.Video.FileSize
+	case message.Audio != nil:
+		text, name, url = b.getDownloadInfo(message.Audio.FileID, "", true)
+		size = message.Audio.FileSize
+	case message.Document != nil:
+		_, _, url = b.getDownloadInfo(message.Document.FileID, "", false)
+		size = message.Document.FileSize
+		name = message.Document.FileName
+		text = " " + message.Document.FileName + " : " + url
+	case message.Photo != nil:
 		photos := *message.Photo
 		size = photos[len(photos)-1].FileSize
-		url = b.getFileDirectURL(photos[len(photos)-1].FileID)
-		urlPart := strings.Split(url, "/")
-		name = urlPart[len(urlPart)-1]
-		text = " " + url
+		text, name, url = b.getDownloadInfo(photos[len(photos)-1].FileID, "", true)
 	}
-	if message.Document != nil {
-		v := message.Document
-		size = v.FileSize
-		url = b.getFileDirectURL(v.FileID)
-		name = v.FileName
-		text = " " + v.FileName + " : " + url
-	}
-	if message.Voice != nil {
-		v := message.Voice
-		size = v.FileSize
-		url = b.getFileDirectURL(v.FileID)
-		urlPart := strings.Split(url, "/")
-		name = urlPart[len(urlPart)-1]
-		text = " " + url
-		if !strings.HasSuffix(name, ".ogg") {
-			name += ".ogg"
-		}
-	}
-	if message.Audio != nil {
-		v := message.Audio
-		size = v.FileSize
-		url = b.getFileDirectURL(v.FileID)
-		urlPart := strings.Split(url, "/")
-		name = urlPart[len(urlPart)-1]
-		text = " " + url
-	}
+
 	// if name is empty we didn't match a thing to download
 	if name == "" {
 		return nil
@@ -282,6 +246,20 @@ func (b *Btelegram) handleDownload(rmsg *config.Message, message *tgbotapi.Messa
 	}
 	helper.HandleDownloadData(b.Log, rmsg, name, message.Caption, "", data, b.General)
 	return nil
+}
+
+func (b *Btelegram) getDownloadInfo(id string, suffix string, urlpart bool) (string, string, string) {
+	url := b.getFileDirectURL(id)
+	name := ""
+	if urlpart {
+		urlPart := strings.Split(url, "/")
+		name = urlPart[len(urlPart)-1]
+	}
+	if suffix != "" && !strings.HasSuffix(name, suffix) {
+		name += suffix
+	}
+	text := " " + url
+	return text, name, url
 }
 
 // handleUploadFile handles native upload of files
