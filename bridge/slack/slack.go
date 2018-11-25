@@ -357,6 +357,10 @@ func (b *Bslack) editMessage(msg *config.Message, channelInfo *slack.Channel) (b
 }
 
 func (b *Bslack) postMessage(msg *config.Message, messageParameters *slack.PostMessageParameters, channelInfo *slack.Channel) (string, error) {
+	// don't post empty messages
+	if msg.Text == "" {
+		return "", nil
+	}
 	for {
 		_, id, err := b.rtm.PostMessage(channelInfo.ID, msg.Text, *messageParameters)
 		if err == nil {
@@ -386,11 +390,16 @@ func (b *Bslack) uploadFile(msg *config.Message, channelID string) {
 		ts := time.Now()
 		b.Log.Debugf("Adding file %s to cache at %s with timestamp", fi.Name, ts.String())
 		b.cache.Add("filename"+fi.Name, ts)
+		initialComment := fmt.Sprintf("File from %s", msg.Username)
+		if fi.Comment != "" {
+			initialComment += fmt.Sprintf("with comment: %s", fi.Comment)
+		}
 		res, err := b.sc.UploadFile(slack.FileUploadParameters{
-			Reader:         bytes.NewReader(*fi.Data),
-			Filename:       fi.Name,
-			Channels:       []string{channelID},
-			InitialComment: fi.Comment,
+			Reader:          bytes.NewReader(*fi.Data),
+			Filename:        fi.Name,
+			Channels:        []string{channelID},
+			InitialComment:  initialComment,
+			ThreadTimestamp: msg.ParentID,
 		})
 		if err != nil {
 			b.Log.Errorf("uploadfile %#v", err)
