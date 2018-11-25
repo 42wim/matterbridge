@@ -54,15 +54,44 @@ func (r *Router) Start() error {
 		flog.Infof("Starting bridge: %s ", br.Account)
 		err := br.Connect()
 		if err != nil {
-			return fmt.Errorf("Bridge %s failed to start: %v", br.Account, err)
+			e := fmt.Errorf("Bridge %s failed to start: %v", br.Account, err)
+			if r.disableBridge(br, e) {
+				continue
+			}
+			return e
 		}
 		err = br.JoinChannels()
 		if err != nil {
-			return fmt.Errorf("Bridge %s failed to join channel: %v", br.Account, err)
+			e := fmt.Errorf("Bridge %s failed to join channel: %v", br.Account, err)
+			if r.disableBridge(br, e) {
+				continue
+			}
+			return e
+		}
+	}
+	// remove unused bridges
+	for _, gw := range r.Gateways {
+		for i, br := range gw.Bridges {
+			if br.Bridger == nil {
+				flog.Errorf("removing failed bridge %s", i)
+				delete(gw.Bridges, i)
+			}
 		}
 	}
 	go r.handleReceive()
 	return nil
+}
+
+// disableBridge returns true and empties a bridge if we have IgnoreFailureOnStart configured
+// otherwise returns false
+func (r *Router) disableBridge(br *bridge.Bridge, err error) bool {
+	if r.BridgeValues().General.IgnoreFailureOnStart {
+		flog.Error(err)
+		// setting this bridge empty
+		*br = bridge.Bridge{}
+		return true
+	}
+	return false
 }
 
 func (r *Router) getBridge(account string) *bridge.Bridge {

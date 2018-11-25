@@ -1303,6 +1303,12 @@ MediaDownloadSize=1000000
 #OPTIONAL (default empty)
 MediaDownloadBlacklist=[".html$",".htm$"]
 
+#IgnoreFailureOnStart allows you to ignore failing bridges on startup.
+#Matterbridge will disable the failed bridge and continue with the other ones.
+#Context: https://github.com/42wim/matterbridge/issues/455
+#OPTIONAL (default false)
+IgnoreFailureOnStart=false
+
 ###################################################################
 #Gateway configuration
 ###################################################################
