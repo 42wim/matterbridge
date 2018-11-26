@@ -1,8 +1,11 @@
 package bslack
 
 import (
+	"io/ioutil"
 	"testing"
 
+	"github.com/42wim/matterbridge/bridge"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,7 +23,10 @@ func TestExtractTopicOrPurpose(t *testing.T) {
 		"error - unhandled":      {"some unmatched message", "unknown", ""},
 	}
 
-	b := &Bslack{}
+	logger := logrus.New()
+	logger.SetOutput(ioutil.Discard)
+	cfg := &bridge.Config{Log: logger.WithFields(nil)}
+	b := newBridge(cfg)
 	for name, tc := range testcases {
 		gotChangeType, gotOutput := b.extractTopicOrPurpose(tc.input)
 
