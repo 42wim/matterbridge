@@ -7,22 +7,23 @@ import (
 )
 
 func TestExtractTopicOrPurpose(t *testing.T) {
-	testcases := []struct {
+	testcases := map[string]struct {
 		input          string
 		wantChangeType string
 		wantOutput     string
 	}{
-		{"@someone set channel topic: one liner", "topic", "one liner"},
-		{"@someone set channel purpose: one liner", "purpose", "one liner"},
-		{"@someone set channel topic: multi\nliner", "topic", "multi\nliner"},
-		{"@someone cleared channel topic", "topic", ""},
-		{"some unmatched message", "unknown", ""},
+		"success - topic type": {"@someone set channel topic: foo bar", "topic", "foo bar"},
+		"success - purpose type": {"@someone set channel purpose: foo bar", "purpose", "foo bar"},
+		"success - one line": {"@someone set channel topic: foo bar", "topic", "foo bar"},
+		"success - multi-line": {"@someone set channel topic: foo\nbar", "topic", "foo\nbar"},
+		"success - cleared": {"@someone cleared channel topic", "topic", ""},
+		"error - unhandled": {"some unmatched message", "unknown", ""},
 	}
 
-	for _, tc := range testcases {
+	for name, tc := range testcases {
 		gotChangeType, gotOutput := extractTopicOrPurpose(tc.input)
 
-		assert.Equal(t, tc.wantChangeType, gotChangeType)
-		assert.Equal(t, tc.wantOutput, gotOutput)
+		assert.Equal(t, tc.wantChangeType, gotChangeType, "This testcase failed: " + name)
+		assert.Equal(t, tc.wantOutput, gotOutput, "This testcase failed: " + name)
 	}
 }
