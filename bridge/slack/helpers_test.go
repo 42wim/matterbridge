@@ -20,8 +20,9 @@ func TestExtractTopicOrPurpose(t *testing.T) {
 		"error - unhandled":      {"some unmatched message", "unknown", ""},
 	}
 
+	b := &Bslack{}
 	for name, tc := range testcases {
-		gotChangeType, gotOutput := extractTopicOrPurpose(tc.input)
+		gotChangeType, gotOutput := b.extractTopicOrPurpose(tc.input)
 
 		assert.Equalf(t, tc.wantChangeType, gotChangeType, "This testcase failed: %s", name)
 		assert.Equalf(t, tc.wantOutput, gotOutput, "This testcase failed: %s", name)
