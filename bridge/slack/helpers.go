@@ -271,7 +271,7 @@ var (
 
 func extractTopicOrPurpose(text string) (string, string) {
 	r := topicOrPurposeRE.FindStringSubmatch(text)
-	if len(r) >= 5 {
+	if len(r) == 5 {
 		action, updateType, extracted := r[2], r[3], r[4]
 		switch action {
 		case "set":
@@ -280,7 +280,8 @@ func extractTopicOrPurpose(text string) (string, string) {
 			return updateType, ""
 		}
 	}
-	return "unknown", ""
+	b.Log.Warnf("Encountered channel topic or purpose change message with unexpected format: %s", text)
+	return "unknown, ""
 }
 
 // @see https://api.slack.com/docs/message-formatting#linking_to_channels_and_users
