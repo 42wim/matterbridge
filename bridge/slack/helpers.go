@@ -281,7 +281,7 @@ func extractTopicOrPurpose(text string) (string, string) {
 		}
 	}
 	b.Log.Warnf("Encountered channel topic or purpose change message with unexpected format: %s", text)
-	return "unknown, ""
+	return unknown, ""
 }
 
 // @see https://api.slack.com/docs/message-formatting#linking_to_channels_and_users
