@@ -116,6 +116,11 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 		return b.GetBool(noSendJoinConfig)
 	case sPinnedItem, sUnpinnedItem:
 		return true
+	case sChannelTopic, sChannelPurpose:
+		// Skip the event if our bot/user account changed the topic/purpose
+		if ev.User == b.si.User.ID {
+			return true
+		}
 	}
 
 	// Skip any messages that we made ourselves or from 'slackbot' (see #527).
@@ -136,7 +141,6 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 	if len(ev.Files) > 0 {
 		return b.filesCached(ev.Files)
 	}
-
 	return false
 }
 
@@ -201,6 +205,7 @@ func (b *Bslack) handleStatusEvent(ev *slack.MessageEvent, rmsg *config.Message)
 		rmsg.Username = sSystemUser
 		rmsg.Event = config.EventJoinLeave
 	case sChannelTopic, sChannelPurpose:
+		b.populateChannels()
 		rmsg.Event = config.EventTopicChange
 	case sMessageChanged:
 		rmsg.Text = ev.SubMessage.Text

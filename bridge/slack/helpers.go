@@ -262,11 +262,27 @@ func (b *Bslack) populateMessageWithBotInfo(ev *slack.MessageEvent, rmsg *config
 }
 
 var (
-	mentionRE  = regexp.MustCompile(`<@([a-zA-Z0-9]+)>`)
-	channelRE  = regexp.MustCompile(`<#[a-zA-Z0-9]+\|(.+?)>`)
-	variableRE = regexp.MustCompile(`<!((?:subteam\^)?[a-zA-Z0-9]+)(?:\|@?(.+?))?>`)
-	urlRE      = regexp.MustCompile(`<(.*?)(\|.*?)?>`)
+	mentionRE        = regexp.MustCompile(`<@([a-zA-Z0-9]+)>`)
+	channelRE        = regexp.MustCompile(`<#[a-zA-Z0-9]+\|(.+?)>`)
+	variableRE       = regexp.MustCompile(`<!((?:subteam\^)?[a-zA-Z0-9]+)(?:\|@?(.+?))?>`)
+	urlRE            = regexp.MustCompile(`<(.*?)(\|.*?)?>`)
+	topicOrPurposeRE = regexp.MustCompile(`(?s)(@.+) (cleared|set)(?: the)? channel (topic|purpose)(?:: (.*))?`)
 )
+
+func (b *Bslack) extractTopicOrPurpose(text string) (string, string) {
+	r := topicOrPurposeRE.FindStringSubmatch(text)
+	if len(r) == 5 {
+		action, updateType, extracted := r[2], r[3], r[4]
+		switch action {
+		case "set":
+			return updateType, extracted
+		case "cleared":
+			return updateType, ""
+		}
+	}
+	b.Log.Warnf("Encountered channel topic or purpose change message with unexpected format: %s", text)
+	return "unknown", ""
+}
 
 // @see https://api.slack.com/docs/message-formatting#linking_to_channels_and_users
 func (b *Bslack) replaceMention(text string) string {

@@ -267,8 +267,10 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		return brMsgIDs
 	}
 
-	// only relay topic change when configured
-	if msg.Event == config.EventTopicChange && !gw.Bridges[dest.Account].GetBool("ShowTopicChange") {
+	// only relay topic change when used in some way on other side
+	if msg.Event == config.EventTopicChange &&
+		!gw.Bridges[dest.Account].GetBool("ShowTopicChange") &&
+		!gw.Bridges[dest.Account].GetBool("SyncTopic") {
 		return brMsgIDs
 	}
 

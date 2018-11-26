@@ -281,8 +281,14 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 		return "", nil
 	}
 
-	// Handle message deletions.
 	var handled bool
+
+	// Handle topic/purpose updates.
+	if handled, err = b.handleTopicOrPurpose(&msg, channelInfo); handled {
+		return "", err
+	}
+
+	// Handle message deletions.
 	if handled, err = b.deleteMessage(&msg, channelInfo); handled {
 		return msg.ID, err
 	}
@@ -313,6 +319,49 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 
 	// Post message.
 	return b.postMessage(&msg, messageParameters, channelInfo)
+}
+
+func (b *Bslack) updateTopicOrPurpose(msg *config.Message, channelInfo *slack.Channel) (bool, error) {
+	var updateFunc func(channelID string, value string) (*slack.Channel, error)
+
+	incomingChangeType, text := b.extractTopicOrPurpose(msg.Text)
+	switch incomingChangeType {
+	case "topic":
+		updateFunc = b.rtm.SetTopicOfConversation
+	case "purpose":
+		updateFunc = b.rtm.SetPurposeOfConversation
+	default:
+		b.Log.Errorf("Unhandled type received from extractTopicOrPurpose: %s", incomingChangeType)
+		return true, nil
+	}
+	for {
+		_, err := updateFunc(channelInfo.ID, text)
+		if err == nil {
+			return true, nil
+		}
+		if err = b.handleRateLimit(err); err != nil {
+			return true, err
+		}
+	}
+}
+
+// handles updating topic/purpose and determining whether to further propagate update messages.
+func (b *Bslack) handleTopicOrPurpose(msg *config.Message, channelInfo *slack.Channel) (bool, error) {
+	if msg.Event != config.EventTopicChange {
+		return false, nil
+	}
+
+	if b.GetBool("SyncTopic") {
+		return b.updateTopicOrPurpose(msg, channelInfo)
+	}
+
+	// Pass along to normal message handlers.
+	if b.GetBool("ShowTopicChange") {
+		return false, nil
+	}
+
+	// Swallow message as handled no-op.
+	return true, nil
 }
 
 func (b *Bslack) deleteMessage(msg *config.Message, channelInfo *slack.Channel) (bool, error) {
