@@ -12,12 +12,12 @@ func TestExtractTopicOrPurpose(t *testing.T) {
 		wantChangeType string
 		wantOutput     string
 	}{
-		"success - topic type": {"@someone set channel topic: foo bar", "topic", "foo bar"},
+		"success - topic type":   {"@someone set channel topic: foo bar", "topic", "foo bar"},
 		"success - purpose type": {"@someone set channel purpose: foo bar", "purpose", "foo bar"},
-		"success - one line": {"@someone set channel topic: foo bar", "topic", "foo bar"},
-		"success - multi-line": {"@someone set channel topic: foo\nbar", "topic", "foo\nbar"},
-		"success - cleared": {"@someone cleared channel topic", "topic", ""},
-		"error - unhandled": {"some unmatched message", "unknown", ""},
+		"success - one line":     {"@someone set channel topic: foo bar", "topic", "foo bar"},
+		"success - multi-line":   {"@someone set channel topic: foo\nbar", "topic", "foo\nbar"},
+		"success - cleared":      {"@someone cleared channel topic", "topic", ""},
+		"error - unhandled":      {"some unmatched message", "unknown", ""},
 	}
 
 	for name, tc := range testcases {
