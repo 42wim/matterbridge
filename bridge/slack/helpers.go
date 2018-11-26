@@ -269,7 +269,7 @@ var (
 	topicOrPurposeRE = regexp.MustCompile(`(?s)(@.+) (cleared|set)(?: the)? channel (topic|purpose)(?:: (.*))?`)
 )
 
-func extractTopicOrPurpose(text string) (string, string) {
+func (b *Bslack) extractTopicOrPurpose(text string) (string, string) {
 	r := topicOrPurposeRE.FindStringSubmatch(text)
 	if len(r) == 5 {
 		action, updateType, extracted := r[2], r[3], r[4]
@@ -281,7 +281,7 @@ func extractTopicOrPurpose(text string) (string, string) {
 		}
 	}
 	b.Log.Warnf("Encountered channel topic or purpose change message with unexpected format: %s", text)
-	return unknown, ""
+	return "unknown", ""
 }
 
 // @see https://api.slack.com/docs/message-formatting#linking_to_channels_and_users
