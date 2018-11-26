@@ -1,4 +1,4 @@
-package bmap
+package bridgemap
 
 import (
 	"github.com/42wim/matterbridge/bridge"
@@ -17,7 +17,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/zulip"
 )
 
-var FullBridgeMap = map[string]bridge.Factory{
+var FullMap = map[string]bridge.Factory{
 	"api":          api.New,
 	"discord":      bdiscord.New,
 	"gitter":       bgitter.New,
