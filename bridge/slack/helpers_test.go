@@ -23,7 +23,7 @@ func TestExtractTopicOrPurpose(t *testing.T) {
 	for name, tc := range testcases {
 		gotChangeType, gotOutput := extractTopicOrPurpose(tc.input)
 
-		assert.Equal(t, tc.wantChangeType, gotChangeType, "This testcase failed: " + name)
-		assert.Equal(t, tc.wantOutput, gotOutput, "This testcase failed: " + name)
+		assert.Equalf(t, tc.wantChangeType, gotChangeType, "This testcase failed: %s", name)
+		assert.Equalf(t, tc.wantOutput, gotOutput, "This testcase failed: %s", name)
 	}
 }
