@@ -9,7 +9,7 @@ import (
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
-	_ "github.com/42wim/matterbridge/docs"
+	_ "github.com/42wim/matterbridge/docs" // required by swagger
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/swaggo/echo-swagger"
