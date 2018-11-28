@@ -11,6 +11,10 @@ github.com/Philipp15b/go-steam/protocol/gamecoordinator
 github.com/Philipp15b/go-steam/protocol/protobuf
 github.com/Philipp15b/go-steam/rwu
 github.com/Philipp15b/go-steam/socialcache
+# github.com/PuerkitoBio/purell v1.1.0
+github.com/PuerkitoBio/purell
+# github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
+github.com/PuerkitoBio/urlesc
 # github.com/bwmarrin/discordgo v0.19.0
 github.com/bwmarrin/discordgo
 # github.com/davecgh/go-spew v1.1.1
@@ -21,6 +25,14 @@ github.com/dfordsoft/golib/ic
 github.com/dgrijalva/jwt-go
 # github.com/fsnotify/fsnotify v1.4.7
 github.com/fsnotify/fsnotify
+# github.com/go-openapi/jsonpointer v0.17.0
+github.com/go-openapi/jsonpointer
+# github.com/go-openapi/jsonreference v0.17.2
+github.com/go-openapi/jsonreference
+# github.com/go-openapi/spec v0.17.2
+github.com/go-openapi/spec
+# github.com/go-openapi/swag v0.17.0
+github.com/go-openapi/swag
 # github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 github.com/go-telegram-bot-api/telegram-bot-api
 # github.com/golang/protobuf v0.0.0-20170613224224-e325f446bebc
@@ -66,6 +78,10 @@ github.com/labstack/gommon/random
 github.com/lrstanley/girc
 # github.com/magiconair/properties v1.8.0
 github.com/magiconair/properties
+# github.com/mailru/easyjson v0.0.0-20180823135443-60711f1a8329
+github.com/mailru/easyjson/jlexer
+github.com/mailru/easyjson/jwriter
+github.com/mailru/easyjson/buffer
 # github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91
 github.com/matterbridge/go-xmpp
 # github.com/matterbridge/gomatrix v0.0.0-20171224233421-78ac6a1a0f5f
@@ -139,6 +155,12 @@ github.com/spf13/pflag
 github.com/spf13/viper
 # github.com/stretchr/testify v1.2.2
 github.com/stretchr/testify/assert
+# github.com/swaggo/echo-swagger v0.0.0-20180315045949-97f46bb9e5a5
+github.com/swaggo/echo-swagger
+# github.com/swaggo/files v0.0.0-20180215091130-49c8a91ea3fa
+github.com/swaggo/files
+# github.com/swaggo/swag v1.4.0
+github.com/swaggo/swag
 # github.com/technoweenie/multipartstreamer v1.0.1
 github.com/technoweenie/multipartstreamer
 # github.com/valyala/bytebufferpool v0.0.0-20160817181652-e746df99fe4a
@@ -173,6 +195,11 @@ golang.org/x/crypto/curve25519
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/internal/chacha20
 golang.org/x/crypto/ed25519/internal/edwards25519
+# golang.org/x/net v0.0.0-20181005035420-146acd28ed58
+golang.org/x/net/webdav
+golang.org/x/net/context
+golang.org/x/net/webdav/internal/xml
+golang.org/x/net/idna
 # golang.org/x/sys v0.0.0-20181116161606-93218def8b18
 golang.org/x/sys/unix
 golang.org/x/sys/windows
@@ -186,6 +213,14 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/norm
 golang.org/x/text/encoding/internal/identifier
 golang.org/x/text/encoding/internal
+golang.org/x/text/width
+golang.org/x/text/secure/bidirule
+golang.org/x/text/unicode/bidi
+# golang.org/x/tools v0.0.0-20181127232545-e782529d0ddd
+golang.org/x/tools/go/loader
+golang.org/x/tools/go/ast/astutil
+golang.org/x/tools/go/buildutil
+golang.org/x/tools/go/internal/cgo
 # gopkg.in/natefinch/lumberjack.v2 v2.0.0
 gopkg.in/natefinch/lumberjack.v2
 # gopkg.in/yaml.v2 v2.2.1
