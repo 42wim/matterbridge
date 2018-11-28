@@ -44,23 +44,21 @@ func (b *Bslack) getChannel(channel string) (*slack.Channel, error) {
 }
 
 func (b *Bslack) getChannelByName(name string) (*slack.Channel, error) {
-	b.channelsMutex.RLock()
-	defer b.channelsMutex.RUnlock()
-
-	if channel, ok := b.channelsByName[name]; ok {
-		return channel, nil
-	}
-	return nil, fmt.Errorf("%s: channel %s not found", b.Account, name)
+	return b.getChannelBy(name, b.channelsByName)
 }
 
 func (b *Bslack) getChannelByID(ID string) (*slack.Channel, error) {
+	return b.getChannelBy(ID, b.channelsByID)
+}
+
+func (b *Bslack) getChannelBy(lookupKey string, lookupMap map[string]*slack.Channel) (*slack.Channel, error) {
 	b.channelsMutex.RLock()
 	defer b.channelsMutex.RUnlock()
 
-	if channel, ok := b.channelsByID[ID]; ok {
+	if channel, ok := lookupMap[lookupKey]; ok {
 		return channel, nil
 	}
-	return nil, fmt.Errorf("%s: channel %s not found", b.Account, ID)
+	return nil, fmt.Errorf("%s: channel %s not found", b.Account, lookupKey)
 }
 
 const minimumRefreshInterval = 10 * time.Second
