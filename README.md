@@ -117,6 +117,14 @@ $ ls bin/
 matterbridge
 ```
 
+The Swagger API documentation must be regenerated when inline doc
+comments are updated. To regenerate, run from project root:
+
+```
+go get -u github.com/swaggo/swag/cmd/swag
+${GOPATH}/bin/swag init --generalInfo bridge/api/api.go --dir .
+```
+
 ## Configuration
 ### Basic configuration
 See [howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config) for a step by step walkthrough for creating your configuration.
