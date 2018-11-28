@@ -114,49 +114,49 @@
             "type": "object",
             "properties": {
                 "account": {
-                    "description": "Unique account name of format \"[protocol].[slug]\"\n",
+                    "description": "Unique account name of format \"[protocol].[slug]\"",
                     "type": "string",
                     "example": "slack.myteam"
                 },
                 "avatar": {
-                    "description": "URL to an avatar image\n",
+                    "description": "URL to an avatar image",
                     "type": "string",
                     "example": "https://secure.gravatar.com/avatar/1234567890abcdef1234567890abcdef.jpg"
                 },
                 "channel": {
-                    "description": "Human-readable channel name\n",
+                    "description": "Human-readable channel name",
                     "type": "string",
                     "example": "test-channel"
                 },
                 "event": {
-                    "description": "Can be blank.\n",
+                    "description": "Can be blank.",
                     "type": "string"
                 },
                 "extra": {
-                    "description": "Extra data that doesn't fit in other fields. Used for processing incoming messages.\n",
+                    "description": "Extra data that doesn't fit in other fields. Used for processing incoming messages.",
                     "type": "object"
                 },
                 "gateway": {
-                    "description": "Name of the gateway\n",
+                    "description": "Name of the gateway",
                     "type": "string",
                     "example": "test-channel-gateway"
                 },
                 "id": {
-                    "description": "Unique ID of message on the gateway\n",
+                    "description": "Unique ID of message on the gateway",
                     "type": "string",
                     "example": "slack 1541361213.030700"
                 },
                 "parent_id": {
-                    "description": "Unique ID of a parent message, if threaded\n",
+                    "description": "Unique ID of a parent message, if threaded",
                     "type": "string"
                 },
                 "protocol": {
-                    "description": "Chat protocol of incoming message\n",
+                    "description": "Chat protocol of incoming message",
                     "type": "string",
                     "example": "slack"
                 },
                 "text": {
-                    "description": "Content of the message\n",
+                    "description": "Content of the message",
                     "type": "string",
                     "example": "Testing, testing, 1-2-3."
                 },
@@ -165,12 +165,12 @@
                     "example": "1541361213.030700"
                 },
                 "userid": {
-                    "description": "userid on the bridge\n",
+                    "description": "userid on the bridge",
                     "type": "string",
                     "example": "U4MCXJKNC"
                 },
                 "username": {
-                    "description": "Human-readable username\n",
+                    "description": "Human-readable username",
                     "type": "string",
                     "example": "alice"
                 }
