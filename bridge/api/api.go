@@ -116,7 +116,7 @@ func (b *API) handleHealthcheck(c echo.Context) error {
 	return c.String(http.StatusOK, "OK")
 }
 
-func (b *Api) handleDocsRedirect(c echo.Context) error {
+func (b *API) handleDocsRedirect(c echo.Context) error {
 	return c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
 }
 
