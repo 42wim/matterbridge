@@ -71,7 +71,7 @@ info:
     url: https://github.com/42wim/matterbridge/blob/master/LICENSE
   title: Matterbridge API
 paths:
-  /api/health:
+  /health:
     get:
       description: OK
       responses:

@@ -11,7 +11,7 @@
     },
     "basePath": "/api",
     "paths": {
-        "/api/health": {
+        "/health": {
             "get": {
                 "description": "OK",
                 "summary": "Checks if the server is alive.",

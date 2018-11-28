@@ -112,7 +112,7 @@ func (b *API) Send(msg config.Message) (string, error) {
 // @Summary Checks if the server is alive.
 // @Description OK
 // @Success 200 {string} string
-// @Router /api/health [get]
+// @Router /health [get]
 func (b *API) handleHealthcheck(c echo.Context) error {
 	return c.String(http.StatusOK, "OK")
 }
