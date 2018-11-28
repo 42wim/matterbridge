@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "OK",
+        "description": "A read/write API for the Matterbridge chat bridge.",
         "title": "Matterbridge API",
         "contact": {},
         "license": {
@@ -13,7 +13,6 @@
     "paths": {
         "/health": {
             "get": {
-                "description": "OK",
                 "summary": "Checks if the server is alive.",
                 "responses": {
                     "200": {
@@ -32,6 +31,7 @@
                         "ApiKeyAuth": []
                     }
                 ],
+                "description": "Required fields: text, gateway. Optional fields: username, avatar.",
                 "consumes": [
                     "application/json"
                 ],

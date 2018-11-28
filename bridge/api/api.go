@@ -9,15 +9,14 @@ import (
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
+	_ "github.com/42wim/matterbridge/docs"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/swaggo/echo-swagger"
 	"github.com/zfjagann/golang-ring"
-	_ "github.com/42wim/matterbridge/docs"
 )
 
 // @title Matterbridge API
-// @description A read/write API for the Matterbridge chat bridge.
 
 // @license.name Apache 2.0
 // @license.url https://github.com/42wim/matterbridge/blob/master/LICENSE
@@ -110,7 +109,6 @@ func (b *API) Send(msg config.Message) (string, error) {
 
 // handleHealthcheck godoc
 // @Summary Checks if the server is alive.
-// @Description OK
 // @Success 200 {string} string
 // @Router /health [get]
 func (b *API) handleHealthcheck(c echo.Context) error {
@@ -122,6 +120,7 @@ func (b *API) handleDocsRedirect(c echo.Context) error {
 }
 
 // handlePostMessage godoc
+// @Description Required fields: text, gateway. Optional fields: username, avatar.
 // @Summary Create/Update a message
 // @Accept json
 // @Produce json
@@ -193,3 +192,6 @@ func (b *API) handleStream(c echo.Context) error {
 		}
 	}
 }
+
+// Must go at the bottom due to bug where endpoint descriptions override.
+// @description A read/write API for the Matterbridge chat bridge.

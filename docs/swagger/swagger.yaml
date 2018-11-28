@@ -65,7 +65,7 @@ definitions:
     type: object
 info:
   contact: {}
-  description: OK
+  description: A read/write API for the Matterbridge chat bridge.
   license:
     name: Apache 2.0
     url: https://github.com/42wim/matterbridge/blob/master/LICENSE
@@ -73,7 +73,6 @@ info:
 paths:
   /health:
     get:
-      description: OK
       responses:
         "200":
           description: OK
@@ -84,6 +83,7 @@ paths:
     post:
       consumes:
       - application/json
+      description: 'Required fields: text, gateway. Optional fields: username, avatar.'
       parameters:
       - description: Message object to create
         in: body
