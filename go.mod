@@ -8,6 +8,8 @@ require (
 	github.com/dfordsoft/golib v0.0.0-20180902042739-76ee6ab99bec
 	github.com/dgrijalva/jwt-go v0.0.0-20170508165458-6c8dedd55f8a // indirect
 	github.com/fsnotify/fsnotify v1.4.7
+	github.com/go-openapi/jsonreference v0.17.2 // indirect
+	github.com/go-openapi/spec v0.17.2 // indirect
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/golang/protobuf v0.0.0-20170613224224-e325f446bebc // indirect
 	github.com/google/gops v0.3.5
@@ -56,6 +58,10 @@ require (
 	github.com/spf13/pflag v1.0.3 // indirect
 	github.com/spf13/viper v1.2.1
 	github.com/stretchr/testify v1.2.2
+	github.com/swaggo/echo-swagger v0.0.0-20180315045949-97f46bb9e5a5
+	github.com/swaggo/files v0.0.0-20180215091130-49c8a91ea3fa // indirect
+	github.com/swaggo/gin-swagger v1.0.0 // indirect
+	github.com/swaggo/swag v1.4.0
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/valyala/bytebufferpool v0.0.0-20160817181652-e746df99fe4a // indirect
 	github.com/valyala/fasttemplate v0.0.0-20170224212429-dcecefd839c4 // indirect
@@ -65,9 +71,9 @@ require (
 	go.uber.org/multierr v1.1.0 // indirect
 	go.uber.org/zap v1.9.1 // indirect
 	golang.org/x/crypto v0.0.0-20181112202954-3d3f9f413869 // indirect
-	golang.org/x/net v0.0.0-20180108090419-434ec0c7fe37 // indirect
 	golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f // indirect
 	golang.org/x/sys v0.0.0-20181116161606-93218def8b18 // indirect
+	golang.org/x/tools v0.0.0-20181127232545-e782529d0ddd // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
