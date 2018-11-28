@@ -396,9 +396,8 @@ func (b *Bslack) editMessage(msg *config.Message, channelInfo *slack.Channel) (b
 	if msg.ID == "" {
 		return false, nil
 	}
-
+	messageOptions := b.prepareMessageOptions(msg)
 	for {
-		messageOptions := b.prepareMessageOptions(msg)
 		messageOptions = append(messageOptions, slack.MsgOptionText(msg.Text, false))
 		_, _, _, err := b.rtm.UpdateMessage(channelInfo.ID, msg.ID, messageOptions...)
 		if err == nil {
