@@ -3,15 +3,13 @@ go:
     - 1.11.x
 
 # we have everything vendored
-# if we're on a PR, then run go get and ignore vendoring
-install:
-  - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then go get -t -v ./...; fi'
+install: true
 
 git:
   depth: 200
 
 env:
-    - GOOS=linux GOARCH=amd64 GO111MODULE=on
+    - GOOS=linux GOARCH=amd64
       #    - GOOS=windows GOARCH=amd64
       #- GOOS=linux GOARCH=arm
 
@@ -33,7 +31,7 @@ before_script:
 #  - go get github.com/golang/lint/golint                 # Linter
 #- go get honnef.co/go/tools/cmd/megacheck              # Badass static analyzer/linter
   - go get -u github.com/swaggo/swag/cmd/swag            # CLI tool for auto-generating swagger docs
-#  - ci/check_swagger_sync.sh                             # Script to check that Swagger docs are up-to-date
+  - ci/check_swagger_sync.sh                             # Script to check that Swagger docs are up-to-date
   - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b $GOPATH/bin v1.12.2
 
 # Anything in before_script: that returns a nonzero exit code will
