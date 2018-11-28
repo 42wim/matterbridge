@@ -303,16 +303,13 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 		return msg.ID, err
 	}
 
-	var messageOptions []slack.MsgOption
-
 	// Upload a file if it exists.
 	if msg.Extra != nil {
 		extraMsgs := helper.HandleExtra(&msg, b.General)
 		for i := range extraMsgs {
 			rmsg := &extraMsgs[i]
-			messageOptions = b.prepareMessageOptions(rmsg)
 			rmsg.Text = rmsg.Username + rmsg.Text
-			_, err = b.postMessage(rmsg, messageOptions, channelInfo)
+			_, err = b.postMessage(rmsg, channelInfo)
 			if err != nil {
 				b.Log.Error(err)
 			}
@@ -322,8 +319,7 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 	}
 
 	// Post message.
-	messageOptions = b.prepareMessageOptions(&msg)
-	return b.postMessage(&msg, messageOptions, channelInfo)
+	return b.postMessage(&msg, channelInfo)
 }
 
 func (b *Bslack) updateTopicOrPurpose(msg *config.Message, channelInfo *slack.Channel) (bool, error) {
@@ -411,11 +407,12 @@ func (b *Bslack) editMessage(msg *config.Message, channelInfo *slack.Channel) (b
 	}
 }
 
-func (b *Bslack) postMessage(msg *config.Message, messageOptions []slack.MsgOption, channelInfo *slack.Channel) (string, error) {
+func (b *Bslack) postMessage(msg *config.Message, channelInfo *slack.Channel) (string, error) {
 	// don't post empty messages
 	if msg.Text == "" {
 		return "", nil
 	}
+	messageOptions := b.prepareMessageOptions(msg)
 	messageOptions = append(messageOptions, slack.MsgOptionText(msg.Text, false))
 	for {
 		_, id, err := b.rtm.PostMessage(channelInfo.ID, messageOptions...)
