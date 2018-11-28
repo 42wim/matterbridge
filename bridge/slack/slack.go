@@ -288,6 +288,12 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 		return "", err
 	}
 
+	// Handle prefix hint for unthreaded messages.
+	if msg.ParentID == "unthreaded" {
+		msg.ParentID = ""
+		msg.Text = fmt.Sprintf("thread reply: %s", msg.Text)
+	}
+
 	// Handle message deletions.
 	if handled, err = b.deleteMessage(&msg, channelInfo); handled {
 		return msg.ID, err

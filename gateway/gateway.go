@@ -41,8 +41,7 @@ type BrMsgID struct {
 var flog *log.Entry
 
 const (
-	apiProtocol       = "api"
-	threadReplyPrefix = "thread reply"
+	apiProtocol = "api"
 )
 
 func New(cfg config.Gateway, r *Router) *Gateway {
@@ -251,16 +250,14 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		return brMsgIDs
 	}
 
-	// Get the ID of the parent message in thread
-	var canonicalParentMsgID string
-	if msg.ParentID != "" && dest.GetBool("PreserveThreading") {
-		canonicalParentMsgID = gw.FindCanonicalMsgID(msg.Protocol, msg.ParentID)
-	}
-
 	originchannel := msg.Channel
 	origmsg := msg
 	channels := gw.getDestChannel(&msg, *dest)
 	for _, channel := range channels {
+		if parentID, isThreaded := gw.handleThreading(&msg, dest, channel); isThreaded {
+			msg.ParentID = parentID
+		}
+
 		// Only send the avatar download event to ourselves.
 		if msg.Event == config.EventAvatarDownload {
 			if channel.ID != getChannelID(origmsg) {
@@ -287,16 +284,6 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		// for api we need originchannel as channel
 		if dest.Protocol == apiProtocol {
 			msg.Channel = originchannel
-		}
-
-		// Add prefix if reply message is being unthreaded.
-		if msg.ParentID != "" && canonicalParentMsgID == "" {
-			msg.Text = fmt.Sprintf("%s: %s", threadReplyPrefix, msg.Text)
-		}
-
-		msg.ParentID = gw.getDestMsgID(origmsg.Protocol+" "+canonicalParentMsgID, dest, channel)
-		if msg.ParentID == "" {
-			msg.ParentID = canonicalParentMsgID
 		}
 
 		// if we are using mattermost plugin account, send messages to MattermostPlugin channel
@@ -442,6 +429,24 @@ func (gw *Gateway) modifyMessage(msg *config.Message) {
 	if msg.Protocol != apiProtocol {
 		msg.Gateway = gw.Name
 	}
+}
+
+func (gw *Gateway) handleThreading(msg *config.Message, dest *bridge.Bridge, channel config.ChannelInfo) (string, bool) {
+	if msg.ParentID == "" {
+		// Message is not threaded.
+		return "", false
+	}
+
+	canonicalParentMsgID := gw.FindCanonicalMsgID(msg.Protocol, msg.ParentID)
+	if !dest.GetBool("PreserveThreading") || canonicalParentMsgID == "" {
+		// Mark message as unthreaded, either because disabled or uncached.
+		return "unthreaded", true
+	}
+
+	if parentID := gw.getDestMsgID(msg.Protocol+" "+canonicalParentMsgID, dest, channel); parentID != "" {
+		return parentID, true
+	}
+	return canonicalParentMsgID, true
 }
 
 // handleFiles uploads or places all files on the given msg to the MediaServer and
