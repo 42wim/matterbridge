@@ -76,9 +76,10 @@ func (b *Bdiscord) Connect() error {
 	if err != nil {
 		return err
 	}
+	serverName := strings.Replace(b.GetString("Server"), "ID:", "", -1)
 	b.Nick = userinfo.Username
 	for _, guild := range guilds {
-		if guild.Name == b.GetString("Server") {
+		if guild.Name == serverName || guild.ID == serverName {
 			b.Channels, err = b.c.GuildChannels(guild.ID)
 			b.guildID = guild.ID
 			if err != nil {
