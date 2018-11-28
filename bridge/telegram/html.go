@@ -34,7 +34,7 @@ func (options *customHTML) Header(out *bytes.Buffer, text func() bool, level int
 }
 
 func (options *customHTML) HRule(out io.ByteWriter) {
-	out.WriteByte('\n')
+	out.WriteByte('\n') //nolint:errcheck
 }
 
 func (options *customHTML) BlockQuote(out *bytes.Buffer, text []byte) {
