@@ -13,6 +13,7 @@ import (
 	"github.com/labstack/echo/middleware"
 	"github.com/swaggo/echo-swagger"
 	"github.com/zfjagann/golang-ring"
+	_ "github.com/42wim/matterbridge/docs"
 )
 
 // @title Matterbridge API
