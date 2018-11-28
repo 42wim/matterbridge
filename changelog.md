@@ -1,3 +1,14 @@
+# v1.12.1
+
+## Bugfix
+* discord: fix regression on server ID connection #619 #617
+* discord: Limit discord username via webhook to 32 chars
+* slack: Make sure threaded files stay in thread (slack). Fixes #590
+* slack: Do not post empty messages (slack). Fixes #574
+* slack: Handle deleted/edited thread starting messages (slack). Fixes #600 (#605)
+* irc: Rework connection logic (irc)
+* irc: Fix Nickserv logic (irc) #602
+
 # v1.12.0
 
 ## Breaking changes
