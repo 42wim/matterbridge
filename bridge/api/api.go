@@ -47,12 +47,12 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
+	e.Pre(middleware.RemoveTrailingSlash())
 	b.Messages = ring.Ring{}
 	if b.GetInt("Buffer") != 0 {
 		b.Messages.SetCapacity(b.GetInt("Buffer"))
 	}
 	if b.GetString("Token") != "" {
-		e.Pre(middleware.RemoveTrailingSlash())
 		e.Use(middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
 			Validator: func(key string, c echo.Context) (bool, error) {
 				return key == b.GetString("Token"), nil
