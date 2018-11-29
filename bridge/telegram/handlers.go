@@ -119,10 +119,10 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		rmsg := config.Message{Account: b.Account, Extra: make(map[string][]interface{})}
 
 		// handle channels
-		b.handleChannels(&rmsg, message, update)
+		message = b.handleChannels(&rmsg, message, update)
 
 		// handle groups
-		b.handleGroups(&rmsg, message, update)
+		message = b.handleGroups(&rmsg, message, update)
 
 		// set the ID's from the channel or group message
 		rmsg.ID = strconv.Itoa(message.MessageID)
