@@ -233,14 +233,14 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 	}
 
 	// only relay join/part when configured
-	if msg.Event == config.EventJoinLeave && !gw.Bridges[dest.Account].GetBool("ShowJoinPart") {
+	if msg.Event == config.EventJoinLeave && !dest.GetBool("ShowJoinPart") {
 		return brMsgIDs
 	}
 
 	// only relay topic change when used in some way on other side
 	if msg.Event == config.EventTopicChange &&
-		!gw.Bridges[dest.Account].GetBool("ShowTopicChange") &&
-		!gw.Bridges[dest.Account].GetBool("SyncTopic") {
+		dest.GetBool("ShowTopicChange") &&
+		dest.GetBool("SyncTopic") {
 		return brMsgIDs
 	}
 
@@ -252,7 +252,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 
 	// Get the ID of the parent message in thread
 	var canonicalParentMsgID string
-	if msg.ParentID != "" && (gw.BridgeValues().General.PreserveThreading || dest.GetBool("PreserveThreading")) {
+	if msg.ParentID != "" && dest.GetBool("PreserveThreading") {
 		canonicalParentMsgID = gw.FindCanonicalMsgID(msg.Protocol, msg.ParentID)
 	}
 
@@ -364,14 +364,11 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 func (gw *Gateway) modifyUsername(msg config.Message, dest *bridge.Bridge) string {
 	br := gw.Bridges[msg.Account]
 	msg.Protocol = br.Protocol
-	if gw.BridgeValues().General.StripNick || dest.GetBool("StripNick") {
+	if dest.GetBool("StripNick") {
 		re := regexp.MustCompile("[^a-zA-Z0-9]+")
 		msg.Username = re.ReplaceAllString(msg.Username, "")
 	}
 	nick := dest.GetString("RemoteNickFormat")
-	if nick == "" {
-		nick = gw.BridgeValues().General.RemoteNickFormat
-	}
 
 	// loop to replace nicks
 	for _, outer := range br.GetStringSlice2D("ReplaceNicks") {
@@ -409,10 +406,7 @@ func (gw *Gateway) modifyUsername(msg config.Message, dest *bridge.Bridge) strin
 }
 
 func (gw *Gateway) modifyAvatar(msg config.Message, dest *bridge.Bridge) string {
-	iconurl := gw.BridgeValues().General.IconURL
-	if iconurl == "" {
-		iconurl = dest.GetString("IconURL")
-	}
+	iconurl := dest.GetString("IconURL")
 	iconurl = strings.Replace(iconurl, "{NICK}", msg.Username, -1)
 	if msg.Avatar == "" {
 		msg.Avatar = iconurl
