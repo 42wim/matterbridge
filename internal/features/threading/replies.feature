@@ -55,3 +55,9 @@ Feature: Thread Reply support
     And I delete the parent message in #foo
     And I post another reply in #bar
     Then the final reply should appear in #foo
+
+  Scenario: User replies back across subprotocols
+    Given I have a simple gateway between slack#foo, slack#bar and slack-legacy#baz
+    And I post a message in #foo
+    And I post a reply in #baz
+    Then the reply should appear in #foo and #bar
