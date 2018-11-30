@@ -13,20 +13,7 @@ import (
 	"time"
 
 	"github.com/42wim/matterbridge/bridge"
-	"github.com/42wim/matterbridge/bridge/api"
 	"github.com/42wim/matterbridge/bridge/config"
-	bdiscord "github.com/42wim/matterbridge/bridge/discord"
-	bgitter "github.com/42wim/matterbridge/bridge/gitter"
-	birc "github.com/42wim/matterbridge/bridge/irc"
-	bmatrix "github.com/42wim/matterbridge/bridge/matrix"
-	bmattermost "github.com/42wim/matterbridge/bridge/mattermost"
-	brocketchat "github.com/42wim/matterbridge/bridge/rocketchat"
-	bslack "github.com/42wim/matterbridge/bridge/slack"
-	bsshchat "github.com/42wim/matterbridge/bridge/sshchat"
-	bsteam "github.com/42wim/matterbridge/bridge/steam"
-	btelegram "github.com/42wim/matterbridge/bridge/telegram"
-	bxmpp "github.com/42wim/matterbridge/bridge/xmpp"
-	bzulip "github.com/42wim/matterbridge/bridge/zulip"
 	"github.com/hashicorp/golang-lru"
 	"github.com/peterhellberg/emojilib"
 	log "github.com/sirupsen/logrus"
@@ -52,23 +39,6 @@ type BrMsgID struct {
 }
 
 var flog *log.Entry
-
-var bridgeMap = map[string]bridge.Factory{
-	"api":          api.New,
-	"discord":      bdiscord.New,
-	"gitter":       bgitter.New,
-	"irc":          birc.New,
-	"mattermost":   bmattermost.New,
-	"matrix":       bmatrix.New,
-	"rocketchat":   brocketchat.New,
-	"slack-legacy": bslack.NewLegacy,
-	"slack":        bslack.New,
-	"sshchat":      bsshchat.New,
-	"steam":        bsteam.New,
-	"telegram":     btelegram.New,
-	"xmpp":         bxmpp.New,
-	"zulip":        bzulip.New,
-}
 
 const (
 	apiProtocol = "api"
@@ -114,7 +84,7 @@ func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 		br.Log = log.WithFields(log.Fields{"prefix": "bridge"})
 		brconfig := &bridge.Config{Remote: gw.Message, Log: log.WithFields(log.Fields{"prefix": br.Protocol}), Bridge: br}
 		// add the actual bridger for this protocol to this bridge using the bridgeMap
-		br.Bridger = bridgeMap[br.Protocol](brconfig)
+		br.Bridger = gw.Router.BridgeMap[br.Protocol](brconfig)
 	}
 	gw.mapChannelsToBridge(br)
 	gw.Bridges[cfg.Account] = br

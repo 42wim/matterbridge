@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/gateway/bridgemap"
 	"github.com/stretchr/testify/assert"
 
 	"testing"
@@ -160,7 +161,7 @@ const (
 
 func maketestRouter(input []byte) *Router {
 	cfg := config.NewConfigFromString(input)
-	r, err := NewRouter(cfg)
+	r, err := NewRouter(cfg, bridgemap.FullMap)
 	if err != nil {
 		fmt.Println(err)
 	}
