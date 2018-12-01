@@ -96,7 +96,7 @@ github.com/nicksnyder/go-i18n/i18n
 github.com/nicksnyder/go-i18n/i18n/bundle
 github.com/nicksnyder/go-i18n/i18n/language
 github.com/nicksnyder/go-i18n/i18n/translation
-# github.com/nlopes/slack v0.4.0
+# github.com/nlopes/slack v0.4.1-0.20181111125009-5963eafd777b
 github.com/nlopes/slack
 github.com/nlopes/slack/slackutilsx
 # github.com/paulrosania/go-charset v0.0.0-20151028000031-621bb39fcc83
