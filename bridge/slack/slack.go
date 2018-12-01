@@ -136,13 +136,13 @@ func (b *Bslack) Connect() error {
 			DisableServer:      true,
 		},
 	)
-	if b.GetString(outgoingWebhookConfig) != "" {
+	if webhookURL := b.GetString(outgoingWebhookConfig); webhookURL != "" {
 		b.Log.Info("Using specified webhook for outgoing messages.")
-		b.mh.Url = b.GetString(outgoingWebhookConfig)
+		b.mh.Url = webhookURL
 	}
-	if b.GetString(incomingWebhookConfig) != "" {
+	if bindAddr := b.GetString(incomingWebhookConfig); bindAddr != "" {
 		b.Log.Info("Setting up local webhook for incoming messages.")
-		b.mh.BindAddress = b.GetString(incomingWebhookConfig)
+		b.mh.BindAddress = bindAddr
 		b.mh.DisableServer = false
 		go b.handleSlack()
 	}
