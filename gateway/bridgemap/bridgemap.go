@@ -25,7 +25,6 @@ var FullMap = map[string]bridge.Factory{
 	"mattermost":   bmattermost.New,
 	"matrix":       bmatrix.New,
 	"rocketchat":   brocketchat.New,
-	"slack-legacy": bslack.NewLegacy,
 	"slack":        bslack.New,
 	"sshchat":      bsshchat.New,
 	"steam":        bsteam.New,
