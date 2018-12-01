@@ -161,20 +161,6 @@ type SameChannelGateway struct {
 }
 
 type BridgeValues struct {
-	API                map[string]Protocol
-	IRC                map[string]Protocol
-	Mattermost         map[string]Protocol
-	Matrix             map[string]Protocol
-	Slack              map[string]Protocol
-	SlackLegacy        map[string]Protocol
-	Steam              map[string]Protocol
-	Gitter             map[string]Protocol
-	XMPP               map[string]Protocol
-	Discord            map[string]Protocol
-	Telegram           map[string]Protocol
-	Rocketchat         map[string]Protocol
-	SSHChat            map[string]Protocol
-	Zulip              map[string]Protocol
 	General            Protocol
 	Gateway            []Gateway
 	SameChannelGateway []SameChannelGateway
