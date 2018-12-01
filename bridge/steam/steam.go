@@ -2,7 +2,6 @@ package bsteam
 
 import (
 	"fmt"
-	"strconv"
 	"sync"
 	"time"
 
@@ -73,22 +72,13 @@ func (b *Bsteam) Send(msg config.Message) (string, error) {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
 			b.c.Social.SendMessage(id, steamlang.EChatEntryType_ChatMsg, rmsg.Username+rmsg.Text)
 		}
-		if len(msg.Extra["file"]) > 0 {
-			for _, f := range msg.Extra["file"] {
-				fi := f.(config.FileInfo)
-				if fi.Comment != "" {
-					msg.Text += fi.Comment + ": "
-				}
-				if fi.URL != "" {
-					msg.Text = fi.URL
-					if fi.Comment != "" {
-						msg.Text = fi.Comment + ": " + fi.URL
-					}
-				}
-				b.c.Social.SendMessage(id, steamlang.EChatEntryType_ChatMsg, msg.Username+msg.Text)
+		for i := range msg.Extra["file"] {
+			if err := b.handleFileInfo(&msg, msg.Extra["file"][i]); err != nil {
+				b.Log.Error(err)
 			}
-			return "", nil
+			b.c.Social.SendMessage(id, steamlang.EChatEntryType_ChatMsg, msg.Username+msg.Text)
 		}
+		return "", nil
 	}
 
 	b.c.Social.SendMessage(id, steamlang.EChatEntryType_ChatMsg, msg.Username+msg.Text)
@@ -102,79 +92,4 @@ func (b *Bsteam) getNick(id steamid.SteamId) string {
 		return name
 	}
 	return "unknown"
-}
-
-func (b *Bsteam) handleEvents() {
-	myLoginInfo := new(steam.LogOnDetails)
-	myLoginInfo.Username = b.GetString("Login")
-	myLoginInfo.Password = b.GetString("Password")
-	myLoginInfo.AuthCode = b.GetString("AuthCode")
-	// Attempt to read existing auth hash to avoid steam guard.
-	// Maybe works
-	//myLoginInfo.SentryFileHash, _ = ioutil.ReadFile("sentry")
-	for event := range b.c.Events() {
-		//b.Log.Info(event)
-		switch e := event.(type) {
-		case *steam.ChatMsgEvent:
-			b.Log.Debugf("Receiving ChatMsgEvent: %#v", e)
-			b.Log.Debugf("<= Sending message from %s on %s to gateway", b.getNick(e.ChatterId), b.Account)
-			var channel int64
-			if e.ChatRoomId == 0 {
-				channel = int64(e.ChatterId)
-			} else {
-				// for some reason we have to remove 0x18000000000000
-				channel = int64(e.ChatRoomId) - 0x18000000000000
-			}
-			msg := config.Message{Username: b.getNick(e.ChatterId), Text: e.Message, Channel: strconv.FormatInt(channel, 10), Account: b.Account, UserID: strconv.FormatInt(int64(e.ChatterId), 10)}
-			b.Remote <- msg
-		case *steam.PersonaStateEvent:
-			b.Log.Debugf("PersonaStateEvent: %#v\n", e)
-			b.Lock()
-			b.userMap[e.FriendId] = e.Name
-			b.Unlock()
-		case *steam.ConnectedEvent:
-			b.c.Auth.LogOn(myLoginInfo)
-		case *steam.MachineAuthUpdateEvent:
-			/*
-				b.Log.Info("authupdate", e)
-				b.Log.Info("hash", e.Hash)
-				ioutil.WriteFile("sentry", e.Hash, 0666)
-			*/
-		case *steam.LogOnFailedEvent:
-			b.Log.Info("Logon failed", e)
-			switch e.Result {
-			case steamlang.EResult_AccountLogonDeniedNeedTwoFactorCode:
-				{
-					b.Log.Info("Steam guard isn't letting me in! Enter 2FA code:")
-					var code string
-					fmt.Scanf("%s", &code)
-					myLoginInfo.TwoFactorCode = code
-				}
-			case steamlang.EResult_AccountLogonDenied:
-				{
-					b.Log.Info("Steam guard isn't letting me in! Enter auth code:")
-					var code string
-					fmt.Scanf("%s", &code)
-					myLoginInfo.AuthCode = code
-				}
-			default:
-				b.Log.Errorf("LogOnFailedEvent: %#v ", e.Result)
-				// TODO: Handle EResult_InvalidLoginAuthCode
-				return
-			}
-		case *steam.LoggedOnEvent:
-			b.Log.Debugf("LoggedOnEvent: %#v", e)
-			b.connected <- struct{}{}
-			b.Log.Debugf("setting online")
-			b.c.Social.SetPersonaState(steamlang.EPersonaState_Online)
-		case *steam.DisconnectedEvent:
-			b.Log.Info("Disconnected")
-			b.Log.Info("Attempting to reconnect...")
-			b.c.Connect()
-		case steam.FatalErrorEvent:
-			b.Log.Error(e)
-		default:
-			b.Log.Debugf("unknown event %#v", e)
-		}
-	}
 }
