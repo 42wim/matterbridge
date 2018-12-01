@@ -263,7 +263,7 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 	channels := gw.getDestChannel(&msg, *dest)
 	for _, channel := range channels {
 		// Performs rethreading.
-		msg.ParentID =  gw.getParentID(&msg, dest, channel)
+		msg.ParentID = gw.getParentID(&msg, dest, channel)
 
 		// Only send the avatar download event to ourselves.
 		if msg.Event == config.EventAvatarDownload {
