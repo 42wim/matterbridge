@@ -132,7 +132,7 @@ func (b *Bslack) Connect() error {
 	b.mh = matterhook.New(
 		"",
 		matterhook.Config{
-			InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
+			InsecureSkipVerify: b.GetBool(skipTLSConfig),
 			DisableServer:      true,
 		},
 	)
