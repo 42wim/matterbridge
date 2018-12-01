@@ -42,6 +42,17 @@ type Message struct {
 	Extra     map[string][]interface{}
 }
 
+func (msg *Message) CanonicalParentMsgID() string {
+	if msg.Extra != nil && len(msg.Extra["canonical_parent_mid"]) == 1 {
+		return msg.Extra["canonical_parent_mid"][0].(string)
+	}
+	return ""
+}
+
+func (msg *Message) IsThreadable() bool {
+	return msg.CanonicalParentMsgID() != ""
+}
+
 type FileInfo struct {
 	Name    string
 	Data    *[]byte
