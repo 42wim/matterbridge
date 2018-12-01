@@ -124,7 +124,7 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 	// Upload a file if it exists
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			if _, err := b.mc.PostMessage(b.mc.GetChannelId(rmsg.Channel, b.TeamID), rmsg.Username+rmsg.Text); err != nil {
+			if _, err := b.mc.PostMessage(b.mc.GetChannelId(rmsg.Channel, b.TeamID), rmsg.Username+rmsg.Text, msg.ParentID); err != nil {
 				b.Log.Errorf("PostMessage failed: %s", err)
 			}
 		}
@@ -144,5 +144,5 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 	}
 
 	// Post normal message
-	return b.mc.PostMessage(b.mc.GetChannelId(msg.Channel, b.TeamID), msg.Text)
+	return b.mc.PostMessage(b.mc.GetChannelId(msg.Channel, b.TeamID), msg.Text, msg.ParentID)
 }

@@ -64,6 +64,7 @@ func (b *Bslack) getChannelBy(lookupKey string, lookupMap map[string]*slack.Chan
 const minimumRefreshInterval = 10 * time.Second
 
 func (b *Bslack) populateUsers() {
+	time.Sleep(time.Second)
 	b.refreshMutex.Lock()
 	if time.Now().Before(b.earliestUserRefresh) || b.refreshInProgress {
 		b.Log.Debugf("Not refreshing user list as it was done less than %v ago.",
@@ -108,6 +109,7 @@ func (b *Bslack) populateUsers() {
 }
 
 func (b *Bslack) populateChannels() {
+	time.Sleep(time.Second)
 	b.refreshMutex.Lock()
 	if time.Now().Before(b.earliestChannelRefresh) || b.refreshInProgress {
 		b.Log.Debugf("Not refreshing channel list as it was done less than %v seconds ago.",

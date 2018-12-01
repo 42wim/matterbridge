@@ -144,8 +144,8 @@ func (m *MMClient) GetPublicLinks(filenames []string) []string {
 	return output
 }
 
-func (m *MMClient) PostMessage(channelId string, text string) (string, error) { //nolint:golint
-	post := &model.Post{ChannelId: channelId, Message: text}
+func (m *MMClient) PostMessage(channelId string, text string, rootId string) (string, error) { //nolint:golint
+	post := &model.Post{ChannelId: channelId, Message: text, RootId: rootId}
 	res, resp := m.Client.CreatePost(post)
 	if resp.Error != nil {
 		return "", resp.Error
@@ -153,8 +153,8 @@ func (m *MMClient) PostMessage(channelId string, text string) (string, error) { 
 	return res.Id, nil
 }
 
-func (m *MMClient) PostMessageWithFiles(channelId string, text string, fileIds []string) (string, error) { //nolint:golint
-	post := &model.Post{ChannelId: channelId, Message: text, FileIds: fileIds}
+func (m *MMClient) PostMessageWithFiles(channelId string, text string, rootId string, fileIds []string) (string, error) { //nolint:golint
+	post := &model.Post{ChannelId: channelId, Message: text, RootId: rootId, FileIds: fileIds}
 	res, resp := m.Client.CreatePost(post)
 	if resp.Error != nil {
 		return "", resp.Error
@@ -171,11 +171,11 @@ func (m *MMClient) SearchPosts(query string) *model.PostList {
 }
 
 // SendDirectMessage sends a direct message to specified user
-func (m *MMClient) SendDirectMessage(toUserId string, msg string) { //nolint:golint
-	m.SendDirectMessageProps(toUserId, msg, nil)
+func (m *MMClient) SendDirectMessage(toUserId string, msg string, rootId string) { //nolint:golint
+	m.SendDirectMessageProps(toUserId, msg, rootId, nil)
 }
 
-func (m *MMClient) SendDirectMessageProps(toUserId string, msg string, props map[string]interface{}) { //nolint:golint
+func (m *MMClient) SendDirectMessageProps(toUserId string, msg string, rootId string, props map[string]interface{}) { //nolint:golint
 	m.log.Debugf("SendDirectMessage to %s, msg %s", toUserId, msg)
 	// create DM channel (only happens on first message)
 	_, resp := m.Client.CreateDirectChannel(m.User.Id, toUserId)
@@ -190,7 +190,7 @@ func (m *MMClient) SendDirectMessageProps(toUserId string, msg string, props map
 
 	// build & send the message
 	msg = strings.Replace(msg, "\r", "", -1)
-	post := &model.Post{ChannelId: m.GetChannelId(channelName, m.Team.Id), Message: msg, Props: props}
+	post := &model.Post{ChannelId: m.GetChannelId(channelName, m.Team.Id), Message: msg, RootId: rootId, Props: props}
 	m.Client.CreatePost(post)
 }
 
