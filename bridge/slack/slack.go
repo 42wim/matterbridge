@@ -2,7 +2,6 @@ package bslack
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -110,8 +109,13 @@ func (b *Bslack) Connect() error {
 	b.RLock()
 	defer b.RUnlock()
 
-	if b.GetString(incomingWebhookConfig) == "" && b.GetString(outgoingWebhookConfig) == "" && b.GetString(tokenConfig) == "" {
-		return errors.New("no connection method found: WebhookBindAddress, WebhookURL or Token need to be configured")
+	if b.GetString(incomingWebhookConfig) == "" &&
+		b.GetString(outgoingWebhookConfig) == "" &&
+		b.GetString(tokenConfig) == "" {
+		return fmt.Errorf("no connection method found: %s, %s or %s need to be configured",
+			incomingWebhookConfig,
+			outgoingWebhookConfig,
+			tokenConfig)
 	}
 
 	// If we have a token we use the Slack websocket-based RTM for both sending and receiving.
