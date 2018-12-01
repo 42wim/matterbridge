@@ -477,18 +477,21 @@ func (b *Bslack) prepareMessageOptions(msg *config.Message) []slack.MsgOption {
 	if msg.Avatar != "" {
 		params.IconURL = msg.Avatar
 	}
+
+	var attachments []slack.Attachment
 	// add a callback ID so we can see we created it
-	params.Attachments = append(params.Attachments, slack.Attachment{CallbackID: "matterbridge_" + b.uuid})
+	attachments = append(attachments, slack.Attachment{CallbackID: "matterbridge_" + b.uuid})
 	// add file attachments
-	params.Attachments = append(params.Attachments, b.createAttach(msg.Extra)...)
+	attachments = append(attachments, b.createAttach(msg.Extra)...)
 	// add slack attachments (from another slack bridge)
 	if msg.Extra != nil {
 		for _, attach := range msg.Extra[sSlackAttachment] {
-			params.Attachments = append(params.Attachments, attach.([]slack.Attachment)...)
+			attachments = append(attachments, attach.([]slack.Attachment)...)
 		}
 	}
+
 	var opts []slack.MsgOption
-	opts = append(opts, slack.MsgOptionAttachments(params.Attachments...))
+	opts = append(opts, slack.MsgOptionAttachments(attachments...))
 	opts = append(opts, slack.MsgOptionPostMessageParameters(params))
 	return opts
 }
