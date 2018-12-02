@@ -3,7 +3,6 @@ package birc
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"regexp"
 	"strconv"
@@ -180,8 +179,6 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 	rmsg.Text = re.ReplaceAllString(rmsg.Text, "")
 
 	// start detecting the charset
-	var r io.Reader
-	var err error
 	mycharset := b.GetString("Charset")
 	if mycharset == "" {
 		// detect what were sending so that we convert it to utf-8
@@ -202,7 +199,7 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 	case "gbk", "gb18030", "gb2312", "big5", "euc-kr", "euc-jp", "shift-jis", "iso-2022-jp":
 		rmsg.Text = ic.ConvertString("utf-8", b.GetString("Charset"), rmsg.Text)
 	default:
-		r, err = charset.NewReader(mycharset, strings.NewReader(rmsg.Text))
+		r, err := charset.NewReader(mycharset, strings.NewReader(rmsg.Text))
 		if err != nil {
 			b.Log.Errorf("charset to utf-8 conversion failed: %s", err)
 			return
