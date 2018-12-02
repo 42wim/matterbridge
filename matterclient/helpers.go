@@ -1,7 +1,7 @@
 package matterclient
 
 import (
-	"crypto/md5"
+	"crypto/md5" //nolint:gosec
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -101,7 +101,10 @@ func (m *MMClient) initClient(firstConnection bool, b *backoff.Backoff) error {
 	}
 	// login to mattermost
 	m.Client = model.NewAPIv4Client(uriScheme + m.Credentials.Server)
-	m.Client.HttpClient.Transport = &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: m.SkipTLSVerify}, Proxy: http.ProxyFromEnvironment}
+	m.Client.HttpClient.Transport = &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: m.SkipTLSVerify}, //nolint:gosec
+		Proxy:           http.ProxyFromEnvironment,
+	}
 	m.Client.HttpClient.Timeout = time.Second * 10
 
 	// handle MMAUTHTOKEN and personal token
@@ -206,7 +209,10 @@ func (m *MMClient) wsConnect() {
 
 	m.log.Debugf("WsClient: making connection: %s", wsurl)
 	for {
-		wsDialer := &websocket.Dialer{Proxy: http.ProxyFromEnvironment, TLSClientConfig: &tls.Config{InsecureSkipVerify: m.SkipTLSVerify}}
+		wsDialer := &websocket.Dialer{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: m.SkipTLSVerify}, //nolint:gosec
+			Proxy:           http.ProxyFromEnvironment,
+		}
 		var err error
 		m.WsClient, _, err = wsDialer.Dial(wsurl, header)
 		if err != nil {
@@ -273,5 +279,5 @@ func supportedVersion(version string) bool {
 }
 
 func digestString(s string) string {
-	return fmt.Sprintf("%x", md5.Sum([]byte(s)))
+	return fmt.Sprintf("%x", md5.Sum([]byte(s))) //nolint:gosec
 }

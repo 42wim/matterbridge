@@ -2,7 +2,7 @@ package gateway
 
 import (
 	"bytes"
-	"crypto/sha1"
+	"crypto/sha1" //nolint:gosec
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -466,7 +466,7 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 		fi.Name = reg.ReplaceAllString(fi.Name, "_")
 		fi.Name += ext
 
-		sha1sum := fmt.Sprintf("%x", sha1.Sum(*fi.Data))[:8]
+		sha1sum := fmt.Sprintf("%x", sha1.Sum(*fi.Data))[:8] //nolint:gosec
 
 		if gw.BridgeValues().General.MediaServerUpload != "" {
 			// Use MediaServerUpload. Upload using a PUT HTTP request and basicauth.
