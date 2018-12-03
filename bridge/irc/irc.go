@@ -172,7 +172,6 @@ func (b *Birc) JoinChannel(channel config.ChannelInfo) error {
 	} else {
 		b.i.Cmd.Join(channel.Name)
 	}
-	b.authDone = false
 	return nil
 }
 
