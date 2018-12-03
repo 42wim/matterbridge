@@ -2,7 +2,9 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -36,9 +38,31 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	if b.GetInt("Buffer") != 0 {
 		b.Messages.SetCapacity(b.GetInt("Buffer"))
 	}
+
+	// Set up Swagger API docs and helpful redirects.
+	e.Pre(middleware.RemoveTrailingSlash())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"https://petstore.swagger.io", "http://petstore.swagger.io"},
+	}))
+	e.File("/swagger/docs.yaml", "docs/swagger/swagger.yaml")
+	for _, path := range strings.Fields("/ /api /swagger") {
+		e.GET(path, b.handleDocsRedirect)
+	}
+
+	// Set up token auth with exclusions for non-sensitive endpoints and redirects.
 	if b.GetString("Token") != "" {
-		e.Use(middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
-			return key == b.GetString("Token"), nil
+		e.Use(middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
+			Validator: func(key string, c echo.Context) (bool, error) {
+				return key == b.GetString("Token"), nil
+			},
+			Skipper: func(c echo.Context) bool {
+				for _, path := range strings.Fields("/ /api /api/health /swagger /swagger/*") {
+					if c.Path() == path {
+						return true
+					}
+				}
+				return false
+			},
 		}))
 	}
 	e.GET("/api/health", b.handleHealthcheck)
@@ -58,13 +82,13 @@ func New(cfg *bridge.Config) bridge.Bridger {
 func (b *API) Connect() error {
 	return nil
 }
+
 func (b *API) Disconnect() error {
 	return nil
-
 }
+
 func (b *API) JoinChannel(channel config.ChannelInfo) error {
 	return nil
-
 }
 
 func (b *API) Send(msg config.Message) (string, error) {
@@ -80,6 +104,17 @@ func (b *API) Send(msg config.Message) (string, error) {
 
 func (b *API) handleHealthcheck(c echo.Context) error {
 	return c.String(http.StatusOK, "OK")
+}
+
+func (b *API) handleDocsRedirect(c echo.Context) error {
+	host := c.Request().Host
+	scheme := c.Request().URL.Scheme
+	// Special-case where this is blank for localhost.
+	if scheme == "" {
+		scheme = "http"
+	}
+	urlTemplate := "https://petstore.swagger.io/?url=%s://%s/swagger/docs.yaml"
+	return c.Redirect(http.StatusMovedPermanently, fmt.Sprintf(urlTemplate, scheme, host))
 }
 
 func (b *API) handlePostMessage(c echo.Context) error {

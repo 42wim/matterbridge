@@ -62,7 +62,16 @@
 * [API](https://github.com/42wim/matterbridge/wiki/Features#api)
 
 ### API
-The API is very basic at the moment and rather undocumented.
+The API is very basic at the moment. It uses the [Swagger/OpenAPI
+specification](https://swagger.io/), and so will have documentation and
+an interactive web interface accessible on your instance. To view it,
+simply visit your own top level `/api` path or [view online][github-api-docs].
+
+Note: The online API docs viewer won't be interactive.
+
+[![Screenshot of Swagger API web interface](docs/screenshot-swagger-api.png)][github-api-docs]
+
+   [github-api-docs]: https://petstore.swagger.io/?url=https://raw.githubusercontent.com/42wim/matterbridge/master/docs/swagger/swagger.yaml
 
 Used by at least 3 projects. Feel free to make a PR to add your project to this list.
 
@@ -111,6 +120,13 @@ You should now have matterbridge binary in the bin directory:
 $ ls bin/
 matterbridge
 ```
+
+The Swagger API documentation can be updated by editting
+[`/docs/swagger/swagger.yaml`][api-yml]. This is simplest to do via the
+hosted editor tool, into which you can [import our file][editor].
+
+   [api-yml]: docs/swagger/swagger.yaml
+   [editor]: https://raw.githubusercontent.com/42wim/matterbridge/master/docs/swagger/swagger.yaml
 
 ## Configuration
 ### Basic configuration
