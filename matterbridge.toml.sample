@@ -667,6 +667,8 @@ ShowTopicChange=false
 #Opportunistically preserve threaded replies between Slack channels.
 #This only works if the parent message is still in the cache.
 #Cache is flushed between restarts.
+#Note: Not currently working on gateways with mixed bridges of
+# both slack and slack-legacy type. Context in issue #624.
 #OPTIONAL (default false)
 PreserveThreading=false
 
