@@ -1,3 +1,9 @@
+# v1.12.2
+
+## Bugfix
+* irc: Fix multiple channel join regression. Closes #639
+* slack: Make slack-legacy change less restrictive (#626)
+
 # v1.12.1
 
 ## Bugfix
