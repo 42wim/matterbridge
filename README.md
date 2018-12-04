@@ -210,13 +210,14 @@ Want to tip ?
 * btc: 1N7cKHj5SfqBHBzDJ6kad4BzeqUBBS2zhs
 
 ## Related projects
-* [matterbridge-heroku](https://github.com/cadecairos/matterbridge-heroku)
-* [matterbridge config viewer](https://github.com/patcon/matterbridge-heroku-viewer)
+* [FOSSRIT/infrastructure - roles/matterbridge](https://github.com/FOSSRIT/infrastructure/tree/master/roles/matterbridge) (Ansible role used to automate deployments of Matterbridge)
 * [matterbridge autoconfig](https://github.com/patcon/matterbridge-autoconfig)
-* [matterlink](https://github.com/elytra/MatterLink)
+* [matterbridge config viewer](https://github.com/patcon/matterbridge-heroku-viewer)
+* [matterbridge-heroku](https://github.com/cadecairos/matterbridge-heroku)
 * [mattereddit](https://github.com/bonehurtingjuice/mattereddit)
-* [pyCord](https://github.com/NikkyAI/pyCord) (crossplatform chatbot)
+* [matterlink](https://github.com/elytra/MatterLink)
 * [mattermost-plugin](https://github.com/matterbridge/mattermost-plugin) - Run matterbridge as a plugin in mattermost
+* [pyCord](https://github.com/NikkyAI/pyCord) (crossplatform chatbot)
 
 ## Articles
 * https://mattermost.com/blog/connect-irc-to-mattermost/
