@@ -53,7 +53,9 @@ func (m *MMClient) parseMessage(rmsg *Message) {
 			m.UpdateUser(user["id"].(string))
 		}
 	case "group_added":
-		m.UpdateChannels()
+		if err := m.UpdateChannels(); err != nil {
+			m.log.Errorf("failed to update channels: %#v", err)
+		}
 		/*
 			case model.ACTION_USER_REMOVED:
 				m.handleWsActionUserRemoved(&rmsg)
@@ -186,7 +188,9 @@ func (m *MMClient) SendDirectMessageProps(toUserId string, msg string, props map
 	channelName := model.GetDMNameFromIds(toUserId, m.User.Id)
 
 	// update our channels
-	m.UpdateChannels()
+	if err := m.UpdateChannels(); err != nil {
+		m.log.Errorf("failed to update channels: %#v", err)
+	}
 
 	// build & send the message
 	msg = strings.Replace(msg, "\r", "", -1)

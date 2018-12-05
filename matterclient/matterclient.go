@@ -208,7 +208,9 @@ func (m *MMClient) StatusLoop() {
 			return
 		}
 		if m.WsConnected {
-			m.checkAlive()
+			if err := m.checkAlive(); err != nil {
+				log.Errorf("Connection is not alive: %#v", err)
+			}
 			select {
 			case <-m.WsPingChan:
 				m.log.Debug("WS PONG received")

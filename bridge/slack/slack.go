@@ -195,16 +195,16 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 
 	// Use webhook to send the message
 	if b.GetString(outgoingWebhookConfig) != "" {
-		return b.sendWebhook(msg)
+		return "", b.sendWebhook(msg)
 	}
 	return b.sendRTM(msg)
 }
 
 // sendWebhook uses the configured WebhookURL to send the message
-func (b *Bslack) sendWebhook(msg config.Message) (string, error) {
+func (b *Bslack) sendWebhook(msg config.Message) error {
 	// Skip events.
 	if msg.Event != "" {
-		return "", nil
+		return nil
 	}
 
 	if b.GetBool(useNickPrefixConfig) {
@@ -259,9 +259,9 @@ func (b *Bslack) sendWebhook(msg config.Message) (string, error) {
 	}
 	if err := b.mh.Send(matterMessage); err != nil {
 		b.Log.Errorf("Failed to send message via webhook: %#v", err)
-		return "", err
+		return err
 	}
-	return "", nil
+	return nil
 }
 
 func (b *Bslack) sendRTM(msg config.Message) (string, error) {
@@ -317,7 +317,7 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 	return b.postMessage(&msg, channelInfo)
 }
 
-func (b *Bslack) updateTopicOrPurpose(msg *config.Message, channelInfo *slack.Channel) (bool, error) {
+func (b *Bslack) updateTopicOrPurpose(msg *config.Message, channelInfo *slack.Channel) error {
 	var updateFunc func(channelID string, value string) (*slack.Channel, error)
 
 	incomingChangeType, text := b.extractTopicOrPurpose(msg.Text)
@@ -328,15 +328,15 @@ func (b *Bslack) updateTopicOrPurpose(msg *config.Message, channelInfo *slack.Ch
 		updateFunc = b.rtm.SetPurposeOfConversation
 	default:
 		b.Log.Errorf("Unhandled type received from extractTopicOrPurpose: %s", incomingChangeType)
-		return true, nil
+		return nil
 	}
 	for {
 		_, err := updateFunc(channelInfo.ID, text)
 		if err == nil {
-			return true, nil
+			return nil
 		}
 		if err = b.handleRateLimit(err); err != nil {
-			return true, err
+			return err
 		}
 	}
 }
@@ -348,7 +348,7 @@ func (b *Bslack) handleTopicOrPurpose(msg *config.Message, channelInfo *slack.Ch
 	}
 
 	if b.GetBool("SyncTopic") {
-		return b.updateTopicOrPurpose(msg, channelInfo)
+		return true, b.updateTopicOrPurpose(msg, channelInfo)
 	}
 
 	// Pass along to normal message handlers.

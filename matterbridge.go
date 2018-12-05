@@ -28,8 +28,11 @@ func main() {
 	flagGops := flag.Bool("gops", false, "enable gops agent")
 	flag.Parse()
 	if *flagGops {
-		agent.Listen(agent.Options{})
-		defer agent.Close()
+		if err := agent.Listen(agent.Options{}); err != nil {
+			flog.Errorf("failed to start gops agent: %#v", err)
+		} else {
+			defer agent.Close()
+		}
 	}
 	if *flagVersion {
 		fmt.Printf("version: %s %s\n", version, githash)
