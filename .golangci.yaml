@@ -178,7 +178,6 @@ linters:
     - errcheck
     - gochecknoglobals
     - gocyclo
-    - gosec
     - lll
     - maligned
     - prealloc

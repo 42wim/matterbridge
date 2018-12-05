@@ -71,7 +71,7 @@ type Config struct {
 func New(url string, config Config) *Client {
 	c := &Client{Url: url, In: make(chan IMessage), Out: make(chan OMessage), Config: config}
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: config.InsecureSkipVerify},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: config.InsecureSkipVerify}, //nolint:gosec
 	}
 	c.httpclient = &http.Client{Transport: tr}
 	if !c.DisableServer {
