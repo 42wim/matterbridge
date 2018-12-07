@@ -95,6 +95,9 @@ See https://github.com/42wim/matterbridge/wiki
 * Latest stable release [v1.12.2](https://github.com/42wim/matterbridge/releases/latest)
 * Development releases (follows master) can be downloaded [here](https://dl.bintray.com/42wim/nightly/)
 
+### Packages
+* [Overview](https://repology.org/metapackage/matterbridge/versions)
+
 ### Building
 Go 1.8+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH](https://golang.org/doc/code.html#GOPATH).
 
