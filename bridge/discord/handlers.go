@@ -5,7 +5,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func (b *Bdiscord) messageDelete(s *discordgo.Session, m *discordgo.MessageDelete) {
+func (b *Bdiscord) messageDelete(s *discordgo.Session, m *discordgo.MessageDelete) { //nolint:unparam
 	rmsg := config.Message{Account: b.Account, ID: m.ID, Event: config.EventMsgDelete, Text: config.EventMsgDelete}
 	rmsg.Channel = b.getChannelName(m.ChannelID)
 	if b.useChannelID {
@@ -16,7 +16,7 @@ func (b *Bdiscord) messageDelete(s *discordgo.Session, m *discordgo.MessageDelet
 	b.Remote <- rmsg
 }
 
-func (b *Bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdate) {
+func (b *Bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdate) { //nolint:unparam
 	if b.GetBool("EditDisable") {
 		return
 	}
@@ -28,7 +28,7 @@ func (b *Bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdat
 	}
 }
 
-func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) { //nolint:unparam
 	var err error
 
 	// not relay our own messages
