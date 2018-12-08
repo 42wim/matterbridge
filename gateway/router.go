@@ -108,41 +108,23 @@ func (r *Router) getBridge(account string) *bridge.Bridge {
 func (r *Router) handleReceive() {
 	for msg := range r.Message {
 		msg := msg // scopelint
-		if msg.Event == config.EventFailure {
-		Loop:
-			for _, gw := range r.Gateways {
-				for _, br := range gw.Bridges {
-					if msg.Account == br.Account {
-						go gw.reconnectBridge(br)
-						break Loop
-					}
-				}
-			}
-		}
-		if msg.Event == config.EventRejoinChannels {
-			for _, gw := range r.Gateways {
-				for _, br := range gw.Bridges {
-					if msg.Account == br.Account {
-						br.Joined = make(map[string]bool)
-						br.JoinChannels()
-					}
-				}
-			}
-		}
+		r.handleEventFailure(&msg)
+		r.handleEventRejoinChannels(&msg)
 		for _, gw := range r.Gateways {
 			// record all the message ID's of the different bridges
 			var msgIDs []*BrMsgID
-			if !gw.ignoreMessage(&msg) {
-				msg.Timestamp = time.Now()
-				gw.modifyMessage(&msg)
-				gw.handleFiles(&msg)
-				for _, br := range gw.Bridges {
-					msgIDs = append(msgIDs, gw.handleMessage(msg, br)...)
-				}
-				// only add the message ID if it doesn't already exists
-				if _, ok := gw.Messages.Get(msg.Protocol + " " + msg.ID); !ok && msg.ID != "" {
-					gw.Messages.Add(msg.Protocol+" "+msg.ID, msgIDs)
-				}
+			if gw.ignoreMessage(&msg) {
+				continue
+			}
+			msg.Timestamp = time.Now()
+			gw.modifyMessage(&msg)
+			gw.handleFiles(&msg)
+			for _, br := range gw.Bridges {
+				msgIDs = append(msgIDs, gw.handleMessage(msg, br)...)
+			}
+			// only add the message ID if it doesn't already exists
+			if _, ok := gw.Messages.Get(msg.Protocol + " " + msg.ID); !ok && msg.ID != "" {
+				gw.Messages.Add(msg.Protocol+" "+msg.ID, msgIDs)
 			}
 		}
 	}
