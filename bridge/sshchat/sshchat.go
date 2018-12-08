@@ -30,9 +30,10 @@ func (b *Bsshchat) Connect() error {
 			b.r = bufio.NewScanner(r)
 			b.w = w
 			b.r.Scan()
-			w.Write([]byte("/theme mono\r\n"))
-			b.handleSSHChat()
-			return nil
+			if _, handleErr := w.Write([]byte("/theme mono\r\n")); handleErr != nil {
+				return handleErr
+			}
+			return b.handleSSHChat()
 		})
 	}()
 	if err != nil {
@@ -59,7 +60,9 @@ func (b *Bsshchat) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			b.w.Write([]byte(rmsg.Username + rmsg.Text + "\r\n"))
+			if _, err := b.w.Write([]byte(rmsg.Username + rmsg.Text + "\r\n")); err != nil {
+				b.Log.Errorf("Could not send extra message: %#v", err)
+			}
 		}
 		if len(msg.Extra["file"]) > 0 {
 			for _, f := range msg.Extra["file"] {
@@ -73,13 +76,15 @@ func (b *Bsshchat) Send(msg config.Message) (string, error) {
 						msg.Text = fi.Comment + ": " + fi.URL
 					}
 				}
-				b.w.Write([]byte(msg.Username + msg.Text))
+				if _, err := b.w.Write([]byte(msg.Username + msg.Text)); err != nil {
+					b.Log.Errorf("Could not send file message: %#v", err)
+				}
 			}
 			return "", nil
 		}
 	}
-	b.w.Write([]byte(msg.Username + msg.Text + "\r\n"))
-	return "", nil
+	_, err := b.w.Write([]byte(msg.Username + msg.Text + "\r\n"))
+	return "", err
 }
 
 /*

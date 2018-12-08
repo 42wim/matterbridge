@@ -175,7 +175,6 @@ linters-settings:
 linters:
   enable-all: true
   disable:
-    - errcheck
     - gochecknoglobals
     - gocyclo
     - lll

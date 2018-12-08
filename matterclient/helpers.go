@@ -263,8 +263,7 @@ func (m *MMClient) sendWSRequest(action string, data map[string]interface{}) err
 	req.Data = data
 	m.WsSequence++
 	m.log.Debugf("sendWsRequest %#v", req)
-	m.WsClient.WriteJSON(req)
-	return nil
+	return m.WsClient.WriteJSON(req)
 }
 
 func supportedVersion(version string) bool {
