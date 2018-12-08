@@ -398,6 +398,12 @@ func (gw *Gateway) SendMessage(origmsg config.Message, dest *bridge.Bridge, chan
 		msg.ParentID = canonicalParentMsgID
 	}
 
+	// if the parentID is still empty and we have a parentID set in the original message
+	// this means that we didn't find it in the cache so set it "msg-parent-not-found"
+	if msg.ParentID == "" && origmsg.ParentID != "" {
+		msg.ParentID = "msg-parent-not-found"
+	}
+
 	// if we are using mattermost plugin account, send messages to MattermostPlugin channel
 	// that can be picked up by the mattermost matterbridge plugin
 	if dest.Account == "mattermost.plugin" {
