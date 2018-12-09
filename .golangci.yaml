@@ -176,7 +176,6 @@ linters:
   enable-all: true
   disable:
     - gochecknoglobals
-    - gocyclo
     - lll
     - maligned
     - prealloc
