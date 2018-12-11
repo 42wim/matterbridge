@@ -248,6 +248,7 @@ func (b *Bslack) populateMessageWithBotInfo(ev *slack.MessageEvent, rmsg *config
 			return err
 		}
 	}
+	b.Log.Debugf("Found bot %#v", bot)
 
 	if bot.Name != "" && bot.Name != "Slack API Tester" {
 		rmsg.Username = bot.Name
