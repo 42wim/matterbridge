@@ -64,24 +64,7 @@ func (b *Bsshchat) Send(msg config.Message) (string, error) {
 				b.Log.Errorf("Could not send extra message: %#v", err)
 			}
 		}
-		if len(msg.Extra["file"]) > 0 {
-			for _, f := range msg.Extra["file"] {
-				fi := f.(config.FileInfo)
-				if fi.Comment != "" {
-					msg.Text += fi.Comment + ": "
-				}
-				if fi.URL != "" {
-					msg.Text = fi.URL
-					if fi.Comment != "" {
-						msg.Text = fi.Comment + ": " + fi.URL
-					}
-				}
-				if _, err := b.w.Write([]byte(msg.Username + msg.Text)); err != nil {
-					b.Log.Errorf("Could not send file message: %#v", err)
-				}
-			}
-			return "", nil
-		}
+		return b.handleUploadFile(&msg)
 	}
 	_, err := b.w.Write([]byte(msg.Username + msg.Text + "\r\n"))
 	return "", err
@@ -143,4 +126,23 @@ func (b *Bsshchat) handleSSHChat() error {
 			}
 		}
 	}
+}
+
+func (b *Bsshchat) handleUploadFile(msg *config.Message) (string, error) {
+	for _, f := range msg.Extra["file"] {
+		fi := f.(config.FileInfo)
+		if fi.Comment != "" {
+			msg.Text += fi.Comment + ": "
+		}
+		if fi.URL != "" {
+			msg.Text = fi.URL
+			if fi.Comment != "" {
+				msg.Text = fi.Comment + ": " + fi.URL
+			}
+		}
+		if _, err := b.w.Write([]byte(msg.Username + msg.Text)); err != nil {
+			b.Log.Errorf("Could not send file message: %#v", err)
+		}
+	}
+	return "", nil
 }
