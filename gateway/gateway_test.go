@@ -387,3 +387,116 @@ func TestGetDestChannelAdvanced(t *testing.T) {
 	}
 	assert.Equal(t, map[string]int{"bridge3": 4, "bridge": 9, "announcements": 3, "bridge2": 4}, hits)
 }
+
+func TestIgnoreTextEmpty(t *testing.T) {
+	extraFile := make(map[string][]interface{})
+	extraAttach := make(map[string][]interface{})
+	extraFailure := make(map[string][]interface{})
+	extraFile["file"] = append(extraFile["file"], config.FileInfo{})
+	extraAttach["attachments"] = append(extraAttach["attachments"], []string{})
+	extraFailure[config.EventFileFailureSize] = append(extraFailure[config.EventFileFailureSize], config.FileInfo{})
+
+	msgTests := map[string]struct {
+		input  *config.Message
+		output bool
+	}{
+		"usertyping": {
+			input:  &config.Message{Event: config.EventUserTyping},
+			output: false,
+		},
+		"file attach": {
+			input:  &config.Message{Extra: extraFile},
+			output: false,
+		},
+		"attachments": {
+			input:  &config.Message{Extra: extraAttach},
+			output: false,
+		},
+		config.EventFileFailureSize: {
+			input:  &config.Message{Extra: extraFailure},
+			output: false,
+		},
+		"nil extra": {
+			input:  &config.Message{Extra: nil},
+			output: true,
+		},
+		"empty": {
+			input:  &config.Message{},
+			output: true,
+		},
+	}
+	gw := &Gateway{}
+	for testname, testcase := range msgTests {
+		output := gw.ignoreTextEmpty(testcase.input)
+		assert.Equalf(t, testcase.output, output, "case '%s' failed", testname)
+	}
+
+}
+
+func TestIgnoreTexts(t *testing.T) {
+	msgTests := map[string]struct {
+		input  *config.Message
+		re     []string
+		output bool
+	}{
+		"no regex": {
+			input:  &config.Message{Text: "a text message"},
+			re:     []string{},
+			output: false,
+		},
+		"simple regex": {
+			input:  &config.Message{Text: "a text message"},
+			re:     []string{"text"},
+			output: true,
+		},
+		"multiple regex fail": {
+			input:  &config.Message{Text: "a text message"},
+			re:     []string{"abc", "123$"},
+			output: false,
+		},
+		"multiple regex pass": {
+			input:  &config.Message{Text: "a text message"},
+			re:     []string{"lala", "sage$"},
+			output: true,
+		},
+	}
+	gw := &Gateway{}
+	for testname, testcase := range msgTests {
+		output := gw.ignoreTexts(testcase.input, testcase.re)
+		assert.Equalf(t, testcase.output, output, "case '%s' failed", testname)
+	}
+}
+
+func TestIgnoreNicks(t *testing.T) {
+	msgTests := map[string]struct {
+		input  *config.Message
+		re     []string
+		output bool
+	}{
+		"no entry": {
+			input:  &config.Message{Username: "user", Text: "a text message"},
+			re:     []string{},
+			output: false,
+		},
+		"one entry": {
+			input:  &config.Message{Username: "user", Text: "a text message"},
+			re:     []string{"user"},
+			output: true,
+		},
+		"multiple entries": {
+			input:  &config.Message{Username: "user", Text: "a text message"},
+			re:     []string{"abc", "user"},
+			output: true,
+		},
+		"multiple entries fail": {
+			input:  &config.Message{Username: "user", Text: "a text message"},
+			re:     []string{"abc", "def"},
+			output: false,
+		},
+	}
+	gw := &Gateway{}
+	for testname, testcase := range msgTests {
+		output := gw.ignoreNicks(testcase.input, testcase.re)
+		assert.Equalf(t, testcase.output, output, "case '%s' failed", testname)
+	}
+}
