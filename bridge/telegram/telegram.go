@@ -75,15 +75,7 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 
 	// Delete message
 	if msg.Event == config.EventMsgDelete {
-		if msg.ID == "" {
-			return "", nil
-		}
-		msgid, err := strconv.Atoi(msg.ID)
-		if err != nil {
-			return "", err
-		}
-		_, err = b.c.DeleteMessage(tgbotapi.DeleteMessageConfig{ChatID: chatid, MessageID: msgid})
-		return "", err
+		return b.handleDelete(&msg, chatid)
 	}
 
 	// Upload a file if it exists
@@ -101,32 +93,7 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 
 	// edit the message if we have a msg ID
 	if msg.ID != "" {
-		msgid, err := strconv.Atoi(msg.ID)
-		if err != nil {
-			return "", err
-		}
-		if strings.ToLower(b.GetString("MessageFormat")) == HTMLNick {
-			b.Log.Debug("Using mode HTML - nick only")
-			msg.Text = html.EscapeString(msg.Text)
-		}
-		m := tgbotapi.NewEditMessageText(chatid, msgid, msg.Username+msg.Text)
-		if b.GetString("MessageFormat") == HTMLFormat {
-			b.Log.Debug("Using mode HTML")
-			m.ParseMode = tgbotapi.ModeHTML
-		}
-		if b.GetString("MessageFormat") == "Markdown" {
-			b.Log.Debug("Using mode markdown")
-			m.ParseMode = tgbotapi.ModeMarkdown
-		}
-		if strings.ToLower(b.GetString("MessageFormat")) == HTMLNick {
-			b.Log.Debug("Using mode HTML - nick only")
-			m.ParseMode = tgbotapi.ModeHTML
-		}
-		_, err = b.c.Send(m)
-		if err != nil {
-			return "", err
-		}
-		return "", nil
+		return b.handleEdit(&msg, chatid)
 	}
 
 	// Post normal message

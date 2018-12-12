@@ -1,6 +1,7 @@
 package btelegram
 
 import (
+	"html"
 	"regexp"
 	"strconv"
 	"strings"
@@ -260,6 +261,49 @@ func (b *Btelegram) getDownloadInfo(id string, suffix string, urlpart bool) (str
 	}
 	text := " " + url
 	return text, name, url
+}
+
+// handleDelete handles message deleting
+func (b *Btelegram) handleDelete(msg *config.Message, chatid int64) (string, error) {
+	if msg.ID == "" {
+		return "", nil
+	}
+	msgid, err := strconv.Atoi(msg.ID)
+	if err != nil {
+		return "", err
+	}
+	_, err = b.c.DeleteMessage(tgbotapi.DeleteMessageConfig{ChatID: chatid, MessageID: msgid})
+	return "", err
+}
+
+// handleEdit handles message editing.
+func (b *Btelegram) handleEdit(msg *config.Message, chatid int64) (string, error) {
+	msgid, err := strconv.Atoi(msg.ID)
+	if err != nil {
+		return "", err
+	}
+	if strings.ToLower(b.GetString("MessageFormat")) == HTMLNick {
+		b.Log.Debug("Using mode HTML - nick only")
+		msg.Text = html.EscapeString(msg.Text)
+	}
+	m := tgbotapi.NewEditMessageText(chatid, msgid, msg.Username+msg.Text)
+	switch b.GetString("MessageFormat") {
+	case HTMLFormat:
+		b.Log.Debug("Using mode HTML")
+		m.ParseMode = tgbotapi.ModeHTML
+	case "Markdown":
+		b.Log.Debug("Using mode markdown")
+		m.ParseMode = tgbotapi.ModeMarkdown
+	}
+	if strings.ToLower(b.GetString("MessageFormat")) == HTMLNick {
+		b.Log.Debug("Using mode HTML - nick only")
+		m.ParseMode = tgbotapi.ModeHTML
+	}
+	_, err = b.c.Send(m)
+	if err != nil {
+		return "", err
+	}
+	return "", nil
 }
 
 // handleUploadFile handles native upload of files
