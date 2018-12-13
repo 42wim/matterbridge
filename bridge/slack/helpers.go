@@ -251,7 +251,7 @@ func (b *Bslack) populateMessageWithBotInfo(ev *slack.MessageEvent, rmsg *config
 		}
 	}
 
-	if bot.Name != "" && bot.Name != "Slack API Tester" {
+	if bot.Name != "" {
 		rmsg.Username = bot.Name
 		if ev.Username != "" {
 			rmsg.Username = ev.Username
