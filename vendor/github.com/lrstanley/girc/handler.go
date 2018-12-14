@@ -46,7 +46,7 @@ func (c *Client) RunHandlers(event *Event) {
 	}
 
 	// Check if it's a CTCP.
-	if ctcp := decodeCTCP(event.Copy()); ctcp != nil {
+	if ctcp := DecodeCTCP(event.Copy()); ctcp != nil {
 		// Execute it.
 		c.CTCP.call(c, ctcp)
 	}

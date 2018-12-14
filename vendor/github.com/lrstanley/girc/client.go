@@ -135,7 +135,7 @@ type Config struct {
 	// PingDelay is the frequency between when the client sends a keep-alive
 	// PING to the server, and awaits a response (and times out if the server
 	// doesn't respond in time). This should be between 20-600 seconds. See
-	// Client.Lag() if you want to determine the delay between the server
+	// Client.Latency() if you want to determine the delay between the server
 	// and the client. If this is set to -1, the client will not attempt to
 	// send client -> server PING requests.
 	PingDelay time.Duration

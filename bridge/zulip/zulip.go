@@ -52,7 +52,7 @@ func (b *Bzulip) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
 
 	// Delete message
-	if msg.Event == config.EVENT_MSG_DELETE {
+	if msg.Event == config.EventMsgDelete {
 		if msg.ID == "" {
 			return "", nil
 		}

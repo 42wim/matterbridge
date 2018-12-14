@@ -126,8 +126,8 @@ func CSRFWithConfig(config CSRFConfig) echo.MiddlewareFunc {
 			k, err := c.Cookie(config.CookieName)
 			token := ""
 
+			// Generate token
 			if err != nil {
-				// Generate token
 				token = random.String(config.TokenLength)
 			} else {
 				// Reuse token
@@ -143,7 +143,7 @@ func CSRFWithConfig(config CSRFConfig) echo.MiddlewareFunc {
 					return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 				}
 				if !validateCSRFToken(token, clientToken) {
-					return echo.NewHTTPError(http.StatusForbidden, "Invalid csrf token")
+					return echo.NewHTTPError(http.StatusForbidden, "invalid csrf token")
 				}
 			}
 
@@ -187,7 +187,7 @@ func csrfTokenFromForm(param string) csrfTokenExtractor {
 	return func(c echo.Context) (string, error) {
 		token := c.FormValue(param)
 		if token == "" {
-			return "", errors.New("Missing csrf token in the form parameter")
+			return "", errors.New("missing csrf token in the form parameter")
 		}
 		return token, nil
 	}
@@ -199,7 +199,7 @@ func csrfTokenFromQuery(param string) csrfTokenExtractor {
 	return func(c echo.Context) (string, error) {
 		token := c.QueryParam(param)
 		if token == "" {
-			return "", errors.New("Missing csrf token in the query string")
+			return "", errors.New("missing csrf token in the query string")
 		}
 		return token, nil
 	}

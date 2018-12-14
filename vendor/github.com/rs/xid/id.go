@@ -42,6 +42,7 @@
 package xid
 
 import (
+	"bytes"
 	"crypto/md5"
 	"crypto/rand"
 	"database/sql/driver"
@@ -51,10 +52,9 @@ import (
 	"hash/crc32"
 	"io/ioutil"
 	"os"
+	"sort"
 	"sync/atomic"
 	"time"
-	"bytes"
-	"sort"
 )
 
 // Code inspired from mgo/bson ObjectId
@@ -143,9 +143,14 @@ func randInt() uint32 {
 
 // New generates a globally unique ID
 func New() ID {
+	return NewWithTime(time.Now())
+}
+
+// NewWithTime generates a globally unique ID with the passed in time
+func NewWithTime(t time.Time) ID {
 	var id ID
 	// Timestamp, 4 bytes, big endian
-	binary.BigEndian.PutUint32(id[:], uint32(time.Now().Unix()))
+	binary.BigEndian.PutUint32(id[:], uint32(t.Unix()))
 	// Machine, first 3 bytes of md5(hostname)
 	id[4] = machineID[0]
 	id[5] = machineID[1]
@@ -338,7 +343,6 @@ func FromBytes(b []byte) (ID, error) {
 func (id ID) Compare(other ID) int {
 	return bytes.Compare(id[:], other[:])
 }
-
 
 type sorter []ID
 

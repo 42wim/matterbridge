@@ -1,8 +1,11 @@
 language: go
 
 go:
-  - 1.8
-  - 1.7.5
-  - 1.6.4
+  - "1.10.3"
+  - "1.9.7"
 
 sudo: false
+
+script:
+  - go vet ./...
+  - go test ./...

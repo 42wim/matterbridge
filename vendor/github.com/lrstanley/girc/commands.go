@@ -70,7 +70,7 @@ func (cmd *Commands) PartMessage(channel, message string) {
 // PRIVMSG specifically. ctcpType is the CTCP command, e.g. "FINGER", "TIME",
 // "VERSION", etc.
 func (cmd *Commands) SendCTCP(target, ctcpType, message string) {
-	out := encodeCTCPRaw(ctcpType, message)
+	out := EncodeCTCPRaw(ctcpType, message)
 	if out == "" {
 		panic(fmt.Sprintf("invalid CTCP: %s -> %s: %s", target, ctcpType, message))
 	}
@@ -95,7 +95,7 @@ func (cmd *Commands) SendCTCPReplyf(target, ctcpType, format string, a ...interf
 // SendCTCPReply sends a CTCP response to target. Note that this method uses
 // NOTICE specifically.
 func (cmd *Commands) SendCTCPReply(target, ctcpType, message string) {
-	out := encodeCTCPRaw(ctcpType, message)
+	out := EncodeCTCPRaw(ctcpType, message)
 	if out == "" {
 		panic(fmt.Sprintf("invalid CTCP: %s -> %s: %s", target, ctcpType, message))
 	}

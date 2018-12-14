@@ -1,16 +1,18 @@
 language: go
 go:
-    #- 1.7.x
-    - 1.10.x
-      # - tip
+    - 1.11.x
+go_import_path: github.com/42wim/matterbridge
 
 # we have everything vendored
 install: true
 
+git:
+  depth: 200
+
 env:
+  global:
     - GOOS=linux GOARCH=amd64
-      #    - GOOS=windows GOARCH=amd64
-      #- GOOS=linux GOARCH=arm
+    - GOLANGCI_VERSION="v1.12.3"
 
 matrix:
   # It's ok if our code fails on unstable development versions of Go.
@@ -24,22 +26,26 @@ notifications:
       email: false
 
 before_script:
-  - MY_VERSION=$(git describe --tags)
-  - GO_FILES=$(find . -iname '*.go' | grep -v /vendor/)  # All the .go files, excluding vendor/
-  - PKGS=$(go list ./... | grep -v /vendor/)             # All the import paths, excluding vendor/
-#  - go get github.com/golang/lint/golint                 # Linter
-  - go get honnef.co/go/tools/cmd/megacheck              # Badass static analyzer/linter
+  # Get version info from tags.
+  - MY_VERSION="$(git describe --tags)"
+  # Retrieve the golangci-lint linter binary.
+  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b ${GOPATH}/bin ${GOLANGCI_VERSION}
+  # Retrieve and prepare CodeClimate's test coverage reporter.
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
 
-# Anything in before_script: that returns a nonzero exit code will
-# flunk the build and immediately stop. It's sorta like having
-# set -e enabled in bash. 
 script:
- #- test -z $(gofmt -s -l $GO_FILES)  # Fail if a .go file hasn't been formatted with gofmt
-  - go test -v -race $PKGS            # Run all the tests with the race detector enabled
- #  - go vet $PKGS                      # go vet is the official Go static analyzer
-  - megacheck $PKGS                   # "go vet on steroids" + linter
+  # Run the linter.
+  - golangci-lint run
+  # Run all the tests with the race detector and generate coverage.
+  - go test -v -race -coverprofile c.out ./...
+  # Run the build script to generate the necessary binaries and images.
   - /bin/bash ci/bintray.sh
-  #- golint -set_exit_status $PKGS     # one last linter
+
+after_script:
+  # Upload test coverage to CodeClimate.
+  - ./cc-test-reporter after-build --exit-code ${TRAVIS_TEST_RESULT}
 
 deploy:
   provider: bintray

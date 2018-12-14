@@ -1,5 +1,5 @@
 #!/bin/bash
-go version |grep go1.10 || exit
+go version | grep go1.11 || exit
 VERSION=$(git describe --tags)
 mkdir ci/binaries
 GOOS=windows GOARCH=amd64 go build -ldflags "-s -w -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o ci/binaries/matterbridge-$VERSION-windows-amd64.exe

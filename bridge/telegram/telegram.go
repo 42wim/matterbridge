@@ -2,7 +2,6 @@ package btelegram
 
 import (
 	"html"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -10,6 +9,12 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
+)
+
+const (
+	unknownUser = "unknown"
+	HTMLFormat  = "HTML"
+	HTMLNick    = "htmlnick"
 )
 
 type Btelegram struct {
@@ -60,31 +65,25 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 	}
 
 	// map the file SHA to our user (caches the avatar)
-	if msg.Event == config.EVENT_AVATAR_DOWNLOAD {
+	if msg.Event == config.EventAvatarDownload {
 		return b.cacheAvatar(&msg)
 	}
 
-	if b.GetString("MessageFormat") == "HTML" {
+	if b.GetString("MessageFormat") == HTMLFormat {
 		msg.Text = makeHTML(msg.Text)
 	}
 
 	// Delete message
-	if msg.Event == config.EVENT_MSG_DELETE {
-		if msg.ID == "" {
-			return "", nil
-		}
-		msgid, err := strconv.Atoi(msg.ID)
-		if err != nil {
-			return "", err
-		}
-		_, err = b.c.DeleteMessage(tgbotapi.DeleteMessageConfig{ChatID: chatid, MessageID: msgid})
-		return "", err
+	if msg.Event == config.EventMsgDelete {
+		return b.handleDelete(&msg, chatid)
 	}
 
 	// Upload a file if it exists
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			b.sendMessage(chatid, rmsg.Username, rmsg.Text)
+			if _, err := b.sendMessage(chatid, rmsg.Username, rmsg.Text); err != nil {
+				b.Log.Errorf("sendMessage failed: %s", err)
+			}
 		}
 		// check if we have files to upload (from slack, telegram or mattermost)
 		if len(msg.Extra["file"]) > 0 {
@@ -94,38 +93,14 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 
 	// edit the message if we have a msg ID
 	if msg.ID != "" {
-		msgid, err := strconv.Atoi(msg.ID)
-		if err != nil {
-			return "", err
-		}
-		if strings.ToLower(b.GetString("MessageFormat")) == "htmlnick" {
-			b.Log.Debug("Using mode HTML - nick only")
-			msg.Text = html.EscapeString(msg.Text)
-		}
-		m := tgbotapi.NewEditMessageText(chatid, msgid, msg.Username+msg.Text)
-		if b.GetString("MessageFormat") == "HTML" {
-			b.Log.Debug("Using mode HTML")
-			m.ParseMode = tgbotapi.ModeHTML
-		}
-		if b.GetString("MessageFormat") == "Markdown" {
-			b.Log.Debug("Using mode markdown")
-			m.ParseMode = tgbotapi.ModeMarkdown
-		}
-		if strings.ToLower(b.GetString("MessageFormat")) == "htmlnick" {
-			b.Log.Debug("Using mode HTML - nick only")
-			m.ParseMode = tgbotapi.ModeHTML
-		}
-		_, err = b.c.Send(m)
-		if err != nil {
-			return "", err
-		}
-		return "", nil
+		return b.handleEdit(&msg, chatid)
 	}
 
 	// Post normal message
 	return b.sendMessage(chatid, msg.Username, msg.Text)
 }
 
+<<<<<<< HEAD
 func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 	for update := range updates {
 		b.Log.Debugf("== Receiving event: %#v", update.Message)
@@ -256,6 +231,8 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 	}
 }
 
+=======
+>>>>>>> upstream/master
 func (b *Btelegram) getFileDirectURL(id string) string {
 	res, err := b.c.GetFileDirectURL(id)
 	if err != nil {
@@ -264,147 +241,10 @@ func (b *Btelegram) getFileDirectURL(id string) string {
 	return res
 }
 
-// handleDownloadAvatar downloads the avatar of userid from channel
-// sends a EVENT_AVATAR_DOWNLOAD message to the gateway if successful.
-// logs an error message if it fails
-func (b *Btelegram) handleDownloadAvatar(userid int, channel string) {
-	rmsg := config.Message{Username: "system", Text: "avatar", Channel: channel, Account: b.Account, UserID: strconv.Itoa(userid), Event: config.EVENT_AVATAR_DOWNLOAD, Extra: make(map[string][]interface{})}
-	if _, ok := b.avatarMap[strconv.Itoa(userid)]; !ok {
-		photos, err := b.c.GetUserProfilePhotos(tgbotapi.UserProfilePhotosConfig{UserID: userid, Limit: 1})
-		if err != nil {
-			b.Log.Errorf("Userprofile download failed for %#v %s", userid, err)
-		}
-
-		if len(photos.Photos) > 0 {
-			photo := photos.Photos[0][0]
-			url := b.getFileDirectURL(photo.FileID)
-			name := strconv.Itoa(userid) + ".png"
-			b.Log.Debugf("trying to download %#v fileid %#v with size %#v", name, photo.FileID, photo.FileSize)
-
-			err := helper.HandleDownloadSize(b.Log, &rmsg, name, int64(photo.FileSize), b.General)
-			if err != nil {
-				b.Log.Error(err)
-				return
-			}
-			data, err := helper.DownloadFile(url)
-			if err != nil {
-				b.Log.Errorf("download %s failed %#v", url, err)
-				return
-			}
-			helper.HandleDownloadData(b.Log, &rmsg, name, rmsg.Text, "", data, b.General)
-			b.Remote <- rmsg
-		}
-	}
-}
-
-// handleDownloadFile handles file download
-func (b *Btelegram) handleDownload(message *tgbotapi.Message, rmsg *config.Message) error {
-	size := 0
-	var url, name, text string
-
-	if message.Sticker != nil {
-		v := message.Sticker
-		size = v.FileSize
-		url = b.getFileDirectURL(v.FileID)
-		urlPart := strings.Split(url, "/")
-		name = urlPart[len(urlPart)-1]
-		if !strings.HasSuffix(name, ".webp") {
-			name = name + ".webp"
-		}
-		text = " " + url
-	}
-	if message.Video != nil {
-		v := message.Video
-		size = v.FileSize
-		url = b.getFileDirectURL(v.FileID)
-		urlPart := strings.Split(url, "/")
-		name = urlPart[len(urlPart)-1]
-		text = " " + url
-	}
-	if message.Photo != nil {
-		photos := *message.Photo
-		size = photos[len(photos)-1].FileSize
-		url = b.getFileDirectURL(photos[len(photos)-1].FileID)
-		urlPart := strings.Split(url, "/")
-		name = urlPart[len(urlPart)-1]
-		text = " " + url
-	}
-	if message.Document != nil {
-		v := message.Document
-		size = v.FileSize
-		url = b.getFileDirectURL(v.FileID)
-		name = v.FileName
-		text = " " + v.FileName + " : " + url
-	}
-	if message.Voice != nil {
-		v := message.Voice
-		size = v.FileSize
-		url = b.getFileDirectURL(v.FileID)
-		urlPart := strings.Split(url, "/")
-		name = urlPart[len(urlPart)-1]
-		text = " " + url
-		if !strings.HasSuffix(name, ".ogg") {
-			name = name + ".ogg"
-		}
-	}
-	if message.Audio != nil {
-		v := message.Audio
-		size = v.FileSize
-		url = b.getFileDirectURL(v.FileID)
-		urlPart := strings.Split(url, "/")
-		name = urlPart[len(urlPart)-1]
-		text = " " + url
-	}
-	// if name is empty we didn't match a thing to download
-	if name == "" {
-		return nil
-	}
-	// use the URL instead of native upload
-	if b.GetBool("UseInsecureURL") {
-		b.Log.Debugf("Setting message text to :%s", text)
-		rmsg.Text = rmsg.Text + text
-		return nil
-	}
-	// if we have a file attached, download it (in memory) and put a pointer to it in msg.Extra
-	err := helper.HandleDownloadSize(b.Log, rmsg, name, int64(size), b.General)
-	if err != nil {
-		return err
-	}
-	data, err := helper.DownloadFile(url)
-	if err != nil {
-		return err
-	}
-	helper.HandleDownloadData(b.Log, rmsg, name, message.Caption, "", data, b.General)
-	return nil
-}
-
-// handleUploadFile handles native upload of files
-func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64) (string, error) {
-	var c tgbotapi.Chattable
-	for _, f := range msg.Extra["file"] {
-		fi := f.(config.FileInfo)
-		file := tgbotapi.FileBytes{fi.Name, *fi.Data}
-		re := regexp.MustCompile(".(jpg|png)$")
-		if re.MatchString(fi.Name) {
-			c = tgbotapi.NewPhotoUpload(chatid, file)
-		} else {
-			c = tgbotapi.NewDocumentUpload(chatid, file)
-		}
-		_, err := b.c.Send(c)
-		if err != nil {
-			b.Log.Errorf("file upload failed: %#v", err)
-		}
-		if fi.Comment != "" {
-			b.sendMessage(chatid, msg.Username, fi.Comment)
-		}
-	}
-	return "", nil
-}
-
 func (b *Btelegram) sendMessage(chatid int64, username, text string) (string, error) {
 	m := tgbotapi.NewMessage(chatid, "")
 	m.Text = username + text
-	if b.GetString("MessageFormat") == "HTML" {
+	if b.GetString("MessageFormat") == HTMLFormat {
 		b.Log.Debug("Using mode HTML")
 		m.ParseMode = tgbotapi.ModeHTML
 	}
@@ -412,7 +252,7 @@ func (b *Btelegram) sendMessage(chatid int64, username, text string) (string, er
 		b.Log.Debug("Using mode markdown")
 		m.ParseMode = tgbotapi.ModeMarkdown
 	}
-	if strings.ToLower(b.GetString("MessageFormat")) == "htmlnick" {
+	if strings.ToLower(b.GetString("MessageFormat")) == HTMLNick {
 		b.Log.Debug("Using mode HTML - nick only")
 		m.Text = username + html.EscapeString(text)
 		m.ParseMode = tgbotapi.ModeHTML
@@ -433,15 +273,4 @@ func (b *Btelegram) cacheAvatar(msg *config.Message) (string, error) {
 		b.avatarMap[msg.UserID] = fi.SHA
 	}
 	return "", nil
-}
-
-func (b *Btelegram) handleQuote(message, quoteNick, quoteMessage string) string {
-	format := b.GetString("quoteformat")
-	if format == "" {
-		format = "{MESSAGE} (re @{QUOTENICK}: {QUOTEMESSAGE})"
-	}
-	format = strings.Replace(format, "{MESSAGE}", message, -1)
-	format = strings.Replace(format, "{QUOTENICK}", quoteNick, -1)
-	format = strings.Replace(format, "{QUOTEMESSAGE}", quoteMessage, -1)
-	return format
 }

@@ -58,8 +58,8 @@ const (
 
 // Errors
 var (
-	ErrJWTMissing = echo.NewHTTPError(http.StatusBadRequest, "Missing or malformed jwt")
-	ErrJWTInvalid = echo.NewHTTPError(http.StatusUnauthorized, "Invalid or expired jwt")
+	ErrJWTMissing = echo.NewHTTPError(http.StatusBadRequest, "missing or malformed jwt")
+	ErrJWTInvalid = echo.NewHTTPError(http.StatusUnauthorized, "invalid or expired jwt")
 )
 
 var (
@@ -116,7 +116,7 @@ func JWTWithConfig(config JWTConfig) echo.MiddlewareFunc {
 	config.keyFunc = func(t *jwt.Token) (interface{}, error) {
 		// Check the signing method
 		if t.Method.Alg() != config.SigningMethod {
-			return nil, fmt.Errorf("Unexpected jwt signing method=%v", t.Header["alg"])
+			return nil, fmt.Errorf("unexpected jwt signing method=%v", t.Header["alg"])
 		}
 		return config.SigningKey, nil
 	}
@@ -156,9 +156,9 @@ func JWTWithConfig(config JWTConfig) echo.MiddlewareFunc {
 				return next(c)
 			}
 			return &echo.HTTPError{
-				Code:    ErrJWTInvalid.Code,
-				Message: ErrJWTInvalid.Message,
-				Inner:   err,
+				Code:     ErrJWTInvalid.Code,
+				Message:  ErrJWTInvalid.Message,
+				Internal: err,
 			}
 		}
 	}

@@ -38,7 +38,7 @@ type Config struct {
 func New(url string, config Config) *Client {
 	c := &Client{In: make(chan Message), Config: config}
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: config.InsecureSkipVerify},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: config.InsecureSkipVerify}, //nolint:gosec
 	}
 	c.httpclient = &http.Client{Transport: tr}
 	_, _, err := net.SplitHostPort(c.BindAddress)

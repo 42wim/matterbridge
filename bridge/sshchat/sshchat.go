@@ -30,9 +30,10 @@ func (b *Bsshchat) Connect() error {
 			b.r = bufio.NewScanner(r)
 			b.w = w
 			b.r.Scan()
-			w.Write([]byte("/theme mono\r\n"))
-			b.handleSshChat()
-			return nil
+			if _, handleErr := w.Write([]byte("/theme mono\r\n")); handleErr != nil {
+				return handleErr
+			}
+			return b.handleSSHChat()
 		})
 	}()
 	if err != nil {
@@ -53,33 +54,20 @@ func (b *Bsshchat) JoinChannel(channel config.ChannelInfo) error {
 
 func (b *Bsshchat) Send(msg config.Message) (string, error) {
 	// ignore delete messages
-	if msg.Event == config.EVENT_MSG_DELETE {
+	if msg.Event == config.EventMsgDelete {
 		return "", nil
 	}
 	b.Log.Debugf("=> Receiving %#v", msg)
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			b.w.Write([]byte(rmsg.Username + rmsg.Text + "\r\n"))
-		}
-		if len(msg.Extra["file"]) > 0 {
-			for _, f := range msg.Extra["file"] {
-				fi := f.(config.FileInfo)
-				if fi.Comment != "" {
-					msg.Text += fi.Comment + ": "
-				}
-				if fi.URL != "" {
-					msg.Text = fi.URL
-					if fi.Comment != "" {
-						msg.Text = fi.Comment + ": " + fi.URL
-					}
-				}
-				b.w.Write([]byte(msg.Username + msg.Text))
+			if _, err := b.w.Write([]byte(rmsg.Username + rmsg.Text + "\r\n")); err != nil {
+				b.Log.Errorf("Could not send extra message: %#v", err)
 			}
-			return "", nil
 		}
+		return b.handleUploadFile(&msg)
 	}
-	b.w.Write([]byte(msg.Username + msg.Text + "\r\n"))
-	return "", nil
+	_, err := b.w.Write([]byte(msg.Username + msg.Text + "\r\n"))
+	return "", err
 }
 
 /*
@@ -113,7 +101,7 @@ func stripPrompt(s string) string {
 	return s[pos+3:]
 }
 
-func (b *Bsshchat) handleSshChat() error {
+func (b *Bsshchat) handleSSHChat() error {
 	/*
 		done := b.sshchatKeepAlive()
 		defer close(done)
@@ -138,4 +126,23 @@ func (b *Bsshchat) handleSshChat() error {
 			}
 		}
 	}
+}
+
+func (b *Bsshchat) handleUploadFile(msg *config.Message) (string, error) {
+	for _, f := range msg.Extra["file"] {
+		fi := f.(config.FileInfo)
+		if fi.Comment != "" {
+			msg.Text += fi.Comment + ": "
+		}
+		if fi.URL != "" {
+			msg.Text = fi.URL
+			if fi.Comment != "" {
+				msg.Text = fi.Comment + ": " + fi.URL
+			}
+		}
+		if _, err := b.w.Write([]byte(msg.Username + msg.Text)); err != nil {
+			b.Log.Errorf("Could not send file message: %#v", err)
+		}
+	}
+	return "", nil
 }

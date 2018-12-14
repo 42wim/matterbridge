@@ -243,7 +243,8 @@ func (config ForwardConfig) method() string {
 // PhotoConfig contains information about a SendPhoto request.
 type PhotoConfig struct {
 	BaseFile
-	Caption string
+	Caption   string
+	ParseMode string
 }
 
 // Params returns a map[string]string representation of PhotoConfig.
@@ -252,6 +253,9 @@ func (config PhotoConfig) params() (map[string]string, error) {
 
 	if config.Caption != "" {
 		params["caption"] = config.Caption
+		if config.ParseMode != "" {
+			params["parse_mode"] = config.ParseMode
+		}
 	}
 
 	return params, nil
@@ -267,7 +271,11 @@ func (config PhotoConfig) values() (url.Values, error) {
 	v.Add(config.name(), config.FileID)
 	if config.Caption != "" {
 		v.Add("caption", config.Caption)
+		if config.ParseMode != "" {
+			v.Add("parse_mode", config.ParseMode)
+		}
 	}
+
 	return v, nil
 }
 
@@ -285,6 +293,7 @@ func (config PhotoConfig) method() string {
 type AudioConfig struct {
 	BaseFile
 	Caption   string
+	ParseMode string
 	Duration  int
 	Performer string
 	Title     string
@@ -310,6 +319,9 @@ func (config AudioConfig) values() (url.Values, error) {
 	}
 	if config.Caption != "" {
 		v.Add("caption", config.Caption)
+		if config.ParseMode != "" {
+			v.Add("parse_mode", config.ParseMode)
+		}
 	}
 
 	return v, nil
@@ -331,6 +343,9 @@ func (config AudioConfig) params() (map[string]string, error) {
 	}
 	if config.Caption != "" {
 		params["caption"] = config.Caption
+		if config.ParseMode != "" {
+			params["parse_mode"] = config.ParseMode
+		}
 	}
 
 	return params, nil
@@ -349,7 +364,8 @@ func (config AudioConfig) method() string {
 // DocumentConfig contains information about a SendDocument request.
 type DocumentConfig struct {
 	BaseFile
-	Caption string
+	Caption   string
+	ParseMode string
 }
 
 // values returns a url.Values representation of DocumentConfig.
@@ -362,6 +378,9 @@ func (config DocumentConfig) values() (url.Values, error) {
 	v.Add(config.name(), config.FileID)
 	if config.Caption != "" {
 		v.Add("caption", config.Caption)
+		if config.ParseMode != "" {
+			v.Add("parse_mode", config.ParseMode)
+		}
 	}
 
 	return v, nil
@@ -373,6 +392,9 @@ func (config DocumentConfig) params() (map[string]string, error) {
 
 	if config.Caption != "" {
 		params["caption"] = config.Caption
+		if config.ParseMode != "" {
+			params["parse_mode"] = config.ParseMode
+		}
 	}
 
 	return params, nil
@@ -425,8 +447,9 @@ func (config StickerConfig) method() string {
 // VideoConfig contains information about a SendVideo request.
 type VideoConfig struct {
 	BaseFile
-	Duration int
-	Caption  string
+	Duration  int
+	Caption   string
+	ParseMode string
 }
 
 // values returns a url.Values representation of VideoConfig.
@@ -442,6 +465,9 @@ func (config VideoConfig) values() (url.Values, error) {
 	}
 	if config.Caption != "" {
 		v.Add("caption", config.Caption)
+		if config.ParseMode != "" {
+			v.Add("parse_mode", config.ParseMode)
+		}
 	}
 
 	return v, nil
@@ -453,6 +479,9 @@ func (config VideoConfig) params() (map[string]string, error) {
 
 	if config.Caption != "" {
 		params["caption"] = config.Caption
+		if config.ParseMode != "" {
+			params["parse_mode"] = config.ParseMode
+		}
 	}
 
 	return params, nil
@@ -466,6 +495,59 @@ func (config VideoConfig) name() string {
 // method returns Telegram API method name for sending Video.
 func (config VideoConfig) method() string {
 	return "sendVideo"
+}
+
+// AnimationConfig contains information about a SendAnimation request.
+type AnimationConfig struct {
+	BaseFile
+	Duration  int
+	Caption   string
+	ParseMode string
+}
+
+// values returns a url.Values representation of AnimationConfig.
+func (config AnimationConfig) values() (url.Values, error) {
+	v, err := config.BaseChat.values()
+	if err != nil {
+		return v, err
+	}
+
+	v.Add(config.name(), config.FileID)
+	if config.Duration != 0 {
+		v.Add("duration", strconv.Itoa(config.Duration))
+	}
+	if config.Caption != "" {
+		v.Add("caption", config.Caption)
+		if config.ParseMode != "" {
+			v.Add("parse_mode", config.ParseMode)
+		}
+	}
+
+	return v, nil
+}
+
+// params returns a map[string]string representation of AnimationConfig.
+func (config AnimationConfig) params() (map[string]string, error) {
+	params, _ := config.BaseFile.params()
+
+	if config.Caption != "" {
+		params["caption"] = config.Caption
+		if config.ParseMode != "" {
+			params["parse_mode"] = config.ParseMode
+		}
+	}
+
+	return params, nil
+}
+
+// name returns the field name for the Animation.
+func (config AnimationConfig) name() string {
+	return "animation"
+}
+
+// method returns Telegram API method name for sending Animation.
+func (config AnimationConfig) method() string {
+	return "sendAnimation"
 }
 
 // VideoNoteConfig contains information about a SendVideoNote request.
@@ -522,8 +604,9 @@ func (config VideoNoteConfig) method() string {
 // VoiceConfig contains information about a SendVoice request.
 type VoiceConfig struct {
 	BaseFile
-	Caption  string
-	Duration int
+	Caption   string
+	ParseMode string
+	Duration  int
 }
 
 // values returns a url.Values representation of VoiceConfig.
@@ -539,6 +622,9 @@ func (config VoiceConfig) values() (url.Values, error) {
 	}
 	if config.Caption != "" {
 		v.Add("caption", config.Caption)
+		if config.ParseMode != "" {
+			v.Add("parse_mode", config.ParseMode)
+		}
 	}
 
 	return v, nil
@@ -553,6 +639,9 @@ func (config VoiceConfig) params() (map[string]string, error) {
 	}
 	if config.Caption != "" {
 		params["caption"] = config.Caption
+		if config.ParseMode != "" {
+			params["parse_mode"] = config.ParseMode
+		}
 	}
 
 	return params, nil
@@ -566,6 +655,32 @@ func (config VoiceConfig) name() string {
 // method returns Telegram API method name for sending Voice.
 func (config VoiceConfig) method() string {
 	return "sendVoice"
+}
+
+// MediaGroupConfig contains information about a sendMediaGroup request.
+type MediaGroupConfig struct {
+	BaseChat
+	InputMedia []interface{}
+}
+
+func (config MediaGroupConfig) values() (url.Values, error) {
+	v, err := config.BaseChat.values()
+	if err != nil {
+		return v, err
+	}
+
+	data, err := json.Marshal(config.InputMedia)
+	if err != nil {
+		return v, err
+	}
+
+	v.Add("media", string(data))
+
+	return v, nil
+}
+
+func (config MediaGroupConfig) method() string {
+	return "sendMediaGroup"
 }
 
 // LocationConfig contains information about a SendLocation request.
@@ -786,13 +901,17 @@ func (config EditMessageTextConfig) method() string {
 // EditMessageCaptionConfig allows you to modify the caption of a message.
 type EditMessageCaptionConfig struct {
 	BaseEdit
-	Caption string
+	Caption   string
+	ParseMode string
 }
 
 func (config EditMessageCaptionConfig) values() (url.Values, error) {
 	v, _ := config.BaseEdit.values()
 
 	v.Add("caption", config.Caption)
+	if config.ParseMode != "" {
+		v.Add("parse_mode", config.ParseMode)
+	}
 
 	return v, nil
 }

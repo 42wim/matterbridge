@@ -1,3 +1,56 @@
+# v1.12.2
+
+## Bugfix
+* irc: Fix multiple channel join regression. Closes #639
+* slack: Make slack-legacy change less restrictive (#626)
+
+# v1.12.1
+
+## Bugfix
+* discord: fix regression on server ID connection #619 #617
+* discord: Limit discord username via webhook to 32 chars
+* slack: Make sure threaded files stay in thread (slack). Fixes #590
+* slack: Do not post empty messages (slack). Fixes #574
+* slack: Handle deleted/edited thread starting messages (slack). Fixes #600 (#605)
+* irc: Rework connection logic (irc)
+* irc: Fix Nickserv logic (irc) #602
+
+# v1.12.0
+
+## Breaking changes
+The slack bridge has been split in a `slack-legacy` and `slack` bridge.
+If you're still using `legacy tokens` and want to keep using them you'll have to rename `slack` to `slack-legacy` in your configuration. See [wiki](https://github.com/42wim/matterbridge/wiki/Section-Slack-(basic)#legacy-configuration) for more information.
+
+To migrate to the new bot-token based setup you can follow the instructions [here](https://github.com/42wim/matterbridge/wiki/Slack-bot-setup).
+
+Slack legacy tokens may be deprecated by Slack at short notice, so it is STRONGLY recommended to use a proper bot-token instead.
+
+## New features
+* general: New {GATEWAY} variable for `RemoteNickFormat` #501. See `RemoteNickFormat` in matterbridge.toml.sample.
+* general: New {CHANNEL} variable for `RemoteNickFormat` #515. See `RemoteNickFormat` in matterbridge.toml.sample.
+* general: Remove hyphens when auto-loading envvars from viper config #545
+* discord: You can mention discord-users from other bridges.
+* slack: Preserve threading between Slack instances #529. See `PreserveThreading` in matterbridge.toml.sample.
+* slack: Add ability to show when user is typing across Slack bridges #559
+* slack: Add rate-limiting
+* mattermost: Add support for mattermost [matterbridge plugin](https://github.com/matterbridge/mattermost-plugin)
+* api: Respond with message on connect. #550
+* api: Add a health endpoint to API #554
+
+## Bugfix
+* slack: Refactoring and making it better.
+* slack: Restore file comments coming from Slack. #583
+* irc: Fix IRC line splitting. #587
+* mattermost: Fix cookie and personal token behaviour. #530
+* mattermost: Check for expiring sessions and reconnect.
+
+
+## Contributors
+This release couldn't exist without the following contributors:
+@jheiselman, @NikkyAI, @dajohi, @NetwideRogue, @patcon and @Helcaraxan
+
+Special thanks to @Helcaraxan and @patcon for their work on improving/refactoring slack.
+
 # v1.11.3
 
 ## Bugfix

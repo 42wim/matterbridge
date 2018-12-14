@@ -43,9 +43,10 @@ type HelloEvent struct{}
 
 // PresenceChangeEvent represents the presence change event
 type PresenceChangeEvent struct {
-	Type     string `json:"type"`
-	Presence string `json:"presence"`
-	User     string `json:"user"`
+	Type     string   `json:"type"`
+	Presence string   `json:"presence"`
+	User     string   `json:"user"`
+	Users    []string `json:"users"`
 }
 
 // UserTypingEvent represents the user typing event

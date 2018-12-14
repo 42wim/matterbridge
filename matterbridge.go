@@ -8,13 +8,14 @@ import (
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/gateway"
+	"github.com/42wim/matterbridge/gateway/bridgemap"
 	"github.com/google/gops/agent"
 	prefixed "github.com/matterbridge/logrus-prefixed-formatter"
 	log "github.com/sirupsen/logrus"
 )
 
 var (
-	version = "1.11.4-dev"
+	version = "1.12.3-dev"
 	githash string
 )
 
@@ -27,8 +28,11 @@ func main() {
 	flagGops := flag.Bool("gops", false, "enable gops agent")
 	flag.Parse()
 	if *flagGops {
-		agent.Listen(&agent.Options{})
-		defer agent.Close()
+		if err := agent.Listen(agent.Options{}); err != nil {
+			flog.Errorf("failed to start gops agent: %#v", err)
+		} else {
+			defer agent.Close()
+		}
 	}
 	if *flagVersion {
 		fmt.Printf("version: %s %s\n", version, githash)
@@ -44,8 +48,8 @@ func main() {
 		flog.Println("WARNING: THIS IS A DEVELOPMENT VERSION. Things may break.")
 	}
 	cfg := config.NewConfig(*flagConfig)
-	cfg.General.Debug = *flagDebug
-	r, err := gateway.NewRouter(cfg)
+	cfg.BridgeValues().General.Debug = *flagDebug
+	r, err := gateway.NewRouter(cfg, bridgemap.FullMap)
 	if err != nil {
 		flog.Fatalf("Starting gateway failed: %s", err)
 	}

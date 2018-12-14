@@ -72,9 +72,12 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("Channel %s maps to channel id %s", msg.Channel, channel)
 
 	// Make a action /me of the message
-	if msg.Event == config.EVENT_USER_ACTION {
-		resp, err := b.mc.SendMessageEvent(channel, "m.room.message",
-			matrix.TextMessage{"m.emote", msg.Username + msg.Text})
+	if msg.Event == config.EventUserAction {
+		m := matrix.TextMessage{
+			MsgType: "m.emote",
+			Body:    msg.Username + msg.Text,
+		}
+		resp, err := b.mc.SendMessageEvent(channel, "m.room.message", m)
 		if err != nil {
 			return "", err
 		}
@@ -82,7 +85,7 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	}
 
 	// Delete message
-	if msg.Event == config.EVENT_MSG_DELETE {
+	if msg.Event == config.EventMsgDelete {
 		if msg.ID == "" {
 			return "", nil
 		}
@@ -96,11 +99,13 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	// Upload a file if it exists
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			b.mc.SendText(channel, rmsg.Username+rmsg.Text)
+			if _, err := b.mc.SendText(channel, rmsg.Username+rmsg.Text); err != nil {
+				b.Log.Errorf("sendText failed: %s", err)
+			}
 		}
 		// check if we have files to upload (from slack, telegram or mattermost)
 		if len(msg.Extra["file"]) > 0 {
-			return b.handleUploadFile(&msg, channel)
+			return b.handleUploadFiles(&msg, channel)
 		}
 	}
 
@@ -126,7 +131,7 @@ func (b *Bmatrix) getRoomID(channel string) string {
 	return ""
 }
 
-func (b *Bmatrix) handlematrix() error {
+func (b *Bmatrix) handlematrix() {
 	syncer := b.mc.Syncer.(*matrix.DefaultSyncer)
 	syncer.OnEventType("m.room.redaction", b.handleEvent)
 	syncer.OnEventType("m.room.message", b.handleEvent)
@@ -137,7 +142,6 @@ func (b *Bmatrix) handlematrix() error {
 			}
 		}
 	}()
-	return nil
 }
 
 func (b *Bmatrix) handleEvent(ev *matrix.Event) {
@@ -158,7 +162,8 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 
 		// Text must be a string
 		if rmsg.Text, ok = ev.Content["body"].(string); !ok {
-			b.Log.Errorf("Content[body] wasn't a %T ?", rmsg.Text)
+			b.Log.Errorf("Content[body] is not a string: %T\n%#v",
+				ev.Content["body"], ev.Content)
 			return
 		}
 
@@ -170,16 +175,16 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 
 		// Delete event
 		if ev.Type == "m.room.redaction" {
-			rmsg.Event = config.EVENT_MSG_DELETE
+			rmsg.Event = config.EventMsgDelete
 			rmsg.ID = ev.Redacts
-			rmsg.Text = config.EVENT_MSG_DELETE
+			rmsg.Text = config.EventMsgDelete
 			b.Remote <- rmsg
 			return
 		}
 
 		// Do we have a /me action
 		if ev.Content["msgtype"].(string) == "m.emote" {
-			rmsg.Event = config.EVENT_USER_ACTION
+			rmsg.Event = config.EventUserAction
 		}
 
 		// Do we have attachments
@@ -231,11 +236,11 @@ func (b *Bmatrix) handleDownloadFile(rmsg *config.Message, content map[string]in
 		if msgtype == "m.image" {
 			mext, _ := mime.ExtensionsByType(mtype)
 			if len(mext) > 0 {
-				name = name + mext[0]
+				name += mext[0]
 			}
 		} else {
 			// just a default .png extension if we don't have mime info
-			name = name + ".png"
+			name += ".png"
 		}
 	}
 
@@ -254,45 +259,52 @@ func (b *Bmatrix) handleDownloadFile(rmsg *config.Message, content map[string]in
 	return nil
 }
 
-// handleUploadFile handles native upload of files
-func (b *Bmatrix) handleUploadFile(msg *config.Message, channel string) (string, error) {
+// handleUploadFiles handles native upload of files.
+func (b *Bmatrix) handleUploadFiles(msg *config.Message, channel string) (string, error) {
 	for _, f := range msg.Extra["file"] {
-		fi := f.(config.FileInfo)
-		content := bytes.NewReader(*fi.Data)
-		sp := strings.Split(fi.Name, ".")
-		mtype := mime.TypeByExtension("." + sp[len(sp)-1])
-		if strings.Contains(mtype, "image") ||
-			strings.Contains(mtype, "video") {
-			if fi.Comment != "" {
-				_, err := b.mc.SendText(channel, msg.Username+fi.Comment)
-				if err != nil {
-					b.Log.Errorf("file comment failed: %#v", err)
-				}
-			}
-			b.Log.Debugf("uploading file: %s %s", fi.Name, mtype)
-			res, err := b.mc.UploadToContentRepo(content, mtype, int64(len(*fi.Data)))
-			if err != nil {
-				b.Log.Errorf("file upload failed: %#v", err)
-				continue
-			}
-			if strings.Contains(mtype, "video") {
-				b.Log.Debugf("sendVideo %s", res.ContentURI)
-				_, err = b.mc.SendVideo(channel, fi.Name, res.ContentURI)
-				if err != nil {
-					b.Log.Errorf("sendVideo failed: %#v", err)
-				}
-			}
-			if strings.Contains(mtype, "image") {
-				b.Log.Debugf("sendImage %s", res.ContentURI)
-				_, err = b.mc.SendImage(channel, fi.Name, res.ContentURI)
-				if err != nil {
-					b.Log.Errorf("sendImage failed: %#v", err)
-				}
-			}
-			b.Log.Debugf("result: %#v", res)
+		if fi, ok := f.(config.FileInfo); ok {
+			b.handleUploadFile(msg, channel, &fi)
 		}
 	}
 	return "", nil
+}
+
+// handleUploadFile handles native upload of a file.
+func (b *Bmatrix) handleUploadFile(msg *config.Message, channel string, fi *config.FileInfo) {
+	content := bytes.NewReader(*fi.Data)
+	sp := strings.Split(fi.Name, ".")
+	mtype := mime.TypeByExtension("." + sp[len(sp)-1])
+	if !strings.Contains(mtype, "image") && !strings.Contains(mtype, "video") {
+		return
+	}
+	if fi.Comment != "" {
+		_, err := b.mc.SendText(channel, msg.Username+fi.Comment)
+		if err != nil {
+			b.Log.Errorf("file comment failed: %#v", err)
+		}
+	}
+	b.Log.Debugf("uploading file: %s %s", fi.Name, mtype)
+	res, err := b.mc.UploadToContentRepo(content, mtype, int64(len(*fi.Data)))
+	if err != nil {
+		b.Log.Errorf("file upload failed: %#v", err)
+		return
+	}
+
+	switch {
+	case strings.Contains(mtype, "video"):
+		b.Log.Debugf("sendVideo %s", res.ContentURI)
+		_, err = b.mc.SendVideo(channel, fi.Name, res.ContentURI)
+		if err != nil {
+			b.Log.Errorf("sendVideo failed: %#v", err)
+		}
+	case strings.Contains(mtype, "image"):
+		b.Log.Debugf("sendImage %s", res.ContentURI)
+		_, err = b.mc.SendImage(channel, fi.Name, res.ContentURI)
+		if err != nil {
+			b.Log.Errorf("sendImage failed: %#v", err)
+		}
+	}
+	b.Log.Debugf("result: %#v", res)
 }
 
 // skipMessages returns true if this message should not be handled

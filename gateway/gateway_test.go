@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/gateway/bridgemap"
 	"github.com/stretchr/testify/assert"
 
 	"testing"
@@ -152,9 +153,15 @@ enable=true
     channel="--333333333333"
 `)
 
+const (
+	ircTestAccount   = "irc.zzz"
+	tgTestAccount    = "telegram.zzz"
+	slackTestAccount = "slack.zzz"
+)
+
 func maketestRouter(input []byte) *Router {
 	cfg := config.NewConfigFromString(input)
-	r, err := NewRouter(cfg)
+	r, err := NewRouter(cfg, bridgemap.FullMap)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -172,18 +179,27 @@ func TestNewRouter(t *testing.T) {
 	assert.Equal(t, 3, len(r.Gateways["bridge2"].Bridges))
 	assert.Equal(t, 4, len(r.Gateways["bridge1"].Channels))
 	assert.Equal(t, 3, len(r.Gateways["bridge2"].Channels))
-	assert.Equal(t, &config.ChannelInfo{Name: "42wim/testroom", Direction: "out",
-		ID: "42wim/testroomgitter.42wim", Account: "gitter.42wim",
-		SameChannel: map[string]bool{"bridge2": false}},
-		r.Gateways["bridge2"].Channels["42wim/testroomgitter.42wim"])
-	assert.Equal(t, &config.ChannelInfo{Name: "42wim/testroom", Direction: "in",
-		ID: "42wim/testroomgitter.42wim", Account: "gitter.42wim",
-		SameChannel: map[string]bool{"bridge1": false}},
-		r.Gateways["bridge1"].Channels["42wim/testroomgitter.42wim"])
-	assert.Equal(t, &config.ChannelInfo{Name: "general", Direction: "inout",
-		ID: "generaldiscord.test", Account: "discord.test",
-		SameChannel: map[string]bool{"bridge1": false}},
-		r.Gateways["bridge1"].Channels["generaldiscord.test"])
+	assert.Equal(t, &config.ChannelInfo{
+		Name:        "42wim/testroom",
+		Direction:   "out",
+		ID:          "42wim/testroomgitter.42wim",
+		Account:     "gitter.42wim",
+		SameChannel: map[string]bool{"bridge2": false},
+	}, r.Gateways["bridge2"].Channels["42wim/testroomgitter.42wim"])
+	assert.Equal(t, &config.ChannelInfo{
+		Name:        "42wim/testroom",
+		Direction:   "in",
+		ID:          "42wim/testroomgitter.42wim",
+		Account:     "gitter.42wim",
+		SameChannel: map[string]bool{"bridge1": false},
+	}, r.Gateways["bridge1"].Channels["42wim/testroomgitter.42wim"])
+	assert.Equal(t, &config.ChannelInfo{
+		Name:        "general",
+		Direction:   "inout",
+		ID:          "generaldiscord.test",
+		Account:     "discord.test",
+		SameChannel: map[string]bool{"bridge1": false},
+	}, r.Gateways["bridge1"].Channels["generaldiscord.test"])
 }
 
 func TestGetDestChannel(t *testing.T) {
@@ -192,11 +208,23 @@ func TestGetDestChannel(t *testing.T) {
 	for _, br := range r.Gateways["bridge1"].Bridges {
 		switch br.Account {
 		case "discord.test":
-			assert.Equal(t, []config.ChannelInfo{{Name: "general", Account: "discord.test", Direction: "inout", ID: "generaldiscord.test", SameChannel: map[string]bool{"bridge1": false}, Options: config.ChannelOptions{Key: ""}}},
-				r.Gateways["bridge1"].getDestChannel(msg, *br))
+			assert.Equal(t, []config.ChannelInfo{{
+				Name:        "general",
+				Account:     "discord.test",
+				Direction:   "inout",
+				ID:          "generaldiscord.test",
+				SameChannel: map[string]bool{"bridge1": false},
+				Options:     config.ChannelOptions{Key: ""},
+			}}, r.Gateways["bridge1"].getDestChannel(msg, *br))
 		case "slack.test":
-			assert.Equal(t, []config.ChannelInfo{{Name: "testing", Account: "slack.test", Direction: "out", ID: "testingslack.test", SameChannel: map[string]bool{"bridge1": false}, Options: config.ChannelOptions{Key: ""}}},
-				r.Gateways["bridge1"].getDestChannel(msg, *br))
+			assert.Equal(t, []config.ChannelInfo{{
+				Name:        "testing",
+				Account:     "slack.test",
+				Direction:   "out",
+				ID:          "testingslack.test",
+				SameChannel: map[string]bool{"bridge1": false},
+				Options:     config.ChannelOptions{Key: ""},
+			}}, r.Gateways["bridge1"].getDestChannel(msg, *br))
 		case "gitter.42wim":
 			assert.Equal(t, []config.ChannelInfo(nil), r.Gateways["bridge1"].getDestChannel(msg, *br))
 		case "irc.freenode":
@@ -226,35 +254,87 @@ func TestGetDestChannelAdvanced(t *testing.T) {
 				}
 				switch gw.Name {
 				case "bridge":
-					if (msg.Channel == "#main" || msg.Channel == "-1111111111111" || msg.Channel == "irc") && (msg.Account == "irc.zzz" || msg.Account == "telegram.zzz" || msg.Account == "slack.zzz") {
+					if (msg.Channel == "#main" || msg.Channel == "-1111111111111" || msg.Channel == "irc") &&
+						(msg.Account == ircTestAccount || msg.Account == tgTestAccount || msg.Account == slackTestAccount) {
 						hits[gw.Name]++
 						switch br.Account {
-						case "irc.zzz":
-							assert.Equal(t, []config.ChannelInfo{{Name: "#main", Account: "irc.zzz", Direction: "inout", ID: "#mainirc.zzz", SameChannel: map[string]bool{"bridge": false}, Options: config.ChannelOptions{Key: ""}}}, channels)
-						case "telegram.zzz":
-							assert.Equal(t, []config.ChannelInfo{{Name: "-1111111111111", Account: "telegram.zzz", Direction: "inout", ID: "-1111111111111telegram.zzz", SameChannel: map[string]bool{"bridge": false}, Options: config.ChannelOptions{Key: ""}}}, channels)
-						case "slack.zzz":
-							assert.Equal(t, []config.ChannelInfo{{Name: "irc", Account: "slack.zzz", Direction: "inout", ID: "ircslack.zzz", SameChannel: map[string]bool{"bridge": false}, Options: config.ChannelOptions{Key: ""}}}, channels)
+						case ircTestAccount:
+							assert.Equal(t, []config.ChannelInfo{{
+								Name:        "#main",
+								Account:     ircTestAccount,
+								Direction:   "inout",
+								ID:          "#mainirc.zzz",
+								SameChannel: map[string]bool{"bridge": false},
+								Options:     config.ChannelOptions{Key: ""},
+							}}, channels)
+						case tgTestAccount:
+							assert.Equal(t, []config.ChannelInfo{{
+								Name:        "-1111111111111",
+								Account:     tgTestAccount,
+								Direction:   "inout",
+								ID:          "-1111111111111telegram.zzz",
+								SameChannel: map[string]bool{"bridge": false},
+								Options:     config.ChannelOptions{Key: ""},
+							}}, channels)
+						case slackTestAccount:
+							assert.Equal(t, []config.ChannelInfo{{
+								Name:        "irc",
+								Account:     slackTestAccount,
+								Direction:   "inout",
+								ID:          "ircslack.zzz",
+								SameChannel: map[string]bool{"bridge": false},
+								Options:     config.ChannelOptions{Key: ""},
+							}}, channels)
 						}
 					}
 				case "bridge2":
-					if (msg.Channel == "#main-help" || msg.Channel == "--444444444444") && (msg.Account == "irc.zzz" || msg.Account == "telegram.zzz") {
+					if (msg.Channel == "#main-help" || msg.Channel == "--444444444444") &&
+						(msg.Account == ircTestAccount || msg.Account == tgTestAccount) {
 						hits[gw.Name]++
 						switch br.Account {
-						case "irc.zzz":
-							assert.Equal(t, []config.ChannelInfo{{Name: "#main-help", Account: "irc.zzz", Direction: "inout", ID: "#main-helpirc.zzz", SameChannel: map[string]bool{"bridge2": false}, Options: config.ChannelOptions{Key: ""}}}, channels)
-						case "telegram.zzz":
-							assert.Equal(t, []config.ChannelInfo{{Name: "--444444444444", Account: "telegram.zzz", Direction: "inout", ID: "--444444444444telegram.zzz", SameChannel: map[string]bool{"bridge2": false}, Options: config.ChannelOptions{Key: ""}}}, channels)
+						case ircTestAccount:
+							assert.Equal(t, []config.ChannelInfo{{
+								Name:        "#main-help",
+								Account:     ircTestAccount,
+								Direction:   "inout",
+								ID:          "#main-helpirc.zzz",
+								SameChannel: map[string]bool{"bridge2": false},
+								Options:     config.ChannelOptions{Key: ""},
+							}}, channels)
+						case tgTestAccount:
+							assert.Equal(t, []config.ChannelInfo{{
+								Name:        "--444444444444",
+								Account:     tgTestAccount,
+								Direction:   "inout",
+								ID:          "--444444444444telegram.zzz",
+								SameChannel: map[string]bool{"bridge2": false},
+								Options:     config.ChannelOptions{Key: ""},
+							}}, channels)
 						}
 					}
 				case "bridge3":
-					if (msg.Channel == "#main-telegram" || msg.Channel == "--333333333333") && (msg.Account == "irc.zzz" || msg.Account == "telegram.zzz") {
+					if (msg.Channel == "#main-telegram" || msg.Channel == "--333333333333") &&
+						(msg.Account == ircTestAccount || msg.Account == tgTestAccount) {
 						hits[gw.Name]++
 						switch br.Account {
-						case "irc.zzz":
-							assert.Equal(t, []config.ChannelInfo{{Name: "#main-telegram", Account: "irc.zzz", Direction: "inout", ID: "#main-telegramirc.zzz", SameChannel: map[string]bool{"bridge3": false}, Options: config.ChannelOptions{Key: ""}}}, channels)
-						case "telegram.zzz":
-							assert.Equal(t, []config.ChannelInfo{{Name: "--333333333333", Account: "telegram.zzz", Direction: "inout", ID: "--333333333333telegram.zzz", SameChannel: map[string]bool{"bridge3": false}, Options: config.ChannelOptions{Key: ""}}}, channels)
+						case ircTestAccount:
+							assert.Equal(t, []config.ChannelInfo{{
+								Name:        "#main-telegram",
+								Account:     ircTestAccount,
+								Direction:   "inout",
+								ID:          "#main-telegramirc.zzz",
+								SameChannel: map[string]bool{"bridge3": false},
+								Options:     config.ChannelOptions{Key: ""},
+							}}, channels)
+						case tgTestAccount:
+							assert.Equal(t, []config.ChannelInfo{{
+								Name:        "--333333333333",
+								Account:     tgTestAccount,
+								Direction:   "inout",
+								ID:          "--333333333333telegram.zzz",
+								SameChannel: map[string]bool{"bridge3": false},
+								Options:     config.ChannelOptions{Key: ""},
+							}}, channels)
 						}
 					}
 				case "announcements":
@@ -264,16 +344,159 @@ func TestGetDestChannelAdvanced(t *testing.T) {
 					}
 					hits[gw.Name]++
 					switch br.Account {
-					case "irc.zzz":
-						assert.Equal(t, []config.ChannelInfo{{Name: "#main", Account: "irc.zzz", Direction: "out", ID: "#mainirc.zzz", SameChannel: map[string]bool{"announcements": false}, Options: config.ChannelOptions{Key: ""}}, {Name: "#main-help", Account: "irc.zzz", Direction: "out", ID: "#main-helpirc.zzz", SameChannel: map[string]bool{"announcements": false}, Options: config.ChannelOptions{Key: ""}}}, channels)
-					case "slack.zzz":
-						assert.Equal(t, []config.ChannelInfo{{Name: "general", Account: "slack.zzz", Direction: "out", ID: "generalslack.zzz", SameChannel: map[string]bool{"announcements": false}, Options: config.ChannelOptions{Key: ""}}}, channels)
-					case "telegram.zzz":
-						assert.Equal(t, []config.ChannelInfo{{Name: "--333333333333", Account: "telegram.zzz", Direction: "out", ID: "--333333333333telegram.zzz", SameChannel: map[string]bool{"announcements": false}, Options: config.ChannelOptions{Key: ""}}}, channels)
+					case ircTestAccount:
+						assert.Len(t, channels, 2)
+						assert.Contains(t, channels, config.ChannelInfo{
+							Name:        "#main",
+							Account:     ircTestAccount,
+							Direction:   "out",
+							ID:          "#mainirc.zzz",
+							SameChannel: map[string]bool{"announcements": false},
+							Options:     config.ChannelOptions{Key: ""},
+						})
+						assert.Contains(t, channels, config.ChannelInfo{
+							Name:        "#main-help",
+							Account:     ircTestAccount,
+							Direction:   "out",
+							ID:          "#main-helpirc.zzz",
+							SameChannel: map[string]bool{"announcements": false},
+							Options:     config.ChannelOptions{Key: ""},
+						})
+					case slackTestAccount:
+						assert.Equal(t, []config.ChannelInfo{{
+							Name:        "general",
+							Account:     slackTestAccount,
+							Direction:   "out",
+							ID:          "generalslack.zzz",
+							SameChannel: map[string]bool{"announcements": false},
+							Options:     config.ChannelOptions{Key: ""},
+						}}, channels)
+					case tgTestAccount:
+						assert.Equal(t, []config.ChannelInfo{{
+							Name:        "--333333333333",
+							Account:     tgTestAccount,
+							Direction:   "out",
+							ID:          "--333333333333telegram.zzz",
+							SameChannel: map[string]bool{"announcements": false},
+							Options:     config.ChannelOptions{Key: ""},
+						}}, channels)
 					}
 				}
 			}
 		}
 	}
 	assert.Equal(t, map[string]int{"bridge3": 4, "bridge": 9, "announcements": 3, "bridge2": 4}, hits)
+}
+
+func TestIgnoreTextEmpty(t *testing.T) {
+	extraFile := make(map[string][]interface{})
+	extraAttach := make(map[string][]interface{})
+	extraFailure := make(map[string][]interface{})
+	extraFile["file"] = append(extraFile["file"], config.FileInfo{})
+	extraAttach["attachments"] = append(extraAttach["attachments"], []string{})
+	extraFailure[config.EventFileFailureSize] = append(extraFailure[config.EventFileFailureSize], config.FileInfo{})
+
+	msgTests := map[string]struct {
+		input  *config.Message
+		output bool
+	}{
+		"usertyping": {
+			input:  &config.Message{Event: config.EventUserTyping},
+			output: false,
+		},
+		"file attach": {
+			input:  &config.Message{Extra: extraFile},
+			output: false,
+		},
+		"attachments": {
+			input:  &config.Message{Extra: extraAttach},
+			output: false,
+		},
+		config.EventFileFailureSize: {
+			input:  &config.Message{Extra: extraFailure},
+			output: false,
+		},
+		"nil extra": {
+			input:  &config.Message{Extra: nil},
+			output: true,
+		},
+		"empty": {
+			input:  &config.Message{},
+			output: true,
+		},
+	}
+	gw := &Gateway{}
+	for testname, testcase := range msgTests {
+		output := gw.ignoreTextEmpty(testcase.input)
+		assert.Equalf(t, testcase.output, output, "case '%s' failed", testname)
+	}
+
+}
+
+func TestIgnoreTexts(t *testing.T) {
+	msgTests := map[string]struct {
+		input  *config.Message
+		re     []string
+		output bool
+	}{
+		"no regex": {
+			input:  &config.Message{Text: "a text message"},
+			re:     []string{},
+			output: false,
+		},
+		"simple regex": {
+			input:  &config.Message{Text: "a text message"},
+			re:     []string{"text"},
+			output: true,
+		},
+		"multiple regex fail": {
+			input:  &config.Message{Text: "a text message"},
+			re:     []string{"abc", "123$"},
+			output: false,
+		},
+		"multiple regex pass": {
+			input:  &config.Message{Text: "a text message"},
+			re:     []string{"lala", "sage$"},
+			output: true,
+		},
+	}
+	gw := &Gateway{}
+	for testname, testcase := range msgTests {
+		output := gw.ignoreTexts(testcase.input, testcase.re)
+		assert.Equalf(t, testcase.output, output, "case '%s' failed", testname)
+	}
+}
+
+func TestIgnoreNicks(t *testing.T) {
+	msgTests := map[string]struct {
+		input  *config.Message
+		re     []string
+		output bool
+	}{
+		"no entry": {
+			input:  &config.Message{Username: "user", Text: "a text message"},
+			re:     []string{},
+			output: false,
+		},
+		"one entry": {
+			input:  &config.Message{Username: "user", Text: "a text message"},
+			re:     []string{"user"},
+			output: true,
+		},
+		"multiple entries": {
+			input:  &config.Message{Username: "user", Text: "a text message"},
+			re:     []string{"abc", "user"},
+			output: true,
+		},
+		"multiple entries fail": {
+			input:  &config.Message{Username: "user", Text: "a text message"},
+			re:     []string{"abc", "def"},
+			output: false,
+		},
+	}
+	gw := &Gateway{}
+	for testname, testcase := range msgTests {
+		output := gw.ignoreNicks(testcase.input, testcase.re)
+		assert.Equalf(t, testcase.output, output, "case '%s' failed", testname)
+	}
 }

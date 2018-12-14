@@ -40,29 +40,52 @@ func DownloadFileAuth(url string, auth string) (*[]byte, error) {
 	return &data, nil
 }
 
-func SplitStringLength(input string, length int) string {
-	a := []rune(input)
-	str := ""
-	for i, r := range a {
-		str = str + string(r)
-		if i > 0 && (i+1)%length == 0 {
-			str += "\n"
+// GetSubLines splits messages in newline-delimited lines. If maxLineLength is
+// specified as non-zero GetSubLines will and also clip long lines to the
+// maximum length and insert a warning marker that the line was clipped.
+//
+// TODO: The current implementation has the inconvenient that it disregards
+// word boundaries when splitting but this is hard to solve without potentially
+// breaking formatting and other stylistic effects.
+func GetSubLines(message string, maxLineLength int) []string {
+	const clippingMessage = " <clipped message>"
+
+	var lines []string
+	for _, line := range strings.Split(strings.TrimSpace(message), "\n") {
+		if maxLineLength == 0 || len([]byte(line)) <= maxLineLength {
+			lines = append(lines, line)
+			continue
 		}
+
+		// !!! WARNING !!!
+		// Before touching the splitting logic below please ensure that you PROPERLY
+		// understand how strings, runes and range loops over strings work in Go.
+		// A good place to start is to read https://blog.golang.org/strings. :-)
+		var splitStart int
+		var startOfPreviousRune int
+		for i := range line {
+			if i-splitStart > maxLineLength-len([]byte(clippingMessage)) {
+				lines = append(lines, line[splitStart:startOfPreviousRune]+clippingMessage)
+				splitStart = startOfPreviousRune
+			}
+			startOfPreviousRune = i
+		}
+		// This last append is safe to do without looking at the remaining byte-length
+		// as we assume that the byte-length of the last rune will never exceed that of
+		// the byte-length of the clipping message.
+		lines = append(lines, line[splitStart:])
 	}
-	return str
+	return lines
 }
 
 // handle all the stuff we put into extra
 func HandleExtra(msg *config.Message, general *config.Protocol) []config.Message {
 	extra := msg.Extra
 	rmsg := []config.Message{}
-	if len(extra[config.EVENT_FILE_FAILURE_SIZE]) > 0 {
-		for _, f := range extra[config.EVENT_FILE_FAILURE_SIZE] {
-			fi := f.(config.FileInfo)
-			text := fmt.Sprintf("file %s too big to download (%#v > allowed size: %#v)", fi.Name, fi.Size, general.MediaDownloadSize)
-			rmsg = append(rmsg, config.Message{Text: text, Username: "<system> ", Channel: msg.Channel, Account: msg.Account})
-		}
-		return rmsg
+	for _, f := range extra[config.EventFileFailureSize] {
+		fi := f.(config.FileInfo)
+		text := fmt.Sprintf("file %s too big to download (%#v > allowed size: %#v)", fi.Name, fi.Size, general.MediaDownloadSize)
+		rmsg = append(rmsg, config.Message{Text: text, Username: "<system> ", Channel: msg.Channel, Account: msg.Account})
 	}
 	return rmsg
 }
@@ -90,7 +113,7 @@ func HandleDownloadSize(flog *log.Entry, msg *config.Message, name string, size 
 	}
 	flog.Debugf("Trying to download %#v with size %#v", name, size)
 	if int(size) > general.MediaDownloadSize {
-		msg.Event = config.EVENT_FILE_FAILURE_SIZE
+		msg.Event = config.EventFileFailureSize
 		msg.Extra[msg.Event] = append(msg.Extra[msg.Event], config.FileInfo{Name: name, Comment: msg.Text, Size: size})
 		return fmt.Errorf("File %#v to large to download (%#v). MediaDownloadSize is %#v", name, size, general.MediaDownloadSize)
 	}
@@ -100,7 +123,7 @@ func HandleDownloadSize(flog *log.Entry, msg *config.Message, name string, size 
 func HandleDownloadData(flog *log.Entry, msg *config.Message, name, comment, url string, data *[]byte, general *config.Protocol) {
 	var avatar bool
 	flog.Debugf("Download OK %#v %#v", name, len(*data))
-	if msg.Event == config.EVENT_AVATAR_DOWNLOAD {
+	if msg.Event == config.EventAvatarDownload {
 		avatar = true
 	}
 	msg.Extra["file"] = append(msg.Extra["file"], config.FileInfo{Name: name, Data: data, URL: url, Comment: comment, Avatar: avatar})

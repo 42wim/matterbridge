@@ -5,17 +5,17 @@ import (
 )
 
 type SameChannelGateway struct {
-	*config.Config
+	config.Config
 }
 
-func New(cfg *config.Config) *SameChannelGateway {
+func New(cfg config.Config) *SameChannelGateway {
 	return &SameChannelGateway{Config: cfg}
 }
 
 func (sgw *SameChannelGateway) GetConfig() []config.Gateway {
 	var gwconfigs []config.Gateway
 	cfg := sgw.Config
-	for _, gw := range cfg.SameChannelGateway {
+	for _, gw := range cfg.BridgeValues().SameChannelGateway {
 		gwconfig := config.Gateway{Name: gw.Name, Enable: gw.Enable}
 		for _, account := range gw.Accounts {
 			for _, channel := range gw.Channels {

@@ -51,7 +51,7 @@ type Event struct {
 	// Trailing text. e.g. with a PRIVMSG, this is the message text (part
 	// after the colon.)
 	Trailing string `json:"trailing"`
-	// EmptyTrailign, if true, the text prefix (:) will be added even if
+	// EmptyTrailing, if true, the text prefix (:) will be added even if
 	// Event.Trailing is empty.
 	EmptyTrailing bool `json:"empty_trailing"`
 	// Sensitive should be true if the message is sensitive (e.g. and should
@@ -355,9 +355,13 @@ func (e *Event) Pretty() (out string, ok bool) {
 	}
 
 	if (e.Command == PRIVMSG || e.Command == NOTICE) && len(e.Params) > 0 {
-		if ctcp := decodeCTCP(e); ctcp != nil {
+		if ctcp := DecodeCTCP(e); ctcp != nil {
 			if ctcp.Reply {
 				return
+			}
+
+			if ctcp.Command == CTCP_ACTION {
+				return fmt.Sprintf("[%s] **%s** %s", strings.Join(e.Params, ","), ctcp.Source.Name, ctcp.Text), true
 			}
 
 			return fmt.Sprintf("[*] CTCP query from %s: %s%s", ctcp.Source.Name, ctcp.Command, " "+ctcp.Text), true
@@ -383,12 +387,30 @@ func (e *Event) Pretty() (out string, ok bool) {
 		return fmt.Sprintf("[*] %s has quit (%s)", e.Source.Name, e.Trailing), true
 	}
 
-	if e.Command == KICK && len(e.Params) == 2 {
+	if e.Command == INVITE && len(e.Params) == 1 {
+		return fmt.Sprintf("[*] %s invited to %s by %s", e.Params[0], e.Trailing, e.Source.Name), true
+	}
+
+	if e.Command == KICK && len(e.Params) >= 2 {
+		if e.Trailing == "" && len(e.Params) == 3 {
+			e.Trailing = e.Params[2]
+		}
+
 		return fmt.Sprintf("[%s] *** %s has kicked %s: %s", e.Params[0], e.Source.Name, e.Params[1], e.Trailing), true
 	}
 
-	if e.Command == NICK && len(e.Params) == 1 {
-		return fmt.Sprintf("[*] %s is now known as %s", e.Source.Name, e.Params[0]), true
+	if e.Command == NICK {
+		// Workaround, see https://github.com/lrstanley/girc/pull/15#issuecomment-413845482
+		var name string
+		if len(e.Params) == 1 {
+			name = e.Params[0]
+		} else if len(e.Trailing) > 0 {
+			name = e.Trailing
+		}
+
+		if name != "" {
+			return fmt.Sprintf("[*] %s is now known as %s", e.Source.Name, name), true
+		}
 	}
 
 	if e.Command == TOPIC && len(e.Params) > 0 {
@@ -430,23 +452,27 @@ func (e *Event) Pretty() (out string, ok bool) {
 	return "", false
 }
 
-// IsAction checks to see if the event is a PRIVMSG, and is an ACTION (/me).
+// IsAction checks to see if the event is an ACTION (/me).
 func (e *Event) IsAction() bool {
-	if e.Source == nil || e.Command != PRIVMSG || len(e.Trailing) < 9 {
+	if e.Command != PRIVMSG {
 		return false
 	}
 
-	if !strings.HasPrefix(e.Trailing, "\001ACTION") || e.Trailing[len(e.Trailing)-1] != ctcpDelim {
-		return false
-	}
+	ok, ctcp := e.IsCTCP()
+	return ok && ctcp.Command == CTCP_ACTION
+}
 
-	return true
+// IsCTCP checks to see if the event is a CTCP event, and if so, returns the
+// converted CTCP event.
+func (e *Event) IsCTCP() (ok bool, ctcp *CTCPEvent) {
+	ctcp = DecodeCTCP(e)
+	return ctcp != nil, ctcp
 }
 
 // IsFromChannel checks to see if a message was from a channel (rather than
 // a private message).
 func (e *Event) IsFromChannel() bool {
-	if e.Source == nil || e.Command != PRIVMSG || len(e.Params) < 1 {
+	if e.Source == nil || (e.Command != PRIVMSG && e.Command != NOTICE) || len(e.Params) < 1 {
 		return false
 	}
 
@@ -460,7 +486,7 @@ func (e *Event) IsFromChannel() bool {
 // IsFromUser checks to see if a message was from a user (rather than a
 // channel).
 func (e *Event) IsFromUser() bool {
-	if e.Source == nil || e.Command != PRIVMSG || len(e.Params) < 1 {
+	if e.Source == nil || (e.Command != PRIVMSG && e.Command != NOTICE) || len(e.Params) < 1 {
 		return false
 	}
 

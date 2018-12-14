@@ -2,26 +2,34 @@ package gateway
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	samechannelgateway "github.com/42wim/matterbridge/gateway/samechannel"
-	//	"github.com/davecgh/go-spew/spew"
-	"time"
 )
 
 type Router struct {
-	Gateways map[string]*Gateway
-	Message  chan config.Message
-	*config.Config
+	config.Config
+
+	BridgeMap        map[string]bridge.Factory
+	Gateways         map[string]*Gateway
+	Message          chan config.Message
+	MattermostPlugin chan config.Message
 }
 
-func NewRouter(cfg *config.Config) (*Router, error) {
-	r := &Router{Message: make(chan config.Message), Gateways: make(map[string]*Gateway), Config: cfg}
+func NewRouter(cfg config.Config, bridgeMap map[string]bridge.Factory) (*Router, error) {
+	r := &Router{
+		Config:           cfg,
+		BridgeMap:        bridgeMap,
+		Message:          make(chan config.Message),
+		MattermostPlugin: make(chan config.Message),
+		Gateways:         make(map[string]*Gateway),
+	}
 	sgw := samechannelgateway.New(cfg)
 	gwconfigs := sgw.GetConfig()
 
-	for _, entry := range append(gwconfigs, cfg.Gateway...) {
+	for _, entry := range append(gwconfigs, cfg.BridgeValues().Gateway...) {
 		if !entry.Enable {
 			continue
 		}
@@ -48,15 +56,44 @@ func (r *Router) Start() error {
 		flog.Infof("Starting bridge: %s ", br.Account)
 		err := br.Connect()
 		if err != nil {
-			return fmt.Errorf("Bridge %s failed to start: %v", br.Account, err)
+			e := fmt.Errorf("Bridge %s failed to start: %v", br.Account, err)
+			if r.disableBridge(br, e) {
+				continue
+			}
+			return e
 		}
 		err = br.JoinChannels()
 		if err != nil {
-			return fmt.Errorf("Bridge %s failed to join channel: %v", br.Account, err)
+			e := fmt.Errorf("Bridge %s failed to join channel: %v", br.Account, err)
+			if r.disableBridge(br, e) {
+				continue
+			}
+			return e
+		}
+	}
+	// remove unused bridges
+	for _, gw := range r.Gateways {
+		for i, br := range gw.Bridges {
+			if br.Bridger == nil {
+				flog.Errorf("removing failed bridge %s", i)
+				delete(gw.Bridges, i)
+			}
 		}
 	}
 	go r.handleReceive()
 	return nil
+}
+
+// disableBridge returns true and empties a bridge if we have IgnoreFailureOnStart configured
+// otherwise returns false
+func (r *Router) disableBridge(br *bridge.Bridge, err error) bool {
+	if r.BridgeValues().General.IgnoreFailureOnStart {
+		flog.Error(err)
+		// setting this bridge empty
+		*br = bridge.Bridge{}
+		return true
+	}
+	return false
 }
 
 func (r *Router) getBridge(account string) *bridge.Bridge {
@@ -70,41 +107,24 @@ func (r *Router) getBridge(account string) *bridge.Bridge {
 
 func (r *Router) handleReceive() {
 	for msg := range r.Message {
-		if msg.Event == config.EVENT_FAILURE {
-		Loop:
-			for _, gw := range r.Gateways {
-				for _, br := range gw.Bridges {
-					if msg.Account == br.Account {
-						go gw.reconnectBridge(br)
-						break Loop
-					}
-				}
-			}
-		}
-		if msg.Event == config.EVENT_REJOIN_CHANNELS {
-			for _, gw := range r.Gateways {
-				for _, br := range gw.Bridges {
-					if msg.Account == br.Account {
-						br.Joined = make(map[string]bool)
-						br.JoinChannels()
-					}
-				}
-			}
-		}
+		msg := msg // scopelint
+		r.handleEventFailure(&msg)
+		r.handleEventRejoinChannels(&msg)
 		for _, gw := range r.Gateways {
 			// record all the message ID's of the different bridges
 			var msgIDs []*BrMsgID
-			if !gw.ignoreMessage(&msg) {
-				msg.Timestamp = time.Now()
-				gw.modifyMessage(&msg)
-				gw.handleFiles(&msg)
-				for _, br := range gw.Bridges {
-					msgIDs = append(msgIDs, gw.handleMessage(msg, br)...)
-				}
-				// only add the message ID if it doesn't already exists
-				if _, ok := gw.Messages.Get(msg.ID); !ok && msg.ID != "" {
-					gw.Messages.Add(msg.ID, msgIDs)
-				}
+			if gw.ignoreMessage(&msg) {
+				continue
+			}
+			msg.Timestamp = time.Now()
+			gw.modifyMessage(&msg)
+			gw.handleFiles(&msg)
+			for _, br := range gw.Bridges {
+				msgIDs = append(msgIDs, gw.handleMessage(msg, br)...)
+			}
+			// only add the message ID if it doesn't already exists
+			if _, ok := gw.Messages.Get(msg.Protocol + " " + msg.ID); !ok && msg.ID != "" {
+				gw.Messages.Add(msg.Protocol+" "+msg.ID, msgIDs)
 			}
 		}
 	}

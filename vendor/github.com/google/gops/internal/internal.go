@@ -1,3 +1,7 @@
+// Copyright 2017 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package internal
 
 import (
@@ -11,7 +15,13 @@ import (
 	"strings"
 )
 
+const gopsConfigDirEnvKey = "GOPS_CONFIG_DIR"
+
 func ConfigDir() (string, error) {
+	if configDir := os.Getenv(gopsConfigDirEnvKey); configDir != "" {
+		return configDir, nil
+	}
+
 	if runtime.GOOS == "windows" {
 		return filepath.Join(os.Getenv("APPDATA"), "gops"), nil
 	}

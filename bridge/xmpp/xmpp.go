@@ -51,7 +51,7 @@ func (b *Bxmpp) Connect() error {
 			time.Sleep(d)
 			b.xc, err = b.createXMPP()
 			if err == nil {
-				b.Remote <- config.Message{Username: "system", Text: "rejoin", Channel: "", Account: b.Account, Event: config.EVENT_REJOIN_CHANNELS}
+				b.Remote <- config.Message{Username: "system", Text: "rejoin", Channel: "", Account: b.Account, Event: config.EventRejoinChannels}
 				b.handleXMPP()
 				bf.Reset()
 			}
@@ -75,10 +75,8 @@ func (b *Bxmpp) JoinChannel(channel config.ChannelInfo) error {
 }
 
 func (b *Bxmpp) Send(msg config.Message) (string, error) {
-	var msgid = ""
-	var msgreplaceid = ""
 	// ignore delete messages
-	if msg.Event == config.EVENT_MSG_DELETE {
+	if msg.Event == config.EventMsgDelete {
 		return "", nil
 	}
 	b.Log.Debugf("=> Receiving %#v", msg)
@@ -93,7 +91,8 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 		}
 	}
 
-	msgid = xid.New().String()
+	var msgreplaceid string
+	msgid := xid.New().String()
 	if msg.ID != "" {
 		msgid = msg.ID
 		msgreplaceid = msg.ID
@@ -178,7 +177,7 @@ func (b *Bxmpp) handleXMPP() error {
 				// check if we have an action event
 				rmsg.Text, ok = b.replaceAction(rmsg.Text)
 				if ok {
-					rmsg.Event = config.EVENT_USER_ACTION
+					rmsg.Event = config.EventUserAction
 				}
 				b.Log.Debugf("<= Sending message from %s on %s to gateway", rmsg.Username, b.Account)
 				b.Log.Debugf("<= Message is %#v", rmsg)

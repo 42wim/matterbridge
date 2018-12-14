@@ -42,24 +42,14 @@ type AttachmentActionOptionGroup struct {
 }
 
 // AttachmentActionCallback is sent from Slack when a user clicks a button in an interactive message (aka AttachmentAction)
-type AttachmentActionCallback struct {
-	Actions    []AttachmentAction `json:"actions"`
-	CallbackID string             `json:"callback_id"`
-	Team       Team               `json:"team"`
-	Channel    Channel            `json:"channel"`
-	User       User               `json:"user"`
+// DEPRECATED: use InteractionCallback
+type AttachmentActionCallback InteractionCallback
 
-	Name  string `json:"name"`
-	Value string `json:"value"`
-
-	OriginalMessage Message `json:"original_message"`
-
-	ActionTs     string `json:"action_ts"`
-	MessageTs    string `json:"message_ts"`
-	AttachmentID string `json:"attachment_id"`
-	Token        string `json:"token"`
-	ResponseURL  string `json:"response_url"`
-	TriggerID    string `json:"trigger_id"`
+// ActionCallback specific fields for the action callback.
+type ActionCallback struct {
+	MessageTs    string             `json:"message_ts"`
+	AttachmentID string             `json:"attachment_id"`
+	Actions      []AttachmentAction `json:"actions"`
 }
 
 // ConfirmationField are used to ask users to confirm actions

@@ -30,10 +30,14 @@ type CTCPEvent struct {
 	Reply bool `json:"reply"`
 }
 
-// decodeCTCP decodes an incoming CTCP event, if it is CTCP. nil is returned
-// if the incoming event does not match a valid CTCP.
-func decodeCTCP(e *Event) *CTCPEvent {
+// DecodeCTCP decodes an incoming CTCP event, if it is CTCP. nil is returned
+// if the incoming event does not have valid CTCP encoding.
+func DecodeCTCP(e *Event) *CTCPEvent {
 	// http://www.irchelp.org/protocol/ctcpspec.html
+
+	if e == nil {
+		return nil
+	}
 
 	// Must be targeting a user/channel, AND trailing must have
 	// DELIM+TAG+DELIM minimum (at least 3 chars).
@@ -41,7 +45,7 @@ func decodeCTCP(e *Event) *CTCPEvent {
 		return nil
 	}
 
-	if (e.Command != PRIVMSG && e.Command != NOTICE) || !IsValidNick(e.Params[0]) {
+	if e.Command != PRIVMSG && e.Command != NOTICE {
 		return nil
 	}
 
@@ -88,18 +92,18 @@ func decodeCTCP(e *Event) *CTCPEvent {
 	}
 }
 
-// encodeCTCP encodes a CTCP event into a string, including delimiters.
-func encodeCTCP(ctcp *CTCPEvent) (out string) {
+// EncodeCTCP encodes a CTCP event into a string, including delimiters.
+func EncodeCTCP(ctcp *CTCPEvent) (out string) {
 	if ctcp == nil {
 		return ""
 	}
 
-	return encodeCTCPRaw(ctcp.Command, ctcp.Text)
+	return EncodeCTCPRaw(ctcp.Command, ctcp.Text)
 }
 
-// encodeCTCPRaw is much like encodeCTCP, however accepts a raw command and
+// EncodeCTCPRaw is much like EncodeCTCP, however accepts a raw command and
 // string as input.
-func encodeCTCPRaw(cmd, text string) (out string) {
+func EncodeCTCPRaw(cmd, text string) (out string) {
 	if len(cmd) <= 0 {
 		return ""
 	}
@@ -145,6 +149,11 @@ func (c *CTCP) call(client *Client, event *CTCPEvent) {
 	}
 
 	if _, ok := c.handlers[event.Command]; !ok {
+		// If ACTION, don't do anything.
+		if event.Command == CTCP_ACTION {
+			return
+		}
+
 		// Send a ERRMSG reply, if we know who sent it.
 		if event.Source != nil && IsValidNick(event.Source.Name) {
 			client.Cmd.SendCTCPReply(event.Source.Name, CTCP_ERRMSG, "that is an unknown CTCP query")

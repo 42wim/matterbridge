@@ -8,13 +8,9 @@ import (
 	"github.com/42wim/matterbridge/matterhook"
 )
 
-type MMhook struct {
+type Brocketchat struct {
 	mh *matterhook.Client
 	rh *rockethook.Client
-}
-
-type Brocketchat struct {
-	MMhook
 	*bridge.Config
 }
 
@@ -47,12 +43,13 @@ func (b *Brocketchat) JoinChannel(channel config.ChannelInfo) error {
 
 func (b *Brocketchat) Send(msg config.Message) (string, error) {
 	// ignore delete messages
-	if msg.Event == config.EVENT_MSG_DELETE {
+	if msg.Event == config.EventMsgDelete {
 		return "", nil
 	}
 	b.Log.Debugf("=> Receiving %#v", msg)
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+			rmsg := rmsg // scopelint
 			iconURL := config.GetIconURL(&rmsg, b.GetString("iconurl"))
 			matterMessage := matterhook.OMessage{IconURL: iconURL, Channel: rmsg.Channel, UserName: rmsg.Username, Text: rmsg.Text}
 			b.mh.Send(matterMessage)

@@ -6,6 +6,7 @@ package girc
 
 // Standard CTCP based constants.
 const (
+	CTCP_ACTION     = "ACTION"
 	CTCP_PING       = "PING"
 	CTCP_PONG       = "PONG"
 	CTCP_VERSION    = "VERSION"
