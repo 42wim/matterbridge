@@ -160,7 +160,7 @@ func (b *Bslack) JoinChannel(channel config.ChannelInfo) error {
 		return nil
 	}
 
-	b.populateChannels()
+	b.populateChannels(false)
 
 	channelInfo, err := b.getChannel(channel.Name)
 	if err != nil {
