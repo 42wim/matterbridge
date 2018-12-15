@@ -89,7 +89,10 @@ func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 			b.Log.Fatalf("Invalid Token %#v", ev)
 		case *slack.ConnectionErrorEvent:
 			b.Log.Errorf("Connection failed %#v %#v", ev.Error(), ev.ErrorObj)
+		case *slack.MemberJoinedChannelEvent:
+			b.populateUser(ev.User)
 		default:
+			b.Log.Debugf("Unhandled incoming event: %T", ev)
 		}
 	}
 }
