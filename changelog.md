@@ -1,3 +1,9 @@
+# v1.12.3
+## Bugfix
+* slack: Fix bot (legacy token) messages not being send. Closes #571
+* slack: Populate user on channel join (slack) (#644)
+* slack: Add wait option for populateUsers/Channels (slack) Fixes #579 (#653)
+
 # v1.12.2
 
 ## Bugfix
