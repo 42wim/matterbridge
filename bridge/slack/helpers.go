@@ -63,6 +63,26 @@ func (b *Bslack) getChannelBy(lookupKey string, lookupMap map[string]*slack.Chan
 
 const minimumRefreshInterval = 10 * time.Second
 
+func (b *Bslack) populateUser(userID string) {
+	b.usersMutex.RLock()
+	_, exists := b.users[userID]
+	b.usersMutex.RUnlock()
+	if exists {
+		// already in cache
+		return
+	}
+
+	user, err := b.sc.GetUserInfo(userID)
+	if err != nil {
+		b.Log.Debugf("GetUserInfo failed for %v: %v", userID, err)
+		return
+	}
+
+	b.usersMutex.Lock()
+	b.users[userID] = user
+	b.usersMutex.Unlock()
+}
+
 func (b *Bslack) populateUsers() {
 	b.refreshMutex.Lock()
 	if time.Now().Before(b.earliestUserRefresh) || b.refreshInProgress {
