@@ -83,14 +83,17 @@ func (b *Bslack) populateUser(userID string) {
 	b.usersMutex.Unlock()
 }
 
-func (b *Bslack) populateUsers() {
+func (b *Bslack) populateUsers(wait bool) {
 	b.refreshMutex.Lock()
-	if time.Now().Before(b.earliestUserRefresh) || b.refreshInProgress {
+	if !wait && (time.Now().Before(b.earliestUserRefresh) || b.refreshInProgress) {
 		b.Log.Debugf("Not refreshing user list as it was done less than %v ago.",
 			minimumRefreshInterval)
 		b.refreshMutex.Unlock()
 
 		return
+	}
+	for b.refreshInProgress {
+		time.Sleep(time.Second)
 	}
 	b.refreshInProgress = true
 	b.refreshMutex.Unlock()
@@ -127,13 +130,16 @@ func (b *Bslack) populateUsers() {
 	b.refreshInProgress = false
 }
 
-func (b *Bslack) populateChannels() {
+func (b *Bslack) populateChannels(wait bool) {
 	b.refreshMutex.Lock()
-	if time.Now().Before(b.earliestChannelRefresh) || b.refreshInProgress {
+	if !wait && (time.Now().Before(b.earliestChannelRefresh) || b.refreshInProgress) {
 		b.Log.Debugf("Not refreshing channel list as it was done less than %v seconds ago.",
 			minimumRefreshInterval)
 		b.refreshMutex.Unlock()
 		return
+	}
+	for b.refreshInProgress {
+		time.Sleep(time.Second)
 	}
 	b.refreshInProgress = true
 	b.refreshMutex.Unlock()
