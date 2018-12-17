@@ -254,7 +254,7 @@ func (b *Bslack) handleAttachments(ev *slack.MessageEvent, rmsg *config.Message)
 
 	// If we have files attached, download them (in memory) and put a pointer to it in msg.Extra.
 	for i := range ev.Files {
-		if err := b.handleDownloadFile(rmsg, &ev.Files[i]); err != nil {
+		if err := b.handleDownloadFile(rmsg, &ev.Files[i], false); err != nil {
 			b.Log.Errorf("Could not download incoming file: %#v", err)
 		}
 	}
@@ -273,7 +273,7 @@ func (b *Bslack) handleTypingEvent(ev *slack.UserTypingEvent) (*config.Message, 
 }
 
 // handleDownloadFile handles file download
-func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File) error {
+func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File, retry bool) error {
 	if b.fileCached(file) {
 		return nil
 	}
@@ -289,11 +289,18 @@ func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File) erro
 		return fmt.Errorf("download %s failed %#v", file.URLPrivateDownload, err)
 	}
 
+	if len(*data) != int(file.Size) && retry != true {
+		b.Log.Debugf("Data size (%i) is not equal to size declared (%i)\n", len(*data), int(file.Size))
+		time.Sleep(1 * time.Second)
+		return b.handleDownloadFile(rmsg, file, true)
+	}
+
 	// If a comment is attached to the file(s) it is in the 'Text' field of the Slack messge event
 	// and should be added as comment to only one of the files. We reset the 'Text' field to ensure
 	// that the comment is not duplicated.
 	comment := rmsg.Text
 	rmsg.Text = ""
+
 	helper.HandleDownloadData(b.Log, rmsg, file.Name, comment, file.URLPrivateDownload, data, b.General)
 	return nil
 }
