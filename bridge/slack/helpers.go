@@ -63,14 +63,37 @@ func (b *Bslack) getChannelBy(lookupKey string, lookupMap map[string]*slack.Chan
 
 const minimumRefreshInterval = 10 * time.Second
 
-func (b *Bslack) populateUsers() {
+func (b *Bslack) populateUser(userID string) {
+	b.usersMutex.RLock()
+	_, exists := b.users[userID]
+	b.usersMutex.RUnlock()
+	if exists {
+		// already in cache
+		return
+	}
+
+	user, err := b.sc.GetUserInfo(userID)
+	if err != nil {
+		b.Log.Debugf("GetUserInfo failed for %v: %v", userID, err)
+		return
+	}
+
+	b.usersMutex.Lock()
+	b.users[userID] = user
+	b.usersMutex.Unlock()
+}
+
+func (b *Bslack) populateUsers(wait bool) {
 	b.refreshMutex.Lock()
-	if time.Now().Before(b.earliestUserRefresh) || b.refreshInProgress {
+	if !wait && (time.Now().Before(b.earliestUserRefresh) || b.refreshInProgress) {
 		b.Log.Debugf("Not refreshing user list as it was done less than %v ago.",
 			minimumRefreshInterval)
 		b.refreshMutex.Unlock()
 
 		return
+	}
+	for b.refreshInProgress {
+		time.Sleep(time.Second)
 	}
 	b.refreshInProgress = true
 	b.refreshMutex.Unlock()
@@ -107,13 +130,16 @@ func (b *Bslack) populateUsers() {
 	b.refreshInProgress = false
 }
 
-func (b *Bslack) populateChannels() {
+func (b *Bslack) populateChannels(wait bool) {
 	b.refreshMutex.Lock()
-	if time.Now().Before(b.earliestChannelRefresh) || b.refreshInProgress {
+	if !wait && (time.Now().Before(b.earliestChannelRefresh) || b.refreshInProgress) {
 		b.Log.Debugf("Not refreshing channel list as it was done less than %v seconds ago.",
 			minimumRefreshInterval)
 		b.refreshMutex.Unlock()
 		return
+	}
+	for b.refreshInProgress {
+		time.Sleep(time.Second)
 	}
 	b.refreshInProgress = true
 	b.refreshMutex.Unlock()
@@ -250,7 +276,7 @@ func (b *Bslack) populateMessageWithBotInfo(ev *slack.MessageEvent, rmsg *config
 	}
 	b.Log.Debugf("Found bot %#v", bot)
 
-	if bot.Name != "" && bot.Name != "Slack API Tester" {
+	if bot.Name != "" {
 		rmsg.Username = bot.Name
 		if ev.Username != "" {
 			rmsg.Username = ev.Username

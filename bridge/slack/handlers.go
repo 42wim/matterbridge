@@ -75,7 +75,7 @@ func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 			// When we join a channel we update the full list of users as
 			// well as the information for the channel that we joined as this
 			// should now tell that we are a member of it.
-			b.populateUsers()
+			b.populateUsers(false)
 
 			b.channelsMutex.Lock()
 			b.channelsByID[ev.Channel.ID] = &ev.Channel
@@ -83,13 +83,16 @@ func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 			b.channelsMutex.Unlock()
 		case *slack.ConnectedEvent:
 			b.si = ev.Info
-			b.populateChannels()
-			b.populateUsers()
+			b.populateChannels(true)
+			b.populateUsers(true)
 		case *slack.InvalidAuthEvent:
 			b.Log.Fatalf("Invalid Token %#v", ev)
 		case *slack.ConnectionErrorEvent:
 			b.Log.Errorf("Connection failed %#v %#v", ev.Error(), ev.ErrorObj)
+		case *slack.MemberJoinedChannelEvent:
+			b.populateUser(ev.User)
 		default:
+			b.Log.Debugf("Unhandled incoming event: %T", ev)
 		}
 	}
 }
@@ -197,7 +200,7 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 func (b *Bslack) handleStatusEvent(ev *slack.MessageEvent, rmsg *config.Message) bool {
 	switch ev.SubType {
 	case sChannelJoined, sMemberJoined:
-		b.populateUsers()
+		b.populateUsers(false)
 		// There's no further processing needed on channel events
 		// so we return 'true'.
 		return true
@@ -205,7 +208,7 @@ func (b *Bslack) handleStatusEvent(ev *slack.MessageEvent, rmsg *config.Message)
 		rmsg.Username = sSystemUser
 		rmsg.Event = config.EventJoinLeave
 	case sChannelTopic, sChannelPurpose:
-		b.populateChannels()
+		b.populateChannels(false)
 		rmsg.Event = config.EventTopicChange
 	case sMessageChanged:
 		rmsg.Text = ev.SubMessage.Text
