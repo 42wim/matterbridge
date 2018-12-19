@@ -293,7 +293,7 @@ func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File, retr
 	}
 
 	if len(*data) != file.Size && !retry {
-		b.Log.Debugf("Data size (%i) is not equal to size declared (%i)\n", len(*data), file.Size)
+		b.Log.Debugf("Data size (%d) is not equal to size declared (%d)\n", len(*data), file.Size)
 		time.Sleep(1 * time.Second)
 		return b.handleDownloadFile(rmsg, file, true)
 	}
