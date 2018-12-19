@@ -292,7 +292,7 @@ func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File, retr
 		return fmt.Errorf("download %s failed %#v", file.URLPrivateDownload, err)
 	}
 
-	if len(*data) != file.Size && retry != true {
+	if len(*data) != file.Size && !retry {
 		b.Log.Debugf("Data size (%i) is not equal to size declared (%i)\n", len(*data), file.Size)
 		time.Sleep(1 * time.Second)
 		return b.handleDownloadFile(rmsg, file, true)
