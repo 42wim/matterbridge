@@ -303,7 +303,6 @@ func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File, retr
 	// that the comment is not duplicated.
 	comment := rmsg.Text
 	rmsg.Text = ""
-
 	helper.HandleDownloadData(b.Log, rmsg, file.Name, comment, file.URLPrivateDownload, data, b.General)
 	return nil
 }
