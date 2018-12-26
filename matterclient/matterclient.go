@@ -12,7 +12,7 @@ import (
 	"github.com/jpillora/backoff"
 	prefixed "github.com/matterbridge/logrus-prefixed-formatter"
 	"github.com/mattermost/mattermost-server/model"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 type Credentials struct {
@@ -55,7 +55,7 @@ type MMClient struct {
 	User          *model.User
 	Users         map[string]*model.User
 	MessageChan   chan *Message
-	log           *log.Entry
+	log           *logrus.Entry
 	WsClient      *websocket.Conn
 	WsQuit        bool
 	WsAway        bool
@@ -70,23 +70,23 @@ type MMClient struct {
 func New(login, pass, team, server string) *MMClient {
 	cred := &Credentials{Login: login, Pass: pass, Team: team, Server: server}
 	mmclient := &MMClient{Credentials: cred, MessageChan: make(chan *Message, 100), Users: make(map[string]*model.User)}
-	log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true})
-	mmclient.log = log.WithFields(log.Fields{"prefix": "matterclient"})
+	logrus.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true})
+	mmclient.log = logrus.WithFields(logrus.Fields{"prefix": "matterclient"})
 	mmclient.lruCache, _ = lru.New(500)
 	return mmclient
 }
 
 func (m *MMClient) SetDebugLog() {
-	log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: false, ForceFormatting: true})
+	logrus.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: false, ForceFormatting: true})
 }
 
 func (m *MMClient) SetLogLevel(level string) {
-	l, err := log.ParseLevel(level)
+	l, err := logrus.ParseLevel(level)
 	if err != nil {
-		log.SetLevel(log.InfoLevel)
+		logrus.SetLevel(logrus.InfoLevel)
 		return
 	}
-	log.SetLevel(l)
+	logrus.SetLevel(l)
 }
 
 func (m *MMClient) Login() error {
@@ -209,7 +209,7 @@ func (m *MMClient) StatusLoop() {
 		}
 		if m.WsConnected {
 			if err := m.checkAlive(); err != nil {
-				log.Errorf("Connection is not alive: %#v", err)
+				logrus.Errorf("Connection is not alive: %#v", err)
 			}
 			select {
 			case <-m.WsPingChan:
@@ -222,7 +222,7 @@ func (m *MMClient) StatusLoop() {
 					m.WsQuit = false
 					err := m.Login()
 					if err != nil {
-						log.Errorf("Login failed: %#v", err)
+						logrus.Errorf("Login failed: %#v", err)
 						break
 					}
 					if m.OnWsConnect != nil {

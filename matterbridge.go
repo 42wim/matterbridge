@@ -11,7 +11,7 @@ import (
 	"github.com/42wim/matterbridge/gateway/bridgemap"
 	"github.com/google/gops/agent"
 	prefixed "github.com/matterbridge/logrus-prefixed-formatter"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -20,8 +20,8 @@ var (
 )
 
 func main() {
-	log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: true})
-	flog := log.WithFields(log.Fields{"prefix": "main"})
+	logrus.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: true})
+	flog := logrus.WithFields(logrus.Fields{"prefix": "main"})
 	flagConfig := flag.String("conf", "matterbridge.toml", "config file")
 	flagDebug := flag.Bool("debug", false, "enable debug")
 	flagVersion := flag.Bool("version", false, "show version")
@@ -39,9 +39,9 @@ func main() {
 		return
 	}
 	if *flagDebug || os.Getenv("DEBUG") == "1" {
-		log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: false, ForceFormatting: true})
+		logrus.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: false, ForceFormatting: true})
 		flog.Info("Enabling debug")
-		log.SetLevel(log.DebugLevel)
+		logrus.SetLevel(logrus.DebugLevel)
 	}
 	flog.Printf("Running version %s %s", version, githash)
 	if strings.Contains(version, "-dev") {

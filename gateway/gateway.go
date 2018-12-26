@@ -9,7 +9,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/hashicorp/golang-lru"
 	"github.com/peterhellberg/emojilib"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 type Gateway struct {
@@ -31,14 +31,14 @@ type BrMsgID struct {
 	ChannelID string
 }
 
-var flog *log.Entry
+var flog *logrus.Entry
 
 const (
 	apiProtocol = "api"
 )
 
 func New(cfg config.Gateway, r *Router) *Gateway {
-	flog = log.WithFields(log.Fields{"prefix": "gateway"})
+	flog = logrus.WithFields(logrus.Fields{"prefix": "gateway"})
 	gw := &Gateway{Channels: make(map[string]*config.ChannelInfo), Message: r.Message,
 		Router: r, Bridges: make(map[string]*bridge.Bridge), Config: r.Config}
 	cache, _ := lru.New(5000)
@@ -76,8 +76,8 @@ func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 		br.Config = gw.Router.Config
 		br.General = &gw.BridgeValues().General
 		// set logging
-		br.Log = log.WithFields(log.Fields{"prefix": "bridge"})
-		brconfig := &bridge.Config{Remote: gw.Message, Log: log.WithFields(log.Fields{"prefix": br.Protocol}), Bridge: br}
+		br.Log = logrus.WithFields(logrus.Fields{"prefix": "bridge"})
+		brconfig := &bridge.Config{Remote: gw.Message, Log: logrus.WithFields(logrus.Fields{"prefix": br.Protocol}), Bridge: br}
 		// add the actual bridger for this protocol to this bridge using the bridgeMap
 		br.Bridger = gw.Router.BridgeMap[br.Protocol](brconfig)
 	}

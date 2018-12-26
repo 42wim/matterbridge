@@ -1,10 +1,10 @@
 package bridge
 
 import (
-	"github.com/42wim/matterbridge/bridge/config"
-	log "github.com/sirupsen/logrus"
-
 	"strings"
+
+	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/sirupsen/logrus"
 )
 
 type Bridger interface {
@@ -21,7 +21,7 @@ type Bridge struct {
 	Protocol string
 	Channels map[string]config.ChannelInfo
 	Joined   map[string]bool
-	Log      *log.Entry
+	Log      *logrus.Entry
 	Config   config.Config
 	General  *config.Protocol
 }
@@ -29,7 +29,7 @@ type Bridge struct {
 type Config struct {
 	//	General *config.Protocol
 	Remote chan config.Message
-	Log    *log.Entry
+	Log    *logrus.Entry
 	*Bridge
 }
 

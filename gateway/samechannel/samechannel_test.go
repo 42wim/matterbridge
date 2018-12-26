@@ -1,10 +1,10 @@
 package samechannelgateway
 
 import (
+	"testing"
+
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/stretchr/testify/assert"
-
-	"testing"
 )
 
 const testConfig = `

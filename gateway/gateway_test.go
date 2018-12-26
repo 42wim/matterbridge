@@ -3,12 +3,11 @@ package gateway
 import (
 	"fmt"
 	"strconv"
+	"testing"
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/gateway/bridgemap"
 	"github.com/stretchr/testify/assert"
-
-	"testing"
 )
 
 var testconfig = []byte(`

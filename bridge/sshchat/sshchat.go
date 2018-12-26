@@ -9,7 +9,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/shazow/ssh-chat/sshd"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 type Bsshchat struct {
@@ -116,7 +116,7 @@ func (b *Bsshchat) handleSSHChat() error {
 			res := strings.Split(stripPrompt(b.r.Text()), ":")
 			if res[0] == "-> Set theme" {
 				wait = false
-				log.Debugf("mono found, allowing")
+				logrus.Debugf("mono found, allowing")
 				continue
 			}
 			if !wait {

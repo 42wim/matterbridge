@@ -11,7 +11,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/42wim/matterbridge/bridge/config"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 func DownloadFile(url string) (*[]byte, error) {
@@ -97,7 +97,7 @@ func GetAvatar(av map[string]string, userid string, general *config.Protocol) st
 	return ""
 }
 
-func HandleDownloadSize(flog *log.Entry, msg *config.Message, name string, size int64, general *config.Protocol) error {
+func HandleDownloadSize(flog *logrus.Entry, msg *config.Message, name string, size int64, general *config.Protocol) error {
 	// check blacklist here
 	for _, entry := range general.MediaDownloadBlackList {
 		if entry != "" {
@@ -120,7 +120,7 @@ func HandleDownloadSize(flog *log.Entry, msg *config.Message, name string, size 
 	return nil
 }
 
-func HandleDownloadData(flog *log.Entry, msg *config.Message, name, comment, url string, data *[]byte, general *config.Protocol) {
+func HandleDownloadData(flog *logrus.Entry, msg *config.Message, name, comment, url string, data *[]byte, general *config.Protocol) {
 	var avatar bool
 	flog.Debugf("Download OK %#v %#v", name, len(*data))
 	if msg.Event == config.EventAvatarDownload {
