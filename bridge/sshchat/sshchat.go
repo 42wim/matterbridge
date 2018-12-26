@@ -23,22 +23,35 @@ func New(cfg *bridge.Config) bridge.Bridger {
 }
 
 func (b *Bsshchat) Connect() error {
-	var err error
 	b.Log.Infof("Connecting %s", b.GetString("Server"))
+
+	// connHandler will be called by 'sshd.ConnectShell()' below
+	// once the connection is established in order to handle it.
+	connErr := make(chan error, 1) // Needs to be buffered.
+	connSignal := make(chan struct{})
+	connHandler := func(r io.Reader, w io.WriteCloser) error {
+		b.r = bufio.NewScanner(r)
+		b.r.Scan()
+		b.w = w
+		if _, err := b.w.Write([]byte("/theme mono\r\n")); err != nil {
+			return err
+		}
+		close(connSignal) // Connection is established so we can signal the success.
+		return b.handleSSHChat()
+	}
+
 	go func() {
-		err = sshd.ConnectShell(b.GetString("Server"), b.GetString("Nick"), func(r io.Reader, w io.WriteCloser) error {
-			b.r = bufio.NewScanner(r)
-			b.w = w
-			b.r.Scan()
-			if _, handleErr := w.Write([]byte("/theme mono\r\n")); handleErr != nil {
-				return handleErr
-			}
-			return b.handleSSHChat()
-		})
+		// As a successful connection will result in this returning after the Connection
+		// method has already returned point we NEED to have a buffered channel to still
+		// be able to write.
+		connErr <- sshd.ConnectShell(b.GetString("Server"), b.GetString("Nick"), connHandler)
 	}()
-	if err != nil {
-		b.Log.Debugf("%#v", err)
+
+	select {
+	case err := <-connErr:
+		b.Log.Error("Connection failed")
 		return err
+	case <-connSignal:
 	}
 	b.Log.Info("Connection succeeded")
 	return nil
@@ -64,7 +77,9 @@ func (b *Bsshchat) Send(msg config.Message) (string, error) {
 				b.Log.Errorf("Could not send extra message: %#v", err)
 			}
 		}
-		return b.handleUploadFile(&msg)
+		if len(msg.Extra["file"]) > 0 {
+			return b.handleUploadFile(&msg)
+		}
 	}
 	_, err := b.w.Write([]byte(msg.Username + msg.Text + "\r\n"))
 	return "", err
