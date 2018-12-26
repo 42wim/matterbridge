@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/mattermost/mattermost-server/model"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // GetChannels returns all channels we're members off
@@ -192,7 +192,7 @@ func (m *MMClient) UpdateChannelHeader(channelId string, header string) { //noli
 	m.log.Debugf("updating channelheader %#v, %#v", channelId, header)
 	_, resp := m.Client.UpdateChannel(channel)
 	if resp.Error != nil {
-		log.Error(resp.Error)
+		logrus.Error(resp.Error)
 	}
 }
 

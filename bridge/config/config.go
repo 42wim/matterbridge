@@ -9,7 +9,7 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	prefixed "github.com/matterbridge/logrus-prefixed-formatter"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -197,12 +197,12 @@ type config struct {
 }
 
 func NewConfig(cfgfile string) Config {
-	log.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: false})
-	flog := log.WithFields(log.Fields{"prefix": "config"})
+	logrus.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: false})
+	flog := logrus.WithFields(logrus.Fields{"prefix": "config"})
 	viper.SetConfigFile(cfgfile)
 	input, err := getFileContents(cfgfile)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 	mycfg := newConfigFromString(input)
 	if mycfg.cv.General.MediaDownloadSize == 0 {
@@ -218,7 +218,7 @@ func NewConfig(cfgfile string) Config {
 func getFileContents(filename string) ([]byte, error) {
 	input, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 		return []byte(nil), err
 	}
 	return input, nil
@@ -236,13 +236,13 @@ func newConfigFromString(input []byte) *config {
 	viper.AutomaticEnv()
 	err := viper.ReadConfig(bytes.NewBuffer(input))
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	cfg := &BridgeValues{}
 	err = viper.Unmarshal(cfg)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 	return &config{
 		v:  viper.GetViper(),
