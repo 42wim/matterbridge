@@ -2,10 +2,10 @@ package bridge
 
 import (
 	"strings"
+	"sync"
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/sirupsen/logrus"
-	"sync"
 )
 
 type Bridger interface {
@@ -17,6 +17,8 @@ type Bridger interface {
 
 type Bridge struct {
 	Bridger
+	*sync.RWMutex
+
 	Name           string
 	Account        string
 	Protocol       string
@@ -26,37 +28,34 @@ type Bridge struct {
 	Log            *logrus.Entry
 	Config         config.Config
 	General        *config.Protocol
-	*sync.RWMutex
 }
 
 type Config struct {
-	//	General *config.Protocol
-	Remote chan config.Message
-	Log    *logrus.Entry
 	*Bridge
+
+	Remote chan config.Message
 }
 
 // Factory is the factory function to create a bridge
 type Factory func(*Config) Bridger
 
 func New(bridge *config.Bridge) *Bridge {
-	b := &Bridge{
-		Channels: make(map[string]config.ChannelInfo),
-		RWMutex:  new(sync.RWMutex),
-		Joined:   make(map[string]bool),
-	}
 	accInfo := strings.Split(bridge.Account, ".")
 	protocol := accInfo[0]
 	name := accInfo[1]
-	b.Name = name
-	b.Protocol = protocol
-	b.Account = bridge.Account
-	return b
+
+	return &Bridge{
+		RWMutex:  new(sync.RWMutex),
+		Channels: make(map[string]config.ChannelInfo),
+		Name:     name,
+		Protocol: protocol,
+		Account:  bridge.Account,
+		Joined:   make(map[string]bool),
+	}
 }
 
 func (b *Bridge) JoinChannels() error {
-	err := b.joinChannels(b.Channels, b.Joined)
-	return err
+	return b.joinChannels(b.Channels, b.Joined)
 }
 
 // SetChannelMembers sets the newMembers to the bridge ChannelMembers

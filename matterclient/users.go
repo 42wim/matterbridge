@@ -124,7 +124,7 @@ func (m *MMClient) UpdateUserNick(nick string) error {
 func (m *MMClient) UsernamesInChannel(channelId string) []string { //nolint:golint
 	res, resp := m.Client.GetChannelMembers(channelId, 0, 50000, "")
 	if resp.Error != nil {
-		m.log.Errorf("UsernamesInChannel(%s) failed: %s", channelId, resp.Error)
+		m.logger.Errorf("UsernamesInChannel(%s) failed: %s", channelId, resp.Error)
 		return []string{}
 	}
 	allusers := m.GetUsers()

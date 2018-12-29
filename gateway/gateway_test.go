@@ -2,12 +2,15 @@ package gateway
 
 import (
 	"fmt"
+	"io/ioutil"
 	"strconv"
 	"testing"
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/gateway/bridgemap"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
 var testconfig = []byte(`
@@ -159,8 +162,10 @@ const (
 )
 
 func maketestRouter(input []byte) *Router {
-	cfg := config.NewConfigFromString(input)
-	r, err := NewRouter(cfg, bridgemap.FullMap)
+	logger := logrus.New()
+	logger.SetOutput(ioutil.Discard)
+	cfg := config.NewConfigFromString(logger, input)
+	r, err := NewRouter(logger, cfg, bridgemap.FullMap)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -387,7 +392,23 @@ func TestGetDestChannelAdvanced(t *testing.T) {
 	assert.Equal(t, map[string]int{"bridge3": 4, "bridge": 9, "announcements": 3, "bridge2": 4}, hits)
 }
 
-func TestIgnoreTextEmpty(t *testing.T) {
+type ignoreTestSuite struct {
+	suite.Suite
+
+	gw *Gateway
+}
+
+func TestIgnoreSuite(t *testing.T) {
+	s := &ignoreTestSuite{}
+	suite.Run(t, s)
+}
+
+func (s *ignoreTestSuite) SetupSuite() {
+	logger := logrus.New()
+	logger.SetOutput(ioutil.Discard)
+	s.gw = &Gateway{logger: logrus.NewEntry(logger)}
+}
+func (s *ignoreTestSuite) TestIgnoreTextEmpty() {
 	extraFile := make(map[string][]interface{})
 	extraAttach := make(map[string][]interface{})
 	extraFailure := make(map[string][]interface{})
@@ -424,15 +445,14 @@ func TestIgnoreTextEmpty(t *testing.T) {
 			output: true,
 		},
 	}
-	gw := &Gateway{}
 	for testname, testcase := range msgTests {
-		output := gw.ignoreTextEmpty(testcase.input)
-		assert.Equalf(t, testcase.output, output, "case '%s' failed", testname)
+		output := s.gw.ignoreTextEmpty(testcase.input)
+		s.Assert().Equalf(testcase.output, output, "case '%s' failed", testname)
 	}
 
 }
 
-func TestIgnoreTexts(t *testing.T) {
+func (s *ignoreTestSuite) TestIgnoreTexts() {
 	msgTests := map[string]struct {
 		input  *config.Message
 		re     []string
@@ -459,14 +479,13 @@ func TestIgnoreTexts(t *testing.T) {
 			output: true,
 		},
 	}
-	gw := &Gateway{}
 	for testname, testcase := range msgTests {
-		output := gw.ignoreTexts(testcase.input, testcase.re)
-		assert.Equalf(t, testcase.output, output, "case '%s' failed", testname)
+		output := s.gw.ignoreTexts(testcase.input, testcase.re)
+		s.Assert().Equalf(testcase.output, output, "case '%s' failed", testname)
 	}
 }
 
-func TestIgnoreNicks(t *testing.T) {
+func (s *ignoreTestSuite) TestIgnoreNicks() {
 	msgTests := map[string]struct {
 		input  *config.Message
 		re     []string
@@ -493,9 +512,8 @@ func TestIgnoreNicks(t *testing.T) {
 			output: false,
 		},
 	}
-	gw := &Gateway{}
 	for testname, testcase := range msgTests {
-		output := gw.ignoreNicks(testcase.input, testcase.re)
-		assert.Equalf(t, testcase.output, output, "case '%s' failed", testname)
+		output := s.gw.ignoreNicks(testcase.input, testcase.re)
+		s.Assert().Equalf(testcase.output, output, "case '%s' failed", testname)
 	}
 }

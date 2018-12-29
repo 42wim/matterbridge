@@ -7,31 +7,40 @@ import (
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
-	samechannelgateway "github.com/42wim/matterbridge/gateway/samechannel"
+	"github.com/42wim/matterbridge/gateway/samechannel"
+	"github.com/sirupsen/logrus"
 )
 
 type Router struct {
 	config.Config
+	sync.RWMutex
 
 	BridgeMap        map[string]bridge.Factory
 	Gateways         map[string]*Gateway
 	Message          chan config.Message
 	MattermostPlugin chan config.Message
-	sync.RWMutex
+
+	logger *logrus.Entry
 }
 
-func NewRouter(cfg config.Config, bridgeMap map[string]bridge.Factory) (*Router, error) {
+// NewRouter initializes a new Matterbridge router for the specified configuration and
+// sets up all required gateways.
+func NewRouter(rootLogger *logrus.Logger, cfg config.Config, bridgeMap map[string]bridge.Factory) (*Router, error) {
+	logger := rootLogger.WithFields(logrus.Fields{"prefix": "router"})
+
 	r := &Router{
 		Config:           cfg,
 		BridgeMap:        bridgeMap,
 		Message:          make(chan config.Message),
 		MattermostPlugin: make(chan config.Message),
 		Gateways:         make(map[string]*Gateway),
+		logger:           logger,
 	}
-	sgw := samechannelgateway.New(cfg)
-	gwconfigs := sgw.GetConfig()
+	sgw := samechannel.New(cfg)
+	gwconfigs := append(sgw.GetConfig(), cfg.BridgeValues().Gateway...)
 
-	for _, entry := range append(gwconfigs, cfg.BridgeValues().Gateway...) {
+	for idx := range gwconfigs {
+		entry := &gwconfigs[idx]
 		if !entry.Enable {
 			continue
 		}
@@ -41,21 +50,23 @@ func NewRouter(cfg config.Config, bridgeMap map[string]bridge.Factory) (*Router,
 		if _, ok := r.Gateways[entry.Name]; ok {
 			return nil, fmt.Errorf("Gateway with name %s already exists", entry.Name)
 		}
-		r.Gateways[entry.Name] = New(entry, r)
+		r.Gateways[entry.Name] = New(rootLogger, entry, r)
 	}
 	return r, nil
 }
 
+// Start will connect all gateways belonging to this router and subsequently route messages
+// between them.
 func (r *Router) Start() error {
 	m := make(map[string]*bridge.Bridge)
 	for _, gw := range r.Gateways {
-		flog.Infof("Parsing gateway %s", gw.Name)
+		r.logger.Infof("Parsing gateway %s", gw.Name)
 		for _, br := range gw.Bridges {
 			m[br.Account] = br
 		}
 	}
 	for _, br := range m {
-		flog.Infof("Starting bridge: %s ", br.Account)
+		r.logger.Infof("Starting bridge: %s ", br.Account)
 		err := br.Connect()
 		if err != nil {
 			e := fmt.Errorf("Bridge %s failed to start: %v", br.Account, err)
@@ -77,7 +88,7 @@ func (r *Router) Start() error {
 	for _, gw := range r.Gateways {
 		for i, br := range gw.Bridges {
 			if br.Bridger == nil {
-				flog.Errorf("removing failed bridge %s", i)
+				r.logger.Errorf("removing failed bridge %s", i)
 				delete(gw.Bridges, i)
 			}
 		}
@@ -91,7 +102,7 @@ func (r *Router) Start() error {
 // otherwise returns false
 func (r *Router) disableBridge(br *bridge.Bridge, err error) bool {
 	if r.BridgeValues().General.IgnoreFailureOnStart {
-		flog.Error(err)
+		r.logger.Error(err)
 		// setting this bridge empty
 		*br = bridge.Bridge{}
 		return true
@@ -124,7 +135,7 @@ func (r *Router) handleReceive() {
 			gw.modifyMessage(&msg)
 			gw.handleFiles(&msg)
 			for _, br := range gw.Bridges {
-				msgIDs = append(msgIDs, gw.handleMessage(msg, br)...)
+				msgIDs = append(msgIDs, gw.handleMessage(&msg, br)...)
 			}
 			// only add the message ID if it doesn't already exists
 			if _, ok := gw.Messages.Get(msg.Protocol + " " + msg.ID); !ok && msg.ID != "" {
@@ -146,9 +157,9 @@ func (r *Router) updateChannelMembers() {
 				if br.Protocol != "slack" {
 					continue
 				}
-				flog.Debugf("sending %s to %s", config.EventGetChannelMembers, br.Account)
+				r.logger.Debugf("sending %s to %s", config.EventGetChannelMembers, br.Account)
 				if _, err := br.Send(config.Message{Event: config.EventGetChannelMembers}); err != nil {
-					flog.Errorf("updateChannelMembers: %s", err)
+					r.logger.Errorf("updateChannelMembers: %s", err)
 				}
 			}
 		}

@@ -1,4 +1,4 @@
-package samechannelgateway
+package samechannel
 
 import (
 	"github.com/42wim/matterbridge/bridge/config"
