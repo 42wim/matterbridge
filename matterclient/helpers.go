@@ -22,7 +22,7 @@ func (m *MMClient) doLogin(firstConnection bool, b *backoff.Backoff) error {
 	var logmsg = "trying login"
 	var err error
 	for {
-		m.log.Debugf("%s %s %s %s", logmsg, m.Credentials.Team, m.Credentials.Login, m.Credentials.Server)
+		m.logger.Debugf("%s %s %s %s", logmsg, m.Credentials.Team, m.Credentials.Login, m.Credentials.Server)
 		if m.Credentials.Token != "" {
 			resp, err = m.doLoginToken()
 			if err != nil {
@@ -34,14 +34,14 @@ func (m *MMClient) doLogin(firstConnection bool, b *backoff.Backoff) error {
 		appErr = resp.Error
 		if appErr != nil {
 			d := b.Duration()
-			m.log.Debug(appErr.DetailedError)
+			m.logger.Debug(appErr.DetailedError)
 			if firstConnection {
 				if appErr.Message == "" {
 					return errors.New(appErr.DetailedError)
 				}
 				return errors.New(appErr.Message)
 			}
-			m.log.Debugf("LOGIN: %s, reconnecting in %s", appErr, d)
+			m.logger.Debugf("LOGIN: %s, reconnecting in %s", appErr, d)
 			time.Sleep(d)
 			logmsg = "retrying login"
 			continue
@@ -59,17 +59,17 @@ func (m *MMClient) doLoginToken() (*model.Response, error) {
 	m.Client.AuthType = model.HEADER_BEARER
 	m.Client.AuthToken = m.Credentials.Token
 	if m.Credentials.CookieToken {
-		m.log.Debugf(logmsg + " with cookie (MMAUTH) token")
+		m.logger.Debugf(logmsg + " with cookie (MMAUTH) token")
 		m.Client.HttpClient.Jar = m.createCookieJar(m.Credentials.Token)
 	} else {
-		m.log.Debugf(logmsg + " with personal token")
+		m.logger.Debugf(logmsg + " with personal token")
 	}
 	m.User, resp = m.Client.GetMe("")
 	if resp.Error != nil {
 		return resp, resp.Error
 	}
 	if m.User == nil {
-		m.log.Errorf("LOGIN TOKEN: %s is invalid", m.Credentials.Pass)
+		m.logger.Errorf("LOGIN TOKEN: %s is invalid", m.Credentials.Pass)
 		return resp, errors.New("invalid token")
 	}
 	return resp, nil
@@ -126,7 +126,7 @@ func (m *MMClient) initUser() error {
 	defer m.Unlock()
 	// we only load all team data on initial login.
 	// all other updates are for channels from our (primary) team only.
-	//m.log.Debug("initUser(): loading all team data")
+	//m.logger.Debug("initUser(): loading all team data")
 	teams, resp := m.Client.GetTeamsForUser(m.User.Id, "")
 	if resp.Error != nil {
 		return resp.Error
@@ -156,7 +156,7 @@ func (m *MMClient) initUser() error {
 		m.OtherTeams = append(m.OtherTeams, t)
 		if team.Name == m.Credentials.Team {
 			m.Team = t
-			m.log.Debugf("initUser(): found our team %s (id: %s)", team.Name, team.Id)
+			m.logger.Debugf("initUser(): found our team %s (id: %s)", team.Name, team.Id)
 		}
 		// add all users
 		for k, v := range t.Users {
@@ -180,10 +180,10 @@ func (m *MMClient) serverAlive(firstConnection bool, b *backoff.Backoff) error {
 		}
 		m.ServerVersion = resp.ServerVersion
 		if m.ServerVersion == "" {
-			m.log.Debugf("Server not up yet, reconnecting in %s", d)
+			m.logger.Debugf("Server not up yet, reconnecting in %s", d)
 			time.Sleep(d)
 		} else {
-			m.log.Infof("Found version %s", m.ServerVersion)
+			m.logger.Infof("Found version %s", m.ServerVersion)
 			return nil
 		}
 	}
@@ -207,7 +207,7 @@ func (m *MMClient) wsConnect() {
 	header := http.Header{}
 	header.Set(model.HEADER_AUTH, "BEARER "+m.Client.AuthToken)
 
-	m.log.Debugf("WsClient: making connection: %s", wsurl)
+	m.logger.Debugf("WsClient: making connection: %s", wsurl)
 	for {
 		wsDialer := &websocket.Dialer{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: m.SkipTLSVerify}, //nolint:gosec
@@ -217,14 +217,14 @@ func (m *MMClient) wsConnect() {
 		m.WsClient, _, err = wsDialer.Dial(wsurl, header)
 		if err != nil {
 			d := b.Duration()
-			m.log.Debugf("WSS: %s, reconnecting in %s", err, d)
+			m.logger.Debugf("WSS: %s, reconnecting in %s", err, d)
 			time.Sleep(d)
 			continue
 		}
 		break
 	}
 
-	m.log.Debug("WsClient: connected")
+	m.logger.Debug("WsClient: connected")
 	m.WsSequence = 1
 	m.WsPingChan = make(chan *model.WebSocketResponse)
 	// only start to parse WS messages when login is completely done
@@ -252,7 +252,7 @@ func (m *MMClient) checkAlive() error {
 	if resp.Error != nil {
 		return resp.Error
 	}
-	m.log.Debug("WS PING")
+	m.logger.Debug("WS PING")
 	return m.sendWSRequest("ping", nil)
 }
 
@@ -262,7 +262,7 @@ func (m *MMClient) sendWSRequest(action string, data map[string]interface{}) err
 	req.Action = action
 	req.Data = data
 	m.WsSequence++
-	m.log.Debugf("sendWsRequest %#v", req)
+	m.logger.Debugf("sendWsRequest %#v", req)
 	return m.WsClient.WriteJSON(req)
 }
 

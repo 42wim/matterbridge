@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/mattermost/mattermost-server/model"
-	"github.com/sirupsen/logrus"
 )
 
 // GetChannels returns all channels we're members off
@@ -155,11 +154,11 @@ func (m *MMClient) JoinChannel(channelId string) error { //nolint:golint
 	defer m.RUnlock()
 	for _, c := range m.Team.Channels {
 		if c.Id == channelId {
-			m.log.Debug("Not joining ", channelId, " already joined.")
+			m.logger.Debug("Not joining ", channelId, " already joined.")
 			return nil
 		}
 	}
-	m.log.Debug("Joining ", channelId)
+	m.logger.Debug("Joining ", channelId)
 	_, resp := m.Client.AddChannelMember(channelId, m.User.Id)
 	if resp.Error != nil {
 		return resp.Error
@@ -189,19 +188,19 @@ func (m *MMClient) UpdateChannels() error {
 
 func (m *MMClient) UpdateChannelHeader(channelId string, header string) { //nolint:golint
 	channel := &model.Channel{Id: channelId, Header: header}
-	m.log.Debugf("updating channelheader %#v, %#v", channelId, header)
+	m.logger.Debugf("updating channelheader %#v, %#v", channelId, header)
 	_, resp := m.Client.UpdateChannel(channel)
 	if resp.Error != nil {
-		logrus.Error(resp.Error)
+		m.logger.Error(resp.Error)
 	}
 }
 
 func (m *MMClient) UpdateLastViewed(channelId string) error { //nolint:golint
-	m.log.Debugf("posting lastview %#v", channelId)
+	m.logger.Debugf("posting lastview %#v", channelId)
 	view := &model.ChannelView{ChannelId: channelId}
 	_, resp := m.Client.ViewChannel(m.User.Id, view)
 	if resp.Error != nil {
-		m.log.Errorf("ChannelView update for %s failed: %s", channelId, resp.Error)
+		m.logger.Errorf("ChannelView update for %s failed: %s", channelId, resp.Error)
 		return resp.Error
 	}
 	return nil

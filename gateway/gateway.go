@@ -10,7 +10,7 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/d5/tengo/script"
-	"github.com/hashicorp/golang-lru"
+	lru "github.com/hashicorp/golang-lru"
 	"github.com/peterhellberg/emojilib"
 	"github.com/sirupsen/logrus"
 )
@@ -26,6 +26,8 @@ type Gateway struct {
 	Message        chan config.Message
 	Name           string
 	Messages       *lru.Cache
+
+	logger *logrus.Entry
 }
 
 type BrMsgID struct {
@@ -34,25 +36,30 @@ type BrMsgID struct {
 	ChannelID string
 }
 
-var flog *logrus.Entry
+const apiProtocol = "api"
 
-const (
-	apiProtocol = "api"
-)
+// New creates a new Gateway object associated with the specified router and
+// following the given configuration.
+func New(rootLogger *logrus.Logger, cfg *config.Gateway, r *Router) *Gateway {
+	logger := rootLogger.WithFields(logrus.Fields{"prefix": "gateway"})
 
-func New(cfg config.Gateway, r *Router) *Gateway {
-	flog = logrus.WithFields(logrus.Fields{"prefix": "gateway"})
-	gw := &Gateway{Channels: make(map[string]*config.ChannelInfo), Message: r.Message,
-		Router: r, Bridges: make(map[string]*bridge.Bridge), Config: r.Config}
 	cache, _ := lru.New(5000)
-	gw.Messages = cache
-	if err := gw.AddConfig(&cfg); err != nil {
-		flog.Errorf("AddConfig failed: %s", err)
+	gw := &Gateway{
+		Channels: make(map[string]*config.ChannelInfo),
+		Message:  r.Message,
+		Router:   r,
+		Bridges:  make(map[string]*bridge.Bridge),
+		Config:   r.Config,
+		Messages: cache,
+		logger:   logger,
+	}
+	if err := gw.AddConfig(cfg); err != nil {
+		logger.Errorf("Failed to add configuration to gateway: %#v", err)
 	}
 	return gw
 }
 
-// Find the canonical ID that the message is keyed under in cache
+// FindCanonicalMsgID returns the ID under which a message was stored in the cache.
 func (gw *Gateway) FindCanonicalMsgID(protocol string, mID string) string {
 	ID := protocol + " " + mID
 	if gw.Messages.Contains(ID) {
@@ -72,15 +79,18 @@ func (gw *Gateway) FindCanonicalMsgID(protocol string, mID string) string {
 	return ""
 }
 
+// AddBridge sets up a new bridge in the gateway object with the specified configuration.
 func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 	br := gw.Router.getBridge(cfg.Account)
 	if br == nil {
 		br = bridge.New(cfg)
 		br.Config = gw.Router.Config
 		br.General = &gw.BridgeValues().General
-		// set logging
-		br.Log = logrus.WithFields(logrus.Fields{"prefix": "bridge"})
-		brconfig := &bridge.Config{Remote: gw.Message, Log: logrus.WithFields(logrus.Fields{"prefix": br.Protocol}), Bridge: br}
+		br.Log = gw.logger.WithFields(logrus.Fields{"prefix": br.Protocol})
+		brconfig := &bridge.Config{
+			Remote: gw.Message,
+			Bridge: br,
+		}
 		// add the actual bridger for this protocol to this bridge using the bridgeMap
 		br.Bridger = gw.Router.BridgeMap[br.Protocol](brconfig)
 	}
@@ -89,11 +99,12 @@ func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 	return nil
 }
 
+// AddConfig associates a new configuration with the gateway object.
 func (gw *Gateway) AddConfig(cfg *config.Gateway) error {
 	gw.Name = cfg.Name
 	gw.MyConfig = cfg
 	if err := gw.mapChannels(); err != nil {
-		flog.Errorf("mapChannels() failed: %s", err)
+		gw.logger.Errorf("mapChannels() failed: %s", err)
 	}
 	for _, br := range append(gw.MyConfig.In, append(gw.MyConfig.InOut, gw.MyConfig.Out...)...) {
 		br := br //scopelint
@@ -115,20 +126,20 @@ func (gw *Gateway) mapChannelsToBridge(br *bridge.Bridge) {
 
 func (gw *Gateway) reconnectBridge(br *bridge.Bridge) {
 	if err := br.Disconnect(); err != nil {
-		flog.Errorf("Disconnect() %s failed: %s", br.Account, err)
+		gw.logger.Errorf("Disconnect() %s failed: %s", br.Account, err)
 	}
 	time.Sleep(time.Second * 5)
 RECONNECT:
-	flog.Infof("Reconnecting %s", br.Account)
+	gw.logger.Infof("Reconnecting %s", br.Account)
 	err := br.Connect()
 	if err != nil {
-		flog.Errorf("Reconnection failed: %s. Trying again in 60 seconds", err)
+		gw.logger.Errorf("Reconnection failed: %s. Trying again in 60 seconds", err)
 		time.Sleep(time.Second * 60)
 		goto RECONNECT
 	}
 	br.Joined = make(map[string]bool)
 	if err := br.JoinChannels(); err != nil {
-		flog.Errorf("JoinChannels() %s failed: %s", br.Account, err)
+		gw.logger.Errorf("JoinChannels() %s failed: %s", br.Account, err)
 	}
 }
 
@@ -142,13 +153,19 @@ func (gw *Gateway) mapChannelConfig(cfg []config.Bridge, direction string) {
 			br.Channel = strings.ToLower(br.Channel)
 		}
 		if strings.HasPrefix(br.Account, "mattermost.") && strings.HasPrefix(br.Channel, "#") {
-			flog.Errorf("Mattermost channels do not start with a #: remove the # in %s", br.Channel)
+			gw.logger.Errorf("Mattermost channels do not start with a #: remove the # in %s", br.Channel)
 			os.Exit(1)
 		}
 		ID := br.Channel + br.Account
 		if _, ok := gw.Channels[ID]; !ok {
-			channel := &config.ChannelInfo{Name: br.Channel, Direction: direction, ID: ID, Options: br.Options, Account: br.Account,
-				SameChannel: make(map[string]bool)}
+			channel := &config.ChannelInfo{
+				Name:        br.Channel,
+				Direction:   direction,
+				ID:          ID,
+				Options:     br.Options,
+				Account:     br.Account,
+				SameChannel: make(map[string]bool),
+			}
 			channel.SameChannel[gw.Name] = br.SameChannel
 			gw.Channels[channel.ID] = channel
 		} else {
@@ -207,7 +224,7 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 	// if source channel is in only, do nothing
 	for _, channel := range gw.Channels {
 		// lookup the channel from the message
-		if channel.ID == getChannelID(*msg) {
+		if channel.ID == getChannelID(msg) {
 			// we only have destinations if the original message is from an "in" (sending) channel
 			if !strings.Contains(channel.Direction, "in") {
 				return channels
@@ -216,11 +233,11 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 		}
 	}
 	for _, channel := range gw.Channels {
-		if _, ok := gw.Channels[getChannelID(*msg)]; !ok {
+		if _, ok := gw.Channels[getChannelID(msg)]; !ok {
 			continue
 		}
 
-		// do samechannelgateway flogic
+		// do samechannelgateway logic
 		if channel.SameChannel[msg.Gateway] {
 			if msg.Channel == channel.Name && msg.Account != dest.Account {
 				channels = append(channels, *channel)
@@ -234,7 +251,7 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 	return channels
 }
 
-func (gw *Gateway) getDestMsgID(msgID string, dest *bridge.Bridge, channel config.ChannelInfo) string {
+func (gw *Gateway) getDestMsgID(msgID string, dest *bridge.Bridge, channel *config.ChannelInfo) string {
 	if res, ok := gw.Messages.Get(msgID); ok {
 		IDs := res.([]*BrMsgID)
 		for _, id := range IDs {
@@ -263,7 +280,7 @@ func (gw *Gateway) ignoreTextEmpty(msg *config.Message) bool {
 			len(msg.Extra[config.EventFileFailureSize]) > 0) {
 		return false
 	}
-	flog.Debugf("ignoring empty message %#v from %s", msg, msg.Account)
+	gw.logger.Debugf("ignoring empty message %#v from %s", msg, msg.Account)
 	return true
 }
 
@@ -282,7 +299,7 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 	return false
 }
 
-func (gw *Gateway) modifyUsername(msg config.Message, dest *bridge.Bridge) string {
+func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) string {
 	br := gw.Bridges[msg.Account]
 	msg.Protocol = br.Protocol
 	if dest.GetBool("StripNick") {
@@ -298,7 +315,7 @@ func (gw *Gateway) modifyUsername(msg config.Message, dest *bridge.Bridge) strin
 		// TODO move compile to bridge init somewhere
 		re, err := regexp.Compile(search)
 		if err != nil {
-			flog.Errorf("regexp in %s failed: %s", msg.Account, err)
+			gw.logger.Errorf("regexp in %s failed: %s", msg.Account, err)
 			break
 		}
 		msg.Username = re.ReplaceAllString(msg.Username, replace)
@@ -326,7 +343,7 @@ func (gw *Gateway) modifyUsername(msg config.Message, dest *bridge.Bridge) strin
 	return nick
 }
 
-func (gw *Gateway) modifyAvatar(msg config.Message, dest *bridge.Bridge) string {
+func (gw *Gateway) modifyAvatar(msg *config.Message, dest *bridge.Bridge) string {
 	iconurl := dest.GetString("IconURL")
 	iconurl = strings.Replace(iconurl, "{NICK}", msg.Username, -1)
 	if msg.Avatar == "" {
@@ -337,7 +354,7 @@ func (gw *Gateway) modifyAvatar(msg config.Message, dest *bridge.Bridge) string 
 
 func (gw *Gateway) modifyMessage(msg *config.Message) {
 	if err := modifyMessageTengo(gw.BridgeValues().General.TengoModifyMessage, msg); err != nil {
-		flog.Errorf("TengoModifyMessage failed: %s", err)
+		gw.logger.Errorf("TengoModifyMessage failed: %s", err)
 	}
 
 	// replace :emoji: to unicode
@@ -351,7 +368,7 @@ func (gw *Gateway) modifyMessage(msg *config.Message) {
 		// TODO move compile to bridge init somewhere
 		re, err := regexp.Compile(search)
 		if err != nil {
-			flog.Errorf("regexp in %s failed: %s", msg.Account, err)
+			gw.logger.Errorf("regexp in %s failed: %s", msg.Account, err)
 			break
 		}
 		msg.Text = re.ReplaceAllString(msg.Text, replace)
@@ -365,46 +382,51 @@ func (gw *Gateway) modifyMessage(msg *config.Message) {
 	}
 }
 
-// SendMessage sends a message (with specified parentID) to the channel on the selected destination bridge.
-// returns a message id and error.
-func (gw *Gateway) SendMessage(origmsg config.Message, dest *bridge.Bridge, channel config.ChannelInfo, canonicalParentMsgID string) (string, error) {
-	msg := origmsg
+// SendMessage sends a message (with specified parentID) to the channel on the selected
+// destination bridge and returns a message ID or an error.
+func (gw *Gateway) SendMessage(
+	rmsg *config.Message,
+	dest *bridge.Bridge,
+	channel *config.ChannelInfo,
+	canonicalParentMsgID string,
+) (string, error) {
+	msg := *rmsg
 	// Only send the avatar download event to ourselves.
 	if msg.Event == config.EventAvatarDownload {
-		if channel.ID != getChannelID(origmsg) {
+		if channel.ID != getChannelID(rmsg) {
 			return "", nil
 		}
 	} else {
 		// do not send to ourself for any other event
-		if channel.ID == getChannelID(origmsg) {
+		if channel.ID == getChannelID(rmsg) {
 			return "", nil
 		}
 	}
 
 	// Too noisy to log like other events
 	if msg.Event != config.EventUserTyping {
-		flog.Debugf("=> Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, origmsg.Channel, dest.Account, channel.Name)
+		gw.logger.Debugf("=> Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, rmsg.Channel, dest.Account, channel.Name)
 	}
 
 	msg.Channel = channel.Name
-	msg.Avatar = gw.modifyAvatar(origmsg, dest)
-	msg.Username = gw.modifyUsername(origmsg, dest)
+	msg.Avatar = gw.modifyAvatar(rmsg, dest)
+	msg.Username = gw.modifyUsername(rmsg, dest)
 
-	msg.ID = gw.getDestMsgID(origmsg.Protocol+" "+origmsg.ID, dest, channel)
+	msg.ID = gw.getDestMsgID(rmsg.Protocol+" "+rmsg.ID, dest, channel)
 
 	// for api we need originchannel as channel
 	if dest.Protocol == apiProtocol {
-		msg.Channel = origmsg.Channel
+		msg.Channel = rmsg.Channel
 	}
 
-	msg.ParentID = gw.getDestMsgID(origmsg.Protocol+" "+canonicalParentMsgID, dest, channel)
+	msg.ParentID = gw.getDestMsgID(rmsg.Protocol+" "+canonicalParentMsgID, dest, channel)
 	if msg.ParentID == "" {
 		msg.ParentID = canonicalParentMsgID
 	}
 
 	// if the parentID is still empty and we have a parentID set in the original message
 	// this means that we didn't find it in the cache so set it "msg-parent-not-found"
-	if msg.ParentID == "" && origmsg.ParentID != "" {
+	if msg.ParentID == "" && rmsg.ParentID != "" {
 		msg.ParentID = "msg-parent-not-found"
 	}
 
@@ -421,7 +443,7 @@ func (gw *Gateway) SendMessage(origmsg config.Message, dest *bridge.Bridge, chan
 
 	// append the message ID (mID) from this bridge (dest) to our brMsgIDs slice
 	if mID != "" {
-		flog.Debugf("mID %s: %s", dest.Account, mID)
+		gw.logger.Debugf("mID %s: %s", dest.Account, mID)
 		return mID, nil
 		//brMsgIDs = append(brMsgIDs, &BrMsgID{dest, dest.Protocol + " " + mID, channel.ID})
 	}
@@ -432,7 +454,7 @@ func (gw *Gateway) validGatewayDest(msg *config.Message) bool {
 	return msg.Gateway == gw.Name
 }
 
-func getChannelID(msg config.Message) string {
+func getChannelID(msg *config.Message) string {
 	return msg.Channel + msg.Account
 }
 
@@ -449,11 +471,11 @@ func (gw *Gateway) ignoreText(text string, input []string) bool {
 		// TODO do not compile regexps everytime
 		re, err := regexp.Compile(entry)
 		if err != nil {
-			flog.Errorf("incorrect regexp %s", entry)
+			gw.logger.Errorf("incorrect regexp %s", entry)
 			continue
 		}
 		if re.MatchString(text) {
-			flog.Debugf("matching %s. ignoring %s", entry, text)
+			gw.logger.Debugf("matching %s. ignoring %s", entry, text)
 			return true
 		}
 	}

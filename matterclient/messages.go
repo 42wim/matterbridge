@@ -10,14 +10,14 @@ func (m *MMClient) parseActionPost(rmsg *Message) {
 	// add post to cache, if it already exists don't relay this again.
 	// this should fix reposts
 	if ok, _ := m.lruCache.ContainsOrAdd(digestString(rmsg.Raw.Data["post"].(string)), true); ok {
-		m.log.Debugf("message %#v in cache, not processing again", rmsg.Raw.Data["post"].(string))
+		m.logger.Debugf("message %#v in cache, not processing again", rmsg.Raw.Data["post"].(string))
 		rmsg.Text = ""
 		return
 	}
 	data := model.PostFromJson(strings.NewReader(rmsg.Raw.Data["post"].(string)))
 	// we don't have the user, refresh the userlist
 	if m.GetUser(data.UserId) == nil {
-		m.log.Infof("User '%v' is not known, ignoring message '%#v'",
+		m.logger.Infof("User '%v' is not known, ignoring message '%#v'",
 			data.UserId, data)
 		return
 	}
@@ -54,7 +54,7 @@ func (m *MMClient) parseMessage(rmsg *Message) {
 		}
 	case "group_added":
 		if err := m.UpdateChannels(); err != nil {
-			m.log.Errorf("failed to update channels: %#v", err)
+			m.logger.Errorf("failed to update channels: %#v", err)
 		}
 		/*
 			case model.ACTION_USER_REMOVED:
@@ -178,18 +178,18 @@ func (m *MMClient) SendDirectMessage(toUserId string, msg string, rootId string)
 }
 
 func (m *MMClient) SendDirectMessageProps(toUserId string, msg string, rootId string, props map[string]interface{}) { //nolint:golint
-	m.log.Debugf("SendDirectMessage to %s, msg %s", toUserId, msg)
+	m.logger.Debugf("SendDirectMessage to %s, msg %s", toUserId, msg)
 	// create DM channel (only happens on first message)
 	_, resp := m.Client.CreateDirectChannel(m.User.Id, toUserId)
 	if resp.Error != nil {
-		m.log.Debugf("SendDirectMessage to %#v failed: %s", toUserId, resp.Error)
+		m.logger.Debugf("SendDirectMessage to %#v failed: %s", toUserId, resp.Error)
 		return
 	}
 	channelName := model.GetDMNameFromIds(toUserId, m.User.Id)
 
 	// update our channels
 	if err := m.UpdateChannels(); err != nil {
-		m.log.Errorf("failed to update channels: %#v", err)
+		m.logger.Errorf("failed to update channels: %#v", err)
 	}
 
 	// build & send the message

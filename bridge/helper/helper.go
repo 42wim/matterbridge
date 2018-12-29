@@ -15,10 +15,12 @@ import (
 	"gitlab.com/golang-commonmark/markdown"
 )
 
+// DownloadFile downloads the given non-authenticated URL.
 func DownloadFile(url string) (*[]byte, error) {
 	return DownloadFileAuth(url, "")
 }
 
+// DownloadFileAuth downloads the given URL using the specified authentication token.
 func DownloadFileAuth(url string, auth string) (*[]byte, error) {
 	var buf bytes.Buffer
 	client := &http.Client{
@@ -42,8 +44,8 @@ func DownloadFileAuth(url string, auth string) (*[]byte, error) {
 }
 
 // GetSubLines splits messages in newline-delimited lines. If maxLineLength is
-// specified as non-zero GetSubLines will and also clip long lines to the
-// maximum length and insert a warning marker that the line was clipped.
+// specified as non-zero GetSubLines will also clip long lines to the maximum
+// length and insert a warning marker that the line was clipped.
 //
 // TODO: The current implementation has the inconvenient that it disregards
 // word boundaries when splitting but this is hard to solve without potentially
@@ -79,18 +81,24 @@ func GetSubLines(message string, maxLineLength int) []string {
 	return lines
 }
 
-// handle all the stuff we put into extra
+// HandleExtra manages the supplementary details stored inside a message's 'Extra' field map.
 func HandleExtra(msg *config.Message, general *config.Protocol) []config.Message {
 	extra := msg.Extra
 	rmsg := []config.Message{}
 	for _, f := range extra[config.EventFileFailureSize] {
 		fi := f.(config.FileInfo)
 		text := fmt.Sprintf("file %s too big to download (%#v > allowed size: %#v)", fi.Name, fi.Size, general.MediaDownloadSize)
-		rmsg = append(rmsg, config.Message{Text: text, Username: "<system> ", Channel: msg.Channel, Account: msg.Account})
+		rmsg = append(rmsg, config.Message{
+			Text:     text,
+			Username: "<system> ",
+			Channel:  msg.Channel,
+			Account:  msg.Account,
+		})
 	}
 	return rmsg
 }
 
+// GetAvatar constructs a URL for a given user-avatar if it is available in the cache.
 func GetAvatar(av map[string]string, userid string, general *config.Protocol) string {
 	if sha, ok := av[userid]; ok {
 		return general.MediaServerDownload + "/" + sha + "/" + userid + ".png"
@@ -98,13 +106,15 @@ func GetAvatar(av map[string]string, userid string, general *config.Protocol) st
 	return ""
 }
 
-func HandleDownloadSize(flog *logrus.Entry, msg *config.Message, name string, size int64, general *config.Protocol) error {
+// HandleDownloadSize checks a specified filename against the configured download blacklist
+// and checks a specified file-size against the configure limit.
+func HandleDownloadSize(logger *logrus.Entry, msg *config.Message, name string, size int64, general *config.Protocol) error {
 	// check blacklist here
 	for _, entry := range general.MediaDownloadBlackList {
 		if entry != "" {
 			re, err := regexp.Compile(entry)
 			if err != nil {
-				flog.Errorf("incorrect regexp %s for %s", entry, msg.Account)
+				logger.Errorf("incorrect regexp %s for %s", entry, msg.Account)
 				continue
 			}
 			if re.MatchString(name) {
@@ -112,43 +122,53 @@ func HandleDownloadSize(flog *logrus.Entry, msg *config.Message, name string, si
 			}
 		}
 	}
-	flog.Debugf("Trying to download %#v with size %#v", name, size)
+	logger.Debugf("Trying to download %#v with size %#v", name, size)
 	if int(size) > general.MediaDownloadSize {
 		msg.Event = config.EventFileFailureSize
-		msg.Extra[msg.Event] = append(msg.Extra[msg.Event], config.FileInfo{Name: name, Comment: msg.Text, Size: size})
+		msg.Extra[msg.Event] = append(msg.Extra[msg.Event], config.FileInfo{
+			Name:    name,
+			Comment: msg.Text,
+			Size:    size,
+		})
 		return fmt.Errorf("File %#v to large to download (%#v). MediaDownloadSize is %#v", name, size, general.MediaDownloadSize)
 	}
 	return nil
 }
 
-func HandleDownloadData(flog *logrus.Entry, msg *config.Message, name, comment, url string, data *[]byte, general *config.Protocol) {
+// HandleDownloadData adds the data for a remote file into a Matterbridge gateway message.
+func HandleDownloadData(logger *logrus.Entry, msg *config.Message, name, comment, url string, data *[]byte, general *config.Protocol) {
 	var avatar bool
-	flog.Debugf("Download OK %#v %#v", name, len(*data))
+	logger.Debugf("Download OK %#v %#v", name, len(*data))
 	if msg.Event == config.EventAvatarDownload {
 		avatar = true
 	}
-	msg.Extra["file"] = append(msg.Extra["file"], config.FileInfo{Name: name, Data: data, URL: url, Comment: comment, Avatar: avatar})
+	msg.Extra["file"] = append(msg.Extra["file"], config.FileInfo{
+		Name:    name,
+		Data:    data,
+		URL:     url,
+		Comment: comment,
+		Avatar:  avatar,
+	})
 }
 
+var emptyLineMatcher = regexp.MustCompile("\n+")
+
+// RemoveEmptyNewLines collapses consecutive newline characters into a single one and
+// trims any preceding or trailing newline characters as well.
 func RemoveEmptyNewLines(msg string) string {
-	lines := ""
-	for _, line := range strings.Split(msg, "\n") {
-		if line != "" {
-			lines += line + "\n"
-		}
-	}
-	lines = strings.TrimRight(lines, "\n")
-	return lines
+	return emptyLineMatcher.ReplaceAllString(strings.Trim(msg, "\n"), "\n")
 }
 
+// ClipMessage trims a message to the specified length if it exceeds it and adds a warning
+// to the message in case it does so.
 func ClipMessage(text string, length int) string {
-	// clip too long messages
+	const clippingMessage = " <clipped message>"
 	if len(text) > length {
-		text = text[:length-len(" *message clipped*")]
+		text = text[:length-len(clippingMessage)]
 		if r, size := utf8.DecodeLastRuneInString(text); r == utf8.RuneError {
 			text = text[:len(text)-size]
 		}
-		text += " *message clipped*"
+		text += clippingMessage
 	}
 	return text
 }
