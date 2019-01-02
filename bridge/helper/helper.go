@@ -12,6 +12,7 @@ import (
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/sirupsen/logrus"
+	"gitlab.com/golang-commonmark/markdown"
 )
 
 func DownloadFile(url string) (*[]byte, error) {
@@ -150,4 +151,9 @@ func ClipMessage(text string, length int) string {
 		text += " *message clipped*"
 	}
 	return text
+}
+
+func ParseMarkdown(input string) string {
+	md := markdown.New(markdown.XHTMLOutput(true), markdown.Breaks(true))
+	return (md.RenderToString([]byte(input)))
 }

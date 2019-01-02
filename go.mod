@@ -61,6 +61,12 @@ require (
 	github.com/valyala/fasttemplate v0.0.0-20170224212429-dcecefd839c4 // indirect
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2 // indirect
 	github.com/zfjagann/golang-ring v0.0.0-20141111230621-17637388c9f6
+	gitlab.com/golang-commonmark/html v0.0.0-20180917080848-cfaf75183c4a // indirect
+	gitlab.com/golang-commonmark/linkify v0.0.0-20180917065525-c22b7bdb1179 // indirect
+	gitlab.com/golang-commonmark/markdown v0.0.0-20181102083822-772775880e1f
+	gitlab.com/golang-commonmark/mdurl v0.0.0-20180912090424-e5bce34c34f2 // indirect
+	gitlab.com/golang-commonmark/puny v0.0.0-20180912090636-2cd490539afe // indirect
+	gitlab.com/opennota/wd v0.0.0-20180912061657-c5d65f63c638 // indirect
 	go.uber.org/atomic v1.3.2 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
 	go.uber.org/zap v1.9.1 // indirect

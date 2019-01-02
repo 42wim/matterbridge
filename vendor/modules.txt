@@ -147,6 +147,16 @@ github.com/valyala/bytebufferpool
 github.com/valyala/fasttemplate
 # github.com/zfjagann/golang-ring v0.0.0-20141111230621-17637388c9f6
 github.com/zfjagann/golang-ring
+# gitlab.com/golang-commonmark/html v0.0.0-20180917080848-cfaf75183c4a
+gitlab.com/golang-commonmark/html
+# gitlab.com/golang-commonmark/linkify v0.0.0-20180917065525-c22b7bdb1179
+gitlab.com/golang-commonmark/linkify
+# gitlab.com/golang-commonmark/markdown v0.0.0-20181102083822-772775880e1f
+gitlab.com/golang-commonmark/markdown
+# gitlab.com/golang-commonmark/mdurl v0.0.0-20180912090424-e5bce34c34f2
+gitlab.com/golang-commonmark/mdurl
+# gitlab.com/golang-commonmark/puny v0.0.0-20180912090636-2cd490539afe
+gitlab.com/golang-commonmark/puny
 # go.uber.org/atomic v1.3.2
 go.uber.org/atomic
 # go.uber.org/multierr v1.1.0
@@ -184,6 +194,7 @@ golang.org/x/text/encoding/simplifiedchinese
 golang.org/x/text/encoding/traditionalchinese
 golang.org/x/text/transform
 golang.org/x/text/unicode/norm
+golang.org/x/text/unicode/rangetable
 golang.org/x/text/encoding/internal/identifier
 golang.org/x/text/encoding/internal
 # gopkg.in/natefinch/lumberjack.v2 v2.0.0
