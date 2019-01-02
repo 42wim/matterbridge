@@ -586,6 +586,19 @@ type InlineQueryResultPhoto struct {
 	InputMessageContent interface{}           `json:"input_message_content,omitempty"`
 }
 
+// InlineQueryResultCachedPhoto is an inline query response with cached photo.
+type InlineQueryResultCachedPhoto struct {
+	Type                string                `json:"type"`          // required
+	ID                  string                `json:"id"`            // required
+	PhotoID             string                `json:"photo_file_id"` // required
+	Title               string                `json:"title"`
+	Description         string                `json:"description"`
+	Caption             string                `json:"caption"`
+	ParseMode           string                `json:"parse_mode"`
+	ReplyMarkup         *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
+	InputMessageContent interface{}           `json:"input_message_content,omitempty"`
+}
+
 // InlineQueryResultGIF is an inline query response GIF.
 type InlineQueryResultGIF struct {
 	Type                string                `json:"type"`    // required
@@ -601,6 +614,18 @@ type InlineQueryResultGIF struct {
 	InputMessageContent interface{}           `json:"input_message_content,omitempty"`
 }
 
+// InlineQueryResultCachedGIF is an inline query response with cached gif.
+type InlineQueryResultCachedGIF struct {
+	Type                string                `json:"type"`        // required
+	ID                  string                `json:"id"`          // required
+	GifID               string                `json:"gif_file_id"` // required
+	Title               string                `json:"title"`
+	Caption             string                `json:"caption"`
+	ParseMode           string                `json:"parse_mode"`
+	ReplyMarkup         *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
+	InputMessageContent interface{}           `json:"input_message_content,omitempty"`
+}
+
 // InlineQueryResultMPEG4GIF is an inline query response MPEG4 GIF.
 type InlineQueryResultMPEG4GIF struct {
 	Type                string                `json:"type"`      // required
@@ -612,6 +637,19 @@ type InlineQueryResultMPEG4GIF struct {
 	ThumbURL            string                `json:"thumb_url"`
 	Title               string                `json:"title"`
 	Caption             string                `json:"caption"`
+	ReplyMarkup         *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
+	InputMessageContent interface{}           `json:"input_message_content,omitempty"`
+}
+
+// InlineQueryResultCachedMpeg4Gif is an inline query response with cached
+// H.264/MPEG-4 AVC video without sound gif.
+type InlineQueryResultCachedMpeg4Gif struct {
+	Type                string                `json:"type"`          // required
+	ID                  string                `json:"id"`            // required
+	MGifID              string                `json:"mpeg4_file_id"` // required
+	Title               string                `json:"title"`
+	Caption             string                `json:"caption"`
+	ParseMode           string                `json:"parse_mode"`
 	ReplyMarkup         *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
 	InputMessageContent interface{}           `json:"input_message_content,omitempty"`
 }
@@ -633,6 +671,19 @@ type InlineQueryResultVideo struct {
 	InputMessageContent interface{}           `json:"input_message_content,omitempty"`
 }
 
+// InlineQueryResultCachedVideo is an inline query response with cached video.
+type InlineQueryResultCachedVideo struct {
+	Type                string                `json:"type"`          // required
+	ID                  string                `json:"id"`            // required
+	VideoID             string                `json:"video_file_id"` // required
+	Title               string                `json:"title"`         // required
+	Description         string                `json:"description"`
+	Caption             string                `json:"caption"`
+	ParseMode           string                `json:"parse_mode"`
+	ReplyMarkup         *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
+	InputMessageContent interface{}           `json:"input_message_content,omitempty"`
+}
+
 // InlineQueryResultAudio is an inline query response audio.
 type InlineQueryResultAudio struct {
 	Type                string                `json:"type"`      // required
@@ -646,6 +697,17 @@ type InlineQueryResultAudio struct {
 	InputMessageContent interface{}           `json:"input_message_content,omitempty"`
 }
 
+// InlineQueryResultCachedAudio is an inline query response with cached audio.
+type InlineQueryResultCachedAudio struct {
+	Type                string                `json:"type"`          // required
+	ID                  string                `json:"id"`            // required
+	AudioID             string                `json:"audio_file_id"` // required
+	Caption             string                `json:"caption"`
+	ParseMode           string                `json:"parse_mode"`
+	ReplyMarkup         *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
+	InputMessageContent interface{}           `json:"input_message_content,omitempty"`
+}
+
 // InlineQueryResultVoice is an inline query response voice.
 type InlineQueryResultVoice struct {
 	Type                string                `json:"type"`      // required
@@ -654,6 +716,18 @@ type InlineQueryResultVoice struct {
 	Title               string                `json:"title"`     // required
 	Caption             string                `json:"caption"`
 	Duration            int                   `json:"voice_duration"`
+	ReplyMarkup         *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
+	InputMessageContent interface{}           `json:"input_message_content,omitempty"`
+}
+
+// InlineQueryResultCachedVoice is an inline query response with cached voice.
+type InlineQueryResultCachedVoice struct {
+	Type                string                `json:"type"`          // required
+	ID                  string                `json:"id"`            // required
+	VoiceID             string                `json:"voice_file_id"` // required
+	Title               string                `json:"title"`         // required
+	Caption             string                `json:"caption"`
+	ParseMode           string                `json:"parse_mode"`
 	ReplyMarkup         *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
 	InputMessageContent interface{}           `json:"input_message_content,omitempty"`
 }
@@ -672,6 +746,19 @@ type InlineQueryResultDocument struct {
 	ThumbURL            string                `json:"thumb_url"`
 	ThumbWidth          int                   `json:"thumb_width"`
 	ThumbHeight         int                   `json:"thumb_height"`
+}
+
+// InlineQueryResultCachedDocument is an inline query response with cached document.
+type InlineQueryResultCachedDocument struct {
+	Type                string                `json:"type"`             // required
+	ID                  string                `json:"id"`               // required
+	DocumentID          string                `json:"document_file_id"` // required
+	Title               string                `json:"title"`            // required
+	Caption             string                `json:"caption"`
+	Description         string                `json:"description"`
+	ParseMode           string                `json:"parse_mode"`
+	ReplyMarkup         *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
+	InputMessageContent interface{}           `json:"input_message_content,omitempty"`
 }
 
 // InlineQueryResultLocation is an inline query response location.

@@ -27,7 +27,7 @@ const (
 	CONNECTED      = "CLIENT_CONNECTED"       // when it's safe to send arbitrary commands (joins, list, who, etc), trailing is host:port
 	INITIALIZED    = "CLIENT_INIT"            // verifies successful socket connection, trailing is host:port
 	DISCONNECTED   = "CLIENT_DISCONNECTED"    // occurs when we're disconnected from the server (user-requested or not)
-	STOPPED        = "CLIENT_STOPPED"         // occurs when Client.Stop() has been called
+	CLOSED         = "CLIENT_CLOSED"          // occurs when Client.Close() has been called
 )
 
 // User/channel prefixes :: RFC1459.
@@ -118,6 +118,7 @@ const (
 	USERS    = "USERS"
 	VERSION  = "VERSION"
 	WALLOPS  = "WALLOPS"
+	WEBIRC   = "WEBIRC"
 	WHO      = "WHO"
 	WHOIS    = "WHOIS"
 	WHOWAS   = "WHOWAS"
@@ -268,6 +269,7 @@ const (
 // IRCv3 commands and extensions :: http://ircv3.net/irc/.
 const (
 	AUTHENTICATE = "AUTHENTICATE"
+	MONITOR      = "MONITOR"
 	STARTTLS     = "STARTTLS"
 
 	CAP       = "CAP"
@@ -288,17 +290,22 @@ const (
 
 // Numeric IRC reply mapping for ircv3 :: http://ircv3.net/irc/.
 const (
-	RPL_LOGGEDIN    = "900"
-	RPL_LOGGEDOUT   = "901"
-	RPL_NICKLOCKED  = "902"
-	RPL_SASLSUCCESS = "903"
-	ERR_SASLFAIL    = "904"
-	ERR_SASLTOOLONG = "905"
-	ERR_SASLABORTED = "906"
-	ERR_SASLALREADY = "907"
-	RPL_SASLMECHS   = "908"
-	RPL_STARTTLS    = "670"
-	ERR_STARTTLS    = "691"
+	RPL_LOGGEDIN     = "900"
+	RPL_LOGGEDOUT    = "901"
+	RPL_NICKLOCKED   = "902"
+	RPL_SASLSUCCESS  = "903"
+	ERR_SASLFAIL     = "904"
+	ERR_SASLTOOLONG  = "905"
+	ERR_SASLABORTED  = "906"
+	ERR_SASLALREADY  = "907"
+	RPL_SASLMECHS    = "908"
+	RPL_STARTTLS     = "670"
+	ERR_STARTTLS     = "691"
+	RPL_MONONLINE    = "730"
+	RPL_MONOFFLINE   = "731"
+	RPL_MONLIST      = "732"
+	RPL_ENDOFMONLIST = "733"
+	ERR_MONLISTFULL  = "734"
 )
 
 // Numeric IRC event mapping :: RFC2812; section 5.3.

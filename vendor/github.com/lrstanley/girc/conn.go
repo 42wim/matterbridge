@@ -284,6 +284,11 @@ func (c *Client) internalConnect(mock net.Conn, dialer Dialer) error {
 	go c.pingLoop(ctx, errs, &wg)
 
 	// Passwords first.
+
+	if c.Config.WebIRC.Password != "" {
+		c.write(&Event{Command: WEBIRC, Params: c.Config.WebIRC.Params(), Sensitive: true})
+	}
+
 	if c.Config.ServerPass != "" {
 		c.write(&Event{Command: PASS, Params: []string{c.Config.ServerPass}, Sensitive: true})
 	}
@@ -314,7 +319,7 @@ func (c *Client) internalConnect(mock net.Conn, dialer Dialer) error {
 	select {
 	case <-ctx.Done():
 		c.debug.Print("received request to close, beginning clean up")
-		c.RunHandlers(&Event{Command: STOPPED, Trailing: c.Server()})
+		c.RunHandlers(&Event{Command: CLOSED, Trailing: c.Server()})
 	case err := <-errs:
 		c.debug.Print("received error, beginning clean up")
 		result = err
@@ -330,6 +335,8 @@ func (c *Client) internalConnect(mock net.Conn, dialer Dialer) error {
 	_ = c.conn.Close()
 	c.conn.mu.Unlock()
 	c.mu.RUnlock()
+
+	c.RunHandlers(&Event{Command: DISCONNECTED, Trailing: c.Server()})
 
 	// Once we have our error/result, let all other functions know we're done.
 	c.debug.Print("waiting for all routines to finish")
@@ -374,7 +381,7 @@ func (c *Client) readLoop(ctx context.Context, errs chan error, wg *sync.WaitGro
 			// Check if it's an echo-message.
 			if !c.Config.disableTracking {
 				event.Echo = (event.Command == PRIVMSG || event.Command == NOTICE) &&
-					event.Source != nil && event.Source.Name == c.GetNick()
+					event.Source != nil && event.Source.ID() == c.GetID()
 			}
 
 			c.rx <- event

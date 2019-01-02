@@ -88,6 +88,8 @@ girc artwork licensed under [CC 3.0](http://creativecommons.org/licenses/by/3.0/
    * [IRCv3: Specification Docs](http://ircv3.net/irc/)
    * [IRCv3: Specification Repo](https://github.com/ircv3/ircv3-specifications)
    * [IRCv3 Capability Registry](http://ircv3.net/registry.html)
+   * [IRCv3: WEBIRC](https://ircv3.net/specs/extensions/webirc.html)
+   * [KiwiIRC: WEBIRC](https://kiwiirc.com/docs/webirc)
    * [ISUPPORT Specification Docs](http://www.irc.org/tech_docs/005.html) ([alternative 1](http://defs.ircdocs.horse/defs/isupport.html), [alternative 2](https://github.com/grawity/irc-docs/blob/master/client/RPL_ISUPPORT/draft-hardy-irc-isupport-00.txt), [relevant draft](http://www.irc.org/tech_docs/draft-brocklesby-irc-isupport-03.txt))
    * [IRC Numerics List](http://defs.ircdocs.horse/defs/numerics.html)
    * [Extended WHO (also known as WHOX)](https://github.com/quakenet/snircd/blob/master/doc/readme.who)

@@ -419,14 +419,16 @@ func (s *state) lookupUser(name string) *User {
 }
 
 // createUser creates the user in state, if not already done.
-func (s *state) createUser(nick string) (ok bool) {
-	if _, ok := s.users[ToRFC1459(nick)]; ok {
+func (s *state) createUser(src *Source) (ok bool) {
+	if _, ok := s.users[src.ID()]; ok {
 		// User already exists.
 		return false
 	}
 
-	s.users[ToRFC1459(nick)] = &User{
-		Nick:       nick,
+	s.users[src.ID()] = &User{
+		Nick:       src.Name,
+		Host:       src.Host,
+		Ident:      src.Ident,
 		FirstSeen:  time.Now(),
 		LastActive: time.Now(),
 		Perms:      &UserPerms{channels: make(map[string]Perms)},

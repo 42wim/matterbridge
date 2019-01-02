@@ -25,7 +25,7 @@ func handleTags(c *Client, e Event) {
 	}
 
 	c.state.Lock()
-	user := c.state.lookupUser(e.Source.Name)
+	user := c.state.lookupUser(e.Source.ID())
 	if user != nil {
 		user.Extras.Account = account
 	}

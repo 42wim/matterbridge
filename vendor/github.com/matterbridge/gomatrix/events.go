@@ -41,8 +41,10 @@ func (event *Event) MessageType() (msgtype string, ok bool) {
 
 // TextMessage is the contents of a Matrix formated message event.
 type TextMessage struct {
-	MsgType string `json:"msgtype"`
-	Body    string `json:"body"`
+	MsgType       string `json:"msgtype"`
+	Body          string `json:"body"`
+	Format        string `json:"format,omitempty"`
+	FormattedBody string `json:"formatted_body,omitempty"`
 }
 
 // ImageInfo contains info about an image - http://matrix.org/docs/spec/client_server/r0.2.0.html#m-image

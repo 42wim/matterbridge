@@ -359,3 +359,9 @@ func (cmd *Commands) List(channels ...string) {
 func (cmd *Commands) Whowas(user string, amount int) {
 	cmd.c.Send(&Event{Command: WHOWAS, Params: []string{user, string(amount)}})
 }
+
+// Monitor sends a MONITOR query to the server. The results of the query
+// depends on the given modifier, see https://ircv3.net/specs/core/monitor-3.2.html
+func (cmd *Commands) Monitor(modifier rune, args ...string) {
+	cmd.c.Send(&Event{Command: MONITOR, Params: append([]string{string(modifier)}, args...)})
+}

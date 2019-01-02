@@ -18,6 +18,8 @@ github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible h1:2cauKuaELYAEARXRkq2LrJ0yDDv1rW7+wrTEdVL3uaU=
 github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible/go.mod h1:qf9acutJ8cwBUhm1bqgz6Bei9/C/c93FPDljKWwsOgM=
+github.com/go-telegram-bot-api/telegram-bot-api v4.6.5-0.20181225215658-ec221ba9ea45+incompatible h1:i64CCJcSqkRIkm5OSdZQjZq84/gJsk2zNwHWIRYWlKE=
+github.com/go-telegram-bot-api/telegram-bot-api v4.6.5-0.20181225215658-ec221ba9ea45+incompatible/go.mod h1:qf9acutJ8cwBUhm1bqgz6Bei9/C/c93FPDljKWwsOgM=
 github.com/golang/protobuf v0.0.0-20170613224224-e325f446bebc h1:wdhDSKrkYy24mcfzuA3oYm58h0QkyXjwERCkzJDP5kA=
 github.com/golang/protobuf v0.0.0-20170613224224-e325f446bebc/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/google/gops v0.3.5 h1:SIWvPLiYvy5vMwjxB3rVFTE4QBhUFj2KKWr3Xm7CKhw=
@@ -55,6 +57,8 @@ github.com/labstack/gommon v0.2.1 h1:C+I4NYknueQncqKYZQ34kHsLZJVeB5KwPUhnO0nmbpU
 github.com/labstack/gommon v0.2.1/go.mod h1:/tj9csK2iPSBvn+3NLM9e52usepMtrd5ilFYA+wQNJ4=
 github.com/lrstanley/girc v0.0.0-20181114171214-3aee8c249519 h1:o7duXxs4nxplgWrFRJoyGrPAS+U9Sk5eQyc2mflk6/Q=
 github.com/lrstanley/girc v0.0.0-20181114171214-3aee8c249519/go.mod h1:7cRs1SIBfKQ7e3Tam6GKTILSNHzR862JD0JpINaZoJk=
+github.com/lrstanley/girc v0.0.0-20190102153329-c1e59a02f488 h1:dDEQN5oaa0WOzEiPDSbOugW/e2I/SWY98HYRdcwmGfY=
+github.com/lrstanley/girc v0.0.0-20190102153329-c1e59a02f488/go.mod h1:7cRs1SIBfKQ7e3Tam6GKTILSNHzR862JD0JpINaZoJk=
 github.com/lusis/go-slackbot v0.0.0-20180109053408-401027ccfef5 h1:AsEBgzv3DhuYHI/GiQh2HxvTP71HCCE9E/tzGUzGdtU=
 github.com/lusis/go-slackbot v0.0.0-20180109053408-401027ccfef5/go.mod h1:c2mYKRyMb1BPkO5St0c/ps62L4S0W2NAkaTXj9qEI+0=
 github.com/lusis/slack-test v0.0.0-20180109053238-3c758769bfa6 h1:iOAVXzZyXtW408TMYejlUPo6BIn92HmOacWtIfNyYns=
@@ -63,8 +67,8 @@ github.com/magiconair/properties v1.8.0 h1:LLgXmsheXeRoUOBOjtwPQCWIYqM/LU1ayDtDe
 github.com/magiconair/properties v1.8.0/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
 github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91 h1:KzDEcy8eDbTx881giW8a6llsAck3e2bJvMyKvh1IK+k=
 github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91/go.mod h1:ECDRehsR9TYTKCAsRS8/wLeOk6UUqDydw47ln7wG41Q=
-github.com/matterbridge/gomatrix v0.0.0-20171224233421-78ac6a1a0f5f h1:2eKh6Qi/sJ8bXvYMoyVfQxHgR8UcCDWjOmhV1oCstMU=
-github.com/matterbridge/gomatrix v0.0.0-20171224233421-78ac6a1a0f5f/go.mod h1:+jWeaaUtXQbBRdKYWfjW6JDDYiI2XXE+3NnTjW5kg8g=
+github.com/matterbridge/gomatrix v0.0.0-20190102230110-6f9631ca6dea h1:kaADGqpK4gGO2BpzEyJrBxq2Jc57Rsar4i2EUxcACUc=
+github.com/matterbridge/gomatrix v0.0.0-20190102230110-6f9631ca6dea/go.mod h1:+jWeaaUtXQbBRdKYWfjW6JDDYiI2XXE+3NnTjW5kg8g=
 github.com/matterbridge/gozulipbot v0.0.0-20180507190239-b6bb12d33544 h1:A8lLG3DAu75B5jITHs9z4JBmU6oCq1WiUNnDAmqKCZc=
 github.com/matterbridge/gozulipbot v0.0.0-20180507190239-b6bb12d33544/go.mod h1:yAjnZ34DuDyPHMPHHjOsTk/FefW4JJjoMMCGt/8uuQA=
 github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61 h1:R/MgM/eUyRBQx2FiH6JVmXck8PaAuKfe2M1tWIzW7nE=

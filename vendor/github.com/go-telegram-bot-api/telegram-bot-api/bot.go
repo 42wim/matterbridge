@@ -526,6 +526,7 @@ func (bot *BotAPI) ListenForWebhook(pattern string) UpdatesChannel {
 
 	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 		bytes, _ := ioutil.ReadAll(r.Body)
+		r.Body.Close()
 
 		var update Update
 		json.Unmarshal(bytes, &update)

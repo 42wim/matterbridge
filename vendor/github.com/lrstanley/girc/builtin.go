@@ -145,7 +145,7 @@ func handleJOIN(c *Client, e Event) {
 
 	user := c.state.lookupUser(e.Source.Name)
 	if user == nil {
-		if ok := c.state.createUser(e.Source.Name); !ok {
+		if ok := c.state.createUser(e.Source); !ok {
 			c.state.Unlock()
 			return
 		}
@@ -169,7 +169,7 @@ func handleJOIN(c *Client, e Event) {
 	}
 	c.state.Unlock()
 
-	if e.Source.Name == c.GetNick() {
+	if e.Source.ID() == c.GetID() {
 		// If it's us, don't just add our user to the list. Run a WHO which
 		// will tell us who exactly is in the entire channel.
 		c.Send(&Event{Command: WHO, Params: []string{channelName, "%tacuhnr,1"}})
@@ -209,7 +209,7 @@ func handlePART(c *Client, e Event) {
 
 	defer c.state.notify(c, UPDATE_STATE)
 
-	if e.Source.Name == c.GetNick() {
+	if e.Source.ID() == c.GetID() {
 		c.state.Lock()
 		c.state.deleteChannel(channel)
 		c.state.Unlock()
@@ -217,7 +217,7 @@ func handlePART(c *Client, e Event) {
 	}
 
 	c.state.Lock()
-	c.state.deleteUser(channel, e.Source.Name)
+	c.state.deleteUser(channel, e.Source.ID())
 	c.state.Unlock()
 }
 
@@ -327,9 +327,9 @@ func handleNICK(c *Client, e Event) {
 	c.state.Lock()
 	// renameUser updates the LastActive time automatically.
 	if len(e.Params) == 1 {
-		c.state.renameUser(e.Source.Name, e.Params[0])
+		c.state.renameUser(e.Source.ID(), e.Params[0])
 	} else if len(e.Trailing) > 0 {
-		c.state.renameUser(e.Source.Name, e.Trailing)
+		c.state.renameUser(e.Source.ID(), e.Trailing)
 	}
 	c.state.Unlock()
 	c.state.notify(c, UPDATE_STATE)
@@ -341,12 +341,12 @@ func handleQUIT(c *Client, e Event) {
 		return
 	}
 
-	if e.Source.Name == c.GetNick() {
+	if e.Source.ID() == c.GetID() {
 		return
 	}
 
 	c.state.Lock()
-	c.state.deleteUser("", e.Source.Name)
+	c.state.deleteUser("", e.Source.ID())
 	c.state.Unlock()
 	c.state.notify(c, UPDATE_STATE)
 }
@@ -443,8 +443,9 @@ func handleNAMES(c *Client, e Event) {
 
 	parts := strings.Split(e.Trailing, " ")
 
-	var host, ident, modes, nick string
+	var modes, nick string
 	var ok bool
+	s := &Source{}
 
 	c.state.Lock()
 	for i := 0; i < len(parts); i++ {
@@ -455,36 +456,29 @@ func handleNAMES(c *Client, e Event) {
 
 		// If userhost-in-names.
 		if strings.Contains(nick, "@") {
-			s := ParseSource(nick)
+			s = ParseSource(nick)
 			if s == nil {
 				continue
 			}
 
-			host = s.Host
-			nick = s.Name
-			ident = s.Ident
+		} else {
+			s = &Source{
+				Name: nick,
+			}
+
+			if !IsValidNick(s.Name) {
+				continue
+			}
 		}
 
-		if !IsValidNick(nick) {
-			continue
-		}
-
-		c.state.createUser(nick)
-		user := c.state.lookupUser(nick)
+		c.state.createUser(s)
+		user := c.state.lookupUser(s.Name)
 		if user == nil {
 			continue
 		}
 
 		user.addChannel(channel.Name)
-		channel.addUser(nick)
-
-		// Add necessary userhost-in-names data into the user.
-		if host != "" {
-			user.Host = host
-		}
-		if ident != "" {
-			user.Ident = ident
-		}
+		channel.addUser(s.ID())
 
 		// Don't append modes, overwrite them.
 		perms, _ := user.Perms.Lookup(channel.Name)

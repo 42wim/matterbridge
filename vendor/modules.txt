@@ -21,7 +21,7 @@ github.com/dfordsoft/golib/ic
 github.com/dgrijalva/jwt-go
 # github.com/fsnotify/fsnotify v1.4.7
 github.com/fsnotify/fsnotify
-# github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
+# github.com/go-telegram-bot-api/telegram-bot-api v4.6.5-0.20181225215658-ec221ba9ea45+incompatible
 github.com/go-telegram-bot-api/telegram-bot-api
 # github.com/golang/protobuf v0.0.0-20170613224224-e325f446bebc
 github.com/golang/protobuf/proto
@@ -62,13 +62,13 @@ github.com/labstack/gommon/color
 github.com/labstack/gommon/log
 github.com/labstack/gommon/bytes
 github.com/labstack/gommon/random
-# github.com/lrstanley/girc v0.0.0-20181114171214-3aee8c249519
+# github.com/lrstanley/girc v0.0.0-20190102153329-c1e59a02f488
 github.com/lrstanley/girc
 # github.com/magiconair/properties v1.8.0
 github.com/magiconair/properties
 # github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91
 github.com/matterbridge/go-xmpp
-# github.com/matterbridge/gomatrix v0.0.0-20171224233421-78ac6a1a0f5f
+# github.com/matterbridge/gomatrix v0.0.0-20190102230110-6f9631ca6dea
 github.com/matterbridge/gomatrix
 # github.com/matterbridge/gozulipbot v0.0.0-20180507190239-b6bb12d33544
 github.com/matterbridge/gozulipbot

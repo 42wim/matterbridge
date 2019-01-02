@@ -8,7 +8,7 @@ require (
 	github.com/dfordsoft/golib v0.0.0-20180902042739-76ee6ab99bec
 	github.com/dgrijalva/jwt-go v0.0.0-20170508165458-6c8dedd55f8a // indirect
 	github.com/fsnotify/fsnotify v1.4.7
-	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
+	github.com/go-telegram-bot-api/telegram-bot-api v4.6.5-0.20181225215658-ec221ba9ea45+incompatible
 	github.com/golang/protobuf v0.0.0-20170613224224-e325f446bebc // indirect
 	github.com/google/gops v0.3.5
 	github.com/gopherjs/gopherjs v0.0.0-20180628210949-0892b62f0d9f // indirect
@@ -22,11 +22,11 @@ require (
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/labstack/echo v3.3.5+incompatible
 	github.com/labstack/gommon v0.2.1 // indirect
-	github.com/lrstanley/girc v0.0.0-20181114171214-3aee8c249519
+	github.com/lrstanley/girc v0.0.0-20190102153329-c1e59a02f488
 	github.com/lusis/go-slackbot v0.0.0-20180109053408-401027ccfef5 // indirect
 	github.com/lusis/slack-test v0.0.0-20180109053238-3c758769bfa6 // indirect
 	github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91
-	github.com/matterbridge/gomatrix v0.0.0-20171224233421-78ac6a1a0f5f
+	github.com/matterbridge/gomatrix v0.0.0-20190102230110-6f9631ca6dea
 	github.com/matterbridge/gozulipbot v0.0.0-20180507190239-b6bb12d33544
 	github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61
 	github.com/mattermost/mattermost-server v5.5.0+incompatible
