@@ -291,6 +291,7 @@ var (
 	channelRE        = regexp.MustCompile(`<#[a-zA-Z0-9]+\|(.+?)>`)
 	variableRE       = regexp.MustCompile(`<!((?:subteam\^)?[a-zA-Z0-9]+)(?:\|@?(.+?))?>`)
 	urlRE            = regexp.MustCompile(`<(.*?)(\|.*?)?>`)
+	codeFenceRE      = regexp.MustCompile(`(?m)^` + "```" + `\w+$`)
 	topicOrPurposeRE = regexp.MustCompile(`(?s)(@.+) (cleared|set)(?: the)? channel (topic|purpose)(?:: (.*))?`)
 )
 
@@ -351,6 +352,10 @@ func (b *Bslack) replaceURL(text string) string {
 		}
 	}
 	return text
+}
+
+func (b *Bslack) replaceCodeFence(text string) string {
+	return codeFenceRE.ReplaceAllString(text, "```")
 }
 
 func (b *Bslack) handleRateLimit(err error) error {
