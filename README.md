@@ -223,6 +223,7 @@ Want to tip ?
 * [pyCord](https://github.com/NikkyAI/pyCord) (crossplatform chatbot)
 
 ## Articles
+* [matterbridge on kubernetes](https://medium.freecodecamp.org/using-kubernetes-to-deploy-a-chat-gateway-or-when-technology-works-like-its-supposed-to-a169a8cd69a3)
 * https://mattermost.com/blog/connect-irc-to-mattermost/
 * https://blog.valvin.fr/2016/09/17/mattermost-et-un-channel-irc-cest-possible/
 * https://blog.brightscout.com/top-10-mattermost-integrations/
