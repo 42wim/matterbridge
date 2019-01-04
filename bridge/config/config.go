@@ -130,7 +130,6 @@ type Protocol struct {
 	UseInsecureURL         bool       // telegram
 	WebhookBindAddress     string     // mattermost, slack
 	WebhookURL             string     // mattermost, slack
-	WebhookUse             string     // mattermost, slack, discord
 }
 
 type ChannelOptions struct {
