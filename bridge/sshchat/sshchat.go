@@ -33,7 +33,7 @@ func (b *Bsshchat) Connect() error {
 		b.r = bufio.NewScanner(r)
 		b.r.Scan()
 		b.w = w
-		if _, err := b.w.Write([]byte("/theme mono\r\n")); err != nil {
+		if _, err := b.w.Write([]byte("/theme mono\r\n/quiet\r\n")); err != nil {
 			return err
 		}
 		close(connSignal) // Connection is established so we can signal the success.
