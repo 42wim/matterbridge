@@ -155,7 +155,7 @@ func (b *Bsshchat) handleUploadFile(msg *config.Message) (string, error) {
 				msg.Text = fi.Comment + ": " + fi.URL
 			}
 		}
-		if _, err := b.w.Write([]byte(msg.Username + msg.Text)); err != nil {
+		if _, err := b.w.Write([]byte(msg.Username + msg.Text + "\r\n")); err != nil {
 			b.Log.Errorf("Could not send file message: %#v", err)
 		}
 	}
