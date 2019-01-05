@@ -33,7 +33,7 @@ func (b *Bsshchat) Connect() error {
 		b.r = bufio.NewScanner(r)
 		b.r.Scan()
 		b.w = w
-		if _, err := b.w.Write([]byte("/theme mono\r\n")); err != nil {
+		if _, err := b.w.Write([]byte("/theme mono\r\n/quiet\r\n")); err != nil {
 			return err
 		}
 		close(connSignal) // Connection is established so we can signal the success.
@@ -128,6 +128,9 @@ func (b *Bsshchat) handleSSHChat() error {
 			if !strings.Contains(b.r.Text(), "\033[K") {
 				continue
 			}
+			if strings.Contains(b.r.Text(), "Rate limiting is in effect") {
+				continue
+			}
 			res := strings.Split(stripPrompt(b.r.Text()), ":")
 			if res[0] == "-> Set theme" {
 				wait = false
@@ -136,7 +139,7 @@ func (b *Bsshchat) handleSSHChat() error {
 			}
 			if !wait {
 				b.Log.Debugf("<= Message %#v", res)
-				rmsg := config.Message{Username: res[0], Text: strings.Join(res[1:], ":"), Channel: "sshchat", Account: b.Account, UserID: "nick"}
+				rmsg := config.Message{Username: res[0], Text: strings.TrimSpace(strings.Join(res[1:], ":")), Channel: "sshchat", Account: b.Account, UserID: "nick"}
 				b.Remote <- rmsg
 			}
 		}
@@ -155,7 +158,7 @@ func (b *Bsshchat) handleUploadFile(msg *config.Message) (string, error) {
 				msg.Text = fi.Comment + ": " + fi.URL
 			}
 		}
-		if _, err := b.w.Write([]byte(msg.Username + msg.Text)); err != nil {
+		if _, err := b.w.Write([]byte(msg.Username + msg.Text + "\r\n")); err != nil {
 			b.Log.Errorf("Could not send file message: %#v", err)
 		}
 	}
