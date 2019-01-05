@@ -128,6 +128,9 @@ func (b *Bsshchat) handleSSHChat() error {
 			if !strings.Contains(b.r.Text(), "\033[K") {
 				continue
 			}
+			if strings.Contains(b.r.Text(), "Rate limiting is in effect") {
+				continue
+			}
 			res := strings.Split(stripPrompt(b.r.Text()), ":")
 			if res[0] == "-> Set theme" {
 				wait = false
