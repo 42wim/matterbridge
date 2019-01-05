@@ -136,7 +136,7 @@ func (b *Bsshchat) handleSSHChat() error {
 			}
 			if !wait {
 				b.Log.Debugf("<= Message %#v", res)
-				rmsg := config.Message{Username: res[0], Text: strings.Join(res[1:], ":"), Channel: "sshchat", Account: b.Account, UserID: "nick"}
+				rmsg := config.Message{Username: res[0], Text: strings.TrimSpace(strings.Join(res[1:], ":")), Channel: "sshchat", Account: b.Account, UserID: "nick"}
 				b.Remote <- rmsg
 			}
 		}
