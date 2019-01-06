@@ -1,0 +1,25 @@
+image: golang:1.11
+
+stages:
+  - build
+  - test
+
+before_script:
+  - go get github.com/russross/blackfriday
+  - go get gitlab.com/golang-commonmark/html
+  - go get gitlab.com/golang-commonmark/linkify
+  - go get gitlab.com/golang-commonmark/mdurl
+  - go get gitlab.com/golang-commonmark/puny
+  - go get gitlab.com/opennota/wd
+  - go get gopkg.in/russross/blackfriday.v2
+
+build:
+  stage: build
+  script:
+    - go build ./...
+
+test:
+  stage: test
+  script:
+    - test -z "$(gofmt -l . | tee /dev/stderr)"
+    - go test -cover ./...
