@@ -5,6 +5,7 @@ import (
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/sirupsen/logrus"
+	"sync"
 )
 
 type Bridger interface {
@@ -16,14 +17,16 @@ type Bridger interface {
 
 type Bridge struct {
 	Bridger
-	Name     string
-	Account  string
-	Protocol string
-	Channels map[string]config.ChannelInfo
-	Joined   map[string]bool
-	Log      *logrus.Entry
-	Config   config.Config
-	General  *config.Protocol
+	Name           string
+	Account        string
+	Protocol       string
+	Channels       map[string]config.ChannelInfo
+	Joined         map[string]bool
+	ChannelMembers *config.ChannelMembers
+	Log            *logrus.Entry
+	Config         config.Config
+	General        *config.Protocol
+	*sync.RWMutex
 }
 
 type Config struct {
@@ -37,21 +40,30 @@ type Config struct {
 type Factory func(*Config) Bridger
 
 func New(bridge *config.Bridge) *Bridge {
-	b := new(Bridge)
-	b.Channels = make(map[string]config.ChannelInfo)
+	b := &Bridge{
+		Channels: make(map[string]config.ChannelInfo),
+		RWMutex:  new(sync.RWMutex),
+		Joined:   make(map[string]bool),
+	}
 	accInfo := strings.Split(bridge.Account, ".")
 	protocol := accInfo[0]
 	name := accInfo[1]
 	b.Name = name
 	b.Protocol = protocol
 	b.Account = bridge.Account
-	b.Joined = make(map[string]bool)
 	return b
 }
 
 func (b *Bridge) JoinChannels() error {
 	err := b.joinChannels(b.Channels, b.Joined)
 	return err
+}
+
+// SetChannelMembers sets the newMembers to the bridge ChannelMembers
+func (b *Bridge) SetChannelMembers(newMembers *config.ChannelMembers) {
+	b.Lock()
+	b.ChannelMembers = newMembers
+	b.Unlock()
 }
 
 func (b *Bridge) joinChannels(channels map[string]config.ChannelInfo, exists map[string]bool) error {
