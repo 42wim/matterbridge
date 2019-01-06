@@ -74,7 +74,7 @@ Used by at least 3 projects. Feel free to make a PR to add your project to this 
 Accounts to one of the supported bridges
 * [Mattermost](https://github.com/mattermost/mattermost-server/) 4.x, 5.x
 * [IRC](http://www.mirc.com/servers.html)
-* [XMPP](https://jabber.org)
+* [XMPP](https://xmpp.org)
 * [Gitter](https://gitter.im)
 * [Slack](https://slack.com)
 * [Discord](https://discordapp.com)
