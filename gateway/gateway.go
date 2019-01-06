@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -137,6 +138,10 @@ func (gw *Gateway) mapChannelConfig(cfg []config.Bridge, direction string) {
 		// make sure to lowercase irc channels in config #348
 		if strings.HasPrefix(br.Account, "irc.") {
 			br.Channel = strings.ToLower(br.Channel)
+		}
+		if strings.HasPrefix(br.Account, "mattermost.") && strings.HasPrefix(br.Channel, "#") {
+			flog.Errorf("Mattermost channels do not start with a #: remove the # in %s", br.Channel)
+			os.Exit(1)
 		}
 		ID := br.Channel + br.Account
 		if _, ok := gw.Channels[ID]; !ok {
