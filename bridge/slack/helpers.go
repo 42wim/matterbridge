@@ -93,7 +93,9 @@ func (b *Bslack) populateUsers(wait bool) {
 		return
 	}
 	for b.refreshInProgress {
+		b.refreshMutex.Unlock()
 		time.Sleep(time.Second)
+		b.refreshMutex.Lock()
 	}
 	b.refreshInProgress = true
 	b.refreshMutex.Unlock()
@@ -139,13 +141,16 @@ func (b *Bslack) populateChannels(wait bool) {
 		return
 	}
 	for b.refreshInProgress {
+		b.refreshMutex.Unlock()
 		time.Sleep(time.Second)
+		b.refreshMutex.Lock()
 	}
 	b.refreshInProgress = true
 	b.refreshMutex.Unlock()
 
 	newChannelsByID := map[string]*slack.Channel{}
 	newChannelsByName := map[string]*slack.Channel{}
+	newChannelMembers := make(map[string][]string)
 
 	// We only retrieve public and private channels, not IMs
 	// and MPIMs as those do not have a channel name.
@@ -166,7 +171,18 @@ func (b *Bslack) populateChannels(wait bool) {
 		for i := range channels {
 			newChannelsByID[channels[i].ID] = &channels[i]
 			newChannelsByName[channels[i].Name] = &channels[i]
+			// also find all the members in every channel
+			members, err := b.getUsersInConversation(channels[i].ID)
+			if err != nil {
+				if err = b.handleRateLimit(err); err != nil {
+					b.Log.Errorf("Could not retrieve channel members: %#v", err)
+					return
+				}
+				continue
+			}
+			newChannelMembers[channels[i].ID] = members
 		}
+
 		if nextCursor == "" {
 			break
 		}
@@ -177,6 +193,10 @@ func (b *Bslack) populateChannels(wait bool) {
 	defer b.channelsMutex.Unlock()
 	b.channelsByID = newChannelsByID
 	b.channelsByName = newChannelsByName
+
+	b.channelMembersMutex.Lock()
+	defer b.channelMembersMutex.Unlock()
+	b.channelMembers = newChannelMembers
 
 	b.refreshMutex.Lock()
 	defer b.refreshMutex.Unlock()
@@ -361,4 +381,30 @@ func (b *Bslack) handleRateLimit(err error) error {
 	b.Log.Infof("Rate-limited by Slack. Sleeping for %v", rateLimit.RetryAfter)
 	time.Sleep(rateLimit.RetryAfter)
 	return nil
+}
+
+// getUsersInConversation returns an array of userIDs that are members of channelID
+func (b *Bslack) getUsersInConversation(channelID string) ([]string, error) {
+	channelMembers := []string{}
+	for {
+		queryParams := &slack.GetUsersInConversationParameters{
+			ChannelID: channelID,
+		}
+
+		members, nextCursor, err := b.sc.GetUsersInConversation(queryParams)
+		if err != nil {
+			if err = b.handleRateLimit(err); err != nil {
+				return channelMembers, fmt.Errorf("Could not retrieve users in channels: %#v", err)
+			}
+			continue
+		}
+
+		channelMembers = append(channelMembers, members...)
+
+		if nextCursor == "" {
+			break
+		}
+		queryParams.Cursor = nextCursor
+	}
+	return channelMembers, nil
 }
