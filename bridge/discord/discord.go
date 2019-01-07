@@ -152,7 +152,8 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 		msg.Text = "_" + msg.Text + "_"
 	}
 
-	// use initial webhook
+	// use initial webhook configured for the entire Discord account
+	isGlobalWebhook := true
 	wID := b.webhookID
 	wToken := b.webhookToken
 
@@ -161,6 +162,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	if ci, ok := b.channelInfoMap[msg.Channel+b.Account]; ok {
 		if ci.Options.WebhookURL != "" {
 			wID, wToken = b.splitURL(ci.Options.WebhookURL)
+			isGlobalWebhook = false
 		}
 	}
 	b.channelsMutex.RUnlock()
@@ -188,6 +190,18 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 		// discord username must be [0..32] max
 		if len(msg.Username) > 32 {
 			msg.Username = msg.Username[0:32]
+		}
+		// if we have a global webhook for this Discord account, use it, but
+		// first set its channel to the message channel
+		// TODO: this isn't necessary if the last message from this webhook was
+		// sent to the current channel
+		if isGlobalWebhook {
+			b.Log.Debugf("Setting webhook channel to \"%s\"", msg.Channel)
+			_, err := b.c.WebhookEdit(wID, "", "", channelID)
+			if err != nil {
+				b.Log.Errorf("Could not set webhook channel: %v", err)
+				return "", err
+			}
 		}
 		err := b.c.WebhookExecute(
 			wID,
