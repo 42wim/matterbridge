@@ -188,8 +188,14 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 		b.Log.Debugf("Broadcasting using Webhook")
 		for _, f := range msg.Extra["file"] {
 			fi := f.(config.FileInfo)
+			if fi.Comment != "" {
+				msg.Text += fi.Comment + ": "
+			}
 			if fi.URL != "" {
-				msg.Text += " " + fi.URL
+				msg.Text = fi.URL
+				if fi.Comment != "" {
+					msg.Text = fi.Comment + ": " + fi.URL
+				}
 			}
 		}
 		// skip empty messages
