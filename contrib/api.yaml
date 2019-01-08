@@ -1,0 +1,210 @@
+openapi: 3.0.0
+info:
+  contact: {}
+  description: A read/write API for the Matterbridge chat bridge.
+  license:
+    name: Apache 2.0
+    url: 'https://github.com/42wim/matterbridge/blob/master/LICENSE'
+  title: Matterbridge API
+  version: "0.1.0-oas3"
+paths:
+  /health:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+      summary: Checks if the server is alive.
+  /message:
+    post:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/config.OutgoingMessageResponse'
+      summary: Create a message
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/config.OutgoingMessage'
+        description: Message object to create
+        required: true
+  /messages:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/config.IncomingMessage'
+                type: array
+      security:
+        - ApiKeyAuth: []
+      summary: List new messages
+  /stream:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/x-json-stream:
+              schema:
+                $ref: '#/components/schemas/config.IncomingMessage'
+      summary: Stream realtime messages
+servers:
+  - url: /api
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    config.IncomingMessage:
+      properties:
+        avatar:
+          description: URL to an avatar image
+          example: >-
+            https://secure.gravatar.com/avatar/1234567890abcdef1234567890abcdef.jpg
+          type: string
+        event:
+          description: >-
+            A specific matterbridge event. (see
+            https://github.com/42wim/matterbridge/blob/master/bridge/config/config.go#L16)
+          type: string
+        gateway:
+          description: Name of the gateway as configured in matterbridge.toml
+          example: mygateway
+          type: string
+        text:
+          description: Content of the message
+          example: 'Testing, testing, 1-2-3.'
+          type: string
+        username:
+          description: Human-readable username
+          example: alice
+          type: string
+        account:
+          description: Unique account name of format "[protocol].[slug]" as defined in matterbridge.toml 
+          example: slack.myteam
+          type: string
+        channel:
+          description: Human-readable channel name of sending bridge
+          example: test-channel
+          type: string
+        id:
+          description: Unique ID of message on the gateway
+          example: slack 1541361213.030700
+          type: string
+        parent_id:
+          description: Unique ID of a parent message, if threaded
+          example: slack 1541361213.030700
+          type: string
+        protocol:
+          description: Chat protocol of the sending bridge
+          example: slack
+          type: string
+        timestamp:
+          description: Timestamp of the message
+          example: "1541361213.030700"
+          type: string
+        userid:
+          description: Userid on the sending bridge
+          example: U4MCXJKNC
+          type: string
+        extra:
+          description: Extra data that doesn't fit in other fields (eg base64 encoded files)
+          type: object
+    config.OutgoingMessage:
+      properties:
+        avatar:
+          description: URL to an avatar image
+          example: >-
+            https://secure.gravatar.com/avatar/1234567890abcdef1234567890abcdef.jpg
+          type: string
+        event:
+          description: >-
+            A specific matterbridge event. (see
+            https://github.com/42wim/matterbridge/blob/master/bridge/config/config.go#L16)
+          example: ""
+          type: string
+        gateway:
+          description: Name of the gateway as configured in matterbridge.toml
+          example: mygateway
+          type: string
+        text:
+          description: Content of the message
+          example: 'Testing, testing, 1-2-3.'
+          type: string
+        username:
+          description: Human-readable username
+          example: alice
+          type: string
+      type: object
+      required:
+        - gateway
+        - text
+        - username
+    config.OutgoingMessageResponse:
+      properties:
+        avatar:
+          description: URL to an avatar image
+          example: >-
+            https://secure.gravatar.com/avatar/1234567890abcdef1234567890abcdef.jpg
+          type: string
+        event:
+          description: >-
+            A specific matterbridge event. (see
+            https://github.com/42wim/matterbridge/blob/master/bridge/config/config.go#L16)
+          example: ""
+          type: string
+        gateway:
+          description: Name of the gateway as configured in matterbridge.toml
+          example: mygateway
+          type: string
+        text:
+          description: Content of the message
+          example: 'Testing, testing, 1-2-3.'
+          type: string
+        username:
+          description: Human-readable username
+          example: alice
+          type: string
+        account:
+          description: fixed api account 
+          example: api.local
+          type: string
+        channel:
+          description: fixed api channel 
+          example: api
+          type: string
+        id:
+          example: ""
+          type: string
+        parent_id:
+          example: ""
+          type: string
+        protocol:
+          description: fixed api protocol
+          example: api
+          type: string
+        timestamp:
+          description: Timestamp of the message
+          example: "1541361213.030700"
+          type: string
+        userid:
+          example: ""
+          type: string
+        extra:
+          example: null
+          type: object
+      type: object
+security:
+  - bearerAuth: []
