@@ -104,6 +104,7 @@ func (b *Bmattermost) handleMatterClient(messages chan *config.Message) {
 			Channel:  message.Channel,
 			Text:     message.Text,
 			ID:       message.Post.Id,
+			ParentID: message.Post.ParentId,
 			Extra:    make(map[string][]interface{}),
 		}
 
@@ -163,7 +164,7 @@ func (b *Bmattermost) handleUploadFile(msg *config.Message) (string, error) {
 		if b.GetBool("PrefixMessagesWithNick") {
 			msg.Text = msg.Username + msg.Text
 		}
-		res, err = b.mc.PostMessageWithFiles(channelID, msg.Text, []string{id})
+		res, err = b.mc.PostMessageWithFiles(channelID, msg.Text, msg.ParentID, []string{id})
 	}
 	return res, err
 }
