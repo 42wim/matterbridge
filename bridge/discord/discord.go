@@ -20,11 +20,12 @@ type Bdiscord struct {
 
 	c *discordgo.Session
 
-	nick         string
-	useChannelID bool
-	guildID      string
-	webhookID    string
-	webhookToken string
+	nick            string
+	useChannelID    bool
+	guildID         string
+	webhookID       string
+	webhookToken    string
+	canEditWebhooks bool
 
 	channelsMutex  sync.RWMutex
 	channels       []*discordgo.Channel
@@ -110,8 +111,26 @@ func (b *Bdiscord) Connect() error {
 		return err
 	}
 	b.channelsMutex.RLock()
-	for _, channel := range b.channels {
-		b.Log.Debugf("found channel %#v", channel)
+	if b.GetString("WebhookURL") == "" {
+		for _, channel := range b.channels {
+			b.Log.Debugf("found channel %#v", channel)
+		}
+	} else {
+		b.canEditWebhooks = true
+		for _, channel := range b.channels {
+			b.Log.Debugf("found channel %#v; verifying PermissionManageWebhooks", channel)
+			perms, err := b.c.State.UserChannelPermissions(userinfo.ID, channel.ID)
+			manageWebhooks := discordgo.PermissionManageWebhooks
+			if err != nil || perms&manageWebhooks != manageWebhooks {
+				b.Log.Warnf("Can't manage webhooks in channel \"%s\"", channel.Name)
+				b.canEditWebhooks = false
+			}
+		}
+		if b.canEditWebhooks {
+			b.Log.Info("Can manage webhooks; will edit channel for global webhook on send")
+		} else {
+			b.Log.Warn("Can't manage webhooks; won't edit channel for global webhook on send")
+		}
 	}
 	b.channelsMutex.RUnlock()
 
@@ -211,11 +230,12 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 		if len(msg.Username) > 32 {
 			msg.Username = msg.Username[0:32]
 		}
-		// if we have a global webhook for this Discord account, use it, but
-		// first set its channel to the message channel
+		// if we have a global webhook for this Discord account, and permission
+		// to modify webhooks (previously verified), then set its channel to
+		// the message channel before using it
 		// TODO: this isn't necessary if the last message from this webhook was
 		// sent to the current channel
-		if isGlobalWebhook {
+		if isGlobalWebhook && b.canEditWebhooks {
 			b.Log.Debugf("Setting webhook channel to \"%s\"", msg.Channel)
 			_, err := b.c.WebhookEdit(wID, "", "", channelID)
 			if err != nil {
