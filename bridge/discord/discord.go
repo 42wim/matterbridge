@@ -14,6 +14,7 @@ import (
 )
 
 const (
+	// MessageLength Max message length for a Discord message
 	MessageLength               = 1950
 	webhookPlaceholderMessageID = "-webhook-message-"
 )
