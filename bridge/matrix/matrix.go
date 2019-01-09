@@ -114,7 +114,7 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	// matrix has no editing support
 
 	// Post normal message with HTML support (eg riot.im)
-	resp, err := b.mc.SendHTML(channel, msg.Text, html.EscapeString(msg.Username)+helper.ParseMarkdown(msg.Text))
+	resp, err := b.mc.SendHTML(channel, msg.Username+msg.Text, html.EscapeString(msg.Username)+helper.ParseMarkdown(msg.Text))
 	if err != nil {
 		return "", err
 	}
