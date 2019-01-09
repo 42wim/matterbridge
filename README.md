@@ -63,7 +63,7 @@
 
 ### API
 The API is very basic at the moment.   
-More info on [swaggerhub](https://app.swaggerhub.com/apis-docs/matterbridge/matterbridge-api/0.1.0-oas3)
+More info and examples on the [wiki](https://github.com/42wim/matterbridge/wiki/Api).
 
 Used by at least 3 projects. Feel free to make a PR to add your project to this list.
 
