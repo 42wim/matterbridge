@@ -20,11 +20,12 @@ type Bdiscord struct {
 
 	c *discordgo.Session
 
-	nick         string
-	useChannelID bool
-	guildID      string
-	webhookID    string
-	webhookToken string
+	nick            string
+	useChannelID    bool
+	guildID         string
+	webhookID       string
+	webhookToken    string
+	canEditWebhooks bool
 
 	channelsMutex  sync.RWMutex
 	channels       []*discordgo.Channel
@@ -110,8 +111,26 @@ func (b *Bdiscord) Connect() error {
 		return err
 	}
 	b.channelsMutex.RLock()
-	for _, channel := range b.channels {
-		b.Log.Debugf("found channel %#v", channel)
+	if b.GetString("WebhookURL") == "" {
+		for _, channel := range b.channels {
+			b.Log.Debugf("found channel %#v", channel)
+		}
+	} else {
+		b.canEditWebhooks = true
+		for _, channel := range b.channels {
+			b.Log.Debugf("found channel %#v; verifying PermissionManageWebhooks", channel)
+			perms, permsErr := b.c.State.UserChannelPermissions(userinfo.ID, channel.ID)
+			manageWebhooks := discordgo.PermissionManageWebhooks
+			if permsErr != nil || perms&manageWebhooks != manageWebhooks {
+				b.Log.Warnf("Can't manage webhooks in channel \"%s\"", channel.Name)
+				b.canEditWebhooks = false
+			}
+		}
+		if b.canEditWebhooks {
+			b.Log.Info("Can manage webhooks; will edit channel for global webhook on send")
+		} else {
+			b.Log.Warn("Can't manage webhooks; won't edit channel for global webhook on send")
+		}
 	}
 	b.channelsMutex.RUnlock()
 
@@ -166,7 +185,8 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 		msg.Text = "_" + msg.Text + "_"
 	}
 
-	// use initial webhook
+	// use initial webhook configured for the entire Discord account
+	isGlobalWebhook := true
 	wID := b.webhookID
 	wToken := b.webhookToken
 
@@ -175,6 +195,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	if ci, ok := b.channelInfoMap[msg.Channel+b.Account]; ok {
 		if ci.Options.WebhookURL != "" {
 			wID, wToken = b.splitURL(ci.Options.WebhookURL)
+			isGlobalWebhook = false
 		}
 	}
 	b.channelsMutex.RUnlock()
@@ -208,6 +229,19 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 		// discord username must be [0..32] max
 		if len(msg.Username) > 32 {
 			msg.Username = msg.Username[0:32]
+		}
+		// if we have a global webhook for this Discord account, and permission
+		// to modify webhooks (previously verified), then set its channel to
+		// the message channel before using it
+		// TODO: this isn't necessary if the last message from this webhook was
+		// sent to the current channel
+		if isGlobalWebhook && b.canEditWebhooks {
+			b.Log.Debugf("Setting webhook channel to \"%s\"", msg.Channel)
+			_, err := b.c.WebhookEdit(wID, "", "", channelID)
+			if err != nil {
+				b.Log.Errorf("Could not set webhook channel: %v", err)
+				return "", err
+			}
 		}
 		err := b.c.WebhookExecute(
 			wID,
