@@ -13,7 +13,10 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-const MessageLength = 1950
+const (
+	MessageLength               = 1950
+	webhookPlaceholderMessageID = "-webhook-message-"
+)
 
 type Bdiscord struct {
 	*bridge.Config
@@ -203,7 +206,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 			return "", nil
 		}
 
-		if msg.ID == "-webhook-" {
+		if msg.ID == webhookPlaceholderMessageID {
 			// Received an edit for a message that was previously sent via a
 			// webhook.  We can't edit the original message, but we can mark
 			// the new version with a pencil icon.
@@ -225,14 +228,14 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 				AvatarURL: msg.Avatar,
 			})
 		// Replace with real ID after https://github.com/bwmarrin/discordgo/issues/622
-		return "-webhook-", err
+		return webhookPlaceholderMessageID, err
 	}
 
 	b.Log.Debugf("Broadcasting using token (API)")
 
 	// Delete message
 	if msg.Event == config.EventMsgDelete {
-		if msg.ID == "" || msg.ID == "-webhook-" {
+		if msg.ID == "" || msg.ID == webhookPlaceholderMessageID {
 			return "", nil
 		}
 		err := b.c.ChannelMessageDelete(channelID, msg.ID)
@@ -257,7 +260,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	msg.Text = b.replaceUserMentions(msg.Text)
 
 	// Edit message
-	if msg.ID != "" && msg.ID != "-webhook-" {
+	if msg.ID != "" && msg.ID != webhookPlaceholderMessageID {
 		// Note: cannot edit messages made by a webhook.  This should never
 		// happen though, because if we get here then it means we don't have a
 		// usable webhook.
