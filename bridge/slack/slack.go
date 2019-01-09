@@ -390,6 +390,7 @@ func (b *Bslack) editMessage(msg *config.Message, channelInfo *slack.Channel) (b
 		return false, nil
 	}
 	messageOptions := b.prepareMessageOptions(msg)
+	msg.Text = "[:pencil:] " + msg.Text
 	for {
 		messageOptions = append(messageOptions, slack.MsgOptionText(msg.Text, false))
 		_, _, _, err := b.rtm.UpdateMessage(channelInfo.ID, msg.ID, messageOptions...)
