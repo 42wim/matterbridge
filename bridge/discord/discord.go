@@ -119,9 +119,9 @@ func (b *Bdiscord) Connect() error {
 		b.canEditWebhooks = true
 		for _, channel := range b.channels {
 			b.Log.Debugf("found channel %#v; verifying PermissionManageWebhooks", channel)
-			perms, err := b.c.State.UserChannelPermissions(userinfo.ID, channel.ID)
+			perms, permsErr := b.c.State.UserChannelPermissions(userinfo.ID, channel.ID)
 			manageWebhooks := discordgo.PermissionManageWebhooks
-			if err != nil || perms&manageWebhooks != manageWebhooks {
+			if permsErr != nil || perms&manageWebhooks != manageWebhooks {
 				b.Log.Warnf("Can't manage webhooks in channel \"%s\"", channel.Name)
 				b.canEditWebhooks = false
 			}
