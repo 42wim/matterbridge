@@ -2,6 +2,7 @@ package bdiscord
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -49,6 +50,7 @@ func New(cfg *bridge.Config) bridge.Bridger {
 func (b *Bdiscord) Connect() error {
 	var err error
 	var token string
+	var guildFound bool
 	b.Log.Info("Connecting")
 	if b.GetString("WebhookURL") == "" {
 		b.Log.Info("Connecting using token")
@@ -86,12 +88,24 @@ func (b *Bdiscord) Connect() error {
 		if guild.Name == serverName || guild.ID == serverName {
 			b.channels, err = b.c.GuildChannels(guild.ID)
 			b.guildID = guild.ID
+			guildFound = true
 			if err != nil {
 				break
 			}
 		}
 	}
 	b.channelsMutex.Unlock()
+	if !guildFound {
+		msg := fmt.Sprintf("Server \"%s\" not found", b.GetString("Server"))
+		err = errors.New(msg)
+		b.Log.Error(msg)
+		b.Log.Info("Possible values:")
+		for _, guild := range guilds {
+			b.Log.Infof("Server=\"%s\" # Server name", guild.Name)
+			b.Log.Infof("Server=\"%s\" # Server ID", guild.ID)
+		}
+	}
+
 	if err != nil {
 		return err
 	}
@@ -106,7 +120,7 @@ func (b *Bdiscord) Connect() error {
 	defer b.membersMutex.Unlock()
 	members, err := b.c.GuildMembers(b.guildID, "", 1000)
 	if err != nil {
-		b.Log.Error("Error obtaining guild members", err)
+		b.Log.Error("Error obtaining server members: ", err)
 		return err
 	}
 	for _, member := range members {
@@ -176,8 +190,14 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 		b.Log.Debugf("Broadcasting using Webhook")
 		for _, f := range msg.Extra["file"] {
 			fi := f.(config.FileInfo)
+			if fi.Comment != "" {
+				msg.Text += fi.Comment + ": "
+			}
 			if fi.URL != "" {
-				msg.Text += " " + fi.URL
+				msg.Text = fi.URL
+				if fi.Comment != "" {
+					msg.Text = fi.Comment + ": " + fi.URL
+				}
 			}
 		}
 		// skip empty messages

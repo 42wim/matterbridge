@@ -62,7 +62,8 @@
 * [API](https://github.com/42wim/matterbridge/wiki/Features#api)
 
 ### API
-The API is very basic at the moment and rather undocumented.
+The API is very basic at the moment.   
+More info on [swaggerhub](https://app.swaggerhub.com/apis-docs/matterbridge/matterbridge-api/0.1.0-oas3)
 
 Used by at least 3 projects. Feel free to make a PR to add your project to this list.
 
