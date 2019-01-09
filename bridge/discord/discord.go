@@ -203,6 +203,12 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 			return "", nil
 		}
 
+		if msg.ID == "-webhook-" {
+			// Received an edit for a message that was previously sent via a
+			// webhook.  We can't edit the original message, but we can mark
+			// the new version with a pencil icon.
+			msg.Text = "[:pencil:] " + msg.Text
+		}
 		msg.Text = helper.ClipMessage(msg.Text, MessageLength)
 		msg.Text = b.replaceUserMentions(msg.Text)
 		// discord username must be [0..32] max
@@ -218,14 +224,15 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 				Username:  msg.Username,
 				AvatarURL: msg.Avatar,
 			})
-		return "", err
+		// Replace with real ID after https://github.com/bwmarrin/discordgo/issues/622
+		return "-webhook-", err
 	}
 
 	b.Log.Debugf("Broadcasting using token (API)")
 
 	// Delete message
 	if msg.Event == config.EventMsgDelete {
-		if msg.ID == "" {
+		if msg.ID == "" || msg.ID == "-webhook-" {
 			return "", nil
 		}
 		err := b.c.ChannelMessageDelete(channelID, msg.ID)
@@ -250,7 +257,10 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	msg.Text = b.replaceUserMentions(msg.Text)
 
 	// Edit message
-	if msg.ID != "" {
+	if msg.ID != "" && msg.ID != "-webhook-" {
+		// Note: cannot edit messages made by a webhook.  This should never
+		// happen though, because if we get here then it means we don't have a
+		// usable webhook.
 		_, err := b.c.ChannelMessageEdit(channelID, msg.ID, msg.Username+msg.Text)
 		return msg.ID, err
 	}
