@@ -58,11 +58,15 @@ func (b *Bdiscord) Connect() error {
 	} else {
 		b.Log.Info("Connecting using webhookurl (for posting) and token")
 	}
-	if !b.GetBool("NotBot") {
-		if !strings.HasPrefix(b.GetString("Token"), "Bot ") {
-			token = "Bot " + b.GetString("Token")
-		}
+	if !strings.HasPrefix(b.GetString("Token"), "Bot ") {
+		token = "Bot " + b.GetString("Token")
 	}
+	
+	// if we have a User token, remove the `Bot` prefix
+	if strings.HasPrefix(b.GetString("Token"),"User ") {
+	   token = strings.Replace(token,"Bot ","",-1)
+	}
+	
 	b.c, err = discordgo.New(token)
 	if err != nil {
 		return err
