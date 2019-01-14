@@ -62,10 +62,10 @@ func (b *Bdiscord) Connect() error {
 		token = "Bot " + b.GetString("Token")
 	}
 	// if we have a User token, remove the `Bot` prefix
-	if strings.HasPrefix(b.GetString("Token"),"User ") {
-	   token = strings.Replace(token,"Bot ","",-1)
+	if strings.HasPrefix(b.GetString("Token"), "User ") {
+		token = strings.Replace(token, "Bot ", "", -1)
 	}
-	
+
 	b.c, err = discordgo.New(token)
 	if err != nil {
 		return err
