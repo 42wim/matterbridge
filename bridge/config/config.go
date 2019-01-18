@@ -14,16 +14,17 @@ import (
 )
 
 const (
-	EventJoinLeave       = "join_leave"
-	EventTopicChange     = "topic_change"
-	EventFailure         = "failure"
-	EventFileFailureSize = "file_failure_size"
-	EventAvatarDownload  = "avatar_download"
-	EventRejoinChannels  = "rejoin_channels"
-	EventUserAction      = "user_action"
-	EventMsgDelete       = "msg_delete"
-	EventAPIConnected    = "api_connected"
-	EventUserTyping      = "user_typing"
+	EventJoinLeave         = "join_leave"
+	EventTopicChange       = "topic_change"
+	EventFailure           = "failure"
+	EventFileFailureSize   = "file_failure_size"
+	EventAvatarDownload    = "avatar_download"
+	EventRejoinChannels    = "rejoin_channels"
+	EventUserAction        = "user_action"
+	EventMsgDelete         = "msg_delete"
+	EventAPIConnected      = "api_connected"
+	EventUserTyping        = "user_typing"
+	EventGetChannelMembers = "get_channel_members"
 )
 
 type Message struct {
@@ -60,6 +61,16 @@ type ChannelInfo struct {
 	SameChannel map[string]bool
 	Options     ChannelOptions
 }
+
+type ChannelMember struct {
+	Username    string
+	Nick        string
+	UserID      string
+	ChannelID   string
+	ChannelName string
+}
+
+type ChannelMembers []ChannelMember
 
 type Protocol struct {
 	AuthCode               string // steam

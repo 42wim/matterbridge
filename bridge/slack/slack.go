@@ -37,6 +37,9 @@ type Bslack struct {
 	channelsByName map[string]*slack.Channel
 	channelsMutex  sync.RWMutex
 
+	channelMembers      map[string][]string
+	channelMembersMutex sync.RWMutex
+
 	refreshInProgress      bool
 	earliestChannelRefresh time.Time
 	earliestUserRefresh    time.Time
@@ -267,6 +270,11 @@ func (b *Bslack) sendWebhook(msg config.Message) error {
 }
 
 func (b *Bslack) sendRTM(msg config.Message) (string, error) {
+	// Handle channelmember messages.
+	if handled := b.handleGetChannelMembers(&msg); handled {
+		return "", nil
+	}
+
 	channelInfo, err := b.getChannel(msg.Channel)
 	if err != nil {
 		return "", fmt.Errorf("could not send message: %v", err)

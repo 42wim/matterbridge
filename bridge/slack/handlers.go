@@ -309,6 +309,58 @@ func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slack.File, retr
 	return nil
 }
 
+// handleGetChannelMembers handles messages containing the GetChannelMembers event
+// Sends a message to the router containing *config.ChannelMembers
+func (b *Bslack) handleGetChannelMembers(rmsg *config.Message) bool {
+	if rmsg.Event != config.EventGetChannelMembers {
+		return false
+	}
+
+	cMembers := config.ChannelMembers{}
+
+	b.channelMembersMutex.RLock()
+
+	for channelID, members := range b.channelMembers {
+		for _, member := range members {
+			channelName := ""
+			userName := ""
+			userNick := ""
+			user := b.getUser(member)
+			if user != nil {
+				userName = user.Name
+				userNick = user.Profile.DisplayName
+			}
+			channel, _ := b.getChannelByID(channelID)
+			if channel != nil {
+				channelName = channel.Name
+			}
+			cMember := config.ChannelMember{
+				Username:    userName,
+				Nick:        userNick,
+				UserID:      member,
+				ChannelID:   channelID,
+				ChannelName: channelName,
+			}
+			cMembers = append(cMembers, cMember)
+		}
+	}
+
+	b.channelMembersMutex.RUnlock()
+
+	extra := make(map[string][]interface{})
+	extra[config.EventGetChannelMembers] = append(extra[config.EventGetChannelMembers], cMembers)
+	msg := config.Message{
+		Extra:   extra,
+		Event:   config.EventGetChannelMembers,
+		Account: b.Account,
+	}
+
+	b.Log.Debugf("sending msg to remote %#v", msg)
+	b.Remote <- msg
+
+	return true
+}
+
 // fileCached implements Matterbridge's caching logic for files
 // shared via Slack.
 //

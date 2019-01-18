@@ -30,6 +30,23 @@ func (r *Router) handleEventFailure(msg *config.Message) {
 	}
 }
 
+// handleEventGetChannelMembers handles channel members
+func (r *Router) handleEventGetChannelMembers(msg *config.Message) {
+	if msg.Event != config.EventGetChannelMembers {
+		return
+	}
+	for _, gw := range r.Gateways {
+		for _, br := range gw.Bridges {
+			if msg.Account == br.Account {
+				cMembers := msg.Extra[config.EventGetChannelMembers][0].(config.ChannelMembers)
+				flog.Debugf("Syncing channelmembers from %s", msg.Account)
+				br.SetChannelMembers(&cMembers)
+				return
+			}
+		}
+	}
+}
+
 // handleEventRejoinChannels handles rejoining of channels.
 func (r *Router) handleEventRejoinChannels(msg *config.Message) {
 	if msg.Event != config.EventRejoinChannels {

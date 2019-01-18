@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/42wim/matterbridge/bridge"
@@ -16,6 +17,7 @@ type Router struct {
 	Gateways         map[string]*Gateway
 	Message          chan config.Message
 	MattermostPlugin chan config.Message
+	sync.RWMutex
 }
 
 func NewRouter(cfg config.Config, bridgeMap map[string]bridge.Factory) (*Router, error) {
@@ -81,6 +83,7 @@ func (r *Router) Start() error {
 		}
 	}
 	go r.handleReceive()
+	go r.updateChannelMembers()
 	return nil
 }
 
@@ -108,6 +111,7 @@ func (r *Router) getBridge(account string) *bridge.Bridge {
 func (r *Router) handleReceive() {
 	for msg := range r.Message {
 		msg := msg // scopelint
+		r.handleEventGetChannelMembers(&msg)
 		r.handleEventFailure(&msg)
 		r.handleEventRejoinChannels(&msg)
 		for _, gw := range r.Gateways {
@@ -127,5 +131,23 @@ func (r *Router) handleReceive() {
 				gw.Messages.Add(msg.Protocol+" "+msg.ID, msgIDs)
 			}
 		}
+	}
+}
+
+// updateChannelMembers sends every minute an GetChannelMembers event to all bridges.
+func (r *Router) updateChannelMembers() {
+	// TODO sleep a minute because slack can take a while
+	// fix this by having actually connectionDone events send to the router
+	time.Sleep(time.Minute)
+	for {
+		for _, gw := range r.Gateways {
+			for _, br := range gw.Bridges {
+				flog.Debugf("sending %s to %s", config.EventGetChannelMembers, br.Account)
+				if _, err := br.Send(config.Message{Event: config.EventGetChannelMembers}); err != nil {
+					flog.Errorf("updateChannelMembers: %s", err)
+				}
+			}
+		}
+		time.Sleep(time.Minute)
 	}
 }
