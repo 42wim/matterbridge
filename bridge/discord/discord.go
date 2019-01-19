@@ -50,8 +50,8 @@ func New(cfg *bridge.Config) bridge.Bridger {
 
 func (b *Bdiscord) Connect() error {
 	var err error
-	var token string
 	var guildFound bool
+	token := b.GetString("Token")
 	b.Log.Info("Connecting")
 	if b.GetString("WebhookURL") == "" {
 		b.Log.Info("Connecting using token")
@@ -63,7 +63,7 @@ func (b *Bdiscord) Connect() error {
 	}
 	// if we have a User token, remove the `Bot` prefix
 	if strings.HasPrefix(b.GetString("Token"), "User ") {
-		token = strings.Replace(token, "Bot ", "", -1)
+		token = strings.Replace(b.GetString("Token"), "User ", "", -1)
 	}
 
 	b.c, err = discordgo.New(token)
