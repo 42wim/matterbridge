@@ -84,6 +84,7 @@ func (b *Birc) Connect() error {
 
 	i.Handlers.Add(girc.RPL_WELCOME, b.handleNewConnection)
 	i.Handlers.Add(girc.RPL_ENDOFMOTD, b.handleOtherAuth)
+	i.Handlers.Add(girc.ERR_NOMOTD, b.handleOtherAuth)
 	i.Handlers.Add(girc.ALL_EVENTS, b.handleOther)
 	b.i = i
 
