@@ -85,10 +85,10 @@ func (b *Birc) Connect() error {
 	i.Handlers.Add(girc.RPL_WELCOME, b.handleNewConnection)
 	i.Handlers.Add(girc.RPL_ENDOFMOTD, b.handleOtherAuth)
 	i.Handlers.Add(girc.ALL_EVENTS, b.handleOther)
+	b.i = i
 
 	go b.doConnect()
 
-	b.i = i
 	err = <-b.connected
 	if err != nil {
 		return fmt.Errorf("connection failed %s", err)
