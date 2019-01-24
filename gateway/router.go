@@ -142,6 +142,10 @@ func (r *Router) updateChannelMembers() {
 	for {
 		for _, gw := range r.Gateways {
 			for _, br := range gw.Bridges {
+				// only for slack now
+				if br.Protocol != "slack" {
+					continue
+				}
 				flog.Debugf("sending %s to %s", config.EventGetChannelMembers, br.Account)
 				if _, err := br.Send(config.Message{Event: config.EventGetChannelMembers}); err != nil {
 					flog.Errorf("updateChannelMembers: %s", err)
