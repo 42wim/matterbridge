@@ -1,3 +1,31 @@
+# v1.13.0
+
+## New features
+* general: refactors of telegram, irc, mattermost, matrix, discord, sshchat bridges and the gateway.
+* irc: Add option to send RAW commands after connection (irc) #490. See `RunCommands` in matterbridge.toml.sample
+* mattermost: 3.x support dropped
+* mattermost: Add support for mattermost threading (#627)
+* slack: Sync channel topics between Slack bridges #585. See `SyncTopic` in matterbridge.toml.sample
+* matrix: Add support for markdown to HTML conversion (matrix). Closes #663 (#670)
+* discord: Improve error reporting on failure to join Discord. Fixes #672 (#680)
+* discord: Use only one webhook if possible (discord) (#681)
+* discord: Allow to bridge non-bot Discord users (discord) (#689) If you prefix a token with `User ` it'll treat is as a user token.
+
+## Bugfix
+* slack: Try downloading files again if slack is too slow (slack). Closes #655 (#656)
+* slack: Ignore LatencyReport event (slack)
+* slack: Fix #668 strip lang in code fences sent to Slack (#673)
+* sshchat: Fix sshchat connection logic (#661)
+* sshchat: set quiet mode to filter joins/quits
+* sshchat: Trim newlines in the end of relayed messages
+* sshchat: fix media links
+* sshchat: do not relay "Rate limiting is in effect" message
+* mattermost: Fail if channel starts with hashtag (mattermost). Closes #625
+* discord: Add file comment to webhook messages (discord). Fixes #358
+* matrix: Fix displaying usernames for plain text clients. (matrix) (#685)
+* irc: Fix possible data race (irc). Closes #693
+* irc: Handle servers without MOTD (irc). Closes #692
+
 # v1.12.3
 ## Bugfix
 * slack: Fix bot (legacy token) messages not being send. Closes #571
