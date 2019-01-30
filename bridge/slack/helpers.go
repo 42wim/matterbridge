@@ -13,6 +13,13 @@ import (
 
 func (b *Bslack) getUser(id string) *slack.User {
 	b.usersMutex.RLock()
+	user, ok := b.users[id]
+	b.usersMutex.RUnlock()
+	if ok {
+		return user
+	}
+	b.populateUser(id)
+	b.usersMutex.RLock()
 	defer b.usersMutex.RUnlock()
 
 	return b.users[id]
@@ -102,9 +109,11 @@ func (b *Bslack) populateUsers(wait bool) {
 
 	newUsers := map[string]*slack.User{}
 	pagination := b.sc.GetUsersPaginated(slack.GetUsersOptionLimit(200))
+	count := 0
 	for {
 		var err error
 		pagination, err = pagination.Next(context.Background())
+		time.Sleep(time.Second)
 		if err != nil {
 			if pagination.Done(err) {
 				break
@@ -119,6 +128,13 @@ func (b *Bslack) populateUsers(wait bool) {
 
 		for i := range pagination.Users {
 			newUsers[pagination.Users[i].ID] = &pagination.Users[i]
+		}
+		b.Log.Debugf("getting %d users", len(pagination.Users))
+		count++
+		// more > 2000 users, slack will complain and ratelimit. break
+		if count > 10 {
+			b.Log.Info("Large slack detected > 2000 users, skipping loading complete userlist.")
+			break
 		}
 	}
 
@@ -172,15 +188,18 @@ func (b *Bslack) populateChannels(wait bool) {
 			newChannelsByID[channels[i].ID] = &channels[i]
 			newChannelsByName[channels[i].Name] = &channels[i]
 			// also find all the members in every channel
-			members, err := b.getUsersInConversation(channels[i].ID)
-			if err != nil {
-				if err = b.handleRateLimit(err); err != nil {
-					b.Log.Errorf("Could not retrieve channel members: %#v", err)
-					return
+			// comment for now, issues on big slacks
+			/*
+				members, err := b.getUsersInConversation(channels[i].ID)
+				if err != nil {
+					if err = b.handleRateLimit(err); err != nil {
+						b.Log.Errorf("Could not retrieve channel members: %#v", err)
+						return
+					}
+					continue
 				}
-				continue
-			}
-			newChannelMembers[channels[i].ID] = members
+				newChannelMembers[channels[i].ID] = members
+			*/
 		}
 
 		if nextCursor == "" {

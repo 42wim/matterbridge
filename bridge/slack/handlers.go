@@ -75,8 +75,6 @@ func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 			// When we join a channel we update the full list of users as
 			// well as the information for the channel that we joined as this
 			// should now tell that we are a member of it.
-			b.populateUsers(false)
-
 			b.channelsMutex.Lock()
 			b.channelsByID[ev.Channel.ID] = &ev.Channel
 			b.channelsByName[ev.Channel.Name] = &ev.Channel
@@ -202,7 +200,6 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 func (b *Bslack) handleStatusEvent(ev *slack.MessageEvent, rmsg *config.Message) bool {
 	switch ev.SubType {
 	case sChannelJoined, sMemberJoined:
-		b.populateUsers(false)
 		// There's no further processing needed on channel events
 		// so we return 'true'.
 		return true
