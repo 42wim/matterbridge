@@ -3,6 +3,8 @@ Package ring provides a simple implementation of a ring buffer.
 */
 package ring
 
+import "sync"
+
 /*
 The DefaultCapacity of an uninitialized Ring buffer.
 
@@ -15,6 +17,7 @@ Type Ring implements a Circular Buffer.
 The default value of the Ring struct is a valid (empty) Ring buffer with capacity DefaultCapacify.
 */
 type Ring struct {
+	sync.Mutex
 	head int // the most recent value written
 	tail int // the least recent value written
 	buff []interface{}
@@ -24,6 +27,9 @@ type Ring struct {
 Set the maximum size of the ring buffer.
 */
 func (r *Ring) SetCapacity(size int) {
+	r.Lock()
+	defer r.Unlock()
+
 	r.checkInit()
 	r.extend(size)
 }
@@ -31,14 +37,38 @@ func (r *Ring) SetCapacity(size int) {
 /*
 Capacity returns the current capacity of the ring buffer.
 */
-func (r Ring) Capacity() int {
-	return len(r.buff)
+func (r *Ring) Capacity() int {
+	r.Lock()
+	defer r.Unlock()
+
+	return r.capacity()
+}
+
+/*
+ContentSize returns the current number of elements inside the ring buffer.
+*/
+func (r *Ring) ContentSize() int {
+	r.Lock()
+	defer r.Unlock()
+
+	if r.head == -1 {
+		return 0
+	} else {
+		difference := (r.head - r.tail)
+		if difference < 0 {
+			difference = -difference
+		}
+		return difference + 1
+	}
 }
 
 /*
 Enqueue a value into the Ring buffer.
 */
 func (r *Ring) Enqueue(i interface{}) {
+	r.Lock()
+	defer r.Unlock()
+
 	r.checkInit()
 	r.set(r.head+1, i)
 	old := r.head
@@ -54,6 +84,9 @@ Dequeue a value from the Ring buffer.
 Returns nil if the ring buffer is empty.
 */
 func (r *Ring) Dequeue() interface{} {
+	r.Lock()
+	defer r.Unlock()
+
 	r.checkInit()
 	if r.head == -1 {
 		return nil
@@ -74,6 +107,9 @@ Read the value that Dequeue would have dequeued without actually dequeuing it.
 Returns nil if the ring buffer is empty.
 */
 func (r *Ring) Peek() interface{} {
+	r.Lock()
+	defer r.Unlock()
+
 	r.checkInit()
 	if r.head == -1 {
 		return nil
@@ -87,11 +123,14 @@ The returned slice can be modified independently of the circular buffer. However
 are shared between the slice and circular buffer.
 */
 func (r *Ring) Values() []interface{} {
+	r.Lock()
+	defer r.Unlock()
+
 	if r.head == -1 {
 		return []interface{}{}
 	}
-	arr := make([]interface{}, 0, r.Capacity())
-	for i := 0; i < r.Capacity(); i++ {
+	arr := make([]interface{}, 0, r.capacity())
+	for i := 0; i < r.capacity(); i++ {
 		idx := r.mod(i + r.tail)
 		arr = append(arr, r.get(idx))
 		if idx == r.head {
@@ -104,6 +143,10 @@ func (r *Ring) Values() []interface{} {
 /**
 *** Unexported methods beyond this point.
 **/
+
+func (r *Ring) capacity() int {
+	return len(r.buff)
+}
 
 // sets a value at the given unmodified index and returns the modified index of the value
 func (r *Ring) set(p int, v interface{}) {
@@ -121,13 +164,15 @@ func (r *Ring) mod(p int) int {
 }
 
 func (r *Ring) checkInit() {
-	if r.buff == nil {
-		r.buff = make([]interface{}, DefaultCapacity)
-		for i := range r.buff {
-			r.buff[i] = nil
-		}
-		r.head, r.tail = -1, 0
+	if r.buff != nil {
+		return
 	}
+
+	r.buff = make([]interface{}, DefaultCapacity)
+	for i := range r.buff {
+		r.buff[i] = nil
+	}
+	r.head, r.tail = -1, 0
 }
 
 func (r *Ring) extend(size int) {

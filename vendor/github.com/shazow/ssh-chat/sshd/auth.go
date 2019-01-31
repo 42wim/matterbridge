@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net"
 
+	"github.com/shazow/ssh-chat/internal/sanitize"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -13,8 +14,8 @@ import (
 type Auth interface {
 	// Whether to allow connections without a public key.
 	AllowAnonymous() bool
-	// Given address and public key, return if the connection should be permitted.
-	Check(net.Addr, ssh.PublicKey) (bool, error)
+	// Given address and public key and client agent string, returns nil if the connection should be allowed.
+	Check(net.Addr, ssh.PublicKey, string) error
 }
 
 // MakeAuth makes an ssh.ServerConfig which performs authentication against an Auth implementation.
@@ -23,8 +24,8 @@ func MakeAuth(auth Auth) *ssh.ServerConfig {
 		NoClientAuth: false,
 		// Auth-related things should be constant-time to avoid timing attacks.
 		PublicKeyCallback: func(conn ssh.ConnMetadata, key ssh.PublicKey) (*ssh.Permissions, error) {
-			ok, err := auth.Check(conn.RemoteAddr(), key)
-			if !ok {
+			err := auth.Check(conn.RemoteAddr(), key, sanitize.Data(string(conn.ClientVersion()), 64))
+			if err != nil {
 				return nil, err
 			}
 			perm := &ssh.Permissions{Extensions: map[string]string{
@@ -36,7 +37,7 @@ func MakeAuth(auth Auth) *ssh.ServerConfig {
 			if !auth.AllowAnonymous() {
 				return nil, errors.New("public key authentication required")
 			}
-			_, err := auth.Check(conn.RemoteAddr(), nil)
+			err := auth.Check(conn.RemoteAddr(), nil, sanitize.Data(string(conn.ClientVersion()), 64))
 			return nil, err
 		},
 	}

@@ -3,6 +3,7 @@ package slack
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/url"
 	"strconv"
@@ -86,12 +87,30 @@ type File struct {
 	CommentsCount   int      `json:"comments_count"`
 	NumStars        int      `json:"num_stars"`
 	IsStarred       bool     `json:"is_starred"`
+	Shares          Share    `json:"shares"`
+}
+
+type Share struct {
+	Public map[string][]ShareFileInfo `json:"public"`
+}
+
+type ShareFileInfo struct {
+	ReplyUsers      []string `json:"reply_users"`
+	ReplyUsersCount int      `json:"reply_users_count"`
+	ReplyCount      int      `json:"reply_count"`
+	Ts              string   `json:"ts"`
+	ThreadTs        string   `json:"thread_ts"`
+	LatestReply     string   `json:"latest_reply"`
+	ChannelName     string   `json:"channel_name"`
+	TeamID          string   `json:"team_id"`
 }
 
 // FileUploadParameters contains all the parameters necessary (including the optional ones) for an UploadFile() request.
 //
 // There are three ways to upload a file. You can either set Content if file is small, set Reader if file is large,
 // or provide a local file path in File to upload it from your filesystem.
+//
+// Note that when using the Reader option, you *must* specify the Filename, otherwise the Slack API isn't happy.
 type FileUploadParameters struct {
 	File            string
 	Content         string
@@ -219,6 +238,9 @@ func (api *Client) UploadFileContext(ctx context.Context, params FileUploadParam
 	_, err = api.AuthTest()
 	if err != nil {
 		return nil, err
+	}
+	if params.Filename == "" {
+		return nil, fmt.Errorf("files.upload: FileUploadParameters.Filename is mandatory")
 	}
 	response := &fileResponseFull{}
 	values := url.Values{

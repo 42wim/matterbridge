@@ -1,23 +1,25 @@
 language: go
 
 go:
-    - 1.7.x
-    - 1.8.x
-    - 1.9.x
-    - 1.10.x
-    - 1.11.x
-    - tip
+  - 1.7.x
+  - 1.8.x
+  - 1.9.x
+  - 1.10.x
+  - 1.11.x
+  - tip
 
 before_install:
   - export PATH=$HOME/gopath/bin:$PATH
+  # install gometalinter
+  - curl -L https://git.io/vp6lP | sh
 
 script:
-  - go test -race ./...
-  - go test -cover ./...
+  - PATH=$PWD/bin:$PATH gometalinter ./...
+  - go test -race -cover ./...
 
 matrix:
-    allow_failures:
-        - go: tip
+  allow_failures:
+    - go: tip
 
 git:
   depth: 10

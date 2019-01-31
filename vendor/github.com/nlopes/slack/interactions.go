@@ -5,6 +5,7 @@ type InteractionType string
 
 // Types of interactions that can be received.
 const (
+	InteractionTypeDialogCancellation = InteractionType("dialog_cancellation")
 	InteractionTypeDialogSubmission   = InteractionType("dialog_submission")
 	InteractionTypeDialogSuggestion   = InteractionType("dialog_suggestion")
 	InteractionTypeInteractionMessage = InteractionType("interactive_message")

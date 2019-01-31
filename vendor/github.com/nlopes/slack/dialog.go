@@ -14,7 +14,7 @@ const (
 	InputTypeText InputType = "text"
 	// InputTypeTextArea textarea input
 	InputTypeTextArea InputType = "textarea"
-	// InputTypeSelect textfield input
+	// InputTypeSelect select menus input
 	InputTypeSelect InputType = "select"
 )
 
@@ -66,6 +66,17 @@ type DialogOpenResponse struct {
 // DialogResponseMetadata lists the error messages
 type DialogResponseMetadata struct {
 	Messages []string `json:"messages"`
+}
+
+// DialogInputValidationError is an error when user inputs incorrect value to form from within a dialog
+type DialogInputValidationError struct {
+	Name  string `json:"name"`
+	Error string `json:"error"`
+}
+
+// DialogInputValidationErrors lists the name of field and that error messages
+type DialogInputValidationErrors struct {
+	Errors []DialogInputValidationError `json:"errors"`
 }
 
 // OpenDialog opens a dialog window where the triggerID originated from.

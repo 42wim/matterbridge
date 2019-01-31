@@ -42,7 +42,9 @@ func unsafeSignatureVerifier(header http.Header, secret string) (_ SecretsVerifi
 	}
 
 	hash := hmac.New(sha256.New, []byte(secret))
-	hash.Write([]byte(fmt.Sprintf("v0:%s:", stimestamp)))
+	if _, err = hash.Write([]byte(fmt.Sprintf("v0:%s:", stimestamp))); err != nil {
+		return SecretsVerifier{}, err
+	}
 
 	return SecretsVerifier{
 		signature: bsignature,
@@ -66,7 +68,7 @@ func NewSecretsVerifier(header http.Header, secret string) (sv SecretsVerifier, 
 		return SecretsVerifier{}, err
 	}
 
-	diff := absDuration(time.Now().Sub(time.Unix(timestamp, 0)))
+	diff := absDuration(time.Since(time.Unix(timestamp, 0)))
 	if diff > 5*time.Minute {
 		return SecretsVerifier{}, fmt.Errorf("timestamp is too old")
 	}

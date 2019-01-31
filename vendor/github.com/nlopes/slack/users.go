@@ -226,8 +226,9 @@ func (api *Client) GetUserInfo(user string) (*User, error) {
 // GetUserInfoContext will retrieve the complete user information with a custom context
 func (api *Client) GetUserInfoContext(ctx context.Context, user string) (*User, error) {
 	values := url.Values{
-		"token": {api.token},
-		"user":  {user},
+		"token":          {api.token},
+		"user":           {user},
+		"include_locale": {strconv.FormatBool(true)},
 	}
 
 	response, err := userRequest(ctx, api.httpclient, "users.info", values, api)
@@ -302,10 +303,11 @@ func (t UserPagination) Next(ctx context.Context) (_ UserPagination, err error) 
 	t.previousResp = t.previousResp.initialize()
 
 	values := url.Values{
-		"limit":    {strconv.Itoa(t.limit)},
-		"presence": {strconv.FormatBool(t.presence)},
-		"token":    {t.c.token},
-		"cursor":   {t.previousResp.Cursor},
+		"limit":          {strconv.Itoa(t.limit)},
+		"presence":       {strconv.FormatBool(t.presence)},
+		"token":          {t.c.token},
+		"cursor":         {t.previousResp.Cursor},
+		"include_locale": {strconv.FormatBool(true)},
 	}
 
 	if resp, err = userRequest(ctx, t.c.httpclient, "users.list", values, t.c); err != nil {

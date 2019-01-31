@@ -8,8 +8,8 @@ import (
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/zfjagann/golang-ring"
 )
 
@@ -117,20 +117,14 @@ func (b *API) handleStream(c echo.Context) error {
 		return err
 	}
 	c.Response().Flush()
-	closeNotifier := c.Response().CloseNotify()
 	for {
-		select {
-		case <-closeNotifier:
-			return nil
-		default:
-			msg := b.Messages.Dequeue()
-			if msg != nil {
-				if err := json.NewEncoder(c.Response()).Encode(msg); err != nil {
-					return err
-				}
-				c.Response().Flush()
+		msg := b.Messages.Dequeue()
+		if msg != nil {
+			if err := json.NewEncoder(c.Response()).Encode(msg); err != nil {
+				return err
 			}
-			time.Sleep(200 * time.Millisecond)
+			c.Response().Flush()
 		}
+		time.Sleep(200 * time.Millisecond)
 	}
 }

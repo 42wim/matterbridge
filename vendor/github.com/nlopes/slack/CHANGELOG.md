@@ -1,3 +1,8 @@
+### v0.5.0 - January 20, 2019
+full differences can be viewed using `git log --oneline --decorate --color v0.4.0..v0.5.0`
+- Breaking changes: various old struct fields have been removed or updated to match slack's api.
+- deadlock fix in RTM disconnect.
+
 ### v0.4.0 - October 06, 2018
 full differences can be viewed using `git log --oneline --decorate --color v0.3.0..v0.4.0`
 - Breaking Change: renamed ApplyMessageOption, to mark it as unsafe,

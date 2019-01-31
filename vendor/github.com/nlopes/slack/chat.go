@@ -43,19 +43,18 @@ func (c chatResponseFull) getMessageTimestamp() string {
 
 // PostMessageParameters contains all the parameters necessary (including the optional ones) for a PostMessage() request
 type PostMessageParameters struct {
-	Username        string       `json:"username"`
-	AsUser          bool         `json:"as_user"`
-	Parse           string       `json:"parse"`
-	ThreadTimestamp string       `json:"thread_ts"`
-	ReplyBroadcast  bool         `json:"reply_broadcast"`
-	LinkNames       int          `json:"link_names"`
-	Attachments     []Attachment `json:"attachments"`
-	UnfurlLinks     bool         `json:"unfurl_links"`
-	UnfurlMedia     bool         `json:"unfurl_media"`
-	IconURL         string       `json:"icon_url"`
-	IconEmoji       string       `json:"icon_emoji"`
-	Markdown        bool         `json:"mrkdwn,omitempty"`
-	EscapeText      bool         `json:"escape_text"`
+	Username        string `json:"username"`
+	AsUser          bool   `json:"as_user"`
+	Parse           string `json:"parse"`
+	ThreadTimestamp string `json:"thread_ts"`
+	ReplyBroadcast  bool   `json:"reply_broadcast"`
+	LinkNames       int    `json:"link_names"`
+	UnfurlLinks     bool   `json:"unfurl_links"`
+	UnfurlMedia     bool   `json:"unfurl_media"`
+	IconURL         string `json:"icon_url"`
+	IconEmoji       string `json:"icon_emoji"`
+	Markdown        bool   `json:"mrkdwn,omitempty"`
+	EscapeText      bool   `json:"escape_text"`
 
 	// chat.postEphemeral support
 	Channel string `json:"channel"`
@@ -71,7 +70,6 @@ func NewPostMessageParameters() PostMessageParameters {
 		Parse:           DEFAULT_MESSAGE_PARSE,
 		ThreadTimestamp: DEFAULT_MESSAGE_THREAD_TIMESTAMP,
 		LinkNames:       DEFAULT_MESSAGE_LINK_NAMES,
-		Attachments:     nil,
 		UnfurlLinks:     DEFAULT_MESSAGE_UNFURL_LINKS,
 		UnfurlMedia:     DEFAULT_MESSAGE_UNFURL_MEDIA,
 		IconURL:         DEFAULT_MESSAGE_ICON_URL,

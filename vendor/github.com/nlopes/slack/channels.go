@@ -38,6 +38,29 @@ func channelRequest(ctx context.Context, client httpClient, path string, values 
 	return response, nil
 }
 
+type channelsConfig struct {
+	values url.Values
+}
+
+// GetChannelsOption option provided when getting channels.
+type GetChannelsOption func(*channelsConfig) error
+
+// GetChannelsOptionExcludeMembers excludes the members collection from each channel.
+func GetChannelsOptionExcludeMembers() GetChannelsOption {
+	return func(config *channelsConfig) error {
+		config.values.Add("exclude_members", "true")
+		return nil
+	}
+}
+
+// GetChannelsOptionExcludeArchived excludes archived channels from results.
+func GetChannelsOptionExcludeArchived() GetChannelsOption {
+	return func(config *channelsConfig) error {
+		config.values.Add("exclude_archived", "true")
+		return nil
+	}
+}
+
 // ArchiveChannel archives the given channel
 // see https://api.slack.com/methods/channels.archive
 func (api *Client) ArchiveChannel(channelID string) error {
@@ -150,8 +173,9 @@ func (api *Client) GetChannelInfo(channelID string) (*Channel, error) {
 // see https://api.slack.com/methods/channels.info
 func (api *Client) GetChannelInfoContext(ctx context.Context, channelID string) (*Channel, error) {
 	values := url.Values{
-		"token":   {api.token},
-		"channel": {channelID},
+		"token":          {api.token},
+		"channel":        {channelID},
+		"include_locale": {strconv.FormatBool(true)},
 	}
 
 	response, err := channelRequest(ctx, api.httpclient, "channels.info", values, api)
@@ -247,21 +271,29 @@ func (api *Client) KickUserFromChannelContext(ctx context.Context, channelID, us
 
 // GetChannels retrieves all the channels
 // see https://api.slack.com/methods/channels.list
-func (api *Client) GetChannels(excludeArchived bool) ([]Channel, error) {
-	return api.GetChannelsContext(context.Background(), excludeArchived)
+func (api *Client) GetChannels(excludeArchived bool, options ...GetChannelsOption) ([]Channel, error) {
+	return api.GetChannelsContext(context.Background(), excludeArchived, options...)
 }
 
 // GetChannelsContext retrieves all the channels with a custom context
 // see https://api.slack.com/methods/channels.list
-func (api *Client) GetChannelsContext(ctx context.Context, excludeArchived bool) ([]Channel, error) {
-	values := url.Values{
-		"token": {api.token},
+func (api *Client) GetChannelsContext(ctx context.Context, excludeArchived bool, options ...GetChannelsOption) ([]Channel, error) {
+	config := channelsConfig{
+		values: url.Values{
+			"token": {api.token},
+		},
 	}
 	if excludeArchived {
-		values.Add("exclude_archived", "1")
+		options = append(options, GetChannelsOptionExcludeArchived())
 	}
 
-	response, err := channelRequest(ctx, api.httpclient, "channels.list", values, api)
+	for _, opt := range options {
+		if err := opt(&config); err != nil {
+			return nil, err
+		}
+	}
+
+	response, err := channelRequest(ctx, api.httpclient, "channels.list", config.values, api)
 	if err != nil {
 		return nil, err
 	}
