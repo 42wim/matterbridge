@@ -93,14 +93,14 @@ See https://github.com/42wim/matterbridge/wiki
 
 ## Installing
 ### Binaries
-* Latest stable release [v1.12.2](https://github.com/42wim/matterbridge/releases/latest)
+* Latest stable release [v1.13.1](https://github.com/42wim/matterbridge/releases/latest)
 * Development releases (follows master) can be downloaded [here](https://dl.bintray.com/42wim/nightly/)
 
 ### Packages
 * [Overview](https://repology.org/metapackage/matterbridge/versions)
 
 ### Building
-Go 1.8+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH](https://golang.org/doc/code.html#GOPATH).
+Go 1.9+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH](https://golang.org/doc/code.html#GOPATH).
 
 After Go is setup, download matterbridge to your $GOPATH directory.
 
@@ -245,6 +245,7 @@ Matterbridge wouldn't exist without these libraries:
 * irc - https://github.com/lrstanley/girc
 * mattermost - https://github.com/mattermost/mattermost-server
 * matrix - https://github.com/matrix-org/gomatrix
+* sshchat - https://github.com/shazow/ssh-chat
 * slack - https://github.com/nlopes/slack
 * steam - https://github.com/Philipp15b/go-steam
 * telegram - https://github.com/go-telegram-bot-api/telegram-bot-api
