@@ -1,3 +1,11 @@
+# v1.13.1
+
+This release fixes go modules issues because of https://github.com/labstack/echo/issues/1272
+
+## Bugfix
+* general: fixes Unable to build 1.13.0 #698
+* api: move to labstack/echo/v4 fixes #698
+
 # v1.13.0
 
 ## New features
