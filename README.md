@@ -15,6 +15,7 @@
       [Matrix][mb-matrix] |
       [Slack][mb-slack] |
       [Mattermost][mb-mattermost] |
+      [Rocket.Chat][mb-rocketchat] |
       [XMPP][mb-xmpp] |
       [Twitch][mb-twitch] |
       [Zulip][mb-zulip] |
@@ -36,6 +37,7 @@
  * [Features](https://github.com/42wim/matterbridge/wiki/Features)
    * [API](#API)
  * [Requirements](#requirements)
+ * [Chat with us](#chat-with-us)
  * [Screenshots](https://github.com/42wim/matterbridge/wiki/)
  * [Installing](#installing)
    * [Binaries](#binaries)
@@ -87,6 +89,21 @@ Accounts to one of the supported bridges
 * [Twitch](https://twitch.tv)
 * [Ssh-chat](https://github.com/shazow/ssh-chat)
 * [Zulip](https://zulipchat.com)
+
+## Chat with us
+
+Questions or want to test on your favorite platform? Join below:
+
+* [Gitter][mb-gitter]
+* [IRC][mb-irc]
+* [Discord][mb-discord]
+* [Matrix][mb-matrix]
+* [Slack][mb-slack]
+* [Mattermost][mb-mattermost]
+* [Rocket.Chat][mb-rocketchat]
+* [XMPP][mb-xmpp]
+* [Twitch][mb-twitch]
+* [Zulip][mb-zulip]
 
 ## Screenshots
 See https://github.com/42wim/matterbridge/wiki
@@ -260,6 +277,7 @@ Matterbridge wouldn't exist without these libraries:
    [mb-matrix]: https://riot.im/app/#/room/#matterbridge:matrix.org
    [mb-slack]: https://join.slack.com/matterbridgechat/shared_invite/MjEwODMxNjU1NDMwLTE0OTk2MTU3NTMtMzZkZmRiNDZhOA
    [mb-mattermost]: https://framateam.org/signup_user_complete/?id=tfqm33ggop8x3qgu4boeieta6e
+   [mb-rocketchat]: https://open.rocket.chat/channel/matterbridge
    [mb-xmpp]: https://inverse.chat/
    [mb-twitch]: https://www.twitch.tv/matterbridge
    [mb-zulip]: https://matterbridge.zulipchat.com/register/
