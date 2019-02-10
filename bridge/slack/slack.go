@@ -293,6 +293,12 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 		return "", err
 	}
 
+	// Handle prefix hint for unthreaded messages.
+	if msg.ParentID == "msg-parent-not-found" {
+		msg.ParentID = ""
+		msg.Text = fmt.Sprintf("[thread]: %s", msg.Text)
+	}
+
 	// Handle message deletions.
 	if handled, err = b.deleteMessage(&msg, channelInfo); handled {
 		return msg.ID, err
