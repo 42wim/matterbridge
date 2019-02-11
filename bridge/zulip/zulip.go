@@ -100,7 +100,23 @@ func (b *Bzulip) getChannel(id int) string {
 
 func (b *Bzulip) handleQueue() error {
 	for {
-		messages, _ := b.q.GetEvents()
+		messages, err := b.q.GetEvents()
+		switch err {
+		case gzb.BackoffError:
+			time.Sleep(time.Second * 5)
+		case gzb.BadEventQueueError:
+			b.Log.Info("got a bad event queue id error, reconnecting")
+			b.bot.Queues = nil
+			b.q, err = b.bot.RegisterAll()
+			if err != nil {
+				b.Log.Errorf("reconnecting failed: %s. Sleeping 10 seconds", err)
+				time.Sleep(time.Second * 10)
+				continue
+			}
+			continue
+		default:
+			b.Log.Debugf("receiving error: %#v", err)
+		}
 		for _, m := range messages {
 			b.Log.Debugf("== Receiving %#v", m)
 			// ignore our own messages
