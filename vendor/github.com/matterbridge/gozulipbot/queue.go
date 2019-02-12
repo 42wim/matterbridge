@@ -1,6 +1,7 @@
 package gozulipbot
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -18,6 +19,7 @@ var (
 	BackoffError       = fmt.Errorf("Too many requests")
 	BadEventQueueError = fmt.Errorf("BAD_EVENT_QUEUE_ID error")
 	UnknownError       = fmt.Errorf("Error was unknown")
+	NoJSONError        = fmt.Errorf("No JSON in body found")
 )
 
 type Queue struct {
@@ -150,6 +152,9 @@ func (q *Queue) GetEvents() ([]EventMessage, error) {
 	case resp.StatusCode == 403:
 		return nil, UnauthorizedError
 	case resp.StatusCode >= 400:
+		if bytes.HasPrefix(body, []byte("<")) {
+			return nil, NoJSONError
+		}
 		qErr, err := q.ParseError(body)
 		if err != nil || qErr == nil {
 			return nil, UnknownError

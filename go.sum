@@ -70,8 +70,8 @@ github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91 h1:KzDEcy8eDb
 github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91/go.mod h1:ECDRehsR9TYTKCAsRS8/wLeOk6UUqDydw47ln7wG41Q=
 github.com/matterbridge/gomatrix v0.0.0-20190102230110-6f9631ca6dea h1:kaADGqpK4gGO2BpzEyJrBxq2Jc57Rsar4i2EUxcACUc=
 github.com/matterbridge/gomatrix v0.0.0-20190102230110-6f9631ca6dea/go.mod h1:+jWeaaUtXQbBRdKYWfjW6JDDYiI2XXE+3NnTjW5kg8g=
-github.com/matterbridge/gozulipbot v0.0.0-20190211002717-befe50663a92 h1:4L4vltV2H74Wl+fuwH3xDBe5jvFTn85UXdTqkCPs6Mg=
-github.com/matterbridge/gozulipbot v0.0.0-20190211002717-befe50663a92/go.mod h1:yAjnZ34DuDyPHMPHHjOsTk/FefW4JJjoMMCGt/8uuQA=
+github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18 h1:fLhwXtWGtfTgZVxHG1lcKjv+re7dRwyyuYFNu69xdho=
+github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18/go.mod h1:yAjnZ34DuDyPHMPHHjOsTk/FefW4JJjoMMCGt/8uuQA=
 github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61 h1:R/MgM/eUyRBQx2FiH6JVmXck8PaAuKfe2M1tWIzW7nE=
 github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61/go.mod h1:iXGEotOvwI1R1SjLxRc+BF5rUORTMtE0iMZBT2lxqAU=
 github.com/mattermost/mattermost-server v5.5.0+incompatible h1:0wcLGgYtd+YImtLDPf2AOfpBHxbU4suATx+6XKw1XbU=

@@ -104,6 +104,9 @@ func (b *Bzulip) handleQueue() error {
 		switch err {
 		case gzb.BackoffError:
 			time.Sleep(time.Second * 5)
+		case gzb.NoJSONError:
+			b.Log.Error("Response wasn't JSON, server down or restarting? sleeping 10 seconds")
+			time.Sleep(time.Second * 10)
 		case gzb.BadEventQueueError:
 			b.Log.Info("got a bad event queue id error, reconnecting")
 			b.bot.Queues = nil
@@ -113,9 +116,13 @@ func (b *Bzulip) handleQueue() error {
 				time.Sleep(time.Second * 10)
 				continue
 			}
-			continue
+		case gzb.HeartbeatError:
+			b.Log.Debug("heartbeat received.")
 		default:
 			b.Log.Debugf("receiving error: %#v", err)
+		}
+		if err != nil {
+			continue
 		}
 		for _, m := range messages {
 			b.Log.Debugf("== Receiving %#v", m)

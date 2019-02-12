@@ -25,7 +25,7 @@ require (
 	github.com/lusis/slack-test v0.0.0-20180109053238-3c758769bfa6 // indirect
 	github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91
 	github.com/matterbridge/gomatrix v0.0.0-20190102230110-6f9631ca6dea
-	github.com/matterbridge/gozulipbot v0.0.0-20190211002717-befe50663a92
+	github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18
 	github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61
 	github.com/mattermost/mattermost-server v5.5.0+incompatible
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
