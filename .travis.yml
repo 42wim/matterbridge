@@ -12,7 +12,7 @@ git:
 env:
   global:
     - GOOS=linux GOARCH=amd64
-    - GOLANGCI_VERSION="v1.12.3"
+    - GOLANGCI_VERSION="v1.14.0"
 
 matrix:
   # It's ok if our code fails on unstable development versions of Go.
