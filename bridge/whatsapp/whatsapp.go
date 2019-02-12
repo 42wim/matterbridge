@@ -17,9 +17,10 @@ import (
 )
 
 const (
-
 	// Account config parameters
-	cfgNumber = "Number"
+	cfgNumber         = "Number"
+	qrOnWhiteTerminal = "QrOnWhiteTerminal"
+	sessionFile       = "SessionFile"
 )
 
 type Bwhatsapp struct {
@@ -159,7 +160,7 @@ func (b *Bwhatsapp) Login() error {
 
 	// TODO qrCode, err := qrcode.Encode(code, qrcode.Low, 256) to encode as image/png
 	// and possibly send it to connected channels (to admin) to authorize the app
-	invert := b.GetBoolOrDefault("QrOnWhiteTerminal", false)
+	invert := b.GetBoolOrDefault(qrOnWhiteTerminal, false)
 	qrChan := qrFromTerminal(invert)
 
 	session, err := b.conn.Login(qrChan)
@@ -203,7 +204,7 @@ func qrFromTerminal(invert bool) chan string {
 
 func (b *Bwhatsapp) readSession() (whatsapp.Session, error) {
 	session := whatsapp.Session{}
-	sessionFile := b.Config.GetString("SessionFile")
+	sessionFile := b.Config.GetString(sessionFile)
 
 	if sessionFile == "" {
 		return session, errors.New("If you won't set SessionFile then you will need to scan QR code on every restart")
@@ -223,7 +224,7 @@ func (b *Bwhatsapp) readSession() (whatsapp.Session, error) {
 }
 
 func (b *Bwhatsapp) writeSession(session whatsapp.Session) error {
-	sessionFile := b.Config.GetString("SessionFile")
+	sessionFile := b.Config.GetString(sessionFile)
 
 	if sessionFile == "" {
 		// we already sent a warning while starting the bridge, so let's be quiet here
