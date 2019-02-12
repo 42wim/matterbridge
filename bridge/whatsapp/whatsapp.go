@@ -444,7 +444,3 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 //}
 // TODO HandleRawMessage
 // TODO HandleAudioMessage
-
-// TODO questions to Tulir
-// Why are you locking on message processing? https://github.com/tulir/mautrix-whatsapp/blob/513eb18e2d59bada0dd515ee1abaaf38a3bfe3d5/portal.go#L212
-// How are you showing nicks in WhatsApp? Inside message?
