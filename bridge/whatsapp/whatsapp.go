@@ -115,12 +115,6 @@ func (b *Bwhatsapp) Connect() error {
 	}
 	b.startedAt = uint64(time.Now().Unix())
 
-	_, err = b.conn.Chats()
-	if err != nil {
-		b.Log.Errorln("Error on update of chats: %v", err)
-		return nil
-	}
-
 	_, err = b.conn.Contacts()
 	if err != nil {
 		b.Log.Errorln("Error on update of contacts: %v", err)
@@ -271,7 +265,7 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
 
 	// msg.Channel target group name
-	// msg.Username empty // TODO why I'm not getting Nickname
+	// msg.Username empty
 	// msg.UserID a weird string , probably slack user id
 	// msg.Avatar has a nice image
 	// msg.Timestamp has a nice timestamp with loc(ation) / timezone
@@ -350,7 +344,7 @@ func (b *Bwhatsapp) HandleError(err error) {
 }
 
 func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
-	if message.Info.FromMe { // || !strings.Contains(strings.ToLower(message.Text), "@echo") { // || message.Info.Timestamp < wh.startTime {
+	if message.Info.FromMe { // || !strings.Contains(strings.ToLower(message.Text), "@echo") {
 		return
 	}
 	// whatsapp sends last messages to show context , cut them
@@ -358,31 +352,7 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 		return
 	}
 
-	//type MessageInfo struct {
-	//	Id              string
-	//	RemoteJid       string
-	//	SenderJid       string
-	//	Timestamp       uint64
-	//	PushName        string
-	//	Status          MessageStatus
-	//	QuotedMessageID string // TODO map to parentId
-	//
-	//	Source *proto.WebMessageInfo
-	//}
-	//
-	//type MessageStatus int
-	//
-	//const (
-	//	Error       MessageStatus = 0
-	//	Pending                   = 1
-	//	ServerAck                 = 2
-	//	DeliveryAck               = 3
-	//	Read                      = 4
-	//	Played                    = 5
-	//)
-
 	messageTime := time.Unix(int64(message.Info.Timestamp), 0) // TODO check how behaves between timezones
-	fmt.Println(messageTime.Format(time.UnixDate))             // TODO delete
 	groupJid := message.Info.RemoteJid
 
 	senderJid := message.Info.SenderJid
@@ -415,25 +385,11 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 		Account:   b.Account,
 		Protocol:  b.Protocol,
 		Extra:     make(map[string][]interface{}),
-		//		Avatar: b.getAvatar(ev.Message.From.Username),
-		//		ParentID: TODO, // TODO handle thread replies
+		//		Avatar: b.getAvatar(ev.Message.From.Username), // TODO get avatar
+		//		ParentID: TODO, // TODO handle thread replies  // map from Info.QuotedMessageID string
+		//	Event     string    `json:"event"`
+		//	Gateway   string  // will be added during message processing
 		ID: message.Info.Id}
-
-	//type Message struct {
-	//	Text      string    `json:"text"`
-	//	Channel   string    `json:"channel"`
-	//	Username  string    `json:"username"`
-	//	UserID    string    `json:"userid"` // userid on the bridge
-	//	Avatar    string    `json:"avatar"`
-	//	Account   string    `json:"account"`
-	//	Event     string    `json:"event"`
-	//	Protocol  string    `json:"protocol"`
-	//	Gateway   string    `json:"gateway"`
-	//	ParentID  string    `json:"parent_id"`
-	//	Timestamp time.Time `json:"timestamp"`
-	//	ID        string    `json:"id"`
-	//	Extra     map[string][]interface{}
-	//}
 
 	b.Log.Debugf("<= Message is %#v", rmsg)
 	b.Remote <- rmsg
