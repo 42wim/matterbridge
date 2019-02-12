@@ -13,9 +13,7 @@ import (
 
 	"github.com/Baozisoftware/qrcode-terminal-go"
 	"github.com/Rhymen/go-whatsapp"
-	// "maunium.net/go/mautrix-whatsapp/whatsapp-ext"
-	//  "@c.us" -> "@s.whatsapp.net"
-	// "github.com/tulir/mautrix-whatsapp"
+	"maunium.net/go/mautrix-whatsapp/whatsapp-ext"
 )
 
 const (
@@ -29,11 +27,13 @@ type Bwhatsapp struct {
 
 	// https://github.com/Rhymen/go-whatsapp/blob/c31092027237441cffba1b9cb148eadf7c83c3d2/session.go#L18-L21
 	session *whatsapp.Session
-	// connExt *whatsappExt.ExtendedConn // https://github.com/tulir/mautrix-whatsapp/blob/master/whatsapp-ext/whatsapp.go
-	conn      *whatsapp.Conn
+	conn    *whatsapp.Conn
+	// https://github.com/tulir/mautrix-whatsapp/blob/master/whatsapp-ext/whatsapp.go
+	connExt   *whatsappExt.ExtendedConn
 	startedAt uint64
 
-	users map[string]whatsapp.Contact
+	users       map[string]whatsapp.Contact
+	userAvatars map[string]string
 }
 
 func New(cfg *bridge.Config) bridge.Bridger {
@@ -50,7 +50,8 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Bwhatsapp{
 		Config: cfg,
 
-		users: make(map[string]whatsapp.Contact),
+		users:       make(map[string]whatsapp.Contact),
+		userAvatars: make(map[string]string),
 
 		//uuid:                   xid.New().String(),
 		//users:                  map[string]*slack.User{},
@@ -85,8 +86,9 @@ func (b *Bwhatsapp) Connect() error {
 	}
 
 	b.conn = conn
-	//b.connExt = whatsappExt.ExtendConn(b.conn)
-	//b.connExt.SetClientName("Matterbridge WhatsApp bridge", "mb-wa")
+	b.connExt = whatsappExt.ExtendConn(b.conn)
+	// TODO do we want to use it? b.connExt.SetClientName("Matterbridge WhatsApp bridge", "mb-wa")
+
 	b.conn.AddHandler(b)
 	b.Log.Debugln("WhatsApp connection successful")
 
@@ -133,18 +135,21 @@ func (b *Bwhatsapp) Connect() error {
 		}
 	}
 
-	// get avatar URLs
-	// https://web.whatsapp.com/pp
-	// 	?e=https%3A%2F%2Fpps.whatsapp.net%2Fv%2Ft61.11540-24%2F16489067_255781518198245_6804985813445640192_n.jpg%3Foe%3D5C66A1FA%26oh%3D20cd213793de891d1e256b27a1cf1075
-	//  &t=s
-	//  &u=remotenumber%40c.us
-	// 	&i=1485652465
-	// https://web.whatsapp.com/pp
-	// 	?e=https://pps.whatsapp.net/v/t61.11540-24/16489067_255781518198245_6804985813445640192_n.jpg?oe=5C66A1FA&oh=20cd213793de891d1e256b27a1cf1075 (the actual photo)
-	// 	&t=s
-	// 	&u=remotenumber@c.us
-	// 	&i=1485652465
-	GetProfilePicThumb
+	// get user avatar asynchronously
+	go func() {
+		b.Log.Debug("Getting user avatars..")
+
+		for jid := range b.users {
+			info, err := b.connExt.GetProfilePicThumb(jid)
+			if err != nil {
+				b.Log.Warnf("Could not get profile photo of %s: %v", jid, err)
+
+			} else {
+				b.userAvatars[jid] = info.URL
+			}
+		}
+		b.Log.Debug("Finished getting avatars..")
+	}()
 
 	return nil
 }
@@ -412,11 +417,14 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 		Account:   b.Account,
 		Protocol:  b.Protocol,
 		Extra:     make(map[string][]interface{}),
-		//		Avatar: b.getAvatar(ev.Message.From.Username), // TODO get avatar
 		//		ParentID: TODO, // TODO handle thread replies  // map from Info.QuotedMessageID string
 		//	Event     string    `json:"event"`
 		//	Gateway   string  // will be added during message processing
 		ID: message.Info.Id}
+
+	if avatarUrl, exists := b.userAvatars[senderJid]; exists {
+		rmsg.Avatar = avatarUrl
+	}
 
 	b.Log.Debugf("<= Message is %#v", rmsg)
 	b.Remote <- rmsg
