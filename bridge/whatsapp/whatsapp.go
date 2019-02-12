@@ -13,8 +13,6 @@ import (
 
 	"github.com/Baozisoftware/qrcode-terminal-go"
 	"github.com/Rhymen/go-whatsapp"
-
-	"maunium.net/go/mautrix-whatsapp/types" // TODO check what is used?
 	// "maunium.net/go/mautrix-whatsapp/whatsapp-ext"
 	//  "@c.us" -> "@s.whatsapp.net"
 	// "github.com/tulir/mautrix-whatsapp"
