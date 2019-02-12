@@ -35,8 +35,9 @@
 
 ### Table of Contents
  * [Features](https://github.com/42wim/matterbridge/wiki/Features)
+   * [Natively supported](#natively-supported)
+   * [3rd party via matterbridge api](#3rd-party-via-matterbridge-api)
    * [API](#API)
- * [Requirements](#requirements)
  * [Chat with us](#chat-with-us)
  * [Screenshots](https://github.com/42wim/matterbridge/wiki/)
  * [Installing](#installing)
@@ -63,18 +64,8 @@
 * [Private groups](https://github.com/42wim/matterbridge/wiki/Features#private-groups)
 * [API](https://github.com/42wim/matterbridge/wiki/Features#api)
 
-### API
-The API is very basic at the moment.   
-More info and examples on the [wiki](https://github.com/42wim/matterbridge/wiki/Api).
+### Natively supported
 
-Used by at least 3 projects. Feel free to make a PR to add your project to this list.
-
-* [MatterLink](https://github.com/elytra/MatterLink) (Matterbridge link for Minecraft Server chat)
-* [pyCord](https://github.com/NikkyAI/pyCord) (crossplatform chatbot)
-* [Mattereddit](https://github.com/bonehurtingjuice/mattereddit) (Reddit chat support)
-
-## Requirements
-Accounts to one of the supported bridges
 * [Mattermost](https://github.com/mattermost/mattermost-server/) 4.x, 5.x
 * [IRC](http://www.mirc.com/servers.html)
 * [XMPP](https://xmpp.org)
@@ -89,6 +80,22 @@ Accounts to one of the supported bridges
 * [Twitch](https://twitch.tv)
 * [Ssh-chat](https://github.com/shazow/ssh-chat)
 * [Zulip](https://zulipchat.com)
+
+### 3rd party via matterbridge api
+* [Minecraft](https://github.com/elytra/MatterLink)
+* [Reddit](https://github.com/bonehurtingjuice/mattereddit)
+* [Facebook messenger](https://github.com/VictorNine/fbridge)
+
+### API
+The API is very basic at the moment.   
+More info and examples on the [wiki](https://github.com/42wim/matterbridge/wiki/Api).
+
+Used by the projects below. Feel free to make a PR to add your project to this list.
+
+* [MatterLink](https://github.com/elytra/MatterLink) (Matterbridge link for Minecraft Server chat)
+* [pyCord](https://github.com/NikkyAI/pyCord) (crossplatform chatbot)
+* [Mattereddit](https://github.com/bonehurtingjuice/mattereddit) (Reddit chat support)
+* [fbridge](https://github.com/VictorNine/fbridge) (Facebook messenger support)
 
 ## Chat with us
 
@@ -239,6 +246,7 @@ Want to tip ?
 * [matterlink](https://github.com/elytra/MatterLink)
 * [mattermost-plugin](https://github.com/matterbridge/mattermost-plugin) - Run matterbridge as a plugin in mattermost
 * [pyCord](https://github.com/NikkyAI/pyCord) (crossplatform chatbot)
+* [fbridge](https://github.com/VictorNine/fbridge) (Facebook messenger support)
 
 ## Articles
 * [matterbridge on kubernetes](https://medium.freecodecamp.org/using-kubernetes-to-deploy-a-chat-gateway-or-when-technology-works-like-its-supposed-to-a169a8cd69a3)
