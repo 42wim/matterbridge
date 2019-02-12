@@ -17,6 +17,7 @@
       [Mattermost][mb-mattermost] |
       [XMPP][mb-xmpp] |
       [Twitch][mb-twitch] |
+      [WhatsApp][mb-whatsapp] |
       [Zulip][mb-zulip] |
       And more...
    </sup>
@@ -86,6 +87,7 @@ Accounts to one of the supported bridges
 * [Steam](https://store.steampowered.com/)
 * [Twitch](https://twitch.tv)
 * [Ssh-chat](https://github.com/shazow/ssh-chat)
+* [WhatsApp](https://www.whatsapp.com/)
 * [Zulip](https://zulipchat.com)
 
 ## Screenshots
@@ -250,6 +252,7 @@ Matterbridge wouldn't exist without these libraries:
 * steam - https://github.com/Philipp15b/go-steam
 * telegram - https://github.com/go-telegram-bot-api/telegram-bot-api
 * xmpp - https://github.com/mattn/go-xmpp
+* whatsapp - https://github.com/Rhymen/go-whatsapp/
 * zulip - https://github.com/ifo/gozulipbot
 
 <!-- Links -->
@@ -262,4 +265,5 @@ Matterbridge wouldn't exist without these libraries:
    [mb-mattermost]: https://framateam.org/signup_user_complete/?id=tfqm33ggop8x3qgu4boeieta6e
    [mb-xmpp]: https://inverse.chat/
    [mb-twitch]: https://www.twitch.tv/matterbridge
+   [mb-whatsapp]: https://www.whatsapp.com/
    [mb-zulip]: https://matterbridge.zulipchat.com/register/
