@@ -1162,6 +1162,10 @@ Number="+48111222333"
 # optional (by default the session is stored only in memory, till restarting matterbridge)
 SessionFile="session-48111222333.gob"
 
+# If your terminal is white we need to invert QR code in order for it to be scanned properly
+# optional (default false)
+QrOnWhiteTerminal=true
+
 # Messages will be seen by other WhatsApp contacts as coming from the bridge. Original nick will be part of the message.
 RemoteNickFormat="@{NICK}: "
 

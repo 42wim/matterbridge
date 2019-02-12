@@ -159,8 +159,8 @@ func (b *Bwhatsapp) Login() error {
 
 	// TODO qrCode, err := qrcode.Encode(code, qrcode.Low, 256) to encode as image/png
 	// and possibly send it to connected channels (to admin) to authorize the app
-	// TODO invert configured in settings
-	qrChan := qrFromTerminal(true)
+	invert := b.GetBoolOrDefault("QrOnWhiteTerminal", false)
+	qrChan := qrFromTerminal(invert)
 
 	session, err := b.conn.Login(qrChan)
 	if err != nil {
