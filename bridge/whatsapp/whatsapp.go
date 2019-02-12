@@ -32,6 +32,8 @@ type Bwhatsapp struct {
 	// connExt *whatsappExt.ExtendedConn // https://github.com/tulir/mautrix-whatsapp/blob/master/whatsapp-ext/whatsapp.go
 	conn      *whatsapp.Conn
 	startedAt uint64
+
+	users map[string]whatsapp.Contact
 }
 
 func New(cfg *bridge.Config) bridge.Bridger {
@@ -47,6 +49,8 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	//}
 	b := &Bwhatsapp{
 		Config: cfg,
+
+		users: make(map[string]whatsapp.Contact),
 
 		//uuid:                   xid.New().String(),
 		//users:                  map[string]*slack.User{},
@@ -121,6 +125,13 @@ func (b *Bwhatsapp) Connect() error {
 	if err != nil {
 		b.Log.Errorln("Error on update of contacts: %v", err)
 		return nil
+	}
+
+	for id, contact := range b.conn.Store.Contacts {
+		if !isGroupJid(id) && id != "status@broadcast" {
+			// it is user
+			b.users[id] = contact
+		}
 	}
 
 	b.Log.Debugln("Importing all contacts done")
@@ -271,9 +282,9 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 			// Id: "", // TODO id
 			// TODO Timestamp
 			RemoteJid: msg.Channel, // which equals to group id
-			PushName:  "pushname",
+
 		},
-		Text: msg.Text,
+		Text: msg.Username + msg.Text,
 	}
 
 	// TODO adapt gitter code
@@ -380,10 +391,24 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 		senderJid = *message.Info.Source.Participant
 	}
 
+	// translate sender's Jid to the nicest username we can get
+	senderName := senderJid
+	if sender, exists := b.users[senderJid]; exists {
+		if sender.Name != "" {
+			senderName = sender.Name
+
+		} else {
+			// if user is not in phone contacts
+			// it is the most obvious scenario unless you sync your phone contacts with some remote updated source
+			// users can change it in their WhatsApp settings -> profile -> click on Avatar
+			senderName = sender.Notify
+		}
+	}
+
 	b.Log.Debugf("<= Sending message from %s on %s to gateway", senderJid, b.Account)
 	rmsg := config.Message{
 		UserID:    senderJid,
-		Username:  senderJid, // TODO mapping
+		Username:  senderName,
 		Text:      message.Text,
 		Timestamp: messageTime,
 		Channel:   groupJid,
