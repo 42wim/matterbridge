@@ -94,8 +94,10 @@ func (b *Bwhatsapp) Connect() error {
 	// TODO try to load session from env vars or otherwise for Azure and other clouds
 	// now implemented: load session from file
 	if b.session == nil {
-		session, err := readSession()
+		session, err := b.readSession()
+
 		if err == nil {
+			b.Log.Debugln("Restoring WhatsApp session..")
 			sess, err := b.conn.RestoreSession(session) // https://github.com/Rhymen/go-whatsapp#restore
 			if err != nil {                             // restore session connection timed out
 				// TODO return or continue to normal login?
@@ -104,6 +106,8 @@ func (b *Bwhatsapp) Connect() error {
 
 			b.session = &sess
 			b.Log.Debugln("Session restored successfully!")
+		} else {
+			b.Log.Warn(err.Error())
 		}
 	}
 
@@ -121,6 +125,7 @@ func (b *Bwhatsapp) Connect() error {
 		return nil
 	}
 
+	// map all the users
 	for id, contact := range b.conn.Store.Contacts {
 		if !isGroupJid(id) && id != "status@broadcast" {
 			// it is user
@@ -128,7 +133,18 @@ func (b *Bwhatsapp) Connect() error {
 		}
 	}
 
-	b.Log.Debugln("Importing all contacts done")
+	// get avatar URLs
+	// https://web.whatsapp.com/pp
+	// 	?e=https%3A%2F%2Fpps.whatsapp.net%2Fv%2Ft61.11540-24%2F16489067_255781518198245_6804985813445640192_n.jpg%3Foe%3D5C66A1FA%26oh%3D20cd213793de891d1e256b27a1cf1075
+	//  &t=s
+	//  &u=remotenumber%40c.us
+	// 	&i=1485652465
+	// https://web.whatsapp.com/pp
+	// 	?e=https://pps.whatsapp.net/v/t61.11540-24/16489067_255781518198245_6804985813445640192_n.jpg?oe=5C66A1FA&oh=20cd213793de891d1e256b27a1cf1075 (the actual photo)
+	// 	&t=s
+	// 	&u=remotenumber@c.us
+	// 	&i=1485652465
+	GetProfilePicThumb
 
 	return nil
 }
@@ -151,7 +167,7 @@ func (b *Bwhatsapp) Login() error {
 	b.Log.Infof("Logged into session: %#v", session)
 	b.Log.Infof("Connection: %#v", b.conn)
 
-	err = writeSession(session)
+	err = b.writeSession(session)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error saving session: %v\n", err)
 	}
@@ -180,9 +196,15 @@ func qrFromTerminal(invert bool) chan string {
 	return qr
 }
 
-func readSession() (whatsapp.Session, error) {
+func (b *Bwhatsapp) readSession() (whatsapp.Session, error) {
 	session := whatsapp.Session{}
-	file, err := os.Open("whatsappSession.gob")
+	sessionFile := b.Config.GetString("SessionFile")
+
+	if sessionFile == "" {
+		return session, errors.New("If you won't set SessionFile then you will need to scan QR code on every restart")
+	}
+
+	file, err := os.Open(sessionFile)
 	if err != nil {
 		return session, err
 	}
@@ -195,18 +217,23 @@ func readSession() (whatsapp.Session, error) {
 	return session, nil
 }
 
-func writeSession(session whatsapp.Session) error {
-	file, err := os.Create("whatsappSession.gob")
+func (b *Bwhatsapp) writeSession(session whatsapp.Session) error {
+	sessionFile := b.Config.GetString("SessionFile")
+
+	if sessionFile == "" {
+		// we already sent a warning while starting the bridge, so let's be quiet here
+		return nil
+	}
+
+	file, err := os.Create(sessionFile)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 	encoder := gob.NewEncoder(file)
 	err = encoder.Encode(session)
-	if err != nil {
-		return err
-	}
-	return nil
+
+	return err
 }
 
 func (b *Bwhatsapp) Disconnect() error {
