@@ -5,8 +5,7 @@ import (
 	"errors"
 	"os"
 
-	"github.com/Baozisoftware/qrcode-terminal-go"
-
+	qrcodeTerminal "github.com/Baozisoftware/qrcode-terminal-go"
 	"github.com/Rhymen/go-whatsapp"
 )
 

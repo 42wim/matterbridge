@@ -12,7 +12,7 @@ import (
 
 	"github.com/Rhymen/go-whatsapp"
 
-	"maunium.net/go/mautrix-whatsapp/whatsapp-ext"
+	whatsappExt "maunium.net/go/mautrix-whatsapp/whatsapp-ext"
 )
 
 const (
@@ -124,7 +124,7 @@ func (b *Bwhatsapp) Connect() error {
 
 	_, err = b.conn.Contacts()
 	if err != nil {
-		return fmt.Errorf("Error on update of contacts: %v", err)
+		return fmt.Errorf("error on update of contacts: %v", err)
 	}
 
 	// map all the users
