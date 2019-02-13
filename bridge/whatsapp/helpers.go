@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/Baozisoftware/qrcode-terminal-go"
+
 	"github.com/Rhymen/go-whatsapp"
 )
 
@@ -28,7 +29,7 @@ func (b *Bwhatsapp) readSession() (whatsapp.Session, error) {
 	sessionFile := b.Config.GetString(sessionFile)
 
 	if sessionFile == "" {
-		return session, errors.New("If you won't set SessionFile then you will need to scan QR code on every restart")
+		return session, errors.New("if you won't set SessionFile then you will need to scan QR code on every restart")
 	}
 
 	file, err := os.Open(sessionFile)

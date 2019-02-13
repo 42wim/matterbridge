@@ -69,8 +69,8 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 		//	Gateway   string  // will be added during message processing
 		ID: message.Info.Id}
 
-	if avatarUrl, exists := b.userAvatars[senderJid]; exists {
-		rmsg.Avatar = avatarUrl
+	if avatarURL, exists := b.userAvatars[senderJid]; exists {
+		rmsg.Avatar = avatarURL
 	}
 
 	b.Log.Debugf("<= Message is %#v", rmsg)

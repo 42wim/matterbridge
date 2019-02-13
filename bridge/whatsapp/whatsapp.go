@@ -11,6 +11,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 
 	"github.com/Rhymen/go-whatsapp"
+
 	"maunium.net/go/mautrix-whatsapp/whatsapp-ext"
 )
 
@@ -79,7 +80,7 @@ func (b *Bwhatsapp) Connect() error {
 	b.Log.Debugln("Connecting to WhatsApp..")
 	conn, err := whatsapp.NewConn(20 * time.Second)
 	if err != nil {
-		return errors.New("Failed to connect to WhatsApp: " + err.Error())
+		return errors.New("failed to connect to WhatsApp: " + err.Error())
 	}
 
 	b.conn = conn
@@ -90,20 +91,22 @@ func (b *Bwhatsapp) Connect() error {
 	b.Log.Debugln("WhatsApp connection successful")
 
 	// load existing session in order to keep it between restarts
-	// TODO try to load session from env vars or otherwise for Azure and other clouds
-	// now implemented: load session from file
 	if b.session == nil {
-		session, err := b.readSession()
+		var session whatsapp.Session
+		session, err = b.readSession()
 
 		if err == nil {
 			b.Log.Debugln("Restoring WhatsApp session..")
-			sess, err := b.conn.RestoreSession(session) // https://github.com/Rhymen/go-whatsapp#restore
-			if err != nil {                             // restore session connection timed out
+
+			// https://github.com/Rhymen/go-whatsapp#restore
+			session, err = b.conn.RestoreSession(session)
+			if err != nil {
 				// TODO return or continue to normal login?
-				return errors.New("Failed to restore session: " + err.Error())
+				// restore session connection timed out (I couldn't get over it without logging in again)
+				return errors.New("failed to restore session: " + err.Error())
 			}
 
-			b.session = &sess
+			b.session = &session
 			b.Log.Debugln("Session restored successfully!")
 		} else {
 			b.Log.Warn(err.Error())
@@ -112,7 +115,8 @@ func (b *Bwhatsapp) Connect() error {
 
 	// login to a new session
 	if b.session == nil {
-		if err := b.Login(); err != nil {
+		err = b.Login()
+		if err != nil {
 			return err
 		}
 	}
@@ -120,8 +124,7 @@ func (b *Bwhatsapp) Connect() error {
 
 	_, err = b.conn.Contacts()
 	if err != nil {
-		b.Log.Errorln("Error on update of contacts: %v", err)
-		return nil
+		return fmt.Errorf("Error on update of contacts: %v", err)
 	}
 
 	// map all the users
@@ -208,7 +211,7 @@ func (b *Bwhatsapp) JoinChannel(channel config.ChannelInfo) error {
 	if byJid {
 		// channel.Name specifies static group jID, not the name
 		if _, exists := b.conn.Store.Contacts[channel.Name]; !exists {
-			return fmt.Errorf("Account doesn't belong to group with jid %s", channel.Name)
+			return fmt.Errorf("account doesn't belong to group with jid %s", channel.Name)
 		}
 	} else {
 		// channel.Name specifies group name that might change, warn about it
@@ -219,7 +222,8 @@ func (b *Bwhatsapp) JoinChannel(channel config.ChannelInfo) error {
 			}
 		}
 
-		if len(jids) == 0 {
+		switch len(jids) {
+		case 0:
 			// didn't match any group - print out possibilites
 			// TODO sort
 			// copy b;
@@ -232,13 +236,13 @@ func (b *Bwhatsapp) JoinChannel(channel config.ChannelInfo) error {
 					fmt.Printf("%s %s\n", contact.Jid, contact.Name)
 				}
 			}
-			return fmt.Errorf("Please specify group's JID from the below list instead of the name '%s'", channel.Name)
+			return fmt.Errorf("please specify group's JID from the below list instead of the name '%s'", channel.Name)
 
-		} else if len(jids) > 1 {
-			return fmt.Errorf("There is more than one group with name '%s'. Please specify one of JIDs as channel name: %v", channel.Name, jids)
+		case 1:
+			return fmt.Errorf("group name might change. Please configure gateway with channel=\"%v\" instead of channel=\"%v\"", jids[0], channel.Name)
 
-		} else {
-			return fmt.Errorf("Group name might change. Please configure gateway with channel=\"%v\" instead of channel=\"%v\"", jids[0], channel.Name)
+		default:
+			return fmt.Errorf("there is more than one group with name '%s'. Please specify one of JIDs as channel name: %v", channel.Name, jids)
 		}
 	}
 
