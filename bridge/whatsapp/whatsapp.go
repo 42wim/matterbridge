@@ -1,7 +1,6 @@
 package bwhatsapp
 
 import (
-	"encoding/gob"
 	"errors"
 	"fmt"
 	"os"
@@ -11,7 +10,6 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 
-	"github.com/Baozisoftware/qrcode-terminal-go"
 	"github.com/Rhymen/go-whatsapp"
 	"maunium.net/go/mautrix-whatsapp/whatsapp-ext"
 )
@@ -65,11 +63,6 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	}
 	return b
 }
-
-// TODO do we want that? to allow login with QR code from a bridged channel? https://github.com/tulir/mautrix-whatsapp/blob/513eb18e2d59bada0dd515ee1abaaf38a3bfe3d5/commands.go#L76
-//func (b *Bwhatsapp) Command(cmd string) string {
-//	return ""
-//}
 
 // Connect to WhatsApp. Required implementation of the Bridger interface
 // https://github.com/42wim/matterbridge/blob/2cfd880cdb0df29771bf8f31df8d990ab897889d/bridge/bridge.go#L11-L16
@@ -192,60 +185,6 @@ func (b *Bwhatsapp) Login() error {
 	return nil
 }
 
-func qrFromTerminal(invert bool) chan string {
-	qr := make(chan string)
-	go func() {
-		terminal := qrcodeTerminal.New()
-		if invert {
-			terminal = qrcodeTerminal.New2(qrcodeTerminal.ConsoleColors.BrightWhite, qrcodeTerminal.ConsoleColors.BrightBlack, qrcodeTerminal.QRCodeRecoveryLevels.Medium)
-		}
-
-		terminal.Get(<-qr).Print()
-	}()
-
-	return qr
-}
-
-func (b *Bwhatsapp) readSession() (whatsapp.Session, error) {
-	session := whatsapp.Session{}
-	sessionFile := b.Config.GetString(sessionFile)
-
-	if sessionFile == "" {
-		return session, errors.New("If you won't set SessionFile then you will need to scan QR code on every restart")
-	}
-
-	file, err := os.Open(sessionFile)
-	if err != nil {
-		return session, err
-	}
-	defer file.Close()
-	decoder := gob.NewDecoder(file)
-	err = decoder.Decode(&session)
-	if err != nil {
-		return session, err
-	}
-	return session, nil
-}
-
-func (b *Bwhatsapp) writeSession(session whatsapp.Session) error {
-	sessionFile := b.Config.GetString(sessionFile)
-
-	if sessionFile == "" {
-		// we already sent a warning while starting the bridge, so let's be quiet here
-		return nil
-	}
-
-	file, err := os.Create(sessionFile)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	encoder := gob.NewEncoder(file)
-	err = encoder.Encode(session)
-
-	return err
-}
-
 // Disconnect TODO What does it mean
 // Required implementation of the Bridger interface
 // https://github.com/42wim/matterbridge/blob/2cfd880cdb0df29771bf8f31df8d990ab897889d/bridge/bridge.go#L11-L16
@@ -305,160 +244,3 @@ func (b *Bwhatsapp) JoinChannel(channel config.ChannelInfo) error {
 
 	return nil
 }
-
-// Send a message from the bridge to WhatsApp
-// Required implementation of the Bridger interface
-// https://github.com/42wim/matterbridge/blob/2cfd880cdb0df29771bf8f31df8d990ab897889d/bridge/bridge.go#L11-L16
-func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
-	b.Log.Debugf("=> Receiving %#v", msg)
-
-	// msg.Channel target group name
-	// msg.Username empty
-	// msg.UserID a weird string , probably slack user id
-	// msg.Avatar has a nice image
-	// msg.Timestamp has a nice timestamp with loc(ation) / timezone
-	// msg.ID empty, // TODO why empty?!
-
-	text := whatsapp.TextMessage{
-		Info: whatsapp.MessageInfo{
-			// Id: "", // TODO id
-			// TODO Timestamp
-			RemoteJid: msg.Channel, // which equals to group id
-
-		},
-		Text: msg.Username + msg.Text,
-	}
-
-	// TODO adapt gitter code for edits, delete and some extra commands
-	//roomID := b.getRoomID(msg.Channel)
-	//if roomID == "" {
-	//	b.Log.Errorf("Could not find roomID for %v", msg.Channel)
-	//	return "", nil
-	//}
-	//
-	//// Delete message
-	//if msg.Event == config.EventMsgDelete {
-	//	if msg.ID == "" {
-	//		return "", nil
-	//	}
-	//	// gitter has no delete message api so we edit message to ""
-	//	_, err := b.c.UpdateMessage(roomID, msg.ID, "")
-	//	if err != nil {
-	//		return "", err
-	//	}
-	//	return "", nil
-	//}
-	//
-	//// Upload a file (in gitter case send the upload URL because gitter has no native upload support)
-	//if msg.Extra != nil {
-	//	for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-	//		b.c.SendMessage(roomID, rmsg.Username+rmsg.Text)
-	//	}
-	//	if len(msg.Extra["file"]) > 0 {
-	//		return b.handleUploadFile(&msg, roomID)
-	//	}
-	//}
-	//
-	//// Edit message
-	//if msg.ID != "" {
-	//	b.Log.Debugf("updating message with id %s", msg.ID)
-	//	_, err := b.c.UpdateMessage(roomID, msg.ID, msg.Username+msg.Text)
-	//	if err != nil {
-	//		return "", err
-	//	}
-	//	return "", nil
-	//}
-	//
-	//// Post normal message
-	//resp, err := b.c.SendMessage(roomID, msg.Username+msg.Text)
-	//if err != nil {
-	//	return "", err
-	//}
-	//return resp.ID, nil
-
-	b.Log.Debugf("=> Sending %#v", msg)
-
-	err := b.conn.Send(text)
-
-	// TODO return message id
-	return "", err
-}
-
-// ================================================================
-// handlers https://github.com/Rhymen/go-whatsapp#add-message-handlers & https://github.com/Rhymen/go-whatsapp/blob/master/handler.go
-
-// HandleError received from WhatsApp
-func (b *Bwhatsapp) HandleError(err error) {
-	b.Log.Errorf("%v", err) // TODO implement proper handling? at least respond to different error types
-}
-
-// HandleTextMessage sent from WhatsApp, relay it to the brige
-func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
-	if message.Info.FromMe { // || !strings.Contains(strings.ToLower(message.Text), "@echo") {
-		return
-	}
-	// whatsapp sends last messages to show context , cut them
-	if message.Info.Timestamp < b.startedAt {
-		return
-	}
-
-	messageTime := time.Unix(int64(message.Info.Timestamp), 0) // TODO check how behaves between timezones
-	groupJid := message.Info.RemoteJid
-
-	senderJid := message.Info.SenderJid
-	if len(senderJid) == 0 {
-		// TODO workaround till https://github.com/Rhymen/go-whatsapp/issues/86 resolved
-		senderJid = *message.Info.Source.Participant
-	}
-
-	// translate sender's Jid to the nicest username we can get
-	senderName := senderJid
-	if sender, exists := b.users[senderJid]; exists {
-		if sender.Name != "" {
-			senderName = sender.Name
-
-		} else {
-			// if user is not in phone contacts
-			// it is the most obvious scenario unless you sync your phone contacts with some remote updated source
-			// users can change it in their WhatsApp settings -> profile -> click on Avatar
-			senderName = sender.Notify
-		}
-	}
-
-	b.Log.Debugf("<= Sending message from %s on %s to gateway", senderJid, b.Account)
-	rmsg := config.Message{
-		UserID:    senderJid,
-		Username:  senderName,
-		Text:      message.Text,
-		Timestamp: messageTime,
-		Channel:   groupJid,
-		Account:   b.Account,
-		Protocol:  b.Protocol,
-		Extra:     make(map[string][]interface{}),
-		//		ParentID: TODO, // TODO handle thread replies  // map from Info.QuotedMessageID string
-		//	Event     string    `json:"event"`
-		//	Gateway   string  // will be added during message processing
-		ID: message.Info.Id}
-
-	if avatarUrl, exists := b.userAvatars[senderJid]; exists {
-		rmsg.Avatar = avatarUrl
-	}
-
-	b.Log.Debugf("<= Message is %#v", rmsg)
-	b.Remote <- rmsg
-}
-
-//
-//func (b *Bwhatsapp) HandleImageMessage(message whatsapp.ImageMessage) {
-//	fmt.Println(message) // TODO implement
-//}
-//
-//func (b *Bwhatsapp) HandleVideoMessage(message whatsapp.VideoMessage) {
-//	fmt.Println(message) // TODO implement
-//}
-//
-//func (b *Bwhatsapp) HandleJsonMessage(message string) {
-//	fmt.Println(message) // TODO implement
-//}
-// TODO HandleRawMessage
-// TODO HandleAudioMessage
