@@ -23,6 +23,7 @@ const (
 	sessionFile       = "SessionFile"
 )
 
+// Bwhatsapp Bridge structure keeping all the information needed for relying
 type Bwhatsapp struct {
 	*bridge.Config
 
@@ -37,6 +38,7 @@ type Bwhatsapp struct {
 	userAvatars map[string]string
 }
 
+// New Create a new WhatsApp bridge. This will be called for each [whatsapp.<server>] entry you have in the config file
 func New(cfg *bridge.Config) bridge.Bridger {
 	number := cfg.GetString(cfgNumber)
 	if number == "" {
@@ -69,7 +71,8 @@ func New(cfg *bridge.Config) bridge.Bridger {
 //	return ""
 //}
 
-// TODO learning GO: What is "(b *Bwhatsapp)" in this function's signature? Not argument and not a return value, so what? Does it add method on struct?
+// Connect to WhatsApp. Required implementation of the Bridger interface
+// https://github.com/42wim/matterbridge/blob/2cfd880cdb0df29771bf8f31df8d990ab897889d/bridge/bridge.go#L11-L16
 func (b *Bwhatsapp) Connect() error {
 	b.RLock() // TODO do we need locking for Whatsapp?
 	defer b.RUnlock()
@@ -155,6 +158,7 @@ func (b *Bwhatsapp) Connect() error {
 	return nil
 }
 
+// Login to WhatsApp creating a new session. This will require to scan a QR code on your mobile device
 func (b *Bwhatsapp) Login() error {
 	b.Log.Debugln("Logging in..")
 
@@ -242,7 +246,12 @@ func (b *Bwhatsapp) writeSession(session whatsapp.Session) error {
 	return err
 }
 
+// Disconnect TODO What does it mean
+// Required implementation of the Bridger interface
+// https://github.com/42wim/matterbridge/blob/2cfd880cdb0df29771bf8f31df8d990ab897889d/bridge/bridge.go#L11-L16
 func (b *Bwhatsapp) Disconnect() error {
+	// We could Logout, but that would close the session completely and would require a new QR code scan
+	// https://github.com/Rhymen/go-whatsapp/blob/c31092027237441cffba1b9cb148eadf7c83c3d2/session.go#L377-L381
 	return nil
 }
 
@@ -250,6 +259,9 @@ func isGroupJid(identifier string) bool {
 	return strings.HasSuffix(identifier, "@g.us") || strings.HasSuffix(identifier, "@temp")
 }
 
+// JoinChannel Join a WhatsApp group specified in gateway config as channel='number-id@g.us' or channel='Channel name'
+// Required implementation of the Bridger interface
+// https://github.com/42wim/matterbridge/blob/2cfd880cdb0df29771bf8f31df8d990ab897889d/bridge/bridge.go#L11-L16
 func (b *Bwhatsapp) JoinChannel(channel config.ChannelInfo) error {
 	byJid := isGroupJid(channel.Name)
 
@@ -294,6 +306,9 @@ func (b *Bwhatsapp) JoinChannel(channel config.ChannelInfo) error {
 	return nil
 }
 
+// Send a message from the bridge to WhatsApp
+// Required implementation of the Bridger interface
+// https://github.com/42wim/matterbridge/blob/2cfd880cdb0df29771bf8f31df8d990ab897889d/bridge/bridge.go#L11-L16
 func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
 
@@ -314,7 +329,7 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 		Text: msg.Username + msg.Text,
 	}
 
-	// TODO adapt gitter code
+	// TODO adapt gitter code for edits, delete and some extra commands
 	//roomID := b.getRoomID(msg.Channel)
 	//if roomID == "" {
 	//	b.Log.Errorf("Could not find roomID for %v", msg.Channel)
@@ -372,10 +387,12 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 // ================================================================
 // handlers https://github.com/Rhymen/go-whatsapp#add-message-handlers & https://github.com/Rhymen/go-whatsapp/blob/master/handler.go
 
+// HandleError received from WhatsApp
 func (b *Bwhatsapp) HandleError(err error) {
 	b.Log.Errorf("%v", err) // TODO implement proper handling? at least respond to different error types
 }
 
+// HandleTextMessage sent from WhatsApp, relay it to the brige
 func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 	if message.Info.FromMe { // || !strings.Contains(strings.ToLower(message.Text), "@echo") {
 		return
