@@ -44,23 +44,11 @@ func New(cfg *bridge.Config) bridge.Bridger {
 		cfg.Log.Fatalf("Missing configuration for WhatsApp bridge: Number")
 	}
 
-	// TODO do we need cache?
-	//newCache, err := lru.New(5000)
-	//if err != nil {
-	//	cfg.Log.Fatalf("Could not create LRU cache for Slack bridge: %v", err)
-	//}
 	b := &Bwhatsapp{
 		Config: cfg,
 
 		users:       make(map[string]whatsapp.Contact),
 		userAvatars: make(map[string]string),
-
-		//uuid:                   xid.New().String(),
-		//users:                  map[string]*slack.User{},
-		//channelsByID:           map[string]*slack.Channel{},
-		//channelsByName:         map[string]*slack.Channel{},
-		//earliestChannelRefresh: time.Now(),
-		//earliestUserRefresh:    time.Now(),
 	}
 	return b
 }
@@ -181,9 +169,8 @@ func (b *Bwhatsapp) Login() error {
 	// TODO change connection strings to configured ones longClientName:"github.com/rhymen/go-whatsapp", shortClientName:"go-whatsapp"}" prefix=whatsapp
 	// TODO get also a nice logo
 
-	// session.Wid
-	// conn.Info: Wid, Pushname, Connected, Battery, Plugged (TODO notification about unplugged and dead battery)
-	// jid = strings.Replace(b.conn.Info.Wid, whatsappExt.OldUserSuffix, whatsappExt.NewUserSuffix, 1)
+	// TODO notification about unplugged and dead battery
+	// conn.Info: Wid, Pushname, Connected, Battery, Plugged
 
 	return nil
 }
@@ -232,8 +219,7 @@ func (b *Bwhatsapp) JoinChannel(channel config.ChannelInfo) error {
 			//})
 			for id, contact := range b.conn.Store.Contacts {
 				if isGroupJid(id) {
-					// TODO b.Log.Info
-					fmt.Printf("%s %s\n", contact.Jid, contact.Name)
+					b.Log.Info("%s %s", contact.Jid, contact.Name)
 				}
 			}
 			return fmt.Errorf("please specify group's JID from the below list instead of the name '%s'", channel.Name)
@@ -254,13 +240,6 @@ func (b *Bwhatsapp) JoinChannel(channel config.ChannelInfo) error {
 // https://github.com/42wim/matterbridge/blob/2cfd880cdb0df29771bf8f31df8d990ab897889d/bridge/bridge.go#L11-L16
 func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
-
-	// msg.Channel target group name
-	// msg.Username empty
-	// msg.UserID a weird string , probably slack user id
-	// msg.Avatar has a nice image
-	// msg.Timestamp has a nice timestamp with loc(ation) / timezone
-	// msg.ID empty, // TODO why empty?!
 
 	text := whatsapp.TextMessage{
 		Info: whatsapp.MessageInfo{
