@@ -221,10 +221,10 @@ func (b *Bwhatsapp) JoinChannel(channel config.ChannelInfo) error {
 			//})
 			for id, contact := range b.conn.Store.Contacts {
 				if isGroupJid(id) {
-					b.Log.Info("%s %s", contact.Jid, contact.Name)
+					b.Log.Infof("%s %s", contact.Jid, contact.Name)
 				}
 			}
-			return fmt.Errorf("please specify group's JID from the below list instead of the name '%s'", channel.Name)
+			return fmt.Errorf("please specify group's JID from the list above instead of the name '%s'", channel.Name)
 
 		case 1:
 			return fmt.Errorf("group name might change. Please configure gateway with channel=\"%v\" instead of channel=\"%v\"", jids[0], channel.Name)
