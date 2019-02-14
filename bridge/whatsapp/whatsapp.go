@@ -1,6 +1,8 @@
 package bwhatsapp
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"os"
@@ -133,6 +135,7 @@ func (b *Bwhatsapp) Connect() error {
 				b.Log.Warnf("Could not get profile photo of %s: %v", jid, err)
 
 			} else {
+				// TODO any race conditions here?
 				b.userAvatars[jid] = info.URL
 			}
 		}
@@ -146,8 +149,6 @@ func (b *Bwhatsapp) Connect() error {
 func (b *Bwhatsapp) Login() error {
 	b.Log.Debugln("Logging in..")
 
-	// TODO qrCode, err := qrcode.Encode(code, qrcode.Low, 256) to encode as image/png
-	// and possibly send it to connected channels (to admin) to authorize the app
 	invert := b.GetBoolOrDefault(qrOnWhiteTerminal, false)
 	qrChan := qrFromTerminal(invert)
 
@@ -175,7 +176,8 @@ func (b *Bwhatsapp) Login() error {
 	return nil
 }
 
-// Disconnect TODO What does it mean
+// Disconnect is called while reconnecting to the bridge
+// TODO 42wim Documentation would be helpful on when reconnects happen and what should be done in this function
 // Required implementation of the Bridger interface
 // https://github.com/42wim/matterbridge/blob/2cfd880cdb0df29771bf8f31df8d990ab897889d/bridge/bridge.go#L11-L16
 func (b *Bwhatsapp) Disconnect() error {
@@ -241,37 +243,30 @@ func (b *Bwhatsapp) JoinChannel(channel config.ChannelInfo) error {
 func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
 
-	text := whatsapp.TextMessage{
-		Info: whatsapp.MessageInfo{
-			// Id: "", // TODO id
-			// TODO Timestamp
-			RemoteJid: msg.Channel, // which equals to group id
+	// Delete message
+	if msg.Event == config.EventMsgDelete {
+		if msg.ID == "" {
+			// No message ID in case action is executed on a message sent before the bridge was started
+			// and then the bridge cache doesn't have this message ID mapped
 
-		},
-		Text: msg.Username + msg.Text,
+			// TODO 42wim Doesn't the app get clogged with a ton of IDs after some time of running?
+			// WhatsApp allows to set any ID so in that case we could use external IDs and don't do mapping
+			// but external IDs are not set
+			return "", nil
+		}
+		// TODO delete message on WhatsApp https://github.com/Rhymen/go-whatsapp/issues/100
+		return "", nil
 	}
 
-	// TODO adapt gitter code for edits, delete and some extra commands
-	//roomID := b.getRoomID(msg.Channel)
-	//if roomID == "" {
-	//	b.Log.Errorf("Could not find roomID for %v", msg.Channel)
-	//	return "", nil
-	//}
-	//
-	//// Delete message
-	//if msg.Event == config.EventMsgDelete {
-	//	if msg.ID == "" {
-	//		return "", nil
-	//	}
-	//	// gitter has no delete message api so we edit message to ""
-	//	_, err := b.c.UpdateMessage(roomID, msg.ID, "")
-	//	if err != nil {
-	//		return "", err
-	//	}
-	//	return "", nil
-	//}
-	//
-	//// Upload a file (in gitter case send the upload URL because gitter has no native upload support)
+	// Edit message
+	if msg.ID != "" {
+		b.Log.Debugf("updating message with id %s", msg.ID)
+
+		msg.Text = msg.Text + " (edited)"
+		// TODO handle edit as a message reply with updated text
+	}
+
+	//// TODO Handle Upload a file
 	//if msg.Extra != nil {
 	//	for _, rmsg := range helper.HandleExtra(&msg, b.General) {
 	//		b.c.SendMessage(roomID, rmsg.Username+rmsg.Text)
@@ -280,30 +275,26 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 	//		return b.handleUploadFile(&msg, roomID)
 	//	}
 	//}
-	//
-	//// Edit message
-	//if msg.ID != "" {
-	//	b.Log.Debugf("updating message with id %s", msg.ID)
-	//	_, err := b.c.UpdateMessage(roomID, msg.ID, msg.Username+msg.Text)
-	//	if err != nil {
-	//		return "", err
-	//	}
-	//	return "", nil
-	//}
-	//
-	//// Post normal message
-	//resp, err := b.c.SendMessage(roomID, msg.Username+msg.Text)
-	//if err != nil {
-	//	return "", err
-	//}
-	//return resp.ID, nil
+
+	// Post text message
+	text := whatsapp.TextMessage{
+		Info: whatsapp.MessageInfo{
+			RemoteJid: msg.Channel, // which equals to group id
+		},
+		Text: msg.Username + msg.Text,
+	}
 
 	b.Log.Debugf("=> Sending %#v", msg)
 
+	// create message ID
+	// TODO follow and act if https://github.com/Rhymen/go-whatsapp/issues/101 implemented
+	bytes := make([]byte, 10)
+	rand.Read(bytes)
+	text.Info.Id = strings.ToUpper(hex.EncodeToString(bytes))
+
 	err := b.conn.Send(text)
 
-	// TODO return message id
-	return "", err
+	return text.Info.Id, err
 }
 
 // TODO do we want that? to allow login with QR code from a bridged channel? https://github.com/tulir/mautrix-whatsapp/blob/513eb18e2d59bada0dd515ee1abaaf38a3bfe3d5/commands.go#L76
