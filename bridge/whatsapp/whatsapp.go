@@ -262,7 +262,7 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 	if msg.ID != "" {
 		b.Log.Debugf("updating message with id %s", msg.ID)
 
-		msg.Text = msg.Text + " (edited)"
+		msg.Text += " (edited)"
 		// TODO handle edit as a message reply with updated text
 	}
 
@@ -289,7 +289,9 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 	// create message ID
 	// TODO follow and act if https://github.com/Rhymen/go-whatsapp/issues/101 implemented
 	bytes := make([]byte, 10)
-	rand.Read(bytes)
+	if _, err := rand.Read(bytes); err != nil {
+		b.Log.Warn(err.Error())
+	}
 	text.Info.Id = strings.ToUpper(hex.EncodeToString(bytes))
 
 	err := b.conn.Send(text)
