@@ -62,3 +62,25 @@ func (b *Bwhatsapp) writeSession(session whatsapp.Session) error {
 
 	return err
 }
+
+func (b *Bwhatsapp) getSenderName(senderJid string) string {
+	if sender, exists := b.users[senderJid]; exists {
+		if sender.Name != "" {
+			return sender.Name
+
+		} else {
+			// if user is not in phone contacts
+			// it is the most obvious scenario unless you sync your phone contacts with some remote updated source
+			// users can change it in their WhatsApp settings -> profile -> click on Avatar
+			return sender.Notify
+		}
+	}
+	return ""
+}
+
+func (b *Bwhatsapp) getSenderNotify(senderJid string) string {
+	if sender, exists := b.users[senderJid]; exists {
+		return sender.Notify
+	}
+	return ""
+}

@@ -1,11 +1,14 @@
 package bwhatsapp
 
 import (
+	"strings"
 	"time"
 
 	"github.com/42wim/matterbridge/bridge/config"
 
 	"github.com/Rhymen/go-whatsapp"
+
+	whatsappExt "maunium.net/go/mautrix-whatsapp/whatsapp-ext"
 )
 
 /*
@@ -41,16 +44,24 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 	}
 
 	// translate sender's Jid to the nicest username we can get
-	senderName := senderJid
-	if sender, exists := b.users[senderJid]; exists {
-		if sender.Name != "" {
-			senderName = sender.Name
+	senderName := b.getSenderName(senderJid)
+	if senderName == "" {
+		senderName = "Someone" // don't expose telephone number
+	}
 
-		} else {
-			// if user is not in phone contacts
-			// it is the most obvious scenario unless you sync your phone contacts with some remote updated source
-			// users can change it in their WhatsApp settings -> profile -> click on Avatar
-			senderName = sender.Notify
+	extText := message.Info.Source.Message.ExtendedTextMessage
+	if extText != nil && extText.ContextInfo != nil && extText.ContextInfo.MentionedJid != nil {
+		// handle user mentions
+		for _, mentionedJid := range extText.ContextInfo.MentionedJid {
+			numberAndSuffix := strings.SplitN(mentionedJid, "@", 2)
+
+			// mentions comes as telephone numbers and we don't want to expose it to other bridges
+			// replace it with something more meaninful to others
+			mention := b.getSenderNotify(numberAndSuffix[0] + whatsappExt.NewUserSuffix)
+			if mention == "" {
+				mention = "someone"
+			}
+			message.Text = strings.Replace(message.Text, "@"+numberAndSuffix[0], "@"+mention, 1)
 		}
 	}
 
