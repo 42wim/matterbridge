@@ -2,6 +2,8 @@ github.com/42wim/go-gitter v0.0.0-20170828205020-017310c2d557 h1:IZtuWGfzQnKnCSu
 github.com/42wim/go-gitter v0.0.0-20170828205020-017310c2d557/go.mod h1:jL0YSXMs/txjtGJ4PWrmETOk6KUHMDPMshgQZlTeB3Y=
 github.com/BurntSushi/toml v0.0.0-20170318202913-d94612f9fc14 h1:v/zr4ns/4sSahF9KBm4Uc933bLsEEv7LuT63CJ019yo=
 github.com/BurntSushi/toml v0.0.0-20170318202913-d94612f9fc14/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
+github.com/Jeffail/gabs v1.1.1 h1:V0uzR08Hj22EX8+8QMhyI9sX2hwRu+/RJhJUmnwda/E=
+github.com/Jeffail/gabs v1.1.1/go.mod h1:6xMvQMK4k33lb7GUUpaAPh6nKMmemQeg5d4gn7/bOXc=
 github.com/Philipp15b/go-steam v1.0.1-0.20180818081528-681bd9573329 h1:xZBoq249G9MSt+XuY7sVQzcfONJ6IQuwpCK+KAaOpnY=
 github.com/Philipp15b/go-steam v1.0.1-0.20180818081528-681bd9573329/go.mod h1:HuVM+sZFzumUdKPWiz+IlCMb4RdsKdT3T+nQBKL+sYg=
 github.com/alexcesaro/log v0.0.0-20150915221235-61e686294e58 h1:MkpmYfld/S8kXqTYI68DfL8/hHXjHogL120Dy00TIxc=
@@ -27,6 +29,8 @@ github.com/golang/protobuf v0.0.0-20170613224224-e325f446bebc h1:wdhDSKrkYy24mcf
 github.com/golang/protobuf v0.0.0-20170613224224-e325f446bebc/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/google/gops v0.3.5 h1:SIWvPLiYvy5vMwjxB3rVFTE4QBhUFj2KKWr3Xm7CKhw=
 github.com/google/gops v0.3.5/go.mod h1:pMQgrscwEK/aUSW1IFSaBPbJX82FPHWaSoJw1axQfD0=
+github.com/gopackage/ddp v0.0.0-20170117053602-652027933df4 h1:4EZlYQIiyecYJlUbVkFXCXHz1QPhVXcHnQKAzBTPfQo=
+github.com/gopackage/ddp v0.0.0-20170117053602-652027933df4/go.mod h1:lEO7XoHJ/xNRBCxrn4h/CEB67h0kW1B0t4ooP2yrjUA=
 github.com/gopherjs/gopherjs v0.0.0-20180628210949-0892b62f0d9f h1:FDM3EtwZLyhW48YRiyqjivNlNZjAObv4xt4NnJaU+NQ=
 github.com/gopherjs/gopherjs v0.0.0-20180628210949-0892b62f0d9f/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
 github.com/gorilla/schema v1.0.2 h1:sAgNfOcNYvdDSrzGHVy9nzCQahG+qmsg+nE8dK85QRA=
@@ -66,6 +70,8 @@ github.com/lusis/slack-test v0.0.0-20180109053238-3c758769bfa6 h1:iOAVXzZyXtW408
 github.com/lusis/slack-test v0.0.0-20180109053238-3c758769bfa6/go.mod h1:sFlOUpQL1YcjhFVXhg1CG8ZASEs/Mf1oVb6H75JL/zg=
 github.com/magiconair/properties v1.8.0 h1:LLgXmsheXeRoUOBOjtwPQCWIYqM/LU1ayDtDePerRcY=
 github.com/magiconair/properties v1.8.0/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
+github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20190210153444-cc9d05784d5d h1:F+Sr+C0ojSlYQ37BLylQtSFmyQULe3jbAygcyXQ9mVs=
+github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20190210153444-cc9d05784d5d/go.mod h1:c6MxwqHD+0HvtAJjsHMIdPCiAwGiQwPRPTp69ACMg8A=
 github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91 h1:KzDEcy8eDbTx881giW8a6llsAck3e2bJvMyKvh1IK+k=
 github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91/go.mod h1:ECDRehsR9TYTKCAsRS8/wLeOk6UUqDydw47ln7wG41Q=
 github.com/matterbridge/gomatrix v0.0.0-20190102230110-6f9631ca6dea h1:kaADGqpK4gGO2BpzEyJrBxq2Jc57Rsar4i2EUxcACUc=
@@ -88,6 +94,8 @@ github.com/mreiferson/go-httpclient v0.0.0-20160630210159-31f0106b4474 h1:oKIteT
 github.com/mreiferson/go-httpclient v0.0.0-20160630210159-31f0106b4474/go.mod h1:OQA4XLvDbMgS8P0CevmM4m9Q3Jq4phKUzcocxuGJ5m8=
 github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff h1:HLGD5/9UxxfEuO9DtP8gnTmNtMxbPyhYltfxsITel8g=
 github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff/go.mod h1:B8jLfIIPn2sKyWr0D7cL2v7tnrDD5z291s2Zypdu89E=
+github.com/nelsonken/gomf v0.0.0-20180504123937-a9dd2f9deae9 h1:mp6tU1r0xLostUGLkTspf/9/AiHuVD7ptyXhySkDEsE=
+github.com/nelsonken/gomf v0.0.0-20180504123937-a9dd2f9deae9/go.mod h1:A5SRAcpTemjGgIuBq6Kic2yHcoeUFWUinOAlMP/i9xo=
 github.com/nicksnyder/go-i18n v1.4.0 h1:AgLl+Yq7kg5OYlzCgu9cKTZOyI4tD/NgukKqLqC8E+I=
 github.com/nicksnyder/go-i18n v1.4.0/go.mod h1:HrK7VCrbOvQoUAQ7Vpy7i87N7JZZZ7R2xBGjv0j365Q=
 github.com/nlopes/slack v0.5.0 h1:NbIae8Kd0NpqaEI3iUrsuS0KbcEDhzhc939jLW5fNm0=

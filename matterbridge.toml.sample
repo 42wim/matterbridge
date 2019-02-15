@@ -893,6 +893,21 @@ ShowTopicChange=false
 #REQUIRED
 
 [rocketchat.rockme]
+#The rocketchat hostname. (prefix it with http or https)
+#REQUIRED (when not using webhooks)
+Server="https://yourrocketchatserver.domain.com:443"
+
+#login/pass of your bot. 
+#Use a dedicated user for this and not your own! 
+#REQUIRED (when not using webhooks)
+Login="yourlogin"
+Password="yourpass"
+
+#### Settings for webhook matterbridge.
+#USE DEDICATED BOT USER WHEN POSSIBLE! This allows you to use advanced features like message editing/deleting and uploads
+#You don't need to configure this, if you have configured the settings 
+#above.
+
 #Url is your incoming webhook url as specified in rocketchat
 #Read #https://rocket.chat/docs/administrator-guides/integrations/#how-to-create-a-new-incoming-webhook
 #See administration - integrations - new integration - incoming webhook
@@ -916,6 +931,8 @@ NoTLS=false
 #e.g. when using selfsigned certificates
 #OPTIONAL (default false)
 SkipTLSVerify=true
+
+#### End settings for webhook matterbridge.
 
 ## RELOADABLE SETTINGS
 ## Settings below can be reloaded by editing the file
