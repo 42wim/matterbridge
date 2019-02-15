@@ -257,6 +257,7 @@ Want to tip ?
 * https://www.algoo.fr/blog/2018/01/19/recouvrez-votre-liberte-en-quittant-slack-pour-un-mattermost-auto-heberge/
 * https://kopano.com/blog/matterbridge-bridging-mattermost-chat/
 * https://www.stitcher.com/s/?eid=52382713
+* https://daniele.tech/2019/02/how-to-use-matterbridge-to-connect-2-different-slack-workspaces/
 
 ## Thanks
 [![Digitalocean](https://snag.gy/3LVifX.jpg)](https://www.digitalocean.com/) for sponsoring demo/testing droplets.
