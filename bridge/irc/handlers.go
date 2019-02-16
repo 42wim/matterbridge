@@ -81,7 +81,7 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 		return
 	}
 	if event.Command == "QUIT" {
-		if event.Source.Name == b.Nick && strings.Contains(event.Trailing, "Ping timeout") {
+		if event.Source.Name == b.Nick && strings.Contains(event.Last(), "Ping timeout") {
 			b.Log.Infof("%s reconnecting ..", b.Account)
 			b.Remote <- config.Message{Username: "system", Text: "reconnect", Channel: channel, Account: b.Account, Event: config.EventFailure}
 			return
@@ -164,7 +164,7 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 		return
 	}
 	rmsg := config.Message{Username: event.Source.Name, Channel: strings.ToLower(event.Params[0]), Account: b.Account, UserID: event.Source.Ident + "@" + event.Source.Host}
-	b.Log.Debugf("== Receiving PRIVMSG: %s %s %#v", event.Source.Name, event.Trailing, event)
+	b.Log.Debugf("== Receiving PRIVMSG: %s %s %#v", event.Source.Name, event.Last(), event)
 
 	// set action event
 	if event.IsAction() {

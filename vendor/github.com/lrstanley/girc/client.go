@@ -335,7 +335,7 @@ func (e *ErrEvent) Error() string {
 		return "unknown error occurred"
 	}
 
-	return e.Event.Trailing
+	return e.Event.Last()
 }
 
 func (c *Client) execLoop(ctx context.Context, errs chan error, wg *sync.WaitGroup) {

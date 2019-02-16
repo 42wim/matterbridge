@@ -94,7 +94,7 @@ func handleCAP(c *Client, e Event) {
 	}
 
 	// We can assume there was a failure attempting to enable a capability.
-	if len(e.Params) == 2 && e.Params[1] == CAP_NAK {
+	if len(e.Params) >= 2 && e.Params[1] == CAP_NAK {
 		// Let the server know that we're done.
 		c.write(&Event{Command: CAP, Params: []string{CAP_END}})
 		return
@@ -102,10 +102,10 @@ func handleCAP(c *Client, e Event) {
 
 	possible := possibleCapList(c)
 
-	if len(e.Params) >= 2 && e.Params[1] == CAP_LS {
+	if len(e.Params) >= 3 && e.Params[1] == CAP_LS {
 		c.state.Lock()
 
-		caps := parseCap(e.Trailing)
+		caps := parseCap(e.Last())
 
 		for k := range caps {
 			if _, ok := possible[k]; !ok {
@@ -137,9 +137,9 @@ func handleCAP(c *Client, e Event) {
 		}
 		c.state.Unlock()
 
-		// Indicates if this is a multi-line LS. (2 args means it's the
+		// Indicates if this is a multi-line LS. (3 args means it's the
 		// last LS).
-		if len(e.Params) == 2 {
+		if len(e.Params) == 3 {
 			// If we support no caps, just ack the CAP message and END.
 			if len(c.state.tmpCap) == 0 {
 				c.write(&Event{Command: CAP, Params: []string{CAP_END}})
@@ -147,7 +147,7 @@ func handleCAP(c *Client, e Event) {
 			}
 
 			// Let them know which ones we'd like to enable.
-			c.write(&Event{Command: CAP, Params: []string{CAP_REQ}, Trailing: strings.Join(c.state.tmpCap, " "), EmptyTrailing: true})
+			c.write(&Event{Command: CAP, Params: []string{CAP_REQ, strings.Join(c.state.tmpCap, " ")}})
 
 			// Re-initialize the tmpCap, so if we get multiple 'CAP LS' requests
 			// due to cap-notify, we can re-evaluate what we can support.
@@ -157,9 +157,9 @@ func handleCAP(c *Client, e Event) {
 		}
 	}
 
-	if len(e.Params) == 2 && len(e.Trailing) > 1 && e.Params[1] == CAP_ACK {
+	if len(e.Params) == 3 && e.Params[1] == CAP_ACK {
 		c.state.Lock()
-		c.state.enabledCap = strings.Split(e.Trailing, " ")
+		c.state.enabledCap = strings.Split(e.Last(), " ")
 
 		// Do we need to do sasl auth?
 		wantsSASL := false
@@ -208,7 +208,7 @@ func handleAWAY(c *Client, e Event) {
 	c.state.Lock()
 	user := c.state.lookupUser(e.Source.Name)
 	if user != nil {
-		user.Extras.Away = e.Trailing
+		user.Extras.Away = e.Last()
 	}
 	c.state.Unlock()
 	c.state.notify(c, UPDATE_STATE)

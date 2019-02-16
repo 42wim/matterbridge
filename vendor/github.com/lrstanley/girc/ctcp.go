@@ -41,7 +41,7 @@ func DecodeCTCP(e *Event) *CTCPEvent {
 
 	// Must be targeting a user/channel, AND trailing must have
 	// DELIM+TAG+DELIM minimum (at least 3 chars).
-	if len(e.Params) != 1 || len(e.Trailing) < 3 {
+	if len(e.Params) != 2 || len(e.Params[1]) < 3 {
 		return nil
 	}
 
@@ -49,12 +49,12 @@ func DecodeCTCP(e *Event) *CTCPEvent {
 		return nil
 	}
 
-	if e.Trailing[0] != ctcpDelim || e.Trailing[len(e.Trailing)-1] != ctcpDelim {
+	if e.Params[1][0] != ctcpDelim || e.Params[1][len(e.Params[1])-1] != ctcpDelim {
 		return nil
 	}
 
 	// Strip delimiters.
-	text := e.Trailing[1 : len(e.Trailing)-1]
+	text := e.Params[1][1 : len(e.Params[1])-1]
 
 	s := strings.IndexByte(text, eventSpace)
 
