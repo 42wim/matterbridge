@@ -434,68 +434,68 @@ func TestIgnoreTextEmpty(t *testing.T) {
 
 func TestIgnoreTexts(t *testing.T) {
 	msgTests := map[string]struct {
-		input  *config.Message
+		input  string
 		re     []string
 		output bool
 	}{
 		"no regex": {
-			input:  &config.Message{Text: "a text message"},
+			input:  "a text message",
 			re:     []string{},
 			output: false,
 		},
 		"simple regex": {
-			input:  &config.Message{Text: "a text message"},
+			input:  "a text message",
 			re:     []string{"text"},
 			output: true,
 		},
 		"multiple regex fail": {
-			input:  &config.Message{Text: "a text message"},
+			input:  "a text message",
 			re:     []string{"abc", "123$"},
 			output: false,
 		},
 		"multiple regex pass": {
-			input:  &config.Message{Text: "a text message"},
+			input:  "a text message",
 			re:     []string{"lala", "sage$"},
 			output: true,
 		},
 	}
 	gw := &Gateway{}
 	for testname, testcase := range msgTests {
-		output := gw.ignoreTexts(testcase.input, testcase.re)
+		output := gw.ignoreText(testcase.input, testcase.re)
 		assert.Equalf(t, testcase.output, output, "case '%s' failed", testname)
 	}
 }
 
 func TestIgnoreNicks(t *testing.T) {
 	msgTests := map[string]struct {
-		input  *config.Message
+		input  string
 		re     []string
 		output bool
 	}{
 		"no entry": {
-			input:  &config.Message{Username: "user", Text: "a text message"},
+			input:  "user",
 			re:     []string{},
 			output: false,
 		},
 		"one entry": {
-			input:  &config.Message{Username: "user", Text: "a text message"},
+			input:  "user",
 			re:     []string{"user"},
 			output: true,
 		},
 		"multiple entries": {
-			input:  &config.Message{Username: "user", Text: "a text message"},
+			input:  "user",
 			re:     []string{"abc", "user"},
 			output: true,
 		},
 		"multiple entries fail": {
-			input:  &config.Message{Username: "user", Text: "a text message"},
+			input:  "user",
 			re:     []string{"abc", "def"},
 			output: false,
 		},
 	}
 	gw := &Gateway{}
 	for testname, testcase := range msgTests {
-		output := gw.ignoreNicks(testcase.input, testcase.re)
+		output := gw.ignoreText(testcase.input, testcase.re)
 		assert.Equalf(t, testcase.output, output, "case '%s' failed", testname)
 	}
 }
