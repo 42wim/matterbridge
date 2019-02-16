@@ -66,7 +66,7 @@ github.com/labstack/gommon/color
 github.com/labstack/gommon/log
 github.com/labstack/gommon/bytes
 github.com/labstack/gommon/random
-# github.com/lrstanley/girc v0.0.0-20190102153329-c1e59a02f488
+# github.com/lrstanley/girc v0.0.0-20190210212025-51b8e096d398
 github.com/lrstanley/girc
 # github.com/magiconair/properties v1.8.0
 github.com/magiconair/properties

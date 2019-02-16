@@ -211,7 +211,7 @@ func IsValidChannel(channel string) bool {
 	return true
 }
 
-// IsValidNick validates an IRC nickame. Note that this does not validate
+// IsValidNick validates an IRC nickname. Note that this does not validate
 // IRC nickname length.
 //
 //   nickname =  ( letter / special ) *8( letter / digit / special / "-" )
