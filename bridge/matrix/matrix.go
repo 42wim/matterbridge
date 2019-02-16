@@ -283,6 +283,12 @@ func (b *Bmatrix) handleUploadFile(msg *config.Message, channel string, fi *conf
 		if err != nil {
 			b.Log.Errorf("file comment failed: %#v", err)
 		}
+	} else {
+		// image and video uploads send no username, we have to do this ourself here #715
+		_, err := b.mc.SendText(channel, msg.Username)
+		if err != nil {
+			b.Log.Errorf("file comment failed: %#v", err)
+		}
 	}
 	b.Log.Debugf("uploading file: %s %s", fi.Name, mtype)
 	res, err := b.mc.UploadToContentRepo(content, mtype, int64(len(*fi.Data)))
