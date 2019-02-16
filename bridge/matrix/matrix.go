@@ -113,6 +113,15 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	// Edit message if we have an ID
 	// matrix has no editing support
 
+	// Use notices to send join/leave events
+	if msg.Event == config.EventJoinLeave {
+		resp, err := b.mc.SendNotice(channel, msg.Username+msg.Text)
+		if err != nil {
+			return "", err
+		}
+		return resp.EventID, err
+	}
+
 	// Post normal message with HTML support (eg riot.im)
 	resp, err := b.mc.SendHTML(channel, msg.Username+msg.Text, html.EscapeString(msg.Username)+helper.ParseMarkdown(msg.Text))
 	if err != nil {
