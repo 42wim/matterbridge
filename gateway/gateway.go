@@ -176,9 +176,20 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 
 	// discord join/leave is for the whole bridge, isn't a per channel join/leave
 	if msg.Event == config.EventJoinLeave && dest.Protocol == "discord" && msg.Account == dest.Account {
-		flog.Error("here")
 		for _, channel := range gw.Channels {
 			if channel.Account == msg.Account && strings.Contains(channel.Direction, "out") &&
+				gw.validGatewayDest(msg) {
+				channels = append(channels, *channel)
+			}
+		}
+		return channels
+	}
+
+	// irc quit is for the whole bridge, isn't a per channel quit.
+	// channel is empty when we quit
+	if msg.Event == config.EventJoinLeave && getProtocol(msg) == "irc" && msg.Channel == "" {
+		for _, channel := range gw.Channels {
+			if channel.Account == dest.Account && strings.Contains(channel.Direction, "out") &&
 				gw.validGatewayDest(msg) {
 				channels = append(channels, *channel)
 			}
@@ -434,4 +445,9 @@ func (gw *Gateway) ignoreText(text string, input []string) bool {
 		}
 	}
 	return false
+}
+
+func getProtocol(msg *config.Message) string {
+	p := strings.Split(msg.Account, ".")
+	return p[0]
 }
