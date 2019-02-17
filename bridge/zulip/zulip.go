@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/42wim/matterbridge/bridge"
@@ -17,10 +18,12 @@ type Bzulip struct {
 	bot     *gzb.Bot
 	streams map[int]string
 	*bridge.Config
+	channelToTopic map[string]string
+	sync.RWMutex
 }
 
 func New(cfg *bridge.Config) bridge.Bridger {
-	return &Bzulip{Config: cfg, streams: make(map[int]string)}
+	return &Bzulip{Config: cfg, streams: make(map[int]string), channelToTopic: make(map[string]string)}
 }
 
 func (b *Bzulip) Connect() error {
@@ -45,6 +48,9 @@ func (b *Bzulip) Disconnect() error {
 }
 
 func (b *Bzulip) JoinChannel(channel config.ChannelInfo) error {
+	b.Lock()
+	defer b.Unlock()
+	b.channelToTopic[channel.Name] = channel.Options.Topic
 	return nil
 }
 
@@ -145,6 +151,9 @@ func (b *Bzulip) sendMessage(msg config.Message) (string, error) {
 	if b.GetString("topic") != "" {
 		topic = b.GetString("topic")
 	}
+	if res := b.getTopic(msg.Channel); res != "" {
+		topic = res
+	}
 	m := gzb.Message{
 		Stream:  msg.Channel,
 		Topic:   topic,
@@ -190,4 +199,10 @@ func (b *Bzulip) handleUploadFile(msg *config.Message) (string, error) {
 		}
 	}
 	return "", nil
+}
+
+func (b *Bzulip) getTopic(channel string) string {
+	b.RLock()
+	defer b.RUnlock()
+	return b.channelToTopic[channel]
 }

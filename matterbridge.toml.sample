@@ -1196,6 +1196,8 @@ Server="https://yourserver.zulipchat.com"
 
 #Topic of the messages matterbridge will use
 #OPTIONAL (default "matterbridge")
+#You can specify a specific topic for each channel using [gateway.inout.options]
+#See more information below at the gateway configuration
 Topic="matterbridge"
 
 ## RELOADABLE SETTINGS
@@ -1437,6 +1439,13 @@ enable=true
         #OPTIONAL - webhookurl only works for discord (it needs a different URL for each cahnnel)
         [gateway.inout.options]
         webhookurl="https://discordapp.com/api/webhooks/123456789123456789/C9WPqExYWONPDZabcdef-def1434FGFjstasJX9pYht73y"
+
+    [[gateway.inout]]
+    account="zulip.streamchat"
+    channel="general"
+        #OPTIONAL - topic only works for zulip
+        [gateway.inout.options]
+        topic="topic1"
 
     #API example
     #[[gateway.inout]]
