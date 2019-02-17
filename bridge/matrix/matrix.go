@@ -20,11 +20,13 @@ type Bmatrix struct {
 	UserID  string
 	RoomMap map[string]string
 	sync.RWMutex
+	htmlTag *regexp.Regexp
 	*bridge.Config
 }
 
 func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Bmatrix{Config: cfg}
+	b.htmlTag = regexp.MustCompile("</.*?>")
 	b.RoomMap = make(map[string]string)
 	return b
 }
@@ -122,8 +124,13 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 		return resp.EventID, err
 	}
 
+	username := html.EscapeString(msg.Username)
+	// check if we have a </tag>. if we have, we don't escape HTML. #696
+	if b.htmlTag.MatchString(msg.Username) {
+		username = msg.Username
+	}
 	// Post normal message with HTML support (eg riot.im)
-	resp, err := b.mc.SendHTML(channel, msg.Username+msg.Text, html.EscapeString(msg.Username)+helper.ParseMarkdown(msg.Text))
+	resp, err := b.mc.SendHTML(channel, msg.Username+msg.Text, username+helper.ParseMarkdown(msg.Text))
 	if err != nil {
 		return "", err
 	}
