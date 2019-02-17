@@ -123,3 +123,45 @@ func (b *Bdiscord) memberUpdate(s *discordgo.Session, m *discordgo.GuildMemberUp
 		b.nickMemberMap[m.Member.Nick] = m.Member
 	}
 }
+
+func (b *Bdiscord) memberAdd(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
+	if m.Member == nil {
+		b.Log.Warnf("Received member update with no member information: %#v", m)
+		return
+	}
+	username := m.Member.User.Username
+	if m.Member.Nick != "" {
+		username = m.Member.Nick
+	}
+
+	rmsg := config.Message{
+		Account:  b.Account,
+		Event:    config.EventJoinLeave,
+		Username: "system",
+		Text:     username + " joins",
+	}
+	b.Log.Debugf("<= Sending message from %s to gateway", b.Account)
+	b.Log.Debugf("<= Message is %#v", rmsg)
+	b.Remote <- rmsg
+}
+
+func (b *Bdiscord) memberRemove(s *discordgo.Session, m *discordgo.GuildMemberRemove) {
+	if m.Member == nil {
+		b.Log.Warnf("Received member update with no member information: %#v", m)
+		return
+	}
+	username := m.Member.User.Username
+	if m.Member.Nick != "" {
+		username = m.Member.Nick
+	}
+
+	rmsg := config.Message{
+		Account:  b.Account,
+		Event:    config.EventJoinLeave,
+		Username: "system",
+		Text:     username + " leaves",
+	}
+	b.Log.Debugf("<= Sending message from %s to gateway", b.Account)
+	b.Log.Debugf("<= Message is %#v", rmsg)
+	b.Remote <- rmsg
+}
