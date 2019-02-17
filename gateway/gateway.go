@@ -237,38 +237,6 @@ func (gw *Gateway) ignoreTextEmpty(msg *config.Message) bool {
 	return true
 }
 
-// ignoreTexts returns true if msg.Text matches any of the input regexes.
-func (gw *Gateway) ignoreTexts(msg *config.Message, input []string) bool {
-	for _, entry := range input {
-		if entry == "" {
-			continue
-		}
-		// TODO do not compile regexps everytime
-		re, err := regexp.Compile(entry)
-		if err != nil {
-			flog.Errorf("incorrect regexp %s for %s", entry, msg.Account)
-			continue
-		}
-		if re.MatchString(msg.Text) {
-			flog.Debugf("matching %s. ignoring %s from %s", entry, msg.Text, msg.Account)
-			return true
-		}
-	}
-	return false
-}
-
-// ignoreNicks returns true if msg.Username matches any of the input regexes.
-func (gw *Gateway) ignoreNicks(msg *config.Message, input []string) bool {
-	// is the username in IgnoreNicks field
-	for _, entry := range input {
-		if msg.Username == entry {
-			flog.Debugf("ignoring %s from %s", msg.Username, msg.Account)
-			return true
-		}
-	}
-	return false
-}
-
 func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 	// if we don't have the bridge, ignore it
 	if _, ok := gw.Bridges[msg.Account]; !ok {
@@ -277,7 +245,7 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 
 	igNicks := strings.Fields(gw.Bridges[msg.Account].GetString("IgnoreNicks"))
 	igMessages := strings.Fields(gw.Bridges[msg.Account].GetString("IgnoreMessages"))
-	if gw.ignoreTextEmpty(msg) || gw.ignoreNicks(msg, igNicks) || gw.ignoreTexts(msg, igMessages) {
+	if gw.ignoreTextEmpty(msg) || gw.ignoreText(msg.Username, igNicks) || gw.ignoreText(msg.Text, igMessages) {
 		return true
 	}
 
@@ -434,4 +402,24 @@ func getChannelID(msg config.Message) string {
 
 func isAPI(account string) bool {
 	return strings.HasPrefix(account, "api.")
+}
+
+// ignoreText returns true if text matches any of the input regexes.
+func (gw *Gateway) ignoreText(text string, input []string) bool {
+	for _, entry := range input {
+		if entry == "" {
+			continue
+		}
+		// TODO do not compile regexps everytime
+		re, err := regexp.Compile(entry)
+		if err != nil {
+			flog.Errorf("incorrect regexp %s", entry)
+			continue
+		}
+		if re.MatchString(text) {
+			flog.Debugf("matching %s. ignoring %s", entry, text)
+			return true
+		}
+	}
+	return false
 }
