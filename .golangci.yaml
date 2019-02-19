@@ -132,6 +132,7 @@ linters-settings:
     # ifElseChain regexpMust singleCaseSwitch sloppyLen switchTrue typeSwitchVar underef
     # unlambda unslice rangeValCopy defaultCaseOrder];
     # all checks list: https://github.com/go-critic/checkers
+    # disabled for now - hugeParam
     enabled-checks:
       - appendAssign
       - assignOp
@@ -147,7 +148,6 @@ linters-settings:
       - dupSubExpr
       - elseif
       - emptyFallthrough
-      - hugeParam
       - ifElseChain
       - importShadow
       - indexAlloc

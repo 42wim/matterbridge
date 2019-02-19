@@ -174,6 +174,29 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 		return channels
 	}
 
+	// discord join/leave is for the whole bridge, isn't a per channel join/leave
+	if msg.Event == config.EventJoinLeave && getProtocol(msg) == "discord" && msg.Channel == "" {
+		for _, channel := range gw.Channels {
+			if channel.Account == dest.Account && strings.Contains(channel.Direction, "out") &&
+				gw.validGatewayDest(msg) {
+				channels = append(channels, *channel)
+			}
+		}
+		return channels
+	}
+
+	// irc quit is for the whole bridge, isn't a per channel quit.
+	// channel is empty when we quit
+	if msg.Event == config.EventJoinLeave && getProtocol(msg) == "irc" && msg.Channel == "" {
+		for _, channel := range gw.Channels {
+			if channel.Account == dest.Account && strings.Contains(channel.Direction, "out") &&
+				gw.validGatewayDest(msg) {
+				channels = append(channels, *channel)
+			}
+		}
+		return channels
+	}
+
 	// if source channel is in only, do nothing
 	for _, channel := range gw.Channels {
 		// lookup the channel from the message
@@ -237,38 +260,6 @@ func (gw *Gateway) ignoreTextEmpty(msg *config.Message) bool {
 	return true
 }
 
-// ignoreTexts returns true if msg.Text matches any of the input regexes.
-func (gw *Gateway) ignoreTexts(msg *config.Message, input []string) bool {
-	for _, entry := range input {
-		if entry == "" {
-			continue
-		}
-		// TODO do not compile regexps everytime
-		re, err := regexp.Compile(entry)
-		if err != nil {
-			flog.Errorf("incorrect regexp %s for %s", entry, msg.Account)
-			continue
-		}
-		if re.MatchString(msg.Text) {
-			flog.Debugf("matching %s. ignoring %s from %s", entry, msg.Text, msg.Account)
-			return true
-		}
-	}
-	return false
-}
-
-// ignoreNicks returns true if msg.Username matches any of the input regexes.
-func (gw *Gateway) ignoreNicks(msg *config.Message, input []string) bool {
-	// is the username in IgnoreNicks field
-	for _, entry := range input {
-		if msg.Username == entry {
-			flog.Debugf("ignoring %s from %s", msg.Username, msg.Account)
-			return true
-		}
-	}
-	return false
-}
-
 func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 	// if we don't have the bridge, ignore it
 	if _, ok := gw.Bridges[msg.Account]; !ok {
@@ -277,7 +268,7 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 
 	igNicks := strings.Fields(gw.Bridges[msg.Account].GetString("IgnoreNicks"))
 	igMessages := strings.Fields(gw.Bridges[msg.Account].GetString("IgnoreMessages"))
-	if gw.ignoreTextEmpty(msg) || gw.ignoreNicks(msg, igNicks) || gw.ignoreTexts(msg, igMessages) {
+	if gw.ignoreTextEmpty(msg) || gw.ignoreText(msg.Username, igNicks) || gw.ignoreText(msg.Text, igMessages) {
 		return true
 	}
 
@@ -398,6 +389,12 @@ func (gw *Gateway) SendMessage(origmsg config.Message, dest *bridge.Bridge, chan
 		msg.ParentID = canonicalParentMsgID
 	}
 
+	// if the parentID is still empty and we have a parentID set in the original message
+	// this means that we didn't find it in the cache so set it "msg-parent-not-found"
+	if msg.ParentID == "" && origmsg.ParentID != "" {
+		msg.ParentID = "msg-parent-not-found"
+	}
+
 	// if we are using mattermost plugin account, send messages to MattermostPlugin channel
 	// that can be picked up by the mattermost matterbridge plugin
 	if dest.Account == "mattermost.plugin" {
@@ -428,4 +425,29 @@ func getChannelID(msg config.Message) string {
 
 func isAPI(account string) bool {
 	return strings.HasPrefix(account, "api.")
+}
+
+// ignoreText returns true if text matches any of the input regexes.
+func (gw *Gateway) ignoreText(text string, input []string) bool {
+	for _, entry := range input {
+		if entry == "" {
+			continue
+		}
+		// TODO do not compile regexps everytime
+		re, err := regexp.Compile(entry)
+		if err != nil {
+			flog.Errorf("incorrect regexp %s", entry)
+			continue
+		}
+		if re.MatchString(text) {
+			flog.Debugf("matching %s. ignoring %s", entry, text)
+			return true
+		}
+	}
+	return false
+}
+
+func getProtocol(msg *config.Message) string {
+	p := strings.Split(msg.Account, ".")
+	return p[0]
 }

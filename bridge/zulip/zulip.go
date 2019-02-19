@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/42wim/matterbridge/bridge"
@@ -17,10 +18,12 @@ type Bzulip struct {
 	bot     *gzb.Bot
 	streams map[int]string
 	*bridge.Config
+	channelToTopic map[string]string
+	sync.RWMutex
 }
 
 func New(cfg *bridge.Config) bridge.Bridger {
-	return &Bzulip{Config: cfg, streams: make(map[int]string)}
+	return &Bzulip{Config: cfg, streams: make(map[int]string), channelToTopic: make(map[string]string)}
 }
 
 func (b *Bzulip) Connect() error {
@@ -45,6 +48,9 @@ func (b *Bzulip) Disconnect() error {
 }
 
 func (b *Bzulip) JoinChannel(channel config.ChannelInfo) error {
+	b.Lock()
+	defer b.Unlock()
+	b.channelToTopic[channel.Name] = channel.Options.Topic
 	return nil
 }
 
@@ -100,7 +106,30 @@ func (b *Bzulip) getChannel(id int) string {
 
 func (b *Bzulip) handleQueue() error {
 	for {
-		messages, _ := b.q.GetEvents()
+		messages, err := b.q.GetEvents()
+		switch err {
+		case gzb.BackoffError:
+			time.Sleep(time.Second * 5)
+		case gzb.NoJSONError:
+			b.Log.Error("Response wasn't JSON, server down or restarting? sleeping 10 seconds")
+			time.Sleep(time.Second * 10)
+		case gzb.BadEventQueueError:
+			b.Log.Info("got a bad event queue id error, reconnecting")
+			b.bot.Queues = nil
+			b.q, err = b.bot.RegisterAll()
+			if err != nil {
+				b.Log.Errorf("reconnecting failed: %s. Sleeping 10 seconds", err)
+				time.Sleep(time.Second * 10)
+				continue
+			}
+		case gzb.HeartbeatError:
+			b.Log.Debug("heartbeat received.")
+		default:
+			b.Log.Debugf("receiving error: %#v", err)
+		}
+		if err != nil {
+			continue
+		}
 		for _, m := range messages {
 			b.Log.Debugf("== Receiving %#v", m)
 			// ignore our own messages
@@ -121,6 +150,9 @@ func (b *Bzulip) sendMessage(msg config.Message) (string, error) {
 	topic := "matterbridge"
 	if b.GetString("topic") != "" {
 		topic = b.GetString("topic")
+	}
+	if res := b.getTopic(msg.Channel); res != "" {
+		topic = res
 	}
 	m := gzb.Message{
 		Stream:  msg.Channel,
@@ -167,4 +199,10 @@ func (b *Bzulip) handleUploadFile(msg *config.Message) (string, error) {
 		}
 	}
 	return "", nil
+}
+
+func (b *Bzulip) getTopic(channel string) string {
+	b.RLock()
+	defer b.RUnlock()
+	return b.channelToTopic[channel]
 }

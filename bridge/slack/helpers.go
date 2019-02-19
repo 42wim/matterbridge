@@ -254,6 +254,13 @@ func (b *Bslack) populateReceivedMessage(ev *slack.MessageEvent) (*config.Messag
 		}
 	}
 
+	// For edits, only submessage has thread ts.
+	// Ensures edits to threaded messages maintain their prefix hint on the
+	// unthreaded end.
+	if ev.SubMessage != nil {
+		rmsg.ParentID = ev.SubMessage.ThreadTimestamp
+	}
+
 	if err = b.populateMessageWithUserInfo(ev, rmsg); err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package gozulipbot
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -13,10 +14,12 @@ import (
 )
 
 var (
-	HeartbeatError    = fmt.Errorf("EventMessage is a heartbeat")
-	UnauthorizedError = fmt.Errorf("Request is unauthorized")
-	BackoffError      = fmt.Errorf("Too many requests")
-	UnknownError      = fmt.Errorf("Error was unknown")
+	HeartbeatError     = fmt.Errorf("EventMessage is a heartbeat")
+	UnauthorizedError  = fmt.Errorf("Request is unauthorized")
+	BackoffError       = fmt.Errorf("Too many requests")
+	BadEventQueueError = fmt.Errorf("BAD_EVENT_QUEUE_ID error")
+	UnknownError       = fmt.Errorf("Error was unknown")
+	NoJSONError        = fmt.Errorf("No JSON in body found")
 )
 
 type Queue struct {
@@ -24,6 +27,13 @@ type Queue struct {
 	LastEventID  int    `json:"last_event_id"`
 	MaxMessageID int    `json:"max_message_id"`
 	Bot          *Bot   `json:"-"`
+}
+
+type QueueError struct {
+	Code   string `json:"code"`
+	Msg    string `json:"msg"`
+	ID     string `json:"queue_id"`
+	Result string `json:"result"`
 }
 
 func (q *Queue) EventsChan() (chan EventMessage, func()) {
@@ -131,18 +141,25 @@ func (q *Queue) GetEvents() ([]EventMessage, error) {
 	}
 	defer resp.Body.Close()
 
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	switch {
 	case resp.StatusCode == 429:
 		return nil, BackoffError
 	case resp.StatusCode == 403:
 		return nil, UnauthorizedError
 	case resp.StatusCode >= 400:
-		return nil, UnknownError
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+		if bytes.HasPrefix(body, []byte("<")) {
+			return nil, NoJSONError
+		}
+		qErr, err := q.ParseError(body)
+		if err != nil || qErr == nil {
+			return nil, UnknownError
+		}
+		return nil, BadEventQueueError
 	}
 
 	msgs, err := q.ParseEventMessages(body)
@@ -168,6 +185,26 @@ func (q *Queue) RawGetEvents() (*http.Response, error) {
 	}
 
 	return q.Bot.Client.Do(req)
+}
+
+func (q *Queue) ParseError(rawEventResponse []byte) (*QueueError, error) {
+	rawResponse := map[string]json.RawMessage{}
+	err := json.Unmarshal(rawEventResponse, &rawResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, ok := rawResponse["code"]; ok {
+		var qErr QueueError
+		err = json.Unmarshal(rawEventResponse, &qErr)
+		if err != nil {
+			return nil, err
+		}
+		if qErr.Code == "BAD_EVENT_QUEUE_ID" {
+			return &qErr, nil
+		}
+	}
+	return nil, nil
 }
 
 func (q *Queue) ParseEventMessages(rawEventResponse []byte) ([]EventMessage, error) {

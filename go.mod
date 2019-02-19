@@ -4,6 +4,7 @@ require (
 	github.com/42wim/go-gitter v0.0.0-20170828205020-017310c2d557
 	github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f
 	github.com/BurntSushi/toml v0.0.0-20170318202913-d94612f9fc14 // indirect
+	github.com/Jeffail/gabs v1.1.1 // indirect
 	github.com/Philipp15b/go-steam v1.0.1-0.20180818081528-681bd9573329
 	github.com/Rhymen/go-whatsapp v0.0.0-20190208184307-c9a81e957884
 	github.com/bwmarrin/discordgo v0.19.0
@@ -11,6 +12,7 @@ require (
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.5-0.20181225215658-ec221ba9ea45+incompatible
 	github.com/google/gops v0.3.5
+	github.com/gopackage/ddp v0.0.0-20170117053602-652027933df4 // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20180628210949-0892b62f0d9f // indirect
 	github.com/gorilla/schema v1.0.2
 	github.com/gorilla/websocket v1.4.0
@@ -21,17 +23,19 @@ require (
 	github.com/kardianos/osext v0.0.0-20170510131534-ae77be60afb1 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/labstack/echo/v4 v4.0.0
-	github.com/lrstanley/girc v0.0.0-20190102153329-c1e59a02f488
+	github.com/lrstanley/girc v0.0.0-20190210212025-51b8e096d398
 	github.com/lusis/go-slackbot v0.0.0-20180109053408-401027ccfef5 // indirect
 	github.com/lusis/slack-test v0.0.0-20180109053238-3c758769bfa6 // indirect
+	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20190210153444-cc9d05784d5d
 	github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91
 	github.com/matterbridge/gomatrix v0.0.0-20190102230110-6f9631ca6dea
-	github.com/matterbridge/gozulipbot v0.0.0-20180507190239-b6bb12d33544
+	github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18
 	github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61
 	github.com/mattermost/mattermost-server v5.5.0+incompatible
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/mreiferson/go-httpclient v0.0.0-20160630210159-31f0106b4474 // indirect
 	github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff // indirect
+	github.com/nelsonken/gomf v0.0.0-20180504123937-a9dd2f9deae9
 	github.com/nicksnyder/go-i18n v1.4.0 // indirect
 	github.com/nlopes/slack v0.5.0
 	github.com/onsi/ginkgo v1.6.0 // indirect

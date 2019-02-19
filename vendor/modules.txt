@@ -2,6 +2,8 @@
 github.com/42wim/go-gitter
 # github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f
 github.com/Baozisoftware/qrcode-terminal-go
+# github.com/Jeffail/gabs v1.1.1
+github.com/Jeffail/gabs
 # github.com/Philipp15b/go-steam v1.0.1-0.20180818081528-681bd9573329
 github.com/Philipp15b/go-steam
 github.com/Philipp15b/go-steam/protocol/steamlang
@@ -40,6 +42,8 @@ github.com/golang/protobuf/protoc-gen-go/descriptor
 github.com/google/gops/agent
 github.com/google/gops/internal
 github.com/google/gops/signal
+# github.com/gopackage/ddp v0.0.0-20170117053602-652027933df4
+github.com/gopackage/ddp
 # github.com/gorilla/schema v1.0.2
 github.com/gorilla/schema
 # github.com/gorilla/websocket v1.4.0
@@ -72,15 +76,19 @@ github.com/labstack/gommon/color
 github.com/labstack/gommon/log
 github.com/labstack/gommon/bytes
 github.com/labstack/gommon/random
-# github.com/lrstanley/girc v0.0.0-20190102153329-c1e59a02f488
+# github.com/lrstanley/girc v0.0.0-20190210212025-51b8e096d398
 github.com/lrstanley/girc
 # github.com/magiconair/properties v1.8.0
 github.com/magiconair/properties
+# github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20190210153444-cc9d05784d5d
+github.com/matterbridge/Rocket.Chat.Go.SDK/models
+github.com/matterbridge/Rocket.Chat.Go.SDK/realtime
+github.com/matterbridge/Rocket.Chat.Go.SDK/rest
 # github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91
 github.com/matterbridge/go-xmpp
 # github.com/matterbridge/gomatrix v0.0.0-20190102230110-6f9631ca6dea
 github.com/matterbridge/gomatrix
-# github.com/matterbridge/gozulipbot v0.0.0-20180507190239-b6bb12d33544
+# github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18
 github.com/matterbridge/gozulipbot
 # github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61
 github.com/matterbridge/logrus-prefixed-formatter
@@ -101,6 +109,8 @@ github.com/mitchellh/mapstructure
 github.com/mreiferson/go-httpclient
 # github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff
 github.com/mrexodia/wray
+# github.com/nelsonken/gomf v0.0.0-20180504123937-a9dd2f9deae9
+github.com/nelsonken/gomf
 # github.com/nicksnyder/go-i18n v1.4.0
 github.com/nicksnyder/go-i18n/i18n
 github.com/nicksnyder/go-i18n/i18n/bundle
@@ -199,6 +209,8 @@ golang.org/x/crypto/ed25519
 golang.org/x/crypto/internal/chacha20
 golang.org/x/crypto/hkdf
 golang.org/x/crypto/ed25519/internal/edwards25519
+# golang.org/x/net v0.0.0-20190110200230-915654e7eabc
+golang.org/x/net/websocket
 # golang.org/x/sys v0.0.0-20190129075346-302c3dd5f1cc
 golang.org/x/sys/unix
 golang.org/x/sys/windows

@@ -295,7 +295,7 @@ func (b *Birc) storeNames(client *girc.Client, event girc.Event) {
 	channel := event.Params[2]
 	b.names[channel] = append(
 		b.names[channel],
-		strings.Split(strings.TrimSpace(event.Trailing), " ")...)
+		strings.Split(strings.TrimSpace(event.Last()), " ")...)
 }
 
 func (b *Birc) formatnicks(nicks []string) string {

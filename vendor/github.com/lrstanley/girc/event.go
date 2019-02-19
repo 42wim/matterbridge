@@ -21,46 +21,6 @@ func cutCRFunc(r rune) bool {
 	return r == '\r' || r == '\n'
 }
 
-// Event represents an IRC protocol message, see RFC1459 section 2.3.1
-//
-//    <message>  :: [':' <prefix> <SPACE>] <command> <params> <crlf>
-//    <prefix>   :: <servername> | <nick> ['!' <user>] ['@' <host>]
-//    <command>  :: <letter>{<letter>} | <number> <number> <number>
-//    <SPACE>    :: ' '{' '}
-//    <params>   :: <SPACE> [':' <trailing> | <middle> <params>]
-//    <middle>   :: <Any *non-empty* sequence of octets not including SPACE or NUL
-//                   or CR or LF, the first of which may not be ':'>
-//    <trailing> :: <Any, possibly empty, sequence of octets not including NUL or
-//                   CR or LF>
-//    <crlf>     :: CR LF
-type Event struct {
-	// Source is the origin of the event.
-	Source *Source `json:"source"`
-	// Tags are the IRCv3 style message tags for the given event. Only use
-	// if network supported.
-	Tags Tags `json:"tags"`
-	// Timestamp is the time the event was received. This could optionally be
-	// used for client-stored sent messages too. If the server supports the
-	// "server-time" capability, this is synced to the UTC time that the server
-	// specifies.
-	Timestamp time.Time `json:"timestamp"`
-	// Command that represents the event, e.g. JOIN, PRIVMSG, KILL.
-	Command string `json:"command"`
-	// Params (parameters/args) to the command. Commonly nickname, channel, etc.
-	Params []string `json:"params"`
-	// Trailing text. e.g. with a PRIVMSG, this is the message text (part
-	// after the colon.)
-	Trailing string `json:"trailing"`
-	// EmptyTrailing, if true, the text prefix (:) will be added even if
-	// Event.Trailing is empty.
-	EmptyTrailing bool `json:"empty_trailing"`
-	// Sensitive should be true if the message is sensitive (e.g. and should
-	// not be logged/shown in debugging output).
-	Sensitive bool `json:"sensitive"`
-	// If the event is an echo-message response.
-	Echo bool `json:"echo"`
-}
-
 // ParseEvent takes a string and attempts to create a Event struct. Returns
 // nil if the Event is invalid.
 func ParseEvent(raw string) (e *Event) {
@@ -157,14 +117,53 @@ func ParseEvent(raw string) (e *Event) {
 		e.Params = strings.Split(raw[j:i-1], string(eventSpace))
 	}
 
-	e.Trailing = raw[i+1:]
-
-	// We need to re-encode the trailing argument even if it was empty.
-	if len(e.Trailing) <= 0 {
-		e.EmptyTrailing = true
-	}
+	e.Params = append(e.Params, raw[i+1:])
 
 	return e
+}
+
+// Event represents an IRC protocol message, see RFC1459 section 2.3.1
+//
+//    <message>  :: [':' <prefix> <SPACE>] <command> <params> <crlf>
+//    <prefix>   :: <servername> | <nick> ['!' <user>] ['@' <host>]
+//    <command>  :: <letter>{<letter>} | <number> <number> <number>
+//    <SPACE>    :: ' '{' '}
+//    <params>   :: <SPACE> [':' <trailing> | <middle> <params>]
+//    <middle>   :: <Any *non-empty* sequence of octets not including SPACE or NUL
+//                   or CR or LF, the first of which may not be ':'>
+//    <trailing> :: <Any, possibly empty, sequence of octets not including NUL or
+//                   CR or LF>
+//    <crlf>     :: CR LF
+type Event struct {
+	// Source is the origin of the event.
+	Source *Source `json:"source"`
+	// Tags are the IRCv3 style message tags for the given event. Only use
+	// if network supported.
+	Tags Tags `json:"tags"`
+	// Timestamp is the time the event was received. This could optionally be
+	// used for client-stored sent messages too. If the server supports the
+	// "server-time" capability, this is synced to the UTC time that the server
+	// specifies.
+	Timestamp time.Time `json:"timestamp"`
+	// Command that represents the event, e.g. JOIN, PRIVMSG, KILL.
+	Command string `json:"command"`
+	// Params (parameters/args) to the command. Commonly nickname, channel, etc.
+	// The last item in the slice could potentially contain spaces (commonly
+	// referred to as the "trailing" parameter).
+	Params []string `json:"params"`
+	// Sensitive should be true if the message is sensitive (e.g. and should
+	// not be logged/shown in debugging output).
+	Sensitive bool `json:"sensitive"`
+	// If the event is an echo-message response.
+	Echo bool `json:"echo"`
+}
+
+// Last returns the last parameter in Event.Params if it exists.
+func (e *Event) Last() string {
+	if len(e.Params) >= 1 {
+		return e.Params[len(e.Params)-1]
+	}
+	return ""
 }
 
 // Copy makes a deep copy of a given event, for use with allowing untrusted
@@ -176,12 +175,10 @@ func (e *Event) Copy() *Event {
 	}
 
 	newEvent := &Event{
-		Timestamp:     e.Timestamp,
-		Command:       e.Command,
-		Trailing:      e.Trailing,
-		EmptyTrailing: e.EmptyTrailing,
-		Sensitive:     e.Sensitive,
-		Echo:          e.Echo,
+		Timestamp: e.Timestamp,
+		Command:   e.Command,
+		Sensitive: e.Sensitive,
+		Echo:      e.Echo,
 	}
 
 	// Copy Source field, as it's a pointer and needs to be dereferenced.
@@ -208,7 +205,7 @@ func (e *Event) Copy() *Event {
 
 // Equals compares two Events for equality.
 func (e *Event) Equals(ev *Event) bool {
-	if e.Command != ev.Command || e.Trailing != ev.Trailing || len(e.Params) != len(ev.Params) {
+	if e.Command != ev.Command || len(e.Params) != len(ev.Params) {
 		return false
 	}
 
@@ -242,16 +239,18 @@ func (e *Event) Len() (length int) {
 	length += len(e.Command)
 
 	if len(e.Params) > 0 {
+		// Spaces before each param.
 		length += len(e.Params)
 
 		for i := 0; i < len(e.Params); i++ {
 			length += len(e.Params[i])
-		}
-	}
 
-	if len(e.Trailing) > 0 || e.EmptyTrailing {
-		// Include prefix and space.
-		length += len(e.Trailing) + 2
+			// If param contains a space or it's empty, it's trailing, so it should be
+			// prefixed with a colon (:).
+			if i == len(e.Params)-1 && (strings.Contains(e.Params[i], " ") || e.Params[i] == "") {
+				length++
+			}
+		}
 	}
 
 	return
@@ -283,14 +282,15 @@ func (e *Event) Bytes() []byte {
 
 	// Space separated list of arguments.
 	if len(e.Params) > 0 {
-		buffer.WriteByte(eventSpace)
-		buffer.WriteString(strings.Join(e.Params, string(eventSpace)))
-	}
+		// buffer.WriteByte(eventSpace)
 
-	if len(e.Trailing) > 0 || e.EmptyTrailing {
-		buffer.WriteByte(eventSpace)
-		buffer.WriteByte(messagePrefix)
-		buffer.WriteString(e.Trailing)
+		for i := 0; i < len(e.Params); i++ {
+			if i == len(e.Params)-1 && (strings.Contains(e.Params[i], " ") || e.Params[i] == "") {
+				buffer.WriteString(string(eventSpace) + string(messagePrefix) + e.Params[i])
+				continue
+			}
+			buffer.WriteString(string(eventSpace) + e.Params[i])
+		}
 	}
 
 	// We need the limit the buffer length.
@@ -327,7 +327,7 @@ func (e *Event) Pretty() (out string, ok bool) {
 	}
 
 	if e.Command == ERROR {
-		return fmt.Sprintf("[*] an error occurred: %s", e.Trailing), true
+		return fmt.Sprintf("[*] an error occurred: %s", e.Last()), true
 	}
 
 	if e.Source == nil {
@@ -335,23 +335,19 @@ func (e *Event) Pretty() (out string, ok bool) {
 			return "", false
 		}
 
-		if len(e.Params) > 0 && len(e.Trailing) > 0 {
-			return fmt.Sprintf("[>] writing %s [%s]: %s", strings.ToLower(e.Command), strings.Join(e.Params, ", "), e.Trailing), true
-		} else if len(e.Params) > 0 {
-			return fmt.Sprintf("[>] writing %s [%s]", strings.ToLower(e.Command), strings.Join(e.Params, ", ")), true
-		} else if len(e.Trailing) > 0 {
-			return fmt.Sprintf("[>] writing %s: %s", strings.ToLower(e.Command), e.Trailing), true
+		if len(e.Params) > 0 {
+			return fmt.Sprintf("[>] writing %s", e.String()), true
 		}
 
 		return "", false
 	}
 
 	if e.Command == INITIALIZED {
-		return fmt.Sprintf("[*] connection to %s initialized", e.Trailing), true
+		return fmt.Sprintf("[*] connection to %s initialized", e.Last()), true
 	}
 
 	if e.Command == CONNECTED {
-		return fmt.Sprintf("[*] successfully connected to %s", e.Trailing), true
+		return fmt.Sprintf("[*] successfully connected to %s", e.Last()), true
 	}
 
 	if (e.Command == PRIVMSG || e.Command == NOTICE) && len(e.Params) > 0 {
@@ -361,18 +357,18 @@ func (e *Event) Pretty() (out string, ok bool) {
 			}
 
 			if ctcp.Command == CTCP_ACTION {
-				return fmt.Sprintf("[%s] **%s** %s", strings.Join(e.Params, ","), ctcp.Source.Name, ctcp.Text), true
+				return fmt.Sprintf("[%s] **%s** %s", strings.Join(e.Params[0:len(e.Params)-1], ","), ctcp.Source.Name, ctcp.Text), true
 			}
 
 			return fmt.Sprintf("[*] CTCP query from %s: %s%s", ctcp.Source.Name, ctcp.Command, " "+ctcp.Text), true
 		}
-		return fmt.Sprintf("[%s] (%s) %s", strings.Join(e.Params, ","), e.Source.Name, e.Trailing), true
+		return fmt.Sprintf("[%s] (%s) %s", strings.Join(e.Params[0:len(e.Params)-1], ","), e.Source.Name, e.Last()), true
 	}
 
 	if e.Command == RPL_MOTD || e.Command == RPL_MOTDSTART ||
 		e.Command == RPL_WELCOME || e.Command == RPL_YOURHOST ||
 		e.Command == RPL_CREATED || e.Command == RPL_LUSERCLIENT {
-		return "[*] " + e.Trailing, true
+		return "[*] " + e.Last(), true
 	}
 
 	if e.Command == JOIN && len(e.Params) > 0 {
@@ -380,41 +376,34 @@ func (e *Event) Pretty() (out string, ok bool) {
 	}
 
 	if e.Command == PART && len(e.Params) > 0 {
-		return fmt.Sprintf("[*] %s (%s) has left %s (%s)", e.Source.Name, e.Source.Host, e.Params[0], e.Trailing), true
+		return fmt.Sprintf("[*] %s (%s) has left %s (%s)", e.Source.Name, e.Source.Host, e.Params[0], e.Last()), true
 	}
 
 	if e.Command == QUIT {
-		return fmt.Sprintf("[*] %s has quit (%s)", e.Source.Name, e.Trailing), true
+		return fmt.Sprintf("[*] %s has quit (%s)", e.Source.Name, e.Last()), true
 	}
 
 	if e.Command == INVITE && len(e.Params) == 1 {
-		return fmt.Sprintf("[*] %s invited to %s by %s", e.Params[0], e.Trailing, e.Source.Name), true
+		return fmt.Sprintf("[*] %s invited to %s by %s", e.Params[0], e.Last(), e.Source.Name), true
 	}
 
 	if e.Command == KICK && len(e.Params) >= 2 {
-		if e.Trailing == "" && len(e.Params) == 3 {
-			e.Trailing = e.Params[2]
-		}
-
-		return fmt.Sprintf("[%s] *** %s has kicked %s: %s", e.Params[0], e.Source.Name, e.Params[1], e.Trailing), true
+		return fmt.Sprintf("[%s] *** %s has kicked %s: %s", e.Params[0], e.Source.Name, e.Params[1], e.Last()), true
 	}
 
 	if e.Command == NICK {
-		// Workaround, see https://github.com/lrstanley/girc/pull/15#issuecomment-413845482
-		var name string
-		if len(e.Params) == 1 {
-			name = e.Params[0]
-		} else if len(e.Trailing) > 0 {
-			name = e.Trailing
-		}
-
-		if name != "" {
-			return fmt.Sprintf("[*] %s is now known as %s", e.Source.Name, name), true
-		}
+		return fmt.Sprintf("[*] %s is now known as %s", e.Source.Name, e.Last()), true
 	}
 
-	if e.Command == TOPIC && len(e.Params) > 0 {
-		return fmt.Sprintf("[%s] *** %s has set the topic to: %s", e.Params[len(e.Params)-1], e.Source.Name, e.Trailing), true
+	if e.Command == TOPIC && len(e.Params) >= 2 {
+		return fmt.Sprintf("[%s] *** %s has set the topic to: %s", e.Params[0], e.Source.Name, e.Last()), true
+	}
+
+	if e.Command == RPL_TOPIC && len(e.Params) > 0 {
+		if len(e.Params) >= 2 {
+			return fmt.Sprintf("[*] topic for %s is: %s", e.Params[1], e.Last()), true
+		}
+		return fmt.Sprintf("[*] topic for %s is: %s", e.Params[0], e.Last()), true
 	}
 
 	if e.Command == MODE && len(e.Params) > 2 {
@@ -422,8 +411,8 @@ func (e *Event) Pretty() (out string, ok bool) {
 	}
 
 	if e.Command == CAP_AWAY {
-		if len(e.Trailing) > 0 {
-			return fmt.Sprintf("[*] %s is now away: %s", e.Source.Name, e.Trailing), true
+		if len(e.Params) > 0 {
+			return fmt.Sprintf("[*] %s is now away: %s", e.Source.Name, e.Last()), true
 		}
 
 		return fmt.Sprintf("[*] %s is no longer away", e.Source.Name), true
@@ -441,12 +430,8 @@ func (e *Event) Pretty() (out string, ok bool) {
 		return fmt.Sprintf("[*] %s has authenticated for account: %s", e.Source.Name, e.Params[0]), true
 	}
 
-	if e.Command == RPL_TOPIC && len(e.Params) > 0 && len(e.Trailing) > 0 {
-		return fmt.Sprintf("[*] topic for %s is: %s", e.Params[len(e.Params)-1], e.Trailing), true
-	}
-
-	if e.Command == CAP && len(e.Params) == 2 && len(e.Trailing) > 1 && e.Params[1] == CAP_ACK {
-		return "[*] enabling capabilities: " + e.Trailing, true
+	if e.Command == CAP && len(e.Params) >= 2 && e.Params[1] == CAP_ACK {
+		return "[*] enabling capabilities: " + e.Last(), true
 	}
 
 	return "", false
@@ -501,10 +486,11 @@ func (e *Event) IsFromUser() bool {
 // PRIVMSG ACTION (/me).
 func (e *Event) StripAction() string {
 	if !e.IsAction() {
-		return e.Trailing
+		return e.Last()
 	}
 
-	return e.Trailing[8 : len(e.Trailing)-1]
+	msg := e.Last()
+	return msg[8 : len(msg)-1]
 }
 
 const (

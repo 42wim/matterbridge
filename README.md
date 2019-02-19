@@ -15,6 +15,7 @@
       [Matrix][mb-matrix] |
       [Slack][mb-slack] |
       [Mattermost][mb-mattermost] |
+      [Rocket.Chat][mb-rocketchat] |
       [XMPP][mb-xmpp] |
       [Twitch][mb-twitch] |
       [WhatsApp][mb-whatsapp] |
@@ -35,8 +36,10 @@
 
 ### Table of Contents
  * [Features](https://github.com/42wim/matterbridge/wiki/Features)
+   * [Natively supported](#natively-supported)
+   * [3rd party via matterbridge api](#3rd-party-via-matterbridge-api)
    * [API](#API)
- * [Requirements](#requirements)
+ * [Chat with us](#chat-with-us)
  * [Screenshots](https://github.com/42wim/matterbridge/wiki/)
  * [Installing](#installing)
    * [Binaries](#binaries)
@@ -62,18 +65,8 @@
 * [Private groups](https://github.com/42wim/matterbridge/wiki/Features#private-groups)
 * [API](https://github.com/42wim/matterbridge/wiki/Features#api)
 
-### API
-The API is very basic at the moment.   
-More info and examples on the [wiki](https://github.com/42wim/matterbridge/wiki/Api).
+### Natively supported
 
-Used by at least 3 projects. Feel free to make a PR to add your project to this list.
-
-* [MatterLink](https://github.com/elytra/MatterLink) (Matterbridge link for Minecraft Server chat)
-* [pyCord](https://github.com/NikkyAI/pyCord) (crossplatform chatbot)
-* [Mattereddit](https://github.com/bonehurtingjuice/mattereddit) (Reddit chat support)
-
-## Requirements
-Accounts to one of the supported bridges
 * [Mattermost](https://github.com/mattermost/mattermost-server/) 4.x, 5.x
 * [IRC](http://www.mirc.com/servers.html)
 * [XMPP](https://xmpp.org)
@@ -89,6 +82,37 @@ Accounts to one of the supported bridges
 * [Ssh-chat](https://github.com/shazow/ssh-chat)
 * [WhatsApp](https://www.whatsapp.com/)
 * [Zulip](https://zulipchat.com)
+
+### 3rd party via matterbridge api
+* [Minecraft](https://github.com/elytra/MatterLink)
+* [Reddit](https://github.com/bonehurtingjuice/mattereddit)
+* [Facebook messenger](https://github.com/VictorNine/fbridge)
+
+### API
+The API is very basic at the moment.   
+More info and examples on the [wiki](https://github.com/42wim/matterbridge/wiki/Api).
+
+Used by the projects below. Feel free to make a PR to add your project to this list.
+
+* [MatterLink](https://github.com/elytra/MatterLink) (Matterbridge link for Minecraft Server chat)
+* [pyCord](https://github.com/NikkyAI/pyCord) (crossplatform chatbot)
+* [Mattereddit](https://github.com/bonehurtingjuice/mattereddit) (Reddit chat support)
+* [fbridge](https://github.com/VictorNine/fbridge) (Facebook messenger support)
+
+## Chat with us
+
+Questions or want to test on your favorite platform? Join below:
+
+* [Gitter][mb-gitter]
+* [IRC][mb-irc]
+* [Discord][mb-discord]
+* [Matrix][mb-matrix]
+* [Slack][mb-slack]
+* [Mattermost][mb-mattermost]
+* [Rocket.Chat][mb-rocketchat]
+* [XMPP][mb-xmpp]
+* [Twitch][mb-twitch]
+* [Zulip][mb-zulip]
 
 ## Screenshots
 See https://github.com/42wim/matterbridge/wiki
@@ -224,6 +248,7 @@ Want to tip ?
 * [matterlink](https://github.com/elytra/MatterLink)
 * [mattermost-plugin](https://github.com/matterbridge/mattermost-plugin) - Run matterbridge as a plugin in mattermost
 * [pyCord](https://github.com/NikkyAI/pyCord) (crossplatform chatbot)
+* [fbridge](https://github.com/VictorNine/fbridge) (Facebook messenger support)
 
 ## Articles
 * [matterbridge on kubernetes](https://medium.freecodecamp.org/using-kubernetes-to-deploy-a-chat-gateway-or-when-technology-works-like-its-supposed-to-a169a8cd69a3)
@@ -234,6 +259,7 @@ Want to tip ?
 * https://www.algoo.fr/blog/2018/01/19/recouvrez-votre-liberte-en-quittant-slack-pour-un-mattermost-auto-heberge/
 * https://kopano.com/blog/matterbridge-bridging-mattermost-chat/
 * https://www.stitcher.com/s/?eid=52382713
+* https://daniele.tech/2019/02/how-to-use-matterbridge-to-connect-2-different-slack-workspaces/
 
 ## Thanks
 [![Digitalocean](https://snag.gy/3LVifX.jpg)](https://www.digitalocean.com/) for sponsoring demo/testing droplets.
@@ -263,6 +289,7 @@ Matterbridge wouldn't exist without these libraries:
    [mb-matrix]: https://riot.im/app/#/room/#matterbridge:matrix.org
    [mb-slack]: https://join.slack.com/matterbridgechat/shared_invite/MjEwODMxNjU1NDMwLTE0OTk2MTU3NTMtMzZkZmRiNDZhOA
    [mb-mattermost]: https://framateam.org/signup_user_complete/?id=tfqm33ggop8x3qgu4boeieta6e
+   [mb-rocketchat]: https://open.rocket.chat/channel/matterbridge
    [mb-xmpp]: https://inverse.chat/
    [mb-twitch]: https://www.twitch.tv/matterbridge
    [mb-whatsapp]: https://www.whatsapp.com/

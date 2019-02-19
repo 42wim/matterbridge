@@ -309,17 +309,17 @@ func (c *Client) internalConnect(mock net.Conn, dialer Dialer) error {
 		c.Config.Name = c.Config.User
 	}
 
-	c.write(&Event{Command: USER, Params: []string{c.Config.User, "*", "*"}, Trailing: c.Config.Name})
+	c.write(&Event{Command: USER, Params: []string{c.Config.User, "*", "*", c.Config.Name}})
 
 	// Send a virtual event allowing hooks for successful socket connection.
-	c.RunHandlers(&Event{Command: INITIALIZED, Trailing: c.Server()})
+	c.RunHandlers(&Event{Command: INITIALIZED, Params: []string{c.Server()}})
 
 	// Wait for the first error.
 	var result error
 	select {
 	case <-ctx.Done():
 		c.debug.Print("received request to close, beginning clean up")
-		c.RunHandlers(&Event{Command: CLOSED, Trailing: c.Server()})
+		c.RunHandlers(&Event{Command: CLOSED, Params: []string{c.Server()}})
 	case err := <-errs:
 		c.debug.Print("received error, beginning clean up")
 		result = err
@@ -336,7 +336,7 @@ func (c *Client) internalConnect(mock net.Conn, dialer Dialer) error {
 	c.conn.mu.Unlock()
 	c.mu.RUnlock()
 
-	c.RunHandlers(&Event{Command: DISCONNECTED, Trailing: c.Server()})
+	c.RunHandlers(&Event{Command: DISCONNECTED, Params: []string{c.Server()}})
 
 	// Once we have our error/result, let all other functions know we're done.
 	c.debug.Print("waiting for all routines to finish")
@@ -396,9 +396,9 @@ func (c *Client) Send(event *Event) {
 		<-time.After(c.conn.rate(event.Len()))
 	}
 
-	if c.Config.GlobalFormat && event.Trailing != "" &&
+	if c.Config.GlobalFormat && len(event.Params) > 0 && event.Params[len(event.Params)-1] != "" &&
 		(event.Command == PRIVMSG || event.Command == TOPIC || event.Command == NOTICE) {
-		event.Trailing = Fmt(event.Trailing)
+		event.Params[len(event.Params)-1] = Fmt(event.Params[len(event.Params)-1])
 	}
 
 	c.write(event)

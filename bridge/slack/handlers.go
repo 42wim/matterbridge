@@ -192,6 +192,9 @@ func (b *Bslack) handleMessageEvent(ev *slack.MessageEvent) (*config.Message, er
 			// This is probably a webhook we couldn't resolve.
 			return nil, fmt.Errorf("message handling resulted in an empty bot message (probably an incoming webhook we couldn't resolve): %#v", ev)
 		}
+		if ev.SubMessage != nil {
+			return nil, fmt.Errorf("message handling resulted in an empty message: %#v with submessage %#v", ev, ev.SubMessage)
+		}
 		return nil, fmt.Errorf("message handling resulted in an empty message: %#v", ev)
 	}
 	return rmsg, nil

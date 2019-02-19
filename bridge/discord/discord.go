@@ -75,6 +75,8 @@ func (b *Bdiscord) Connect() error {
 	b.c.AddHandler(b.memberUpdate)
 	b.c.AddHandler(b.messageUpdate)
 	b.c.AddHandler(b.messageDelete)
+	b.c.AddHandler(b.memberAdd)
+	b.c.AddHandler(b.memberRemove)
 	err = b.c.Open()
 	if err != nil {
 		return err

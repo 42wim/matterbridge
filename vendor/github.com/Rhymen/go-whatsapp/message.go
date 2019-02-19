@@ -183,6 +183,19 @@ func getTextProto(msg TextMessage) *proto.WebMessageInfo {
 	p.Message = &proto.Message{
 		Conversation: &msg.Text,
 	}
+	if msg.Info.QuotedMessageID != "" {
+		previousText := "previous"
+		p.Message.ExtendedTextMessage = &proto.ExtendedTextMessage{
+			ContextInfo: &proto.ContextInfo{
+				StanzaId: &msg.Info.QuotedMessageID,
+				QuotedMessage: []*proto.Message{
+					&proto.Message{
+						Conversation: &previousText,
+					},
+				},
+			},
+		}
+	}
 	return p
 }
 

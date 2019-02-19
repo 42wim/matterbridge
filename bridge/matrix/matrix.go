@@ -20,11 +20,13 @@ type Bmatrix struct {
 	UserID  string
 	RoomMap map[string]string
 	sync.RWMutex
+	htmlTag *regexp.Regexp
 	*bridge.Config
 }
 
 func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Bmatrix{Config: cfg}
+	b.htmlTag = regexp.MustCompile("</.*?>")
 	b.RoomMap = make(map[string]string)
 	return b
 }
@@ -113,8 +115,22 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	// Edit message if we have an ID
 	// matrix has no editing support
 
+	// Use notices to send join/leave events
+	if msg.Event == config.EventJoinLeave {
+		resp, err := b.mc.SendNotice(channel, msg.Username+msg.Text)
+		if err != nil {
+			return "", err
+		}
+		return resp.EventID, err
+	}
+
+	username := html.EscapeString(msg.Username)
+	// check if we have a </tag>. if we have, we don't escape HTML. #696
+	if b.htmlTag.MatchString(msg.Username) {
+		username = msg.Username
+	}
 	// Post normal message with HTML support (eg riot.im)
-	resp, err := b.mc.SendHTML(channel, msg.Username+msg.Text, html.EscapeString(msg.Username)+helper.ParseMarkdown(msg.Text))
+	resp, err := b.mc.SendHTML(channel, msg.Username+msg.Text, username+helper.ParseMarkdown(msg.Text))
 	if err != nil {
 		return "", err
 	}
@@ -280,6 +296,12 @@ func (b *Bmatrix) handleUploadFile(msg *config.Message, channel string, fi *conf
 	}
 	if fi.Comment != "" {
 		_, err := b.mc.SendText(channel, msg.Username+fi.Comment)
+		if err != nil {
+			b.Log.Errorf("file comment failed: %#v", err)
+		}
+	} else {
+		// image and video uploads send no username, we have to do this ourself here #715
+		_, err := b.mc.SendText(channel, msg.Username)
 		if err != nil {
 			b.Log.Errorf("file comment failed: %#v", err)
 		}
