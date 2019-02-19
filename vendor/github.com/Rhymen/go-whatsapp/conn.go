@@ -159,7 +159,7 @@ func (wac *Conn) connect() error {
 	}
 
 	headers := http.Header{"Origin": []string{"https://web.whatsapp.com"}}
-	wsConn, _, err := dialer.Dial("wss://w3.web.whatsapp.com/ws", headers)
+	wsConn, _, err := dialer.Dial("wss://web.whatsapp.com/ws", headers)
 	if err != nil {
 		return fmt.Errorf("couldn't dial whatsapp web websocket: %v", err)
 	}
@@ -298,7 +298,9 @@ func (wac *Conn) readPump() {
 		listener, hasListener := wac.listener[data[0]]
 		wac.listenerMutex.RUnlock()
 
-		if hasListener && len(data[1]) > 0 {
+		if len(data[1]) == 0 {
+			continue
+		} else if hasListener {
 			listener <- data[1]
 
 			wac.listenerMutex.Lock()
@@ -313,9 +315,7 @@ func (wac *Conn) readPump() {
 
 			wac.dispatch(message)
 		} else {
-			if len(data[1]) > 0 {
-				wac.handle(string(data[1]))
-			}
+			wac.handle(string(data[1]))
 		}
 
 	}

@@ -8,6 +8,8 @@ github.com/Philipp15b/go-steam v1.0.1-0.20180818081528-681bd9573329 h1:xZBoq249G
 github.com/Philipp15b/go-steam v1.0.1-0.20180818081528-681bd9573329/go.mod h1:HuVM+sZFzumUdKPWiz+IlCMb4RdsKdT3T+nQBKL+sYg=
 github.com/Rhymen/go-whatsapp v0.0.0-20181218094654-2ca6af00572c h1:ldRXgMEfKmzBomrZusl3edG9AGEeztA7jovLEQy62us=
 github.com/Rhymen/go-whatsapp v0.0.0-20181218094654-2ca6af00572c/go.mod h1:MSDmePOOkbFFbVW2WRRppBcbA+aabwpXRgyIIG7jDFQ=
+github.com/Rhymen/go-whatsapp v0.0.0-20190208184307-c9a81e957884 h1:2AxfzkQi2L4QGBvUCZoWD6hQuUJa5MG54wiYyNqJlf4=
+github.com/Rhymen/go-whatsapp v0.0.0-20190208184307-c9a81e957884/go.mod h1:rdQr95g2C1xcOfM7QGOhza58HeI3I+tZ/bbluv7VazA=
 github.com/alexcesaro/log v0.0.0-20150915221235-61e686294e58 h1:MkpmYfld/S8kXqTYI68DfL8/hHXjHogL120Dy00TIxc=
 github.com/alexcesaro/log v0.0.0-20150915221235-61e686294e58/go.mod h1:YNfsMyWSs+h+PaYkxGeMVmVCX75Zj/pqdjbu12ciCYE=
 github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6/go.mod h1:grANhF5doyWs3UAsr3K4I6qtAmlQcZDesFNEHPZAzj8=
@@ -195,6 +197,8 @@ golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9/go.mod h1:6SG95UA2DQfeDnf
 golang.org/x/crypto v0.0.0-20190103213133-ff983b9c42bc/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20190130090550-b01c7a725664 h1:YbZJ76lQ1BqNhVe7dKTSB67wDrc2VPRR75IyGyyPDX8=
 golang.org/x/crypto v0.0.0-20190130090550-b01c7a725664/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
+golang.org/x/crypto v0.0.0-20190131182504-b8fe1690c613 h1:MQ/ZZiDsUapFFiMS+vzwXkCTeEKaum+Do5rINYJDmxc=
+golang.org/x/crypto v0.0.0-20190131182504-b8fe1690c613/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/net v0.0.0-20180108090419-434ec0c7fe37 h1:BkNcmLtAVeWe9h5k0jt24CQgaG5vb4x/doFbAiEC/Ho=
 golang.org/x/net v0.0.0-20180108090419-434ec0c7fe37/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/net v0.0.0-20190110200230-915654e7eabc/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=

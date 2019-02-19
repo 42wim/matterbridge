@@ -13,7 +13,7 @@ github.com/Philipp15b/go-steam/protocol/gamecoordinator
 github.com/Philipp15b/go-steam/protocol/protobuf
 github.com/Philipp15b/go-steam/rwu
 github.com/Philipp15b/go-steam/socialcache
-# github.com/Rhymen/go-whatsapp v0.0.0-20181218094654-2ca6af00572c
+# github.com/Rhymen/go-whatsapp v0.0.0-20190208184307-c9a81e957884
 github.com/Rhymen/go-whatsapp
 github.com/Rhymen/go-whatsapp/binary
 github.com/Rhymen/go-whatsapp/binary/proto
@@ -183,7 +183,7 @@ go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/buffer
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
-# golang.org/x/crypto v0.0.0-20190130090550-b01c7a725664
+# golang.org/x/crypto v0.0.0-20190131182504-b8fe1690c613
 golang.org/x/crypto/ssh/terminal
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/nacl/secretbox
