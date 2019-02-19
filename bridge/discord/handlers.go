@@ -71,6 +71,9 @@ func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 		rmsg.Username = b.getNick(m.Author)
 	} else {
 		rmsg.Username = m.Author.Username
+		if b.GetBool("UseDiscriminator") {
+			rmsg.Username += "#" + m.Author.Discriminator
+		}
 	}
 
 	// if we have embedded content add it to text
