@@ -149,7 +149,7 @@ func (b *Bwhatsapp) Connect() error {
 func (b *Bwhatsapp) Login() error {
 	b.Log.Debugln("Logging in..")
 
-	invert := b.GetBoolOrDefault(qrOnWhiteTerminal, false)
+	invert := b.GetBool(qrOnWhiteTerminal) // false is the default
 	qrChan := qrFromTerminal(invert)
 
 	session, err := b.conn.Login(qrChan)

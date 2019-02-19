@@ -88,17 +88,6 @@ func (b *Bridge) GetBool(key string) bool {
 	return val
 }
 
-// GetBoolOrDefault Get config value, or if it doesn't exist a provided default
-func (b *Bridge) GetBoolOrDefault(key string, thedefault bool) bool {
-	val, ok := b.Config.GetBool(b.Account + "." + key)
-	if !ok {
-		if val, ok = b.Config.GetBool("general." + key); !ok {
-			return thedefault
-		}
-	}
-	return val
-}
-
 func (b *Bridge) GetInt(key string) int {
 	val, ok := b.Config.GetInt(b.Account + "." + key)
 	if !ok {
