@@ -20,6 +20,7 @@
       [Twitch][mb-twitch] |
       [WhatsApp][mb-whatsapp] |
       [Zulip][mb-zulip] |
+      [Telegram][mb-telegram] |
       And more...
    </sup>
 
@@ -113,6 +114,7 @@ Questions or want to test on your favorite platform? Join below:
 * [XMPP][mb-xmpp]
 * [Twitch][mb-twitch]
 * [Zulip][mb-zulip]
+* [Telegram][mb-telegram]
 
 ## Screenshots
 See https://github.com/42wim/matterbridge/wiki
@@ -294,3 +296,4 @@ Matterbridge wouldn't exist without these libraries:
    [mb-twitch]: https://www.twitch.tv/matterbridge
    [mb-whatsapp]: https://www.whatsapp.com/
    [mb-zulip]: https://matterbridge.zulipchat.com/register/
+   [mb-telegram]: https://t.me/Matterbridge
