@@ -190,7 +190,7 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 	if msg.Event == config.EventJoinLeave && getProtocol(msg) == "irc" && msg.Channel == "" {
 		// if we only have one channel on this irc bridge it's got to be the sending one.
 		// don't send it back
-		if channel.Account == msg.Account && len(dest.Channels) == 1 && dest.Protocol == "irc" {
+		if dest.Account == msg.Account && len(dest.Channels) == 1 && dest.Protocol == "irc" {
 			return channels
 		}
 		for _, channel := range gw.Channels {
