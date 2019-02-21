@@ -1172,10 +1172,45 @@ StripNick=false
 #OPTIONAL (default false)
 ShowTopicChange=false
 
+
+
 ###################################################################
-#zulip section
+#
+# WhatsApp
+#
 ###################################################################
+
+[whatsapp.bridge]
+
+# Number you will use as a relay bot. Tip: Get some disposable sim card, don't rely on your own number.
+Number="+48111222333"
+
+# First time that you login you will need to scan QR code, then credentials willl be saved in a session file
+# If you won't set SessionFile then you will need to scan QR code on every restart
+# optional (by default the session is stored only in memory, till restarting matterbridge)
+SessionFile="session-48111222333.gob"
+
+# If your terminal is white we need to invert QR code in order for it to be scanned properly
+# optional (default false)
+QrOnWhiteTerminal=true
+
+# Messages will be seen by other WhatsApp contacts as coming from the bridge. Original nick will be part of the message.
+RemoteNickFormat="@{NICK}: "
+
+# extra label that can be used in the RemoteNickFormat
+# optional (default empty)
+Label="Organization"
+
+
+
+###################################################################
+#
+# zulip
+#
+###################################################################
+
 [zulip]
+
 #You can configure multiple servers "[zulip.name]" or "[zulip.name2]"
 #In this example we use [zulip.streamchat]
 #REQUIRED
@@ -1373,36 +1408,41 @@ name="gateway1"
 ##OPTIONAL (default false)
 enable=true
 
-    #[[gateway.in]] specifies the account and channels we will receive messages from.
-    #The following example bridges between mattermost and irc
+    # [[gateway.in]] specifies the account and channels we will receive messages from.
+    # The following example bridges between mattermost and irc
     [[gateway.in]]
 
-    #account specified above
-    #REQUIRED
+    # account specified above
+    # REQUIRED
     account="irc.freenode"
-    #channel to connect on that account
-    #How to specify them for the different bridges:
+
+    # channel to connect on that account
+    # How to specify them for the different bridges:
     #
-    #irc        - #channel (# is required) (this needs to be lowercase!)
-    #mattermost - channel (the channel name as seen in the URL, not the displayname)
-    #gitter     - username/room 
-    #xmpp       - channel
-    #slack      - channel (without the #)
-    #           - ID:C123456 (where C123456 is the channel ID) does not work with webhook
-    #discord    - channel (without the #)
-    #           - ID:123456789 (where 123456789 is the channel ID) 
+    # irc        - #channel (# is required) (this needs to be lowercase!)
+    # mattermost - channel (the channel name as seen in the URL, not the displayname)
+    # gitter     - username/room
+    # xmpp       - channel
+    # slack      - channel (without the #)
+    #            - ID:C123456 (where C123456 is the channel ID) does not work with webhook
+    # discord    - channel (without the #)
+    #            - ID:123456789 (where 123456789 is the channel ID)
     #               (https://github.com/42wim/matterbridge/issues/57)
-    #telegram   - chatid (a large negative number, eg -123456789)
+    # telegram   - chatid (a large negative number, eg -123456789)
     #             see (https://www.linkedin.com/pulse/telegram-bots-beginners-marco-frau)
-    #hipchat    - id_channel (see https://www.hipchat.com/account/xmpp for the correct channel)
-    #rocketchat - #channel (# is required (also needed for private channels!)
-    #matrix     - #channel:server (eg #yourchannel:matrix.org) 
-    #           - encrypted rooms are not supported in matrix
-    #steam      - chatid (a large number). 
+    # hipchat    - id_channel (see https://www.hipchat.com/account/xmpp for the correct channel)
+    # rocketchat - #channel (# is required (also needed for private channels!)
+    # matrix     - #channel:server (eg #yourchannel:matrix.org)
+    #            - encrypted rooms are not supported in matrix
+    # steam      - chatid (a large number).
     #             The number in the URL when you click "enter chat room" in the browser
-    #zulip      - stream (without the #)
+    # whatsapp   - 48111222333-123455678999@g.us A unique group JID;
+    #              if you specify an empty string bridge will list all the possibilities
+    #            - "Group Name" if you specify a group name the bridge will hint its JID to specify
+    #              as group names might change in time and contain weird emoticons
+    # zulip      - stream (without the #)
     #                  
-    #REQUIRED
+    # REQUIRED
     channel="#testing"
 
         #OPTIONAL - only used for IRC and XMPP protocols at the moment

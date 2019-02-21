@@ -18,6 +18,7 @@
       [Rocket.Chat][mb-rocketchat] |
       [XMPP][mb-xmpp] |
       [Twitch][mb-twitch] |
+      [WhatsApp][mb-whatsapp] |
       [Zulip][mb-zulip] |
       And more...
    </sup>
@@ -79,6 +80,7 @@
 * [Steam](https://store.steampowered.com/)
 * [Twitch](https://twitch.tv)
 * [Ssh-chat](https://github.com/shazow/ssh-chat)
+* [WhatsApp](https://www.whatsapp.com/)
 * [Zulip](https://zulipchat.com)
 
 ### 3rd party via matterbridge api
@@ -276,6 +278,7 @@ Matterbridge wouldn't exist without these libraries:
 * steam - https://github.com/Philipp15b/go-steam
 * telegram - https://github.com/go-telegram-bot-api/telegram-bot-api
 * xmpp - https://github.com/mattn/go-xmpp
+* whatsapp - https://github.com/Rhymen/go-whatsapp/
 * zulip - https://github.com/ifo/gozulipbot
 
 <!-- Links -->
@@ -289,4 +292,5 @@ Matterbridge wouldn't exist without these libraries:
    [mb-rocketchat]: https://open.rocket.chat/channel/matterbridge
    [mb-xmpp]: https://inverse.chat/
    [mb-twitch]: https://www.twitch.tv/matterbridge
+   [mb-whatsapp]: https://www.whatsapp.com/
    [mb-zulip]: https://matterbridge.zulipchat.com/register/

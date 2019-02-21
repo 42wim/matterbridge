@@ -13,6 +13,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/sshchat"
 	"github.com/42wim/matterbridge/bridge/steam"
 	"github.com/42wim/matterbridge/bridge/telegram"
+	"github.com/42wim/matterbridge/bridge/whatsapp"
 	"github.com/42wim/matterbridge/bridge/xmpp"
 	"github.com/42wim/matterbridge/bridge/zulip"
 )
@@ -30,6 +31,7 @@ var FullMap = map[string]bridge.Factory{
 	"sshchat":      bsshchat.New,
 	"steam":        bsteam.New,
 	"telegram":     btelegram.New,
+	"whatsapp":     bwhatsapp.New,
 	"xmpp":         bxmpp.New,
 	"zulip":        bzulip.New,
 }
