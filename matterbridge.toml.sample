@@ -562,6 +562,10 @@ ShowTopicChange=false
 #REQUIRED (when not using webhooks)
 Token="yourslacktoken"
 
+#Extra slack specific debug info, warning this generates a lot of output.
+#OPTIONAL (default false)
+Debug="false"
+
 #### Settings for webhook matterbridge.
 #NOT RECOMMENDED TO USE INCOMING/OUTGOING WEBHOOK. USE SLACK API
 #AND DEDICATED BOT USER WHEN POSSIBLE!

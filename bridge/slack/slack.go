@@ -121,7 +121,7 @@ func (b *Bslack) Connect() error {
 	// If we have a token we use the Slack websocket-based RTM for both sending and receiving.
 	if token := b.GetString(tokenConfig); token != "" {
 		b.Log.Info("Connecting using token")
-		b.sc = slack.New(token)
+		b.sc = slack.New(token, slack.OptionDebug(b.GetBool("Debug")))
 		b.rtm = b.sc.NewRTM()
 		go b.rtm.ManageConnection()
 		go b.handleSlack()
