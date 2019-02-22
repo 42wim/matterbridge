@@ -136,6 +136,7 @@ type Protocol struct {
 	UseAPI                 bool       // mattermost, slack
 	UseSASL                bool       // IRC
 	UseTLS                 bool       // IRC
+	UseDiscriminator       bool       // discord
 	UseFirstName           bool       // telegram
 	UseUserName            bool       // discord
 	UseInsecureURL         bool       // telegram

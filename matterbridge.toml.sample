@@ -710,9 +710,13 @@ Server="yourservername"
 #OPTIONAL (default false)
 ShowEmbeds=false
 
-#Shows the username (minus the discriminator) instead of the server nickname
+#Shows the username instead of the server nickname
 #OPTIONAL (default false)
 UseUserName=false
+
+#Show #xxxx discriminator with UseUserName
+#OPTIONAL (default false)
+UseDiscriminator=false
 
 #Specify WebhookURL. If given, will relay messages using the Webhook, which gives a better look to messages.
 #This only works if you have one discord channel, if you have multiple discord channels you'll have to specify it in the gateway config
