@@ -83,7 +83,7 @@ func (r *Router) Start() error {
 		}
 	}
 	go r.handleReceive()
-	go r.updateChannelMembers()
+	//go r.updateChannelMembers()
 	return nil
 }
 
