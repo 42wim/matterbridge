@@ -17,6 +17,7 @@ type Bxmpp struct {
 	xc      *xmpp.Client
 	xmppMap map[string]string
 	*bridge.Config
+	startTime time.Time
 }
 
 func New(cfg *bridge.Config) bridge.Bridger {
@@ -153,6 +154,7 @@ func (b *Bxmpp) xmppKeepAlive() chan bool {
 func (b *Bxmpp) handleXMPP() error {
 	var ok bool
 	var msgid string
+	b.startTime = time.Now()
 	done := b.xmppKeepAlive()
 	defer close(done)
 	for {
@@ -164,15 +166,27 @@ func (b *Bxmpp) handleXMPP() error {
 		case xmpp.Chat:
 			if v.Type == "groupchat" {
 				b.Log.Debugf("== Receiving %#v", v)
+				event := ""
 				// skip invalid messages
 				if b.skipMessage(v) {
 					continue
+				}
+				if strings.Contains(v.Text, "has set the subject to:") {
+					event = config.EventTopicChange
 				}
 				msgid = v.ID
 				if v.ReplaceID != "" {
 					msgid = v.ReplaceID
 				}
-				rmsg := config.Message{Username: b.parseNick(v.Remote), Text: v.Text, Channel: b.parseChannel(v.Remote), Account: b.Account, UserID: v.Remote, ID: msgid}
+				rmsg := config.Message{
+					Username: b.parseNick(v.Remote),
+					Text:     v.Text,
+					Channel:  b.parseChannel(v.Remote),
+					Account:  b.Account,
+					UserID:   v.Remote,
+					ID:       msgid,
+					Event:    event,
+				}
 
 				// check if we have an action event
 				rmsg.Text, ok = b.replaceAction(rmsg.Text)
@@ -256,6 +270,11 @@ func (b *Bxmpp) skipMessage(message xmpp.Chat) bool {
 
 	// skip subject messages
 	if strings.Contains(message.Text, "</subject>") {
+		return true
+	}
+
+	// do not show subjects on connect #732
+	if strings.Contains(message.Text, "has set the subject to:") && time.Since(b.startTime) < time.Second*5 {
 		return true
 	}
 
