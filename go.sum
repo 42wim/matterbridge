@@ -32,8 +32,6 @@ github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/go-telegram-bot-api/telegram-bot-api v4.6.5-0.20181225215658-ec221ba9ea45+incompatible h1:i64CCJcSqkRIkm5OSdZQjZq84/gJsk2zNwHWIRYWlKE=
 github.com/go-telegram-bot-api/telegram-bot-api v4.6.5-0.20181225215658-ec221ba9ea45+incompatible/go.mod h1:qf9acutJ8cwBUhm1bqgz6Bei9/C/c93FPDljKWwsOgM=
-github.com/golang/protobuf v0.0.0-20170613224224-e325f446bebc h1:wdhDSKrkYy24mcfzuA3oYm58h0QkyXjwERCkzJDP5kA=
-github.com/golang/protobuf v0.0.0-20170613224224-e325f446bebc/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/protobuf v1.2.0 h1:P3YflyNX/ehuJFLhxviNdFxQPkGK5cDcApsge1SqnvM=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/google/gops v0.3.5 h1:SIWvPLiYvy5vMwjxB3rVFTE4QBhUFj2KKWr3Xm7CKhw=
@@ -138,8 +136,6 @@ github.com/shazow/rateio v0.0.0-20150116013248-e8e00881e5c1 h1:Lx3BlDGFElJt4u/zK
 github.com/shazow/rateio v0.0.0-20150116013248-e8e00881e5c1/go.mod h1:vt2jWY/3Qw1bIzle5thrJWucsLuuX9iUNnp20CqCciI=
 github.com/shazow/ssh-chat v0.0.0-20190125184227-81d7e1686296 h1:8RLq547MSVc6vhOuCl4Ca0TsAQknj6NX6ZLSZ3+xmio=
 github.com/shazow/ssh-chat v0.0.0-20190125184227-81d7e1686296/go.mod h1:1GLXsL4esywkpNId3v4QWuMf3THtWGitWvtQ/L3aSA4=
-github.com/shurcooL/sanitized_anchor_name v0.0.0-20170918181015-86672fcb3f95 h1:/vdW8Cb7EXrkqWGufVMES1OH2sU9gKVb2n9/1y5NMBY=
-github.com/shurcooL/sanitized_anchor_name v0.0.0-20170918181015-86672fcb3f95/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
 github.com/shurcooL/sanitized_anchor_name v1.0.0 h1:PdmoCO6wvbs+7yrJyMORt4/BmY5IYyJwS/kOiWx8mHo=
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
 github.com/sirupsen/logrus v1.3.0 h1:hI/7Q+DtNZ2kINb6qt/lS+IyXnHQe9e90POfeewL/ME=
@@ -207,13 +203,10 @@ golang.org/x/crypto v0.0.0-20190130090550-b01c7a725664 h1:YbZJ76lQ1BqNhVe7dKTSB6
 golang.org/x/crypto v0.0.0-20190130090550-b01c7a725664/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20190131182504-b8fe1690c613 h1:MQ/ZZiDsUapFFiMS+vzwXkCTeEKaum+Do5rINYJDmxc=
 golang.org/x/crypto v0.0.0-20190131182504-b8fe1690c613/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
-golang.org/x/net v0.0.0-20180108090419-434ec0c7fe37 h1:BkNcmLtAVeWe9h5k0jt24CQgaG5vb4x/doFbAiEC/Ho=
-golang.org/x/net v0.0.0-20180108090419-434ec0c7fe37/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/net v0.0.0-20190110200230-915654e7eabc h1:Yx9JGxI1SBhVLFjpAkWMaO1TF+xyqtHLjZpvQboJGiM=
 golang.org/x/net v0.0.0-20190110200230-915654e7eabc/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
-golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f h1:wMNYb4v58l5UBM7MYRLPG6ZhfOqbKu7X5eyFl8ZhKvA=
-golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sync v0.0.0-20181108010431-42b317875d0f/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
+golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4 h1:YUO/7uOKsKeq9UokNS62b8FYywz3ker1l1vDZRCRefw=
 golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sys v0.0.0-20180905080454-ebe1bf3edb33/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20181205085412-a5c9d58dba9a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
