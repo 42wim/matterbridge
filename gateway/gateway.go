@@ -351,6 +351,8 @@ func (gw *Gateway) modifyMessage(msg *config.Message) {
 		msg.Text = re.ReplaceAllString(msg.Text, replace)
 	}
 
+	gw.handleExtractNicks(msg)
+
 	// messages from api have Gateway specified, don't overwrite
 	if msg.Protocol != apiProtocol {
 		msg.Gateway = gw.Name

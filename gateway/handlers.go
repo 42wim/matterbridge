@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/42wim/matterbridge/bridge"
@@ -224,4 +225,42 @@ func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrM
 		brMsgIDs = append(brMsgIDs, &BrMsgID{dest, dest.Protocol + " " + msgID, channel.ID})
 	}
 	return brMsgIDs
+}
+
+func (gw *Gateway) handleExtractNicks(msg *config.Message) {
+	var err error
+	br := gw.Bridges[msg.Account]
+	for _, outer := range br.GetStringSlice2D("ExtractNicks") {
+		search := outer[0]
+		replace := outer[1]
+		msg.Username, msg.Text, err = extractNick(search, replace, msg.Username, msg.Text)
+		if err != nil {
+			flog.Errorf("regexp in %s failed: %s", msg.Account, err)
+			break
+		}
+	}
+}
+
+// extractNick searches for a username (based on "search" a regular expression).
+// if this matches it extracts a nick (based on "extract" another regular expression) from text
+// and replaces username with this result.
+// returns error if the regexp doesn't compile.
+func extractNick(search, extract, username, text string) (string, string, error) {
+	re, err := regexp.Compile(search)
+	if err != nil {
+		return username, text, err
+	}
+	if re.MatchString(username) {
+		re, err = regexp.Compile(extract)
+		if err != nil {
+			return username, text, err
+		}
+		res := re.FindAllStringSubmatch(text, 1)
+		// only replace if we have exactly 1 match
+		if len(res) > 0 && len(res[0]) == 2 {
+			username = res[0][1]
+			text = strings.Replace(text, res[0][0], "", 1)
+		}
+	}
+	return username, text, nil
 }
