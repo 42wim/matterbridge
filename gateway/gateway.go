@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/d5/tengo/script"
 	"github.com/hashicorp/golang-lru"
 	"github.com/peterhellberg/emojilib"
 	"github.com/sirupsen/logrus"
@@ -334,6 +336,10 @@ func (gw *Gateway) modifyAvatar(msg config.Message, dest *bridge.Bridge) string 
 }
 
 func (gw *Gateway) modifyMessage(msg *config.Message) {
+	if err := modifyMessageTengo(gw.BridgeValues().General.TengoModifyMessage, msg); err != nil {
+		flog.Errorf("TengoModifyMessage failed: %s", err)
+	}
+
 	// replace :emoji: to unicode
 	msg.Text = emojilib.Replace(msg.Text)
 
@@ -455,4 +461,29 @@ func (gw *Gateway) ignoreText(text string, input []string) bool {
 func getProtocol(msg *config.Message) string {
 	p := strings.Split(msg.Account, ".")
 	return p[0]
+}
+
+func modifyMessageTengo(filename string, msg *config.Message) error {
+	if filename == "" {
+		return nil
+	}
+	res, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+	s := script.New(res)
+	_ = s.Add("msgText", msg.Text)
+	_ = s.Add("msgUsername", msg.Username)
+	_ = s.Add("msgAccount", msg.Account)
+	_ = s.Add("msgChannel", msg.Channel)
+	c, err := s.Compile()
+	if err != nil {
+		return err
+	}
+	if err := c.Run(); err != nil {
+		return err
+	}
+	msg.Text = c.Get("msgText").String()
+	msg.Username = c.Get("msgUsername").String()
+	return nil
 }

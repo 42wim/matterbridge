@@ -1395,6 +1395,29 @@ MediaDownloadBlacklist=[".html$",".htm$"]
 #OPTIONAL (default false)
 IgnoreFailureOnStart=false
 
+
+#TengoModifyMessage allows you to specify the location of a tengo (https://github.com/d5/tengo/) script.
+#This script will receive every incoming message and can be used to modify the Username and the Text of that message.
+#The script will have the following global variables:
+#to modify: msgUsername and msgText
+#to read: msgChannel and msgAccount
+#
+#The script is reloaded on every message, so you can modify the script on the fly.
+#
+#Example script can be found in https://github.com/42wim/matterbridge/tree/master/gateway/bench.tengo
+#and https://github.com/42wim/matterbridge/tree/master/contrib/example.tengo
+#
+#The example below will check if the text contains blah and if so, it'll replace the text and the username of that message.
+#text := import("text")
+#if text.re_match("blah",msgText) {
+#    msgText="replaced by this"
+#    msgUsername="fakeuser"
+#}
+#More information about tengo on: https://github.com/d5/tengo/blob/master/docs/tutorial.md and
+#https://github.com/d5/tengo/blob/master/docs/stdlib.md
+#OPTIONAL (default empty)
+TengoModifyMessage="example.tengo"
+
 ###################################################################
 #Gateway configuration
 ###################################################################

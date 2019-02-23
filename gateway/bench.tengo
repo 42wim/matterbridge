@@ -1,0 +1,5 @@
+text := import("text")
+if text.re_match("blah",msgText) {
+    msgText="replaced by this"
+    msgUsername="fakeuser"
+}

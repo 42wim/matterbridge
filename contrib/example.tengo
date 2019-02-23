@@ -1,0 +1,2 @@
+text := import("text")
+msgText=text.re_replace("matterbridge",msgText,"matterbridge (https://github.com/42wim/matterbridge)")
