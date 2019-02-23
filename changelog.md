@@ -1,3 +1,32 @@
+# v1.14.0-rc1
+
+## New features
+* whatsapp: new protocol added. Add initial WhatsApp support (#711) Thanks to @KrzysztofMadejski
+* facebook messenger: new protocol via matterbridge api. See https://github.com/VictorNine/fbridge/ for more information.
+* general: Add scripting (tengo) support for every incoming message (#731). See `TengoModifyMessage`
+* general: Allow regexs in ignoreNicks. Closes #690 (#720)
+* general: Support rewriting messages from relaybots using ExtractNicks. Fixes #466 (#730). See `ExtractNicks` in matterbridge.toml.sample
+* general: refactor Make all loggers derive from non-default instance (#728). Thanks to @Helcaraxan
+* rocketchat: add support for the rocketchat API. Sending to rocketchat now supports uploading of files, editing and deleting of messages.
+* discord: Support join/leaves from discord. Closes #654 (#721)
+* discord: Allow sending discriminator with Discord username (#726). See `UseDiscriminator` in matterbridge.toml.sample
+* zulip: Allow zulip bridge to specify topic per channel. Closes #701 (#723). See `Topic` in matterbridge.toml.sample
+* slack: Add extra debug option (slack). See `Debug` in the slack section in matterbridge.toml.sample
+
+## Bugfix
+* zulip: Fix error handling on bad event queue id (zulip). Closes #694
+* irc: add support for (older) unrealircd versions. #708
+* irc: Support quits from irc correctly. Fixes #722 (#724)
+* matrix: Send username when uploading video/images (matrix). Fixes #715 (#717)
+* matrix: Send notices on join/parts (matrix). Fixes #712 (#716)
+* matrix: Detect html nicks in RemoteNickFormat (matrix). Fixes #696 (#719)
+* slack: Hint at thread replies when messages are unthreaded (slack) (#684)
+* xmpp: Do not send topic changes on connect (xmpp). Fixes #732 (#733)
+
+## Contributors
+This release couldn't exist without the following contributors:
+@Helcaraxan, @KrzysztofMadejski, @AJolly, @DeclanHoare
+
 # v1.13.1
 
 This release fixes go modules issues because of https://github.com/labstack/echo/issues/1272
