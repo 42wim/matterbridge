@@ -25,7 +25,7 @@ func TestExtractTopicOrPurpose(t *testing.T) {
 
 	logger := logrus.New()
 	logger.SetOutput(ioutil.Discard)
-	cfg := &bridge.Config{Log: logger.WithFields(nil)}
+	cfg := &bridge.Config{Bridge: &bridge.Bridge{Log: logrus.NewEntry(logger)}}
 	b := newBridge(cfg)
 	for name, tc := range testcases {
 		gotChangeType, gotOutput := b.extractTopicOrPurpose(tc.input)

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
-	prefixed "github.com/matterbridge/logrus-prefixed-formatter"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -204,63 +203,58 @@ type Config interface {
 }
 
 type config struct {
-	v *viper.Viper
 	sync.RWMutex
 
-	cv *BridgeValues
+	logger *logrus.Entry
+	v      *viper.Viper
+	cv     *BridgeValues
 }
 
-func NewConfig(cfgfile string) Config {
-	logrus.SetFormatter(&prefixed.TextFormatter{PrefixPadding: 13, DisableColors: true, FullTimestamp: false})
-	flog := logrus.WithFields(logrus.Fields{"prefix": "config"})
+// NewConfig instantiates a new configuration based on the specified configuration file path.
+func NewConfig(rootLogger *logrus.Logger, cfgfile string) Config {
+	logger := rootLogger.WithFields(logrus.Fields{"prefix": "config"})
+
 	viper.SetConfigFile(cfgfile)
-	input, err := getFileContents(cfgfile)
+	input, err := ioutil.ReadFile(cfgfile)
 	if err != nil {
-		logrus.Fatal(err)
+		logger.Fatalf("Failed to read configuration file: %#v", err)
 	}
-	mycfg := newConfigFromString(input)
+
+	mycfg := newConfigFromString(logger, input)
 	if mycfg.cv.General.MediaDownloadSize == 0 {
 		mycfg.cv.General.MediaDownloadSize = 1000000
 	}
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {
-		flog.Println("Config file changed:", e.Name)
+		logger.Println("Config file changed:", e.Name)
 	})
 	return mycfg
 }
 
-func getFileContents(filename string) ([]byte, error) {
-	input, err := ioutil.ReadFile(filename)
-	if err != nil {
-		logrus.Fatal(err)
-		return []byte(nil), err
-	}
-	return input, nil
+// NewConfigFromString instantiates a new configuration based on the specified string.
+func NewConfigFromString(rootLogger *logrus.Logger, input []byte) Config {
+	logger := rootLogger.WithFields(logrus.Fields{"prefix": "config"})
+	return newConfigFromString(logger, input)
 }
 
-func NewConfigFromString(input []byte) Config {
-	return newConfigFromString(input)
-}
-
-func newConfigFromString(input []byte) *config {
+func newConfigFromString(logger *logrus.Entry, input []byte) *config {
 	viper.SetConfigType("toml")
 	viper.SetEnvPrefix("matterbridge")
-	viper.AddConfigPath(".")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
 	viper.AutomaticEnv()
-	err := viper.ReadConfig(bytes.NewBuffer(input))
-	if err != nil {
-		logrus.Fatal(err)
+
+	if err := viper.ReadConfig(bytes.NewBuffer(input)); err != nil {
+		logger.Fatalf("Failed to parse the configuration: %#v", err)
 	}
 
 	cfg := &BridgeValues{}
-	err = viper.Unmarshal(cfg)
-	if err != nil {
-		logrus.Fatal(err)
+	if err := viper.Unmarshal(cfg); err != nil {
+		logger.Fatalf("Failed to load the configuration: %#v", err)
 	}
 	return &config{
-		v:  viper.GetViper(),
-		cv: cfg,
+		logger: logger,
+		v:      viper.GetViper(),
+		cv:     cfg,
 	}
 }
 
@@ -271,46 +265,44 @@ func (c *config) BridgeValues() *BridgeValues {
 func (c *config) GetBool(key string) (bool, bool) {
 	c.RLock()
 	defer c.RUnlock()
-	//	log.Debugf("getting bool %s = %#v", key, c.v.GetBool(key))
 	return c.v.GetBool(key), c.v.IsSet(key)
 }
 
 func (c *config) GetInt(key string) (int, bool) {
 	c.RLock()
 	defer c.RUnlock()
-	//	log.Debugf("getting int %s = %d", key, c.v.GetInt(key))
 	return c.v.GetInt(key), c.v.IsSet(key)
 }
 
 func (c *config) GetString(key string) (string, bool) {
 	c.RLock()
 	defer c.RUnlock()
-	//	log.Debugf("getting String %s = %s", key, c.v.GetString(key))
 	return c.v.GetString(key), c.v.IsSet(key)
 }
 
 func (c *config) GetStringSlice(key string) ([]string, bool) {
 	c.RLock()
 	defer c.RUnlock()
-	// log.Debugf("getting StringSlice %s = %#v", key, c.v.GetStringSlice(key))
 	return c.v.GetStringSlice(key), c.v.IsSet(key)
 }
 
 func (c *config) GetStringSlice2D(key string) ([][]string, bool) {
 	c.RLock()
 	defer c.RUnlock()
-	result := [][]string{}
-	if res, ok := c.v.Get(key).([]interface{}); ok {
-		for _, entry := range res {
-			result2 := []string{}
-			for _, entry2 := range entry.([]interface{}) {
-				result2 = append(result2, entry2.(string))
-			}
-			result = append(result, result2)
-		}
-		return result, true
+
+	res, ok := c.v.Get(key).([]interface{})
+	if !ok {
+		return nil, false
 	}
-	return result, false
+	var result [][]string
+	for _, entry := range res {
+		result2 := []string{}
+		for _, entry2 := range entry.([]interface{}) {
+			result2 = append(result2, entry2.(string))
+		}
+		result = append(result, result2)
+	}
+	return result, true
 }
 
 func GetIconURL(msg *Message, iconURL string) string {

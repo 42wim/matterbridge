@@ -40,7 +40,7 @@ func (r *Router) handleEventGetChannelMembers(msg *config.Message) {
 		for _, br := range gw.Bridges {
 			if msg.Account == br.Account {
 				cMembers := msg.Extra[config.EventGetChannelMembers][0].(config.ChannelMembers)
-				flog.Debugf("Syncing channelmembers from %s", msg.Account)
+				r.logger.Debugf("Syncing channelmembers from %s", msg.Account)
 				br.SetChannelMembers(&cMembers)
 				return
 			}
@@ -58,7 +58,7 @@ func (r *Router) handleEventRejoinChannels(msg *config.Message) {
 			if msg.Account == br.Account {
 				br.Joined = make(map[string]bool)
 				if err := br.JoinChannels(); err != nil {
-					flog.Errorf("channel join failed for %s: %s", msg.Account, err)
+					r.logger.Errorf("channel join failed for %s: %s", msg.Account, err)
 				}
 			}
 		}
@@ -94,13 +94,13 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 		if gw.BridgeValues().General.MediaServerUpload != "" {
 			// Use MediaServerUpload. Upload using a PUT HTTP request and basicauth.
 			if err := gw.handleFilesUpload(&fi); err != nil {
-				flog.Error(err)
+				gw.logger.Error(err)
 				continue
 			}
 		} else {
 			// Use MediaServerPath. Place the file on the current filesystem.
 			if err := gw.handleFilesLocal(&fi); err != nil {
-				flog.Error(err)
+				gw.logger.Error(err)
 				continue
 			}
 		}
@@ -108,7 +108,7 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 		// Download URL.
 		durl := gw.BridgeValues().General.MediaServerDownload + "/" + sha1sum + "/" + fi.Name
 
-		flog.Debugf("mediaserver download URL = %s", durl)
+		gw.logger.Debugf("mediaserver download URL = %s", durl)
 
 		// We uploaded/placed the file successfully. Add the SHA and URL.
 		extra := msg.Extra["file"][i].(config.FileInfo)
@@ -133,7 +133,7 @@ func (gw *Gateway) handleFilesUpload(fi *config.FileInfo) error {
 		return fmt.Errorf("mediaserver upload failed, could not create request: %#v", err)
 	}
 
-	flog.Debugf("mediaserver upload url: %s", url)
+	gw.logger.Debugf("mediaserver upload url: %s", url)
 
 	req.Header.Set("Content-Type", "binary/octet-stream")
 	_, err = client.Do(req)
@@ -154,7 +154,7 @@ func (gw *Gateway) handleFilesLocal(fi *config.FileInfo) error {
 	}
 
 	path := dir + "/" + fi.Name
-	flog.Debugf("mediaserver path placing file: %s", path)
+	gw.logger.Debugf("mediaserver path placing file: %s", path)
 
 	err = ioutil.WriteFile(path, *fi.Data, os.ModePerm)
 	if err != nil {
@@ -187,36 +187,36 @@ func (gw *Gateway) ignoreEvent(event string, dest *bridge.Bridge) bool {
 
 // handleMessage makes sure the message get sent to the correct bridge/channels.
 // Returns an array of msg ID's
-func (gw *Gateway) handleMessage(msg config.Message, dest *bridge.Bridge) []*BrMsgID {
+func (gw *Gateway) handleMessage(rmsg *config.Message, dest *bridge.Bridge) []*BrMsgID {
 	var brMsgIDs []*BrMsgID
 
 	// if we have an attached file, or other info
-	if msg.Extra != nil && len(msg.Extra[config.EventFileFailureSize]) != 0 && msg.Text == "" {
+	if rmsg.Extra != nil && len(rmsg.Extra[config.EventFileFailureSize]) != 0 && rmsg.Text == "" {
 		return brMsgIDs
 	}
 
-	if gw.ignoreEvent(msg.Event, dest) {
+	if gw.ignoreEvent(rmsg.Event, dest) {
 		return brMsgIDs
 	}
 
 	// broadcast to every out channel (irc QUIT)
-	if msg.Channel == "" && msg.Event != config.EventJoinLeave {
-		flog.Debug("empty channel")
+	if rmsg.Channel == "" && rmsg.Event != config.EventJoinLeave {
+		gw.logger.Debug("empty channel")
 		return brMsgIDs
 	}
 
 	// Get the ID of the parent message in thread
 	var canonicalParentMsgID string
-	if msg.ParentID != "" && dest.GetBool("PreserveThreading") {
-		canonicalParentMsgID = gw.FindCanonicalMsgID(msg.Protocol, msg.ParentID)
+	if rmsg.ParentID != "" && dest.GetBool("PreserveThreading") {
+		canonicalParentMsgID = gw.FindCanonicalMsgID(rmsg.Protocol, rmsg.ParentID)
 	}
 
-	origmsg := msg
-	channels := gw.getDestChannel(&msg, *dest)
-	for _, channel := range channels {
-		msgID, err := gw.SendMessage(origmsg, dest, channel, canonicalParentMsgID)
+	channels := gw.getDestChannel(rmsg, *dest)
+	for idx := range channels {
+		channel := &channels[idx]
+		msgID, err := gw.SendMessage(rmsg, dest, channel, canonicalParentMsgID)
 		if err != nil {
-			flog.Errorf("SendMessage failed: %s", err)
+			gw.logger.Errorf("SendMessage failed: %s", err)
 			continue
 		}
 		if msgID == "" {
@@ -235,7 +235,7 @@ func (gw *Gateway) handleExtractNicks(msg *config.Message) {
 		replace := outer[1]
 		msg.Username, msg.Text, err = extractNick(search, replace, msg.Username, msg.Text)
 		if err != nil {
-			flog.Errorf("regexp in %s failed: %s", msg.Account, err)
+			gw.logger.Errorf("regexp in %s failed: %s", msg.Account, err)
 			break
 		}
 	}
