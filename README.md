@@ -282,6 +282,7 @@ Matterbridge wouldn't exist without these libraries:
 * xmpp - https://github.com/mattn/go-xmpp
 * whatsapp - https://github.com/Rhymen/go-whatsapp/
 * zulip - https://github.com/ifo/gozulipbot
+* tengo - https://github.com/d5/tengo
 
 <!-- Links -->
 

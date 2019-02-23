@@ -129,6 +129,7 @@ type Protocol struct {
 	SkipTLSVerify          bool       // IRC, mattermost
 	StripNick              bool       // all protocols
 	SyncTopic              bool       // slack
+	TengoModifyMessage     string     // general
 	Team                   string     // mattermost
 	Token                  string     // gitter, slack, discord, api
 	Topic                  string     // zulip
