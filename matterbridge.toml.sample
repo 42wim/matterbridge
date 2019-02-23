@@ -130,6 +130,17 @@ ReplaceMessages=[ ["cat","dog"] ]
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
+#Extractnicks is used to for example rewrite messages from other relaybots
+#See https://github.com/42wim/matterbridge/issues/713 and https://github.com/42wim/matterbridge/issues/466
+#some examples:
+#this replaces a message like "Relaybot: <relayeduser> something interesting" to "relayeduser: something interesting"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ] ]
+#you can use multiple entries for multiplebots
+#this also replaces a message like "otherbot: (relayeduser) something else" to "relayeduser: something else"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ],[ "otherbot","\\((.*?)\\)\\s+" ]
+#OPTIONAL (default empty)
+ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
+
 #extra label that can be used in the RemoteNickFormat
 #optional (default empty)
 Label=""
@@ -225,6 +236,17 @@ ReplaceMessages=[ ["cat","dog"] ]
 #OPTIONAL (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
+#Extractnicks is used to for example rewrite messages from other relaybots
+#See https://github.com/42wim/matterbridge/issues/713 and https://github.com/42wim/matterbridge/issues/466
+#some examples:
+#this replaces a message like "Relaybot: <relayeduser> something interesting" to "relayeduser: something interesting"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ] ]
+#you can use multiple entries for multiplebots
+#this also replaces a message like "otherbot: (relayeduser) something else" to "relayeduser: something else"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ],[ "otherbot","\\((.*?)\\)\\s+" ]
+#OPTIONAL (default empty)
+ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
+
 #extra label that can be used in the RemoteNickFormat
 #optional (default empty)
 Label=""
@@ -305,6 +327,17 @@ ReplaceMessages=[ ["cat","dog"] ]
 #see replacemessages for syntaxa
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
+
+#Extractnicks is used to for example rewrite messages from other relaybots
+#See https://github.com/42wim/matterbridge/issues/713 and https://github.com/42wim/matterbridge/issues/466
+#some examples:
+#this replaces a message like "Relaybot: <relayeduser> something interesting" to "relayeduser: something interesting"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ] ]
+#you can use multiple entries for multiplebots
+#this also replaces a message like "otherbot: (relayeduser) something else" to "relayeduser: something else"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ],[ "otherbot","\\((.*?)\\)\\s+" ]
+#OPTIONAL (default empty)
+ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
 
 #extra label that can be used in the RemoteNickFormat
 #optional (default empty)
@@ -447,6 +480,17 @@ ReplaceMessages=[ ["cat","dog"] ]
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
+#Extractnicks is used to for example rewrite messages from other relaybots
+#See https://github.com/42wim/matterbridge/issues/713 and https://github.com/42wim/matterbridge/issues/466
+#some examples:
+#this replaces a message like "Relaybot: <relayeduser> something interesting" to "relayeduser: something interesting"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ] ]
+#you can use multiple entries for multiplebots
+#this also replaces a message like "otherbot: (relayeduser) something else" to "relayeduser: something else"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ],[ "otherbot","\\((.*?)\\)\\s+" ]
+#OPTIONAL (default empty)
+ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
+
 #extra label that can be used in the RemoteNickFormat
 #optional (default empty)
 Label=""
@@ -522,6 +566,17 @@ ReplaceMessages=[ ["cat","dog"] ]
 #see replacemessages for syntaxa
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
+
+#Extractnicks is used to for example rewrite messages from other relaybots
+#See https://github.com/42wim/matterbridge/issues/713 and https://github.com/42wim/matterbridge/issues/466
+#some examples:
+#this replaces a message like "Relaybot: <relayeduser> something interesting" to "relayeduser: something interesting"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ] ]
+#you can use multiple entries for multiplebots
+#this also replaces a message like "otherbot: (relayeduser) something else" to "relayeduser: something else"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ],[ "otherbot","\\((.*?)\\)\\s+" ]
+#OPTIONAL (default empty)
+ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
 
 #extra label that can be used in the RemoteNickFormat
 #optional (default empty)
@@ -646,6 +701,17 @@ ReplaceMessages=[ ["cat","dog"] ]
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
+#Extractnicks is used to for example rewrite messages from other relaybots
+#See https://github.com/42wim/matterbridge/issues/713 and https://github.com/42wim/matterbridge/issues/466
+#some examples:
+#this replaces a message like "Relaybot: <relayeduser> something interesting" to "relayeduser: something interesting"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ] ]
+#you can use multiple entries for multiplebots
+#this also replaces a message like "otherbot: (relayeduser) something else" to "relayeduser: something else"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ],[ "otherbot","\\((.*?)\\)\\s+" ]
+#OPTIONAL (default empty)
+ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
+
 #extra label that can be used in the RemoteNickFormat
 #optional (default empty)
 Label=""
@@ -764,6 +830,17 @@ ReplaceMessages=[ ["cat","dog"] ]
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
+#Extractnicks is used to for example rewrite messages from other relaybots
+#See https://github.com/42wim/matterbridge/issues/713 and https://github.com/42wim/matterbridge/issues/466
+#some examples:
+#this replaces a message like "Relaybot: <relayeduser> something interesting" to "relayeduser: something interesting"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ] ]
+#you can use multiple entries for multiplebots
+#this also replaces a message like "otherbot: (relayeduser) something else" to "relayeduser: something else"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ],[ "otherbot","\\((.*?)\\)\\s+" ]
+#OPTIONAL (default empty)
+ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
+
 #extra label that can be used in the RemoteNickFormat
 #optional (default empty)
 Label=""
@@ -872,6 +949,17 @@ ReplaceMessages=[ ["cat","dog"] ]
 #see replacemessages for syntaxa
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
+
+#Extractnicks is used to for example rewrite messages from other relaybots
+#See https://github.com/42wim/matterbridge/issues/713 and https://github.com/42wim/matterbridge/issues/466
+#some examples:
+#this replaces a message like "Relaybot: <relayeduser> something interesting" to "relayeduser: something interesting"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ] ]
+#you can use multiple entries for multiplebots
+#this also replaces a message like "otherbot: (relayeduser) something else" to "relayeduser: something else"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ],[ "otherbot","\\((.*?)\\)\\s+" ]
+#OPTIONAL (default empty)
+ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
 
 #extra label that can be used in the RemoteNickFormat
 #optional (default empty)
@@ -989,6 +1077,17 @@ ReplaceMessages=[ ["cat","dog"] ]
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
+#Extractnicks is used to for example rewrite messages from other relaybots
+#See https://github.com/42wim/matterbridge/issues/713 and https://github.com/42wim/matterbridge/issues/466
+#some examples:
+#this replaces a message like "Relaybot: <relayeduser> something interesting" to "relayeduser: something interesting"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ] ]
+#you can use multiple entries for multiplebots
+#this also replaces a message like "otherbot: (relayeduser) something else" to "relayeduser: something else"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ],[ "otherbot","\\((.*?)\\)\\s+" ]
+#OPTIONAL (default empty)
+ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
+
 #extra label that can be used in the RemoteNickFormat
 #optional (default empty)
 Label=""
@@ -1076,6 +1175,17 @@ ReplaceMessages=[ ["cat","dog"] ]
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
+#Extractnicks is used to for example rewrite messages from other relaybots
+#See https://github.com/42wim/matterbridge/issues/713 and https://github.com/42wim/matterbridge/issues/466
+#some examples:
+#this replaces a message like "Relaybot: <relayeduser> something interesting" to "relayeduser: something interesting"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ] ]
+#you can use multiple entries for multiplebots
+#this also replaces a message like "otherbot: (relayeduser) something else" to "relayeduser: something else"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ],[ "otherbot","\\((.*?)\\)\\s+" ]
+#OPTIONAL (default empty)
+ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
+
 #extra label that can be used in the RemoteNickFormat
 #optional (default empty)
 Label=""
@@ -1156,6 +1266,17 @@ ReplaceMessages=[ ["cat","dog"] ]
 #see replacemessages for syntaxa
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
+
+#Extractnicks is used to for example rewrite messages from other relaybots
+#See https://github.com/42wim/matterbridge/issues/713 and https://github.com/42wim/matterbridge/issues/466
+#some examples:
+#this replaces a message like "Relaybot: <relayeduser> something interesting" to "relayeduser: something interesting"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ] ]
+#you can use multiple entries for multiplebots
+#this also replaces a message like "otherbot: (relayeduser) something else" to "relayeduser: something else"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ],[ "otherbot","\\((.*?)\\)\\s+" ]
+#OPTIONAL (default empty)
+ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
 
 #extra label that can be used in the RemoteNickFormat
 #optional (default empty)
@@ -1274,6 +1395,17 @@ ReplaceMessages=[ ["cat","dog"] ]
 #see replacemessages for syntaxa
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
+
+#Extractnicks is used to for example rewrite messages from other relaybots
+#See https://github.com/42wim/matterbridge/issues/713 and https://github.com/42wim/matterbridge/issues/466
+#some examples:
+#this replaces a message like "Relaybot: <relayeduser> something interesting" to "relayeduser: something interesting"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ] ]
+#you can use multiple entries for multiplebots
+#this also replaces a message like "otherbot: (relayeduser) something else" to "relayeduser: something else"
+#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ],[ "otherbot","\\((.*?)\\)\\s+" ]
+#OPTIONAL (default empty)
+ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
 
 #extra label that can be used in the RemoteNickFormat
 #optional (default empty)
