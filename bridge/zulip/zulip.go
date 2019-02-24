@@ -116,11 +116,13 @@ func (b *Bzulip) handleQueue() error {
 		case gzb.BadEventQueueError:
 			b.Log.Info("got a bad event queue id error, reconnecting")
 			b.bot.Queues = nil
-			b.q, err = b.bot.RegisterAll()
-			if err != nil {
-				b.Log.Errorf("reconnecting failed: %s. Sleeping 10 seconds", err)
-				time.Sleep(time.Second * 10)
-				continue
+			for {
+				b.q, err = b.bot.RegisterAll()
+				if err != nil {
+					b.Log.Errorf("reconnecting failed: %s. Sleeping 10 seconds", err)
+					time.Sleep(time.Second * 10)
+				}
+				break
 			}
 		case gzb.HeartbeatError:
 			b.Log.Debug("heartbeat received.")
