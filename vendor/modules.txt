@@ -145,7 +145,7 @@ github.com/pkg/errors
 github.com/pmezard/go-difflib/difflib
 # github.com/rs/xid v1.2.1
 github.com/rs/xid
-# github.com/russross/blackfriday v2.0.0+incompatible
+# github.com/russross/blackfriday v1.5.2
 github.com/russross/blackfriday
 # github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca
 github.com/saintfish/chardet
@@ -154,8 +154,6 @@ github.com/shazow/rateio
 # github.com/shazow/ssh-chat v0.0.0-20190125184227-81d7e1686296
 github.com/shazow/ssh-chat/sshd
 github.com/shazow/ssh-chat/internal/sanitize
-# github.com/shurcooL/sanitized_anchor_name v1.0.0
-github.com/shurcooL/sanitized_anchor_name
 # github.com/sirupsen/logrus v1.3.0
 github.com/sirupsen/logrus
 # github.com/skip2/go-qrcode v0.0.0-20190110000554-dc11ecdae0a9

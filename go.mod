@@ -46,7 +46,7 @@ require (
 	github.com/peterhellberg/emojilib v0.0.0-20190124112554-c18758d55320
 	github.com/pkg/errors v0.8.0 // indirect
 	github.com/rs/xid v1.2.1
-	github.com/russross/blackfriday v2.0.0+incompatible
+	github.com/russross/blackfriday v1.5.2
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca
 	github.com/shazow/ssh-chat v0.0.0-20190125184227-81d7e1686296
 	github.com/sirupsen/logrus v1.3.0
