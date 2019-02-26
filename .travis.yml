@@ -48,6 +48,8 @@ after_script:
   - ./cc-test-reporter after-build --exit-code ${TRAVIS_TEST_RESULT}
 
 deploy:
+  on:
+     all_branches: true
   provider: bintray
   edge:
     branch: v1.8.47
