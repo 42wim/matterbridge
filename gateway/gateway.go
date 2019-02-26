@@ -92,6 +92,9 @@ func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 			Bridge: br,
 		}
 		// add the actual bridger for this protocol to this bridge using the bridgeMap
+		if _, ok := gw.Router.BridgeMap[br.Protocol]; !ok {
+			gw.logger.Fatalf("Incorrect protocol %s specified in gateway configuration %s, exiting.", br.Protocol, cfg.Account)
+		}
 		br.Bridger = gw.Router.BridgeMap[br.Protocol](brconfig)
 	}
 	gw.mapChannelsToBridge(br)
