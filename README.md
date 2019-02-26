@@ -237,10 +237,6 @@ See [changelog.md](https://github.com/42wim/matterbridge/blob/master/changelog.m
 
 See [FAQ](https://github.com/42wim/matterbridge/wiki/FAQ)
 
-Want to tip ?
-* eth: 0xb3f9b5387c66ad6be892bcb7bbc67862f3abc16f
-* btc: 1N7cKHj5SfqBHBzDJ6kad4BzeqUBBS2zhs
-
 ## Related projects
 * [FOSSRIT/infrastructure - roles/matterbridge](https://github.com/FOSSRIT/infrastructure/tree/master/roles/matterbridge) (Ansible role used to automate deployments of Matterbridge)
 * [matterbridge autoconfig](https://github.com/patcon/matterbridge-autoconfig)

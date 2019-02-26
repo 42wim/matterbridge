@@ -1,4 +1,4 @@
-# v1.14.0-rc1
+# v1.14.0
 
 ## New features
 * whatsapp: new protocol added. Add initial WhatsApp support (#711) Thanks to @KrzysztofMadejski
@@ -15,6 +15,7 @@
 
 ## Bugfix
 * zulip: Fix error handling on bad event queue id (zulip). Closes #694
+* zulip: Keep reconnecting until succeed (zulip) (#737)
 * irc: add support for (older) unrealircd versions. #708
 * irc: Support quits from irc correctly. Fixes #722 (#724)
 * matrix: Send username when uploading video/images (matrix). Fixes #715 (#717)
@@ -22,6 +23,7 @@
 * matrix: Detect html nicks in RemoteNickFormat (matrix). Fixes #696 (#719)
 * slack: Hint at thread replies when messages are unthreaded (slack) (#684)
 * xmpp: Do not send topic changes on connect (xmpp). Fixes #732 (#733)
+* telegram: Fix regression in HTML handling (telegram). Closes #734
 
 ## Contributors
 This release couldn't exist without the following contributors:
