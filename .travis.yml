@@ -49,6 +49,8 @@ after_script:
 
 deploy:
   provider: bintray
+  on:
+    all_branches: true
   edge:
     branch: v1.8.47
   file: ci/deploy.json
