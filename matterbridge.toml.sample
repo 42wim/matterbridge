@@ -913,6 +913,11 @@ QuoteDisable=false
 #OPTIONAL (default "{MESSAGE} (re @{QUOTENICK}: {QUOTEMESSAGE})")
 QuoteFormat="{MESSAGE} (re @{QUOTENICK}: {QUOTEMESSAGE})"
 
+#Convert WebP images to PNG before upload.
+#https://github.com/42wim/matterbridge/issues/398
+#OPTIONAL (default false)
+MediaConvertWebPToPNG=false
+
 #Disable sending of edits to other bridges
 #OPTIONAL (default false)
 EditDisable=false

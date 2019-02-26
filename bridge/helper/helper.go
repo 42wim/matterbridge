@@ -3,12 +3,15 @@ package helper
 import (
 	"bytes"
 	"fmt"
+	"image/png"
 	"io"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"golang.org/x/image/webp"
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/sirupsen/logrus"
@@ -176,4 +179,20 @@ func ClipMessage(text string, length int) string {
 func ParseMarkdown(input string) string {
 	md := markdown.New(markdown.XHTMLOutput(true), markdown.Breaks(true))
 	return (md.RenderToString([]byte(input)))
+}
+
+// ConvertWebPToPNG convert input data (which should be WebP format to PNG format)
+func ConvertWebPToPNG(data *[]byte) error {
+	r := bytes.NewReader(*data)
+	m, err := webp.Decode(r)
+	if err != nil {
+		return err
+	}
+	var output []byte
+	w := bytes.NewBuffer(output)
+	if err := png.Encode(w, m); err != nil {
+		return err
+	}
+	*data = w.Bytes()
+	return nil
 }

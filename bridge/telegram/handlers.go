@@ -245,6 +245,12 @@ func (b *Btelegram) handleDownload(rmsg *config.Message, message *tgbotapi.Messa
 	if err != nil {
 		return err
 	}
+	if strings.HasSuffix(name, ".webp") && b.GetBool("MediaConvertWebPToPNG") {
+		if err := helper.ConvertWebPToPNG(data); err == nil {
+			name = strings.Replace(name, ".webp", ".png", 1)
+			//name=strings.Replace
+		}
+	}
 	helper.HandleDownloadData(b.Log, rmsg, name, message.Caption, "", data, b.General)
 	return nil
 }

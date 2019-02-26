@@ -1,6 +1,8 @@
 package helper
 
 import (
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -101,5 +103,24 @@ func TestGetSubLines(t *testing.T) {
 
 		nonSplitLines := GetSubLines(testcase.input, 0)
 		assert.Equalf(t, testcase.nonSplitOutput, nonSplitLines, "'%s' testcase should give expected lines without splitting.", testname)
+	}
+}
+
+func TestConvertWebPToPNG(t *testing.T) {
+	if os.Getenv("LOCAL_TEST") == "" {
+		t.Skip()
+	}
+	input, err := ioutil.ReadFile("test.webp")
+	if err != nil {
+		t.Fail()
+	}
+	d := &input
+	err = ConvertWebPToPNG(d)
+	if err != nil {
+		t.Fail()
+	}
+	err = ioutil.WriteFile("test.png", *d, 0644)
+	if err != nil {
+		t.Fail()
 	}
 }
