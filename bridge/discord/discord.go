@@ -246,7 +246,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 			b.Log.Debugf("Setting webhook channel to \"%s\"", msg.Channel)
 			_, err := b.c.WebhookEdit(wID, "", "", channelID)
 			if err != nil {
-				b.Log.Errorf("Could not set webhook channel: %v", err)
+				b.Log.Errorf("Could not set webhook channel: %s", err)
 				return "", err
 			}
 		}
@@ -278,7 +278,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
 			rmsg.Text = helper.ClipMessage(rmsg.Text, MessageLength)
 			if _, err := b.c.ChannelMessageSend(channelID, rmsg.Username+rmsg.Text); err != nil {
-				b.Log.Errorf("Could not send message %#v: %v", rmsg, err)
+				b.Log.Errorf("Could not send message %#v: %s", rmsg, err)
 			}
 		}
 		// check if we have files to upload (from slack, telegram or mattermost)
@@ -360,7 +360,7 @@ func (b *Bdiscord) handleUploadFile(msg *config.Message, channelID string) (stri
 		}
 		_, err = b.c.ChannelMessageSendComplex(channelID, &m)
 		if err != nil {
-			return "", fmt.Errorf("file upload failed: %#v", err)
+			return "", fmt.Errorf("file upload failed: %s", err)
 		}
 	}
 	return "", nil
