@@ -128,7 +128,7 @@ func NewConn(timeout time.Duration) (*Conn, error) {
 
 	go wac.readPump()
 	go wac.writePump()
-	go wac.keepAlive(20000, 90000)
+	go wac.keepAlive(20000, 60000)
 
 	return wac, nil
 }
