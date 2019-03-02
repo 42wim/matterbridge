@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -18,12 +19,11 @@ type Bzulip struct {
 	bot     *gzb.Bot
 	streams map[int]string
 	*bridge.Config
-	channelToTopic map[string]string
 	sync.RWMutex
 }
 
 func New(cfg *bridge.Config) bridge.Bridger {
-	return &Bzulip{Config: cfg, streams: make(map[int]string), channelToTopic: make(map[string]string)}
+	return &Bzulip{Config: cfg, streams: make(map[int]string)}
 }
 
 func (b *Bzulip) Connect() error {
@@ -48,9 +48,6 @@ func (b *Bzulip) Disconnect() error {
 }
 
 func (b *Bzulip) JoinChannel(channel config.ChannelInfo) error {
-	b.Lock()
-	defer b.Unlock()
-	b.channelToTopic[channel.Name] = channel.Options.Topic
 	return nil
 }
 
@@ -138,7 +135,14 @@ func (b *Bzulip) handleQueue() error {
 			if m.SenderEmail == b.GetString("login") {
 				continue
 			}
-			rmsg := config.Message{Username: m.SenderFullName, Text: m.Content, Channel: b.getChannel(m.StreamID), Account: b.Account, UserID: strconv.Itoa(m.SenderID), Avatar: m.AvatarURL}
+			rmsg := config.Message{
+				Username: m.SenderFullName,
+				Text:     m.Content,
+				Channel:  b.getChannel(m.StreamID) + "/topic:" + m.Subject,
+				Account:  b.Account,
+				UserID:   strconv.Itoa(m.SenderID),
+				Avatar:   m.AvatarURL,
+			}
 			b.Log.Debugf("<= Sending message from %s on %s to gateway", rmsg.Username, b.Account)
 			b.Log.Debugf("<= Message is %#v", rmsg)
 			b.Remote <- rmsg
@@ -149,12 +153,11 @@ func (b *Bzulip) handleQueue() error {
 }
 
 func (b *Bzulip) sendMessage(msg config.Message) (string, error) {
-	topic := "matterbridge"
-	if b.GetString("topic") != "" {
-		topic = b.GetString("topic")
-	}
-	if res := b.getTopic(msg.Channel); res != "" {
-		topic = res
+	topic := ""
+	if strings.Contains(msg.Channel, "/topic:") {
+		res := strings.Split(msg.Channel, "/topic:")
+		topic = res[1]
+		msg.Channel = res[0]
 	}
 	m := gzb.Message{
 		Stream:  msg.Channel,
@@ -201,10 +204,4 @@ func (b *Bzulip) handleUploadFile(msg *config.Message) (string, error) {
 		}
 	}
 	return "", nil
-}
-
-func (b *Bzulip) getTopic(channel string) string {
-	b.RLock()
-	defer b.RUnlock()
-	return b.channelToTopic[channel]
 }

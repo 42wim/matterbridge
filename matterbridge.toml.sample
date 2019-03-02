@@ -1363,12 +1363,6 @@ Login="yourbot-bot@yourserver.zulipchat.com"
 #REQUIRED 
 Server="https://yourserver.zulipchat.com"
 
-#Topic of the messages matterbridge will use
-#OPTIONAL (default "matterbridge")
-#You can specify a specific topic for each channel using [gateway.inout.options]
-#See more information below at the gateway configuration
-Topic="matterbridge"
-
 ## RELOADABLE SETTINGS
 ## Settings below can be reloaded by editing the file
 
@@ -1608,7 +1602,7 @@ enable=true
     #              if you specify an empty string bridge will list all the possibilities
     #            - "Group Name" if you specify a group name the bridge will hint its JID to specify
     #              as group names might change in time and contain weird emoticons
-    # zulip      - stream (without the #)
+    # zulip      - stream/topic:topicname (without the #)
     #                  
     # REQUIRED
     channel="#testing"
@@ -1650,10 +1644,7 @@ enable=true
 
     [[gateway.inout]]
     account="zulip.streamchat"
-    channel="general"
-        #OPTIONAL - topic only works for zulip
-        [gateway.inout.options]
-        topic="topic1"
+    channel="general/topic:mytopic"
 
     #API example
     #[[gateway.inout]]
