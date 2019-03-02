@@ -88,6 +88,7 @@
 * [Minecraft](https://github.com/elytra/MatterLink)
 * [Reddit](https://github.com/bonehurtingjuice/mattereddit)
 * [Facebook messenger](https://github.com/VictorNine/fbridge)
+* [Discourse](https://github.com/DeclanHoare/matterbabble)
 
 ### API
 The API is very basic at the moment.   
@@ -99,6 +100,7 @@ Used by the projects below. Feel free to make a PR to add your project to this l
 * [pyCord](https://github.com/NikkyAI/pyCord) (crossplatform chatbot)
 * [Mattereddit](https://github.com/bonehurtingjuice/mattereddit) (Reddit chat support)
 * [fbridge](https://github.com/VictorNine/fbridge) (Facebook messenger support)
+* [matterbabble](https://github.com/DeclanHoare/matterbabble) (Discourse support)
 
 ## Chat with us
 
@@ -247,6 +249,8 @@ See [FAQ](https://github.com/42wim/matterbridge/wiki/FAQ)
 * [mattermost-plugin](https://github.com/matterbridge/mattermost-plugin) - Run matterbridge as a plugin in mattermost
 * [pyCord](https://github.com/NikkyAI/pyCord) (crossplatform chatbot)
 * [fbridge](https://github.com/VictorNine/fbridge) (Facebook messenger support)
+* [isla](https://github.com/alphachung/isla) (Bot for Discord-Telegram groups used alongside matterbridge)
+* [matterbabble](https://github.com/DeclanHoare/matterbabble) (Connect Discourse threads to Matterbridge)
 
 ## Articles
 * [matterbridge on kubernetes](https://medium.freecodecamp.org/using-kubernetes-to-deploy-a-chat-gateway-or-when-technology-works-like-its-supposed-to-a169a8cd69a3)
