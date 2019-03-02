@@ -144,6 +144,9 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		// quote the previous message
 		b.handleQuoting(&rmsg, message)
 
+		// handle entities (adding URLs)
+		b.handleEntities(&rmsg, message)
+
 		if rmsg.Text != "" || len(rmsg.Extra) > 0 {
 			rmsg.Text = helper.RemoveEmptyNewLines(rmsg.Text)
 			// channels don't have (always?) user information. see #410
@@ -352,4 +355,23 @@ func (b *Btelegram) handleQuote(message, quoteNick, quoteMessage string) string 
 	format = strings.Replace(format, "{QUOTENICK}", quoteNick, -1)
 	format = strings.Replace(format, "{QUOTEMESSAGE}", quoteMessage, -1)
 	return format
+}
+
+// handleEntities handles messageEntities
+func (b *Btelegram) handleEntities(rmsg *config.Message, message *tgbotapi.Message) {
+	if message.Entities == nil {
+		return
+	}
+	// for now only do URL replacements
+	for _, e := range *message.Entities {
+		if e.Type == "text_link" {
+			url, err := e.ParseURL()
+			if err != nil {
+				b.Log.Errorf("entity text_link url parse failed: %s", err)
+				continue
+			}
+			link := rmsg.Text[e.Offset : e.Offset+e.Length]
+			rmsg.Text = strings.Replace(rmsg.Text, link, url.String(), 1)
+		}
+	}
 }
