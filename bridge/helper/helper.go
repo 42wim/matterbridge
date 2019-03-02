@@ -178,7 +178,10 @@ func ClipMessage(text string, length int) string {
 
 func ParseMarkdown(input string) string {
 	md := markdown.New(markdown.XHTMLOutput(true), markdown.Breaks(true))
-	return (md.RenderToString([]byte(input)))
+	res := md.RenderToString([]byte(input))
+	res = strings.TrimPrefix(res, "<p>")
+	res = strings.TrimSuffix(res, "</p>\n")
+	return res
 }
 
 // ConvertWebPToPNG convert input data (which should be WebP format to PNG format)
