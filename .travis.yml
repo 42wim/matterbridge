@@ -47,6 +47,10 @@ after_script:
   # Upload test coverage to CodeClimate.
   - ./cc-test-reporter after-build --exit-code ${TRAVIS_TEST_RESULT}
 
+branches:
+  only:
+    - master
+
 deploy:
   on:
      all_branches: true
