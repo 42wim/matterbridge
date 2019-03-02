@@ -408,6 +408,11 @@ type TCPInfo struct {
 	Total_retrans  uint32
 }
 
+type CanFilter struct {
+	Id   uint32
+	Mask uint32
+}
+
 const (
 	SizeofSockaddrInet4     = 0x10
 	SizeofSockaddrInet6     = 0x1c
@@ -437,6 +442,7 @@ const (
 	SizeofICMPv6Filter      = 0x20
 	SizeofUcred             = 0xc
 	SizeofTCPInfo           = 0x68
+	SizeofCanFilter         = 0x8
 )
 
 const (
@@ -572,6 +578,7 @@ const (
 	SizeofIfAddrmsg      = 0x8
 	SizeofRtMsg          = 0xc
 	SizeofRtNexthop      = 0x8
+	SizeofNdUseroptmsg   = 0x10
 )
 
 type NlMsghdr struct {
@@ -635,6 +642,17 @@ type RtNexthop struct {
 	Flags   uint8
 	Hops    uint8
 	Ifindex int32
+}
+
+type NdUseroptmsg struct {
+	Family    uint8
+	Pad1      uint8
+	Opts_len  uint16
+	Ifindex   int32
+	Icmp_type uint8
+	Icmp_code uint8
+	Pad2      uint16
+	Pad3      uint32
 }
 
 const (
@@ -762,26 +780,29 @@ type Sigset_t struct {
 }
 
 type SignalfdSiginfo struct {
-	Signo   uint32
-	Errno   int32
-	Code    int32
-	Pid     uint32
-	Uid     uint32
-	Fd      int32
-	Tid     uint32
-	Band    uint32
-	Overrun uint32
-	Trapno  uint32
-	Status  int32
-	Int     int32
-	Ptr     uint64
-	Utime   uint64
-	Stime   uint64
-	Addr    uint64
-	_       [48]uint8
+	Signo     uint32
+	Errno     int32
+	Code      int32
+	Pid       uint32
+	Uid       uint32
+	Fd        int32
+	Tid       uint32
+	Band      uint32
+	Overrun   uint32
+	Trapno    uint32
+	Status    int32
+	Int       int32
+	Ptr       uint64
+	Utime     uint64
+	Stime     uint64
+	Addr      uint64
+	Addr_lsb  uint16
+	_         uint16
+	Syscall   int32
+	Call_addr uint64
+	Arch      uint32
+	_         [28]uint8
 }
-
-const RNDGETENTCNT = 0x40045200
 
 const PERF_IOC_FLAG_GROUP = 0x1
 

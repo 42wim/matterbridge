@@ -15,14 +15,6 @@ github.com/Philipp15b/go-steam/protocol/gamecoordinator
 github.com/Philipp15b/go-steam/protocol/protobuf
 github.com/Philipp15b/go-steam/rwu
 github.com/Philipp15b/go-steam/socialcache
-# github.com/Rhymen/go-whatsapp v0.0.0-20190208184307-c9a81e957884
-github.com/Rhymen/go-whatsapp
-github.com/Rhymen/go-whatsapp/binary
-github.com/Rhymen/go-whatsapp/binary/proto
-github.com/Rhymen/go-whatsapp/crypto/cbc
-github.com/Rhymen/go-whatsapp/crypto/curve25519
-github.com/Rhymen/go-whatsapp/crypto/hkdf
-github.com/Rhymen/go-whatsapp/binary/token
 # github.com/bwmarrin/discordgo v0.19.0
 github.com/bwmarrin/discordgo
 # github.com/d5/tengo v1.9.2
@@ -95,6 +87,14 @@ github.com/magiconair/properties
 github.com/matterbridge/Rocket.Chat.Go.SDK/models
 github.com/matterbridge/Rocket.Chat.Go.SDK/realtime
 github.com/matterbridge/Rocket.Chat.Go.SDK/rest
+# github.com/matterbridge/go-whatsapp v0.0.1-0.20190301204034-f2f1b29d441b
+github.com/matterbridge/go-whatsapp
+github.com/matterbridge/go-whatsapp/binary
+github.com/matterbridge/go-whatsapp/binary/proto
+github.com/matterbridge/go-whatsapp/crypto/cbc
+github.com/matterbridge/go-whatsapp/crypto/curve25519
+github.com/matterbridge/go-whatsapp/crypto/hkdf
+github.com/matterbridge/go-whatsapp/binary/token
 # github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91
 github.com/matterbridge/go-xmpp
 # github.com/matterbridge/gomatrix v0.0.0-20190102230110-6f9631ca6dea
@@ -103,14 +103,16 @@ github.com/matterbridge/gomatrix
 github.com/matterbridge/gozulipbot
 # github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61
 github.com/matterbridge/logrus-prefixed-formatter
+# github.com/matterbridge/mautrix-whatsapp v0.0.0-20190301210046-3539cf52ed6e
+github.com/matterbridge/mautrix-whatsapp/whatsapp-ext
 # github.com/mattermost/mattermost-server v5.5.0+incompatible
 github.com/mattermost/mattermost-server/model
 github.com/mattermost/mattermost-server/mlog
 github.com/mattermost/mattermost-server/utils/jsonutils
 github.com/mattermost/mattermost-server/utils/markdown
-# github.com/mattn/go-colorable v0.0.9
+# github.com/mattn/go-colorable v0.1.1
 github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.4
+# github.com/mattn/go-isatty v0.0.5
 github.com/mattn/go-isatty
 # github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b
 github.com/mgutz/ansi
@@ -204,7 +206,7 @@ go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/buffer
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
-# golang.org/x/crypto v0.0.0-20190131182504-b8fe1690c613
+# golang.org/x/crypto v0.0.0-20190222235706-ffb98f73852f
 golang.org/x/crypto/ssh/terminal
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/nacl/secretbox
@@ -227,7 +229,7 @@ golang.org/x/image/vp8
 golang.org/x/image/vp8l
 # golang.org/x/net v0.0.0-20190110200230-915654e7eabc
 golang.org/x/net/websocket
-# golang.org/x/sys v0.0.0-20190129075346-302c3dd5f1cc
+# golang.org/x/sys v0.0.0-20190222171317-cd391775e71e
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 # golang.org/x/text v0.3.0
@@ -245,5 +247,3 @@ golang.org/x/text/encoding/internal
 gopkg.in/natefinch/lumberjack.v2
 # gopkg.in/yaml.v2 v2.2.2
 gopkg.in/yaml.v2
-# maunium.net/go/mautrix-whatsapp v0.0.0-20190127121751-281b3e8f77f3
-maunium.net/go/mautrix-whatsapp/whatsapp-ext

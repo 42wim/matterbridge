@@ -6,7 +6,7 @@ import (
 	"os"
 
 	qrcodeTerminal "github.com/Baozisoftware/qrcode-terminal-go"
-	"github.com/Rhymen/go-whatsapp"
+	"github.com/matterbridge/go-whatsapp"
 )
 
 func qrFromTerminal(invert bool) chan string {
