@@ -9,16 +9,18 @@ import (
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/42wim/matterbridge/hook/rockethook"
 	"github.com/42wim/matterbridge/matterhook"
+	lru "github.com/hashicorp/golang-lru"
 	"github.com/matterbridge/Rocket.Chat.Go.SDK/models"
 	"github.com/matterbridge/Rocket.Chat.Go.SDK/realtime"
 	"github.com/matterbridge/Rocket.Chat.Go.SDK/rest"
 )
 
 type Brocketchat struct {
-	mh *matterhook.Client
-	rh *rockethook.Client
-	c  *realtime.Client
-	r  *rest.Client
+	mh    *matterhook.Client
+	rh    *rockethook.Client
+	c     *realtime.Client
+	r     *rest.Client
+	cache *lru.Cache
 	*bridge.Config
 	messageChan chan models.Message
 	channelMap  map[string]string
@@ -27,9 +29,16 @@ type Brocketchat struct {
 }
 
 func New(cfg *bridge.Config) bridge.Bridger {
-	b := &Brocketchat{Config: cfg}
-	b.messageChan = make(chan models.Message)
-	b.channelMap = make(map[string]string)
+	newCache, err := lru.New(100)
+	if err != nil {
+		cfg.Log.Fatalf("Could not create LRU cache for rocketchat bridge: %v", err)
+	}
+	b := &Brocketchat{
+		Config:      cfg,
+		messageChan: make(chan models.Message),
+		channelMap:  make(map[string]string),
+		cache:       newCache,
+	}
 	b.Log.Debugf("enabling rocketchat")
 	return b
 }
