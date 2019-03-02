@@ -1,5 +1,8 @@
 # v1.14.0
 
+## Breaking
+* zulip: Need to specify /topic:mytopic for channel configuration (zulip). (#751)
+
 ## New features
 * whatsapp: new protocol added. Add initial WhatsApp support (#711) Thanks to @KrzysztofMadejski
 * facebook messenger: new protocol via matterbridge api. See https://github.com/VictorNine/fbridge/ for more information.
@@ -10,10 +13,15 @@
 * rocketchat: add support for the rocketchat API. Sending to rocketchat now supports uploading of files, editing and deleting of messages.
 * discord: Support join/leaves from discord. Closes #654 (#721)
 * discord: Allow sending discriminator with Discord username (#726). See `UseDiscriminator` in matterbridge.toml.sample
-* zulip: Allow zulip bridge to specify topic per channel. Closes #701 (#723). See `Topic` in matterbridge.toml.sample
 * slack: Add extra debug option (slack). See `Debug` in the slack section in matterbridge.toml.sample
+* telegram: Add support for URL in messageEntities (telegram). Fixes #735 (#736)
+* telegram: Add MediaConvertWebPToPNG option (telegram). (#741). See `MediaConvertWebPToPNG` in matterbridge.toml.sample
+
+## Enhancements
+* general: Fail gracefully on incorrect human input. Fixes #739 (#740)
 
 ## Bugfix
+* general: Handle file upload/download only once for each message (#742)
 * zulip: Fix error handling on bad event queue id (zulip). Closes #694
 * zulip: Keep reconnecting until succeed (zulip) (#737)
 * irc: add support for (older) unrealircd versions. #708
@@ -24,6 +32,8 @@
 * slack: Hint at thread replies when messages are unthreaded (slack) (#684)
 * xmpp: Do not send topic changes on connect (xmpp). Fixes #732 (#733)
 * telegram: Fix regression in HTML handling (telegram). Closes #734
+* discord: Do not relay any bot messages (discord) (#743)
+* rocketchat: Do not send duplicate messages (rocketchat). Fixes #745 (#752)
 
 ## Contributors
 This release couldn't exist without the following contributors:
