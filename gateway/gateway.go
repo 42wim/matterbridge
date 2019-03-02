@@ -159,6 +159,10 @@ func (gw *Gateway) mapChannelConfig(cfg []config.Bridge, direction string) {
 			gw.logger.Errorf("Mattermost channels do not start with a #: remove the # in %s", br.Channel)
 			os.Exit(1)
 		}
+		if strings.HasPrefix(br.Account, "zulip.") && !strings.Contains(br.Channel, "/topic:") {
+			gw.logger.Errorf("Breaking change, since matterbridge 1.14.0 zulip channels need to specify the topic with channel/topic:mytopic in %s of %s", br.Channel, br.Account)
+			os.Exit(1)
+		}
 		ID := br.Channel + br.Account
 		if _, ok := gw.Channels[ID]; !ok {
 			channel := &config.ChannelInfo{
