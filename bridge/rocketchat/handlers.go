@@ -1,7 +1,11 @@
 package brocketchat
 
 import (
+	"fmt"
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/helper"
+	"github.com/matterbridge/Rocket.Chat.Go.SDK/models"
+	"time"
 )
 
 func (b *Brocketchat) handleRocket() {
@@ -52,15 +56,86 @@ func (b *Brocketchat) handleRocketClient(messages chan *config.Message) {
 			continue
 		}
 
+		extra := make(map[string][]interface{})
+
 		rmsg := &config.Message{Text: message.Msg,
 			Username: message.User.UserName,
 			Channel:  b.getChannelName(message.RoomID),
 			Account:  b.Account,
 			UserID:   message.User.ID,
 			ID:       message.ID,
+			Extra:    extra,
 		}
+
+		b.handleAttachments(&message, rmsg)
+
 		messages <- rmsg
 	}
+}
+
+func (b *Brocketchat) handleAttachments(message *models.Message, rmsg *config.Message) {
+
+	// See if we have some text in the attachments.
+	if rmsg.Text == "" {
+		for _, attach := range message.Attachments {
+			if attach.Text != "" {
+				if attach.Title != "" {
+					rmsg.Text = attach.Title + "\n"
+				}
+				rmsg.Text += attach.Text
+			}
+		}
+	}
+
+	// Save the attachments, so that we can send them to other slack (compatible) bridges.
+	if len(message.Attachments) > 0 {
+		rmsg.Extra["rocket_attachments"] = append(rmsg.Extra["rocket_attachments"], message.Attachments)
+	}
+
+	// If we have files attached, download them (in memory) and put a pointer to it in msg.Extra.
+	for i := range message.Attachments {
+		if err := b.handleDownloadFile(rmsg, &message.Attachments[i], false); err != nil {
+			b.Log.Errorf("Could not download incoming file: %#v", err)
+		}
+	}
+}
+
+func (b *Brocketchat) handleDownloadFile(rmsg *config.Message, file *models.Attachment, retry bool) error {
+	if b.fileCached(file) {
+		return nil
+	}
+	// Check that the file is neither too large nor blacklisted.
+	/*	if err := helper.HandleDownloadSize(b.Log, rmsg, file.Title, int64(file.Size), b.General); err != nil {
+			b.Log.WithError(err).Infof("Skipping download of incoming file.")
+			return nil
+		}*/
+	downloadUrl := b.GetString("server") + file.ImageURL
+	// Actually download the file.
+	data, err := helper.DownloadFileAuthRocket(downloadUrl, b.user.Token, b.user.ID)
+	if err != nil {
+		return fmt.Errorf("download %s failed %#v", downloadUrl, err)
+	}
+
+	/*	if len(*data) != file.Size && !retry {
+			b.Log.Debugf("Data size (%d) is not equal to size declared (%d)\n", len(*data), file.Size)
+			time.Sleep(1 * time.Second)
+			return b.handleDownloadFile(rmsg, file, true)
+		}*/
+
+	// If a comment is attached to the file(s) it is in the 'Text' field of the Slack messge event
+	// and should be added as comment to only one of the files. We reset the 'Text' field to ensure
+	// that the comment is not duplicated.
+	comment := rmsg.Text
+	rmsg.Text = ""
+	helper.HandleDownloadData(b.Log, rmsg, file.Title, comment, downloadUrl, data, b.General)
+	return nil
+}
+
+func (b *Brocketchat) fileCached(file *models.Attachment) bool {
+	if ts, ok := b.cache.Get("file" + file.ImageURL); ok && time.Since(ts.(time.Time)) < time.Minute {
+		return true
+	}
+	return false
 }
 
 func (b *Brocketchat) handleUploadFile(msg *config.Message) error {
