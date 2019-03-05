@@ -20,6 +20,12 @@ var ErrInvalidOperator = errors.New("invalid operator")
 // ErrWrongNumArguments represents a wrong number of arguments error.
 var ErrWrongNumArguments = errors.New("wrong number of arguments")
 
+// ErrBytesLimit represents an error where the size of bytes value exceeds the limit.
+var ErrBytesLimit = errors.New("exceeding bytes size limit")
+
+// ErrStringLimit represents an error where the size of string value exceeds the limit.
+var ErrStringLimit = errors.New("exceeding string size limit")
+
 // ErrInvalidArgumentType represents an invalid argument value type error.
 type ErrInvalidArgumentType struct {
 	Name     string

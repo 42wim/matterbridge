@@ -3,6 +3,7 @@ package objects
 import (
 	"strconv"
 
+	"github.com/d5/tengo"
 	"github.com/d5/tengo/compiler/token"
 )
 
@@ -28,9 +29,16 @@ func (o *String) BinaryOp(op token.Token, rhs Object) (Object, error) {
 	case token.Add:
 		switch rhs := rhs.(type) {
 		case *String:
+			if len(o.Value)+len(rhs.Value) > tengo.MaxStringLen {
+				return nil, ErrStringLimit
+			}
 			return &String{Value: o.Value + rhs.Value}, nil
 		default:
-			return &String{Value: o.Value + rhs.String()}, nil
+			rhsStr := rhs.String()
+			if len(o.Value)+len(rhsStr) > tengo.MaxStringLen {
+				return nil, ErrStringLimit
+			}
+			return &String{Value: o.Value + rhsStr}, nil
 		}
 	}
 

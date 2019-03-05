@@ -77,11 +77,8 @@ func (c *Compiler) doCompileModule(moduleName string, src []byte) (*objects.Comp
 	symbolTable := NewSymbolTable()
 
 	// inherit builtin functions
-	for idx, fn := range objects.Builtins {
-		s, _, ok := c.symbolTable.Resolve(fn.Name)
-		if ok && s.Scope == ScopeBuiltin {
-			symbolTable.DefineBuiltin(idx, fn.Name)
-		}
+	for _, sym := range c.symbolTable.BuiltinSymbols() {
+		symbolTable.DefineBuiltin(sym.Index, sym.Name)
 	}
 
 	// no global scope for the module

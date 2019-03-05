@@ -1,5 +1,7 @@
 package objects
 
+import "github.com/d5/tengo"
+
 func builtinString(args ...Object) (Object, error) {
 	argsLen := len(args)
 	if !(argsLen == 1 || argsLen == 2) {
@@ -12,6 +14,10 @@ func builtinString(args ...Object) (Object, error) {
 
 	v, ok := ToString(args[0])
 	if ok {
+		if len(v) > tengo.MaxStringLen {
+			return nil, ErrStringLimit
+		}
+
 		return &String{Value: v}, nil
 	}
 
@@ -117,11 +123,19 @@ func builtinBytes(args ...Object) (Object, error) {
 
 	// bytes(N) => create a new bytes with given size N
 	if n, ok := args[0].(*Int); ok {
+		if n.Value > int64(tengo.MaxBytesLen) {
+			return nil, ErrBytesLimit
+		}
+
 		return &Bytes{Value: make([]byte, int(n.Value))}, nil
 	}
 
 	v, ok := ToByteSlice(args[0])
 	if ok {
+		if len(v) > tengo.MaxBytesLen {
+			return nil, ErrBytesLimit
+		}
+
 		return &Bytes{Value: v}, nil
 	}
 

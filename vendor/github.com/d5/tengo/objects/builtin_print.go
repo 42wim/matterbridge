@@ -2,6 +2,8 @@ package objects
 
 import (
 	"fmt"
+
+	"github.com/d5/tengo"
 )
 
 // print(args...)
@@ -71,5 +73,11 @@ func builtinSprintf(args ...Object) (Object, error) {
 		formatArgs[idx] = objectToInterface(arg)
 	}
 
-	return &String{Value: fmt.Sprintf(format.Value, formatArgs...)}, nil
+	s := fmt.Sprintf(format.Value, formatArgs...)
+
+	if len(s) > tengo.MaxStringLen {
+		return nil, ErrStringLimit
+	}
+
+	return &String{Value: s}, nil
 }

@@ -2,12 +2,13 @@ package compiler
 
 // SymbolTable represents a symbol table.
 type SymbolTable struct {
-	parent        *SymbolTable
-	block         bool
-	store         map[string]*Symbol
-	numDefinition int
-	maxDefinition int
-	freeSymbols   []*Symbol
+	parent         *SymbolTable
+	block          bool
+	store          map[string]*Symbol
+	numDefinition  int
+	maxDefinition  int
+	freeSymbols    []*Symbol
+	builtinSymbols []*Symbol
 }
 
 // NewSymbolTable creates a SymbolTable.
@@ -37,6 +38,10 @@ func (t *SymbolTable) Define(name string) *Symbol {
 
 // DefineBuiltin adds a symbol for builtin function.
 func (t *SymbolTable) DefineBuiltin(index int, name string) *Symbol {
+	if t.parent != nil {
+		return t.parent.DefineBuiltin(index, name)
+	}
+
 	symbol := &Symbol{
 		Name:  name,
 		Index: index,
@@ -44,6 +49,8 @@ func (t *SymbolTable) DefineBuiltin(index int, name string) *Symbol {
 	}
 
 	t.store[name] = symbol
+
+	t.builtinSymbols = append(t.builtinSymbols, symbol)
 
 	return symbol
 }
@@ -99,6 +106,15 @@ func (t *SymbolTable) MaxSymbols() int {
 // FreeSymbols returns free symbols for the scope.
 func (t *SymbolTable) FreeSymbols() []*Symbol {
 	return t.freeSymbols
+}
+
+// BuiltinSymbols returns builtin symbols for the scope.
+func (t *SymbolTable) BuiltinSymbols() []*Symbol {
+	if t.parent != nil {
+		return t.parent.BuiltinSymbols()
+	}
+
+	return t.builtinSymbols
 }
 
 // Names returns the name of all the symbols.

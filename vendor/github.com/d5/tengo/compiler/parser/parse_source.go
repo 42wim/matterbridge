@@ -12,5 +12,6 @@ func ParseSource(filename string, src []byte, trace io.Writer) (res *ast.File, e
 	fileSet := source.NewFileSet()
 	file := fileSet.AddFile(filename, -1, len(src))
 
-	return ParseFile(file, src, trace)
+	p := NewParser(file, src, trace)
+	return p.ParseFile()
 }

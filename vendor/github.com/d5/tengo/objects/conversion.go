@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+
+	"github.com/d5/tengo"
 )
 
 // ToString will try to convert object o to string value.
@@ -194,6 +196,9 @@ func FromInterface(v interface{}) (Object, error) {
 	case nil:
 		return UndefinedValue, nil
 	case string:
+		if len(v) > tengo.MaxStringLen {
+			return nil, ErrStringLimit
+		}
 		return &String{Value: v}, nil
 	case int64:
 		return &Int{Value: v}, nil
@@ -211,6 +216,9 @@ func FromInterface(v interface{}) (Object, error) {
 	case float64:
 		return &Float{Value: v}, nil
 	case []byte:
+		if len(v) > tengo.MaxBytesLen {
+			return nil, ErrBytesLimit
+		}
 		return &Bytes{Value: v}, nil
 	case error:
 		return &Error{Value: &String{Value: v.Error()}}, nil
@@ -243,6 +251,8 @@ func FromInterface(v interface{}) (Object, error) {
 		return &Time{Value: v}, nil
 	case Object:
 		return v, nil
+	case CallableFunc:
+		return &UserFunction{Value: v}, nil
 	}
 
 	return nil, fmt.Errorf("cannot convert to object: %T", v)

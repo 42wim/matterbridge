@@ -9,16 +9,15 @@ import (
 	"github.com/d5/tengo/compiler/source"
 	"github.com/d5/tengo/objects"
 	"github.com/d5/tengo/runtime"
-	"github.com/d5/tengo/stdlib"
 )
 
 // Script can simplify compilation and execution of embedded scripts.
 type Script struct {
-	variables         map[string]*Variable
-	removedBuiltins   map[string]bool
-	removedStdModules map[string]bool
-	userModuleLoader  compiler.ModuleLoader
-	input             []byte
+	variables        map[string]*Variable
+	builtinFuncs     []objects.Object
+	builtinModules   map[string]*objects.Object
+	userModuleLoader compiler.ModuleLoader
+	input            []byte
 }
 
 // New creates a Script instance with an input script.
@@ -56,22 +55,28 @@ func (s *Script) Remove(name string) bool {
 	return true
 }
 
-// DisableBuiltinFunction disables a builtin function.
-func (s *Script) DisableBuiltinFunction(name string) {
-	if s.removedBuiltins == nil {
-		s.removedBuiltins = make(map[string]bool)
+// SetBuiltinFunctions allows to define builtin functions.
+func (s *Script) SetBuiltinFunctions(funcs []*objects.BuiltinFunction) {
+	if funcs != nil {
+		s.builtinFuncs = make([]objects.Object, len(funcs))
+		for idx, fn := range funcs {
+			s.builtinFuncs[idx] = fn
+		}
+	} else {
+		s.builtinFuncs = []objects.Object{}
 	}
-
-	s.removedBuiltins[name] = true
 }
 
-// DisableStdModule disables a standard library module.
-func (s *Script) DisableStdModule(name string) {
-	if s.removedStdModules == nil {
-		s.removedStdModules = make(map[string]bool)
+// SetBuiltinModules allows to define builtin modules.
+func (s *Script) SetBuiltinModules(modules map[string]*objects.ImmutableMap) {
+	if modules != nil {
+		s.builtinModules = make(map[string]*objects.Object, len(modules))
+		for k, mod := range modules {
+			s.builtinModules[k] = objectPtr(mod)
+		}
+	} else {
+		s.builtinModules = map[string]*objects.Object{}
 	}
-
-	s.removedStdModules[name] = true
 }
 
 // SetUserModuleLoader sets the user module loader for the compiler.
@@ -81,7 +86,7 @@ func (s *Script) SetUserModuleLoader(loader compiler.ModuleLoader) {
 
 // Compile compiles the script with all the defined variables, and, returns Compiled object.
 func (s *Script) Compile() (*Compiled, error) {
-	symbolTable, stdModules, globals, err := s.prepCompile()
+	symbolTable, builtinModules, globals, err := s.prepCompile()
 	if err != nil {
 		return nil, err
 	}
@@ -92,10 +97,10 @@ func (s *Script) Compile() (*Compiled, error) {
 	p := parser.NewParser(srcFile, s.input, nil)
 	file, err := p.ParseFile()
 	if err != nil {
-		return nil, fmt.Errorf("parse error: %s", err.Error())
+		return nil, err
 	}
 
-	c := compiler.NewCompiler(srcFile, symbolTable, nil, stdModules, nil)
+	c := compiler.NewCompiler(srcFile, symbolTable, nil, builtinModules, nil)
 
 	if s.userModuleLoader != nil {
 		c.SetModuleLoader(s.userModuleLoader)
@@ -107,7 +112,7 @@ func (s *Script) Compile() (*Compiled, error) {
 
 	return &Compiled{
 		symbolTable: symbolTable,
-		machine:     runtime.NewVM(c.Bytecode(), globals, nil),
+		machine:     runtime.NewVM(c.Bytecode(), globals, s.builtinFuncs, s.builtinModules),
 	}, nil
 }
 
@@ -136,24 +141,36 @@ func (s *Script) RunContext(ctx context.Context) (compiled *Compiled, err error)
 	return
 }
 
-func (s *Script) prepCompile() (symbolTable *compiler.SymbolTable, stdModules map[string]bool, globals []*objects.Object, err error) {
+func (s *Script) prepCompile() (symbolTable *compiler.SymbolTable, builtinModules map[string]bool, globals []*objects.Object, err error) {
 	var names []string
 	for name := range s.variables {
 		names = append(names, name)
 	}
 
 	symbolTable = compiler.NewSymbolTable()
-	for idx, fn := range objects.Builtins {
-		if !s.removedBuiltins[fn.Name] {
-			symbolTable.DefineBuiltin(idx, fn.Name)
+
+	if s.builtinFuncs == nil {
+		s.builtinFuncs = make([]objects.Object, len(objects.Builtins))
+		for idx, fn := range objects.Builtins {
+			s.builtinFuncs[idx] = &objects.BuiltinFunction{
+				Name:  fn.Name,
+				Value: fn.Value,
+			}
 		}
 	}
 
-	stdModules = make(map[string]bool)
-	for name := range stdlib.Modules {
-		if !s.removedStdModules[name] {
-			stdModules[name] = true
-		}
+	if s.builtinModules == nil {
+		s.builtinModules = make(map[string]*objects.Object)
+	}
+
+	for idx, fn := range s.builtinFuncs {
+		f := fn.(*objects.BuiltinFunction)
+		symbolTable.DefineBuiltin(idx, f.Name)
+	}
+
+	builtinModules = make(map[string]bool)
+	for name := range s.builtinModules {
+		builtinModules[name] = true
 	}
 
 	globals = make([]*objects.Object, runtime.GlobalsSize, runtime.GlobalsSize)
@@ -177,4 +194,8 @@ func (s *Script) copyVariables() map[string]*Variable {
 	}
 
 	return vars
+}
+
+func objectPtr(o objects.Object) *objects.Object {
+	return &o
 }

@@ -2,6 +2,8 @@ package objects
 
 import (
 	"encoding/json"
+
+	"github.com/d5/tengo"
 )
 
 // to_json(v object) => bytes
@@ -13,6 +15,10 @@ func builtinToJSON(args ...Object) (Object, error) {
 	res, err := json.Marshal(objectToInterface(args[0]))
 	if err != nil {
 		return &Error{Value: &String{Value: err.Error()}}, nil
+	}
+
+	if len(res) > tengo.MaxBytesLen {
+		return nil, ErrBytesLimit
 	}
 
 	return &Bytes{Value: res}, nil

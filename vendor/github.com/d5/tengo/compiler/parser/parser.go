@@ -57,7 +57,18 @@ func NewParser(file *source.File, src []byte, trace io.Writer) *Parser {
 }
 
 // ParseFile parses the source and returns an AST file unit.
-func (p *Parser) ParseFile() (*ast.File, error) {
+func (p *Parser) ParseFile() (file *ast.File, err error) {
+	defer func() {
+		if e := recover(); e != nil {
+			if _, ok := e.(bailout); !ok {
+				panic(e)
+			}
+		}
+
+		p.errors.Sort()
+		err = p.errors.Err()
+	}()
+
 	if p.trace {
 		defer un(trace(p, "File"))
 	}
@@ -71,10 +82,12 @@ func (p *Parser) ParseFile() (*ast.File, error) {
 		return nil, p.errors.Err()
 	}
 
-	return &ast.File{
+	file = &ast.File{
 		InputFile: p.file,
 		Stmts:     stmts,
-	}, nil
+	}
+
+	return
 }
 
 func (p *Parser) parseExpr() ast.Expr {
@@ -1002,16 +1015,26 @@ func (p *Parser) parseMapElementLit() *ast.MapElementLit {
 		defer un(trace(p, "MapElementLit"))
 	}
 
-	// key: read identifier token but it's not actually an identifier
-	ident := p.parseIdent()
+	pos := p.pos
+	name := "_"
+
+	if p.token == token.Ident {
+		name = p.tokenLit
+	} else if p.token == token.String {
+		v, _ := strconv.Unquote(p.tokenLit)
+		name = v
+	} else {
+		p.errorExpected(pos, "map key")
+	}
+
+	p.next()
 
 	colonPos := p.expect(token.Colon)
-
 	valueExpr := p.parseExpr()
 
 	return &ast.MapElementLit{
-		Key:      ident.Name,
-		KeyPos:   ident.NamePos,
+		Key:      name,
+		KeyPos:   pos,
 		ColonPos: colonPos,
 		Value:    valueExpr,
 	}

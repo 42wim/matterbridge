@@ -3,6 +3,7 @@ package objects
 import (
 	"bytes"
 
+	"github.com/d5/tengo"
 	"github.com/d5/tengo/compiler/token"
 )
 
@@ -27,6 +28,10 @@ func (o *Bytes) BinaryOp(op token.Token, rhs Object) (Object, error) {
 	case token.Add:
 		switch rhs := rhs.(type) {
 		case *Bytes:
+			if len(o.Value)+len(rhs.Value) > tengo.MaxBytesLen {
+				return nil, ErrBytesLimit
+			}
+
 			return &Bytes{Value: append(o.Value, rhs.Value...)}, nil
 		}
 	}
