@@ -158,7 +158,6 @@ linters-settings:
       - regexpMust
       - singleCaseSwitch
       - sloppyLen
-      - sloppyReassign
       - switchTrue
       - typeSwitchVar
       - typeUnparen
