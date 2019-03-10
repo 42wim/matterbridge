@@ -15,7 +15,7 @@ import (
 // router before we apply message-dependent modifications.
 func (b *Bslack) populateReceivedMessage(ev *slack.MessageEvent) (*config.Message, error) {
 	// Use our own func because rtm.GetChannelInfo doesn't work for private channels.
-	channel, err := b.getChannelByID(ev.Channel)
+	channel, err := b.channels.getChannelByID(ev.Channel)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (b *Bslack) populateMessageWithUserInfo(ev *slack.MessageEvent, rmsg *confi
 		return nil
 	}
 
-	user := b.getUser(userID)
+	user := b.users.getUser(userID)
 	if user == nil {
 		return fmt.Errorf("could not find information for user with id %s", ev.User)
 	}
@@ -148,7 +148,7 @@ func (b *Bslack) extractTopicOrPurpose(text string) (string, string) {
 func (b *Bslack) replaceMention(text string) string {
 	replaceFunc := func(match string) string {
 		userID := strings.Trim(match, "@<>")
-		if username := b.getUsername(userID); userID != "" {
+		if username := b.users.getUsername(userID); userID != "" {
 			return "@" + username
 		}
 		return match

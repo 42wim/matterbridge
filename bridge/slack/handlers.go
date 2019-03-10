@@ -34,7 +34,7 @@ func (b *Bslack) handleSlack() {
 		message.Text = html.UnescapeString(message.Text)
 
 		// Add the avatar
-		message.Avatar = b.getAvatar(message.UserID)
+		message.Avatar = b.users.getAvatar(message.UserID)
 
 		b.Log.Debugf("<= Message is %#v", message)
 		b.Remote <- *message
@@ -75,20 +75,17 @@ func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 			// When we join a channel we update the full list of users as
 			// well as the information for the channel that we joined as this
 			// should now tell that we are a member of it.
-			b.channelsMutex.Lock()
-			b.channelsByID[ev.Channel.ID] = &ev.Channel
-			b.channelsByName[ev.Channel.Name] = &ev.Channel
-			b.channelsMutex.Unlock()
+			b.channels.registerChannel(ev.Channel)
 		case *slack.ConnectedEvent:
 			b.si = ev.Info
-			b.populateChannels(true)
-			b.populateUsers(true)
+			b.channels.populateChannels(true)
+			b.users.populateUsers(true)
 		case *slack.InvalidAuthEvent:
 			b.Log.Fatalf("Invalid Token %#v", ev)
 		case *slack.ConnectionErrorEvent:
 			b.Log.Errorf("Connection failed %#v %#v", ev.Error(), ev.ErrorObj)
 		case *slack.MemberJoinedChannelEvent:
-			b.populateUser(ev.User)
+			b.users.populateUser(ev.User)
 		case *slack.LatencyReport:
 			continue
 		default:
@@ -210,7 +207,7 @@ func (b *Bslack) handleStatusEvent(ev *slack.MessageEvent, rmsg *config.Message)
 		rmsg.Username = sSystemUser
 		rmsg.Event = config.EventJoinLeave
 	case sChannelTopic, sChannelPurpose:
-		b.populateChannels(false)
+		b.channels.populateChannels(false)
 		rmsg.Event = config.EventTopicChange
 	case sMessageChanged:
 		rmsg.Text = ev.SubMessage.Text
@@ -266,7 +263,7 @@ func (b *Bslack) handleAttachments(ev *slack.MessageEvent, rmsg *config.Message)
 }
 
 func (b *Bslack) handleTypingEvent(ev *slack.UserTypingEvent) (*config.Message, error) {
-	channelInfo, err := b.getChannelByID(ev.Channel)
+	channelInfo, err := b.channels.getChannelByID(ev.Channel)
 	if err != nil {
 		return nil, err
 	}
@@ -316,36 +313,7 @@ func (b *Bslack) handleGetChannelMembers(rmsg *config.Message) bool {
 		return false
 	}
 
-	cMembers := config.ChannelMembers{}
-
-	b.channelMembersMutex.RLock()
-
-	for channelID, members := range b.channelMembers {
-		for _, member := range members {
-			channelName := ""
-			userName := ""
-			userNick := ""
-			user := b.getUser(member)
-			if user != nil {
-				userName = user.Name
-				userNick = user.Profile.DisplayName
-			}
-			channel, _ := b.getChannelByID(channelID)
-			if channel != nil {
-				channelName = channel.Name
-			}
-			cMember := config.ChannelMember{
-				Username:    userName,
-				Nick:        userNick,
-				UserID:      member,
-				ChannelID:   channelID,
-				ChannelName: channelName,
-			}
-			cMembers = append(cMembers, cMember)
-		}
-	}
-
-	b.channelMembersMutex.RUnlock()
+	cMembers := b.channels.getChannelMembers(b.users)
 
 	extra := make(map[string][]interface{})
 	extra[config.EventGetChannelMembers] = append(extra[config.EventGetChannelMembers], cMembers)

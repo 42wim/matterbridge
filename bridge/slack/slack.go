@@ -30,20 +30,8 @@ type Bslack struct {
 	uuid         string
 	useChannelID bool
 
-	users      map[string]*slack.User
-	usersMutex sync.RWMutex
-
-	channelsByID   map[string]*slack.Channel
-	channelsByName map[string]*slack.Channel
-	channelsMutex  sync.RWMutex
-
-	channelMembers      map[string][]string
-	channelMembersMutex sync.RWMutex
-
-	refreshInProgress      bool
-	earliestChannelRefresh time.Time
-	earliestUserRefresh    time.Time
-	refreshMutex           sync.Mutex
+	channels *channels
+	users    *users
 }
 
 const (
@@ -94,14 +82,9 @@ func newBridge(cfg *bridge.Config) *Bslack {
 		cfg.Log.Fatalf("Could not create LRU cache for Slack bridge: %v", err)
 	}
 	b := &Bslack{
-		Config:                 cfg,
-		uuid:                   xid.New().String(),
-		cache:                  newCache,
-		users:                  map[string]*slack.User{},
-		channelsByID:           map[string]*slack.Channel{},
-		channelsByName:         map[string]*slack.Channel{},
-		earliestChannelRefresh: time.Now(),
-		earliestUserRefresh:    time.Now(),
+		Config: cfg,
+		uuid:   xid.New().String(),
+		cache:  newCache,
 	}
 	return b
 }
@@ -121,7 +104,12 @@ func (b *Bslack) Connect() error {
 	// If we have a token we use the Slack websocket-based RTM for both sending and receiving.
 	if token := b.GetString(tokenConfig); token != "" {
 		b.Log.Info("Connecting using token")
+
 		b.sc = slack.New(token, slack.OptionDebug(b.GetBool("Debug")))
+
+		b.channels = newChannelManager(b.Log, b.sc)
+		b.users = newUserManager(b.Log, b.sc)
+
 		b.rtm = b.sc.NewRTM()
 		go b.rtm.ManageConnection()
 		go b.handleSlack()
@@ -163,9 +151,9 @@ func (b *Bslack) JoinChannel(channel config.ChannelInfo) error {
 		return nil
 	}
 
-	b.populateChannels(false)
+	b.channels.populateChannels(false)
 
-	channelInfo, err := b.getChannel(channel.Name)
+	channelInfo, err := b.channels.getChannel(channel.Name)
 	if err != nil {
 		return fmt.Errorf("could not join channel: %#v", err)
 	}
@@ -275,7 +263,7 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 		return "", nil
 	}
 
-	channelInfo, err := b.getChannel(msg.Channel)
+	channelInfo, err := b.channels.getChannel(msg.Channel)
 	if err != nil {
 		return "", fmt.Errorf("could not send message: %v", err)
 	}
