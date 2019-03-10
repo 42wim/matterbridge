@@ -12,6 +12,7 @@ git:
 env:
   global:
     - GOOS=linux GOARCH=amd64
+    - GO111MODULE=on
     - GOLANGCI_VERSION="v1.14.0"
 
 matrix:
@@ -36,10 +37,17 @@ before_script:
   - ./cc-test-reporter before-build
 
 script:
+  # Ensure that the module files are being kept correctly and that vendored dependencies are up-to-date.
+  - go mod tidy
+  - go mod vendor
+  - git diff --exit-code --quiet || (echo "Please run 'go mod tidy' to clean up the 'go.mod' and 'go.sum' files."; false)
+
   # Run the linter.
   - golangci-lint run
+
   # Run all the tests with the race detector and generate coverage.
   - go test -v -race -coverprofile c.out ./...
+
   # Run the build script to generate the necessary binaries and images.
   - /bin/bash ci/bintray.sh
 
