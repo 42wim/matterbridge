@@ -424,7 +424,11 @@ func (b *Bslack) postMessage(msg *config.Message, channelInfo *slack.Channel) (s
 		return "", nil
 	}
 	messageOptions := b.prepareMessageOptions(msg)
-	messageOptions = append(messageOptions, slack.MsgOptionText(msg.Text, false))
+	messageOptions = append(
+		messageOptions,
+		slack.MsgOptionText(msg.Text, false),
+		slack.MsgOptionEnableLinkUnfurl(),
+	)
 	for {
 		_, id, err := b.rtm.PostMessage(channelInfo.ID, messageOptions...)
 		if err == nil {
