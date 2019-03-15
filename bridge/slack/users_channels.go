@@ -4,14 +4,38 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/nlopes/slack"
+	"github.com/sirupsen/logrus"
 )
 
 const minimumRefreshInterval = 10 * time.Second
 
-func (b *Bslack) getUser(id string) *slack.User {
+type users struct {
+	log *logrus.Entry
+	sc  *slack.Client
+
+	users      map[string]*slack.User
+	usersMutex sync.RWMutex
+
+	refreshInProgress bool
+	earliestRefresh   time.Time
+	refreshMutex      sync.Mutex
+}
+
+func newUserManager(log *logrus.Entry, sc *slack.Client) *users {
+	return &users{
+		log:             log,
+		sc:              sc,
+		users:           make(map[string]*slack.User),
+		earliestRefresh: time.Now(),
+	}
+}
+
+func (b *users) getUser(id string) *slack.User {
 	b.usersMutex.RLock()
 	user, ok := b.users[id]
 	b.usersMutex.RUnlock()
@@ -25,25 +49,25 @@ func (b *Bslack) getUser(id string) *slack.User {
 	return b.users[id]
 }
 
-func (b *Bslack) getUsername(id string) string {
+func (b *users) getUsername(id string) string {
 	if user := b.getUser(id); user != nil {
 		if user.Profile.DisplayName != "" {
 			return user.Profile.DisplayName
 		}
 		return user.Name
 	}
-	b.Log.Warnf("Could not find user with ID '%s'", id)
+	b.log.Warnf("Could not find user with ID '%s'", id)
 	return ""
 }
 
-func (b *Bslack) getAvatar(id string) string {
+func (b *users) getAvatar(id string) string {
 	if user := b.getUser(id); user != nil {
 		return user.Profile.Image48
 	}
 	return ""
 }
 
-func (b *Bslack) populateUser(userID string) {
+func (b *users) populateUser(userID string) {
 	b.usersMutex.RLock()
 	_, exists := b.users[userID]
 	b.usersMutex.RUnlock()
@@ -54,7 +78,7 @@ func (b *Bslack) populateUser(userID string) {
 
 	user, err := b.sc.GetUserInfo(userID)
 	if err != nil {
-		b.Log.Debugf("GetUserInfo failed for %v: %v", userID, err)
+		b.log.Debugf("GetUserInfo failed for %v: %v", userID, err)
 		return
 	}
 
@@ -63,10 +87,10 @@ func (b *Bslack) populateUser(userID string) {
 	b.usersMutex.Unlock()
 }
 
-func (b *Bslack) populateUsers(wait bool) {
+func (b *users) populateUsers(wait bool) {
 	b.refreshMutex.Lock()
-	if !wait && (time.Now().Before(b.earliestUserRefresh) || b.refreshInProgress) {
-		b.Log.Debugf("Not refreshing user list as it was done less than %v ago.",
+	if !wait && (time.Now().Before(b.earliestRefresh) || b.refreshInProgress) {
+		b.log.Debugf("Not refreshing user list as it was done less than %v ago.",
 			minimumRefreshInterval)
 		b.refreshMutex.Unlock()
 
@@ -92,8 +116,8 @@ func (b *Bslack) populateUsers(wait bool) {
 				break
 			}
 
-			if err = handleRateLimit(b.Log, err); err != nil {
-				b.Log.Errorf("Could not retrieve users: %#v", err)
+			if err = handleRateLimit(b.log, err); err != nil {
+				b.log.Errorf("Could not retrieve users: %#v", err)
 				return
 			}
 			continue
@@ -102,11 +126,11 @@ func (b *Bslack) populateUsers(wait bool) {
 		for i := range pagination.Users {
 			newUsers[pagination.Users[i].ID] = &pagination.Users[i]
 		}
-		b.Log.Debugf("getting %d users", len(pagination.Users))
+		b.log.Debugf("getting %d users", len(pagination.Users))
 		count++
 		// more > 2000 users, slack will complain and ratelimit. break
 		if count > 10 {
-			b.Log.Info("Large slack detected > 2000 users, skipping loading complete userlist.")
+			b.log.Info("Large slack detected > 2000 users, skipping loading complete userlist.")
 			break
 		}
 	}
@@ -117,40 +141,104 @@ func (b *Bslack) populateUsers(wait bool) {
 
 	b.refreshMutex.Lock()
 	defer b.refreshMutex.Unlock()
-	b.earliestUserRefresh = time.Now().Add(minimumRefreshInterval)
+	b.earliestRefresh = time.Now().Add(minimumRefreshInterval)
 	b.refreshInProgress = false
 }
 
-func (b *Bslack) getChannel(channel string) (*slack.Channel, error) {
+type channels struct {
+	log *logrus.Entry
+	sc  *slack.Client
+
+	channelsByID   map[string]*slack.Channel
+	channelsByName map[string]*slack.Channel
+	channelsMutex  sync.RWMutex
+
+	channelMembers      map[string][]string
+	channelMembersMutex sync.RWMutex
+
+	refreshInProgress bool
+	earliestRefresh   time.Time
+	refreshMutex      sync.Mutex
+}
+
+func newChannelManager(log *logrus.Entry, sc *slack.Client) *channels {
+	return &channels{
+		log:             log,
+		sc:              sc,
+		channelsByID:    make(map[string]*slack.Channel),
+		channelsByName:  make(map[string]*slack.Channel),
+		earliestRefresh: time.Now(),
+	}
+}
+
+func (b *channels) getChannel(channel string) (*slack.Channel, error) {
 	if strings.HasPrefix(channel, "ID:") {
 		return b.getChannelByID(strings.TrimPrefix(channel, "ID:"))
 	}
 	return b.getChannelByName(channel)
 }
 
-func (b *Bslack) getChannelByName(name string) (*slack.Channel, error) {
+func (b *channels) getChannelByName(name string) (*slack.Channel, error) {
 	return b.getChannelBy(name, b.channelsByName)
 }
 
-func (b *Bslack) getChannelByID(id string) (*slack.Channel, error) {
+func (b *channels) getChannelByID(id string) (*slack.Channel, error) {
 	return b.getChannelBy(id, b.channelsByID)
 }
 
-func (b *Bslack) getChannelBy(lookupKey string, lookupMap map[string]*slack.Channel) (*slack.Channel, error) {
+func (b *channels) getChannelBy(lookupKey string, lookupMap map[string]*slack.Channel) (*slack.Channel, error) {
 	b.channelsMutex.RLock()
 	defer b.channelsMutex.RUnlock()
 
 	if channel, ok := lookupMap[lookupKey]; ok {
 		return channel, nil
 	}
-	return nil, fmt.Errorf("%s: channel %s not found", b.Account, lookupKey)
+	return nil, fmt.Errorf("channel %s not found", lookupKey)
 }
 
-func (b *Bslack) populateChannels(wait bool) {
+func (b *channels) getChannelMembers(users *users) config.ChannelMembers {
+	b.channelMembersMutex.RLock()
+	defer b.channelMembersMutex.RUnlock()
+
+	membersInfo := config.ChannelMembers{}
+	for channelID, members := range b.channelMembers {
+		for _, member := range members {
+			channelName := ""
+			userName := ""
+			userNick := ""
+			user := users.getUser(member)
+			if user != nil {
+				userName = user.Name
+				userNick = user.Profile.DisplayName
+			}
+			channel, _ := b.getChannelByID(channelID)
+			if channel != nil {
+				channelName = channel.Name
+			}
+			memberInfo := config.ChannelMember{
+				Username:    userName,
+				Nick:        userNick,
+				UserID:      member,
+				ChannelID:   channelID,
+				ChannelName: channelName,
+			}
+			membersInfo = append(membersInfo, memberInfo)
+		}
+	}
+	return membersInfo
+}
+
+func (b *channels) registerChannel(channel slack.Channel) {
+	b.channelsMutex.Lock()
+	b.channelsByID[channel.ID] = &channel
+	b.channelsByName[channel.Name] = &channel
+	b.channelsMutex.Unlock()
+}
+
+func (b *channels) populateChannels(wait bool) {
 	b.refreshMutex.Lock()
-	if !wait && (time.Now().Before(b.earliestChannelRefresh) || b.refreshInProgress) {
-		b.Log.Debugf("Not refreshing channel list as it was done less than %v seconds ago.",
-			minimumRefreshInterval)
+	if !wait && (time.Now().Before(b.earliestRefresh) || b.refreshInProgress) {
+		b.log.Debugf("Not refreshing channel list as it was done less than %v seconds ago.", minimumRefreshInterval)
 		b.refreshMutex.Unlock()
 		return
 	}
@@ -175,8 +263,8 @@ func (b *Bslack) populateChannels(wait bool) {
 	for {
 		channels, nextCursor, err := b.sc.GetConversations(queryParams)
 		if err != nil {
-			if err = handleRateLimit(b.Log, err); err != nil {
-				b.Log.Errorf("Could not retrieve channels: %#v", err)
+			if err = handleRateLimit(b.log, err); err != nil {
+				b.log.Errorf("Could not retrieve channels: %#v", err)
 				return
 			}
 			continue
@@ -217,6 +305,6 @@ func (b *Bslack) populateChannels(wait bool) {
 
 	b.refreshMutex.Lock()
 	defer b.refreshMutex.Unlock()
-	b.earliestChannelRefresh = time.Now().Add(minimumRefreshInterval)
+	b.earliestRefresh = time.Now().Add(minimumRefreshInterval)
 	b.refreshInProgress = false
 }
