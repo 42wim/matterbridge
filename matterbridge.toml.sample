@@ -1007,9 +1007,10 @@ ShowTopicChange=false
 Server="https://yourrocketchatserver.domain.com:443"
 
 #login/pass of your bot. 
+#login needs to be the login with email address! user@domain.com
 #Use a dedicated user for this and not your own! 
 #REQUIRED (when not using webhooks)
-Login="yourlogin"
+Login="yourlogin@domain.com"
 Password="yourpass"
 
 #### Settings for webhook matterbridge.
