@@ -19,6 +19,8 @@
 
 ## Enhancements
 * general: Fail gracefully on incorrect human input. Fixes #739 (#740)
+* matrix: Detect html nicks in RemoteNickFormat (matrix). Fixes #696 (#719)
+* matrix: Send notices on join/parts (matrix). Fixes #712 (#716)
 
 ## Bugfix
 * general: Handle file upload/download only once for each message (#742)
@@ -27,9 +29,9 @@
 * irc: add support for (older) unrealircd versions. #708
 * irc: Support quits from irc correctly. Fixes #722 (#724)
 * matrix: Send username when uploading video/images (matrix). Fixes #715 (#717)
-* matrix: Send notices on join/parts (matrix). Fixes #712 (#716)
-* matrix: Detect html nicks in RemoteNickFormat (matrix). Fixes #696 (#719)
+* matrix: Trim <p> and </p> tags (matrix). Closes #686 (#753)
 * slack: Hint at thread replies when messages are unthreaded (slack) (#684)
+* slack: Fix race-condition in populateUser() (#767)
 * xmpp: Do not send topic changes on connect (xmpp). Fixes #732 (#733)
 * telegram: Fix regression in HTML handling (telegram). Closes #734
 * discord: Do not relay any bot messages (discord) (#743)
