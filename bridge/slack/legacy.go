@@ -55,14 +55,18 @@ func (b *BLegacy) Connect() error {
 		})
 		if b.GetString(tokenConfig) != "" {
 			b.Log.Info("Connecting using token (receiving)")
-			b.sc = slack.New(b.GetString(tokenConfig))
+			b.sc = slack.New(b.GetString(tokenConfig), slack.OptionDebug(b.GetBool("debug")))
+			b.channels = newChannelManager(b.Log, b.sc)
+			b.users = newUserManager(b.Log, b.sc)
 			b.rtm = b.sc.NewRTM()
 			go b.rtm.ManageConnection()
 			go b.handleSlack()
 		}
 	} else if b.GetString(tokenConfig) != "" {
 		b.Log.Info("Connecting using token (sending and receiving)")
-		b.sc = slack.New(b.GetString(tokenConfig))
+		b.sc = slack.New(b.GetString(tokenConfig), slack.OptionDebug(b.GetBool("debug")))
+		b.channels = newChannelManager(b.Log, b.sc)
+		b.users = newUserManager(b.Log, b.sc)
 		b.rtm = b.sc.NewRTM()
 		go b.rtm.ManageConnection()
 		go b.handleSlack()
