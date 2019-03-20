@@ -2,6 +2,7 @@ package brocketchat
 
 import (
 	"errors"
+	"strings"
 	"sync"
 
 	"github.com/42wim/matterbridge/bridge"
@@ -85,14 +86,14 @@ func (b *Brocketchat) JoinChannel(channel config.ChannelInfo) error {
 	if b.c == nil {
 		return nil
 	}
-	id, err := b.c.GetChannelId(channel.Name)
+	id, err := b.c.GetChannelId(strings.TrimPrefix(channel.Name, "#"))
 	if err != nil {
 		return err
 	}
 	b.Lock()
 	b.channelMap[id] = channel.Name
 	b.Unlock()
-	mychannel := &models.Channel{ID: id, Name: channel.Name}
+	mychannel := &models.Channel{ID: id, Name: strings.TrimPrefix(channel.Name, "#")}
 	if err := b.c.JoinChannel(id); err != nil {
 		return err
 	}
@@ -103,6 +104,8 @@ func (b *Brocketchat) JoinChannel(channel config.ChannelInfo) error {
 }
 
 func (b *Brocketchat) Send(msg config.Message) (string, error) {
+	// strip the # if people has set this
+	msg.Channel = strings.TrimPrefix(msg.Channel, "#")
 	channel := &models.Channel{ID: b.getChannelID(msg.Channel), Name: msg.Channel}
 
 	// Delete message
@@ -131,6 +134,8 @@ func (b *Brocketchat) Send(msg config.Message) (string, error) {
 	// Upload a file if it exists
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+			// strip the # if people has set this
+			rmsg.Channel = strings.TrimPrefix(rmsg.Channel, "#")
 			smsg := &models.Message{
 				RoomID: b.getChannelID(rmsg.Channel),
 				Msg:    rmsg.Username + rmsg.Text,
