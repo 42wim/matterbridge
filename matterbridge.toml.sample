@@ -1051,6 +1051,8 @@ SkipTLSVerify=true
 #Useful if username overrides for incoming webhooks isn't enabled on the 
 #rocketchat server. If you set PrefixMessagesWithNick to true, each message 
 #from bridge to rocketchat will by default be prefixed by the RemoteNickFormat setting. i
+#if you're using login/pass you can better enable because of this bug:
+#https://github.com/RocketChat/Rocket.Chat/issues/7549
 #OPTIONAL (default false)
 PrefixMessagesWithNick=false
 
