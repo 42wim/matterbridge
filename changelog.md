@@ -1,3 +1,7 @@
+# v1.14.1
+## Bugfix
+* slack: Fix crash double unlock (slack) (#771)
+
 # v1.14.0
 
 ## Breaking
