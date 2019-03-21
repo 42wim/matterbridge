@@ -87,7 +87,6 @@ func (b *users) populateUser(userID string) {
 			// in case the previous query failed for some reason.
 		} else {
 			b.usersSyncPoints[userID] = make(chan struct{})
-			b.usersMutex.Unlock()
 			break
 		}
 	}
