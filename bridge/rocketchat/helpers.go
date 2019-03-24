@@ -95,7 +95,7 @@ func (b *Brocketchat) getChannelID(name string) string {
 	b.RLock()
 	defer b.RUnlock()
 	for k, v := range b.channelMap {
-		if v == name {
+		if v == name || v == "#"+name {
 			return k
 		}
 	}
