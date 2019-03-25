@@ -35,6 +35,12 @@
 
 **Note:** Matter<em>most</em> isn't required to run matter<em>bridge</em>.</sup></div>
 
+<p>
+  <a href="https://www.digitalocean.com/">
+    <img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/PoweredByDO/DO_Powered_by_Badge_blue.svg" width="201px">
+  </a>
+</p>
+
 ### Table of Contents
  * [Features](https://github.com/42wim/matterbridge/wiki/Features)
    * [Natively supported](#natively-supported)
@@ -264,7 +270,13 @@ See [FAQ](https://github.com/42wim/matterbridge/wiki/FAQ)
 * https://daniele.tech/2019/02/how-to-use-matterbridge-to-connect-2-different-slack-workspaces/
 
 ## Thanks
-[![Digitalocean](https://snag.gy/3LVifX.jpg)](https://www.digitalocean.com/) for sponsoring demo/testing droplets.
+
+<p>This project is supported by:</p>
+<p>
+  <a href="https://www.digitalocean.com/">
+    <img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg" width="201px">
+  </a>
+</p>
 
 Matterbridge wouldn't exist without these libraries:
 * discord - https://github.com/bwmarrin/discordgo
