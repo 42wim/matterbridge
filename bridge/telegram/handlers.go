@@ -109,8 +109,8 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 	for update := range updates {
 		b.Log.Debugf("== Receiving event: %#v", update.Message)
 
-		if update.Message == nil && update.ChannelPost == nil &&
-			update.EditedMessage == nil && update.EditedChannelPost == nil {
+		if update.Message == nil || update.ChannelPost == nil ||
+			update.EditedMessage == nil || update.EditedChannelPost == nil {
 			b.Log.Error("Getting nil messages, this shouldn't happen.")
 			continue
 		}
