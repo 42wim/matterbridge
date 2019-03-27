@@ -130,12 +130,18 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 		return true
 	}
 
-	// It seems ev.SubMessage.Edited == nil when slack unfurls.
-	// Do not forward these messages. See Github issue #266.
-	if ev.SubMessage != nil &&
-		ev.SubMessage.ThreadTimestamp != ev.SubMessage.Timestamp &&
-		ev.SubMessage.Edited == nil {
-		return true
+	if ev.SubMessage != nil {
+		// It seems ev.SubMessage.Edited == nil when slack unfurls.
+		// Do not forward these messages. See Github issue #266.
+		if ev.SubMessage.ThreadTimestamp != ev.SubMessage.Timestamp &&
+			ev.SubMessage.Edited == nil {
+			return true
+		}
+		// see hidden subtypes at https://api.slack.com/events/message
+		// these messages are sent when we add a message to a thread #709
+		if ev.SubType == "message_replied" && ev.Hidden {
+			return true
+		}
 	}
 
 	if len(ev.Files) > 0 {
