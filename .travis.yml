@@ -1,64 +1,48 @@
 language: go
 go_import_path: github.com/42wim/matterbridge
 
-# we have everything vendored
+# We have everything vendored so this helps TravisCI not run `go get ...`.
 install: true
 
 git:
   depth: 200
 
+notifications:
+  email: false
+
 branches:
   only:
   - master
 
-notifications:
-  email: false
-
-env:
-  global:
-  - GOOS=linux GOARCH=amd64
-  - GO111MODULE=on
-  - GOLANGCI_VERSION="v1.15.0"
-
-matrix:
+jobs:
   include:
-  - go: 1.11.x
-    env: GO111MODULE=off
-  - go: 1.11.x
-    env: GO111MODULE=on
-  - go: 1.12.x
-    env: GO111MODULE=on
-
-before_script:
-  # Get version info from tags.
-- MY_VERSION="$(git describe --tags)"
-  # Retrieve the golangci-lint linter binary.
-- curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b ${GOPATH}/bin ${GOLANGCI_VERSION}
-  # Retrieve and prepare CodeClimate's test coverage reporter.
-- curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-- chmod +x ./cc-test-reporter
-- ./cc-test-reporter before-build
-
-script:
-  # Ensure that the module files are being kept correctly and that vendored dependencies are up-to-date.
-- go mod tidy
-- go mod vendor
-- git diff --exit-code --quiet || (echo "Please run 'go mod tidy' to clean up the 'go.mod' and 'go.sum' files."; false)
-
-  # Run the linter.
-- golangci-lint run
-
-  # Run all the tests with the race detector and generate coverage.
-- go test -v -race -coverprofile c.out ./...
-
-after_script:
-  # Upload test coverage to CodeClimate.
-- ./cc-test-reporter after-build --exit-code ${TRAVIS_TEST_RESULT}
+  - stage: lint
+    # Run linting in one Go environment only.
+    script: ./ci/lint.sh
+    go: 1.12.x
+    env:
+    - GO111MODULE=on
+    - GOLANGCI_VERSION="v1.15.0"
+  - stage: test
+    # Run tests in a combination of Go environments.
+    script: ./ci/test.sh
+    go: 1.11.x
+    env:
+    - GO111MODULE=off
+  - script: ./ci/test.sh
+    go: 1.11.x
+    env:
+    - GO111MODULE=on
+  - script: ./ci/test.sh
+    go: 1.12.x
+    env:
+    - GO111MODULE=on
+    - REPORT_COVERAGE=1
 
 deploy:
   on:
     all_branches: true
-    condition: env(TRAVIS_GO_VERSION) = 1.12.x
+    condition: env(TRAVIS_GO_VERSION) = 1.12.x AND env(GO111MODULE) = on
   before_deploy:
     # Run the build script to generate the necessary binaries and images.
   - /bin/bash ci/bintray.sh
