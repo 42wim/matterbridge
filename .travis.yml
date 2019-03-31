@@ -1,6 +1,4 @@
 language: go
-go:
-    - 1.12.x
 go_import_path: github.com/42wim/matterbridge
 
 # we have everything vendored
@@ -9,67 +7,65 @@ install: true
 git:
   depth: 200
 
-env:
-  global:
-    - GOOS=linux GOARCH=amd64
-    - GO111MODULE=on
-    - GOLANGCI_VERSION="v1.15.0"
-
-matrix:
-  # It's ok if our code fails on unstable development versions of Go.
-  allow_failures:
-    - go: tip
-  # Don't wait for tip tests to finish. Mark the test run green if the
-  # tests pass on the stable versions of Go.
-  fast_finish: true
+branches:
+  only:
+  - master
 
 notifications:
-      email: false
+  email: false
+
+env:
+  global:
+  - GOOS=linux GOARCH=amd64
+  - GO111MODULE=on
+  - GOLANGCI_VERSION="v1.15.0"
+
+matrix:
+  include:
+  - go: 1.11.x
+    env: GO111MODULE=off
+  - go: 1.11.x
+    env: GO111MODULE=on
+  - go: 1.12.x
+    env: GO111MODULE=on
 
 before_script:
   # Get version info from tags.
-  - MY_VERSION="$(git describe --tags)"
+- MY_VERSION="$(git describe --tags)"
   # Retrieve the golangci-lint linter binary.
-  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b ${GOPATH}/bin ${GOLANGCI_VERSION}
+- curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b ${GOPATH}/bin ${GOLANGCI_VERSION}
   # Retrieve and prepare CodeClimate's test coverage reporter.
-  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-  - chmod +x ./cc-test-reporter
-  - ./cc-test-reporter before-build
+- curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+- chmod +x ./cc-test-reporter
+- ./cc-test-reporter before-build
 
 script:
   # Ensure that the module files are being kept correctly and that vendored dependencies are up-to-date.
-  - go mod tidy
-  - go mod vendor
-  - git diff --exit-code --quiet || (echo "Please run 'go mod tidy' to clean up the 'go.mod' and 'go.sum' files."; false)
+- go mod tidy
+- go mod vendor
+- git diff --exit-code --quiet || (echo "Please run 'go mod tidy' to clean up the 'go.mod' and 'go.sum' files."; false)
 
   # Run the linter.
-  - golangci-lint run
+- golangci-lint run
 
   # Run all the tests with the race detector and generate coverage.
-  - go test -v -race -coverprofile c.out ./...
-
-  # Run the build script to generate the necessary binaries and images.
-  - /bin/bash ci/bintray.sh
+- go test -v -race -coverprofile c.out ./...
 
 after_script:
   # Upload test coverage to CodeClimate.
-  - ./cc-test-reporter after-build --exit-code ${TRAVIS_TEST_RESULT}
-
-branches:
-  only:
-    - master
+- ./cc-test-reporter after-build --exit-code ${TRAVIS_TEST_RESULT}
 
 deploy:
   on:
-     all_branches: true
-  provider: bintray
-  on:
     all_branches: true
+    condition: env(TRAVIS_GO_VERSION) = 1.12.x
+  before_deploy:
+    # Run the build script to generate the necessary binaries and images.
+  - /bin/bash ci/bintray.sh
+  provider: bintray
   edge:
     branch: v1.8.47
   file: ci/deploy.json
   user: 42wim
-  on:
-     all_branches: true
   key:
-     secure: "CeXXe6JOmt7HYR81MdWLua0ltQHhDdkIeRGBFbgd7hkb1wi8eF9DgpAcQrTso8NIlHNZmSAP46uhFgsRvkuezzX0ygalZ7DCJyAyn3sAMEh+UQSHV1WGThRehTtidqRGjetzsIGSwdrJOWil+XTfbO1Z8DGzfakhSuAZka8CM4BAoe3YeP9rYK8h+84x0GHfczvsLtXZ3mWLvQuwe4pK6+ItBCUg0ae7O7ZUpWHy0xQQkkWztY/6RAzXfaG7DuGjIw+20fhx3WOXRNpHCtZ6Bc3qERCpk0s1HhlQWlrN9wDaFTBWYwlvSnNgvxxMbNXJ6RrRJ0l0bA7FUswYwyroxhzrGLdzWDg8dHaQkypocngdalfhpsnoO9j3ApJhomUFJ3UoEq5nOGRUrKn8MPi+dP0zE4kNQ3e4VNa1ufNrvfpWolMg3xh8OXuhQdD5wIM5zFAbRJLqWSCVAjPq4DDPecmvXBOlIial7oa312lN5qnBnUjvAcxszZ+FUyDHT1Grxzna4tMwxY9obPzZUzm7359AOCCwIQFVB8GLqD2nwIstcXS0zGRz+fhviPipHuBa02q5bGUZwmkvrSNab0s8Jo7pCrel2Rz3nWPKaiCfq2WjbW1CLheSMkOQrjsdUd1hhbqNWFPUjJPInTc77NAKCfm5runv5uyowRLh4NNd0sI="
+    secure: "CeXXe6JOmt7HYR81MdWLua0ltQHhDdkIeRGBFbgd7hkb1wi8eF9DgpAcQrTso8NIlHNZmSAP46uhFgsRvkuezzX0ygalZ7DCJyAyn3sAMEh+UQSHV1WGThRehTtidqRGjetzsIGSwdrJOWil+XTfbO1Z8DGzfakhSuAZka8CM4BAoe3YeP9rYK8h+84x0GHfczvsLtXZ3mWLvQuwe4pK6+ItBCUg0ae7O7ZUpWHy0xQQkkWztY/6RAzXfaG7DuGjIw+20fhx3WOXRNpHCtZ6Bc3qERCpk0s1HhlQWlrN9wDaFTBWYwlvSnNgvxxMbNXJ6RrRJ0l0bA7FUswYwyroxhzrGLdzWDg8dHaQkypocngdalfhpsnoO9j3ApJhomUFJ3UoEq5nOGRUrKn8MPi+dP0zE4kNQ3e4VNa1ufNrvfpWolMg3xh8OXuhQdD5wIM5zFAbRJLqWSCVAjPq4DDPecmvXBOlIial7oa312lN5qnBnUjvAcxszZ+FUyDHT1Grxzna4tMwxY9obPzZUzm7359AOCCwIQFVB8GLqD2nwIstcXS0zGRz+fhviPipHuBa02q5bGUZwmkvrSNab0s8Jo7pCrel2Rz3nWPKaiCfq2WjbW1CLheSMkOQrjsdUd1hhbqNWFPUjJPInTc77NAKCfm5runv5uyowRLh4NNd0sI="
