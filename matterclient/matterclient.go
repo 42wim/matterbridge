@@ -216,9 +216,14 @@ func (m *MMClient) WsReceiver() {
 			if msg.Post != nil {
 				if msg.Text != "" || len(msg.Post.FileIds) > 0 || msg.Post.Type == "slack_attachment" {
 					m.MessageChan <- msg
+					continue
 				}
 			}
-			continue
+			switch msg.Raw.Event {
+			case model.WEBSOCKET_EVENT_USER_ADDED, model.WEBSOCKET_EVENT_USER_REMOVED:
+				m.MessageChan <- msg
+				continue
+			}
 		}
 
 		var response model.WebSocketResponse
