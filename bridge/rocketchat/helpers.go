@@ -113,7 +113,9 @@ func (b *Brocketchat) uploadFile(fi *config.FileInfo, channel string) error {
 	}
 	sp := strings.Split(fi.Name, ".")
 	mtype := mime.TypeByExtension("." + sp[len(sp)-1])
+	//Supports only images and video for now
 	if !strings.Contains(mtype, "image") && !strings.Contains(mtype, "video") {
+		b.Log.Infof("Attachment is not supported.")
 		return nil
 	}
 	if err := fb.WriteFile("file", fi.Name, mtype, *fi.Data); err != nil {

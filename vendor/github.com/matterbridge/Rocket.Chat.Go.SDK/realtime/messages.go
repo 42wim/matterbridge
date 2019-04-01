@@ -191,6 +191,26 @@ func getMessageFromData(data interface{}) *models.Message {
 
 func getMessageFromDocument(arg *gabs.Container) *models.Message {
 	var ts *time.Time
+	var attachments []models.Attachment
+
+	attachmentSrc, err := arg.Path("attachments").Children()
+	if err != nil {
+		attachments = make([]models.Attachment, 0)
+	} else {
+		attachments = make([]models.Attachment, len(attachmentSrc))
+		for i, attachment := range attachmentSrc {
+			attachments[i] = models.Attachment{
+				Timestamp:         stringOrZero(attachment.Path("ts").Data()),
+				Title:             stringOrZero(attachment.Path("title").Data()),
+				TitleLink:         stringOrZero(attachment.Path("title_link").Data()),
+ 				TitleLinkDownload: booleanOrFalse(attachment.Path("title_link_download").Data()),
+				ImageURL:          stringOrZero(attachment.Path("image_url").Data()),
+
+				AuthorName:        stringOrZero(arg.Path("u.name").Data()),
+			}
+		}
+	}
+
 	date := stringOrZero(arg.Path("ts.$date").Data())
 	if len(date) > 0 {
 		if ti, err := strconv.ParseFloat(date, 64); err == nil {
@@ -207,7 +227,16 @@ func getMessageFromDocument(arg *gabs.Container) *models.Message {
 			ID:       stringOrZero(arg.Path("u._id").Data()),
 			UserName: stringOrZero(arg.Path("u.username").Data()),
 		},
+		Attachments: attachments,
 	}
+}
+
+func booleanOrFalse(i interface{}) bool {
+	if i == nil {
+		return false
+	}
+
+	return i.(bool)
 }
 
 func stringOrZero(i interface{}) string {
