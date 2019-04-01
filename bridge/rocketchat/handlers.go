@@ -88,7 +88,7 @@ func (b *Brocketchat) handleAttachments(message *models.Message, rmsg *config.Me
 
 	// Save the attachments, so that we can send them to other slack (compatible) bridges.
 	if len(message.Attachments) > 0 {
-		rmsg.Extra["rocket_attachments"] = append(rmsg.Extra["rocket_attachments"], message.Attachments)
+		rmsg.Extra["rocketchat_attachments"] = append(rmsg.Extra["rocketchat_attachments"], message.Attachments)
 	}
 
 	// If we have files attached, download them (in memory) and put a pointer to it in msg.Extra.
