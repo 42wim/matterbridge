@@ -51,8 +51,11 @@ func (m *MMClient) GetChannelId(name string, teamId string) string { //nolint:go
 				if res == name {
 					return channel.Id
 				}
+			} else {
+				if channel.Name == name {
+					return channel.Id
+				}
 			}
-
 		}
 	}
 	return ""
