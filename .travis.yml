@@ -38,14 +38,14 @@ jobs:
     env:
     - GO111MODULE=on
     - REPORT_COVERAGE=1
+    - BINDEPLOY=1
+
+before_deploy: /bin/bash ci/bintray.sh
 
 deploy:
   on:
     all_branches: true
-    condition: $TRAVIS_GO_VERSION =~ ^1\.12
-  before_deploy:
-    # Run the build script to generate the necessary binaries and images.
-  - /bin/bash ci/bintray.sh
+    condition: $BINDEPLOY = 1
   provider: bintray
   edge:
     branch: v1.8.47
