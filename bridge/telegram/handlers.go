@@ -125,6 +125,11 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		// handle groups
 		message = b.handleGroups(&rmsg, message, update)
 
+		if message == nil {
+			b.Log.Error("message is nil, this shouldn't happen.")
+			continue
+		}
+
 		// set the ID's from the channel or group message
 		rmsg.ID = strconv.Itoa(message.MessageID)
 		rmsg.Channel = strconv.FormatInt(message.Chat.ID, 10)
