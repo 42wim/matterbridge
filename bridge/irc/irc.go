@@ -231,7 +231,7 @@ func (b *Birc) getClient() (*girc.Client, error) {
 	// fix strict user handling of girc
 	user := b.GetString("Nick")
 	for !girc.IsValidUser(user) {
-		if len(user) == 1 {
+		if len(user) == 1 || len(user) == 0 {
 			user = "matterbridge"
 			break
 		}
