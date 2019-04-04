@@ -22,7 +22,7 @@ jobs:
     go: 1.12.x
     env:
     - GO111MODULE=on
-    - GOLANGCI_VERSION="v1.15.0"
+    - GOLANGCI_VERSION="v1.16.0"
   - stage: test
     # Run tests in a combination of Go environments.
     script: ./ci/test.sh
@@ -42,7 +42,7 @@ jobs:
 deploy:
   on:
     all_branches: true
-    condition: env(TRAVIS_GO_VERSION) = 1.12.x AND env(GO111MODULE) = on
+    condition: $TRAVIS_GO_VERSION =~ ^1\.12
   before_deploy:
     # Run the build script to generate the necessary binaries and images.
   - /bin/bash ci/bintray.sh
