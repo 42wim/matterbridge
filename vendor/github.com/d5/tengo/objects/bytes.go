@@ -79,3 +79,11 @@ func (o *Bytes) IndexGet(index Object) (res Object, err error) {
 
 	return
 }
+
+// Iterate creates a bytes iterator.
+func (o *Bytes) Iterate() Iterator {
+	return &BytesIterator{
+		v: o.Value,
+		l: len(o.Value),
+	}
+}

@@ -181,3 +181,15 @@ func builtinIsCallable(args ...Object) (Object, error) {
 
 	return FalseValue, nil
 }
+
+func builtinIsIterable(args ...Object) (Object, error) {
+	if len(args) != 1 {
+		return nil, ErrWrongNumArguments
+	}
+
+	if _, ok := args[0].(Iterable); ok {
+		return TrueValue, nil
+	}
+
+	return FalseValue, nil
+}

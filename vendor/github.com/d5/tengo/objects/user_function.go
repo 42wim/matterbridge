@@ -6,8 +6,9 @@ import (
 
 // UserFunction represents a user function.
 type UserFunction struct {
-	Name  string
-	Value CallableFunc
+	Name       string
+	Value      CallableFunc
+	EncodingID string
 }
 
 // TypeName returns the name of the type.

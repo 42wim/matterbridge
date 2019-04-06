@@ -1,10 +1,13 @@
 vet:
 	go vet ./...
 
+generate:
+	go generate ./...
+
 lint:
 	golint -set_exit_status ./...
 
-test: vet lint
+test: generate vet lint
 	go test -race -cover ./...
 
 fmt:

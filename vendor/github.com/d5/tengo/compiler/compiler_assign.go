@@ -51,27 +51,27 @@ func (c *Compiler) compileAssign(node ast.Node, lhs, rhs []ast.Expr, op token.To
 
 	switch op {
 	case token.AddAssign:
-		c.emit(node, OpAdd)
+		c.emit(node, OpBinaryOp, int(token.Add))
 	case token.SubAssign:
-		c.emit(node, OpSub)
+		c.emit(node, OpBinaryOp, int(token.Sub))
 	case token.MulAssign:
-		c.emit(node, OpMul)
+		c.emit(node, OpBinaryOp, int(token.Mul))
 	case token.QuoAssign:
-		c.emit(node, OpDiv)
+		c.emit(node, OpBinaryOp, int(token.Quo))
 	case token.RemAssign:
-		c.emit(node, OpRem)
+		c.emit(node, OpBinaryOp, int(token.Rem))
 	case token.AndAssign:
-		c.emit(node, OpBAnd)
+		c.emit(node, OpBinaryOp, int(token.And))
 	case token.OrAssign:
-		c.emit(node, OpBOr)
+		c.emit(node, OpBinaryOp, int(token.Or))
 	case token.AndNotAssign:
-		c.emit(node, OpBAndNot)
+		c.emit(node, OpBinaryOp, int(token.AndNot))
 	case token.XorAssign:
-		c.emit(node, OpBXor)
+		c.emit(node, OpBinaryOp, int(token.Xor))
 	case token.ShlAssign:
-		c.emit(node, OpBShiftLeft)
+		c.emit(node, OpBinaryOp, int(token.Shl))
 	case token.ShrAssign:
-		c.emit(node, OpBShiftRight)
+		c.emit(node, OpBinaryOp, int(token.Shr))
 	}
 
 	// compile selector expressions (right to left)
