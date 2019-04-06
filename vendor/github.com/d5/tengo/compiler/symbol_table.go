@@ -64,9 +64,7 @@ func (t *SymbolTable) Resolve(name string) (symbol *Symbol, depth int, ok bool) 
 			return
 		}
 
-		if !t.block {
-			depth++
-		}
+		depth++
 
 		// if symbol is defined in parent table and if it's not global/builtin
 		// then it's free variable.

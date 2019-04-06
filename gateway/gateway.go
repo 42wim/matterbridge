@@ -10,6 +10,7 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/d5/tengo/script"
+	"github.com/d5/tengo/stdlib"
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/peterhellberg/emojilib"
 	"github.com/sirupsen/logrus"
@@ -503,6 +504,7 @@ func modifyMessageTengo(filename string, msg *config.Message) error {
 		return err
 	}
 	s := script.New(res)
+	s.SetImports(stdlib.GetModuleMap(stdlib.AllModuleNames()...))
 	_ = s.Add("msgText", msg.Text)
 	_ = s.Add("msgUsername", msg.Username)
 	_ = s.Add("msgAccount", msg.Account)

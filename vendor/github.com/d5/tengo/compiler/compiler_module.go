@@ -1,72 +1,31 @@
 package compiler
 
 import (
-	"io/ioutil"
-	"strings"
-
 	"github.com/d5/tengo/compiler/ast"
 	"github.com/d5/tengo/compiler/parser"
 	"github.com/d5/tengo/objects"
 )
 
-func (c *Compiler) compileModule(expr *ast.ImportExpr) (*objects.CompiledFunction, error) {
-	compiledModule, exists := c.loadCompiledModule(expr.ModuleName)
-	if exists {
-		return compiledModule, nil
-	}
-
-	moduleName := expr.ModuleName
-
-	// read module source from loader
-	var moduleSrc []byte
-	if c.moduleLoader == nil {
-		// default loader: read from local file
-		if !strings.HasSuffix(moduleName, ".tengo") {
-			moduleName += ".tengo"
-		}
-
-		if err := c.checkCyclicImports(expr, moduleName); err != nil {
-			return nil, err
-		}
-
-		var err error
-		moduleSrc, err = ioutil.ReadFile(moduleName)
-		if err != nil {
-			return nil, c.errorf(expr, "module file read error: %s", err.Error())
-		}
-	} else {
-		if err := c.checkCyclicImports(expr, moduleName); err != nil {
-			return nil, err
-		}
-
-		var err error
-		moduleSrc, err = c.moduleLoader(moduleName)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	compiledModule, err := c.doCompileModule(moduleName, moduleSrc)
-	if err != nil {
-		return nil, err
-	}
-
-	c.storeCompiledModule(moduleName, compiledModule)
-
-	return compiledModule, nil
-}
-
-func (c *Compiler) checkCyclicImports(node ast.Node, moduleName string) error {
-	if c.moduleName == moduleName {
-		return c.errorf(node, "cyclic module import: %s", moduleName)
+func (c *Compiler) checkCyclicImports(node ast.Node, modulePath string) error {
+	if c.modulePath == modulePath {
+		return c.errorf(node, "cyclic module import: %s", modulePath)
 	} else if c.parent != nil {
-		return c.parent.checkCyclicImports(node, moduleName)
+		return c.parent.checkCyclicImports(node, modulePath)
 	}
 
 	return nil
 }
 
-func (c *Compiler) doCompileModule(moduleName string, src []byte) (*objects.CompiledFunction, error) {
+func (c *Compiler) compileModule(node ast.Node, moduleName, modulePath string, src []byte) (*objects.CompiledFunction, error) {
+	if err := c.checkCyclicImports(node, modulePath); err != nil {
+		return nil, err
+	}
+
+	compiledModule, exists := c.loadCompiledModule(modulePath)
+	if exists {
+		return compiledModule, nil
+	}
+
 	modFile := c.file.Set().AddFile(moduleName, -1, len(src))
 	p := parser.NewParser(modFile, src, nil)
 	file, err := p.ParseFile()
@@ -85,36 +44,36 @@ func (c *Compiler) doCompileModule(moduleName string, src []byte) (*objects.Comp
 	symbolTable = symbolTable.Fork(false)
 
 	// compile module
-	moduleCompiler := c.fork(modFile, moduleName, symbolTable)
+	moduleCompiler := c.fork(modFile, modulePath, symbolTable)
 	if err := moduleCompiler.Compile(file); err != nil {
 		return nil, err
 	}
 
-	// add OpReturn (== export undefined) if export is missing
-	if !moduleCompiler.lastInstructionIs(OpReturnValue) {
-		moduleCompiler.emit(nil, OpReturn)
-	}
+	// code optimization
+	moduleCompiler.optimizeFunc(node)
 
 	compiledFunc := moduleCompiler.Bytecode().MainFunction
 	compiledFunc.NumLocals = symbolTable.MaxSymbols()
 
+	c.storeCompiledModule(modulePath, compiledFunc)
+
 	return compiledFunc, nil
 }
 
-func (c *Compiler) loadCompiledModule(moduleName string) (mod *objects.CompiledFunction, ok bool) {
+func (c *Compiler) loadCompiledModule(modulePath string) (mod *objects.CompiledFunction, ok bool) {
 	if c.parent != nil {
-		return c.parent.loadCompiledModule(moduleName)
+		return c.parent.loadCompiledModule(modulePath)
 	}
 
-	mod, ok = c.compiledModules[moduleName]
+	mod, ok = c.compiledModules[modulePath]
 
 	return
 }
 
-func (c *Compiler) storeCompiledModule(moduleName string, module *objects.CompiledFunction) {
+func (c *Compiler) storeCompiledModule(modulePath string, module *objects.CompiledFunction) {
 	if c.parent != nil {
-		c.parent.storeCompiledModule(moduleName, module)
+		c.parent.storeCompiledModule(modulePath, module)
 	}
 
-	c.compiledModules[moduleName] = module
+	c.compiledModules[modulePath] = module
 }

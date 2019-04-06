@@ -14,17 +14,20 @@ import (
 // Script can simplify compilation and execution of embedded scripts.
 type Script struct {
 	variables        map[string]*Variable
-	builtinFuncs     []objects.Object
-	builtinModules   map[string]*objects.Object
-	userModuleLoader compiler.ModuleLoader
+	modules          *objects.ModuleMap
 	input            []byte
+	maxAllocs        int64
+	maxConstObjects  int
+	enableFileImport bool
 }
 
 // New creates a Script instance with an input script.
 func New(input []byte) *Script {
 	return &Script{
-		variables: make(map[string]*Variable),
-		input:     input,
+		variables:       make(map[string]*Variable),
+		input:           input,
+		maxAllocs:       -1,
+		maxConstObjects: -1,
 	}
 }
 
@@ -37,7 +40,7 @@ func (s *Script) Add(name string, value interface{}) error {
 
 	s.variables[name] = &Variable{
 		name:  name,
-		value: &obj,
+		value: obj,
 	}
 
 	return nil
@@ -55,38 +58,31 @@ func (s *Script) Remove(name string) bool {
 	return true
 }
 
-// SetBuiltinFunctions allows to define builtin functions.
-func (s *Script) SetBuiltinFunctions(funcs []*objects.BuiltinFunction) {
-	if funcs != nil {
-		s.builtinFuncs = make([]objects.Object, len(funcs))
-		for idx, fn := range funcs {
-			s.builtinFuncs[idx] = fn
-		}
-	} else {
-		s.builtinFuncs = []objects.Object{}
-	}
+// SetImports sets import modules.
+func (s *Script) SetImports(modules *objects.ModuleMap) {
+	s.modules = modules
 }
 
-// SetBuiltinModules allows to define builtin modules.
-func (s *Script) SetBuiltinModules(modules map[string]*objects.ImmutableMap) {
-	if modules != nil {
-		s.builtinModules = make(map[string]*objects.Object, len(modules))
-		for k, mod := range modules {
-			s.builtinModules[k] = objectPtr(mod)
-		}
-	} else {
-		s.builtinModules = map[string]*objects.Object{}
-	}
+// SetMaxAllocs sets the maximum number of objects allocations during the run time.
+// Compiled script will return runtime.ErrObjectAllocLimit error if it exceeds this limit.
+func (s *Script) SetMaxAllocs(n int64) {
+	s.maxAllocs = n
 }
 
-// SetUserModuleLoader sets the user module loader for the compiler.
-func (s *Script) SetUserModuleLoader(loader compiler.ModuleLoader) {
-	s.userModuleLoader = loader
+// SetMaxConstObjects sets the maximum number of objects in the compiled constants.
+func (s *Script) SetMaxConstObjects(n int) {
+	s.maxConstObjects = n
+}
+
+// EnableFileImport enables or disables module loading from local files.
+// Local file modules are disabled by default.
+func (s *Script) EnableFileImport(enable bool) {
+	s.enableFileImport = enable
 }
 
 // Compile compiles the script with all the defined variables, and, returns Compiled object.
 func (s *Script) Compile() (*Compiled, error) {
-	symbolTable, builtinModules, globals, err := s.prepCompile()
+	symbolTable, globals, err := s.prepCompile()
 	if err != nil {
 		return nil, err
 	}
@@ -100,19 +96,41 @@ func (s *Script) Compile() (*Compiled, error) {
 		return nil, err
 	}
 
-	c := compiler.NewCompiler(srcFile, symbolTable, nil, builtinModules, nil)
-
-	if s.userModuleLoader != nil {
-		c.SetModuleLoader(s.userModuleLoader)
-	}
-
+	c := compiler.NewCompiler(srcFile, symbolTable, nil, s.modules, nil)
+	c.EnableFileImport(s.enableFileImport)
 	if err := c.Compile(file); err != nil {
 		return nil, err
 	}
 
+	// reduce globals size
+	globals = globals[:symbolTable.MaxSymbols()+1]
+
+	// global symbol names to indexes
+	globalIndexes := make(map[string]int, len(globals))
+	for _, name := range symbolTable.Names() {
+		symbol, _, _ := symbolTable.Resolve(name)
+		if symbol.Scope == compiler.ScopeGlobal {
+			globalIndexes[name] = symbol.Index
+		}
+	}
+
+	// remove duplicates from constants
+	bytecode := c.Bytecode()
+	bytecode.RemoveDuplicates()
+
+	// check the constant objects limit
+	if s.maxConstObjects >= 0 {
+		cnt := bytecode.CountObjects()
+		if cnt > s.maxConstObjects {
+			return nil, fmt.Errorf("exceeding constant objects limit: %d", cnt)
+		}
+	}
+
 	return &Compiled{
-		symbolTable: symbolTable,
-		machine:     runtime.NewVM(c.Bytecode(), globals, s.builtinFuncs, s.builtinModules),
+		globalIndexes: globalIndexes,
+		bytecode:      bytecode,
+		globals:       globals,
+		maxAllocs:     s.maxAllocs,
 	}, nil
 }
 
@@ -141,39 +159,18 @@ func (s *Script) RunContext(ctx context.Context) (compiled *Compiled, err error)
 	return
 }
 
-func (s *Script) prepCompile() (symbolTable *compiler.SymbolTable, builtinModules map[string]bool, globals []*objects.Object, err error) {
+func (s *Script) prepCompile() (symbolTable *compiler.SymbolTable, globals []objects.Object, err error) {
 	var names []string
 	for name := range s.variables {
 		names = append(names, name)
 	}
 
 	symbolTable = compiler.NewSymbolTable()
-
-	if s.builtinFuncs == nil {
-		s.builtinFuncs = make([]objects.Object, len(objects.Builtins))
-		for idx, fn := range objects.Builtins {
-			s.builtinFuncs[idx] = &objects.BuiltinFunction{
-				Name:  fn.Name,
-				Value: fn.Value,
-			}
-		}
+	for idx, fn := range objects.Builtins {
+		symbolTable.DefineBuiltin(idx, fn.Name)
 	}
 
-	if s.builtinModules == nil {
-		s.builtinModules = make(map[string]*objects.Object)
-	}
-
-	for idx, fn := range s.builtinFuncs {
-		f := fn.(*objects.BuiltinFunction)
-		symbolTable.DefineBuiltin(idx, f.Name)
-	}
-
-	builtinModules = make(map[string]bool)
-	for name := range s.builtinModules {
-		builtinModules[name] = true
-	}
-
-	globals = make([]*objects.Object, runtime.GlobalsSize, runtime.GlobalsSize)
+	globals = make([]objects.Object, runtime.GlobalsSize)
 
 	for idx, name := range names {
 		symbol := symbolTable.Define(name)
@@ -194,8 +191,4 @@ func (s *Script) copyVariables() map[string]*Variable {
 	}
 
 	return vars
-}
-
-func objectPtr(o objects.Object) *objects.Object {
-	return &o
 }

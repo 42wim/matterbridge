@@ -47,3 +47,14 @@ func (o *CompiledFunction) IsFalsy() bool {
 func (o *CompiledFunction) Equals(x Object) bool {
 	return false
 }
+
+// SourcePos returns the source position of the instruction at ip.
+func (o *CompiledFunction) SourcePos(ip int) source.Pos {
+	for ip >= 0 {
+		if p, ok := o.SourceMap[ip]; ok {
+			return p
+		}
+		ip--
+	}
+	return source.NoPos
+}

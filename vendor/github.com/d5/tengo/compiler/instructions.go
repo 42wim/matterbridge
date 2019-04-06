@@ -57,3 +57,16 @@ func FormatInstructions(b []byte, posOffset int) []string {
 
 	return out
 }
+
+func iterateInstructions(b []byte, fn func(pos int, opcode Opcode, operands []int) bool) {
+	for i := 0; i < len(b); i++ {
+		numOperands := OpcodeOperands[Opcode(b[i])]
+		operands, read := ReadOperands(numOperands, b[i+1:])
+
+		if !fn(i, b[i], operands) {
+			break
+		}
+
+		i += read
+	}
+}

@@ -1,6 +1,7 @@
 package objects
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -158,8 +159,8 @@ func ToTime(o Object) (v time.Time, ok bool) {
 	return
 }
 
-// objectToInterface attempts to convert an object o to an interface{} value
-func objectToInterface(o Object) (res interface{}) {
+// ToInterface attempts to convert an object o to an interface{} value
+func ToInterface(o Object) (res interface{}) {
 	switch o := o.(type) {
 	case *Int:
 		res = o.Value
@@ -176,13 +177,29 @@ func objectToInterface(o Object) (res interface{}) {
 	case *Array:
 		res = make([]interface{}, len(o.Value))
 		for i, val := range o.Value {
-			res.([]interface{})[i] = objectToInterface(val)
+			res.([]interface{})[i] = ToInterface(val)
+		}
+	case *ImmutableArray:
+		res = make([]interface{}, len(o.Value))
+		for i, val := range o.Value {
+			res.([]interface{})[i] = ToInterface(val)
 		}
 	case *Map:
 		res = make(map[string]interface{})
 		for key, v := range o.Value {
-			res.(map[string]interface{})[key] = objectToInterface(v)
+			res.(map[string]interface{})[key] = ToInterface(v)
 		}
+	case *ImmutableMap:
+		res = make(map[string]interface{})
+		for key, v := range o.Value {
+			res.(map[string]interface{})[key] = ToInterface(v)
+		}
+	case *Time:
+		res = o.Value
+	case *Error:
+		res = errors.New(o.String())
+	case *Undefined:
+		res = nil
 	case Object:
 		return o
 	}
