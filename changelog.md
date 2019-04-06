@@ -1,3 +1,18 @@
+# v1.14.2
+
+## Bugfix
+* general: Update tengo vendor and load the stdlib. Fixes #789 (#792)
+* rocketchat: Look up #channel too (rocketchat). Fix #773 (#775)
+* slack: Ignore messagereplied and hidden messages (slack). Fixes #709 (#779)
+* telegram: Handle nil message (telegram). Fixes #777
+* irc: Use default nick if none specified (irc). Fixes #785
+* irc: Return when not connected and drop a message (irc). Fixes #786
+* irc: Revert fix for #722 (Support quits from irc correctly). Closes #781
+
+## Contributors
+This release couldn't exist without the following contributors:
+@42wim, @Helcaraxan, @dajohi
+
 # v1.14.1
 ## Bugfix
 * slack: Fix crash double unlock (slack) (#771)
