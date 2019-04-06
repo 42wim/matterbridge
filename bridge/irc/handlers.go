@@ -92,10 +92,6 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 			return
 		}
 		b.Log.Debugf("<= Sending JOIN_LEAVE event from %s to gateway", b.Account)
-		// QUIT isn't channel bound, happens for all channels on the bridge
-		if event.Command == "QUIT" {
-			channel = ""
-		}
 		msg := config.Message{Username: "system", Text: event.Source.Name + " " + strings.ToLower(event.Command) + "s", Channel: channel, Account: b.Account, Event: config.EventJoinLeave}
 		b.Log.Debugf("<= Message is %#v", msg)
 		b.Remote <- msg
