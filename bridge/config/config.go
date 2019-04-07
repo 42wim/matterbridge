@@ -166,6 +166,11 @@ type Gateway struct {
 	InOut  []Bridge
 }
 
+type Tengo struct {
+	Message          string
+	RemoteNickFormat string
+}
+
 type SameChannelGateway struct {
 	Name     string
 	Enable   bool
@@ -190,6 +195,7 @@ type BridgeValues struct {
 	WhatsApp           map[string]Protocol // TODO is this struct used? Search for "SlackLegacy" for example didn't return any results
 	Zulip              map[string]Protocol
 	General            Protocol
+	Tengo              Tengo
 	Gateway            []Gateway
 	SameChannelGateway []SameChannelGateway
 }

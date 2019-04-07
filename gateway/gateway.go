@@ -331,6 +331,11 @@ func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) stri
 	nick = strings.Replace(nick, "{LABEL}", br.GetString("Label"), -1)
 	nick = strings.Replace(nick, "{NICK}", msg.Username, -1)
 	nick = strings.Replace(nick, "{CHANNEL}", msg.Channel, -1)
+	tengoNick, err := gw.modifyUsernameTengo(msg, br)
+	if err != nil {
+		gw.logger.Errorf("modifyUsernameTengo error: %s", err)
+	}
+	nick = strings.Replace(nick, "{TENGO}", tengoNick, -1) //nolint:gocritic
 	return nick
 }
 
@@ -346,6 +351,9 @@ func (gw *Gateway) modifyAvatar(msg *config.Message, dest *bridge.Bridge) string
 func (gw *Gateway) modifyMessage(msg *config.Message) {
 	if err := modifyMessageTengo(gw.BridgeValues().General.TengoModifyMessage, msg); err != nil {
 		gw.logger.Errorf("TengoModifyMessage failed: %s", err)
+	}
+	if err := modifyMessageTengo(gw.BridgeValues().Tengo.Message, msg); err != nil {
+		gw.logger.Errorf("Tengo.Message failed: %s", err)
 	}
 
 	// replace :emoji: to unicode
@@ -502,4 +510,37 @@ func modifyMessageTengo(filename string, msg *config.Message) error {
 	msg.Text = c.Get("msgText").String()
 	msg.Username = c.Get("msgUsername").String()
 	return nil
+}
+
+func (gw *Gateway) modifyUsernameTengo(msg *config.Message, br *bridge.Bridge) (string, error) {
+	filename := gw.BridgeValues().Tengo.RemoteNickFormat
+	if filename == "" {
+		return "", nil
+	}
+	res, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return "", err
+	}
+	s := script.New(res)
+	s.SetImports(stdlib.GetModuleMap(stdlib.AllModuleNames()...))
+	_ = s.Add("result", "")
+	_ = s.Add("msgText", msg.Text)
+	_ = s.Add("msgUsername", msg.Username)
+	_ = s.Add("nick", msg.Username)
+	_ = s.Add("msgAccount", msg.Account)
+	_ = s.Add("msgChannel", msg.Channel)
+	_ = s.Add("channel", msg.Channel)
+	_ = s.Add("msgProtocol", msg.Protocol)
+	_ = s.Add("remoteAccount", br.Account)
+	_ = s.Add("protocol", br.Protocol)
+	_ = s.Add("bridge", br.Name)
+	_ = s.Add("gateway", gw.Name)
+	c, err := s.Compile()
+	if err != nil {
+		return "", err
+	}
+	if err := c.Run(); err != nil {
+		return "", err
+	}
+	return c.Get("result").String(), nil
 }

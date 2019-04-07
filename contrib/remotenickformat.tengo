@@ -1,0 +1,9 @@
+/*
+This script will return the current time in kitchen format if the protocol (of the remote bridge) isn't irc
+See https://github.com/d5/tengo/blob/master/docs/stdlib-times.md
+This result can be used in {TENGO} in RemoteNickFormat
+*/
+times := import("times")
+if protocol != "irc" {
+   result=times.time_format(times.now(),times.format_kitchen)
+}
