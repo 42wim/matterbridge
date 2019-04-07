@@ -119,7 +119,7 @@ Questions or want to test on your favorite platform? Join below:
 * [Slack][mb-slack]
 * [Mattermost][mb-mattermost]
 * [Rocket.Chat][mb-rocketchat]
-* [XMPP][mb-xmpp]
+* [XMPP][mb-xmpp] (matterbridge@conference.jabber.de)
 * [Twitch][mb-twitch]
 * [Zulip][mb-zulip]
 * [Telegram][mb-telegram]
