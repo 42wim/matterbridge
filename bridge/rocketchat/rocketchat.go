@@ -108,6 +108,11 @@ func (b *Brocketchat) Send(msg config.Message) (string, error) {
 	msg.Channel = strings.TrimPrefix(msg.Channel, "#")
 	channel := &models.Channel{ID: b.getChannelID(msg.Channel), Name: msg.Channel}
 
+	// Make a action /me of the message
+	if msg.Event == config.EventUserAction {
+		msg.Text = "_" + msg.Text + "_"
+	}
+
 	// Delete message
 	if msg.Event == config.EventMsgDelete {
 		if msg.ID == "" {
