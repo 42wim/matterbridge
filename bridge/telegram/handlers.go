@@ -75,6 +75,11 @@ func (b *Btelegram) handleQuoting(rmsg *config.Message, message *tgbotapi.Messag
 			usernameReply = unknownUser
 		}
 		if !b.GetBool("QuoteDisable") {
+			// handle any downloads
+			err := b.handleDownload(rmsg, message.ReplyToMessage)
+			if err != nil {
+				b.Log.Errorf("download failed: %s", err)
+			}
 			rmsg.Text = b.handleQuote(rmsg.Text, usernameReply, message.ReplyToMessage.Text)
 		}
 	}
