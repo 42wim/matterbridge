@@ -220,7 +220,10 @@ func (m *MMClient) WsReceiver() {
 				}
 			}
 			switch msg.Raw.Event {
-			case model.WEBSOCKET_EVENT_USER_ADDED, model.WEBSOCKET_EVENT_USER_REMOVED:
+			case model.WEBSOCKET_EVENT_USER_ADDED,
+				model.WEBSOCKET_EVENT_USER_REMOVED,
+				model.WEBSOCKET_EVENT_CHANNEL_CREATED,
+				model.WEBSOCKET_EVENT_CHANNEL_DELETED:
 				m.MessageChan <- msg
 				continue
 			}
