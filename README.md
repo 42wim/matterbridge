@@ -50,9 +50,10 @@
  * [Screenshots](https://github.com/42wim/matterbridge/wiki/)
  * [Installing](#installing)
    * [Binaries](#binaries)
-   * [Building](#building)
+ * [Building](#building)
  * [Configuration](#configuration)
    * [Howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config)
+   * [Settings](#settings)
    * [Examples](#examples)
  * [Running](#running)
    * [Docker](#docker)
@@ -97,7 +98,7 @@
 * [Discourse](https://github.com/DeclanHoare/matterbabble)
 
 ### API
-The API is very basic at the moment.   
+The API is basic at the moment.
 More info and examples on the [wiki](https://github.com/42wim/matterbridge/wiki/Api).
 
 Used by the projects below. Feel free to make a PR to add your project to this list.
@@ -135,7 +136,7 @@ See https://github.com/42wim/matterbridge/wiki
 ### Packages
 * [Overview](https://repology.org/metapackage/matterbridge/versions)
 
-### Building
+## Building
 Go 1.9+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH](https://golang.org/doc/code.html#GOPATH).
 
 After Go is setup, download matterbridge to your $GOPATH directory.
@@ -155,6 +156,9 @@ matterbridge
 ## Configuration
 ### Basic configuration
 See [howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config) for a step by step walkthrough for creating your configuration.
+
+### Settings
+All possible [settings](https://github.com/42wim/matterbridge/wiki/Settings) for each bridge.
 
 ### Advanced configuration
 * [matterbridge.toml.sample](https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.sample) for documentation and an example.
