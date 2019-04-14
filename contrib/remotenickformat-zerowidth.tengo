@@ -1,0 +1,16 @@
+/*
+This script will return the nick except with multi-character usernames
+containing a zero-width space between the first and second character letter.
+
+Single character usernames will be left untouched.
+
+This is useful to prevent remote users from nickalerting
+IRC users of the same name when the remote user speaks.
+
+This result can be used in {TENGO} in RemoteNickFormat.
+*/
+
+result = nick
+if len(nick) > 1 {
+    result = string(nick[0]) + "​" + nick[1:]
+}
