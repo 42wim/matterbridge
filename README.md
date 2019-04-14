@@ -82,7 +82,6 @@
 * [Slack](https://slack.com)
 * [Discord](https://discordapp.com)
 * [Telegram](https://telegram.org)
-* [Hipchat](https://www.hipchat.com)
 * [Rocket.chat](https://rocket.chat)
 * [Matrix](https://matrix.org)
 * [Steam](https://store.steampowered.com/)
