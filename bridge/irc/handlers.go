@@ -156,7 +156,10 @@ func (b *Birc) handleOtherAuth(client *girc.Client, event girc.Event) {
 	b.handleNickServ()
 	b.handleRunCommands()
 	// we are now fully connected
-	b.connected <- nil
+	// only send on first connection
+	if b.FirstConnection {
+		b.connected <- nil
+	}
 }
 
 func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {

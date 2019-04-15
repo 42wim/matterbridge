@@ -27,7 +27,7 @@ UseTLS=false
 #OPTIONAL (default false)
 UseSASL=false
 
-#Enable to not verify the certificate on your irc server. i
+#Enable to not verify the certificate on your irc server.
 #e.g. when using selfsigned certificates
 #OPTIONAL (default false)
 SkipTLSVerify=true
