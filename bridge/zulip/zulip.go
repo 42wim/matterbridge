@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"regexp"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -62,6 +63,10 @@ func (b *Bzulip) Send(msg config.Message) (string, error) {
 		_, err := b.bot.UpdateMessage(msg.ID, "")
 		return "", err
 	}
+
+	// Strip IRC colors sent to Zulip
+	re := regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
+	msg.Text = re.ReplaceAllString(msg.Text, "")
 
 	// Upload a file if it exists
 	if msg.Extra != nil {
