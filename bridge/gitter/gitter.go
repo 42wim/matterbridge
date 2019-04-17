@@ -2,8 +2,8 @@ package bgitter
 
 import (
 	"fmt"
-	"strings"
 	"regexp"
+	"strings"
 
 	"github.com/42wim/go-gitter"
 	"github.com/42wim/matterbridge/bridge"

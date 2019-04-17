@@ -2,9 +2,9 @@ package bxmpp
 
 import (
 	"crypto/tls"
+	"regexp"
 	"strings"
 	"time"
-	"regexp"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"

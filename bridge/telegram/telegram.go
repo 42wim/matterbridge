@@ -2,9 +2,9 @@ package btelegram
 
 import (
 	"html"
+	"regexp"
 	"strconv"
 	"strings"
-	"regexp"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"

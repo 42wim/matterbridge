@@ -2,9 +2,9 @@ package bsteam
 
 import (
 	"fmt"
+	"regexp"
 	"sync"
 	"time"
-	"regexp"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"

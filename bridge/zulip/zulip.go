@@ -3,11 +3,11 @@ package bzulip
 import (
 	"encoding/json"
 	"io/ioutil"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
-	"regexp"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"

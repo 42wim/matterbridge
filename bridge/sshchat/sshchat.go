@@ -3,8 +3,8 @@ package bsshchat
 import (
 	"bufio"
 	"io"
-	"strings"
 	"regexp"
+	"strings"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
