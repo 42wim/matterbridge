@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 	"time"
+	"regexp"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -66,6 +67,10 @@ func (b *Bsteam) Send(msg config.Message) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	// Strip IRC colors sent to Steam
+	re := regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
+	msg.Text = re.ReplaceAllString(msg.Text, "")
 
 	// Handle files
 	if msg.Extra != nil {
