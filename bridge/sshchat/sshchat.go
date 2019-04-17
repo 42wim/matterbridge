@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"io"
 	"strings"
+	"regexp"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -80,6 +81,11 @@ func (b *Bsshchat) Send(msg config.Message) (string, error) {
 			return b.handleUploadFile(&msg)
 		}
 	}
+
+	// Strip IRC colors sent to SSHChat
+	re := regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
+	msg.Text = re.ReplaceAllString(msg.Text, "")
+
 	_, err := b.w.Write([]byte(msg.Username + msg.Text + "\r\n"))
 	return "", err
 }
