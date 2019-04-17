@@ -3,6 +3,7 @@ package bgitter
 import (
 	"fmt"
 	"strings"
+	"regexp"
 
 	"github.com/42wim/go-gitter"
 	"github.com/42wim/matterbridge/bridge"
@@ -98,6 +99,10 @@ func (b *Bgitter) Send(msg config.Message) (string, error) {
 		b.Log.Errorf("Could not find roomID for %v", msg.Channel)
 		return "", nil
 	}
+	
+	// Strip IRC colors sent to Gitter
+	re := regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
+	msg.Text = re.ReplaceAllString(msg.Text, "")
 
 	// Delete message
 	if msg.Event == config.EventMsgDelete {
