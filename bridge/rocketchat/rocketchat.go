@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 	"sync"
+	"regexp"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -107,6 +108,10 @@ func (b *Brocketchat) Send(msg config.Message) (string, error) {
 	// strip the # if people has set this
 	msg.Channel = strings.TrimPrefix(msg.Channel, "#")
 	channel := &models.Channel{ID: b.getChannelID(msg.Channel), Name: msg.Channel}
+
+	// Strip IRC colors sent to Rocketchat
+	re := regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
+	msg.Text = re.ReplaceAllString(msg.Text, "")
 
 	// Make a action /me of the message
 	if msg.Event == config.EventUserAction {
