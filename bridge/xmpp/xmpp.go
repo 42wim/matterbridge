@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"strings"
 	"time"
+	"regexp"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -81,6 +82,10 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 		return "", nil
 	}
 	b.Log.Debugf("=> Receiving %#v", msg)
+
+	// Strip IRC colors sent to XMPP
+	re := regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
+	msg.Text = re.ReplaceAllString(msg.Text, "")
 
 	// Upload a file (in xmpp case send the upload URL because xmpp has no native upload support)
 	if msg.Extra != nil {
