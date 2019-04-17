@@ -4,6 +4,7 @@ import (
 	"html"
 	"strconv"
 	"strings"
+	"regexp"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -90,6 +91,10 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 			b.handleUploadFile(&msg, chatid)
 		}
 	}
+
+	// Strip IRC colors sent to Telegram
+	re := regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
+	msg.Text = re.ReplaceAllString(msg.Text, "")
 
 	// edit the message if we have a msg ID
 	if msg.ID != "" {
