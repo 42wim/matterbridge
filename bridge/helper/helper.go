@@ -200,5 +200,5 @@ func ConvertWebPToPNG(data *[]byte) error {
 	return nil
 }
 
-// Strip IRC colors
+// StripIRCColors will remove any IRC colors found in the message
 var StripIRCColors = regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
