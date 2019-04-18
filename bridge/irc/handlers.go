@@ -91,7 +91,6 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 		if b.GetBool("nosendjoinpart") {
 			return
 		}
-		
 		msg := config.Message{}
 		if b.GetBool("verbosejoinpart") {
 			b.Log.Debugf("<= Sending verbose JOIN_LEAVE event from %s to gateway", b.Account)
