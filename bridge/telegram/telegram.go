@@ -2,7 +2,6 @@ package btelegram
 
 import (
 	"html"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -93,8 +92,7 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 	}
 
 	// Strip IRC colors sent to Telegram
-	re := regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
-	msg.Text = re.ReplaceAllString(msg.Text, "")
+	msg.Text = helper.StripIRCColors.ReplaceAllString(msg.Text, "")
 
 	// edit the message if we have a msg ID
 	if msg.ID != "" {

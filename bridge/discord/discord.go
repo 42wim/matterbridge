@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"regexp"
 	"strings"
 	"sync"
 
@@ -189,8 +188,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	}
 
 	// Strip IRC colors sent to Discord
-	re := regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
-	msg.Text = re.ReplaceAllString(msg.Text, "")
+	msg.Text = helper.StripIRCColors.ReplaceAllString(msg.Text, "")
 
 	// Make a action /me of the message
 	if msg.Event == config.EventUserAction {

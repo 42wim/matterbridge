@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -183,8 +182,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	msg.Text = b.replaceCodeFence(msg.Text)
 
 	// Strip IRC colors sent to Slack
-	re := regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
-	msg.Text = re.ReplaceAllString(msg.Text, "")
+	msg.Text = helper.StripIRCColors.ReplaceAllString(msg.Text, "")
 
 	// Make a action /me of the message
 	if msg.Event == config.EventUserAction {

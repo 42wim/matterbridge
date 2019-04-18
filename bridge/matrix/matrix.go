@@ -75,8 +75,7 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("Channel %s maps to channel id %s", msg.Channel, channel)
 
 	// Strip IRC colors sent to Matrix
-	re := regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
-	msg.Text = re.ReplaceAllString(msg.Text, "")
+	msg.Text = helper.StripIRCColors.ReplaceAllString(msg.Text, "")
 
 	// Make a action /me of the message
 	if msg.Event == config.EventUserAction {

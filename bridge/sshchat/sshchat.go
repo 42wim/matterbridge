@@ -3,7 +3,6 @@ package bsshchat
 import (
 	"bufio"
 	"io"
-	"regexp"
 	"strings"
 
 	"github.com/42wim/matterbridge/bridge"
@@ -83,8 +82,7 @@ func (b *Bsshchat) Send(msg config.Message) (string, error) {
 	}
 
 	// Strip IRC colors sent to SSHChat
-	re := regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
-	msg.Text = re.ReplaceAllString(msg.Text, "")
+	msg.Text = helper.StripIRCColors.ReplaceAllString(msg.Text, "")
 
 	_, err := b.w.Write([]byte(msg.Username + msg.Text + "\r\n"))
 	return "", err

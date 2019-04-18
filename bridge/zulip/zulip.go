@@ -3,7 +3,6 @@ package bzulip
 import (
 	"encoding/json"
 	"io/ioutil"
-	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -65,8 +64,7 @@ func (b *Bzulip) Send(msg config.Message) (string, error) {
 	}
 
 	// Strip IRC colors sent to Zulip
-	re := regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
-	msg.Text = re.ReplaceAllString(msg.Text, "")
+	msg.Text = helper.StripIRCColors.ReplaceAllString(msg.Text, "")
 
 	// Upload a file if it exists
 	if msg.Extra != nil {

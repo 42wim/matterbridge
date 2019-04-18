@@ -2,7 +2,6 @@ package bxmpp
 
 import (
 	"crypto/tls"
-	"regexp"
 	"strings"
 	"time"
 
@@ -84,8 +83,7 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
 
 	// Strip IRC colors sent to XMPP
-	re := regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
-	msg.Text = re.ReplaceAllString(msg.Text, "")
+	msg.Text = helper.StripIRCColors.ReplaceAllString(msg.Text, "")
 
 	// Upload a file (in xmpp case send the upload URL because xmpp has no native upload support)
 	if msg.Extra != nil {
