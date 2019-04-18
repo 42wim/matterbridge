@@ -199,3 +199,6 @@ func ConvertWebPToPNG(data *[]byte) error {
 	*data = w.Bytes()
 	return nil
 }
+
+// Strip IRC colors
+var StripIRCColors = regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)

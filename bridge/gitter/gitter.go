@@ -2,7 +2,6 @@ package bgitter
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/42wim/go-gitter"
@@ -101,8 +100,7 @@ func (b *Bgitter) Send(msg config.Message) (string, error) {
 	}
 
 	// Strip IRC colors sent to Gitter
-	re := regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
-	msg.Text = re.ReplaceAllString(msg.Text, "")
+	msg.Text = helper.StripIRCColors.ReplaceAllString(msg.Text, "")
 
 	// Delete message
 	if msg.Event == config.EventMsgDelete {

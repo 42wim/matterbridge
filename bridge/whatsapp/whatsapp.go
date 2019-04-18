@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"regexp"
 	"strings"
 	"time"
 
@@ -245,8 +244,7 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
 
 	// Strip IRC colors sent to Whatsapp
-	re := regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
-	msg.Text = re.ReplaceAllString(msg.Text, "")
+	msg.Text = helper.StripIRCColors.ReplaceAllString(msg.Text, "")
 
 	// Delete message
 	if msg.Event == config.EventMsgDelete {

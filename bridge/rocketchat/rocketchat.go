@@ -2,7 +2,6 @@ package brocketchat
 
 import (
 	"errors"
-	"regexp"
 	"strings"
 	"sync"
 
@@ -110,8 +109,7 @@ func (b *Brocketchat) Send(msg config.Message) (string, error) {
 	channel := &models.Channel{ID: b.getChannelID(msg.Channel), Name: msg.Channel}
 
 	// Strip IRC colors sent to Rocketchat
-	re := regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
-	msg.Text = re.ReplaceAllString(msg.Text, "")
+	msg.Text = helper.StripIRCColors.ReplaceAllString(msg.Text, "")
 
 	// Make a action /me of the message
 	if msg.Event == config.EventUserAction {
