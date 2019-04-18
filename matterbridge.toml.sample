@@ -157,6 +157,11 @@ RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 #OPTIONAL (default false)
 ShowJoinPart=false
 
+#Enable to show verbose users joins/parts (ident@host) from other bridges
+#Currently works for messages from the following bridges: irc
+#OPTIONAL (default false)
+VerboseJoinPart=false
+
 #Do not send joins/parts to other bridges
 #Currently works for messages from the following bridges: irc, mattermost, slack
 #OPTIONAL (default false)

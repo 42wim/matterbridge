@@ -120,7 +120,7 @@ type Protocol struct {
 	ReplaceMessages        [][]string // all protocols
 	ReplaceNicks           [][]string // all protocols
 	RemoteNickFormat       string     // all protocols
-	RunCommands            []string   // irc
+	RunCommands            []string   // IRC
 	Server                 string     // IRC,mattermost,XMPP,discord
 	ShowJoinPart           bool       // all protocols
 	ShowTopicChange        bool       // slack
@@ -141,6 +141,7 @@ type Protocol struct {
 	UseFirstName           bool       // telegram
 	UseUserName            bool       // discord
 	UseInsecureURL         bool       // telegram
+	VerboseJoinPart        bool       // IRC
 	WebhookBindAddress     string     // mattermost, slack
 	WebhookURL             string     // mattermost, slack
 }

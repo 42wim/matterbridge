@@ -91,8 +91,13 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 		if b.GetBool("nosendjoinpart") {
 			return
 		}
-		b.Log.Debugf("<= Sending JOIN_LEAVE event from %s to gateway", b.Account)
 		msg := config.Message{Username: "system", Text: event.Source.Name + " " + strings.ToLower(event.Command) + "s", Channel: channel, Account: b.Account, Event: config.EventJoinLeave}
+		if b.GetBool("verbosejoinpart") {
+			b.Log.Debugf("<= Sending verbose JOIN_LEAVE event from %s to gateway", b.Account)
+			msg = config.Message{Username: "system", Text: event.Source.Name + " (" + event.Source.Ident + "@" + event.Source.Host + ") " + strings.ToLower(event.Command) + "s", Channel: channel, Account: b.Account, Event: config.EventJoinLeave}
+		} else {
+			b.Log.Debugf("<= Sending JOIN_LEAVE event from %s to gateway", b.Account)
+		}
 		b.Log.Debugf("<= Message is %#v", msg)
 		b.Remote <- msg
 		return
