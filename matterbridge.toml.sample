@@ -1470,7 +1470,7 @@ TengoModifyMessage="example.tengo"
 #https://github.com/d5/tengo/blob/master/docs/stdlib.md
 
 [tengo]
-#Message allows you to specify the location of a tengo (https://github.com/d5/tengo/) script.
+#InMessage allows you to specify the location of a tengo (https://github.com/d5/tengo/) script.
 #This script will receive every incoming message and can be used to modify the Username and the Text of that message.
 #The script will have the following global variables:
 #to modify: msgUsername and msgText
@@ -1488,7 +1488,27 @@ TengoModifyMessage="example.tengo"
 #    msgUsername="fakeuser"
 #}
 #OPTIONAL (default empty)
-Message="example.tengo"
+InMessage="example.tengo"
+
+#OutMessage allows you to specify the location of the script that
+#will be invoked on each message being sent to a bridge and can be used to modify the Username
+#and the Text of that message.
+#
+#The script will have the following global variables:
+#read-only:
+#inAccount, inProtocol, inChannel, inGateway
+#outAccount, outProtocol, outChannel, outGateway
+#
+#read-write:
+#msgText, msgUsername
+#
+#The script is reloaded on every message, so you can modify the script on the fly.
+#
+#The default script in https://github.com/42wim/matterbridge/tree/master/internal/tengo/outmessage.tengo
+#is compiled in and will be executed if no script is specified.
+#OPTIONAL (default empty)
+OutMessage="example.tengo"
+
 
 #RemoteNickFormat allows you to specify the location of a tengo (https://github.com/d5/tengo/) script.
 #The script will have the following global variables:
