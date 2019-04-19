@@ -186,6 +186,12 @@ func (b *Bmattermost) skipMessage(message *matterclient.Message) bool {
 		return true
 	}
 
+	// Ignore non-post messages
+	if message.Post == nil {
+		b.Log.Debugf("ignoring nil message.Post: %#v", message)
+		return true
+	}
+
 	// Ignore messages sent from matterbridge
 	if message.Post.Props != nil {
 		if _, ok := message.Post.Props["matterbridge_"+b.uuid].(bool); ok {
