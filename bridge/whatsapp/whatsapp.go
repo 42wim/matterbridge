@@ -11,10 +11,9 @@ import (
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/Rhymen/go-whatsapp"
 
-	"github.com/matterbridge/go-whatsapp"
-
-	whatsappExt "github.com/matterbridge/mautrix-whatsapp/whatsapp-ext"
+	whatsappExt "maunium.net/go/mautrix-whatsapp/whatsapp-ext"
 )
 
 const (
@@ -89,7 +88,7 @@ func (b *Bwhatsapp) Connect() error {
 			b.Log.Debugln("Restoring WhatsApp session..")
 
 			// https://github.com/Rhymen/go-whatsapp#restore
-			session, err = b.conn.RestoreSession(session)
+			session, err = b.conn.RestoreWithSession(session)
 			if err != nil {
 				// TODO return or continue to normal login?
 				// restore session connection timed out (I couldn't get over it without logging in again)

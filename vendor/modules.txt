@@ -15,6 +15,14 @@ github.com/Philipp15b/go-steam/protocol/gamecoordinator
 github.com/Philipp15b/go-steam/protocol/protobuf
 github.com/Philipp15b/go-steam/rwu
 github.com/Philipp15b/go-steam/socialcache
+# github.com/Rhymen/go-whatsapp v0.0.2-0.20190325075644-cc2581bbf24d
+github.com/Rhymen/go-whatsapp
+github.com/Rhymen/go-whatsapp/binary
+github.com/Rhymen/go-whatsapp/binary/proto
+github.com/Rhymen/go-whatsapp/crypto/cbc
+github.com/Rhymen/go-whatsapp/crypto/curve25519
+github.com/Rhymen/go-whatsapp/crypto/hkdf
+github.com/Rhymen/go-whatsapp/binary/token
 # github.com/bwmarrin/discordgo v0.19.0
 github.com/bwmarrin/discordgo
 # github.com/d5/tengo v1.20.0
@@ -40,7 +48,7 @@ github.com/dgrijalva/jwt-go
 github.com/fsnotify/fsnotify
 # github.com/go-telegram-bot-api/telegram-bot-api v4.6.5-0.20181225215658-ec221ba9ea45+incompatible
 github.com/go-telegram-bot-api/telegram-bot-api
-# github.com/golang/protobuf v1.2.0
+# github.com/golang/protobuf v1.3.0
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go/descriptor
 # github.com/google/gops v0.3.5
@@ -89,14 +97,6 @@ github.com/magiconair/properties
 github.com/matterbridge/Rocket.Chat.Go.SDK/models
 github.com/matterbridge/Rocket.Chat.Go.SDK/realtime
 github.com/matterbridge/Rocket.Chat.Go.SDK/rest
-# github.com/matterbridge/go-whatsapp v0.0.1-0.20190301204034-f2f1b29d441b
-github.com/matterbridge/go-whatsapp
-github.com/matterbridge/go-whatsapp/binary
-github.com/matterbridge/go-whatsapp/binary/proto
-github.com/matterbridge/go-whatsapp/crypto/cbc
-github.com/matterbridge/go-whatsapp/crypto/curve25519
-github.com/matterbridge/go-whatsapp/crypto/hkdf
-github.com/matterbridge/go-whatsapp/binary/token
 # github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91
 github.com/matterbridge/go-xmpp
 # github.com/matterbridge/gomatrix v0.0.0-20190102230110-6f9631ca6dea
@@ -105,8 +105,6 @@ github.com/matterbridge/gomatrix
 github.com/matterbridge/gozulipbot
 # github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61
 github.com/matterbridge/logrus-prefixed-formatter
-# github.com/matterbridge/mautrix-whatsapp v0.0.0-20190301210046-3539cf52ed6e
-github.com/matterbridge/mautrix-whatsapp/whatsapp-ext
 # github.com/mattermost/mattermost-server v5.5.0+incompatible
 github.com/mattermost/mattermost-server/model
 github.com/mattermost/mattermost-server/mlog
@@ -143,7 +141,7 @@ github.com/pborman/uuid
 github.com/pelletier/go-toml
 # github.com/peterhellberg/emojilib v0.0.0-20190124112554-c18758d55320
 github.com/peterhellberg/emojilib
-# github.com/pkg/errors v0.8.0
+# github.com/pkg/errors v0.8.1
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
@@ -208,7 +206,7 @@ go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/buffer
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
-# golang.org/x/crypto v0.0.0-20190222235706-ffb98f73852f
+# golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
 golang.org/x/crypto/ssh/terminal
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/nacl/secretbox
@@ -234,6 +232,7 @@ golang.org/x/net/websocket
 # golang.org/x/sys v0.0.0-20190222171317-cd391775e71e
 golang.org/x/sys/unix
 golang.org/x/sys/windows
+golang.org/x/sys/cpu
 # golang.org/x/text v0.3.0
 golang.org/x/text/encoding
 golang.org/x/text/encoding/japanese
@@ -249,3 +248,5 @@ golang.org/x/text/encoding/internal
 gopkg.in/natefinch/lumberjack.v2
 # gopkg.in/yaml.v2 v2.2.2
 gopkg.in/yaml.v2
+# maunium.net/go/mautrix-whatsapp v0.0.0-20190406194125-7e1028726f0f
+maunium.net/go/mautrix-whatsapp/whatsapp-ext
