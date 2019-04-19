@@ -1,2 +1,13 @@
+/*
+variables available 
+read-only:
+inAccount, inProtocol, inChannel, inGateway
+outAccount, outProtocol, outChannel, outGateway
+
+read-write:
+msgText, msgUsername
+*/
+
 text := import("text")
+
 msgText=text.re_replace("matterbridge",msgText,"matterbridge (https://github.com/42wim/matterbridge)")
