@@ -83,7 +83,7 @@ func (m *MMClient) DeleteMessage(postId string) error { //nolint:golint
 }
 
 func (m *MMClient) EditMessage(postId string, text string) (string, error) { //nolint:golint
-	post := &model.Post{Message: text}
+	post := &model.Post{Message: text, Id: postId}
 	res, resp := m.Client.UpdatePost(postId, post)
 	if resp.Error != nil {
 		return "", resp.Error
