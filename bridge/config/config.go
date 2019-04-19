@@ -168,8 +168,10 @@ type Gateway struct {
 }
 
 type Tengo struct {
+	InMessage        string
 	Message          string
 	RemoteNickFormat string
+	OutMessage       string
 }
 
 type SameChannelGateway struct {

@@ -1,0 +1,7 @@
+// See https://github.com/42wim/matterbridge/issues/798
+
+// if we're not sending to an irc bridge we strip the IRC colors
+if outProtocol != "irc" {
+    re := text.re_compile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
+    msgText=re.replace(msgText,"")
+}

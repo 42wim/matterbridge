@@ -9,6 +9,7 @@ import (
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/internal"
 	"github.com/d5/tengo/script"
 	"github.com/d5/tengo/stdlib"
 	lru "github.com/hashicorp/golang-lru"
@@ -429,6 +430,11 @@ func (gw *Gateway) SendMessage(
 		msg.ParentID = "msg-parent-not-found"
 	}
 
+	err := gw.modifySendMessageTengo(rmsg, &msg, dest)
+	if err != nil {
+		gw.logger.Errorf("modifySendMessageTengo: %s", err)
+	}
+
 	// if we are using mattermost plugin account, send messages to MattermostPlugin channel
 	// that can be picked up by the mattermost matterbridge plugin
 	if dest.Account == "mattermost.plugin" {
@@ -543,4 +549,43 @@ func (gw *Gateway) modifyUsernameTengo(msg *config.Message, br *bridge.Bridge) (
 		return "", err
 	}
 	return c.Get("result").String(), nil
+}
+
+func (gw *Gateway) modifySendMessageTengo(origmsg *config.Message, msg *config.Message, br *bridge.Bridge) error {
+	filename := gw.BridgeValues().Tengo.OutMessage
+	var res []byte
+	var err error
+	if filename == "" {
+		res, err = internal.Asset("tengo/outmessage.tengo")
+		if err != nil {
+			return err
+		}
+	} else {
+		res, err = ioutil.ReadFile(filename)
+		if err != nil {
+			return err
+		}
+	}
+	s := script.New(res)
+	s.SetImports(stdlib.GetModuleMap(stdlib.AllModuleNames()...))
+	_ = s.Add("inAccount", origmsg.Account)
+	_ = s.Add("inProtocol", origmsg.Protocol)
+	_ = s.Add("inChannel", origmsg.Channel)
+	_ = s.Add("inGateway", origmsg.Gateway)
+	_ = s.Add("outAccount", br.Account)
+	_ = s.Add("outProtocol", br.Protocol)
+	_ = s.Add("outChannel", msg.Channel)
+	_ = s.Add("outGateway", gw.Name)
+	_ = s.Add("msgText", msg.Text)
+	_ = s.Add("msgUsername", msg.Username)
+	c, err := s.Compile()
+	if err != nil {
+		return err
+	}
+	if err := c.Run(); err != nil {
+		return err
+	}
+	msg.Text = c.Get("msgText").String()
+	msg.Username = c.Get("msgUsername").String()
+	return nil
 }

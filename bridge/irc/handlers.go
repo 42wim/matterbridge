@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -181,10 +180,6 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 
 	// strip action, we made an event if it was an action
 	rmsg.Text += event.StripAction()
-
-	// strip IRC colors
-	re := regexp.MustCompile(`\x03(?:\d{1,2}(?:,\d{1,2})?)?|[[:cntrl:]]`)
-	rmsg.Text = re.ReplaceAllString(rmsg.Text, "")
 
 	// start detecting the charset
 	mycharset := b.GetString("Charset")
