@@ -1,3 +1,8 @@
+# v1.14.3
+
+## Bugfix
+* irc: Fix deadlock on reconnect (irc). Closes #757
+
 # v1.14.2
 
 ## Bugfix
