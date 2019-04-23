@@ -1,3 +1,13 @@
+# v1.14.4
+
+## Bugfix
+* mattermost: Add Id to EditMessage (mattermost). Fixes #802
+* mattermost: Fix panic on nil message.Post (mattermost). Fixes #804
+* mattermost: Handle unthreaded messages (mattermost). Fixes #803
+* mattermost: Use paging in initUser and UpdateUsers (mattermost)
+* slack: Add lacking clean-up in Slack synchronisation (#811)
+* slack: Disable user lookups on delete messages (slack) (#812)
+
 # v1.14.3
 
 ## Bugfix
