@@ -22,19 +22,19 @@ func (b *Bslack) handleSlack() {
 	time.Sleep(time.Second)
 	b.Log.Debug("Start listening for Slack messages")
 	for message := range messages {
-		if message.Event != config.EventUserTyping {
+		// don't do any action on deleted/typing messages
+		if message.Event != config.EventUserTyping && message.Event != config.EventMsgDelete {
 			b.Log.Debugf("<= Sending message from %s on %s to gateway", message.Username, b.Account)
+			// cleanup the message
+			message.Text = b.replaceMention(message.Text)
+			message.Text = b.replaceVariable(message.Text)
+			message.Text = b.replaceChannel(message.Text)
+			message.Text = b.replaceURL(message.Text)
+			message.Text = html.UnescapeString(message.Text)
+
+			// Add the avatar
+			message.Avatar = b.users.getAvatar(message.UserID)
 		}
-
-		// cleanup the message
-		message.Text = b.replaceMention(message.Text)
-		message.Text = b.replaceVariable(message.Text)
-		message.Text = b.replaceChannel(message.Text)
-		message.Text = b.replaceURL(message.Text)
-		message.Text = html.UnescapeString(message.Text)
-
-		// Add the avatar
-		message.Avatar = b.users.getAvatar(message.UserID)
 
 		b.Log.Debugf("<= Message is %#v", message)
 		b.Remote <- *message
