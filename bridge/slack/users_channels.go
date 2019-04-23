@@ -87,6 +87,11 @@ func (b *users) populateUser(userID string) {
 			// in case the previous query failed for some reason.
 		} else {
 			b.usersSyncPoints[userID] = make(chan struct{})
+			defer func() {
+				// Wake up any waiting goroutines and remove the synchronization point.
+				close(b.usersSyncPoints[userID])
+				delete(b.usersSyncPoints, userID)
+			}()
 			break
 		}
 	}
@@ -106,10 +111,6 @@ func (b *users) populateUser(userID string) {
 
 	// Register user information.
 	b.users[userID] = user
-
-	// Wake up any waiting goroutines and remove the synchronization point.
-	close(b.usersSyncPoints[userID])
-	delete(b.usersSyncPoints, userID)
 }
 
 func (b *users) populateUsers(wait bool) {
