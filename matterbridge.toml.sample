@@ -1478,8 +1478,8 @@ InMessage="example.tengo"
 #
 #The script will have the following global variables:
 #read-only:
-#inAccount, inProtocol, inChannel, inGateway
-#outAccount, outProtocol, outChannel, outGateway
+#inAccount, inProtocol, inChannel, inGateway, inEvent
+#outAccount, outProtocol, outChannel, outGateway, outEvent
 #
 #read-write:
 #msgText, msgUsername
