@@ -36,7 +36,7 @@ func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 		return
 	}
 	// if using webhooks, do not relay if it's ours
-	if b.useWebhook() && m.Author.Bot { // && b.isWebhookID(m.Author.ID) {
+	if b.useWebhook() && m.Author.Bot && b.isWebhookID(m.Author.ID) {
 		return
 	}
 
