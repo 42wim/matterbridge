@@ -167,23 +167,38 @@ func (m *MMClient) JoinChannel(channelId string) error { //nolint:golint
 	return nil
 }
 
+func (m *MMClient) UpdateChannelsTeam(teamId string) error {
+	mmchannels, resp := m.Client.GetChannelsForTeamForUser(teamId, m.User.Id, "")
+	if resp.Error != nil {
+		return errors.New(resp.Error.DetailedError)
+	}
+	for idx, t := range m.OtherTeams {
+		if t.Id == teamId {
+			m.Lock()
+			m.OtherTeams[idx].Channels = mmchannels
+			m.Unlock()
+		}
+	}
+
+	mmchannels, resp = m.Client.GetPublicChannelsForTeam(teamId, 0, 5000, "")
+	if resp.Error != nil {
+		return errors.New(resp.Error.DetailedError)
+	}
+	for idx, t := range m.OtherTeams {
+		if t.Id == teamId {
+			m.Lock()
+			m.OtherTeams[idx].MoreChannels = mmchannels
+			m.Unlock()
+		}
+	}
+	return nil
+}
+
 func (m *MMClient) UpdateChannels() error {
-	mmchannels, resp := m.Client.GetChannelsForTeamForUser(m.Team.Id, m.User.Id, "")
-	if resp.Error != nil {
-		return errors.New(resp.Error.DetailedError)
+	m.UpdateChannelsTeam(m.Team.Id)
+	for _, t := range m.OtherTeams {
+		m.UpdateChannelsTeam(t.Id)
 	}
-	m.Lock()
-	m.Team.Channels = mmchannels
-	m.Unlock()
-
-	mmchannels, resp = m.Client.GetPublicChannelsForTeam(m.Team.Id, 0, 5000, "")
-	if resp.Error != nil {
-		return errors.New(resp.Error.DetailedError)
-	}
-
-	m.Lock()
-	m.Team.MoreChannels = mmchannels
-	m.Unlock()
 	return nil
 }
 
