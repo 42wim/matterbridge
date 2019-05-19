@@ -101,7 +101,7 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 
 	// Post normal message
 	// TODO: recheck it.
-	// Ignore empty text field needs for prevent double messages from whatsapp to telegram 
+	// Ignore empty text field needs for prevent double messages from whatsapp to telegram
 	// when sending media with text caption
 	if msg.Text != "" {
 		msgRes, msgErr = b.sendMessage(chatid, msg.Username, msg.Text)
