@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/42wim/matterbridge/bridge/config"
-  "github.com/42wim/matterbridge/bridge/helper"
+	"github.com/42wim/matterbridge/bridge/helper"
 
 	"github.com/matterbridge/go-whatsapp"
 
