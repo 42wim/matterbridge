@@ -8,6 +8,9 @@ import (
 	"os"
 	"strings"
 	"time"
+	"bytes"
+	"mime"
+	"path/filepath"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -266,37 +269,89 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 		// TODO handle edit as a message reply with updated text
 	}
 
-	//// TODO Handle Upload a file
-	//if msg.Extra != nil {
-	//	for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-	//		b.c.SendMessage(roomID, rmsg.Username+rmsg.Text)
-	//	}
-	//	if len(msg.Extra["file"]) > 0 {
-	//		return b.handleUploadFile(&msg, roomID)
-	//	}
-	//}
+	// Handle Upload a file
+	if msg.Extra["file"] != nil {
+		fi := msg.Extra["file"][0].(config.FileInfo)
 
-	// Post text message
-	text := whatsapp.TextMessage{
-		Info: whatsapp.MessageInfo{
-			RemoteJid: msg.Channel, // which equals to group id
-		},
-		Text: msg.Username + msg.Text,
+		filetype := mime.TypeByExtension(filepath.Ext(fi.Name))
+
+		b.Log.Debugf("Extra file is %#v", filetype)
+
+	  // TODO: add different types
+	  // TODO: add webp conversion
+		if filetype == "image/jpeg" || filetype == "image/png" || filetype == "image/gif" {
+			// Post image message
+			message := whatsapp.ImageMessage{
+				Info: whatsapp.MessageInfo{
+					RemoteJid: msg.Channel,
+				},
+				Type:    filetype,
+				Caption: msg.Username + fi.Comment,
+				Content: bytes.NewReader(*fi.Data),
+			}
+
+			b.Log.Debugf("=> Sending %#v", msg)
+
+			// create message ID
+			// TODO follow and act if https://github.com/Rhymen/go-whatsapp/issues/101 implemented
+			idbytes := make([]byte, 10)
+			if _, err := rand.Read(idbytes); err != nil {
+				b.Log.Warn(err.Error())
+			}
+
+			message.Info.Id = strings.ToUpper(hex.EncodeToString(idbytes))
+			err := b.conn.Send(message)
+
+			return message.Info.Id, err
+		} else {
+			// Post document message
+			message := whatsapp.DocumentMessage{
+				Info: whatsapp.MessageInfo{
+					RemoteJid: msg.Channel,
+				},
+				Title:    fi.Name,
+				FileName: fi.Name,
+				Type:     filetype,
+				Content:  bytes.NewReader(*fi.Data),
+			}
+
+			b.Log.Debugf("=> Sending %#v", msg)
+
+			// create message ID
+			// TODO follow and act if https://github.com/Rhymen/go-whatsapp/issues/101 implemented
+			idbytes := make([]byte, 10)
+			if _, err := rand.Read(idbytes); err != nil {
+				b.Log.Warn(err.Error())
+			}
+
+			message.Info.Id = strings.ToUpper(hex.EncodeToString(idbytes))
+			err := b.conn.Send(message)
+
+			return message.Info.Id, err
+		}
+	} else {
+		// Post text message
+		message := whatsapp.TextMessage{
+			Info: whatsapp.MessageInfo{
+				RemoteJid: msg.Channel, // which equals to group id
+			},
+			Text: msg.Username + msg.Text,
+		}
+
+		b.Log.Debugf("=> Sending %#v", msg)
+
+		// create message ID
+		// TODO follow and act if https://github.com/Rhymen/go-whatsapp/issues/101 implemented
+		idbytes := make([]byte, 10)
+		if _, err := rand.Read(idbytes); err != nil {
+			b.Log.Warn(err.Error())
+		}
+
+		message.Info.Id = strings.ToUpper(hex.EncodeToString(idbytes))
+		err := b.conn.Send(message)
+
+		return message.Info.Id, err
 	}
-
-	b.Log.Debugf("=> Sending %#v", msg)
-
-	// create message ID
-	// TODO follow and act if https://github.com/Rhymen/go-whatsapp/issues/101 implemented
-	bytes := make([]byte, 10)
-	if _, err := rand.Read(bytes); err != nil {
-		b.Log.Warn(err.Error())
-	}
-	text.Info.Id = strings.ToUpper(hex.EncodeToString(bytes))
-
-	err := b.conn.Send(text)
-
-	return text.Info.Id, err
 }
 
 // TODO do we want that? to allow login with QR code from a bridged channel? https://github.com/tulir/mautrix-whatsapp/blob/513eb18e2d59bada0dd515ee1abaaf38a3bfe3d5/commands.go#L76
