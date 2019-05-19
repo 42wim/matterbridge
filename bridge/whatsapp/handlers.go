@@ -1,10 +1,10 @@
 package bwhatsapp
 
 import (
+	"fmt"
+	"mime"
 	"strings"
 	"time"
-	"mime"
-	"fmt"
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
