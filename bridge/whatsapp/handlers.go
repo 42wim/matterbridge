@@ -7,8 +7,8 @@ import (
 	"fmt"
 
 	"github.com/42wim/matterbridge/bridge/config"
-	"github.com/Rhymen/go-whatsapp"
 	"github.com/42wim/matterbridge/bridge/helper"
+	"github.com/matterbridge/go-whatsapp"
 	whatsappExt "github.com/matterbridge/mautrix-whatsapp/whatsapp-ext"
 )
 
