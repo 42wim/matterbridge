@@ -6,9 +6,9 @@ import (
 
 	"github.com/42wim/matterbridge/bridge/config"
 
-	"github.com/matterbridge/go-whatsapp"
+	"github.com/Rhymen/go-whatsapp"
 
-	whatsappExt "github.com/matterbridge/mautrix-whatsapp/whatsapp-ext"
+	whatsappExt "maunium.net/go/mautrix-whatsapp/whatsapp-ext"
 )
 
 /*
