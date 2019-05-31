@@ -46,6 +46,37 @@ func ExtendConn(conn *whatsapp.Conn) *ExtendedConn {
 	return ext
 }
 
+func (ext *ExtendedConn) AddHandler(handler whatsapp.Handler) {
+	ext.Conn.AddHandler(handler)
+	ext.handlers = append(ext.handlers, handler)
+}
+
+
+func (ext *ExtendedConn) RemoveHandler(handler whatsapp.Handler) bool {
+	ext.Conn.RemoveHandler(handler)
+	for i, v := range ext.handlers {
+		if v == handler {
+			ext.handlers = append(ext.handlers[:i], ext.handlers[i+1:]...)
+			return true
+		}
+	}
+	return false
+}
+
+func (ext *ExtendedConn) RemoveHandlers() {
+	ext.Conn.RemoveHandlers()
+	ext.handlers = make([]whatsapp.Handler, 0)
+}
+
+func (ext *ExtendedConn) shouldCallSynchronously(handler whatsapp.Handler) bool {
+	sh, ok := handler.(whatsapp.SyncHandler)
+	return ok && sh.ShouldCallSynchronously()
+}
+
+func (ext *ExtendedConn) ShouldCallSynchronously() bool {
+	return true
+}
+
 type GroupInfo struct {
 	JID      string `json:"jid"`
 	OwnerJID string `json:"owner"`

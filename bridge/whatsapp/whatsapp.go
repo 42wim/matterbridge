@@ -293,7 +293,7 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 	}
 	text.Info.Id = strings.ToUpper(hex.EncodeToString(bytes))
 
-	err := b.conn.Send(text)
+	_, err := b.conn.Send(text)
 
 	return text.Info.Id, err
 }

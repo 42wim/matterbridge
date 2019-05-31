@@ -142,6 +142,11 @@ func (ext *ExtendedConn) handleMessageChatUpdate(message []byte) {
 		if !ok {
 			continue
 		}
-		go chatUpdateHandler.HandleChatUpdate(event)
+
+		if ext.shouldCallSynchronously(chatUpdateHandler) {
+			chatUpdateHandler.HandleChatUpdate(event)
+		} else {
+			go chatUpdateHandler.HandleChatUpdate(event)
+		}
 	}
 }

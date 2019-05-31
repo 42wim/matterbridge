@@ -6,7 +6,7 @@ require (
 	github.com/BurntSushi/toml v0.0.0-20170318202913-d94612f9fc14 // indirect
 	github.com/Jeffail/gabs v1.1.1 // indirect
 	github.com/Philipp15b/go-steam v1.0.1-0.20180818081528-681bd9573329
-	github.com/Rhymen/go-whatsapp v0.0.2-0.20190325075644-cc2581bbf24d
+	github.com/Rhymen/go-whatsapp v0.0.2
 	github.com/bwmarrin/discordgo v0.19.0
 	github.com/d5/tengo v1.20.0
 	github.com/dfordsoft/golib v0.0.0-20180902042739-76ee6ab99bec
@@ -66,9 +66,13 @@ require (
 	go.uber.org/multierr v1.1.0 // indirect
 	go.uber.org/zap v1.9.1 // indirect
 	golang.org/x/image v0.0.0-20190220214146-31aff87c08e9
-	golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
-	maunium.net/go/mautrix-whatsapp v0.0.0-20190406194125-7e1028726f0f
+	maunium.net/go/mautrix-whatsapp v0.0.0-20190530172504-37cd34e4bfe4
+)
+
+replace (
+	github.com/Rhymen/go-whatsapp => github.com/tulir/go-whatsapp v0.0.2-0.20190528182350-fde573a2a73b
+	gopkg.in/russross/blackfriday.v2 => github.com/russross/blackfriday/v2 v2.0.1
 )

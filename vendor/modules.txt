@@ -15,7 +15,7 @@ github.com/Philipp15b/go-steam/protocol/gamecoordinator
 github.com/Philipp15b/go-steam/protocol/protobuf
 github.com/Philipp15b/go-steam/rwu
 github.com/Philipp15b/go-steam/socialcache
-# github.com/Rhymen/go-whatsapp v0.0.2-0.20190325075644-cc2581bbf24d
+# github.com/Rhymen/go-whatsapp v0.0.2 => github.com/tulir/go-whatsapp v0.0.2-0.20190528182350-fde573a2a73b
 github.com/Rhymen/go-whatsapp
 github.com/Rhymen/go-whatsapp/binary
 github.com/Rhymen/go-whatsapp/binary/proto
@@ -48,7 +48,7 @@ github.com/dgrijalva/jwt-go
 github.com/fsnotify/fsnotify
 # github.com/go-telegram-bot-api/telegram-bot-api v4.6.5-0.20181225215658-ec221ba9ea45+incompatible
 github.com/go-telegram-bot-api/telegram-bot-api
-# github.com/golang/protobuf v1.3.0
+# github.com/golang/protobuf v1.3.1
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go/descriptor
 # github.com/google/gops v0.3.5
@@ -110,9 +110,9 @@ github.com/mattermost/mattermost-server/model
 github.com/mattermost/mattermost-server/mlog
 github.com/mattermost/mattermost-server/utils/jsonutils
 github.com/mattermost/mattermost-server/utils/markdown
-# github.com/mattn/go-colorable v0.1.1
+# github.com/mattn/go-colorable v0.1.2
 github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.5
+# github.com/mattn/go-isatty v0.0.8
 github.com/mattn/go-isatty
 # github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b
 github.com/mgutz/ansi
@@ -206,7 +206,7 @@ go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/buffer
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
-# golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
+# golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f
 golang.org/x/crypto/ssh/terminal
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/nacl/secretbox
@@ -227,13 +227,14 @@ golang.org/x/image/webp
 golang.org/x/image/riff
 golang.org/x/image/vp8
 golang.org/x/image/vp8l
-# golang.org/x/net v0.0.0-20190110200230-915654e7eabc
+# golang.org/x/net v0.0.0-20190522155817-f3200d17e092
+golang.org/x/net/idna
 golang.org/x/net/websocket
-# golang.org/x/sys v0.0.0-20190222171317-cd391775e71e
+# golang.org/x/sys v0.0.0-20190527104216-9cd6430ef91e
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/cpu
-# golang.org/x/text v0.3.0
+# golang.org/x/text v0.3.2
 golang.org/x/text/encoding
 golang.org/x/text/encoding/japanese
 golang.org/x/text/encoding/korean
@@ -244,9 +245,11 @@ golang.org/x/text/unicode/norm
 golang.org/x/text/unicode/rangetable
 golang.org/x/text/encoding/internal/identifier
 golang.org/x/text/encoding/internal
+golang.org/x/text/secure/bidirule
+golang.org/x/text/unicode/bidi
 # gopkg.in/natefinch/lumberjack.v2 v2.0.0
 gopkg.in/natefinch/lumberjack.v2
 # gopkg.in/yaml.v2 v2.2.2
 gopkg.in/yaml.v2
-# maunium.net/go/mautrix-whatsapp v0.0.0-20190406194125-7e1028726f0f
+# maunium.net/go/mautrix-whatsapp v0.0.0-20190530172504-37cd34e4bfe4
 maunium.net/go/mautrix-whatsapp/whatsapp-ext

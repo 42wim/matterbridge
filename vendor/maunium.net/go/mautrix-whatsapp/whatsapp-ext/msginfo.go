@@ -85,6 +85,11 @@ func (ext *ExtendedConn) handleMessageMsgInfo(msgType JSONMessageType, message [
 		if !ok {
 			continue
 		}
-		go msgInfoHandler.HandleMsgInfo(event)
+
+		if ext.shouldCallSynchronously(msgInfoHandler) {
+			msgInfoHandler.HandleMsgInfo(event)
+		} else {
+			go msgInfoHandler.HandleMsgInfo(event)
+		}
 	}
 }

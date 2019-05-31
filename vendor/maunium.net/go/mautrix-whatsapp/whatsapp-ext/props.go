@@ -63,6 +63,11 @@ func (ext *ExtendedConn) handleMessageProps(message []byte) {
 		if !ok {
 			continue
 		}
-		go protocolPropsHandler.HandleProtocolProps(event)
+
+		if ext.shouldCallSynchronously(protocolPropsHandler) {
+			protocolPropsHandler.HandleProtocolProps(event)
+		} else {
+			go protocolPropsHandler.HandleProtocolProps(event)
+		}
 	}
 }

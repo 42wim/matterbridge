@@ -55,6 +55,11 @@ func (ext *ExtendedConn) handleMessageConn(message []byte) {
 		if !ok {
 			continue
 		}
-		connInfoHandler.HandleConnInfo(event)
+
+		if ext.shouldCallSynchronously(connInfoHandler) {
+			connInfoHandler.HandleConnInfo(event)
+		} else {
+			go connInfoHandler.HandleConnInfo(event)
+		}
 	}
 }

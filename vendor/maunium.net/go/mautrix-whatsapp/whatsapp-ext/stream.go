@@ -58,6 +58,11 @@ func (ext *ExtendedConn) handleMessageStream(message []json.RawMessage) {
 		if !ok {
 			continue
 		}
-		go streamHandler.HandleStreamEvent(event)
+
+		if ext.shouldCallSynchronously(streamHandler) {
+			streamHandler.HandleStreamEvent(event)
+		} else {
+			go streamHandler.HandleStreamEvent(event)
+		}
 	}
 }

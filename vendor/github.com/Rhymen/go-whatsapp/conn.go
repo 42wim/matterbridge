@@ -89,6 +89,8 @@ type Conn struct {
 
 	longClientName  string
 	shortClientName string
+
+	loginSessionLock sync.RWMutex
 }
 
 type websocketWrapper struct {
@@ -117,6 +119,14 @@ func NewConn(timeout time.Duration) (*Conn, error) {
 		shortClientName: "go-whatsapp",
 	}
 	return wac, wac.connect()
+}
+
+func (wac *Conn) IsConnected() bool {
+	return wac.connected
+}
+
+func (wac *Conn) IsLoggedIn() bool {
+	return wac.loggedIn
 }
 
 // connect should be guarded with wsWriteMutex
@@ -166,7 +176,7 @@ func (wac *Conn) connect() (err error) {
 	wac.wg = &sync.WaitGroup{}
 	wac.wg.Add(2)
 	go wac.readPump()
-	go wac.keepAlive(20000, 60000)
+	go wac.keepAlive(20000, 55000)
 
 	wac.loggedIn = false
 	return nil

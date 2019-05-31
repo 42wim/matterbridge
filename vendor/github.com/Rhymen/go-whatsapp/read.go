@@ -75,7 +75,13 @@ func (wac *Conn) processReadData(msgType int, msg []byte) error {
 		wac.listener.Lock()
 		delete(wac.listener.m, data[0])
 		wac.listener.Unlock()
-	} else if msgType == websocket.BinaryMessage && wac.loggedIn {
+	} else if msgType == websocket.BinaryMessage {
+		wac.loginSessionLock.RLock()
+		sess := wac.session
+		wac.loginSessionLock.RUnlock()
+		if sess == nil || sess.MacKey == nil || sess.EncKey == nil {
+			return ErrInvalidWsState
+		}
 		message, err := wac.decryptBinaryMessage([]byte(data[1]))
 		if err != nil {
 			return errors.Wrap(err, "error decoding binary")
@@ -89,6 +95,9 @@ func (wac *Conn) processReadData(msgType int, msg []byte) error {
 
 func (wac *Conn) decryptBinaryMessage(msg []byte) (*binary.Node, error) {
 	//message validation
+	if len(msg) < 32 {
+		return nil, ErrShortBinaryData
+	}
 	h2 := hmac.New(sha256.New, wac.session.MacKey)
 	h2.Write([]byte(msg[32:]))
 	if !hmac.Equal(h2.Sum(nil), msg[:32]) {

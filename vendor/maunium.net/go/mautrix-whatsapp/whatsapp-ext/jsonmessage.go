@@ -35,12 +35,8 @@ const (
 	MessageProps    JSONMessageType = "Props"
 	MessageCmd      JSONMessageType = "Cmd"
 	MessageChat     JSONMessageType = "Chat"
+	MessageCall     JSONMessageType = "Call"
 )
-
-func (ext *ExtendedConn) AddHandler(handler whatsapp.Handler) {
-	ext.Conn.AddHandler(handler)
-	ext.handlers = append(ext.handlers, handler)
-}
 
 func (ext *ExtendedConn) HandleError(error) {}
 
@@ -90,13 +86,20 @@ func (ext *ExtendedConn) HandleJsonMessage(message string) {
 		ext.handleMessageCommand(msg[1])
 	case MessageChat:
 		ext.handleMessageChatUpdate(msg[1])
+	case MessageCall:
+		ext.handleMessageCall(msg[1])
 	default:
 		for _, handler := range ext.handlers {
 			ujmHandler, ok := handler.(UnhandledJSONMessageHandler)
 			if !ok {
 				continue
 			}
-			ujmHandler.HandleUnhandledJSONMessage(message)
+
+			if ext.shouldCallSynchronously(ujmHandler) {
+				ujmHandler.HandleUnhandledJSONMessage(message)
+			} else {
+				go ujmHandler.HandleUnhandledJSONMessage(message)
+			}
 		}
 	}
 }
