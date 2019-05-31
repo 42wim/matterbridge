@@ -5,10 +5,7 @@ import (
 	"time"
 
 	"github.com/42wim/matterbridge/bridge/config"
-
 	"github.com/Rhymen/go-whatsapp"
-
-	whatsappExt "maunium.net/go/mautrix-whatsapp/whatsapp-ext"
 )
 
 /*
@@ -57,7 +54,7 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 
 			// mentions comes as telephone numbers and we don't want to expose it to other bridges
 			// replace it with something more meaninful to others
-			mention := b.getSenderNotify(numberAndSuffix[0] + whatsappExt.NewUserSuffix)
+			mention := b.getSenderNotify(numberAndSuffix[0] + "@s.whatsapp.net")
 			if mention == "" {
 				mention = "someone"
 			}

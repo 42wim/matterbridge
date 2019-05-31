@@ -12,8 +12,6 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/Rhymen/go-whatsapp"
-
-	whatsappExt "maunium.net/go/mautrix-whatsapp/whatsapp-ext"
 )
 
 const (
@@ -28,10 +26,8 @@ type Bwhatsapp struct {
 	*bridge.Config
 
 	// https://github.com/Rhymen/go-whatsapp/blob/c31092027237441cffba1b9cb148eadf7c83c3d2/session.go#L18-L21
-	session *whatsapp.Session
-	conn    *whatsapp.Conn
-	// https://github.com/tulir/mautrix-whatsapp/blob/master/whatsapp-ext/whatsapp.go
-	connExt   *whatsappExt.ExtendedConn
+	session   *whatsapp.Session
+	conn      *whatsapp.Conn
 	startedAt uint64
 
 	users       map[string]whatsapp.Contact
@@ -73,8 +69,6 @@ func (b *Bwhatsapp) Connect() error {
 	}
 
 	b.conn = conn
-	b.connExt = whatsappExt.ExtendConn(b.conn)
-	// TODO do we want to use it? b.connExt.SetClientName("Matterbridge WhatsApp bridge", "mb-wa")
 
 	b.conn.AddHandler(b)
 	b.Log.Debugln("WhatsApp connection successful")
@@ -129,7 +123,7 @@ func (b *Bwhatsapp) Connect() error {
 		b.Log.Debug("Getting user avatars..")
 
 		for jid := range b.users {
-			info, err := b.connExt.GetProfilePicThumb(jid)
+			info, err := b.GetProfilePicThumb(jid)
 			if err != nil {
 				b.Log.Warnf("Could not get profile photo of %s: %v", jid, err)
 
