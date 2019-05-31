@@ -248,5 +248,3 @@ golang.org/x/text/encoding/internal
 gopkg.in/natefinch/lumberjack.v2
 # gopkg.in/yaml.v2 v2.2.2
 gopkg.in/yaml.v2
-# maunium.net/go/mautrix-whatsapp v0.0.0-20190406194125-7e1028726f0f
-maunium.net/go/mautrix-whatsapp/whatsapp-ext

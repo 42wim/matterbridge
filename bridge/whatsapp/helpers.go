@@ -2,12 +2,21 @@ package bwhatsapp
 
 import (
 	"encoding/gob"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 
 	qrcodeTerminal "github.com/Baozisoftware/qrcode-terminal-go"
 	"github.com/Rhymen/go-whatsapp"
 )
+
+type ProfilePicInfo struct {
+	URL string `json:"eurl"`
+	Tag string `json:"tag"`
+
+	Status int16 `json:"status"`
+}
 
 func qrFromTerminal(invert bool) chan string {
 	qr := make(chan string)
@@ -81,4 +90,18 @@ func (b *Bwhatsapp) getSenderNotify(senderJid string) string {
 		return sender.Notify
 	}
 	return ""
+}
+
+func (b *Bwhatsapp) GetProfilePicThumb(jid string) (*ProfilePicInfo, error) {
+	data, err := b.conn.GetProfilePicThumb(jid)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get avatar: %v", err)
+	}
+	content := <-data
+	info := &ProfilePicInfo{}
+	err = json.Unmarshal([]byte(content), info)
+	if err != nil {
+		return info, fmt.Errorf("failed to unmarshal avatar info: %v", err)
+	}
+	return info, nil
 }
