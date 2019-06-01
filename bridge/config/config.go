@@ -254,12 +254,12 @@ func newConfigFromString(logger *logrus.Entry, input []byte) *config {
 	viper.AutomaticEnv()
 
 	if err := viper.ReadConfig(bytes.NewBuffer(input)); err != nil {
-		logger.Fatalf("Failed to parse the configuration: %#v", err)
+		logger.Fatalf("Failed to parse the configuration: %s", err)
 	}
 
 	cfg := &BridgeValues{}
 	if err := viper.Unmarshal(cfg); err != nil {
-		logger.Fatalf("Failed to load the configuration: %#v", err)
+		logger.Fatalf("Failed to load the configuration: %s", err)
 	}
 	return &config{
 		logger: logger,
