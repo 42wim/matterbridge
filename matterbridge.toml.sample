@@ -277,6 +277,11 @@ StripNick=false
 #OPTIONAL (default false)
 ShowTopicChange=false
 
+#Enable to fix a problem where xmpp servers dont send timestamps and all messages are skipped. See https://github.com/42wim/matterbridge/issues/835
+#This will bypass the check for delayed messages.
+#OPTIONAL (default false)
+DelayedEnable=false
+
 ###################################################################
 #mattermost section
 ###################################################################

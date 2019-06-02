@@ -79,6 +79,7 @@ type Protocol struct {
 	ColorNicks             bool   // only irc for now
 	Debug                  bool   // general
 	DebugLevel             int    // only for irc now
+	DelayedEnable          bool   // only for xmpp now
 	EditSuffix             string // mattermost, slack, discord, telegram, gitter
 	EditDisable            bool   // mattermost, slack, discord, telegram, gitter
 	IconURL                string // mattermost, slack
