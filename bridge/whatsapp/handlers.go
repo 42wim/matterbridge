@@ -18,6 +18,10 @@ Check:
 
 // HandleError received from WhatsApp
 func (b *Bwhatsapp) HandleError(err error) {
+	// ignore received invalid data errors. https://github.com/42wim/matterbridge/issues/843
+	if strings.Contains(err.Error(), "error processing data: received invalid data") {
+		return
+	}
 	b.Log.Errorf("%v", err) // TODO implement proper handling? at least respond to different error types
 }
 
