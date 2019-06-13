@@ -13,7 +13,9 @@ type BLegacy struct {
 }
 
 func NewLegacy(cfg *bridge.Config) bridge.Bridger {
-	return &BLegacy{Bslack: newBridge(cfg)}
+	b := &BLegacy{Bslack: newBridge(cfg)}
+	b.legacy = true
+	return b
 }
 
 func (b *BLegacy) Connect() error {
