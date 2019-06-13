@@ -6,7 +6,7 @@ require (
 	github.com/BurntSushi/toml v0.0.0-20170318202913-d94612f9fc14 // indirect
 	github.com/Jeffail/gabs v1.1.1 // indirect
 	github.com/Philipp15b/go-steam v1.0.1-0.20180818081528-681bd9573329
-	github.com/Rhymen/go-whatsapp v0.0.2-0.20190325075644-cc2581bbf24d
+	github.com/Rhymen/go-whatsapp v0.0.2
 	github.com/bwmarrin/discordgo v0.19.0
 	github.com/d5/tengo v1.20.0
 	github.com/dfordsoft/golib v0.0.0-20180902042739-76ee6ab99bec
@@ -33,7 +33,6 @@ require (
 	github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18
 	github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61
 	github.com/mattermost/mattermost-server v5.5.0+incompatible
-	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/mreiferson/go-httpclient v0.0.0-20160630210159-31f0106b4474 // indirect
 	github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff // indirect
@@ -50,7 +49,6 @@ require (
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca
 	github.com/shazow/ssh-chat v0.0.0-20190125184227-81d7e1686296
 	github.com/sirupsen/logrus v1.3.0
-	github.com/skip2/go-qrcode v0.0.0-20190110000554-dc11ecdae0a9 // indirect
 	github.com/smartystreets/assertions v0.0.0-20180803164922-886ec427f6b9 // indirect
 	github.com/smartystreets/goconvey v0.0.0-20180222194500-ef6db91d284a // indirect
 	github.com/spf13/viper v1.3.1
