@@ -8,10 +8,7 @@ import (
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-
-	"github.com/matterbridge/go-whatsapp"
-
-	whatsappExt "github.com/matterbridge/mautrix-whatsapp/whatsapp-ext"
+	"github.com/Rhymen/go-whatsapp"
 )
 
 /*
@@ -24,6 +21,10 @@ Check:
 
 // HandleError received from WhatsApp
 func (b *Bwhatsapp) HandleError(err error) {
+	// ignore received invalid data errors. https://github.com/42wim/matterbridge/issues/843
+	if strings.Contains(err.Error(), "error processing data: received invalid data") {
+		return
+	}
 	b.Log.Errorf("%v", err) // TODO implement proper handling? at least respond to different error types
 }
 
@@ -60,7 +61,7 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 
 			// mentions comes as telephone numbers and we don't want to expose it to other bridges
 			// replace it with something more meaninful to others
-			mention := b.getSenderNotify(numberAndSuffix[0] + whatsappExt.NewUserSuffix)
+			mention := b.getSenderNotify(numberAndSuffix[0] + "@s.whatsapp.net")
 			if mention == "" {
 				mention = "someone"
 			}

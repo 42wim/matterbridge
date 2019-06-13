@@ -14,6 +14,7 @@ import (
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/gateway/bridgemap"
 )
 
 // handleEventFailure handles failures and reconnects bridges.
@@ -189,6 +190,14 @@ func (gw *Gateway) ignoreEvent(event string, dest *bridge.Bridge) bool {
 // Returns an array of msg ID's
 func (gw *Gateway) handleMessage(rmsg *config.Message, dest *bridge.Bridge) []*BrMsgID {
 	var brMsgIDs []*BrMsgID
+
+	// Not all bridges support "user is typing" indications so skip the message
+	// if the targeted bridge does not support it.
+	if rmsg.Event == config.EventUserTyping {
+		if _, ok := bridgemap.UserTypingSupport[dest.Protocol]; !ok {
+			return nil
+		}
+	}
 
 	// if we have an attached file, or other info
 	if rmsg.Extra != nil && len(rmsg.Extra[config.EventFileFailureSize]) != 0 && rmsg.Text == "" {

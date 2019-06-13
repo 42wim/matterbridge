@@ -6,6 +6,7 @@ require (
 	github.com/BurntSushi/toml v0.0.0-20170318202913-d94612f9fc14 // indirect
 	github.com/Jeffail/gabs v1.1.1 // indirect
 	github.com/Philipp15b/go-steam v1.0.1-0.20180818081528-681bd9573329
+	github.com/Rhymen/go-whatsapp v0.0.2
 	github.com/bwmarrin/discordgo v0.19.0
 	github.com/d5/tengo v1.20.0
 	github.com/dfordsoft/golib v0.0.0-20180902042739-76ee6ab99bec
@@ -27,12 +28,10 @@ require (
 	github.com/lusis/go-slackbot v0.0.0-20180109053408-401027ccfef5 // indirect
 	github.com/lusis/slack-test v0.0.0-20180109053238-3c758769bfa6 // indirect
 	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20190210153444-cc9d05784d5d
-	github.com/matterbridge/go-whatsapp v0.0.1-0.20190301204034-f2f1b29d441b
 	github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91
 	github.com/matterbridge/gomatrix v0.0.0-20190102230110-6f9631ca6dea
 	github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18
 	github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61
-	github.com/matterbridge/mautrix-whatsapp v0.0.0-20190301210046-3539cf52ed6e
 	github.com/mattermost/mattermost-server v5.5.0+incompatible
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/mreiferson/go-httpclient v0.0.0-20160630210159-31f0106b4474 // indirect
@@ -45,7 +44,6 @@ require (
 	github.com/paulrosania/go-charset v0.0.0-20151028000031-621bb39fcc83
 	github.com/pborman/uuid v0.0.0-20160216163710-c55201b03606 // indirect
 	github.com/peterhellberg/emojilib v0.0.0-20190124112554-c18758d55320
-	github.com/pkg/errors v0.8.0 // indirect
 	github.com/rs/xid v1.2.1
 	github.com/russross/blackfriday v1.5.2
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca
@@ -68,6 +66,10 @@ require (
 	go.uber.org/multierr v1.1.0 // indirect
 	go.uber.org/zap v1.9.1 // indirect
 	golang.org/x/image v0.0.0-20190220214146-31aff87c08e9
+	golang.org/x/net v0.0.0-20190110200230-915654e7eabc // indirect
+	golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4 // indirect
+	golang.org/x/sys v0.0.0-20190222171317-cd391775e71e // indirect
+	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect

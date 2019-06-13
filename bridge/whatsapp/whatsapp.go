@@ -14,10 +14,7 @@ import (
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
-
-	"github.com/matterbridge/go-whatsapp"
-
-	whatsappExt "github.com/matterbridge/mautrix-whatsapp/whatsapp-ext"
+	"github.com/Rhymen/go-whatsapp"
 )
 
 const (
@@ -32,10 +29,8 @@ type Bwhatsapp struct {
 	*bridge.Config
 
 	// https://github.com/Rhymen/go-whatsapp/blob/c31092027237441cffba1b9cb148eadf7c83c3d2/session.go#L18-L21
-	session *whatsapp.Session
-	conn    *whatsapp.Conn
-	// https://github.com/tulir/mautrix-whatsapp/blob/master/whatsapp-ext/whatsapp.go
-	connExt   *whatsappExt.ExtendedConn
+	session   *whatsapp.Session
+	conn      *whatsapp.Conn
 	startedAt uint64
 
 	users       map[string]whatsapp.Contact
@@ -77,8 +72,6 @@ func (b *Bwhatsapp) Connect() error {
 	}
 
 	b.conn = conn
-	b.connExt = whatsappExt.ExtendConn(b.conn)
-	// TODO do we want to use it? b.connExt.SetClientName("Matterbridge WhatsApp bridge", "mb-wa")
 
 	b.conn.AddHandler(b)
 	b.Log.Debugln("WhatsApp connection successful")
@@ -92,7 +85,7 @@ func (b *Bwhatsapp) Connect() error {
 			b.Log.Debugln("Restoring WhatsApp session..")
 
 			// https://github.com/Rhymen/go-whatsapp#restore
-			session, err = b.conn.RestoreSession(session)
+			session, err = b.conn.RestoreWithSession(session)
 			if err != nil {
 				// TODO return or continue to normal login?
 				// restore session connection timed out (I couldn't get over it without logging in again)
@@ -133,7 +126,7 @@ func (b *Bwhatsapp) Connect() error {
 		b.Log.Debug("Getting user avatars..")
 
 		for jid := range b.users {
-			info, err := b.connExt.GetProfilePicThumb(jid)
+			info, err := b.GetProfilePicThumb(jid)
 			if err != nil {
 				b.Log.Warnf("Could not get profile photo of %s: %v", jid, err)
 
@@ -300,7 +293,7 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 			}
 
 			message.Info.Id = strings.ToUpper(hex.EncodeToString(idbytes))
-			err := b.conn.Send(message)
+			_, err := b.conn.Send(message)
 
 			return message.Info.Id, err
 		}
@@ -326,7 +319,7 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 		}
 
 		message.Info.Id = strings.ToUpper(hex.EncodeToString(idbytes))
-		err := b.conn.Send(message)
+		_, err := b.conn.Send(message)
 
 		return message.Info.Id, err
 	}
@@ -347,9 +340,9 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 	if _, err := rand.Read(idbytes); err != nil {
 		b.Log.Warn(err.Error())
 	}
-
 	message.Info.Id = strings.ToUpper(hex.EncodeToString(idbytes))
-	err := b.conn.Send(message)
+
+	_, err := b.conn.Send(message)
 
 	return message.Info.Id, err
 }
