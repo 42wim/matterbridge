@@ -100,7 +100,7 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 
 func (b *Bxmpp) createXMPP() error {
 	tc := &tls.Config{
-		ServerName:         strings.Split(b.GetString("Server"), ":")[0],
+		ServerName:         strings.Split(b.GetString("Jid"), "@")[1],
 		InsecureSkipVerify: b.GetBool("SkipTLSVerify"), // nolint: gosec
 	}
 	options := xmpp.Options{
@@ -332,5 +332,5 @@ func (b *Bxmpp) skipMessage(message xmpp.Chat) bool {
 	}
 
 	// skip delayed messages
-	return !message.Stamp.IsZero() || time.Since(message.Stamp).Minutes() > 5
+	return !message.Stamp.IsZero() && time.Since(message.Stamp).Minutes() > 5
 }

@@ -1,3 +1,31 @@
+# v1.15.0
+## New features
+* Add scripting (tengo) support for every outgoing message (#806)
+  See https://github.com/42wim/matterbridge/wiki/Settings#tengo and 
+  https://github.com/42wim/matterbridge/wiki/Settings#outmessage for more information
+* Add tengo support to RemoteNickFormat (#793)
+  See https://github.com/42wim/matterbridge/wiki/Settings#remotenickformat-2
+* Deprecated `Message` under `[tengo]` to `InMessage`
+
+## Enhancements
+* general: Forward only user-typing messages if supported by protocol (#832)
+* general: updated wiki with all possible settings: https://github.com/42wim/matterbridge/wiki/Settings
+* tengo: Add msg event to tengo
+* xmpp: Verify TLS against JID domain, not the host. (xmpp) (#834)
+* xmpp: Allow messages with timestamp (xmpp). Fixes #835 (#847)
+* irc: Add verbose IRC joins/parts (ident@host) (#805)
+  See https://github.com/42wim/matterbridge/wiki/Settings#verbosejoinpart
+* rocketchat: Add useraction support (rocketchat). Closes #772 (#794)
+
+## Bugfix
+* slack: Fix regression in autojoining with legacy tokens (slack). Fixes #651 (#848)
+* xmpp: Revert xmpp to orig behaviour. Closes #844
+* whatsapp: Update github.com/Rhymen/go-whatsapp vendor. Fixes #843
+* mattermost: Update channels of all teams (mattermost)
+
+This release couldn't exist without the following contributors:
+@42wim, @Helcaraxan, @chotaire, @qaisjp, @dajohi, @kousu
+
 # v1.14.4
 
 ## Bugfix
