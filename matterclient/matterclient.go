@@ -16,14 +16,15 @@ import (
 )
 
 type Credentials struct {
-	Login         string
-	Team          string
-	Pass          string
-	Token         string
-	CookieToken   bool
-	Server        string
-	NoTLS         bool
-	SkipTLSVerify bool
+	Login            string
+	Team             string
+	Pass             string
+	Token            string
+	CookieToken      bool
+	Server           string
+	NoTLS            bool
+	SkipTLSVerify    bool
+	SkipVersionCheck bool
 }
 
 type Message struct {

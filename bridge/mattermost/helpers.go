@@ -70,6 +70,7 @@ func (b *Bmattermost) apiLogin() error {
 		b.mc.SetLogLevel("debug")
 	}
 	b.mc.SkipTLSVerify = b.GetBool("SkipTLSVerify")
+	b.mc.SkipVersionCheck = b.GetBool("SkipVersionCheck")
 	b.mc.NoTLS = b.GetBool("NoTLS")
 	b.Log.Infof("Connecting %s (team: %s) on %s", b.GetString("Login"), b.GetString("Team"), b.GetString("Server"))
 	err := b.mc.Login()
