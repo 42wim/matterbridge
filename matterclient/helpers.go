@@ -198,8 +198,9 @@ func (m *MMClient) serverAlive(firstConnection bool, b *backoff.Backoff) error {
 				m.logger.Infof("Found version %s", m.ServerVersion)
 				return nil
 			}
+		} else {
+			return nil
 		}
-		return nil
 	}
 }
 
