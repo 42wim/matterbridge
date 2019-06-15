@@ -16,6 +16,27 @@ func (b *Bdiscord) messageDelete(s *discordgo.Session, m *discordgo.MessageDelet
 	b.Remote <- rmsg
 }
 
+// TODO(qaisjp): if other bridges support bulk deletions, it could be fanned out centrally
+func (b *Bdiscord) messageDeleteBulk(s *discordgo.Session, m *discordgo.MessageDeleteBulk) { //nolint:unparam
+	for _, msgID := range m.Messages {
+		rmsg := config.Message{
+			Account: b.Account,
+			ID:      msgID,
+			Event:   config.EventMsgDelete,
+			Text:    config.EventMsgDelete,
+			Channel: "ID:" + m.ChannelID,
+		}
+
+		if !b.useChannelID {
+			rmsg.Channel = b.getChannelName(m.ChannelID)
+		}
+
+		b.Log.Debugf("<= Sending message from %s to gateway", b.Account)
+		b.Log.Debugf("<= Message is %#v", rmsg)
+		b.Remote <- rmsg
+	}
+}
+
 func (b *Bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdate) { //nolint:unparam
 	if b.GetBool("EditDisable") {
 		return
