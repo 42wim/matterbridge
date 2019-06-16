@@ -186,15 +186,19 @@ func (m *MMClient) serverAlive(firstConnection bool, b *backoff.Backoff) error {
 		if resp.Error != nil {
 			return fmt.Errorf("%#v", resp.Error.Error())
 		}
-		if firstConnection && !supportedVersion(resp.ServerVersion) {
+		if firstConnection && !m.SkipVersionCheck && !supportedVersion(resp.ServerVersion) {
 			return fmt.Errorf("unsupported mattermost version: %s", resp.ServerVersion)
 		}
-		m.ServerVersion = resp.ServerVersion
-		if m.ServerVersion == "" {
-			m.logger.Debugf("Server not up yet, reconnecting in %s", d)
-			time.Sleep(d)
+		if !m.SkipVersionCheck {
+			m.ServerVersion = resp.ServerVersion
+			if m.ServerVersion == "" {
+				m.logger.Debugf("Server not up yet, reconnecting in %s", d)
+				time.Sleep(d)
+			} else {
+				m.logger.Infof("Found version %s", m.ServerVersion)
+				return nil
+			}
 		} else {
-			m.logger.Infof("Found version %s", m.ServerVersion)
 			return nil
 		}
 	}

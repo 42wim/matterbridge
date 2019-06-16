@@ -127,6 +127,7 @@ type Protocol struct {
 	ShowUserTyping         bool       // slack
 	ShowEmbeds             bool       // discord
 	SkipTLSVerify          bool       // IRC, mattermost
+	SkipVersionCheck       bool       // mattermost
 	StripNick              bool       // all protocols
 	SyncTopic              bool       // slack
 	TengoModifyMessage     string     // general
