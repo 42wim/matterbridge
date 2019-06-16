@@ -350,6 +350,12 @@ NickFormatter="plain"
 #OPTIONAL (default 4)
 NicksPerRow=4
 
+#Skip the Mattermost server version checks that are normally done when connecting.
+#The usage scenario for this feature would be when the Mattermost instance is hosted behind a
+#reverse proxy that suppresses "non-standard" response headers in flight.
+#OPTIONAL (default false)
+SkipVersionCheck=false
+
 #Whether to prefix messages from other bridges to mattermost with the sender's nick. 
 #Useful if username overrides for incoming webhooks isn't enabled on the 
 #mattermost server. If you set PrefixMessagesWithNick to true, each message 

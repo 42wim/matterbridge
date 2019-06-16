@@ -1,3 +1,9 @@
+# dev
+## Enhancements
+* discord: Support bulk deletions #851
+* mattermost: Add an option to skip the Mattermost server version check #849
+
+
 # v1.15.0
 ## New features
 * Add scripting (tengo) support for every outgoing message (#806)
