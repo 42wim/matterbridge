@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/mattn/go-isatty"
@@ -21,7 +22,7 @@ import (
 type (
 	Logger struct {
 		prefix     string
-		level      Lvl
+		level      uint32
 		skip       int
 		output     io.Writer
 		template   *fasttemplate.Template
@@ -58,7 +59,7 @@ func init() {
 
 func New(prefix string) (l *Logger) {
 	l = &Logger{
-		level:    INFO,
+		level:    uint32(INFO),
 		skip:     2,
 		prefix:   prefix,
 		template: l.newTemplate(defaultHeader),
@@ -110,11 +111,11 @@ func (l *Logger) SetPrefix(p string) {
 }
 
 func (l *Logger) Level() Lvl {
-	return l.level
+	return Lvl(atomic.LoadUint32(&l.level))
 }
 
-func (l *Logger) SetLevel(v Lvl) {
-	l.level = v
+func (l *Logger) SetLevel(level Lvl) {
+	atomic.StoreUint32(&l.level, uint32(level))
 }
 
 func (l *Logger) Output() io.Writer {
@@ -247,8 +248,8 @@ func Level() Lvl {
 	return global.Level()
 }
 
-func SetLevel(v Lvl) {
-	global.SetLevel(v)
+func SetLevel(level Lvl) {
+	global.SetLevel(level)
 }
 
 func Output() io.Writer {
@@ -347,16 +348,14 @@ func Panicj(j JSON) {
 	global.Panicj(j)
 }
 
-func (l *Logger) log(v Lvl, format string, args ...interface{}) {
-	l.mutex.Lock()
-	defer l.mutex.Unlock()
-	buf := l.bufferPool.Get().(*bytes.Buffer)
-	buf.Reset()
-	defer l.bufferPool.Put(buf)
-	_, file, line, _ := runtime.Caller(l.skip)
-
-	if v >= l.level || v == 0 {
+func (l *Logger) log(level Lvl, format string, args ...interface{}) {
+	if level >= l.Level() || level == 0 {
+		buf := l.bufferPool.Get().(*bytes.Buffer)
+		buf.Reset()
+		defer l.bufferPool.Put(buf)
+		_, file, line, _ := runtime.Caller(l.skip)
 		message := ""
+
 		if format == "" {
 			message = fmt.Sprint(args...)
 		} else if format == "json" {
@@ -376,7 +375,7 @@ func (l *Logger) log(v Lvl, format string, args ...interface{}) {
 			case "time_rfc3339_nano":
 				return w.Write([]byte(time.Now().Format(time.RFC3339Nano)))
 			case "level":
-				return w.Write([]byte(l.levels[v]))
+				return w.Write([]byte(l.levels[level]))
 			case "prefix":
 				return w.Write([]byte(l.prefix))
 			case "long_file":
@@ -409,6 +408,8 @@ func (l *Logger) log(v Lvl, format string, args ...interface{}) {
 				buf.WriteString(message)
 			}
 			buf.WriteByte('\n')
+			l.mutex.Lock()
+			defer l.mutex.Unlock()
 			l.output.Write(buf.Bytes())
 		}
 	}

@@ -111,4 +111,8 @@ var Builtins = []*BuiltinFunction{
 		Name:  "type_name",
 		Value: builtinTypeName,
 	},
+	{
+		Name:  "format",
+		Value: builtinFormat,
+	},
 }

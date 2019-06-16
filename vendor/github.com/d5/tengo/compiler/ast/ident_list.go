@@ -8,9 +8,10 @@ import (
 
 // IdentList represents a list of identifiers.
 type IdentList struct {
-	LParen source.Pos
-	List   []*Ident
-	RParen source.Pos
+	LParen  source.Pos
+	VarArgs bool
+	List    []*Ident
+	RParen  source.Pos
 }
 
 // Pos returns the position of first character belonging to the node.
@@ -50,8 +51,12 @@ func (n *IdentList) NumFields() int {
 
 func (n *IdentList) String() string {
 	var list []string
-	for _, e := range n.List {
-		list = append(list, e.String())
+	for i, e := range n.List {
+		if n.VarArgs && i == len(n.List)-1 {
+			list = append(list, "..."+e.String())
+		} else {
+			list = append(list, e.String())
+		}
 	}
 
 	return "(" + strings.Join(list, ", ") + ")"

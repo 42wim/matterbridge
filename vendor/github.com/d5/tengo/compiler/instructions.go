@@ -13,7 +13,7 @@ func MakeInstruction(opcode Opcode, operands ...int) []byte {
 		totalLen += w
 	}
 
-	instruction := make([]byte, totalLen, totalLen)
+	instruction := make([]byte, totalLen)
 	instruction[0] = byte(opcode)
 
 	offset := 1

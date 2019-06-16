@@ -10,6 +10,7 @@ type CompiledFunction struct {
 	Instructions  []byte
 	NumLocals     int // number of local variables (including function parameters)
 	NumParameters int
+	VarArgs       bool
 	SourceMap     map[int]source.Pos
 }
 
@@ -34,6 +35,7 @@ func (o *CompiledFunction) Copy() Object {
 		Instructions:  append([]byte{}, o.Instructions...),
 		NumLocals:     o.NumLocals,
 		NumParameters: o.NumParameters,
+		VarArgs:       o.VarArgs,
 	}
 }
 

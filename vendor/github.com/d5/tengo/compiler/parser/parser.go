@@ -610,19 +610,31 @@ func (p *Parser) parseIdentList() *ast.IdentList {
 
 	var params []*ast.Ident
 	lparen := p.expect(token.LParen)
+	isVarArgs := false
 	if p.token != token.RParen {
-		params = append(params, p.parseIdent())
-		for p.token == token.Comma {
+		if p.token == token.Ellipsis {
+			isVarArgs = true
 			p.next()
+		}
+
+		params = append(params, p.parseIdent())
+		for !isVarArgs && p.token == token.Comma {
+			p.next()
+			if p.token == token.Ellipsis {
+				isVarArgs = true
+				p.next()
+			}
 			params = append(params, p.parseIdent())
 		}
 	}
+
 	rparen := p.expect(token.RParen)
 
 	return &ast.IdentList{
-		LParen: lparen,
-		RParen: rparen,
-		List:   params,
+		LParen:  lparen,
+		RParen:  rparen,
+		VarArgs: isVarArgs,
+		List:    params,
 	}
 }
 

@@ -76,13 +76,13 @@ func (o *Map) Equals(x Object) bool {
 
 // IndexGet returns the value for the given key.
 func (o *Map) IndexGet(index Object) (res Object, err error) {
-	strIdx, ok := index.(*String)
+	strIdx, ok := ToString(index)
 	if !ok {
 		err = ErrInvalidIndexType
 		return
 	}
 
-	val, ok := o.Value[strIdx.Value]
+	val, ok := o.Value[strIdx]
 	if !ok {
 		val = UndefinedValue
 	}
