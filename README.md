@@ -48,7 +48,7 @@
    * [API](#API)
  * [Chat with us](#chat-with-us)
  * [Screenshots](https://github.com/42wim/matterbridge/wiki/)
- * [Installing](#installing)
+ * [Installing/upgrading](#installing--upgrading)
    * [Binaries](#binaries)
  * [Building](#building)
  * [Configuration](#configuration)
@@ -127,15 +127,20 @@ Questions or want to test on your favorite platform? Join below:
 ## Screenshots
 See https://github.com/42wim/matterbridge/wiki
 
-## Installing
+## Installing / upgrading
 ### Binaries
 * Latest stable release [v1.15.0](https://github.com/42wim/matterbridge/releases/latest)
 * Development releases (follows master) can be downloaded [here](https://dl.bintray.com/42wim/nightly/)
+
+To install or upgrade just download the latest [binary](https://github.com/42wim/matterbridge/releases/latest) and follow the instructions on the [howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config) for a step by step walkthrough for creating your configuration.
 
 ### Packages
 * [Overview](https://repology.org/metapackage/matterbridge/versions)
 
 ## Building
+Most people just want to use binaries, you can find those [here](https://github.com/42wim/matterbridge/releases/latest)
+
+If you really want to build from source, follow these instructions:
 Go 1.9+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH](https://golang.org/doc/code.html#GOPATH).
 
 After Go is setup, download matterbridge to your $GOPATH directory.
