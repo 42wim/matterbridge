@@ -254,7 +254,7 @@ func FromInterface(v interface{}) (Object, error) {
 	case []Object:
 		return &Array{Value: v}, nil
 	case []interface{}:
-		arr := make([]Object, len(v), len(v))
+		arr := make([]Object, len(v))
 		for i, e := range v {
 			vo, err := FromInterface(e)
 			if err != nil {

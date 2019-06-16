@@ -56,7 +56,7 @@ func (r *Ring) ContentSize() int {
 	} else {
 		difference := (r.head - r.tail)
 		if difference < 0 {
-			difference = -difference
+			difference += r.capacity()
 		}
 		return difference + 1
 	}

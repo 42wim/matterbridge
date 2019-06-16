@@ -40,3 +40,23 @@ func (o *Undefined) Equals(x Object) bool {
 func (o *Undefined) IndexGet(index Object) (Object, error) {
 	return UndefinedValue, nil
 }
+
+// Iterate creates a map iterator.
+func (o *Undefined) Iterate() Iterator {
+	return o
+}
+
+// Next returns true if there are more elements to iterate.
+func (o *Undefined) Next() bool {
+	return false
+}
+
+// Key returns the key or index value of the current element.
+func (o *Undefined) Key() Object {
+	return o
+}
+
+// Value returns the value of the current element.
+func (o *Undefined) Value() Object {
+	return o
+}

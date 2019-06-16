@@ -44,12 +44,12 @@ func fmtPrintf(args ...objects.Object) (ret objects.Object, err error) {
 		return nil, nil
 	}
 
-	formatArgs := make([]interface{}, numArgs-1, numArgs-1)
-	for idx, arg := range args[1:] {
-		formatArgs[idx] = objects.ToInterface(arg)
+	s, err := objects.Format(format.Value, args[1:]...)
+	if err != nil {
+		return nil, err
 	}
 
-	fmt.Printf(format.Value, formatArgs...)
+	fmt.Print(s)
 
 	return nil, nil
 }
@@ -84,15 +84,9 @@ func fmtSprintf(args ...objects.Object) (ret objects.Object, err error) {
 		return format, nil // okay to return 'format' directly as String is immutable
 	}
 
-	formatArgs := make([]interface{}, numArgs-1, numArgs-1)
-	for idx, arg := range args[1:] {
-		formatArgs[idx] = objects.ToInterface(arg)
-	}
-
-	s := fmt.Sprintf(format.Value, formatArgs...)
-
-	if len(s) > tengo.MaxStringLen {
-		return nil, objects.ErrStringLimit
+	s, err := objects.Format(format.Value, args[1:]...)
+	if err != nil {
+		return nil, err
 	}
 
 	return &objects.String{Value: s}, nil

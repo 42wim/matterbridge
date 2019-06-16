@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 type (
@@ -198,6 +199,7 @@ type (
 		handler  HandlerFunc
 		store    Map
 		echo     *Echo
+		lock     sync.RWMutex
 	}
 )
 
@@ -232,7 +234,7 @@ func (c *context) IsTLS() bool {
 
 func (c *context) IsWebSocket() bool {
 	upgrade := c.request.Header.Get(HeaderUpgrade)
-	return upgrade == "websocket" || upgrade == "Websocket"
+	return strings.ToLower(upgrade) == "websocket"
 }
 
 func (c *context) Scheme() string {
@@ -360,10 +362,15 @@ func (c *context) Cookies() []*http.Cookie {
 }
 
 func (c *context) Get(key string) interface{} {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
 	return c.store[key]
 }
 
 func (c *context) Set(key string, val interface{}) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
 	if c.store == nil {
 		c.store = make(Map)
 	}
@@ -430,7 +437,7 @@ func (c *context) json(code int, i interface{}, indent string) error {
 		enc.SetIndent("", indent)
 	}
 	c.writeContentType(MIMEApplicationJSONCharsetUTF8)
-	c.response.WriteHeader(code)
+	c.response.Status = code
 	return enc.Encode(i)
 }
 
@@ -597,4 +604,3 @@ func (c *context) Reset(r *http.Request, w http.ResponseWriter) {
 	// NOTE: Don't reset because it has to have length c.echo.maxParam at all times
 	// c.pvalues = nil
 }
-

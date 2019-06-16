@@ -477,6 +477,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 			Instructions:  instructions,
 			NumLocals:     numLocals,
 			NumParameters: len(node.Type.Params.List),
+			VarArgs:       node.Type.Params.VarArgs,
 			SourceMap:     sourceMap,
 		}
 

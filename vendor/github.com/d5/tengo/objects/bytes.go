@@ -57,7 +57,7 @@ func (o *Bytes) Equals(x Object) bool {
 		return false
 	}
 
-	return bytes.Compare(o.Value, t.Value) == 0
+	return bytes.Equal(o.Value, t.Value)
 }
 
 // IndexGet returns an element (as Int) at a given index.

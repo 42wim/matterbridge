@@ -183,12 +183,3 @@ func (s *Script) prepCompile() (symbolTable *compiler.SymbolTable, globals []obj
 
 	return
 }
-
-func (s *Script) copyVariables() map[string]*Variable {
-	vars := make(map[string]*Variable)
-	for n, v := range s.variables {
-		vars[n] = v
-	}
-
-	return vars
-}

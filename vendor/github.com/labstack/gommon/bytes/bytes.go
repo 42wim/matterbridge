@@ -22,7 +22,7 @@ const (
 )
 
 var (
-	pattern = regexp.MustCompile(`(?i)^(-?\d+(?:\.\d+)?)([KMGTPE]B?|B?)$`)
+	pattern = regexp.MustCompile(`(?i)^(-?\d+(?:\.\d+)?)\s?([KMGTPE]B?|B?)$`)
 	global  = New()
 )
 

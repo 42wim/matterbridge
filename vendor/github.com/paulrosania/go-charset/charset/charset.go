@@ -6,7 +6,7 @@
 //
 //	import _ "github.com/paulrosania/go-charset/data"
 //
-// It can also made available in a data directory (by settting CharsetDir).
+// It can also made available in a data directory (by setting CharsetDir).
 package charset
 
 import (

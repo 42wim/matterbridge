@@ -32,6 +32,7 @@ var textModule = map[string]objects.Object{
 	"last_index_any": &objects.UserFunction{Name: "last_index_any", Value: FuncASSRI(strings.LastIndexAny)}, // last_index_any(s, chars) => int
 	"repeat":         &objects.UserFunction{Name: "repeat", Value: textRepeat},                              // repeat(s, count) => string
 	"replace":        &objects.UserFunction{Name: "replace", Value: textReplace},                            // replace(s, old, new, n) => string
+	"substr":         &objects.UserFunction{Name: "substr", Value: textSubstring},                           // substr(s, lower, upper) => string
 	"split":          &objects.UserFunction{Name: "split", Value: FuncASSRSs(strings.Split)},                // split(s, sep) => [string]
 	"split_after":    &objects.UserFunction{Name: "split_after", Value: FuncASSRSs(strings.SplitAfter)},     // split_after(s, sep) => [string]
 	"split_after_n":  &objects.UserFunction{Name: "split_after_n", Value: FuncASSIRSs(strings.SplitAfterN)}, // split_after_n(s, sep, n) => [string]
@@ -40,6 +41,9 @@ var textModule = map[string]objects.Object{
 	"to_lower":       &objects.UserFunction{Name: "to_lower", Value: FuncASRS(strings.ToLower)},             // to_lower(s) => string
 	"to_title":       &objects.UserFunction{Name: "to_title", Value: FuncASRS(strings.ToTitle)},             // to_title(s) => string
 	"to_upper":       &objects.UserFunction{Name: "to_upper", Value: FuncASRS(strings.ToUpper)},             // to_upper(s) => string
+	"pad_left":       &objects.UserFunction{Name: "pad_left", Value: textPadLeft},                           // pad_left(s, pad_len, pad_with) => string
+	"pad_right":      &objects.UserFunction{Name: "pad_right", Value: textPadRight},                         // pad_right(s, pad_len, pad_with) => string
+	"trim":           &objects.UserFunction{Name: "trim", Value: FuncASSRS(strings.Trim)},                   // trim(s, cutset) => string
 	"trim_left":      &objects.UserFunction{Name: "trim_left", Value: FuncASSRS(strings.TrimLeft)},          // trim_left(s, cutset) => string
 	"trim_prefix":    &objects.UserFunction{Name: "trim_prefix", Value: FuncASSRS(strings.TrimPrefix)},      // trim_prefix(s, prefix) => string
 	"trim_right":     &objects.UserFunction{Name: "trim_right", Value: FuncASSRS(strings.TrimRight)},        // trim_right(s, cutset) => string
@@ -372,6 +376,195 @@ func textReplace(args ...objects.Object) (ret objects.Object, err error) {
 	}
 
 	ret = &objects.String{Value: s}
+
+	return
+}
+
+func textSubstring(args ...objects.Object) (ret objects.Object, err error) {
+	argslen := len(args)
+	if argslen != 2 && argslen != 3 {
+		err = objects.ErrWrongNumArguments
+		return
+	}
+
+	s1, ok := objects.ToString(args[0])
+	if !ok {
+		err = objects.ErrInvalidArgumentType{
+			Name:     "first",
+			Expected: "string(compatible)",
+			Found:    args[0].TypeName(),
+		}
+		return
+	}
+
+	i2, ok := objects.ToInt(args[1])
+	if !ok {
+		err = objects.ErrInvalidArgumentType{
+			Name:     "second",
+			Expected: "int(compatible)",
+			Found:    args[1].TypeName(),
+		}
+		return
+	}
+
+	strlen := len(s1)
+	i3 := strlen
+	if argslen == 3 {
+		i3, ok = objects.ToInt(args[2])
+		if !ok {
+			err = objects.ErrInvalidArgumentType{
+				Name:     "third",
+				Expected: "int(compatible)",
+				Found:    args[2].TypeName(),
+			}
+			return
+		}
+	}
+
+	if i2 > i3 {
+		err = objects.ErrInvalidIndexType
+		return
+	}
+
+	if i2 < 0 {
+		i2 = 0
+	} else if i2 > strlen {
+		i2 = strlen
+	}
+
+	if i3 < 0 {
+		i3 = 0
+	} else if i3 > strlen {
+		i3 = strlen
+	}
+
+	ret = &objects.String{Value: s1[i2:i3]}
+
+	return
+}
+
+func textPadLeft(args ...objects.Object) (ret objects.Object, err error) {
+	argslen := len(args)
+	if argslen != 2 && argslen != 3 {
+		err = objects.ErrWrongNumArguments
+		return
+	}
+
+	s1, ok := objects.ToString(args[0])
+	if !ok {
+		err = objects.ErrInvalidArgumentType{
+			Name:     "first",
+			Expected: "string(compatible)",
+			Found:    args[0].TypeName(),
+		}
+		return
+	}
+
+	i2, ok := objects.ToInt(args[1])
+	if !ok {
+		err = objects.ErrInvalidArgumentType{
+			Name:     "second",
+			Expected: "int(compatible)",
+			Found:    args[1].TypeName(),
+		}
+		return
+	}
+
+	if i2 > tengo.MaxStringLen {
+		return nil, objects.ErrStringLimit
+	}
+
+	sLen := len(s1)
+	if sLen >= i2 {
+		ret = &objects.String{Value: s1}
+		return
+	}
+
+	s3 := " "
+	if argslen == 3 {
+		s3, ok = objects.ToString(args[2])
+		if !ok {
+			err = objects.ErrInvalidArgumentType{
+				Name:     "third",
+				Expected: "string(compatible)",
+				Found:    args[2].TypeName(),
+			}
+			return
+		}
+	}
+
+	padStrLen := len(s3)
+	if padStrLen == 0 {
+		ret = &objects.String{Value: s1}
+		return
+	}
+
+	padCount := ((i2 - padStrLen) / padStrLen) + 1
+	retStr := strings.Repeat(s3, int(padCount)) + s1
+	ret = &objects.String{Value: retStr[len(retStr)-i2:]}
+
+	return
+}
+
+func textPadRight(args ...objects.Object) (ret objects.Object, err error) {
+	argslen := len(args)
+	if argslen != 2 && argslen != 3 {
+		err = objects.ErrWrongNumArguments
+		return
+	}
+
+	s1, ok := objects.ToString(args[0])
+	if !ok {
+		err = objects.ErrInvalidArgumentType{
+			Name:     "first",
+			Expected: "string(compatible)",
+			Found:    args[0].TypeName(),
+		}
+		return
+	}
+
+	i2, ok := objects.ToInt(args[1])
+	if !ok {
+		err = objects.ErrInvalidArgumentType{
+			Name:     "second",
+			Expected: "int(compatible)",
+			Found:    args[1].TypeName(),
+		}
+		return
+	}
+
+	if i2 > tengo.MaxStringLen {
+		return nil, objects.ErrStringLimit
+	}
+
+	sLen := len(s1)
+	if sLen >= i2 {
+		ret = &objects.String{Value: s1}
+		return
+	}
+
+	s3 := " "
+	if argslen == 3 {
+		s3, ok = objects.ToString(args[2])
+		if !ok {
+			err = objects.ErrInvalidArgumentType{
+				Name:     "third",
+				Expected: "string(compatible)",
+				Found:    args[2].TypeName(),
+			}
+			return
+		}
+	}
+
+	padStrLen := len(s3)
+	if padStrLen == 0 {
+		ret = &objects.String{Value: s1}
+		return
+	}
+
+	padCount := ((i2 - padStrLen) / padStrLen) + 1
+	retStr := s1 + strings.Repeat(s3, int(padCount))
+	ret = &objects.String{Value: retStr[:i2]}
 
 	return
 }
