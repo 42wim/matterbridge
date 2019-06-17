@@ -201,7 +201,7 @@ func (b *Bdiscord) webhookExecute(webhookID, token string, wait bool, data *disc
 	}
 	response, err := b.c.RequestWithBucketID("POST", uri, data, discordgo.EndpointWebhookToken("", ""))
 	if !wait || err != nil {
-		return
+		return nil, err
 	}
 
 	err = json.Unmarshal(response, &st)
@@ -209,5 +209,5 @@ func (b *Bdiscord) webhookExecute(webhookID, token string, wait bool, data *disc
 		return nil, discordgo.ErrJSONUnmarshal
 	}
 
-	return
+	return st, nil
 }
