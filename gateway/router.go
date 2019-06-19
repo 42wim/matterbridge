@@ -125,7 +125,8 @@ func (r *Router) handleReceive() {
 		r.handleEventGetChannelMembers(&msg)
 		r.handleEventFailure(&msg)
 		r.handleEventRejoinChannels(&msg)
-		idx := 0
+
+		filesHandled := false
 		for _, gw := range r.Gateways {
 			// record all the message ID's of the different bridges
 			var msgIDs []*BrMsgID
@@ -134,8 +135,9 @@ func (r *Router) handleReceive() {
 			}
 			msg.Timestamp = time.Now()
 			gw.modifyMessage(&msg)
-			if idx == 0 {
+			if !filesHandled {
 				gw.handleFiles(&msg)
+				filesHandled = true
 			}
 			for _, br := range gw.Bridges {
 				msgIDs = append(msgIDs, gw.handleMessage(&msg, br)...)
@@ -144,8 +146,6 @@ func (r *Router) handleReceive() {
 			// Always add/update the message ID. This is necessary as msgIDs
 			// will change if a bridge returns a different ID in response to edits.
 			gw.Messages.Add(msg.Protocol+" "+msg.ID, msgIDs)
-
-			idx++
 		}
 	}
 }
