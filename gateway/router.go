@@ -140,10 +140,11 @@ func (r *Router) handleReceive() {
 			for _, br := range gw.Bridges {
 				msgIDs = append(msgIDs, gw.handleMessage(&msg, br)...)
 			}
-			// only add the message ID if it doesn't already exists
-			if _, ok := gw.Messages.Get(msg.Protocol + " " + msg.ID); !ok && msg.ID != "" {
-				gw.Messages.Add(msg.Protocol+" "+msg.ID, msgIDs)
-			}
+
+			// Always add/update the message ID. This is necessary as msgIDs
+			// will change if a bridge returns a different ID in response to edits.
+			gw.Messages.Add(msg.Protocol+" "+msg.ID, msgIDs)
+
 			idx++
 		}
 	}
