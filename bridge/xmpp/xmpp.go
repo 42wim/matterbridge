@@ -2,7 +2,9 @@ package bxmpp
 
 import (
 	"crypto/tls"
+	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/42wim/matterbridge/bridge"
@@ -19,6 +21,8 @@ type Bxmpp struct {
 	startTime time.Time
 	xc        *xmpp.Client
 	xmppMap   map[string]string
+	connected bool
+	sync.RWMutex
 }
 
 func New(cfg *bridge.Config) bridge.Bridger {
@@ -55,6 +59,10 @@ func (b *Bxmpp) JoinChannel(channel config.ChannelInfo) error {
 }
 
 func (b *Bxmpp) Send(msg config.Message) (string, error) {
+	// should be fixed by using a cache instead of dropping
+	if !b.Connected() {
+		return "", fmt.Errorf("bridge %s not connected, dropping message %#v to bridge", b.Account, msg)
+	}
 	// ignore delete messages
 	if msg.Event == config.EventMsgDelete {
 		return "", nil
@@ -124,6 +132,7 @@ func (b *Bxmpp) createXMPP() error {
 }
 
 func (b *Bxmpp) manageConnection() {
+	b.setConnected(true)
 	initial := true
 	bf := &backoff.Backoff{
 		Min:    time.Second,
@@ -148,6 +157,7 @@ func (b *Bxmpp) manageConnection() {
 
 		if err := b.handleXMPP(); err != nil {
 			b.Log.WithError(err).Error("Disconnected.")
+			b.setConnected(false)
 		}
 
 		// Reconnection loop using an exponential back-off strategy. We
@@ -159,6 +169,7 @@ func (b *Bxmpp) manageConnection() {
 
 			b.Log.Infof("Reconnecting now.")
 			if err := b.createXMPP(); err == nil {
+				b.setConnected(true)
 				bf.Reset()
 				break
 			}
@@ -333,4 +344,16 @@ func (b *Bxmpp) skipMessage(message xmpp.Chat) bool {
 
 	// skip delayed messages
 	return !message.Stamp.IsZero() && time.Since(message.Stamp).Minutes() > 5
+}
+
+func (b *Bxmpp) setConnected(state bool) {
+	b.Lock()
+	b.connected = state
+	defer b.Unlock()
+}
+
+func (b *Bxmpp) Connected() bool {
+	b.RLock()
+	defer b.RUnlock()
+	return b.connected
 }
