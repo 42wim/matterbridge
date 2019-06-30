@@ -23,7 +23,7 @@ jobs:
     go: 1.12.x
     env:
     - GO111MODULE=on
-    - GOLANGCI_VERSION="v1.16.0"
+    - GOLANGCI_VERSION="v1.17.1"
   - stage: test
     # Run tests in a combination of Go environments.
     script: ./ci/test.sh
