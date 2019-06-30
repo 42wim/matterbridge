@@ -143,9 +143,18 @@ func (r *Router) handleReceive() {
 				msgIDs = append(msgIDs, gw.handleMessage(&msg, br)...)
 			}
 
-			// Always add/update the message ID. This is necessary as msgIDs
-			// will change if a bridge returns a different ID in response to edits.
-			gw.Messages.Add(msg.Protocol+" "+msg.ID, msgIDs)
+			if msg.ID != "" {
+				_, exists := gw.Messages.Get(msg.Protocol + " " + msg.ID)
+
+				// Only add the message ID if it doesn't already exist
+				//
+				// For some bridges we always add/update the message ID.
+				// This is necessary as msgIDs will change if a bridge returns
+				// a different ID in response to edits.
+				if !exists || msg.Protocol == "discord" {
+					gw.Messages.Add(msg.Protocol+" "+msg.ID, msgIDs)
+				}
+			}
 		}
 	}
 }
