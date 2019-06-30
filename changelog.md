@@ -3,6 +3,8 @@
 * discord: Support bulk deletions #851
 * mattermost: Add an option to skip the Mattermost server version check #849
 
+## Bugfix
+* xmpp: fix segfault when disconnected/reconnected #856
 
 # v1.15.0
 ## New features
