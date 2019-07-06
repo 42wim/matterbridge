@@ -5,10 +5,11 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode/utf16"
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 func (b *Btelegram) handleUpdate(rmsg *config.Message, message, posted, edited *tgbotapi.Message) *tgbotapi.Message {
@@ -375,8 +376,13 @@ func (b *Btelegram) handleEntities(rmsg *config.Message, message *tgbotapi.Messa
 				b.Log.Errorf("entity text_link url parse failed: %s", err)
 				continue
 			}
-			link := rmsg.Text[e.Offset : e.Offset+e.Length]
-			rmsg.Text = strings.Replace(rmsg.Text, link, url.String(), 1)
+			utfEncodedString := utf16.Encode([]rune(rmsg.Text))
+			if e.Offset+e.Length > len(utfEncodedString) {
+				b.Log.Errorf("entity length is too long %d > %d", e.Offset+e.Length, len(utfEncodedString))
+				continue
+			}
+			link := utf16.Decode(utfEncodedString[e.Offset : e.Offset+e.Length])
+			rmsg.Text = strings.Replace(rmsg.Text, string(link), url.String(), 1)
 		}
 	}
 }
