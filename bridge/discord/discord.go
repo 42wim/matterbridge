@@ -209,11 +209,21 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	b.channelsMutex.RUnlock()
 
 	// Use webhook to send the message
-	if wID != "" {
+	if wID != "" && msg.Event != config.EventMsgDelete {
 		// skip events
 		if msg.Event != "" && msg.Event != config.EventJoinLeave && msg.Event != config.EventTopicChange {
 			return "", nil
 		}
+
+		// If we are editing a message, delete the old message
+		if msg.ID != "" {
+			b.Log.Debugf("Deleting edited webhook message")
+			err := b.c.ChannelMessageDelete(channelID, msg.ID)
+			if err != nil {
+				b.Log.Errorf("Could not delete edited webhook message: %s", err)
+			}
+		}
+
 		b.Log.Debugf("Broadcasting using Webhook")
 		for _, f := range msg.Extra["file"] {
 			fi := f.(config.FileInfo)
@@ -251,7 +261,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 				return "", err
 			}
 		}
-		err := b.c.WebhookExecute(
+		msg, err := b.webhookExecute(
 			wID,
 			wToken,
 			true,
@@ -260,7 +270,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 				Username:  msg.Username,
 				AvatarURL: msg.Avatar,
 			})
-		return "", err
+		return msg.ID, err
 	}
 
 	b.Log.Debugf("Broadcasting using token (API)")

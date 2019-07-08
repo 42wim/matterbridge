@@ -125,7 +125,8 @@ func (r *Router) handleReceive() {
 		r.handleEventGetChannelMembers(&msg)
 		r.handleEventFailure(&msg)
 		r.handleEventRejoinChannels(&msg)
-		idx := 0
+
+		filesHandled := false
 		for _, gw := range r.Gateways {
 			// record all the message ID's of the different bridges
 			var msgIDs []*BrMsgID
@@ -134,17 +135,26 @@ func (r *Router) handleReceive() {
 			}
 			msg.Timestamp = time.Now()
 			gw.modifyMessage(&msg)
-			if idx == 0 {
+			if !filesHandled {
 				gw.handleFiles(&msg)
+				filesHandled = true
 			}
 			for _, br := range gw.Bridges {
 				msgIDs = append(msgIDs, gw.handleMessage(&msg, br)...)
 			}
-			// only add the message ID if it doesn't already exists
-			if _, ok := gw.Messages.Get(msg.Protocol + " " + msg.ID); !ok && msg.ID != "" {
-				gw.Messages.Add(msg.Protocol+" "+msg.ID, msgIDs)
+
+			if msg.ID != "" {
+				_, exists := gw.Messages.Get(msg.Protocol + " " + msg.ID)
+
+				// Only add the message ID if it doesn't already exist
+				//
+				// For some bridges we always add/update the message ID.
+				// This is necessary as msgIDs will change if a bridge returns
+				// a different ID in response to edits.
+				if !exists || msg.Protocol == "discord" {
+					gw.Messages.Add(msg.Protocol+" "+msg.ID, msgIDs)
+				}
 			}
-			idx++
 		}
 	}
 }

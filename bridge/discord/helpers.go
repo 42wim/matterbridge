@@ -1,6 +1,7 @@
 package bdiscord
 
 import (
+	"encoding/json"
 	"errors"
 	"regexp"
 	"strings"
@@ -186,4 +187,27 @@ func enumerateUsernames(s string) []string {
 		usernames = append(usernames, username)
 	}
 	return usernames
+}
+
+// webhookExecute executes a webhook.
+// webhookID: The ID of a webhook.
+// token    : The auth token for the webhook
+// wait	    : Waits for server confirmation of message send and ensures that the return struct is populated (it is nil otherwise)
+func (b *Bdiscord) webhookExecute(webhookID, token string, wait bool, data *discordgo.WebhookParams) (st *discordgo.Message, err error) {
+	uri := discordgo.EndpointWebhookToken(webhookID, token)
+
+	if wait {
+		uri += "?wait=true"
+	}
+	response, err := b.c.RequestWithBucketID("POST", uri, data, discordgo.EndpointWebhookToken("", ""))
+	if !wait || err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(response, &st)
+	if err != nil {
+		return nil, discordgo.ErrJSONUnmarshal
+	}
+
+	return st, nil
 }
