@@ -88,13 +88,13 @@ var (
 
 func (b *Bdiscord) replaceChannelMentions(text string) string {
 	replaceChannelMentionFunc := func(match string) string {
-		var err error
 		channelID := match[2 : len(match)-1]
-
 		channelName := b.getChannelName(channelID)
+
 		// If we don't have the channel refresh our list.
 		if channelName == "" {
-			b.channels, err = b.c.GuildChannels(b.guildID)
+			chans, err := b.c.GuildChannels(b.guildID)
+			b.channels = filterChannelsByType(chans, discordgo.ChannelTypeGuildCategory, true)
 			if err != nil {
 				return "#unknownchannel"
 			}
@@ -210,4 +210,20 @@ func (b *Bdiscord) webhookExecute(webhookID, token string, wait bool, data *disc
 	}
 
 	return st, nil
+}
+
+func filterChannelsByType(chans []*discordgo.Channel, t discordgo.ChannelType, filterOut bool) []*discordgo.Channel {
+	cs := []*discordgo.Channel{}
+	for _, c := range chans {
+		keep := c.Type == t
+		if filterOut {
+			keep = c.Type != t
+		}
+
+		if keep {
+			cs = append(cs, c)
+		}
+	}
+	return cs
+
 }
