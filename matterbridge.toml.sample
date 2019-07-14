@@ -1553,6 +1553,7 @@ enable=true
     # discord    - channel (without the #)
     #            - ID:123456789 (where 123456789 is the channel ID)
     #               (https://github.com/42wim/matterbridge/issues/57)
+    #            - category/channel (without the #) if you're using discord categories to group your channels
     # telegram   - chatid (a large negative number, eg -123456789)
     #             see (https://www.linkedin.com/pulse/telegram-bots-beginners-marco-frau)
     # hipchat    - id_channel (see https://www.hipchat.com/account/xmpp for the correct channel)

@@ -95,12 +95,10 @@ func (b *Bdiscord) Connect() error {
 	b.channelsMutex.Lock()
 	for _, guild := range guilds {
 		if guild.Name == serverName || guild.ID == serverName {
-			var chans []*discordgo.Channel
-			chans, err = b.c.GuildChannels(guild.ID)
+			b.channels, err = b.c.GuildChannels(guild.ID)
 			if err != nil {
 				break
 			}
-			b.channels = filterChannelsByType(chans, discordgo.ChannelTypeGuildText, false)
 			b.guildID = guild.ID
 			guildFound = true
 		}
