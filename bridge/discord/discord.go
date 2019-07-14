@@ -95,7 +95,8 @@ func (b *Bdiscord) Connect() error {
 	b.channelsMutex.Lock()
 	for _, guild := range guilds {
 		if guild.Name == serverName || guild.ID == serverName {
-			chans, err := b.c.GuildChannels(guild.ID)
+			var chans []*discordgo.Channel
+			chans, err = b.c.GuildChannels(guild.ID)
 			if err != nil {
 				break
 			}
