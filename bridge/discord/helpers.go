@@ -52,6 +52,9 @@ func (b *Bdiscord) getGuildMemberByNick(nick string) (*discordgo.Member, error) 
 }
 
 func (b *Bdiscord) getChannelID(name string) string {
+	if strings.Contains(name, "/") {
+		return b.getCategoryChannelID(name)
+	}
 	b.channelsMutex.RLock()
 	defer b.channelsMutex.RUnlock()
 
@@ -60,8 +63,31 @@ func (b *Bdiscord) getChannelID(name string) string {
 		return idcheck[1]
 	}
 	for _, channel := range b.channels {
-		if channel.Name == name {
+		if channel.Name == name && channel.Type == discordgo.ChannelTypeGuildText {
 			return channel.ID
+		}
+	}
+	return ""
+}
+
+func (b *Bdiscord) getCategoryChannelID(name string) string {
+	b.channelsMutex.RLock()
+	defer b.channelsMutex.RUnlock()
+	res := strings.Split(name, "/")
+	// shouldn't happen because function should be only called from getChannelID
+	if len(res) != 2 {
+		return ""
+	}
+	catName, chanName := res[0], res[1]
+	for _, channel := range b.channels {
+		// if we have a parentID, lookup the name of that parent (category)
+		// and if it matches return it
+		if channel.Name == chanName && channel.ParentID != "" {
+			for _, cat := range b.channels {
+				if cat.ID == channel.ParentID && cat.Name == catName {
+					return channel.ID
+				}
+			}
 		}
 	}
 	return ""
@@ -73,10 +99,32 @@ func (b *Bdiscord) getChannelName(id string) string {
 
 	for _, channel := range b.channels {
 		if channel.ID == id {
-			return channel.Name
+			return b.getCategoryChannelName(channel.Name, channel.ParentID)
 		}
 	}
 	return ""
+}
+
+func (b *Bdiscord) getCategoryChannelName(name, parentID string) string {
+	var usesCat bool
+	// do we have a category configuration in the channel config
+	for _, c := range b.channelInfoMap {
+		if strings.Contains(c.Name, "/") {
+			usesCat = true
+			break
+		}
+	}
+	// configuration without category, return the normal channel name
+	if !usesCat {
+		return name
+	}
+	// create a category/channel response
+	for _, c := range b.channels {
+		if c.ID == parentID {
+			name = c.Name + "/" + name
+		}
+	}
+	return name
 }
 
 var (
@@ -93,8 +141,8 @@ func (b *Bdiscord) replaceChannelMentions(text string) string {
 
 		// If we don't have the channel refresh our list.
 		if channelName == "" {
-			chans, err := b.c.GuildChannels(b.guildID)
-			b.channels = filterChannelsByType(chans, discordgo.ChannelTypeGuildCategory, true)
+			var err error
+			b.channels, err = b.c.GuildChannels(b.guildID)
 			if err != nil {
 				return "#unknownchannel"
 			}
@@ -210,20 +258,4 @@ func (b *Bdiscord) webhookExecute(webhookID, token string, wait bool, data *disc
 	}
 
 	return st, nil
-}
-
-func filterChannelsByType(chans []*discordgo.Channel, t discordgo.ChannelType, filterOut bool) []*discordgo.Channel {
-	cs := []*discordgo.Channel{}
-	for _, c := range chans {
-		keep := c.Type == t
-		if filterOut {
-			keep = c.Type != t
-		}
-
-		if keep {
-			cs = append(cs, c)
-		}
-	}
-	return cs
-
 }
