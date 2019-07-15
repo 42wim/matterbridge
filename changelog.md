@@ -1,10 +1,14 @@
 # dev
+
+# v1.15.1
 ## Enhancements
 * discord: Support bulk deletions #851
+* discord: Support channels in categories #863 (use category/channel. See matterbridge.toml.sample for more info)
 * mattermost: Add an option to skip the Mattermost server version check #849
 
 ## Bugfix
 * xmpp: fix segfault when disconnected/reconnected #856
+* telegram: fix panic in handleEntities #858
 
 # v1.15.0
 ## New features
