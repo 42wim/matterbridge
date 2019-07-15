@@ -10,6 +10,9 @@
 * xmpp: fix segfault when disconnected/reconnected #856
 * telegram: fix panic in handleEntities #858
 
+This release couldn't exist without the following contributors:
+@42wim, @qaisjp, @joohoi
+
 # v1.15.0
 ## New features
 * Add scripting (tengo) support for every outgoing message (#806)
