@@ -183,7 +183,7 @@ func (b *Bdiscord) stripCustomoji(text string) string {
 
 func (b *Bdiscord) replaceAction(text string) (string, bool) {
 	if strings.HasPrefix(text, "_") && strings.HasSuffix(text, "_") {
-		return text[1:], true
+		return text[1 : len(text)-1], true
 	}
 	return text, false
 }
