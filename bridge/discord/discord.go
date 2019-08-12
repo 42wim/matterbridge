@@ -261,16 +261,11 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 				return "", err
 			}
 		}
-		msg, err := b.webhookExecute(
-			wID,
-			wToken,
-			true,
-			&discordgo.WebhookParams{
-				Content:   msg.Text,
-				Username:  msg.Username,
-				AvatarURL: msg.Avatar,
-			})
-		return msg.ID, err
+		msg, err := b.webhookSend(&msg, wID, wToken)
+		if err != nil {
+			return "", err
+		}
+		return msg.ID, nil
 	}
 
 	b.Log.Debugf("Broadcasting using token (API)")
@@ -375,4 +370,52 @@ func (b *Bdiscord) handleUploadFile(msg *config.Message, channelID string) (stri
 		}
 	}
 	return "", nil
+}
+
+// webhookSend send one or more message via webhook, taking care of file
+// uploads (from slack, telegram or mattermost).
+// Returns messageID and error.
+func (b *Bdiscord) webhookSend(msg *config.Message, webhookID, token string) (*discordgo.Message, error) {
+	var err error
+
+	// WebhookParams can have either `Content` or `File`.
+	res, err := b.c.WebhookExecute(
+		webhookID,
+		token,
+		true,
+		&discordgo.WebhookParams{
+			Content:   msg.Text,
+			Username:  msg.Username,
+			AvatarURL: msg.Avatar,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	if msg.Extra != nil {
+		for _, f := range msg.Extra["file"] {
+			fi := f.(config.FileInfo)
+			file := discordgo.File{
+				Name:        fi.Name,
+				ContentType: "",
+				Reader:      bytes.NewReader(*fi.Data),
+			}
+			_, err := b.c.WebhookExecute(
+				webhookID,
+				token,
+				false,
+				&discordgo.WebhookParams{
+					Username:  msg.Username,
+					AvatarURL: msg.Avatar,
+					File:      &file,
+				},
+			)
+			if err != nil {
+				return nil, fmt.Errorf("file upload failed: %s", err)
+			}
+		}
+	}
+
+	return res, nil
 }
