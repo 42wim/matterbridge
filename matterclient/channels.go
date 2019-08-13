@@ -63,7 +63,13 @@ func (m *MMClient) getChannelIdTeam(name string, teamId string) string { //nolin
 	for _, t := range m.OtherTeams {
 		if t.Id == teamId {
 			for _, channel := range append(t.Channels, t.MoreChannels...) {
-				if channel.Name == name {
+				if channel.Type == model.CHANNEL_GROUP {
+					res := strings.Replace(channel.DisplayName, ", ", "-", -1)
+					res = strings.Replace(res, " ", "_", -1)
+					if res == name {
+						return channel.Id
+					}
+				} else if channel.Name == name {
 					return channel.Id
 				}
 			}
