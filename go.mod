@@ -7,6 +7,7 @@ require (
 	github.com/Philipp15b/go-steam v1.0.1-0.20180818081528-681bd9573329
 	github.com/Rhymen/go-whatsapp v0.0.2
 	github.com/bwmarrin/discordgo v0.19.0
+	// github.com/bwmarrin/discordgo v0.19.0
 	github.com/d5/tengo v1.24.1
 	github.com/dfordsoft/golib v0.0.0-20180902042739-76ee6ab99bec
 	github.com/fsnotify/fsnotify v1.4.7
@@ -64,3 +65,5 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 )
+
+replace github.com/bwmarrin/discordgo v0.19.0 => github.com/MOZGIII/discordgo v0.19.1-0.20190812115637-1e74183814f9
