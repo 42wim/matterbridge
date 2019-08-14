@@ -7,8 +7,6 @@ github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/Jeffail/gabs v1.1.1 h1:V0uzR08Hj22EX8+8QMhyI9sX2hwRu+/RJhJUmnwda/E=
 github.com/Jeffail/gabs v1.1.1/go.mod h1:6xMvQMK4k33lb7GUUpaAPh6nKMmemQeg5d4gn7/bOXc=
-github.com/MOZGIII/discordgo v0.19.1-0.20190812115637-1e74183814f9 h1:2AlsZSdWfhhuyzNgRejZDkkLq1cAA2K8TaMoadSXeJE=
-github.com/MOZGIII/discordgo v0.19.1-0.20190812115637-1e74183814f9/go.mod h1:O9S4p+ofTFwB02em7jkpkV8M3R0/PUVOwN61zSZ0r4Q=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/Philipp15b/go-steam v1.0.1-0.20180818081528-681bd9573329 h1:xZBoq249G9MSt+XuY7sVQzcfONJ6IQuwpCK+KAaOpnY=
 github.com/Philipp15b/go-steam v1.0.1-0.20180818081528-681bd9573329/go.mod h1:HuVM+sZFzumUdKPWiz+IlCMb4RdsKdT3T+nQBKL+sYg=
