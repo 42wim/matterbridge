@@ -38,7 +38,7 @@ func (m *MMClient) GetChannelHeader(channelId string) string { //nolint:golint
 
 func getNormalisedName(channel *model.Channel) string {
 	if channel.Type == model.CHANNEL_GROUP {
-		// (deprecated in favour of ReplaceAll in go 1.12)
+		// (deprecated in favor of ReplaceAll in go 1.12)
 		res := strings.Replace(channel.DisplayName, ", ", "-", -1) //nolint: gocritic
 		res = strings.Replace(res, " ", "_", -1)                   //nolint: gocritic
 		return res
