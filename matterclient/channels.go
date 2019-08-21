@@ -36,6 +36,15 @@ func (m *MMClient) GetChannelHeader(channelId string) string { //nolint:golint
 	return ""
 }
 
+func getNormalisedName(channel *model.Channel) string {
+	if channel.Type == model.CHANNEL_GROUP {
+		res := strings.Replace(channel.DisplayName, ", ", "-", -1)
+		res = strings.Replace(res, " ", "_", -1)
+		return res
+	}
+	return channel.Name
+}
+
 func (m *MMClient) GetChannelId(name string, teamId string) string { //nolint:golint
 	m.RLock()
 	defer m.RUnlock()
@@ -45,13 +54,7 @@ func (m *MMClient) GetChannelId(name string, teamId string) string { //nolint:go
 
 	for _, t := range m.OtherTeams {
 		for _, channel := range append(t.Channels, t.MoreChannels...) {
-			if channel.Type == model.CHANNEL_GROUP {
-				res := strings.Replace(channel.DisplayName, ", ", "-", -1)
-				res = strings.Replace(res, " ", "_", -1)
-				if res == name {
-					return channel.Id
-				}
-			} else if channel.Name == name {
+			if getNormalisedName(channel) == name {
 				return channel.Id
 			}
 		}
@@ -63,13 +66,7 @@ func (m *MMClient) getChannelIdTeam(name string, teamId string) string { //nolin
 	for _, t := range m.OtherTeams {
 		if t.Id == teamId {
 			for _, channel := range append(t.Channels, t.MoreChannels...) {
-				if channel.Type == model.CHANNEL_GROUP {
-					res := strings.Replace(channel.DisplayName, ", ", "-", -1)
-					res = strings.Replace(res, " ", "_", -1)
-					if res == name {
-						return channel.Id
-					}
-				} else if channel.Name == name {
+				if getNormalisedName(channel) == name {
 					return channel.Id
 				}
 			}
@@ -87,12 +84,7 @@ func (m *MMClient) GetChannelName(channelId string) string { //nolint:golint
 		}
 		for _, channel := range append(t.Channels, t.MoreChannels...) {
 			if channel.Id == channelId {
-				if channel.Type == model.CHANNEL_GROUP {
-					res := strings.Replace(channel.DisplayName, ", ", "-", -1)
-					res = strings.Replace(res, " ", "_", -1)
-					return res
-				}
-				return channel.Name
+				return getNormalisedName(channel)
 			}
 		}
 	}
