@@ -198,6 +198,7 @@ type BridgeValues struct {
 	SSHChat            map[string]Protocol
 	WhatsApp           map[string]Protocol // TODO is this struct used? Search for "SlackLegacy" for example didn't return any results
 	Zulip              map[string]Protocol
+	Keybase            map[string]Protocol
 	General            Protocol
 	Tengo              Tengo
 	Gateway            []Gateway
