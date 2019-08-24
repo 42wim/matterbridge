@@ -79,6 +79,8 @@ github.com/hashicorp/hcl/json/token
 github.com/jpillora/backoff
 # github.com/kardianos/osext v0.0.0-20170510131534-ae77be60afb1
 github.com/kardianos/osext
+# github.com/keybase/go-keybase-chat-bot v0.0.0-20190816161829-561f10822eb2
+github.com/keybase/go-keybase-chat-bot/kbchat
 # github.com/konsorten/go-windows-terminal-sequences v1.0.1
 github.com/konsorten/go-windows-terminal-sequences
 # github.com/labstack/echo/v4 v4.1.6
@@ -175,8 +177,8 @@ github.com/spf13/pflag
 github.com/spf13/viper
 # github.com/stretchr/testify v1.3.0
 github.com/stretchr/testify/assert
-github.com/stretchr/testify/suite
 github.com/stretchr/testify/require
+github.com/stretchr/testify/suite
 # github.com/technoweenie/multipartstreamer v1.0.1
 github.com/technoweenie/multipartstreamer
 # github.com/valyala/bytebufferpool v1.0.0
@@ -206,7 +208,7 @@ go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/buffer
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
-# golang.org/x/crypto v0.0.0-20190605123033-f99c8df09eb5
+# golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586
 golang.org/x/crypto/ssh/terminal
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
@@ -227,10 +229,10 @@ golang.org/x/image/webp
 golang.org/x/image/riff
 golang.org/x/image/vp8
 golang.org/x/image/vp8l
-# golang.org/x/net v0.0.0-20190607181551-461777fb6f67
+# golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7
 golang.org/x/net/idna
 golang.org/x/net/websocket
-# golang.org/x/sys v0.0.0-20190609082536-301114b31cce
+# golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/cpu
