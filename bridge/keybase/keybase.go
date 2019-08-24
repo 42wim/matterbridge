@@ -49,26 +49,19 @@ func (b *Bkeybase) JoinChannel(channel config.ChannelInfo) error {
 func (b *Bkeybase) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
 
-	// TODO: /me handling
-	// if msg.Event == config.EventUserAction {
-	// 	m := matrix.TextMessage{
-	// 		MsgType: "m.emote",
-	// 		Body:    msg.Username + msg.Text,
-	// 	}
-	// 	resp, err := b.mc.SendMessageEvent(channel, "m.room.message", m)
-	// 	if err != nil {
-	// 		return "", err
-	// 	}
-	// 	return resp.EventID, err
-	// }
+	// Handle /me events
+	if msg.Event == config.EventUserAction {
+		msg.Text = "_" + msg.Text + "_"
+	}
 
+	// Delete message if we have an ID
 	// Delete message not supported by keybase go library yet
 
 	// Upload a file if it exists
-	// kbchat does not support attachments yet
+	// kbchat lib does not support attachments yet
 
 	// Edit message if we have an ID
-	// matrix has no editing support
+	// kbchat lib does not support message editing yet
 
 	// Use notices to send join/leave events
 	// if msg.Event == config.EventJoinLeave {
@@ -79,10 +72,8 @@ func (b *Bkeybase) Send(msg config.Message) (string, error) {
 	// 	return resp.EventID, err
 	// }
 
-	// resp, err := b.mc.SendHTML(channel, msg.Username+msg.Text, username+helper.ParseMarkdown(msg.Text))
-	body := msg.Username + msg.Text
-	b.Log.Debugf("|| computed message is %s", body)
-	resp, err := b.kbc.SendMessageByTeamName(b.team, msg.Username+msg.Text, &b.channel)
+	body := msg.Username + ": " + msg.Text
+	resp, err := b.kbc.SendMessageByTeamName(b.team, body, &b.channel)
 	if err != nil {
 		return "", err
 	}
