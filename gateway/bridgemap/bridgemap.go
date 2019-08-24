@@ -6,6 +6,7 @@ import (
 	bdiscord "github.com/42wim/matterbridge/bridge/discord"
 	bgitter "github.com/42wim/matterbridge/bridge/gitter"
 	birc "github.com/42wim/matterbridge/bridge/irc"
+	bkeybase "github.com/42wim/matterbridge/bridge/keybase"
 	bmatrix "github.com/42wim/matterbridge/bridge/matrix"
 	bmattermost "github.com/42wim/matterbridge/bridge/mattermost"
 	brocketchat "github.com/42wim/matterbridge/bridge/rocketchat"
@@ -35,6 +36,7 @@ var (
 		"whatsapp":     bwhatsapp.New,
 		"xmpp":         bxmpp.New,
 		"zulip":        bzulip.New,
+		"keybase":      bkeybase.New,
 	}
 
 	UserTypingSupport = map[string]struct{}{
