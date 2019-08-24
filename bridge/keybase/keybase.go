@@ -64,8 +64,7 @@ func (b *Bkeybase) Send(msg config.Message) (string, error) {
 	// kbchat lib does not support message editing yet
 
 	// Send regular message
-	body := msg.Username + ": " + msg.Text
-	resp, err := b.kbc.SendMessageByTeamName(b.team, body, &b.channel)
+	resp, err := b.kbc.SendMessageByTeamName(b.team, msg.Username+msg.Text, &b.channel)
 	if err != nil {
 		return "", err
 	}
