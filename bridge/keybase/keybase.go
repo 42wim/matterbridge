@@ -8,6 +8,7 @@ import (
 	"github.com/keybase/go-keybase-chat-bot/kbchat"
 )
 
+// Bkeybase bridge structure
 type Bkeybase struct {
 	kbc     *kbchat.API
 	user    string
@@ -16,12 +17,14 @@ type Bkeybase struct {
 	*bridge.Config
 }
 
+// New initializes Bkeybase object and sets team
 func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Bkeybase{Config: cfg}
 	b.team = b.Config.GetString("Team")
 	return b
 }
 
+// Connect starts keybase API and listener loop
 func (b *Bkeybase) Connect() error {
 	var err error
 	b.Log.Infof("Connecting %s", b.GetString("Team"))
@@ -37,15 +40,18 @@ func (b *Bkeybase) Connect() error {
 	return nil
 }
 
+// Disconnect doesn't do anything for now
 func (b *Bkeybase) Disconnect() error {
 	return nil
 }
 
+// JoinChannel sets channel name in struct
 func (b *Bkeybase) JoinChannel(channel config.ChannelInfo) error {
 	b.channel = channel.Name
 	return nil
 }
 
+// Send receives bridge messages and sends them to Keybase chat room
 func (b *Bkeybase) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
 
