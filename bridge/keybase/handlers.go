@@ -10,14 +10,14 @@ import (
 func (b *Bkeybase) handleKeybase() {
 	sub, err := b.kbc.ListenForNewTextMessages()
 	if err != nil {
-		b.Log.Error("Error listening: %s", err.Error())
+		b.Log.Errorf("Error listening: %s", err.Error())
 	}
 
 	go func() {
 		for {
 			msg, err := sub.Read()
 			if err != nil {
-				b.Log.Error("failed to read message: %s", err.Error())
+				b.Log.Errorf("failed to read message: %s", err.Error())
 			}
 
 			if msg.Message.Content.Type != "text" {
