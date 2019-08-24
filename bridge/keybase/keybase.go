@@ -80,6 +80,8 @@ func (b *Bkeybase) Send(msg config.Message) (string, error) {
 	// }
 
 	// resp, err := b.mc.SendHTML(channel, msg.Username+msg.Text, username+helper.ParseMarkdown(msg.Text))
+	body := msg.Username + msg.Text
+	b.Log.Debugf("|| computed message is %s", body)
 	resp, err := b.kbc.SendMessageByTeamName(b.team, msg.Username+msg.Text, &b.channel)
 	if err != nil {
 		return "", err
@@ -123,7 +125,7 @@ func (b *Bkeybase) handleEvent(msg kbchat.Message) {
 		// TODO download avatar
 
 		// Create our message
-		rmsg := config.Message{Username: msg.Sender.Username, Channel: msg.Channel.Name, ID: strconv.Itoa(msg.MsgID)}
+		rmsg := config.Message{Username: msg.Sender.Username, Channel: msg.Channel.TopicName, ID: strconv.Itoa(msg.MsgID)}
 
 		// Text must be a string
 		if msg.Content.Type != "text" {
