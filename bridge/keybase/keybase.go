@@ -1,145 +1,91 @@
 package bmatrix
 
 import (
-	"html"
-	"regexp"
-	"sync"
+	"strconv"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
-	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/keybase/go-keybase-chat-bot/kbchat"
 )
 
 type Bkeybase struct {
-	kbc    *kbchat.API
-	UserID string
-	sync.RWMutex
-	htmlTag *regexp.Regexp
+	kbc     *kbchat.API
+	user    string
+	channel string
+	team    string
 	*bridge.Config
 }
 
 func New(cfg *bridge.Config) bridge.Bridger { // idk what this does
 	b := &Bkeybase{Config: cfg}
-	b.htmlTag = regexp.MustCompile("</.*?>")
+	b.team = b.Config.GetString("Team")
 	return b
 }
 
 func (b *Bkeybase) Connect() error {
 	var err error
-	b.Log.Infof("Connecting %s", b.GetString("Server"))
-	b.mc, err = matrix.NewClient(b.GetString("Server"), "", "")
+	b.Log.Infof("Connecting %s", b.GetString("Team"))
+	b.kbc, err = kbchat.Start(kbchat.RunOptions{})
 	if err != nil {
 		return err
 	}
-	resp, err := b.mc.Login(&matrix.ReqLogin{
-		Type:     "m.login.password",
-		User:     b.GetString("Login"),
-		Password: b.GetString("Password"),
-	})
-	if err != nil {
-		return err
-	}
-	b.mc.SetCredentials(resp.UserID, resp.AccessToken)
-	b.UserID = resp.UserID
+	b.user = b.kbc.GetUsername()
 	b.Log.Info("Connection succeeded")
-	go b.handlematrix()
+	go b.handleKeybase()
 	return nil
 }
 
-func (b *Bmatrix) Disconnect() error {
+func (b *Bkeybase) Disconnect() error {
 	return nil
 }
 
-func (b *Bmatrix) JoinChannel(channel config.ChannelInfo) error {
-	resp, err := b.mc.JoinRoom(channel.Name, "", nil)
-	if err != nil {
-		return err
-	}
+func (b *Bkeybase) JoinChannel(channel config.ChannelInfo) error {
 	b.Lock()
-	b.RoomMap[resp.RoomID] = channel.Name
+	b.channel = channel.Name
 	b.Unlock()
-	return err
+	return nil
 }
 
-func (b *Bmatrix) Send(msg config.Message) (string, error) {
+func (b *Bkeybase) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
 
-	channel := b.getRoomID(msg.Channel)
-	b.Log.Debugf("Channel %s maps to channel id %s", msg.Channel, channel)
+	// TODO: /me handling
+	// if msg.Event == config.EventUserAction {
+	// 	m := matrix.TextMessage{
+	// 		MsgType: "m.emote",
+	// 		Body:    msg.Username + msg.Text,
+	// 	}
+	// 	resp, err := b.mc.SendMessageEvent(channel, "m.room.message", m)
+	// 	if err != nil {
+	// 		return "", err
+	// 	}
+	// 	return resp.EventID, err
+	// }
 
-	// Make a action /me of the message
-	if msg.Event == config.EventUserAction {
-		m := matrix.TextMessage{
-			MsgType: "m.emote",
-			Body:    msg.Username + msg.Text,
-		}
-		resp, err := b.mc.SendMessageEvent(channel, "m.room.message", m)
-		if err != nil {
-			return "", err
-		}
-		return resp.EventID, err
-	}
-
-	// Delete message
-	if msg.Event == config.EventMsgDelete {
-		if msg.ID == "" {
-			return "", nil
-		}
-		resp, err := b.mc.RedactEvent(channel, msg.ID, &matrix.ReqRedact{})
-		if err != nil {
-			return "", err
-		}
-		return resp.EventID, err
-	}
+	// Delete message not supported by keybase go library yet
 
 	// Upload a file if it exists
-	if msg.Extra != nil {
-		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			if _, err := b.mc.SendText(channel, rmsg.Username+rmsg.Text); err != nil {
-				b.Log.Errorf("sendText failed: %s", err)
-			}
-		}
-		// check if we have files to upload (from slack, telegram or mattermost)
-		if len(msg.Extra["file"]) > 0 {
-			return b.handleUploadFiles(&msg, channel)
-		}
-	}
+	// kbchat does not support attachments yet
 
 	// Edit message if we have an ID
 	// matrix has no editing support
 
 	// Use notices to send join/leave events
-	if msg.Event == config.EventJoinLeave {
-		resp, err := b.mc.SendNotice(channel, msg.Username+msg.Text)
-		if err != nil {
-			return "", err
-		}
-		return resp.EventID, err
-	}
+	// if msg.Event == config.EventJoinLeave {
+	// 	resp, err := b.mc.SendNotice(channel, msg.Username+msg.Text)
+	// 	if err != nil {
+	// 		return "", err
+	// 	}
+	// 	return resp.EventID, err
+	// }
 
-	username := html.EscapeString(msg.Username)
-	// check if we have a </tag>. if we have, we don't escape HTML. #696
-	if b.htmlTag.MatchString(msg.Username) {
-		username = msg.Username
-	}
-	// Post normal message with HTML support (eg riot.im)
-	resp, err := b.mc.SendHTML(channel, msg.Username+msg.Text, username+helper.ParseMarkdown(msg.Text))
+	// resp, err := b.mc.SendHTML(channel, msg.Username+msg.Text, username+helper.ParseMarkdown(msg.Text))
+	resp, err := b.kbc.SendMessageByTeamName(b.team, msg.Username+msg.Text, &b.channel)
 	if err != nil {
 		return "", err
 	}
-	return resp.EventID, err
-}
 
-func (b *Bmatrix) getRoomID(channel string) string {
-	b.RLock()
-	defer b.RUnlock()
-	for ID, name := range b.RoomMap {
-		if name == channel {
-			return ID
-		}
-	}
-	return ""
+	return strconv.Itoa(resp.Result.MsgID), err
 }
 
 func (b *Bkeybase) handleKeybase() {
@@ -172,49 +118,37 @@ func (b *Bkeybase) handleKeybase() {
 
 func (b *Bkeybase) handleEvent(msg kbchat.Message) {
 	b.Log.Debugf("== Receiving event: %#v", msg)
-	if ev.Sender != b.UserID {
+	if msg.Sender.Username != b.kbc.GetUsername() {
 
 		// TODO download avatar
 
 		// Create our message
-		rmsg := config.Message{Username: msg.Sender.Username, Channel: channel, Account: b.Account, UserID: ev.Sender, ID: ev.ID}
+		rmsg := config.Message{Username: msg.Sender.Username, Channel: msg.Channel.Name, ID: strconv.Itoa(msg.MsgID)}
 
 		// Text must be a string
-		if rmsg.Text, ok = ev.Content["body"].(string); !ok {
-			b.Log.Errorf("Content[body] is not a string: %T\n%#v",
-				ev.Content["body"], ev.Content)
+		if msg.Content.Type != "text" {
+			b.Log.Errorf("message is not text")
 			return
 		}
 
-		// Remove homeserver suffix if configured
-		if b.GetBool("NoHomeServerSuffix") {
-			re := regexp.MustCompile("(.*?):.*")
-			rmsg.Username = re.ReplaceAllString(rmsg.Username, `$1`)
-		}
-
-		// Delete event
-		if ev.Type == "m.room.redaction" {
-			rmsg.Event = config.EventMsgDelete
-			rmsg.ID = ev.Redacts
-			rmsg.Text = config.EventMsgDelete
-			b.Remote <- rmsg
-			return
-		}
+		// Delete event TODO
+		// if ev.Type == "m.room.redaction" {
+		// 	rmsg.Event = config.EventMsgDelete
+		// 	rmsg.ID = ev.Redacts
+		// 	rmsg.Text = config.EventMsgDelete
+		// 	b.Remote <- rmsg
+		// 	return
+		// }
 
 		// Do we have a /me action
-		if ev.Content["msgtype"].(string) == "m.emote" {
-			rmsg.Event = config.EventUserAction
-		}
+		// if ev.Content["msgtype"].(string) == "m.emote" {
+		// 	rmsg.Event = config.EventUserAction
+		// }
 
 		// Do we have attachments
-		if b.containsAttachment(ev.Content) {
-			err := b.handleDownloadFile(&rmsg, ev.Content)
-			if err != nil {
-				b.Log.Errorf("download failed: %#v", err)
-			}
-		}
+		// doesn't matter because we can't handle it yet
 
-		b.Log.Debugf("<= Sending message from %s on %s to gateway", ev.Sender, b.Account)
+		b.Log.Debugf("<= Sending message from %s on %s to gateway", msg.Sender.Username, msg.Channel.Name)
 		b.Remote <- rmsg
 	}
 }

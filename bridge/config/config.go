@@ -87,7 +87,7 @@ type Protocol struct {
 	IgnoreMessages         string // all protocols
 	Jid                    string // xmpp
 	Label                  string // all protocols
-	Login                  string // mattermost, matrix
+	Login                  string // mattermost, matrix, keybase
 	MediaDownloadBlackList []string
 	MediaDownloadPath      string // Basically MediaServerUpload, but instead of uploading it, just write it to a file on the same server.
 	MediaDownloadSize      int    // all protocols
@@ -131,7 +131,7 @@ type Protocol struct {
 	StripNick              bool       // all protocols
 	SyncTopic              bool       // slack
 	TengoModifyMessage     string     // general
-	Team                   string     // mattermost
+	Team                   string     // mattermost, keybase
 	Token                  string     // gitter, slack, discord, api
 	Topic                  string     // zulip
 	URL                    string     // mattermost, slack // DEPRECATED
@@ -145,6 +145,7 @@ type Protocol struct {
 	VerboseJoinPart        bool       // IRC
 	WebhookBindAddress     string     // mattermost, slack
 	WebhookURL             string     // mattermost, slack
+	PaperKey               string     // keybase
 }
 
 type ChannelOptions struct {
