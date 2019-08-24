@@ -36,6 +36,10 @@ func (b *Bkeybase) handleKeybase() {
 
 func (b *Bkeybase) handleMessage(msg kbchat.Message) {
 	b.Log.Debugf("== Receiving event: %#v", msg)
+	if msg.Channel.TopicName != b.channel {
+		return
+	}
+
 	if msg.Sender.Username != b.kbc.GetUsername() {
 
 		// TODO download avatar
