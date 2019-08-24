@@ -125,7 +125,7 @@ func (b *Bkeybase) handleEvent(msg kbchat.Message) {
 		// TODO download avatar
 
 		// Create our message
-		rmsg := config.Message{Username: msg.Sender.Username, UserID: msg.Sender.Uid, Channel: msg.Channel.TopicName, ID: strconv.Itoa(msg.MsgID), Account: b.Account}
+		rmsg := config.Message{Username: msg.Sender.Username, Text: msg.Content.Text.Body, UserID: msg.Sender.Uid, Channel: msg.Channel.TopicName, ID: strconv.Itoa(msg.MsgID), Account: b.Account}
 
 		// Text must be a string
 		if msg.Content.Type != "text" {
