@@ -36,7 +36,7 @@ func (b *Bkeybase) handleKeybase() {
 
 func (b *Bkeybase) handleMessage(msg kbchat.Message) {
 	b.Log.Debugf("== Receiving event: %#v", msg)
-	if msg.Channel.TopicName != b.channel {
+	if msg.Channel.TopicName != b.channel || msg.Channel.Name != b.team {
 		return
 	}
 
