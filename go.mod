@@ -20,6 +20,7 @@ require (
 	github.com/hpcloud/tail v1.0.0 // indirect
 	github.com/jpillora/backoff v0.0.0-20180909062703-3050d21c67d7
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
+	github.com/keybase/go-keybase-chat-bot v0.0.0-20190816161829-561f10822eb2
 	github.com/labstack/echo/v4 v4.1.6
 	github.com/lrstanley/girc v0.0.0-20190210212025-51b8e096d398
 	github.com/lusis/go-slackbot v0.0.0-20180109053408-401027ccfef5 // indirect
@@ -59,7 +60,10 @@ require (
 	gitlab.com/golang-commonmark/mdurl v0.0.0-20180912090424-e5bce34c34f2 // indirect
 	gitlab.com/golang-commonmark/puny v0.0.0-20180912090636-2cd490539afe // indirect
 	gitlab.com/opennota/wd v0.0.0-20180912061657-c5d65f63c638 // indirect
+	golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586 // indirect
 	golang.org/x/image v0.0.0-20190616094056-33659d3de4f5
+	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7 // indirect
+	golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect

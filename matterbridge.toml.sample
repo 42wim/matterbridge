@@ -523,6 +523,29 @@ StripNick=false
 ShowTopicChange=false
 
 ###################################################################
+#
+# Keybase
+# You should have a separate bridge account on Keybase
+# (it also needs to be logged in on the system you're running the bridge on)
+#
+###################################################################
+
+[keybase.myteam]
+
+# RemoteNickFormat defines how remote users appear on this bridge 
+# See [general] config section for default options
+RemoteNickFormat="{NICK} ({PROTOCOL}): "
+
+# extra label that can be used in the RemoteNickFormat
+# optional (default empty)
+Label=""
+
+# Your team on Keybase.
+# The bot user MUST be a member of this team
+# REQUIRED
+Team="myteam"
+
+###################################################################
 #slack section
 ###################################################################
 [slack]

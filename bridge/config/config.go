@@ -131,7 +131,7 @@ type Protocol struct {
 	StripNick              bool       // all protocols
 	SyncTopic              bool       // slack
 	TengoModifyMessage     string     // general
-	Team                   string     // mattermost
+	Team                   string     // mattermost, keybase
 	Token                  string     // gitter, slack, discord, api
 	Topic                  string     // zulip
 	URL                    string     // mattermost, slack // DEPRECATED
@@ -198,6 +198,7 @@ type BridgeValues struct {
 	SSHChat            map[string]Protocol
 	WhatsApp           map[string]Protocol // TODO is this struct used? Search for "SlackLegacy" for example didn't return any results
 	Zulip              map[string]Protocol
+	Keybase            map[string]Protocol
 	General            Protocol
 	Tengo              Tengo
 	Gateway            []Gateway

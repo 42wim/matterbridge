@@ -1,0 +1,16 @@
+# Rename this file to `test_config.yaml`
+
+config:
+  bots:
+    alice:
+      username: "alice"
+      paperkey: "foo bar car..."
+    bob:
+      username: "bob"
+      paperkey: "one two three four..."
+  teams:
+    acme:
+      # A real team that you add your alice1 and bob1 into
+      name: "acme"
+      # The channel to use
+      topicname: "mysupercoolchannel"
