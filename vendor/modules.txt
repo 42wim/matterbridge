@@ -15,7 +15,7 @@ github.com/Philipp15b/go-steam/protocol/gamecoordinator
 github.com/Philipp15b/go-steam/protocol/protobuf
 github.com/Philipp15b/go-steam/rwu
 github.com/Philipp15b/go-steam/socialcache
-# github.com/Rhymen/go-whatsapp v0.0.2
+# github.com/Rhymen/go-whatsapp v0.0.3-0.20190729104911-5c79b2cf277a
 github.com/Rhymen/go-whatsapp
 github.com/Rhymen/go-whatsapp/binary
 github.com/Rhymen/go-whatsapp/binary/proto

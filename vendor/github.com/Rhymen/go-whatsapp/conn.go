@@ -89,6 +89,8 @@ type Conn struct {
 
 	longClientName  string
 	shortClientName string
+
+	loginSessionLock sync.RWMutex
 }
 
 type websocketWrapper struct {
@@ -189,6 +191,19 @@ func (wac *Conn) Disconnect() (Session, error) {
 		return Session{}, err
 	}
 	return *wac.session, err
+}
+
+func (wac *Conn) AdminTest() (bool, error) {
+	if !wac.connected {
+		return false, ErrNotConnected
+	}
+
+	if !wac.loggedIn {
+		return false, ErrInvalidSession
+	}
+
+	result, err := wac.sendAdminTest()			
+	return result, err
 }
 
 func (wac *Conn) keepAlive(minIntervalMs int, maxIntervalMs int) {
