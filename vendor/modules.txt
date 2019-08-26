@@ -23,7 +23,7 @@ github.com/Rhymen/go-whatsapp/crypto/cbc
 github.com/Rhymen/go-whatsapp/crypto/curve25519
 github.com/Rhymen/go-whatsapp/crypto/hkdf
 github.com/Rhymen/go-whatsapp/binary/token
-# github.com/bwmarrin/discordgo v0.19.0
+# github.com/bwmarrin/discordgo v0.19.0 => github.com/matterbridge/discordgo v0.0.0-20190818085008-57c6e0fc2f40
 github.com/bwmarrin/discordgo
 # github.com/d5/tengo v1.24.1
 github.com/d5/tengo/script
