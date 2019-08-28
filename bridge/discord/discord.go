@@ -237,8 +237,10 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 				}
 			}
 		}
+
 		// skip empty messages
-		if msg.Text == "" {
+		if msg.Text == "" && (msg.Extra == nil || len(msg.Extra["file"]) == 0) {
+			b.Log.Debugf("Skipping empty message %#v", msg)
 			return "", nil
 		}
 
@@ -261,16 +263,16 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 				return "", err
 			}
 		}
-		msg, err := b.webhookExecute(
-			wID,
-			wToken,
-			true,
-			&discordgo.WebhookParams{
-				Content:   msg.Text,
-				Username:  msg.Username,
-				AvatarURL: msg.Avatar,
-			})
-		return msg.ID, err
+		b.Log.Debugf("Processing webhook sending for message %#v", msg)
+		msg, err := b.webhookSend(&msg, wID, wToken)
+		if err != nil {
+			b.Log.Errorf("Could not broadcast via webook for message %#v: %s", msg, err)
+			return "", err
+		}
+		if msg == nil {
+			return "", nil
+		}
+		return msg.ID, nil
 	}
 
 	b.Log.Debugf("Broadcasting using token (API)")
@@ -312,7 +314,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return res.ID, err
+	return res.ID, nil
 }
 
 // useWebhook returns true if we have a webhook defined somewhere
@@ -375,4 +377,58 @@ func (b *Bdiscord) handleUploadFile(msg *config.Message, channelID string) (stri
 		}
 	}
 	return "", nil
+}
+
+// webhookSend send one or more message via webhook, taking care of file
+// uploads (from slack, telegram or mattermost).
+// Returns messageID and error.
+func (b *Bdiscord) webhookSend(msg *config.Message, webhookID, token string) (*discordgo.Message, error) {
+	var (
+		res *discordgo.Message
+		err error
+	)
+
+	// WebhookParams can have either `Content` or `File`.
+
+	// We can't send empty messages.
+	if msg.Text != "" {
+		res, err = b.c.WebhookExecute(
+			webhookID,
+			token,
+			true,
+			&discordgo.WebhookParams{
+				Content:   msg.Text,
+				Username:  msg.Username,
+				AvatarURL: msg.Avatar,
+			},
+		)
+		if err != nil {
+			b.Log.Errorf("Could not send text (%s) for message %#v: %s", msg.Text, msg, err)
+		}
+	}
+
+	if msg.Extra != nil {
+		for _, f := range msg.Extra["file"] {
+			fi := f.(config.FileInfo)
+			file := discordgo.File{
+				Name:        fi.Name,
+				ContentType: "",
+				Reader:      bytes.NewReader(*fi.Data),
+			}
+			_, e2 := b.c.WebhookExecute(
+				webhookID,
+				token,
+				false,
+				&discordgo.WebhookParams{
+					Username:  msg.Username,
+					AvatarURL: msg.Avatar,
+					File:      &file,
+				},
+			)
+			if e2 != nil {
+				b.Log.Errorf("Could not send file %#v for message %#v: %s", file, msg, e2)
+			}
+		}
+	}
+	return res, err
 }
