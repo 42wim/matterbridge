@@ -382,7 +382,12 @@ func (b *Bdiscord) handleUploadFile(msg *config.Message, channelID string) (stri
 // webhookSend send one or more message via webhook, taking care of file
 // uploads (from slack, telegram or mattermost).
 // Returns messageID and error.
-func (b *Bdiscord) webhookSend(msg *config.Message, webhookID, token string) (res *discordgo.Message, err error) {
+func (b *Bdiscord) webhookSend(msg *config.Message, webhookID, token string) (*discordgo.Message, error) {
+	var (
+		res *discordgo.Message
+		err error
+	)
+
 	// WebhookParams can have either `Content` or `File`.
 
 	// We can't send empty messages.
