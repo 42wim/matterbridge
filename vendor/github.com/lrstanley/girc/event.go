@@ -49,6 +49,7 @@ func ParseEvent(raw string) (e *Event) {
 			}
 		}
 		raw = raw[i+1:]
+		i = 0
 	}
 
 	if raw[0] == messagePrefix {
@@ -91,7 +92,7 @@ func ParseEvent(raw string) (e *Event) {
 
 		if trailerIndex == -1 {
 			// No trailing argument found, assume the rest is just params.
-			e.Params = strings.Split(raw[j:], string(eventSpace))
+			e.Params = strings.Fields(raw[j:])
 			return e
 		}
 
@@ -114,7 +115,7 @@ func ParseEvent(raw string) (e *Event) {
 	// Check if we need to parse arguments. If so, take everything after the
 	// command, and right before the trailing prefix, and cut it up.
 	if i > j {
-		e.Params = strings.Split(raw[j:i-1], string(eventSpace))
+		e.Params = strings.Fields(raw[j : i-1])
 	}
 
 	e.Params = append(e.Params, raw[i+1:])

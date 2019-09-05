@@ -12,8 +12,11 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
+	"os"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -95,6 +98,16 @@ type Config struct {
 	// configuration (e.g. to not force hostname checking). This only has an
 	// affect during the dial process.
 	SSL bool
+	// DisableSTS disables the use of automatic STS connection upgrades
+	// when the server supports STS. STS can also be disabled using the environment
+	// variable "GIRC_DISABLE_STS=true". As many clients may not propagate options
+	// like this back to the user, this allows to directly disable such automatic
+	// functionality.
+	DisableSTS bool
+	// DisableSTSFallback disables the "fallback" to a non-tls connection if the
+	// strict transport policy expires and the first attempt to reconnect back to
+	// the tls version fails.
+	DisableSTSFallback bool
 	// TLSConfig is an optional user-supplied tls configuration, used during
 	// socket creation to the server. SSL must be enabled for this to be used.
 	// This only has an affect during the dial process.
@@ -146,7 +159,7 @@ type Config struct {
 
 	// disableTracking disables all channel and user-level tracking. Useful
 	// for highly embedded scripts with single purposes. This has an exported
-	// method which enables this and ensures prop cleanup, see
+	// method which enables this and ensures proper cleanup, see
 	// Client.DisableTracking().
 	disableTracking bool
 	// HandleNickCollide when set, allows the client to handle nick collisions
@@ -247,11 +260,26 @@ func New(config Config) *Client {
 		c.Config.PingDelay = 600 * time.Second
 	}
 
+	envDebug, _ := strconv.ParseBool(os.Getenv("GIRC_DEBUG"))
 	if c.Config.Debug == nil {
-		c.debug = log.New(ioutil.Discard, "", 0)
+		if envDebug {
+			c.debug = log.New(os.Stderr, "debug:", log.Ltime|log.Lshortfile)
+		} else {
+			c.debug = log.New(ioutil.Discard, "", 0)
+		}
 	} else {
+		if envDebug {
+			if c.Config.Debug != os.Stdout && c.Config.Debug != os.Stderr {
+				c.Config.Debug = io.MultiWriter(os.Stderr, c.Config.Debug)
+			}
+		}
 		c.debug = log.New(c.Config.Debug, "debug:", log.Ltime|log.Lshortfile)
 		c.debug.Print("initializing debugging")
+	}
+
+	envDisableSTS, _ := strconv.ParseBool((os.Getenv("GIRC_DISABLE_STS")))
+	if envDisableSTS {
+		c.Config.DisableSTS = envDisableSTS
 	}
 
 	// Setup the caller.
@@ -259,7 +287,7 @@ func New(config Config) *Client {
 
 	// Give ourselves a new state.
 	c.state = &state{}
-	c.state.reset()
+	c.state.reset(true)
 
 	// Register builtin handlers.
 	c.registerBuiltins()
@@ -321,6 +349,18 @@ func (c *Client) Close() {
 		c.stop()
 	}
 	c.mu.RUnlock()
+}
+
+// Quit sends a QUIT message to the server with a given reason to close the
+// connection. Underlying this event being sent, Client.Close() is called as well.
+// This is different than just calling Client.Close() in that it provides a reason
+// as to why the connection was closed (for bots to tell users the bot is restarting,
+// or shutting down, etc).
+//
+// NOTE: servers may delay showing of QUIT reasons, until you've been connected to
+// the server for a certain period of time (e.g. 5 minutes). Keep this in mind.
+func (c *Client) Quit(reason string) {
+	c.Send(&Event{Command: QUIT, Params: []string{reason}})
 }
 
 // ErrEvent is an error returned when the server (or library) sends an ERROR
@@ -400,9 +440,21 @@ func (c *Client) DisableTracking() {
 	c.registerBuiltins()
 }
 
-// Server returns the string representation of host+port pair for net.Conn.
+// Server returns the string representation of host+port pair for the connection.
 func (c *Client) Server() string {
-	return fmt.Sprintf("%s:%d", c.Config.Server, c.Config.Port)
+	c.state.Lock()
+	defer c.state.Lock()
+
+	return c.server()
+}
+
+// server returns the string representation of host+port pair for net.Conn, and
+// takes into consideration STS. Must lock state mu first!
+func (c *Client) server() string {
+	if c.state.sts.enabled() {
+		return net.JoinHostPort(c.Config.Server, strconv.Itoa(c.state.sts.upgradePort))
+	}
+	return net.JoinHostPort(c.Config.Server, strconv.Itoa(c.Config.Port))
 }
 
 // Lifetime returns the amount of time that has passed since the client was
@@ -688,8 +740,9 @@ func (c *Client) HasCapability(name string) (has bool) {
 	name = strings.ToLower(name)
 
 	c.state.RLock()
-	for i := 0; i < len(c.state.enabledCap); i++ {
-		if strings.ToLower(c.state.enabledCap[i]) == name {
+	for key := range c.state.enabledCap {
+		key = strings.ToLower(key)
+		if key == name {
 			has = true
 			break
 		}
@@ -712,4 +765,26 @@ func (c *Client) panicIfNotTracking() {
 	_, file, line, _ := runtime.Caller(2)
 
 	panic(fmt.Sprintf("%s used when tracking is disabled (caller %s:%d)", fn.Name(), file, line))
+}
+
+func (c *Client) debugLogEvent(e *Event, dropped bool) {
+	var prefix string
+
+	if dropped {
+		prefix = "dropping event (disconnected):"
+	} else {
+		prefix = ">"
+	}
+
+	if e.Sensitive {
+		c.debug.Printf(prefix, " %s ***redacted***", e.Command)
+	} else {
+		c.debug.Print(prefix, " ", StripRaw(e.String()))
+	}
+
+	if c.Config.Out != nil {
+		if pretty, ok := e.Pretty(); ok {
+			fmt.Fprintln(c.Config.Out, StripRaw(pretty))
+		}
+	}
 }

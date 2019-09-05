@@ -93,7 +93,11 @@ func handleConnect(c *Client, e Event) {
 	}
 
 	time.Sleep(2 * time.Second)
-	c.RunHandlers(&Event{Command: CONNECTED, Params: []string{c.Server()}})
+
+	c.mu.RLock()
+	server := c.server()
+	c.mu.RUnlock()
+	c.RunHandlers(&Event{Command: CONNECTED, Params: []string{server}})
 }
 
 // nickCollisionHandler helps prevent the client from having conflicting

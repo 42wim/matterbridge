@@ -23,7 +23,7 @@ require (
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
 	github.com/keybase/go-keybase-chat-bot v0.0.0-20190816161829-561f10822eb2
 	github.com/labstack/echo/v4 v4.1.6
-	github.com/lrstanley/girc v0.0.0-20190210212025-51b8e096d398
+	github.com/lrstanley/girc v0.0.0-20190801035559-4fc93959e1a7
 	github.com/lusis/go-slackbot v0.0.0-20180109053408-401027ccfef5 // indirect
 	github.com/lusis/slack-test v0.0.0-20180109053238-3c758769bfa6 // indirect
 	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20190210153444-cc9d05784d5d
