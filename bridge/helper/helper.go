@@ -3,6 +3,8 @@ package helper
 import (
 	"bytes"
 	"fmt"
+	"image"
+	"image/color"
 	"image/png"
 	"io"
 	"net/http"
@@ -191,11 +193,57 @@ func ConvertWebPToPNG(data *[]byte) error {
 	if err != nil {
 		return err
 	}
+	rgba := createRGBAImage(m)
 	var output []byte
 	w := bytes.NewBuffer(output)
-	if err := png.Encode(w, m); err != nil {
+	if err := png.Encode(w, rgba); err != nil {
 		return err
 	}
 	*data = w.Bytes()
 	return nil
+}
+
+func createRGBAImage(imageData image.Image) *image.RGBA {
+	newImage := image.NewRGBA(imageData.Bounds())
+
+	//fill new image with pixels
+	for y := imageData.Bounds().Min.Y; y < imageData.Bounds().Max.Y; y++ {
+		for x := imageData.Bounds().Min.X; x < imageData.Bounds().Max.X; x++ {
+
+			//get pixel from imageData
+			pixel := imageData.At(x, y)
+
+			//convert pixel to RGBA
+			var RGBApixel color.RGBA
+			switch imageData.ColorModel() {
+
+			case color.NYCbCrAModel:
+				RGBApixel = ConvertNYCbCrA(pixel.(color.NYCbCrA))
+
+			case color.NRGBAModel:
+				RGBApixel = ConvertNRGBA(pixel.(color.NRGBA))
+
+			default:
+				RGBApixel = color.RGBAModel.Convert(pixel).(color.RGBA)
+				RGBApixel.A = 255
+			}
+			//set new pixel in new image
+			newImage.Set(x, y, RGBApixel)
+		}
+	}
+	return newImage
+}
+
+func ConvertNYCbCrA(c color.NYCbCrA) color.RGBA {
+	r, g, b := color.YCbCrToRGB(c.Y, c.Cb, c.Cr)
+	return color.RGBA{r, g, b, 255}
+}
+
+func ConvertNRGBA(c color.NRGBA) color.RGBA {
+	return color.RGBA{
+		c.R,
+		c.G,
+		c.B,
+		255,
+	}
 }
