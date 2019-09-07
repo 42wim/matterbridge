@@ -1,0 +1,14 @@
+// See https://github.com/42wim/matterbridge/issues/881
+// Generates a colored nick for each msgUsername, with example to filter specific codes 
+
+text := import("text")
+fmt := import("fmt")
+if outProtocol == "irc" {
+    // generate a color for a nick, make sure it isn't 0 or 15
+    colorCode := len(msgUsername)+bytes(msgUsername)[0]%14 + 2
+    // example if we want to use colorCode 3 when we have calculated colorcode 14
+    if colorCode == 14 {
+        colorCode = 3
+    }
+    msgUsername=fmt.sprintf("\x03%02d%s\x0F", colorCode, msgUsername)
+}
