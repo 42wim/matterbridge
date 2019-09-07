@@ -107,6 +107,9 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 }
 
 func (b *Bxmpp) createXMPP() error {
+	if !strings.Contains(b.GetString("Jid"), "@") {
+		return fmt.Errorf("the Jid %s doesn't contain an @", b.GetString("Jid"))
+	}
 	tc := &tls.Config{
 		ServerName:         strings.Split(b.GetString("Jid"), "@")[1],
 		InsecureSkipVerify: b.GetBool("SkipTLSVerify"), // nolint: gosec
