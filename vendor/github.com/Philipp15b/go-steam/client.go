@@ -133,11 +133,17 @@ func (c *Client) Connected() bool {
 // If you want to connect to a specific server, use `ConnectTo`.
 func (c *Client) Connect() *netutil.PortAddr {
 	var server *netutil.PortAddr
+
+	// try to initialize the directory cache
+	if !steamDirectoryCache.IsInitialized() {
+		_ = steamDirectoryCache.Initialize()
+	}
 	if steamDirectoryCache.IsInitialized() {
 		server = steamDirectoryCache.GetRandomCM()
 	} else {
 		server = GetRandomCM()
 	}
+
 	c.ConnectTo(server)
 	return server
 }

@@ -1,12 +1,9 @@
 language: go
 
-go:
-  - 1.7.x
-  - 1.8.x
-  - 1.9.x
-  - 1.10.x
-  - 1.11.x
-  - tip
+env:
+  - GO111MODULE=on
+
+install: true
 
 before_install:
   - export PATH=$HOME/gopath/bin:$PATH
@@ -20,6 +17,19 @@ script:
 matrix:
   allow_failures:
     - go: tip
+  include:
+  - go: "1.7.x"
+    script:  go test -v ./...
+  - go: "1.8.x"
+    script:  go test -v ./...
+  - go: "1.9.x"
+    script:  go test -v ./...
+  - go: "1.10.x"
+    script:  go test -v ./...
+  - go: "1.11.x"
+    script: go test -v -mod=vendor ./...
+  - go: "tip"
+    script: go test -v -mod=vendor ./...
 
 git:
   depth: 10

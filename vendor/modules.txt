@@ -4,40 +4,40 @@ github.com/42wim/go-gitter
 github.com/Baozisoftware/qrcode-terminal-go
 # github.com/Jeffail/gabs v1.1.1
 github.com/Jeffail/gabs
-# github.com/Philipp15b/go-steam v1.0.1-0.20180818081528-681bd9573329
+# github.com/Philipp15b/go-steam v1.0.1-0.20190816133340-b04c5a83c1c0
 github.com/Philipp15b/go-steam
-github.com/Philipp15b/go-steam/protocol/steamlang
-github.com/Philipp15b/go-steam/steamid
 github.com/Philipp15b/go-steam/cryptoutil
 github.com/Philipp15b/go-steam/netutil
 github.com/Philipp15b/go-steam/protocol
 github.com/Philipp15b/go-steam/protocol/gamecoordinator
 github.com/Philipp15b/go-steam/protocol/protobuf
+github.com/Philipp15b/go-steam/protocol/steamlang
 github.com/Philipp15b/go-steam/rwu
 github.com/Philipp15b/go-steam/socialcache
+github.com/Philipp15b/go-steam/steamid
 # github.com/Rhymen/go-whatsapp v0.0.3-0.20190729104911-5c79b2cf277a
 github.com/Rhymen/go-whatsapp
 github.com/Rhymen/go-whatsapp/binary
 github.com/Rhymen/go-whatsapp/binary/proto
+github.com/Rhymen/go-whatsapp/binary/token
 github.com/Rhymen/go-whatsapp/crypto/cbc
 github.com/Rhymen/go-whatsapp/crypto/curve25519
 github.com/Rhymen/go-whatsapp/crypto/hkdf
-github.com/Rhymen/go-whatsapp/binary/token
 # github.com/bwmarrin/discordgo v0.19.0 => github.com/matterbridge/discordgo v0.0.0-20190818085008-57c6e0fc2f40
 github.com/bwmarrin/discordgo
-# github.com/d5/tengo v1.24.1
-github.com/d5/tengo/script
-github.com/d5/tengo/stdlib
+# github.com/d5/tengo v1.24.3
+github.com/d5/tengo
 github.com/d5/tengo/compiler
+github.com/d5/tengo/compiler/ast
 github.com/d5/tengo/compiler/parser
+github.com/d5/tengo/compiler/scanner
 github.com/d5/tengo/compiler/source
+github.com/d5/tengo/compiler/token
 github.com/d5/tengo/objects
 github.com/d5/tengo/runtime
-github.com/d5/tengo
+github.com/d5/tengo/script
+github.com/d5/tengo/stdlib
 github.com/d5/tengo/stdlib/json
-github.com/d5/tengo/compiler/ast
-github.com/d5/tengo/compiler/token
-github.com/d5/tengo/compiler/scanner
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/dfordsoft/golib v0.0.0-20180902042739-76ee6ab99bec
@@ -59,20 +59,20 @@ github.com/google/gops/signal
 github.com/gopackage/ddp
 # github.com/gorilla/schema v1.1.0
 github.com/gorilla/schema
-# github.com/gorilla/websocket v1.4.0
+# github.com/gorilla/websocket v1.4.1
 github.com/gorilla/websocket
-# github.com/hashicorp/golang-lru v0.5.1
+# github.com/hashicorp/golang-lru v0.5.3
 github.com/hashicorp/golang-lru
 github.com/hashicorp/golang-lru/simplelru
 # github.com/hashicorp/hcl v1.0.0
 github.com/hashicorp/hcl
-github.com/hashicorp/hcl/hcl/printer
 github.com/hashicorp/hcl/hcl/ast
 github.com/hashicorp/hcl/hcl/parser
-github.com/hashicorp/hcl/hcl/token
-github.com/hashicorp/hcl/json/parser
+github.com/hashicorp/hcl/hcl/printer
 github.com/hashicorp/hcl/hcl/scanner
 github.com/hashicorp/hcl/hcl/strconv
+github.com/hashicorp/hcl/hcl/token
+github.com/hashicorp/hcl/json/parser
 github.com/hashicorp/hcl/json/scanner
 github.com/hashicorp/hcl/json/token
 # github.com/jpillora/backoff v0.0.0-20180909062703-3050d21c67d7
@@ -83,13 +83,13 @@ github.com/kardianos/osext
 github.com/keybase/go-keybase-chat-bot/kbchat
 # github.com/konsorten/go-windows-terminal-sequences v1.0.1
 github.com/konsorten/go-windows-terminal-sequences
-# github.com/labstack/echo/v4 v4.1.6
+# github.com/labstack/echo/v4 v4.1.10
 github.com/labstack/echo/v4
 github.com/labstack/echo/v4/middleware
-# github.com/labstack/gommon v0.2.9
+# github.com/labstack/gommon v0.3.0
+github.com/labstack/gommon/bytes
 github.com/labstack/gommon/color
 github.com/labstack/gommon/log
-github.com/labstack/gommon/bytes
 github.com/labstack/gommon/random
 # github.com/lrstanley/girc v0.0.0-20190801035559-4fc93959e1a7
 github.com/lrstanley/girc
@@ -108,13 +108,13 @@ github.com/matterbridge/gozulipbot
 # github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61
 github.com/matterbridge/logrus-prefixed-formatter
 # github.com/mattermost/mattermost-server v5.5.0+incompatible
-github.com/mattermost/mattermost-server/model
 github.com/mattermost/mattermost-server/mlog
+github.com/mattermost/mattermost-server/model
 github.com/mattermost/mattermost-server/utils/jsonutils
 github.com/mattermost/mattermost-server/utils/markdown
 # github.com/mattn/go-colorable v0.1.2
 github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.8
+# github.com/mattn/go-isatty v0.0.9
 github.com/mattn/go-isatty
 # github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b
 github.com/mgutz/ansi
@@ -131,8 +131,10 @@ github.com/nicksnyder/go-i18n/i18n
 github.com/nicksnyder/go-i18n/i18n/bundle
 github.com/nicksnyder/go-i18n/i18n/language
 github.com/nicksnyder/go-i18n/i18n/translation
-# github.com/nlopes/slack v0.5.0
+# github.com/nlopes/slack v0.6.0
 github.com/nlopes/slack
+github.com/nlopes/slack/internal/errorsx
+github.com/nlopes/slack/internal/timex
 github.com/nlopes/slack/slackutilsx
 # github.com/paulrosania/go-charset v0.0.0-20190326053356-55c9d7a5834c
 github.com/paulrosania/go-charset/charset
@@ -156,8 +158,8 @@ github.com/saintfish/chardet
 # github.com/shazow/rateio v0.0.0-20150116013248-e8e00881e5c1
 github.com/shazow/rateio
 # github.com/shazow/ssh-chat v0.0.0-20190125184227-81d7e1686296
-github.com/shazow/ssh-chat/sshd
 github.com/shazow/ssh-chat/internal/sanitize
+github.com/shazow/ssh-chat/sshd
 # github.com/sirupsen/logrus v1.4.2
 github.com/sirupsen/logrus
 # github.com/skip2/go-qrcode v0.0.0-20190110000554-dc11ecdae0a9
@@ -175,7 +177,7 @@ github.com/spf13/jwalterweatherman
 github.com/spf13/pflag
 # github.com/spf13/viper v1.4.0
 github.com/spf13/viper
-# github.com/stretchr/testify v1.3.0
+# github.com/stretchr/testify v1.4.0
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 github.com/stretchr/testify/suite
@@ -203,52 +205,52 @@ go.uber.org/atomic
 go.uber.org/multierr
 # go.uber.org/zap v1.10.0
 go.uber.org/zap
-go.uber.org/zap/zapcore
-go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/buffer
+go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
+go.uber.org/zap/zapcore
 # golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586
-golang.org/x/crypto/ssh/terminal
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
-golang.org/x/crypto/nacl/secretbox
 golang.org/x/crypto/bcrypt
-golang.org/x/crypto/ssh
-golang.org/x/crypto/internal/subtle
-golang.org/x/crypto/poly1305
-golang.org/x/crypto/salsa20/salsa
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/ed25519
-golang.org/x/crypto/internal/chacha20
-golang.org/x/crypto/hkdf
 golang.org/x/crypto/ed25519/internal/edwards25519
-# golang.org/x/image v0.0.0-20190616094056-33659d3de4f5
-golang.org/x/image/webp
+golang.org/x/crypto/hkdf
+golang.org/x/crypto/internal/chacha20
+golang.org/x/crypto/internal/subtle
+golang.org/x/crypto/nacl/secretbox
+golang.org/x/crypto/poly1305
+golang.org/x/crypto/salsa20/salsa
+golang.org/x/crypto/ssh
+golang.org/x/crypto/ssh/terminal
+# golang.org/x/image v0.0.0-20190902063713-cb417be4ba39
 golang.org/x/image/riff
 golang.org/x/image/vp8
 golang.org/x/image/vp8l
+golang.org/x/image/webp
 # golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7
 golang.org/x/net/idna
 golang.org/x/net/websocket
 # golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a
+golang.org/x/sys/cpu
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-golang.org/x/sys/cpu
 # golang.org/x/text v0.3.2
 golang.org/x/text/encoding
+golang.org/x/text/encoding/internal
+golang.org/x/text/encoding/internal/identifier
 golang.org/x/text/encoding/japanese
 golang.org/x/text/encoding/korean
 golang.org/x/text/encoding/simplifiedchinese
 golang.org/x/text/encoding/traditionalchinese
+golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
+golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/unicode/rangetable
-golang.org/x/text/encoding/internal/identifier
-golang.org/x/text/encoding/internal
-golang.org/x/text/secure/bidirule
-golang.org/x/text/unicode/bidi
 # gopkg.in/natefinch/lumberjack.v2 v2.0.0
 gopkg.in/natefinch/lumberjack.v2
 # gopkg.in/yaml.v2 v2.2.2

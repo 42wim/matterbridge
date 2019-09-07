@@ -156,17 +156,12 @@ type Icons struct {
 	Image72 string `json:"image_72,omitempty"`
 }
 
-// Info contains various details about Users, Channels, Bots and the authenticated user.
+// Info contains various details about the authenticated user and team.
 // It is returned by StartRTM or included in the "ConnectedEvent" RTM event.
 type Info struct {
-	URL      string       `json:"url,omitempty"`
-	User     *UserDetails `json:"self,omitempty"`
-	Team     *Team        `json:"team,omitempty"`
-	Users    []User       `json:"users,omitempty"`
-	Channels []Channel    `json:"channels,omitempty"`
-	Groups   []Group      `json:"groups,omitempty"`
-	Bots     []Bot        `json:"bots,omitempty"`
-	IMs      []IM         `json:"ims,omitempty"`
+	URL  string       `json:"url,omitempty"`
+	User *UserDetails `json:"self,omitempty"`
+	Team *Team        `json:"team,omitempty"`
 }
 
 type infoResponseFull struct {
@@ -174,52 +169,27 @@ type infoResponseFull struct {
 	SlackResponse
 }
 
-// GetBotByID returns a bot given a bot id
+// GetBotByID is deprecated and returns nil
 func (info Info) GetBotByID(botID string) *Bot {
-	for _, bot := range info.Bots {
-		if bot.ID == botID {
-			return &bot
-		}
-	}
 	return nil
 }
 
-// GetUserByID returns a user given a user id
+// GetUserByID is deprecated and returns nil
 func (info Info) GetUserByID(userID string) *User {
-	for _, user := range info.Users {
-		if user.ID == userID {
-			return &user
-		}
-	}
 	return nil
 }
 
-// GetChannelByID returns a channel given a channel id
+// GetChannelByID is deprecated and returns nil
 func (info Info) GetChannelByID(channelID string) *Channel {
-	for _, channel := range info.Channels {
-		if channel.ID == channelID {
-			return &channel
-		}
-	}
 	return nil
 }
 
-// GetGroupByID returns a group given a group id
+// GetGroupByID is deprecated and returns nil
 func (info Info) GetGroupByID(groupID string) *Group {
-	for _, group := range info.Groups {
-		if group.ID == groupID {
-			return &group
-		}
-	}
 	return nil
 }
 
-// GetIMByID returns an IM given an IM id
+// GetIMByID is deprecated and returns nil
 func (info Info) GetIMByID(imID string) *IM {
-	for _, im := range info.IMs {
-		if im.ID == imID {
-			return &im
-		}
-	}
 	return nil
 }

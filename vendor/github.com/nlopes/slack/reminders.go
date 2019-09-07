@@ -23,7 +23,7 @@ type reminderResp struct {
 
 func (api *Client) doReminder(ctx context.Context, path string, values url.Values) (*Reminder, error) {
 	response := &reminderResp{}
-	if err := postSlackMethod(ctx, api.httpclient, path, values, response, api); err != nil {
+	if err := api.postMethod(ctx, path, values, response); err != nil {
 		return nil, err
 	}
 	return &response.Reminder, response.Err()
@@ -68,7 +68,7 @@ func (api *Client) DeleteReminder(id string) error {
 		"reminder": {id},
 	}
 	response := &SlackResponse{}
-	if err := postSlackMethod(context.Background(), api.httpclient, "reminders.delete", values, response, api); err != nil {
+	if err := api.postMethod(context.Background(), "reminders.delete", values, response); err != nil {
 		return err
 	}
 	return response.Err()

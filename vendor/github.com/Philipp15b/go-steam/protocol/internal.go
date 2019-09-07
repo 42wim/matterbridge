@@ -1,6 +1,7 @@
 package protocol
 
 import (
+	"encoding/hex"
 	"io"
 	"math"
 	"strconv"
@@ -42,6 +43,7 @@ const EClientPersonaStateFlag_DefaultInfoRequest = EClientPersonaStateFlag_Playe
 
 const DefaultAvatar = "fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb"
 
-func ValidAvatar(avatar string) bool {
-	return !(avatar == "0000000000000000000000000000000000000000" || len(avatar) != 40)
+func ValidAvatar(avatar []byte) bool {
+	str := hex.EncodeToString(avatar)
+	return !(str == "0000000000000000000000000000000000000000" || len(str) != 40)
 }

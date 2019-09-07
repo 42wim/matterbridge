@@ -9,9 +9,9 @@ fi
 # Run the linter.
 golangci-lint run
 
-if [[ "${GO111MODULE-off}" == "on" ]]; then
-  # If Go modules are active then check that dependencies are correctly maintained.
-  go mod tidy
-  go mod vendor
-  git diff --exit-code --quiet || (echo "Please run 'go mod tidy' to clean up the 'go.mod' and 'go.sum' files."; false)
-fi
+# if [[ "${GO111MODULE-off}" == "on" ]]; then
+#   # If Go modules are active then check that dependencies are correctly maintained.
+#   go mod tidy
+#   go mod vendor
+#   git diff --exit-code --quiet || (echo "Please run 'go mod tidy' to clean up the 'go.mod' and 'go.sum' files."; false)
+# fi

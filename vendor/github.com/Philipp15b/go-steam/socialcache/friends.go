@@ -2,9 +2,10 @@ package socialcache
 
 import (
 	"errors"
+	"sync"
+
 	. "github.com/Philipp15b/go-steam/protocol/steamlang"
 	. "github.com/Philipp15b/go-steam/steamid"
-	"sync"
 )
 
 // Friends list is a thread safe map
@@ -76,7 +77,7 @@ func (list *FriendsList) SetName(id SteamId, name string) {
 	}
 }
 
-func (list *FriendsList) SetAvatar(id SteamId, hash string) {
+func (list *FriendsList) SetAvatar(id SteamId, hash []byte) {
 	list.mutex.Lock()
 	defer list.mutex.Unlock()
 	if val, ok := list.byId[id]; ok {
@@ -136,7 +137,7 @@ func (list *FriendsList) SetGameName(id SteamId, name string) {
 type Friend struct {
 	SteamId           SteamId `json:",string"`
 	Name              string
-	Avatar            string
+	Avatar            []byte
 	Relationship      EFriendRelationship
 	PersonaState      EPersonaState
 	PersonaStateFlags EPersonaStateFlag

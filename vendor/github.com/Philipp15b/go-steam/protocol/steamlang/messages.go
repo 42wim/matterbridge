@@ -723,7 +723,7 @@ func (d *MsgClientNewLoginKeyAccepted) Deserialize(r io.Reader) error {
 
 const (
 	MsgClientLogon_ObfuscationMask                                      uint32 = 0xBAADF00D
-	MsgClientLogon_CurrentProtocol                                      uint32 = 65579
+	MsgClientLogon_CurrentProtocol                                      uint32 = 65580
 	MsgClientLogon_ProtocolVerMajorMask                                 uint32 = 0xFFFF0000
 	MsgClientLogon_ProtocolVerMinorMask                                 uint32 = 0xFFFF
 	MsgClientLogon_ProtocolVerMinorMinGameServers                       uint16 = 4
@@ -744,7 +744,11 @@ const (
 	MsgClientLogon_ProtocolVerMinorMinForMachineAuth                    uint16 = 33
 	MsgClientLogon_ProtocolVerMinorMinForSessionIDLastAnon              uint16 = 36
 	MsgClientLogon_ProtocolVerMinorMinForEnhancedAppList                uint16 = 40
+	MsgClientLogon_ProtocolVerMinorMinForSteamGuardNotificationUI       uint16 = 41
+	MsgClientLogon_ProtocolVerMinorMinForProtoBufServiceModuleCalls     uint16 = 42
 	MsgClientLogon_ProtocolVerMinorMinForGzipMultiMessages              uint16 = 43
+	MsgClientLogon_ProtocolVerMinorMinForNewVoiceCallAuthorize          uint16 = 44
+	MsgClientLogon_ProtocolVerMinorMinForClientInstanceIDs              uint16 = 44
 )
 
 type MsgClientLogon struct {
@@ -1976,64 +1980,6 @@ func (d *MsgClientChatRoomInfo) Deserialize(r io.Reader) error {
 	return err
 }
 
-type MsgClientGetNumberOfCurrentPlayers struct {
-	GameID uint64
-}
-
-func NewMsgClientGetNumberOfCurrentPlayers() *MsgClientGetNumberOfCurrentPlayers {
-	return &MsgClientGetNumberOfCurrentPlayers{}
-}
-
-func (d *MsgClientGetNumberOfCurrentPlayers) GetEMsg() EMsg {
-	return EMsg_ClientGetNumberOfCurrentPlayers
-}
-
-func (d *MsgClientGetNumberOfCurrentPlayers) Serialize(w io.Writer) error {
-	var err error
-	err = binary.Write(w, binary.LittleEndian, d.GameID)
-	return err
-}
-
-func (d *MsgClientGetNumberOfCurrentPlayers) Deserialize(r io.Reader) error {
-	var err error
-	d.GameID, err = rwu.ReadUint64(r)
-	return err
-}
-
-type MsgClientGetNumberOfCurrentPlayersResponse struct {
-	Result     EResult
-	NumPlayers uint32
-}
-
-func NewMsgClientGetNumberOfCurrentPlayersResponse() *MsgClientGetNumberOfCurrentPlayersResponse {
-	return &MsgClientGetNumberOfCurrentPlayersResponse{}
-}
-
-func (d *MsgClientGetNumberOfCurrentPlayersResponse) GetEMsg() EMsg {
-	return EMsg_ClientGetNumberOfCurrentPlayersResponse
-}
-
-func (d *MsgClientGetNumberOfCurrentPlayersResponse) Serialize(w io.Writer) error {
-	var err error
-	err = binary.Write(w, binary.LittleEndian, d.Result)
-	if err != nil {
-		return err
-	}
-	err = binary.Write(w, binary.LittleEndian, d.NumPlayers)
-	return err
-}
-
-func (d *MsgClientGetNumberOfCurrentPlayersResponse) Deserialize(r io.Reader) error {
-	var err error
-	t0, err := rwu.ReadInt32(r)
-	if err != nil {
-		return err
-	}
-	d.Result = EResult(t0)
-	d.NumPlayers, err = rwu.ReadUint32(r)
-	return err
-}
-
 type MsgClientSetIgnoreFriend struct {
 	MySteamId     steamid.SteamId
 	SteamIdFriend steamid.SteamId
@@ -2079,8 +2025,8 @@ func (d *MsgClientSetIgnoreFriend) Deserialize(r io.Reader) error {
 }
 
 type MsgClientSetIgnoreFriendResponse struct {
-	Unknown uint64
-	Result  EResult
+	FriendId steamid.SteamId
+	Result   EResult
 }
 
 func NewMsgClientSetIgnoreFriendResponse() *MsgClientSetIgnoreFriendResponse {
@@ -2093,7 +2039,7 @@ func (d *MsgClientSetIgnoreFriendResponse) GetEMsg() EMsg {
 
 func (d *MsgClientSetIgnoreFriendResponse) Serialize(w io.Writer) error {
 	var err error
-	err = binary.Write(w, binary.LittleEndian, d.Unknown)
+	err = binary.Write(w, binary.LittleEndian, d.FriendId)
 	if err != nil {
 		return err
 	}
@@ -2103,12 +2049,13 @@ func (d *MsgClientSetIgnoreFriendResponse) Serialize(w io.Writer) error {
 
 func (d *MsgClientSetIgnoreFriendResponse) Deserialize(r io.Reader) error {
 	var err error
-	d.Unknown, err = rwu.ReadUint64(r)
+	t0, err := rwu.ReadUint64(r)
 	if err != nil {
 		return err
 	}
-	t0, err := rwu.ReadInt32(r)
-	d.Result = EResult(t0)
+	d.FriendId = steamid.SteamId(t0)
+	t1, err := rwu.ReadInt32(r)
+	d.Result = EResult(t1)
 	return err
 }
 
@@ -2223,73 +2170,6 @@ func (d *MsgClientLogOnResponse) Deserialize(r io.Reader) error {
 		return err
 	}
 	d.ServerRealTime, err = rwu.ReadUint32(r)
-	return err
-}
-
-type MsgClientSendGuestPass struct {
-	GiftId    uint64
-	GiftType  uint8
-	AccountId uint32
-}
-
-func NewMsgClientSendGuestPass() *MsgClientSendGuestPass {
-	return &MsgClientSendGuestPass{}
-}
-
-func (d *MsgClientSendGuestPass) GetEMsg() EMsg {
-	return EMsg_ClientSendGuestPass
-}
-
-func (d *MsgClientSendGuestPass) Serialize(w io.Writer) error {
-	var err error
-	err = binary.Write(w, binary.LittleEndian, d.GiftId)
-	if err != nil {
-		return err
-	}
-	err = binary.Write(w, binary.LittleEndian, d.GiftType)
-	if err != nil {
-		return err
-	}
-	err = binary.Write(w, binary.LittleEndian, d.AccountId)
-	return err
-}
-
-func (d *MsgClientSendGuestPass) Deserialize(r io.Reader) error {
-	var err error
-	d.GiftId, err = rwu.ReadUint64(r)
-	if err != nil {
-		return err
-	}
-	d.GiftType, err = rwu.ReadUint8(r)
-	if err != nil {
-		return err
-	}
-	d.AccountId, err = rwu.ReadUint32(r)
-	return err
-}
-
-type MsgClientSendGuestPassResponse struct {
-	Result EResult
-}
-
-func NewMsgClientSendGuestPassResponse() *MsgClientSendGuestPassResponse {
-	return &MsgClientSendGuestPassResponse{}
-}
-
-func (d *MsgClientSendGuestPassResponse) GetEMsg() EMsg {
-	return EMsg_ClientSendGuestPassResponse
-}
-
-func (d *MsgClientSendGuestPassResponse) Serialize(w io.Writer) error {
-	var err error
-	err = binary.Write(w, binary.LittleEndian, d.Result)
-	return err
-}
-
-func (d *MsgClientSendGuestPassResponse) Deserialize(r io.Reader) error {
-	var err error
-	t0, err := rwu.ReadInt32(r)
-	d.Result = EResult(t0)
 	return err
 }
 

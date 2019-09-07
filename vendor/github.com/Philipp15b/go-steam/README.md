@@ -45,19 +45,10 @@ Whether you want to develop your own Steam bot or directly work on go-steam itse
 
 ## Updating go-steam to a new SteamKit version
 
-To update go-steam to a new version of SteamKit, do the following:
+Go source code is generated with code in the `generator` directory.
+Look at `generator/README.md` for more information on how to use the generator.
 
-	go get github.com/golang/protobuf/protoc-gen-go/
-    git submodule init && git submodule update
-    cd generator
-    go run generator.go clean proto steamlang
-
-Make sure that `$GOPATH/bin` / `protoc-gen-go` is in your `$PATH`. You'll also need [`protoc`](https://developers.google.com/protocol-buffers/docs/downloads), the protocol buffer compiler. At the moment, we use Protocol Buffers 2.6.1 with `proco-gen-go`-[2402d76](https://github.com/golang/protobuf/tree/2402d76f3d41f928c7902a765dfc872356dd3aad).
-
-To compile the Steam Language files, you also need the [.NET Framework](https://www.microsoft.com/net/downloads)
-on Windows or [mono](http://www.go-mono.com/mono-downloads/download.html) on other operating systems.
-
-Apply the protocol changes where necessary.
+Then, after generating new Go source files, update `go-steam` as necessary.
 
 ## License
 
