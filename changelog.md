@@ -1,3 +1,5 @@
+# dev
+
 # v1.16.0
 
 ## New features
@@ -14,6 +16,9 @@
 * discord: Underscores from Discord don't arrive correctly #864
 * xmpp: Fix possible panic at startup of the XMPP bridge #869
 * mattermost: Make getChannelIdTeam behave like GetChannelId for groups (mattermost) #873
+
+This release couldn't exist without the following contributors:
+@hyperobject, @42wim, @bucko909, @MOZGIII
 
 # v1.15.1
 
