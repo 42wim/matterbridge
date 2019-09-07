@@ -5,6 +5,7 @@
 package girc
 
 import (
+	"fmt"
 	"sort"
 	"sync"
 	"time"
@@ -22,27 +23,28 @@ type state struct {
 	// users represents all of users that we're tracking.
 	users map[string]*User
 	// enabledCap are the capabilities which are enabled for this connection.
-	enabledCap []string
+	enabledCap map[string]map[string]string
 	// tmpCap are the capabilties which we share with the server during the
 	// last capability check. These will get sent once we have received the
 	// last capability list command from the server.
-	tmpCap []string
+	tmpCap map[string]map[string]string
 	// serverOptions are the standard capabilities and configurations
 	// supported by the server at connection time. This also includes
 	// RPL_ISUPPORT entries.
 	serverOptions map[string]string
 	// motd is the servers message of the day.
 	motd string
-}
 
-// notify sends state change notifications so users can update their refs
-// when state changes.
-func (s *state) notify(c *Client, ntype string) {
-	c.RunHandlers(&Event{Command: ntype})
+	// sts are strict transport security configurations, if specified by the
+	// server.
+	//
+	// TODO: ideally, this would be a configurable policy store that the user could
+	// optionally override (to store STS information on disk, memory, etc).
+	sts strictTransport
 }
 
 // reset resets the state back to it's original form.
-func (s *state) reset() {
+func (s *state) reset(initial bool) {
 	s.Lock()
 	s.nick = ""
 	s.ident = ""
@@ -50,8 +52,13 @@ func (s *state) reset() {
 	s.channels = make(map[string]*Channel)
 	s.users = make(map[string]*User)
 	s.serverOptions = make(map[string]string)
-	s.enabledCap = []string{}
+	s.enabledCap = make(map[string]map[string]string)
+	s.tmpCap = make(map[string]map[string]string)
 	s.motd = ""
+
+	if initial {
+		s.sts.reset()
+	}
 	s.Unlock()
 }
 
@@ -499,4 +506,45 @@ func (s *state) renameUser(from, to string) {
 			}
 		}
 	}
+}
+
+type strictTransport struct {
+	beginUpgrade        bool
+	upgradePort         int
+	persistenceDuration int
+	persistenceReceived time.Time
+	preload             bool
+	lastFailed          time.Time
+}
+
+func (s *strictTransport) reset() {
+	s.upgradePort = -1
+	s.persistenceDuration = -1
+	s.preload = false
+}
+
+func (s *strictTransport) expired() bool {
+	return int(time.Since(s.persistenceReceived).Seconds()) > s.persistenceDuration
+}
+
+func (s *strictTransport) enabled() bool {
+	return s.upgradePort > 0
+}
+
+// ErrSTSUpgradeFailed is an error that occurs when a connection that was attempted
+// to be upgraded via a strict transport policy, failed. This does not necessarily
+// indicate that STS was to blame, but the underlying connection failed for some
+// reason.
+type ErrSTSUpgradeFailed struct {
+	Err error
+}
+
+func (e ErrSTSUpgradeFailed) Error() string {
+	return fmt.Sprintf("fail to upgrade to secure (sts) connection: %v", e.Err)
+}
+
+// notify sends state change notifications so users can update their refs
+// when state changes.
+func (s *state) notify(c *Client, ntype string) {
+	c.RunHandlers(&Event{Command: ntype})
 }

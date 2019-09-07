@@ -38,7 +38,7 @@ const (
 	prefixTagValue byte = '='
 	prefixUserTag  byte = '+'
 	tagSeparator   byte = ';'
-	maxTagLength   int  = 511 // 510 + @ and " " (space), though space usually not included.
+	maxTagLength   int  = 4094 // 4094 + @ and " " (space) = 4096, though space usually not included.
 )
 
 // Tags represents the key-value pairs in IRCv3 message tags. The map contains
@@ -55,6 +55,9 @@ type Tags map[string]string
 //   @aaa=bbb;ccc;example.com/ddd=eee
 // NOT:
 //   @aaa=bbb;ccc;example.com/ddd=eee :nick!ident@host.com PRIVMSG me :Hello
+//
+// Technically, there is a length limit of 4096, but the server should reject
+// tag messages longer than this.
 func ParseTags(raw string) (t Tags) {
 	t = make(Tags)
 
@@ -79,11 +82,11 @@ func ParseTags(raw string) (t Tags) {
 		}
 
 		// Check if tag key or decoded value are invalid.
-		if !validTag(parts[i][:hasValue]) || !validTagValue(tagDecoder.Replace(parts[i][hasValue+1:])) {
-			continue
-		}
+		// if !validTag(parts[i][:hasValue]) || !validTagValue(tagDecoder.Replace(parts[i][hasValue+1:])) {
+		// 	continue
+		// }
 
-		t[parts[i][:hasValue]] = parts[i][hasValue+1:]
+		t[parts[i][:hasValue]] = tagDecoder.Replace(parts[i][hasValue+1:])
 	}
 
 	return t
