@@ -21,14 +21,18 @@ builds:
   ldflags:
     - -s -w -X main.githash={{.ShortCommit}}
 
-archive:
-  name_template: "{{ .Binary }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
-  format: binary
-  files:
-    - none*
-  replacements:
-    386: 32bit
-    amd64: 64bit
+archives:
+  -
+    id: matterbridge
+    builds:
+    - matterbridge
+    name_template: "{{ .Binary }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    format: binary
+    files:
+      - none*
+    replacements:
+      386: 32bit
+      amd64: 64bit
 
 checksum:
   name_template: 'checksums.txt'
