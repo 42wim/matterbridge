@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"mime"
 	"mime/multipart"
 	"net/http"
 	"net/http/httputil"
@@ -48,31 +49,95 @@ type statusCodeError struct {
 }
 
 func (t statusCodeError) Error() string {
-	// TODO: this is a bad error string, should clean it up with a breaking changes
-	// merger.
-	return fmt.Sprintf("Slack server error: %s.", t.Status)
+	return fmt.Sprintf("slack server error: %s", t.Status)
 }
 
 func (t statusCodeError) HTTPStatusCode() int {
 	return t.Code
 }
 
+func (t statusCodeError) Retryable() bool {
+	if t.Code >= 500 || t.Code == http.StatusTooManyRequests {
+		return true
+	}
+	return false
+}
+
+// RateLimitedError represents the rate limit respond from slack
 type RateLimitedError struct {
 	RetryAfter time.Duration
 }
 
 func (e *RateLimitedError) Error() string {
-	return fmt.Sprintf("Slack rate limit exceeded, retry after %s", e.RetryAfter)
+	return fmt.Sprintf("slack rate limit exceeded, retry after %s", e.RetryAfter)
+}
+
+func (e *RateLimitedError) Retryable() bool {
+	return true
 }
 
 func fileUploadReq(ctx context.Context, path string, values url.Values, r io.Reader) (*http.Request, error) {
 	req, err := http.NewRequest("POST", path, r)
-
-	req = req.WithContext(ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	req = req.WithContext(ctx)
 	req.URL.RawQuery = (values).Encode()
+	return req, nil
+}
+
+func downloadFile(client httpClient, token string, downloadURL string, writer io.Writer, d debug) error {
+	if downloadURL == "" {
+		return fmt.Errorf("received empty download URL")
+	}
+
+	req, err := http.NewRequest("GET", downloadURL, &bytes.Buffer{})
+	if err != nil {
+		return err
+	}
+
+	var bearer = "Bearer " + token
+	req.Header.Add("Authorization", bearer)
+	req.WithContext(context.Background())
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	err = checkStatusCode(resp, d)
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(writer, resp.Body)
+
+	return err
+}
+
+func formReq(endpoint string, values url.Values) (req *http.Request, err error) {
+	if req, err = http.NewRequest("POST", endpoint, strings.NewReader(values.Encode())); err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	return req, nil
+}
+
+func jsonReq(endpoint string, body interface{}) (req *http.Request, err error) {
+	buffer := bytes.NewBuffer([]byte{})
+	if err = json.NewEncoder(buffer).Encode(body); err != nil {
+		return nil, err
+	}
+
+	if req, err = http.NewRequest("POST", endpoint, buffer); err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	return req, nil
 }
 
@@ -89,7 +154,7 @@ func parseResponseBody(body io.ReadCloser, intf interface{}, d debug) error {
 	return json.Unmarshal(response, intf)
 }
 
-func postLocalWithMultipartResponse(ctx context.Context, client httpClient, path, fpath, fieldname string, values url.Values, intf interface{}, d debug) error {
+func postLocalWithMultipartResponse(ctx context.Context, client httpClient, method, fpath, fieldname string, values url.Values, intf interface{}, d debug) error {
 	fullpath, err := filepath.Abs(fpath)
 	if err != nil {
 		return err
@@ -99,7 +164,8 @@ func postLocalWithMultipartResponse(ctx context.Context, client httpClient, path
 		return err
 	}
 	defer file.Close()
-	return postWithMultipartResponse(ctx, client, path, filepath.Base(fpath), fieldname, values, file, intf, d)
+
+	return postWithMultipartResponse(ctx, client, method, filepath.Base(fpath), fieldname, values, file, intf, d)
 }
 
 func postWithMultipartResponse(ctx context.Context, client httpClient, path, name, fieldname string, values url.Values, r io.Reader, intf interface{}, d debug) error {
@@ -123,7 +189,7 @@ func postWithMultipartResponse(ctx context.Context, client httpClient, path, nam
 			return
 		}
 	}()
-	req, err := fileUploadReq(ctx, APIURL+path, values, pipeReader)
+	req, err := fileUploadReq(ctx, path, values, pipeReader)
 	if err != nil {
 		return err
 	}
@@ -136,28 +202,20 @@ func postWithMultipartResponse(ctx context.Context, client httpClient, path, nam
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusTooManyRequests {
-		retry, err := strconv.ParseInt(resp.Header.Get("Retry-After"), 10, 64)
-		if err != nil {
-			return err
-		}
-		return &RateLimitedError{time.Duration(retry) * time.Second}
+	err = checkStatusCode(resp, d)
+	if err != nil {
+		return err
 	}
 
-	// Slack seems to send an HTML body along with 5xx error codes. Don't parse it.
-	if resp.StatusCode != http.StatusOK {
-		logResponse(resp, d)
-		return statusCodeError{Code: resp.StatusCode, Status: resp.Status}
-	}
 	select {
 	case err = <-errc:
 		return err
 	default:
-		return parseResponseBody(resp.Body, intf, d)
+		return newJSONParser(intf)(resp)
 	}
 }
 
-func doPost(ctx context.Context, client httpClient, req *http.Request, intf interface{}, d debug) error {
+func doPost(ctx context.Context, client httpClient, req *http.Request, parser responseParser, d debug) error {
 	req = req.WithContext(ctx)
 	resp, err := client.Do(req)
 	if err != nil {
@@ -165,21 +223,12 @@ func doPost(ctx context.Context, client httpClient, req *http.Request, intf inte
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusTooManyRequests {
-		retry, err := strconv.ParseInt(resp.Header.Get("Retry-After"), 10, 64)
-		if err != nil {
-			return err
-		}
-		return &RateLimitedError{time.Duration(retry) * time.Second}
+	err = checkStatusCode(resp, d)
+	if err != nil {
+		return err
 	}
 
-	// Slack seems to send an HTML body along with 5xx error codes. Don't parse it.
-	if resp.StatusCode != http.StatusOK {
-		logResponse(resp, d)
-		return statusCodeError{Code: resp.StatusCode, Status: resp.Status}
-	}
-
-	return parseResponseBody(resp.Body, intf, d)
+	return parser(resp)
 }
 
 // post JSON.
@@ -191,7 +240,8 @@ func postJSON(ctx context.Context, client httpClient, endpoint, token string, js
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	return doPost(ctx, client, req, intf, d)
+
+	return doPost(ctx, client, req, newJSONParser(intf), d)
 }
 
 // post a url encoded form.
@@ -202,17 +252,7 @@ func postForm(ctx context.Context, client httpClient, endpoint string, values ur
 		return err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	return doPost(ctx, client, req, intf, d)
-}
-
-// post to a slack web method.
-func postSlackMethod(ctx context.Context, client httpClient, path string, values url.Values, intf interface{}, d debug) error {
-	return postForm(ctx, client, APIURL+path, values, intf, d)
-}
-
-// get a slack web method.
-func getSlackMethod(ctx context.Context, client httpClient, path string, values url.Values, intf interface{}, d debug) error {
-	return getResource(ctx, client, APIURL+path, values, intf, d)
+	return doPost(ctx, client, req, newJSONParser(intf), d)
 }
 
 func getResource(ctx context.Context, client httpClient, endpoint string, values url.Values, intf interface{}, d debug) error {
@@ -223,7 +263,7 @@ func getResource(ctx context.Context, client httpClient, endpoint string, values
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.URL.RawQuery = values.Encode()
 
-	return doPost(ctx, client, req, intf, d)
+	return doPost(ctx, client, req, newJSONParser(intf), d)
 }
 
 func parseAdminResponse(ctx context.Context, client httpClient, method string, teamName string, values url.Values, intf interface{}, d debug) error {
@@ -251,16 +291,70 @@ func okJSONHandler(rw http.ResponseWriter, r *http.Request) {
 	rw.Write(response)
 }
 
-type errorString string
-
-func (t errorString) Error() string {
-	return string(t)
-}
-
 // timerReset safely reset a timer, see time.Timer.Reset for details.
 func timerReset(t *time.Timer, d time.Duration) {
 	if !t.Stop() {
 		<-t.C
 	}
 	t.Reset(d)
+}
+
+func checkStatusCode(resp *http.Response, d debug) error {
+	if resp.StatusCode == http.StatusTooManyRequests {
+		retry, err := strconv.ParseInt(resp.Header.Get("Retry-After"), 10, 64)
+		if err != nil {
+			return err
+		}
+		return &RateLimitedError{time.Duration(retry) * time.Second}
+	}
+
+	// Slack seems to send an HTML body along with 5xx error codes. Don't parse it.
+	if resp.StatusCode != http.StatusOK {
+		logResponse(resp, d)
+		return statusCodeError{Code: resp.StatusCode, Status: resp.Status}
+	}
+
+	return nil
+}
+
+type responseParser func(*http.Response) error
+
+func newJSONParser(dst interface{}) responseParser {
+	return func(resp *http.Response) error {
+		return json.NewDecoder(resp.Body).Decode(dst)
+	}
+}
+
+func newTextParser(dst interface{}) responseParser {
+	return func(resp *http.Response) error {
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+
+		if !bytes.Equal(b, []byte("ok")) {
+			return errors.New(string(b))
+		}
+
+		return nil
+	}
+}
+
+func newContentTypeParser(dst interface{}) responseParser {
+	return func(req *http.Response) (err error) {
+		var (
+			ctype string
+		)
+
+		if ctype, _, err = mime.ParseMediaType(req.Header.Get("Content-Type")); err != nil {
+			return err
+		}
+
+		switch ctype {
+		case "application/json":
+			return newJSONParser(dst)(req)
+		default:
+			return newTextParser(dst)(req)
+		}
+	}
 }

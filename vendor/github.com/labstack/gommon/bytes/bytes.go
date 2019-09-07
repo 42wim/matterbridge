@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 type (
@@ -73,7 +74,7 @@ func (*Bytes) Parse(value string) (i int64, err error) {
 		return 0, fmt.Errorf("error parsing value=%s", value)
 	}
 	bytesString := parts[1]
-	multiple := parts[2]
+	multiple := strings.ToUpper(parts[2])
 	bytes, err := strconv.ParseFloat(bytesString, 64)
 	if err != nil {
 		return

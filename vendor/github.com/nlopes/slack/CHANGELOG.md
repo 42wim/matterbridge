@@ -1,3 +1,20 @@
+### v0.6.0 - August 31, 2019
+full differences can be viewed using `git log --oneline --decorate --color v0.5.0..v0.6.0`
+thanks to everyone who has contributed since January!
+
+
+#### Breaking Changes:
+- Info struct has had fields removed related to deprecated functionality by slack.
+- minor adjustments to some structs.
+- some internal default values have changed, usually to be more inline with slack defaults or to correct inability to set a particular value. (Message Parse for example.)
+
+##### Highlights:
+- new slacktest package easy mocking for slack client. use, enjoy, please submit PRs for improvements and default behaviours! shamelessly taken from the [slack-test repo](https://github.com/lusis/slack-test) thank you lusis for letting us use it and bring it into the slack repo.
+- blocks, blocks, blocks.
+- RTM ManagedConnection has undergone a significant cleanup.
+in particular handles backoffs gracefully, removed many deadlocks,
+and Disconnect is now much more responsive.
+
 ### v0.5.0 - January 20, 2019
 full differences can be viewed using `git log --oneline --decorate --color v0.4.0..v0.5.0`
 - Breaking changes: various old struct fields have been removed or updated to match slack's api.

@@ -94,9 +94,6 @@ func (a *Auth) HandlePacket(packet *Packet) {
 		a.handleUpdateMachineAuth(packet)
 	case EMsg_ClientAccountInfo:
 		a.handleAccountInfo(packet)
-	case EMsg_ClientWalletInfoUpdate:
-	case EMsg_ClientRequestWebAPIAuthenticateUserNonceResponse:
-	case EMsg_ClientMarketingMessageUpdate:
 	}
 }
 

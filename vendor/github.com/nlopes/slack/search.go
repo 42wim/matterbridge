@@ -41,6 +41,7 @@ type SearchMessage struct {
 	User        string       `json:"user"`
 	Username    string       `json:"username"`
 	Timestamp   string       `json:"ts"`
+	Blocks      Blocks       `json:"blocks,omitempty"`
 	Text        string       `json:"text"`
 	Permalink   string       `json:"permalink"`
 	Attachments []Attachment `json:"attachments"`
@@ -103,7 +104,7 @@ func (api *Client) _search(ctx context.Context, path, query string, params Searc
 	}
 
 	response = &searchResponseFull{}
-	err := postSlackMethod(ctx, api.httpclient, path, values, response, api)
+	err := api.postMethod(ctx, path, values, response)
 	if err != nil {
 		return nil, err
 	}

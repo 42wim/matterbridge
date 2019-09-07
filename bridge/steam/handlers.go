@@ -85,7 +85,7 @@ func (b *Bsteam) handleEvents() {
 
 func (b *Bsteam) handleLogOnFailed(e *steam.LogOnFailedEvent, myLoginInfo *steam.LogOnDetails) error {
 	switch e.Result {
-	case steamlang.EResult_AccountLogonDeniedNeedTwoFactorCode:
+	case steamlang.EResult_AccountLoginDeniedNeedTwoFactor:
 		b.Log.Info("Steam guard isn't letting me in! Enter 2FA code:")
 		var code string
 		fmt.Scanf("%s", &code)

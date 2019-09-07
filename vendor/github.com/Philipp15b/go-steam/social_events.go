@@ -1,9 +1,10 @@
 package steam
 
 import (
+	"time"
+
 	. "github.com/Philipp15b/go-steam/protocol/steamlang"
 	. "github.com/Philipp15b/go-steam/steamid"
-	"time"
 )
 
 type FriendsListEvent struct{}
@@ -41,7 +42,7 @@ type PersonaStateEvent struct {
 	SourceSteamId          SteamId `json:",string"`
 	GameDataBlob           []byte
 	Name                   string
-	Avatar                 string
+	Avatar                 []byte
 	LastLogOff             uint32
 	LastLogOn              uint32
 	ClanRank               uint32
@@ -49,17 +50,14 @@ type PersonaStateEvent struct {
 	OnlineSessionInstances uint32
 	PublishedSessionId     uint32
 	PersonaSetByUser       bool
-	FacebookName           string
-	FacebookId             uint64 `json:",string"`
 }
 
 // Fired when a clan's state has been changed
 type ClanStateEvent struct {
-	ClandId             SteamId `json:",string"`
-	StateFlags          EClientPersonaStateFlag
+	ClanId              SteamId `json:",string"`
 	AccountFlags        EAccountFlags
 	ClanName            string
-	Avatar              string
+	Avatar              []byte
 	MemberTotalCount    uint32
 	MemberOnlineCount   uint32
 	MemberChattingCount uint32

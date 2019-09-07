@@ -12,9 +12,9 @@ type AuthRevokeResponse struct {
 }
 
 // authRequest sends the actual request, and unmarshals the response
-func authRequest(ctx context.Context, client httpClient, path string, values url.Values, d debug) (*AuthRevokeResponse, error) {
+func (api *Client) authRequest(ctx context.Context, path string, values url.Values) (*AuthRevokeResponse, error) {
 	response := &AuthRevokeResponse{}
-	err := postSlackMethod(ctx, client, path, values, response, d)
+	err := api.postMethod(ctx, path, values, response)
 	if err != nil {
 		return nil, err
 	}
@@ -36,5 +36,5 @@ func (api *Client) SendAuthRevokeContext(ctx context.Context, token string) (*Au
 		"token": {token},
 	}
 
-	return authRequest(ctx, api.httpclient, "auth.revoke", values, api)
+	return api.authRequest(ctx, "auth.revoke", values)
 }

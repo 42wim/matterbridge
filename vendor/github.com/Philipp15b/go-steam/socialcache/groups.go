@@ -2,9 +2,10 @@ package socialcache
 
 import (
 	"errors"
+	"sync"
+
 	. "github.com/Philipp15b/go-steam/protocol/steamlang"
 	. "github.com/Philipp15b/go-steam/steamid"
-	"sync"
 )
 
 // Groups list is a thread safe map
@@ -78,7 +79,7 @@ func (list *GroupsList) SetName(id SteamId, name string) {
 	}
 }
 
-func (list *GroupsList) SetAvatar(id SteamId, hash string) {
+func (list *GroupsList) SetAvatar(id SteamId, hash []byte) {
 	list.mutex.Lock()
 	defer list.mutex.Unlock()
 	id = id.ChatToClan()
@@ -136,7 +137,7 @@ func (list *GroupsList) SetMemberInGameCount(id SteamId, count uint32) {
 type Group struct {
 	SteamId             SteamId `json:",string"`
 	Name                string
-	Avatar              string
+	Avatar              []byte
 	Relationship        EClanRelationship
 	MemberTotalCount    uint32
 	MemberOnlineCount   uint32

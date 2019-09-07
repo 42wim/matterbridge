@@ -35,7 +35,7 @@ func main() {
 	api := slack.New("YOUR_TOKEN_HERE")
 	// If you set debugging, it will log all requests to the console
 	// Useful when encountering issues
-	// api.SetDebug(true)
+	// slack.New("YOUR_TOKEN_HERE", slack.OptionDebug(true))
 	groups, err := api.GetGroups(false)
 	if err != nil {
 		fmt.Printf("%s\n", err)

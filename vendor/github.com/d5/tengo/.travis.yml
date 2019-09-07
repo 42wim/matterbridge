@@ -1,13 +1,13 @@
 language: go
 
 go:
-  - 1.9
+  - "1.12"
 
 install:
-  - go get -u golang.org/x/lint/golint
+  - env GO111MODULE=on go get -u golang.org/x/lint/golint
 
 script:
-  - make test
+  - env GO111MODULE=on make test
 
 deploy:
   - provider: script

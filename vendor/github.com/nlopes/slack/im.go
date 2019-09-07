@@ -22,15 +22,13 @@ type imResponseFull struct {
 
 // IM contains information related to the Direct Message channel
 type IM struct {
-	conversation
-	IsIM          bool   `json:"is_im"`
-	User          string `json:"user"`
-	IsUserDeleted bool   `json:"is_user_deleted"`
+	Conversation
+	IsUserDeleted bool `json:"is_user_deleted"`
 }
 
-func imRequest(ctx context.Context, client httpClient, path string, values url.Values, d debug) (*imResponseFull, error) {
+func (api *Client) imRequest(ctx context.Context, path string, values url.Values) (*imResponseFull, error) {
 	response := &imResponseFull{}
-	err := postSlackMethod(ctx, client, path, values, response, d)
+	err := api.postMethod(ctx, path, values, response)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +48,7 @@ func (api *Client) CloseIMChannelContext(ctx context.Context, channel string) (b
 		"channel": {channel},
 	}
 
-	response, err := imRequest(ctx, api.httpclient, "im.close", values, api)
+	response, err := api.imRequest(ctx, "im.close", values)
 	if err != nil {
 		return false, false, err
 	}
@@ -71,7 +69,7 @@ func (api *Client) OpenIMChannelContext(ctx context.Context, user string) (bool,
 		"user":  {user},
 	}
 
-	response, err := imRequest(ctx, api.httpclient, "im.open", values, api)
+	response, err := api.imRequest(ctx, "im.open", values)
 	if err != nil {
 		return false, false, "", err
 	}
@@ -91,7 +89,7 @@ func (api *Client) MarkIMChannelContext(ctx context.Context, channel, ts string)
 		"ts":      {ts},
 	}
 
-	_, err := imRequest(ctx, api.httpclient, "im.mark", values, api)
+	_, err := api.imRequest(ctx, "im.mark", values)
 	return err
 }
 
@@ -130,7 +128,7 @@ func (api *Client) GetIMHistoryContext(ctx context.Context, channel string, para
 		}
 	}
 
-	response, err := imRequest(ctx, api.httpclient, "im.history", values, api)
+	response, err := api.imRequest(ctx, "im.history", values)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +146,7 @@ func (api *Client) GetIMChannelsContext(ctx context.Context) ([]IM, error) {
 		"token": {api.token},
 	}
 
-	response, err := imRequest(ctx, api.httpclient, "im.list", values, api)
+	response, err := api.imRequest(ctx, "im.list", values)
 	if err != nil {
 		return nil, err
 	}

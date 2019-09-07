@@ -4,7 +4,6 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"hash"
 	"net/http"
@@ -34,7 +33,7 @@ func unsafeSignatureVerifier(header http.Header, secret string) (_ SecretsVerifi
 	stimestamp := header.Get(hTimestamp)
 
 	if signature == "" || stimestamp == "" {
-		return SecretsVerifier{}, errors.New("missing headers")
+		return SecretsVerifier{}, ErrMissingHeaders
 	}
 
 	if bsignature, err = hex.DecodeString(strings.TrimPrefix(signature, "v0=")); err != nil {
@@ -70,7 +69,7 @@ func NewSecretsVerifier(header http.Header, secret string) (sv SecretsVerifier, 
 
 	diff := absDuration(time.Since(time.Unix(timestamp, 0)))
 	if diff > 5*time.Minute {
-		return SecretsVerifier{}, fmt.Errorf("timestamp is too old")
+		return SecretsVerifier{}, ErrExpiredTimestamp
 	}
 
 	return sv, err
@@ -88,7 +87,7 @@ func (v SecretsVerifier) Ensure() error {
 		return nil
 	}
 
-	return fmt.Errorf("Expected signing signature: %s, but computed: %s", v.signature, computed)
+	return fmt.Errorf("Expected signing signature: %s, but computed: %s", hex.EncodeToString(v.signature), hex.EncodeToString(computed))
 }
 
 func abs64(n int64) int64 {

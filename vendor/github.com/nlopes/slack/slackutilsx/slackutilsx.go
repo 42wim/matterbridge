@@ -55,3 +55,8 @@ func EscapeMessage(message string) string {
 	replacer := strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;")
 	return replacer.Replace(message)
 }
+
+// Retryable errors return true.
+type Retryable interface {
+	Retryable() bool
+}

@@ -16,6 +16,7 @@ type OutgoingMessage struct {
 type Message struct {
 	Msg
 	SubMessage *Msg `json:"message,omitempty"`
+	PreviousMessage *Msg `json:"previous_message,omitempty"`
 }
 
 // Msg contains information about a slack message
@@ -92,7 +93,17 @@ type Msg struct {
 	ResponseType    string `json:"response_type,omitempty"`
 	ReplaceOriginal bool   `json:"replace_original"`
 	DeleteOriginal  bool   `json:"delete_original"`
+
+	// Block type Message
+	Blocks Blocks `json:"blocks,omitempty"`
 }
+
+const (
+	// ResponseTypeInChannel in channel response for slash commands.
+	ResponseTypeInChannel = "in_channel"
+	// ResponseTypeEphemeral ephemeral respone for slash commands.
+	ResponseTypeEphemeral = "ephemeral"
+)
 
 // Icon is used for bot messages
 type Icon struct {

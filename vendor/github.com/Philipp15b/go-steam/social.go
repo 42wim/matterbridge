@@ -3,7 +3,10 @@ package steam
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/hex"
+	"io"
+	"sync"
+	"time"
+
 	. "github.com/Philipp15b/go-steam/protocol"
 	. "github.com/Philipp15b/go-steam/protocol/protobuf"
 	. "github.com/Philipp15b/go-steam/protocol/steamlang"
@@ -11,9 +14,6 @@ import (
 	"github.com/Philipp15b/go-steam/socialcache"
 	. "github.com/Philipp15b/go-steam/steamid"
 	"github.com/golang/protobuf/proto"
-	"io"
-	"sync"
-	"time"
 )
 
 // Provides access to social aspects of Steam.
@@ -21,7 +21,7 @@ type Social struct {
 	mutex sync.RWMutex
 
 	name         string
-	avatar       string
+	avatar       []byte
 	personaState EPersonaState
 
 	Friends *socialcache.FriendsList
@@ -41,7 +41,7 @@ func newSocial(client *Client) *Social {
 }
 
 // Gets the local user's avatar
-func (s *Social) GetAvatar() string {
+func (s *Social) GetAvatar() []byte {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 	return s.avatar
@@ -156,7 +156,7 @@ func (s *Social) RequestProfileInfo(id SteamId) {
 
 // Requests all offline messages and marks them as read
 func (s *Social) RequestOfflineMessages() {
-	s.client.Write(NewClientMsgProtobuf(EMsg_ClientFSGetFriendMessageHistoryForOfflineMessages, &CMsgClientFSGetFriendMessageHistoryForOfflineMessages{}))
+	s.client.Write(NewClientMsgProtobuf(EMsg_ClientChatGetFriendMessageHistoryForOfflineMessages, &CMsgClientChatGetFriendMessageHistoryForOfflineMessages{}))
 }
 
 // Attempts to join a chat room
@@ -307,7 +307,7 @@ func (s *Social) handlePersonaState(packet *Packet) {
 			if friend.GetPlayerName() != "" {
 				s.name = friend.GetPlayerName()
 			}
-			avatar := hex.EncodeToString(friend.GetAvatarHash())
+			avatar := friend.GetAvatarHash()
 			if ValidAvatar(avatar) {
 				s.avatar = avatar
 			}
@@ -319,7 +319,7 @@ func (s *Social) handlePersonaState(packet *Packet) {
 				}
 			}
 			if (flags & EClientPersonaStateFlag_Presence) == EClientPersonaStateFlag_Presence {
-				avatar := hex.EncodeToString(friend.GetAvatarHash())
+				avatar := friend.GetAvatarHash()
 				if ValidAvatar(avatar) {
 					s.Friends.SetAvatar(id, avatar)
 				}
@@ -338,7 +338,7 @@ func (s *Social) handlePersonaState(packet *Packet) {
 				}
 			}
 			if (flags & EClientPersonaStateFlag_Presence) == EClientPersonaStateFlag_Presence {
-				avatar := hex.EncodeToString(friend.GetAvatarHash())
+				avatar := friend.GetAvatarHash()
 				if ValidAvatar(avatar) {
 					s.Groups.SetAvatar(id, avatar)
 				}
@@ -358,7 +358,7 @@ func (s *Social) handlePersonaState(packet *Packet) {
 			SourceSteamId:          SteamId(friend.GetSteamidSource()),
 			GameDataBlob:           friend.GetGameDataBlob(),
 			Name:                   friend.GetPlayerName(),
-			Avatar:                 hex.EncodeToString(friend.GetAvatarHash()),
+			Avatar:                 friend.GetAvatarHash(),
 			LastLogOff:             friend.GetLastLogoff(),
 			LastLogOn:              friend.GetLastLogon(),
 			ClanRank:               friend.GetClanRank(),
@@ -366,8 +366,6 @@ func (s *Social) handlePersonaState(packet *Packet) {
 			OnlineSessionInstances: friend.GetOnlineSessionInstances(),
 			PublishedSessionId:     friend.GetPublishedInstanceId(),
 			PersonaSetByUser:       friend.GetPersonaSetByUser(),
-			FacebookName:           friend.GetFacebookName(),
-			FacebookId:             friend.GetFacebookId(),
 		})
 	}
 }
@@ -376,10 +374,10 @@ func (s *Social) handleClanState(packet *Packet) {
 	body := new(CMsgClientClanState)
 	packet.ReadProtoMsg(body)
 	var name string
-	var avatar string
+	var avatar []byte
 	if body.GetNameInfo() != nil {
 		name = body.GetNameInfo().GetClanName()
-		avatar = hex.EncodeToString(body.GetNameInfo().GetShaAvatar())
+		avatar = body.GetNameInfo().GetShaAvatar()
 	}
 	var totalCount, onlineCount, chattingCount, ingameCount uint32
 	if body.GetUserCounts() != nil {
@@ -408,18 +406,13 @@ func (s *Social) handleClanState(packet *Packet) {
 			JustPosted: announce.GetJustPosted(),
 		})
 	}
-	flags := EClientPersonaStateFlag(body.GetMUnStatusFlags())
+
 	//Add stuff to group
 	clanid := SteamId(body.GetSteamidClan())
-	if (flags & EClientPersonaStateFlag_PlayerName) == EClientPersonaStateFlag_PlayerName {
-		if name != "" {
-			s.Groups.SetName(clanid, name)
-		}
-	}
-	if (flags & EClientPersonaStateFlag_Presence) == EClientPersonaStateFlag_Presence {
-		if ValidAvatar(avatar) {
-			s.Groups.SetAvatar(clanid, avatar)
-		}
+	if body.NameInfo != nil {
+		info := body.NameInfo
+		s.Groups.SetName(clanid, info.GetClanName())
+		s.Groups.SetAvatar(clanid, info.GetShaAvatar())
 	}
 	if body.GetUserCounts() != nil {
 		s.Groups.SetMemberTotalCount(clanid, totalCount)
@@ -428,8 +421,7 @@ func (s *Social) handleClanState(packet *Packet) {
 		s.Groups.SetMemberInGameCount(clanid, ingameCount)
 	}
 	s.client.Emit(&ClanStateEvent{
-		ClandId:             clanid,
-		StateFlags:          EClientPersonaStateFlag(body.GetMUnStatusFlags()),
+		ClanId:              clanid,
 		AccountFlags:        EAccountFlags(body.GetClanAccountFlags()),
 		ClanName:            name,
 		Avatar:              avatar,
@@ -606,7 +598,7 @@ func (s *Social) handleProfileInfoResponse(packet *Packet) {
 }
 
 func (s *Social) handleFriendMessageHistoryResponse(packet *Packet) {
-	body := new(CMsgClientFSGetFriendMessageHistoryResponse)
+	body := new(CMsgClientChatGetFriendMessageHistoryResponse)
 	packet.ReadProtoMsg(body)
 	steamid := SteamId(body.GetSteamid())
 	for _, message := range body.GetMessages() {

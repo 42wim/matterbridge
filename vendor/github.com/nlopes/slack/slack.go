@@ -9,11 +9,12 @@ import (
 	"os"
 )
 
-// APIURL added as a var so that we can change this for testing purposes
-var APIURL = "https://slack.com/api/"
-
-// WEBAPIURLFormat ...
-const WEBAPIURLFormat = "https://%s.slack.com/api/users.admin.%s?t=%d"
+const (
+	// APIURL of the slack api.
+	APIURL = "https://slack.com/api/"
+	// WEBAPIURLFormat ...
+	WEBAPIURLFormat = "https://%s.slack.com/api/users.admin.%s?t=%d"
+)
 
 // httpClient defines the minimal interface needed for an http.Client to be implemented.
 type httpClient interface {
@@ -40,6 +41,8 @@ type AuthTestResponse struct {
 	User   string `json:"user"`
 	TeamID string `json:"team_id"`
 	UserID string `json:"user_id"`
+	// EnterpriseID is only returned when an enterprise id present
+	EnterpriseID string `json:"enterprise_id,omitempty"`
 }
 
 type authTestResponseFull struct {
@@ -48,8 +51,11 @@ type authTestResponseFull struct {
 }
 
 // Client for the slack api.
+type ParamOption func(*url.Values)
+
 type Client struct {
 	token      string
+	endpoint   string
 	debug      bool
 	log        ilogger
 	httpclient httpClient
@@ -79,10 +85,16 @@ func OptionLog(l logger) func(*Client) {
 	}
 }
 
+// OptionAPIURL set the url for the client. only useful for testing.
+func OptionAPIURL(u string) func(*Client) {
+	return func(c *Client) { c.endpoint = u }
+}
+
 // New builds a slack client from the provided token and options.
 func New(token string, options ...Option) *Client {
 	s := &Client{
 		token:      token,
+		endpoint:   APIURL,
 		httpclient: &http.Client{},
 		log:        log.New(os.Stderr, "nlopes/slack", log.LstdFlags|log.Lshortfile),
 	}
@@ -103,7 +115,7 @@ func (api *Client) AuthTest() (response *AuthTestResponse, error error) {
 func (api *Client) AuthTestContext(ctx context.Context) (response *AuthTestResponse, err error) {
 	api.Debugf("Challenging auth...")
 	responseFull := &authTestResponseFull{}
-	err = postSlackMethod(ctx, api.httpclient, "auth.test", url.Values{"token": {api.token}}, responseFull, api)
+	err = api.postMethod(ctx, "auth.test", url.Values{"token": {api.token}}, responseFull)
 	if err != nil {
 		return nil, err
 	}
@@ -128,4 +140,14 @@ func (api *Client) Debugln(v ...interface{}) {
 // Debug returns if debug is enabled.
 func (api *Client) Debug() bool {
 	return api.debug
+}
+
+// post to a slack web method.
+func (api *Client) postMethod(ctx context.Context, path string, values url.Values, intf interface{}) error {
+	return postForm(ctx, api.httpclient, api.endpoint+path, values, intf, api)
+}
+
+// get a slack web method.
+func (api *Client) getMethod(ctx context.Context, path string, values url.Values, intf interface{}) error {
+	return getResource(ctx, api.httpclient, api.endpoint+path, values, intf, api)
 }

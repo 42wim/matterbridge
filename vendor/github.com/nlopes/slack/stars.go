@@ -2,7 +2,6 @@ package slack
 
 import (
 	"context"
-	"errors"
 	"net/url"
 	"strconv"
 )
@@ -58,7 +57,7 @@ func (api *Client) AddStarContext(ctx context.Context, channel string, item Item
 	}
 
 	response := &SlackResponse{}
-	if err := postSlackMethod(ctx, api.httpclient, "stars.add", values, response, api); err != nil {
+	if err := api.postMethod(ctx, "stars.add", values, response); err != nil {
 		return err
 	}
 
@@ -87,7 +86,7 @@ func (api *Client) RemoveStarContext(ctx context.Context, channel string, item I
 	}
 
 	response := &SlackResponse{}
-	if err := postSlackMethod(ctx, api.httpclient, "stars.remove", values, response, api); err != nil {
+	if err := api.postMethod(ctx, "stars.remove", values, response); err != nil {
 		return err
 	}
 
@@ -115,13 +114,15 @@ func (api *Client) ListStarsContext(ctx context.Context, params StarsParameters)
 	}
 
 	response := &listResponseFull{}
-	err := postSlackMethod(ctx, api.httpclient, "stars.list", values, response, api)
+	err := api.postMethod(ctx, "stars.list", values, response)
 	if err != nil {
 		return nil, nil, err
 	}
-	if !response.Ok {
-		return nil, nil, errors.New(response.Error)
+
+	if err := response.Err(); err != nil {
+		return nil, nil, err
 	}
+
 	return response.Items, &response.Paging, nil
 }
 

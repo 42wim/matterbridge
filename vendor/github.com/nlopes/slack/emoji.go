@@ -2,7 +2,6 @@ package slack
 
 import (
 	"context"
-	"errors"
 	"net/url"
 )
 
@@ -23,12 +22,14 @@ func (api *Client) GetEmojiContext(ctx context.Context) (map[string]string, erro
 	}
 	response := &emojiResponseFull{}
 
-	err := postSlackMethod(ctx, api.httpclient, "emoji.list", values, response, api)
+	err := api.postMethod(ctx, "emoji.list", values, response)
 	if err != nil {
 		return nil, err
 	}
-	if !response.Ok {
-		return nil, errors.New(response.Error)
+
+	if response.Err() != nil {
+		return nil, response.Err()
 	}
+
 	return response.Emoji, nil
 }
