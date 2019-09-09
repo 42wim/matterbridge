@@ -206,6 +206,7 @@ type BridgeValues struct {
 }
 
 type Config interface {
+	Viper() *viper.Viper
 	BridgeValues() *BridgeValues
 	GetBool(key string) (bool, bool)
 	GetInt(key string) (int, bool)
@@ -272,6 +273,10 @@ func newConfigFromString(logger *logrus.Entry, input []byte) *config {
 
 func (c *config) BridgeValues() *BridgeValues {
 	return c.cv
+}
+
+func (c *config) Viper() *viper.Viper {
+	return c.v
 }
 
 func (c *config) GetBool(key string) (bool, bool) {

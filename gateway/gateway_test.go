@@ -15,10 +15,15 @@ import (
 
 var testconfig = []byte(`
 [irc.freenode]
+server=""
 [mattermost.test]
+server=""
 [gitter.42wim]
+server=""
 [discord.test]
+server=""
 [slack.test]
+server=""
 
 [[gateway]]
     name = "bridge1"
@@ -44,10 +49,15 @@ var testconfig = []byte(`
 
 var testconfig2 = []byte(`
 [irc.freenode]
+server=""
 [mattermost.test]
+server=""
 [gitter.42wim]
+server=""
 [discord.test]
+server=""
 [slack.test]
+server=""
 
 [[gateway]]
     name = "bridge1"
@@ -87,8 +97,11 @@ var testconfig2 = []byte(`
 
 var testconfig3 = []byte(`
 [irc.zzz]
+server=""
 [telegram.zzz]
+server=""
 [slack.zzz]
+server=""
 [[gateway]]
 name="bridge"
 enable=true
@@ -176,7 +189,6 @@ func TestNewRouter(t *testing.T) {
 	assert.Equal(t, 1, len(r.Gateways))
 	assert.Equal(t, 4, len(r.Gateways["bridge1"].Bridges))
 	assert.Equal(t, 4, len(r.Gateways["bridge1"].Channels))
-
 	r = maketestRouter(testconfig2)
 	assert.Equal(t, 2, len(r.Gateways))
 	assert.Equal(t, 4, len(r.Gateways["bridge1"].Bridges))
