@@ -85,6 +85,7 @@ func (gw *Gateway) FindCanonicalMsgID(protocol string, mID string) string {
 func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 	br := gw.Router.getBridge(cfg.Account)
 	if br == nil {
+		gw.checkConfig(cfg)
 		br = bridge.New(cfg)
 		br.Config = gw.Router.Config
 		br.General = &gw.BridgeValues().General
@@ -102,6 +103,19 @@ func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 	gw.mapChannelsToBridge(br)
 	gw.Bridges[cfg.Account] = br
 	return nil
+}
+
+func (gw *Gateway) checkConfig(cfg *config.Bridge) {
+	match := false
+	for _, key := range gw.Router.Config.Viper().AllKeys() {
+		if strings.HasPrefix(key, cfg.Account) {
+			match = true
+			break
+		}
+	}
+	if !match {
+		gw.logger.Fatalf("Account %s defined in gateway %s but no configuration found, exiting.", cfg.Account, gw.Name)
+	}
 }
 
 // AddConfig associates a new configuration with the gateway object.

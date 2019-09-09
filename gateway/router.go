@@ -59,8 +59,14 @@ func NewRouter(rootLogger *logrus.Logger, cfg config.Config, bridgeMap map[strin
 // between them.
 func (r *Router) Start() error {
 	m := make(map[string]*bridge.Bridge)
+	if len(r.Gateways) == 0 {
+		return fmt.Errorf("no [[gateway]] configured. See https://github.com/42wim/matterbridge/wiki/How-to-create-your-config for more info")
+	}
 	for _, gw := range r.Gateways {
 		r.logger.Infof("Parsing gateway %s", gw.Name)
+		if len(gw.Bridges) == 0 {
+			return fmt.Errorf("no bridges configured for gateway %s. See https://github.com/42wim/matterbridge/wiki/How-to-create-your-config for more info", gw.Name)
+		}
 		for _, br := range gw.Bridges {
 			m[br.Account] = br
 		}
