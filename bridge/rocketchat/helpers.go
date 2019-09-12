@@ -58,6 +58,9 @@ func (b *Brocketchat) doConnectWebhookURL() error {
 func (b *Brocketchat) apiLogin() error {
 	b.Log.Debugf("handling apiLogin()")
 	credentials := &models.UserCredentials{Email: b.GetString("login"), Password: b.GetString("password")}
+	if b.GetString("Token") != "" {
+		credentials = &models.UserCredentials{ID: b.GetString("Login"), Token: b.GetString("Token")}
+	}
 	myURL, err := url.Parse(b.GetString("server"))
 	if err != nil {
 		return err
