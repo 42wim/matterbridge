@@ -956,6 +956,11 @@ Server="https://yourrocketchatserver.domain.com:443"
 #REQUIRED (when not using webhooks)
 Login="yourlogin@domain.com"
 Password="yourpass"
+# When using access token set Login to the User ID associated with your token and Token to your token.
+# When Token is set Password is ignored.
+# Login="yOurUSerID"
+# Token="YoUrUsER_toKEN"
+
 
 #### Settings for webhook matterbridge.
 #USE DEDICATED BOT USER WHEN POSSIBLE! This allows you to use advanced features like message editing/deleting and uploads
