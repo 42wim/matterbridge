@@ -89,7 +89,7 @@ func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 
 	// set username
 	if !b.GetBool("UseUserName") {
-		rmsg.Username = b.getNick(m.Author)
+		rmsg.Username = b.getNick(m.Author, m.GuildID)
 	} else {
 		rmsg.Username = m.Author.Username
 		if b.GetBool("UseDiscriminator") {
