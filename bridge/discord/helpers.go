@@ -9,7 +9,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func (b *Bdiscord) getNick(user *discordgo.User) string {
+func (b *Bdiscord) getNick(user *discordgo.User, guildID string) string {
 	b.membersMutex.RLock()
 	defer b.membersMutex.RUnlock()
 
@@ -23,9 +23,9 @@ func (b *Bdiscord) getNick(user *discordgo.User) string {
 	}
 
 	// If we didn't find nick, search for it.
-	member, err := b.c.GuildMember(b.guildID, user.ID)
+	member, err := b.c.GuildMember(guildID, user.ID)
 	if err != nil {
-		b.Log.Warnf("Failed to fetch information for member %#v on guild %#v: %s", user, b.guildID, err)
+		b.Log.Warnf("Failed to fetch information for member %#v on guild %#v: %s", user, guildID, err)
 		return user.Username
 	} else if member == nil {
 		b.Log.Warnf("Got no information for member %#v", user)
