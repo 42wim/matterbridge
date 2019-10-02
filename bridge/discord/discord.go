@@ -72,6 +72,7 @@ func (b *Bdiscord) Connect() error {
 	}
 	b.Log.Info("Connection succeeded")
 	b.c.AddHandler(b.messageCreate)
+	b.c.AddHandler(b.messageTyping)
 	b.c.AddHandler(b.memberUpdate)
 	b.c.AddHandler(b.messageUpdate)
 	b.c.AddHandler(b.messageDelete)

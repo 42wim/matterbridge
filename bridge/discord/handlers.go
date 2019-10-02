@@ -37,6 +37,19 @@ func (b *Bdiscord) messageDeleteBulk(s *discordgo.Session, m *discordgo.MessageD
 	}
 }
 
+func (b *Bdiscord) messageTyping(s *discordgo.Session, m *discordgo.TypingStart) {
+	if !b.GetBool("ShowUserTyping") {
+		return
+	}
+
+	rmsg := config.Message{Account: b.Account, Event: config.EventUserTyping}
+	rmsg.Channel = b.getChannelName(m.ChannelID)
+	if b.useChannelID {
+		rmsg.Channel = "ID:" + m.ChannelID
+	}
+	b.Remote <- rmsg
+}
+
 func (b *Bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdate) { //nolint:unparam
 	if b.GetBool("EditDisable") {
 		return
