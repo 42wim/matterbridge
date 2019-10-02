@@ -12,7 +12,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/42wim/matterbridge/matterhook"
-	"github.com/hashicorp/golang-lru"
+	lru "github.com/hashicorp/golang-lru"
 	"github.com/nlopes/slack"
 	"github.com/rs/xid"
 )
@@ -36,6 +36,7 @@ type Bslack struct {
 }
 
 const (
+	sHello           = "hello"
 	sChannelJoin     = "channel_join"
 	sChannelLeave    = "channel_leave"
 	sChannelJoined   = "channel_joined"
