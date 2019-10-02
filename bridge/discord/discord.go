@@ -188,6 +188,14 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 		return "", fmt.Errorf("Could not find channelID for %v", msg.Channel)
 	}
 
+	if msg.Event == config.EventUserTyping {
+		if b.GetBool("ShowUserTyping") {
+			err := b.c.ChannelTyping(channelID)
+			return "", err
+		}
+		return "", nil
+	}
+
 	// Make a action /me of the message
 	if msg.Event == config.EventUserAction {
 		msg.Text = "_" + msg.Text + "_"
