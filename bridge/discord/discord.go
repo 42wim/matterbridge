@@ -72,6 +72,7 @@ func (b *Bdiscord) Connect() error {
 	}
 	b.Log.Info("Connection succeeded")
 	b.c.AddHandler(b.messageCreate)
+	b.c.AddHandler(b.messageTyping)
 	b.c.AddHandler(b.memberUpdate)
 	b.c.AddHandler(b.messageUpdate)
 	b.c.AddHandler(b.messageDelete)
@@ -186,6 +187,14 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	channelID := b.getChannelID(msg.Channel)
 	if channelID == "" {
 		return "", fmt.Errorf("Could not find channelID for %v", msg.Channel)
+	}
+
+	if msg.Event == config.EventUserTyping {
+		if b.GetBool("ShowUserTyping") {
+			err := b.c.ChannelTyping(channelID)
+			return "", err
+		}
+		return "", nil
 	}
 
 	// Make a action /me of the message

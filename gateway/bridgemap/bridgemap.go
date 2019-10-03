@@ -40,6 +40,7 @@ var (
 	}
 
 	UserTypingSupport = map[string]struct{}{
-		"slack": {},
+		"slack":   {},
+		"discord": {},
 	}
 )
