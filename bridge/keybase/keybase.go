@@ -1,10 +1,10 @@
 package bkeybase
 
 import (
-	"strconv"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -80,19 +80,21 @@ func (b *Bkeybase) Send(msg config.Message) (string, error) {
 		}
 		defer os.RemoveAll(dir)
 		fname := msg.Extra["file"][0].(config.FileInfo).Name
-		fpath := filepath.Join(dir, msg.Extra["file"][0].(config.FileInfo).Name)
-		if err := ioutil.WriteFile(fpath, *msg.Extra["file"][0].(config.FileInfo).Data, 0600); err != nil {
+		fdata := *msg.Extra["file"][0].(config.FileInfo).Data
+		fcaption := msg.Extra["file"][0].(config.FileInfo).Comment
+		fpath := filepath.Join(dir, fname)
+		if err = ioutil.WriteFile(fpath, fdata, 0600); err != nil {
 			return "", err
 		}
 
-		resp, err := b.kbc.SendAttachmentByTeam(b.team, fpath, fname, &b.channel)
-		return strconv.Itoa(resp.Result.MsgID), err
-	} else {
-		// Send regular message
-		resp, err := b.kbc.SendMessageByTeamName(b.team, msg.Username+msg.Text, &b.channel)
-		if err != nil {
-			return "", err
-		}
+		resp, err := b.kbc.SendAttachmentByTeam(b.team, fpath, fcaption, &b.channel)
 		return strconv.Itoa(resp.Result.MsgID), err
 	}
+
+	// Send regular message
+	resp, err := b.kbc.SendMessageByTeamName(b.team, msg.Username+msg.Text, &b.channel)
+	if err != nil {
+		return "", err
+	}
+	return strconv.Itoa(resp.Result.MsgID), err
 }
