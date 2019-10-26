@@ -105,6 +105,25 @@ func (s *Session) ApplicationDelete(appID string) (err error) {
 	return
 }
 
+// Asset struct stores values for an asset of an application
+type Asset struct {
+	Type int    `json:"type"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// ApplicationAssets returns an application's assets
+func (s *Session) ApplicationAssets(appID string) (ass []*Asset, err error) {
+
+	body, err := s.RequestWithBucketID("GET", EndpointApplicationAssets(appID), nil, EndpointApplicationAssets(""))
+	if err != nil {
+		return
+	}
+
+	err = unmarshal(body, &ass)
+	return
+}
+
 // ------------------------------------------------------------------------------------------------
 // Code specific to Discord OAuth2 Application Bots
 // ------------------------------------------------------------------------------------------------

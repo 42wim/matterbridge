@@ -38,6 +38,7 @@ var (
 	EndpointCDNIcons        = EndpointCDN + "icons/"
 	EndpointCDNSplashes     = EndpointCDN + "splashes/"
 	EndpointCDNChannelIcons = EndpointCDN + "channel-icons/"
+	EndpointCDNBanners      = EndpointCDN + "banners/"
 
 	EndpointAuth           = EndpointAPI + "auth/"
 	EndpointLogin          = EndpointAuth + "login"
@@ -92,11 +93,13 @@ var (
 	EndpointGuildEmbed           = func(gID string) string { return EndpointGuilds + gID + "/embed" }
 	EndpointGuildPrune           = func(gID string) string { return EndpointGuilds + gID + "/prune" }
 	EndpointGuildIcon            = func(gID, hash string) string { return EndpointCDNIcons + gID + "/" + hash + ".png" }
+	EndpointGuildIconAnimated    = func(gID, hash string) string { return EndpointCDNIcons + gID + "/" + hash + ".gif" }
 	EndpointGuildSplash          = func(gID, hash string) string { return EndpointCDNSplashes + gID + "/" + hash + ".png" }
 	EndpointGuildWebhooks        = func(gID string) string { return EndpointGuilds + gID + "/webhooks" }
 	EndpointGuildAuditLogs       = func(gID string) string { return EndpointGuilds + gID + "/audit-logs" }
 	EndpointGuildEmojis          = func(gID string) string { return EndpointGuilds + gID + "/emojis" }
 	EndpointGuildEmoji           = func(gID, eID string) string { return EndpointGuilds + gID + "/emojis/" + eID }
+	EndpointGuildBanner          = func(gID, hash string) string { return EndpointCDNBanners + gID + "/" + hash + ".png" }
 
 	EndpointChannel                   = func(cID string) string { return EndpointChannels + cID }
 	EndpointChannelPermissions        = func(cID string) string { return EndpointChannels + cID + "/permissions" }
@@ -139,8 +142,9 @@ var (
 	EndpointEmoji         = func(eID string) string { return EndpointAPI + "emojis/" + eID + ".png" }
 	EndpointEmojiAnimated = func(eID string) string { return EndpointAPI + "emojis/" + eID + ".gif" }
 
-	EndpointOauth2          = EndpointAPI + "oauth2/"
-	EndpointApplications    = EndpointOauth2 + "applications"
-	EndpointApplication     = func(aID string) string { return EndpointApplications + "/" + aID }
-	EndpointApplicationsBot = func(aID string) string { return EndpointApplications + "/" + aID + "/bot" }
+	EndpointOauth2            = EndpointAPI + "oauth2/"
+	EndpointApplications      = EndpointOauth2 + "applications"
+	EndpointApplication       = func(aID string) string { return EndpointApplications + "/" + aID }
+	EndpointApplicationsBot   = func(aID string) string { return EndpointApplications + "/" + aID + "/bot" }
+	EndpointApplicationAssets = func(aID string) string { return EndpointApplications + "/" + aID + "/assets" }
 )

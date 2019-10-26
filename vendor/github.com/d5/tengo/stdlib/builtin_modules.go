@@ -11,4 +11,6 @@ var BuiltinModules = map[string]map[string]objects.Object{
 	"rand":  randModule,
 	"fmt":   fmtModule,
 	"json":  jsonModule,
+	"base64": base64Module,
+	"hex":  hexModule,
 }

@@ -1036,6 +1036,29 @@ func FuncAYRIE(fn func([]byte) (int, error)) objects.CallableFunc {
 	}
 }
 
+// FuncAYRS transform a function of 'func([]byte) string' signature
+// into CallableFunc type.
+func FuncAYRS(fn func([]byte) string) objects.CallableFunc {
+	return func(args ...objects.Object) (ret objects.Object, err error) {
+		if len(args) != 1 {
+			return nil, objects.ErrWrongNumArguments
+		}
+
+		y1, ok := objects.ToByteSlice(args[0])
+		if !ok {
+			return nil, objects.ErrInvalidArgumentType{
+				Name:     "first",
+				Expected: "bytes(compatible)",
+				Found:    args[0].TypeName(),
+			}
+		}
+
+		res := fn(y1)
+
+		return &objects.String{Value: res}, nil
+	}
+}
+
 // FuncASRIE transform a function of 'func(string) (int, error)' signature
 // into CallableFunc type.
 func FuncASRIE(fn func(string) (int, error)) objects.CallableFunc {
@@ -1059,6 +1082,36 @@ func FuncASRIE(fn func(string) (int, error)) objects.CallableFunc {
 		}
 
 		return &objects.Int{Value: int64(res)}, nil
+	}
+}
+
+// FuncASRYE transform a function of 'func(string) ([]byte, error)' signature
+// into CallableFunc type.
+func FuncASRYE(fn func(string) ([]byte, error)) objects.CallableFunc {
+	return func(args ...objects.Object) (ret objects.Object, err error) {
+		if len(args) != 1 {
+			return nil, objects.ErrWrongNumArguments
+		}
+
+		s1, ok := objects.ToString(args[0])
+		if !ok {
+			return nil, objects.ErrInvalidArgumentType{
+				Name:     "first",
+				Expected: "string(compatible)",
+				Found:    args[0].TypeName(),
+			}
+		}
+
+		res, err := fn(s1)
+		if err != nil {
+			return wrapError(err), nil
+		}
+
+		if len(res) > tengo.MaxBytesLen {
+			return nil, objects.ErrBytesLimit
+		}
+
+		return &objects.Bytes{Value: res}, nil
 	}
 }
 

@@ -15,7 +15,7 @@ github.com/Philipp15b/go-steam/protocol/steamlang
 github.com/Philipp15b/go-steam/rwu
 github.com/Philipp15b/go-steam/socialcache
 github.com/Philipp15b/go-steam/steamid
-# github.com/Rhymen/go-whatsapp v0.0.3-0.20190729104911-5c79b2cf277a
+# github.com/Rhymen/go-whatsapp v0.0.3-0.20191003184814-fc3f792c814c
 github.com/Rhymen/go-whatsapp
 github.com/Rhymen/go-whatsapp/binary
 github.com/Rhymen/go-whatsapp/binary/proto
@@ -23,9 +23,9 @@ github.com/Rhymen/go-whatsapp/binary/token
 github.com/Rhymen/go-whatsapp/crypto/cbc
 github.com/Rhymen/go-whatsapp/crypto/curve25519
 github.com/Rhymen/go-whatsapp/crypto/hkdf
-# github.com/bwmarrin/discordgo v0.19.0 => github.com/matterbridge/discordgo v0.0.0-20190818085008-57c6e0fc2f40
+# github.com/bwmarrin/discordgo v0.19.0 => github.com/matterbridge/discordgo v0.0.0-20191026232317-01823f4ebba4
 github.com/bwmarrin/discordgo
-# github.com/d5/tengo v1.24.3
+# github.com/d5/tengo v1.24.8
 github.com/d5/tengo
 github.com/d5/tengo/compiler
 github.com/d5/tengo/compiler/ast

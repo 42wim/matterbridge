@@ -243,6 +243,7 @@ type voiceOP2 struct {
 	Port              int           `json:"port"`
 	Modes             []string      `json:"modes"`
 	HeartbeatInterval time.Duration `json:"heartbeat_interval"`
+	IP                string        `json:"ip"`
 }
 
 // WaitUntilConnected waits for the Voice Connection to
@@ -542,7 +543,7 @@ func (v *VoiceConnection) udpOpen() (err error) {
 		return fmt.Errorf("empty endpoint")
 	}
 
-	host := strings.TrimSuffix(v.endpoint, ":80") + ":" + strconv.Itoa(v.op2.Port)
+	host := v.op2.IP + ":" + strconv.Itoa(v.op2.Port)
 	addr, err := net.ResolveUDPAddr("udp", host)
 	if err != nil {
 		v.log(LogWarning, "error resolving udp host %s, %s", host, err)
@@ -593,7 +594,7 @@ func (v *VoiceConnection) udpOpen() (err error) {
 	}
 
 	// Grab port from position 68 and 69
-	port := binary.LittleEndian.Uint16(rb[68:70])
+	port := binary.BigEndian.Uint16(rb[68:70])
 
 	// Take the data from above and send it back to Discord to finalize
 	// the UDP connection handshake.

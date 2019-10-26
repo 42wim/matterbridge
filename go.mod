@@ -5,10 +5,10 @@ require (
 	github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f
 	github.com/Jeffail/gabs v1.1.1 // indirect
 	github.com/Philipp15b/go-steam v1.0.1-0.20190816133340-b04c5a83c1c0
-	github.com/Rhymen/go-whatsapp v0.0.3-0.20190729104911-5c79b2cf277a
+	github.com/Rhymen/go-whatsapp v0.0.3-0.20191003184814-fc3f792c814c
 	github.com/bwmarrin/discordgo v0.19.0
 	// github.com/bwmarrin/discordgo v0.19.0
-	github.com/d5/tengo v1.24.3
+	github.com/d5/tengo v1.24.8
 	github.com/dfordsoft/golib v0.0.0-20180902042739-76ee6ab99bec
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.5-0.20181225215658-ec221ba9ea45+incompatible
@@ -70,6 +70,6 @@ require (
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 )
 
-replace github.com/bwmarrin/discordgo v0.19.0 => github.com/matterbridge/discordgo v0.0.0-20190818085008-57c6e0fc2f40
+replace github.com/bwmarrin/discordgo v0.19.0 => github.com/matterbridge/discordgo v0.0.0-20191026232317-01823f4ebba4
 
 go 1.13
