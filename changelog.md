@@ -1,5 +1,30 @@
 # dev
 
+# v1.16.1
+
+## New features
+
+* rocketchat: add token support #892
+* matrix: Add support for uploading application/x and audio/x (matrix). #929
+
+## Enhancements
+
+* general: Do configuration validation on start-up. Fixes #888
+* general: updated vendored libraries (discord/whatsapp) #932
+* discord: user typing messages #914
+* slack: Convert slack bold/strike to correct markdown (slack). Fixes #918
+
+## Bugfix
+
+* discord: fix Failed to fetch information for members message. #894
+* discord: remove obsolete file upload links (discord). #931
+* slack: suppress unhandled HelloEvent message #913
+* mattermost: Fix panic on WebhookURL only setting (mattermost). #917
+* matrix: fix corrupted links between slack and matrix #924
+
+This release couldn't exist without the following contributors:
+@qaisjp, @hramrach, @42wim
+
 # v1.16.0
 
 ## New features
