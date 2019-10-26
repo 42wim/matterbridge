@@ -188,6 +188,36 @@ func (b *Bslack) replaceURL(text string) string {
 	return text
 }
 
+func (b *Bslack) replaceb0rkedMarkDown(text string) string {
+	// taken from https://github.com/mattermost/mattermost-server/blob/master/app/slackimport.go
+	//
+	regexReplaceAllString := []struct {
+		regex *regexp.Regexp
+		rpl   string
+	}{
+		// bold
+		{
+			regexp.MustCompile(`(^|[\s.;,])\*(\S[^*\n]+)\*`),
+			"$1**$2**",
+		},
+		// strikethrough
+		{
+			regexp.MustCompile(`(^|[\s.;,])\~(\S[^~\n]+)\~`),
+			"$1~~$2~~",
+		},
+		// single paragraph blockquote
+		// Slack converts > character to &gt;
+		{
+			regexp.MustCompile(`(?sm)^&gt;`),
+			">",
+		},
+	}
+	for _, rule := range regexReplaceAllString {
+		text = rule.regex.ReplaceAllString(text, rule.rpl)
+	}
+	return text
+}
+
 func (b *Bslack) replaceCodeFence(text string) string {
 	return codeFenceRE.ReplaceAllString(text, "```")
 }
