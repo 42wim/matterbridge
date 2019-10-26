@@ -10,15 +10,15 @@ import (
 //go:generate go run tools/cmd/eventhandlers/main.go
 
 // Connect is the data for a Connect event.
-// This is a sythetic event and is not dispatched by Discord.
+// This is a synthetic event and is not dispatched by Discord.
 type Connect struct{}
 
 // Disconnect is the data for a Disconnect event.
-// This is a sythetic event and is not dispatched by Discord.
+// This is a synthetic event and is not dispatched by Discord.
 type Disconnect struct{}
 
 // RateLimit is the data for a RateLimit event.
-// This is a sythetic event and is not dispatched by Discord.
+// This is a synthetic event and is not dispatched by Discord.
 type RateLimit struct {
 	*TooManyRequests
 	URL string
@@ -162,6 +162,8 @@ type MessageCreate struct {
 // MessageUpdate is the data for a MessageUpdate event.
 type MessageUpdate struct {
 	*Message
+	// BeforeUpdate will be nil if the Message was not previously cached in the state cache.
+	BeforeUpdate *Message `json:"-"`
 }
 
 // MessageDelete is the data for a MessageDelete event.

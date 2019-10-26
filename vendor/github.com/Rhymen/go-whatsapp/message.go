@@ -4,13 +4,14 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/Rhymen/go-whatsapp/binary"
-	"github.com/Rhymen/go-whatsapp/binary/proto"
 	"io"
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Rhymen/go-whatsapp/binary"
+	"github.com/Rhymen/go-whatsapp/binary/proto"
 )
 
 type MediaType string
@@ -131,6 +132,7 @@ type MessageInfo struct {
 	PushName        string
 	Status          MessageStatus
 	QuotedMessageID string
+	QuotedMessage   proto.Message
 
 	Source *proto.WebMessageInfo
 }
@@ -170,7 +172,7 @@ func getInfoProto(info *MessageInfo) *proto.WebMessageInfo {
 	}
 	info.FromMe = true
 
-	status := proto.WebMessageInfo_STATUS(info.Status)
+	status := proto.WebMessageInfo_WEB_MESSAGE_INFO_STATUS(info.Status)
 
 	return &proto.WebMessageInfo{
 		Key: &proto.MessageKey{
@@ -181,6 +183,22 @@ func getInfoProto(info *MessageInfo) *proto.WebMessageInfo {
 		MessageTimestamp: &info.Timestamp,
 		Status:           &status,
 	}
+}
+
+func getContextInfoProto(info *MessageInfo) *proto.ContextInfo {
+	if len(info.QuotedMessageID) > 0 {
+		contextInfo := &proto.ContextInfo{
+			StanzaId: &info.QuotedMessageID,
+		}
+
+		if &info.QuotedMessage != nil {
+			contextInfo.QuotedMessage = &info.QuotedMessage
+		}
+
+		return contextInfo
+	}
+
+	return nil
 }
 
 /*
@@ -204,9 +222,21 @@ func getTextMessage(msg *proto.WebMessageInfo) TextMessage {
 
 func getTextProto(msg TextMessage) *proto.WebMessageInfo {
 	p := getInfoProto(&msg.Info)
-	p.Message = &proto.Message{
-		Conversation: &msg.Text,
+	contextInfo := getContextInfoProto(&msg.Info)
+
+	if contextInfo == nil {
+		p.Message = &proto.Message{
+			Conversation: &msg.Text,
+		}
+	} else {
+		p.Message = &proto.Message{
+			ExtendedTextMessage: &proto.ExtendedTextMessage{
+				Text:        &msg.Text,
+				ContextInfo: contextInfo,
+			},
+		}
 	}
+
 	return p
 }
 
@@ -229,7 +259,8 @@ type ImageMessage struct {
 
 func getImageMessage(msg *proto.WebMessageInfo) ImageMessage {
 	image := msg.GetMessage().GetImageMessage()
-	return ImageMessage{
+
+	imageMessage := ImageMessage{
 		Info:          getMessageInfo(msg),
 		Caption:       image.GetCaption(),
 		Thumbnail:     image.GetJpegThumbnail(),
@@ -240,10 +271,18 @@ func getImageMessage(msg *proto.WebMessageInfo) ImageMessage {
 		fileSha256:    image.GetFileSha256(),
 		fileLength:    image.GetFileLength(),
 	}
+
+	if contextInfo := image.GetContextInfo(); contextInfo != nil {
+		imageMessage.Info.QuotedMessageID = contextInfo.GetStanzaId()
+	}
+
+	return imageMessage
 }
 
 func getImageProto(msg ImageMessage) *proto.WebMessageInfo {
 	p := getInfoProto(&msg.Info)
+	contextInfo := getContextInfoProto(&msg.Info)
+
 	p.Message = &proto.Message{
 		ImageMessage: &proto.ImageMessage{
 			Caption:       &msg.Caption,
@@ -254,6 +293,7 @@ func getImageProto(msg ImageMessage) *proto.WebMessageInfo {
 			FileEncSha256: msg.fileEncSha256,
 			FileSha256:    msg.fileSha256,
 			FileLength:    &msg.fileLength,
+			ContextInfo:   contextInfo,
 		},
 	}
 	return p
@@ -287,7 +327,8 @@ type VideoMessage struct {
 
 func getVideoMessage(msg *proto.WebMessageInfo) VideoMessage {
 	vid := msg.GetMessage().GetVideoMessage()
-	return VideoMessage{
+
+	videoMessage := VideoMessage{
 		Info:          getMessageInfo(msg),
 		Caption:       vid.GetCaption(),
 		Thumbnail:     vid.GetJpegThumbnail(),
@@ -300,10 +341,18 @@ func getVideoMessage(msg *proto.WebMessageInfo) VideoMessage {
 		fileSha256:    vid.GetFileSha256(),
 		fileLength:    vid.GetFileLength(),
 	}
+
+	if contextInfo := vid.GetContextInfo(); contextInfo != nil {
+		videoMessage.Info.QuotedMessageID = contextInfo.GetStanzaId()
+	}
+
+	return videoMessage
 }
 
 func getVideoProto(msg VideoMessage) *proto.WebMessageInfo {
 	p := getInfoProto(&msg.Info)
+	contextInfo := getContextInfoProto(&msg.Info)
+
 	p.Message = &proto.Message{
 		VideoMessage: &proto.VideoMessage{
 			Caption:       &msg.Caption,
@@ -316,6 +365,7 @@ func getVideoProto(msg VideoMessage) *proto.WebMessageInfo {
 			FileSha256:    msg.fileSha256,
 			FileLength:    &msg.fileLength,
 			Mimetype:      &msg.Type,
+			ContextInfo:   contextInfo,
 		},
 	}
 	return p
@@ -337,6 +387,7 @@ type AudioMessage struct {
 	Length        uint32
 	Type          string
 	Content       io.Reader
+	Ptt           bool
 	url           string
 	mediaKey      []byte
 	fileEncSha256 []byte
@@ -346,7 +397,8 @@ type AudioMessage struct {
 
 func getAudioMessage(msg *proto.WebMessageInfo) AudioMessage {
 	aud := msg.GetMessage().GetAudioMessage()
-	return AudioMessage{
+
+	audioMessage := AudioMessage{
 		Info:          getMessageInfo(msg),
 		url:           aud.GetUrl(),
 		mediaKey:      aud.GetMediaKey(),
@@ -356,10 +408,17 @@ func getAudioMessage(msg *proto.WebMessageInfo) AudioMessage {
 		fileSha256:    aud.GetFileSha256(),
 		fileLength:    aud.GetFileLength(),
 	}
+
+	if contextInfo := aud.GetContextInfo(); contextInfo != nil {
+		audioMessage.Info.QuotedMessageID = contextInfo.GetStanzaId()
+	}
+
+	return audioMessage
 }
 
 func getAudioProto(msg AudioMessage) *proto.WebMessageInfo {
 	p := getInfoProto(&msg.Info)
+	contextInfo := getContextInfoProto(&msg.Info)
 	p.Message = &proto.Message{
 		AudioMessage: &proto.AudioMessage{
 			Url:           &msg.url,
@@ -369,6 +428,8 @@ func getAudioProto(msg AudioMessage) *proto.WebMessageInfo {
 			FileSha256:    msg.fileSha256,
 			FileLength:    &msg.fileLength,
 			Mimetype:      &msg.Type,
+			ContextInfo:   contextInfo,
+			Ptt:           &msg.Ptt,
 		},
 	}
 	return p
@@ -402,7 +463,8 @@ type DocumentMessage struct {
 
 func getDocumentMessage(msg *proto.WebMessageInfo) DocumentMessage {
 	doc := msg.GetMessage().GetDocumentMessage()
-	return DocumentMessage{
+
+	documentMessage := DocumentMessage{
 		Info:          getMessageInfo(msg),
 		Title:         doc.GetTitle(),
 		PageCount:     doc.GetPageCount(),
@@ -415,10 +477,17 @@ func getDocumentMessage(msg *proto.WebMessageInfo) DocumentMessage {
 		fileSha256:    doc.GetFileSha256(),
 		fileLength:    doc.GetFileLength(),
 	}
+
+	if contextInfo := doc.GetContextInfo(); contextInfo != nil {
+		documentMessage.Info.QuotedMessageID = contextInfo.GetStanzaId()
+	}
+
+	return documentMessage
 }
 
 func getDocumentProto(msg DocumentMessage) *proto.WebMessageInfo {
 	p := getInfoProto(&msg.Info)
+	contextInfo := getContextInfoProto(&msg.Info)
 	p.Message = &proto.Message{
 		DocumentMessage: &proto.DocumentMessage{
 			JpegThumbnail: msg.Thumbnail,
@@ -430,6 +499,7 @@ func getDocumentProto(msg DocumentMessage) *proto.WebMessageInfo {
 			PageCount:     &msg.PageCount,
 			Title:         &msg.Title,
 			Mimetype:      &msg.Type,
+			ContextInfo:   contextInfo,
 		},
 	}
 	return p
@@ -457,7 +527,8 @@ type LocationMessage struct {
 
 func GetLocationMessage(msg *proto.WebMessageInfo) LocationMessage {
 	loc := msg.GetMessage().GetLocationMessage()
-	return LocationMessage{
+
+	locationMessage := LocationMessage{
 		Info:             getMessageInfo(msg),
 		DegreesLatitude:  loc.GetDegreesLatitude(),
 		DegreesLongitude: loc.GetDegreesLongitude(),
@@ -466,10 +537,18 @@ func GetLocationMessage(msg *proto.WebMessageInfo) LocationMessage {
 		Url:              loc.GetUrl(),
 		JpegThumbnail:    loc.GetJpegThumbnail(),
 	}
+
+	if contextInfo := loc.GetContextInfo(); contextInfo != nil {
+		locationMessage.Info.QuotedMessageID = contextInfo.GetStanzaId()
+	}
+
+	return locationMessage
 }
 
 func GetLocationProto(msg LocationMessage) *proto.WebMessageInfo {
 	p := getInfoProto(&msg.Info)
+	contextInfo := getContextInfoProto(&msg.Info)
+
 	p.Message = &proto.Message{
 		LocationMessage: &proto.LocationMessage{
 			DegreesLatitude:  &msg.DegreesLatitude,
@@ -478,6 +557,7 @@ func GetLocationProto(msg LocationMessage) *proto.WebMessageInfo {
 			Address:          &msg.Address,
 			Url:              &msg.Url,
 			JpegThumbnail:    msg.JpegThumbnail,
+			ContextInfo:      contextInfo,
 		},
 	}
 	return p
@@ -500,7 +580,8 @@ type LiveLocationMessage struct {
 
 func GetLiveLocationMessage(msg *proto.WebMessageInfo) LiveLocationMessage {
 	loc := msg.GetMessage().GetLiveLocationMessage()
-	return LiveLocationMessage{
+
+	liveLocationMessage := LiveLocationMessage{
 		Info:                              getMessageInfo(msg),
 		DegreesLatitude:                   loc.GetDegreesLatitude(),
 		DegreesLongitude:                  loc.GetDegreesLongitude(),
@@ -511,10 +592,17 @@ func GetLiveLocationMessage(msg *proto.WebMessageInfo) LiveLocationMessage {
 		SequenceNumber:                    loc.GetSequenceNumber(),
 		JpegThumbnail:                     loc.GetJpegThumbnail(),
 	}
+
+	if contextInfo := loc.GetContextInfo(); contextInfo != nil {
+		liveLocationMessage.Info.QuotedMessageID = contextInfo.GetStanzaId()
+	}
+
+	return liveLocationMessage
 }
 
 func GetLiveLocationProto(msg LiveLocationMessage) *proto.WebMessageInfo {
 	p := getInfoProto(&msg.Info)
+	contextInfo := getContextInfoProto(&msg.Info)
 	p.Message = &proto.Message{
 		LiveLocationMessage: &proto.LiveLocationMessage{
 			DegreesLatitude:                   &msg.DegreesLatitude,
@@ -525,9 +613,47 @@ func GetLiveLocationProto(msg LiveLocationMessage) *proto.WebMessageInfo {
 			Caption:                           &msg.Caption,
 			SequenceNumber:                    &msg.SequenceNumber,
 			JpegThumbnail:                     msg.JpegThumbnail,
+			ContextInfo:                       contextInfo,
 		},
 	}
 	return p
+}
+
+/*
+StickerMessage represents a sticker message.
+*/
+type StickerMessage struct {
+	Info MessageInfo
+
+	Thumbnail     []byte
+	Type          string
+	Content       io.Reader
+	url           string
+	mediaKey      []byte
+	fileEncSha256 []byte
+	fileSha256    []byte
+	fileLength    uint64
+}
+
+func getStickerMessage(msg *proto.WebMessageInfo) StickerMessage {
+	sticker := msg.GetMessage().GetStickerMessage()
+
+	StickerMessage := StickerMessage{
+		Info:          getMessageInfo(msg),
+		Thumbnail:     sticker.GetPngThumbnail(),
+		url:           sticker.GetUrl(),
+		mediaKey:      sticker.GetMediaKey(),
+		Type:          sticker.GetMimetype(),
+		fileEncSha256: sticker.GetFileEncSha256(),
+		fileSha256:    sticker.GetFileSha256(),
+		fileLength:    sticker.GetFileLength(),
+	}
+
+	if contextInfo := sticker.GetContextInfo(); contextInfo != nil {
+		StickerMessage.Info.QuotedMessageID = contextInfo.GetStanzaId()
+	}
+
+	return StickerMessage
 }
 
 func ParseProtoMessage(msg *proto.WebMessageInfo) interface{} {
@@ -556,6 +682,9 @@ func ParseProtoMessage(msg *proto.WebMessageInfo) interface{} {
 
 	case msg.GetMessage().GetLiveLocationMessage() != nil:
 		return GetLiveLocationMessage(msg)
+
+	case msg.GetMessage().GetStickerMessage() != nil:
+		return getStickerMessage(msg)
 
 	default:
 		//cannot match message

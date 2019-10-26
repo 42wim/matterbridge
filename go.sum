@@ -11,8 +11,8 @@ github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAE
 github.com/Philipp15b/go-steam v1.0.1-0.20190816133340-b04c5a83c1c0 h1:TO7d4rocnNFng6ZQrPe7U6WqHtK5eHEMrgrnnM/72IQ=
 github.com/Philipp15b/go-steam v1.0.1-0.20190816133340-b04c5a83c1c0/go.mod h1:HuVM+sZFzumUdKPWiz+IlCMb4RdsKdT3T+nQBKL+sYg=
 github.com/Rhymen/go-whatsapp v0.0.0/go.mod h1:rdQr95g2C1xcOfM7QGOhza58HeI3I+tZ/bbluv7VazA=
-github.com/Rhymen/go-whatsapp v0.0.3-0.20190729104911-5c79b2cf277a h1:umvfZW+YE+ynhYwsyheyunB/3xRK68kNFMRNUMQxzJI=
-github.com/Rhymen/go-whatsapp v0.0.3-0.20190729104911-5c79b2cf277a/go.mod h1:qf/2PQi82Okxw/igghu/oMGzTeUYuKBq1JNo3tdQyNg=
+github.com/Rhymen/go-whatsapp v0.0.3-0.20191003184814-fc3f792c814c h1:+yAllLxP+WjpuVVE1WNm0/Oigbeob9+liYEyk/v4nj8=
+github.com/Rhymen/go-whatsapp v0.0.3-0.20191003184814-fc3f792c814c/go.mod h1:qf/2PQi82Okxw/igghu/oMGzTeUYuKBq1JNo3tdQyNg=
 github.com/Rhymen/go-whatsapp/examples/echo v0.0.0-20190325075644-cc2581bbf24d/go.mod h1:zgCiQtBtZ4P4gFWvwl9aashsdwOcbb/EHOGRmSzM8ME=
 github.com/Rhymen/go-whatsapp/examples/restoreSession v0.0.0-20190325075644-cc2581bbf24d/go.mod h1:5sCUSpG616ZoSJhlt9iBNI/KXBqrVLcNUJqg7J9+8pU=
 github.com/Rhymen/go-whatsapp/examples/sendImage v0.0.0-20190325075644-cc2581bbf24d/go.mod h1:RdiyhanVEGXTam+mZ3k6Y3VDCCvXYCwReOoxGozqhHw=
@@ -32,8 +32,8 @@ github.com/coreos/etcd v3.3.10+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc
 github.com/coreos/go-semver v0.2.0/go.mod h1:nnelYz7RCh+5ahJtPPxZlU+153eP4D4r3EedlOD2RNk=
 github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e/go.mod h1:F5haX7vjVVG0kc13fIWeqUViNPyEJxv/OmvnBo0Yme4=
 github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f/go.mod h1:E3G3o1h8I7cfcXa63jLwjI0eiQQMgzzUDFVpN/nH/eA=
-github.com/d5/tengo v1.24.3 h1:wp44VW7fdfzMzIDT19tT5uNeGnm2UMd6s3TLAahrwSU=
-github.com/d5/tengo v1.24.3/go.mod h1:VhLq8Q2QFhCIJO3NhvM934qOThykMqJi9y9Siqd1ocQ=
+github.com/d5/tengo v1.24.8 h1:PRJ+NWt7ae/9sSbIfThOBTkPSvNV+dwYoBAvwfNgNJY=
+github.com/d5/tengo v1.24.8/go.mod h1:VhLq8Q2QFhCIJO3NhvM934qOThykMqJi9y9Siqd1ocQ=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -121,8 +121,8 @@ github.com/magiconair/properties v1.8.0 h1:LLgXmsheXeRoUOBOjtwPQCWIYqM/LU1ayDtDe
 github.com/magiconair/properties v1.8.0/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
 github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20190210153444-cc9d05784d5d h1:F+Sr+C0ojSlYQ37BLylQtSFmyQULe3jbAygcyXQ9mVs=
 github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20190210153444-cc9d05784d5d/go.mod h1:c6MxwqHD+0HvtAJjsHMIdPCiAwGiQwPRPTp69ACMg8A=
-github.com/matterbridge/discordgo v0.0.0-20190818085008-57c6e0fc2f40 h1:OJmjOa1ry5IZzFowLhAZ8b3bFPWFFNUbqGxs9pNqgEU=
-github.com/matterbridge/discordgo v0.0.0-20190818085008-57c6e0fc2f40/go.mod h1:O9S4p+ofTFwB02em7jkpkV8M3R0/PUVOwN61zSZ0r4Q=
+github.com/matterbridge/discordgo v0.0.0-20191026232317-01823f4ebba4 h1:RvH3lC4bEp+bieca+Yh5xPU8tLJgnk7ridiSwMFHrrw=
+github.com/matterbridge/discordgo v0.0.0-20191026232317-01823f4ebba4/go.mod h1:O9S4p+ofTFwB02em7jkpkV8M3R0/PUVOwN61zSZ0r4Q=
 github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91 h1:KzDEcy8eDbTx881giW8a6llsAck3e2bJvMyKvh1IK+k=
 github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91/go.mod h1:ECDRehsR9TYTKCAsRS8/wLeOk6UUqDydw47ln7wG41Q=
 github.com/matterbridge/gomatrix v0.0.0-20191026211822-6fc7accd00ca h1:3ypqEpFpt6vg5Sv2xxA8/v4WiSOnWMXW7DqxTxpM4XI=
