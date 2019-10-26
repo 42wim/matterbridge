@@ -30,6 +30,7 @@ func (b *Bslack) handleSlack() {
 			message.Text = b.replaceVariable(message.Text)
 			message.Text = b.replaceChannel(message.Text)
 			message.Text = b.replaceURL(message.Text)
+			message.Text = b.replaceb0rkedMarkDown(message.Text)
 			message.Text = html.UnescapeString(message.Text)
 
 			// Add the avatar
