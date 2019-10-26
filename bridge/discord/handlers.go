@@ -58,7 +58,10 @@ func (b *Bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdat
 	if m.Message.EditedTimestamp != "" {
 		b.Log.Debugf("Sending edit message")
 		m.Content += b.GetString("EditSuffix")
-		b.messageCreate(s, (*discordgo.MessageCreate)(m))
+		msg := &discordgo.MessageCreate{
+			Message: m.Message,
+		}
+		b.messageCreate(s, msg)
 	}
 }
 
