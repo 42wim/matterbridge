@@ -26,7 +26,7 @@ require (
 	github.com/lrstanley/girc v0.0.0-20190801035559-4fc93959e1a7
 	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20190210153444-cc9d05784d5d
 	github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91
-	github.com/matterbridge/gomatrix v0.0.0-20190102230110-6f9631ca6dea
+	github.com/matterbridge/gomatrix v0.0.0-20191026211822-6fc7accd00ca
 	github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18
 	github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61
 	github.com/mattermost/mattermost-server v5.5.0+incompatible

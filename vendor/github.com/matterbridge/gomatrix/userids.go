@@ -125,6 +125,6 @@ func ExtractUserLocalpart(userID string) (string, error) {
 	}
 	return strings.TrimPrefix(
 		strings.SplitN(userID, ":", 2)[0], // @foo:bar:8448 => [ "@foo", "bar:8448" ]
-		"@", // remove "@" prefix
+		"@",                               // remove "@" prefix
 	), nil
 }
