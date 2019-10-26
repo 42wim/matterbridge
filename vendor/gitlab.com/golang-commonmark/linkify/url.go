@@ -88,7 +88,7 @@ loop:
 		case isUnreserved(r):
 			if r == '-' {
 				nHyphen++
-				if nHyphen > 1 {
+				if nHyphen > 2 {
 					break loop
 				}
 			} else {

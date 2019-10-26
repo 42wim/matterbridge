@@ -191,9 +191,9 @@ github.com/valyala/fasttemplate
 github.com/zfjagann/golang-ring
 # gitlab.com/golang-commonmark/html v0.0.0-20180917080848-cfaf75183c4a
 gitlab.com/golang-commonmark/html
-# gitlab.com/golang-commonmark/linkify v0.0.0-20180917065525-c22b7bdb1179
+# gitlab.com/golang-commonmark/linkify v0.0.0-20191026162114-a0c2df6c8f82
 gitlab.com/golang-commonmark/linkify
-# gitlab.com/golang-commonmark/markdown v0.0.0-20181102083822-772775880e1f => github.com/matterbridge/golang-connmark-markdown v0.0.0-20190921222037-3cfbd51464b9
+# gitlab.com/golang-commonmark/markdown v0.0.0-20181102083822-772775880e1f
 gitlab.com/golang-commonmark/markdown
 # gitlab.com/golang-commonmark/mdurl v0.0.0-20180912090424-e5bce34c34f2
 gitlab.com/golang-commonmark/mdurl
