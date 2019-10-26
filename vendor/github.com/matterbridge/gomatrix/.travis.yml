@@ -1,6 +1,6 @@
 language: go
 go:
- - 1.8
+ - 1.10.x
 install:
  - go get github.com/golang/lint/golint
  - go get github.com/fzipp/gocyclo

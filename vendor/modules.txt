@@ -101,7 +101,7 @@ github.com/matterbridge/Rocket.Chat.Go.SDK/realtime
 github.com/matterbridge/Rocket.Chat.Go.SDK/rest
 # github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91
 github.com/matterbridge/go-xmpp
-# github.com/matterbridge/gomatrix v0.0.0-20190102230110-6f9631ca6dea
+# github.com/matterbridge/gomatrix v0.0.0-20191026211822-6fc7accd00ca
 github.com/matterbridge/gomatrix
 # github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18
 github.com/matterbridge/gozulipbot
