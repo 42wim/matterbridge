@@ -79,16 +79,21 @@ func (b *Bkeybase) Send(msg config.Message) (string, error) {
 			return "", err
 		}
 		defer os.RemoveAll(dir)
-		fname := msg.Extra["file"][0].(config.FileInfo).Name
-		fdata := *msg.Extra["file"][0].(config.FileInfo).Data
-		fcaption := msg.Extra["file"][0].(config.FileInfo).Comment
-		fpath := filepath.Join(dir, fname)
-		if err = ioutil.WriteFile(fpath, fdata, 0600); err != nil {
-			return "", err
+
+		for _, f := range msg.Extra["file"] {
+			fname := f.(config.FileInfo).Name
+			fdata := *f.(config.FileInfo).Data
+			fcaption := f.(config.FileInfo).Comment
+			fpath := filepath.Join(dir, fname)
+
+			if err = ioutil.WriteFile(fpath, fdata, 0600); err != nil {
+				return "", err
+			}
+
+			_, _ = b.kbc.SendAttachmentByTeam(b.team, fpath, fcaption, &b.channel)
 		}
 
-		resp, err := b.kbc.SendAttachmentByTeam(b.team, fpath, fcaption, &b.channel)
-		return strconv.Itoa(resp.Result.MsgID), err
+		return "", nil
 	}
 
 	// Send regular message
