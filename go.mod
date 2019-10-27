@@ -12,6 +12,7 @@ require (
 	github.com/dfordsoft/golib v0.0.0-20180902042739-76ee6ab99bec
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.5-0.20181225215658-ec221ba9ea45+incompatible
+	github.com/gomarkdown/markdown v0.0.0-20190912180731-281270bc6d83
 	github.com/google/gops v0.3.6
 	github.com/gopackage/ddp v0.0.0-20170117053602-652027933df4 // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20180628210949-0892b62f0d9f // indirect
@@ -45,7 +46,6 @@ require (
 	github.com/russross/blackfriday v1.5.2
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca
 	github.com/shazow/ssh-chat v0.0.0-20190125184227-81d7e1686296
-	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/smartystreets/assertions v0.0.0-20180803164922-886ec427f6b9 // indirect
 	github.com/smartystreets/goconvey v0.0.0-20180222194500-ef6db91d284a // indirect
@@ -54,19 +54,12 @@ require (
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2 // indirect
 	github.com/zfjagann/golang-ring v0.0.0-20190304061218-d34796e0a6c2
-	gitlab.com/golang-commonmark/html v0.0.0-20180917080848-cfaf75183c4a // indirect
-	gitlab.com/golang-commonmark/linkify v0.0.0-20191026162114-a0c2df6c8f82 // indirect
-	gitlab.com/golang-commonmark/markdown v0.0.0-20181102083822-772775880e1f
-	gitlab.com/golang-commonmark/mdurl v0.0.0-20180912090424-e5bce34c34f2 // indirect
-	gitlab.com/golang-commonmark/puny v0.0.0-20180912090636-2cd490539afe // indirect
-	gitlab.com/opennota/wd v0.0.0-20180912061657-c5d65f63c638 // indirect
 	golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586 // indirect
 	golang.org/x/image v0.0.0-20190902063713-cb417be4ba39
 	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7 // indirect
 	golang.org/x/text v0.3.2 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
-	gopkg.in/russross/blackfriday.v2 v2.0.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 )
 
