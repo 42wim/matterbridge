@@ -1,6 +1,9 @@
 package bkeybase
 
 import (
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/42wim/matterbridge/bridge"
@@ -66,17 +69,37 @@ func (b *Bkeybase) Send(msg config.Message) (string, error) {
 	// Delete message if we have an ID
 	// Delete message not supported by keybase go library yet
 
-	// Upload a file if it exists
-	// kbchat lib does not support attachments yet
-
 	// Edit message if we have an ID
 	// kbchat lib does not support message editing yet
+
+	if len(msg.Extra["file"]) > 0 {
+		// Upload a file
+		dir, err := ioutil.TempDir("", "matterbridge")
+		if err != nil {
+			return "", err
+		}
+		defer os.RemoveAll(dir)
+
+		for _, f := range msg.Extra["file"] {
+			fname := f.(config.FileInfo).Name
+			fdata := *f.(config.FileInfo).Data
+			fcaption := f.(config.FileInfo).Comment
+			fpath := filepath.Join(dir, fname)
+
+			if err = ioutil.WriteFile(fpath, fdata, 0600); err != nil {
+				return "", err
+			}
+
+			_, _ = b.kbc.SendAttachmentByTeam(b.team, fpath, fcaption, &b.channel)
+		}
+
+		return "", nil
+	}
 
 	// Send regular message
 	resp, err := b.kbc.SendMessageByTeamName(b.team, msg.Username+msg.Text, &b.channel)
 	if err != nil {
 		return "", err
 	}
-
 	return strconv.Itoa(resp.Result.MsgID), err
 }
