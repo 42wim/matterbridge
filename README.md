@@ -102,6 +102,7 @@ And more...
 - [Reddit](https://github.com/bonehurtingjuice/mattereddit)
 - [Facebook messenger](https://github.com/VictorNine/fbridge)
 - [Discourse](https://github.com/DeclanHoare/matterbabble)
+- [Counter-Strike, half-life and more](https://forums.alliedmods.net/showthread.php?t=319430)
 
 ### API
 
@@ -115,6 +116,7 @@ Used by the projects below. Feel free to make a PR to add your project to this l
 - [Mattereddit](https://github.com/bonehurtingjuice/mattereddit) (Reddit chat support)
 - [fbridge](https://github.com/VictorNine/fbridge) (Facebook messenger support)
 - [matterbabble](https://github.com/DeclanHoare/matterbabble) (Discourse support)
+- [MatterAMXX](https://forums.alliedmods.net/showthread.php?t=319430) (Counter-Strike, half-life and more via AMXX mod)
 
 ## Chat with us
 
