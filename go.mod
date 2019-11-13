@@ -36,6 +36,7 @@ require (
 	github.com/nelsonken/gomf v0.0.0-20180504123937-a9dd2f9deae9
 	github.com/nicksnyder/go-i18n v1.4.0 // indirect
 	github.com/nlopes/slack v0.6.0
+	//github.com/nlopes/slack v0.6.0
 	github.com/onsi/ginkgo v1.6.0 // indirect
 	github.com/onsi/gomega v1.4.1 // indirect
 	github.com/paulrosania/go-charset v0.0.0-20190326053356-55c9d7a5834c
@@ -71,5 +72,7 @@ require (
 )
 
 replace github.com/bwmarrin/discordgo v0.19.0 => github.com/matterbridge/discordgo v0.0.0-20191026232317-01823f4ebba4
+
+replace github.com/nlopes/slack v0.6.0 => github.com/matterbridge/slack v0.1.1-0.20191113220225-25f80ef0a0d1
 
 go 1.13
