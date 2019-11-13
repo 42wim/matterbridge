@@ -62,6 +62,20 @@ type BlockElements struct {
 	ElementSet []BlockElement `json:"elements,omitempty"`
 }
 
+// UnknownBlockElement any block element that this library does not directly support.
+// See the "Rich Elements" section at the following URL:
+// https://api.slack.com/changelog/2019-09-what-they-see-is-what-you-get-and-more-and-less
+// New block element types may be introduced by Slack at any time; this is a catch-all for any such block elements.
+type UnknownBlockElement struct {
+	Type     MessageElementType `json:"type"`
+	Elements BlockElements
+}
+
+// ElementType returns the type of the Element
+func (s UnknownBlockElement) ElementType() MessageElementType {
+	return s.Type
+}
+
 // ImageBlockElement An element to insert an image - this element can be used
 // in section and context blocks only. If you want a block with only an image
 // in it, you're looking for the image block.
