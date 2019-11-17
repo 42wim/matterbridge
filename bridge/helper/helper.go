@@ -14,8 +14,9 @@ import (
 	"golang.org/x/image/webp"
 
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/parser"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/golang-commonmark/markdown"
 )
 
 // DownloadFile downloads the given non-authenticated URL.
@@ -176,9 +177,12 @@ func ClipMessage(text string, length int) string {
 	return text
 }
 
+// ParseMarkdown takes in an input string as markdown and parses it to html
 func ParseMarkdown(input string) string {
-	md := markdown.New(markdown.XHTMLOutput(true), markdown.Breaks(true))
-	res := md.RenderToString([]byte(input))
+	extensions := parser.HardLineBreak
+	markdownParser := parser.NewWithExtensions(extensions)
+	parsedMarkdown := markdown.ToHTML([]byte(input), markdownParser, nil)
+	res := string(parsedMarkdown)
 	res = strings.TrimPrefix(res, "<p>")
 	res = strings.TrimSuffix(res, "</p>\n")
 	return res
