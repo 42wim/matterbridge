@@ -7,7 +7,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-// Container for the connection and ssh-related configuration
+// SSHListener is the container for the connection and ssh-related configuration
 type SSHListener struct {
 	net.Listener
 	config *ssh.ServerConfig
@@ -16,7 +16,7 @@ type SSHListener struct {
 	HandlerFunc func(term *Terminal)
 }
 
-// Make an SSH listener socket
+// ListenSSH makes an SSH listener socket
 func ListenSSH(laddr string, config *ssh.ServerConfig) (*SSHListener, error) {
 	socket, err := net.Listen("tcp", laddr)
 	if err != nil {
@@ -43,7 +43,7 @@ func (l *SSHListener) handleConn(conn net.Conn) (*Terminal, error) {
 	return NewSession(sshConn, channels)
 }
 
-// Accept incoming connections as terminal requests and yield them
+// Serve Accepts incoming connections as terminal requests and yield them
 func (l *SSHListener) Serve() {
 	defer l.Close()
 	for {
@@ -59,6 +59,7 @@ func (l *SSHListener) Serve() {
 			term, err := l.handleConn(conn)
 			if err != nil {
 				logger.Printf("[%s] Failed to handshake: %s", conn.RemoteAddr(), err)
+				conn.Close() // Must be closed to avoid a leak
 				return
 			}
 			l.HandlerFunc(term)
