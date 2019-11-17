@@ -1,4 +1,21 @@
-# dev
+# v1.16.2
+
+## New features
+
+- keybase: Add support for receiving attachments (keybase) (#923)
+
+## Enhancements
+
+- general: Switch to new emoji library kyokomi/emoji (#948)
+- general: Update markdown parsing library to github.com/gomarkdown/markdown (#944)
+- ssh-chat: Update shazow/ssh-chat dependency (#947)
+
+## Bugfix
+
+- slack: Fix issues with the slack block kit API #937 (#943).
+
+This release couldn't exist without the following contributors:
+@42wim, @bmpickford, @goncalor
 
 # v1.16.1
 
