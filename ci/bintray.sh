@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -u -e -x -o pipefail
 
-go version | grep go1.12 || exit
+go version | grep go1.13 || exit
 
 VERSION=$(git describe --tags)
 mkdir ci/binaries

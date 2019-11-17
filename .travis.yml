@@ -20,22 +20,22 @@ jobs:
   - stage: lint
     # Run linting in one Go environment only.
     script: ./ci/lint.sh
-    go: 1.12.x
+    go: 1.13.x
     env:
     - GO111MODULE=on
-    - GOLANGCI_VERSION="v1.17.1"
+    - GOLANGCI_VERSION="v1.21.0"
   - stage: test
     # Run tests in a combination of Go environments.
     script: ./ci/test.sh
-    go: 1.11.x
+    go: 1.12.x
     env:
     - GO111MODULE=off
   - script: ./ci/test.sh
-    go: 1.11.x
+    go: 1.12.x
     env:
     - GO111MODULE=on
   - script: ./ci/test.sh
-    go: 1.12.x
+    go: 1.13.x
     env:
     - GO111MODULE=on
     - REPORT_COVERAGE=1
