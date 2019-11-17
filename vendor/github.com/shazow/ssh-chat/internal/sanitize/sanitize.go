@@ -2,7 +2,10 @@ package sanitize
 
 import "regexp"
 
-var reStripName = regexp.MustCompile("[^\\w.-]")
+var (
+	reStripName = regexp.MustCompile("[^\\w.-]")
+	reStripData = regexp.MustCompile("[^[:ascii:]]|[[:cntrl:]]")
+)
 
 const maxLength = 16
 
@@ -16,8 +19,6 @@ func Name(s string) string {
 	s = s[:nameLength]
 	return s
 }
-
-var reStripData = regexp.MustCompile("[^[:ascii:]]|[[:cntrl:]]")
 
 // Data returns a string with only allowed characters for client-provided metadata inputs.
 func Data(s string, maxlen int) string {

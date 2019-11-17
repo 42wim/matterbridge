@@ -162,9 +162,10 @@ github.com/russross/blackfriday
 github.com/saintfish/chardet
 # github.com/shazow/rateio v0.0.0-20150116013248-e8e00881e5c1
 github.com/shazow/rateio
-# github.com/shazow/ssh-chat v0.0.0-20190125184227-81d7e1686296
+# github.com/shazow/ssh-chat v1.8.2
 github.com/shazow/ssh-chat/internal/sanitize
 github.com/shazow/ssh-chat/sshd
+github.com/shazow/ssh-chat/sshd/terminal
 # github.com/sirupsen/logrus v1.4.2
 github.com/sirupsen/logrus
 # github.com/skip2/go-qrcode v0.0.0-20190110000554-dc11ecdae0a9
