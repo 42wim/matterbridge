@@ -13,7 +13,7 @@ import (
 	"github.com/d5/tengo/script"
 	"github.com/d5/tengo/stdlib"
 	lru "github.com/hashicorp/golang-lru"
-	"github.com/peterhellberg/emojilib"
+	"github.com/matterbridge/emoji"
 	"github.com/sirupsen/logrus"
 )
 
@@ -372,7 +372,7 @@ func (gw *Gateway) modifyMessage(msg *config.Message) {
 	}
 
 	// replace :emoji: to unicode
-	msg.Text = emojilib.Replace(msg.Text)
+	msg.Text = emoji.Sprint(msg.Text)
 
 	br := gw.Bridges[msg.Account]
 	// loop to replace messages

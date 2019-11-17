@@ -104,6 +104,8 @@ github.com/magiconair/properties
 github.com/matterbridge/Rocket.Chat.Go.SDK/models
 github.com/matterbridge/Rocket.Chat.Go.SDK/realtime
 github.com/matterbridge/Rocket.Chat.Go.SDK/rest
+# github.com/matterbridge/emoji v2.1.1-0.20191117213217-af507f6b02db+incompatible
+github.com/matterbridge/emoji
 # github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91
 github.com/matterbridge/go-xmpp
 # github.com/matterbridge/gomatrix v0.0.0-20191026211822-6fc7accd00ca
@@ -148,8 +150,6 @@ github.com/paulrosania/go-charset/data
 github.com/pborman/uuid
 # github.com/pelletier/go-toml v1.2.0
 github.com/pelletier/go-toml
-# github.com/peterhellberg/emojilib v0.0.0-20190124112554-c18758d55320
-github.com/peterhellberg/emojilib
 # github.com/pkg/errors v0.8.1
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0

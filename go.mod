@@ -26,6 +26,7 @@ require (
 	github.com/labstack/echo/v4 v4.1.10
 	github.com/lrstanley/girc v0.0.0-20190801035559-4fc93959e1a7
 	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20190210153444-cc9d05784d5d
+	github.com/matterbridge/emoji v2.1.1-0.20191117213217-af507f6b02db+incompatible
 	github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91
 	github.com/matterbridge/gomatrix v0.0.0-20191026211822-6fc7accd00ca
 	github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18
@@ -42,7 +43,6 @@ require (
 	github.com/onsi/gomega v1.4.1 // indirect
 	github.com/paulrosania/go-charset v0.0.0-20190326053356-55c9d7a5834c
 	github.com/pborman/uuid v0.0.0-20160216163710-c55201b03606 // indirect
-	github.com/peterhellberg/emojilib v0.0.0-20190124112554-c18758d55320
 	github.com/rs/xid v1.2.1
 	github.com/russross/blackfriday v1.5.2
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca
