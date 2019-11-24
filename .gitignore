@@ -1,4 +1,5 @@
 # Exclude matterbridge binary
+matterbridge
 
 # Exclude configuration file
 matterbridge.toml
