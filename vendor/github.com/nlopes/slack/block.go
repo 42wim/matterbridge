@@ -30,22 +30,23 @@ type Blocks struct {
 
 // BlockAction is the action callback sent when a block is interacted with
 type BlockAction struct {
-	ActionID             string            `json:"action_id"`
-	BlockID              string            `json:"block_id"`
-	Type                 actionType        `json:"type"`
-	Text                 TextBlockObject   `json:"text"`
-	Value                string            `json:"value"`
-	ActionTs             string            `json:"action_ts"`
-	SelectedOption       OptionBlockObject `json:"selected_option"`
-	SelectedUser         string            `json:"selected_user"`
-	SelectedChannel      string            `json:"selected_channel"`
-	SelectedConversation string            `json:"selected_conversation"`
-	SelectedDate         string            `json:"selected_date"`
-	InitialOption        OptionBlockObject `json:"initial_option"`
-	InitialUser          string            `json:"initial_user"`
-	InitialChannel       string            `json:"initial_channel"`
-	InitialConversation  string            `json:"initial_conversation"`
-	InitialDate          string            `json:"initial_date"`
+	ActionID             string              `json:"action_id"`
+	BlockID              string              `json:"block_id"`
+	Type                 actionType          `json:"type"`
+	Text                 TextBlockObject     `json:"text"`
+	Value                string              `json:"value"`
+	ActionTs             string              `json:"action_ts"`
+	SelectedOption       OptionBlockObject   `json:"selected_option"`
+	SelectedOptions      []OptionBlockObject `json:"selected_options"`
+	SelectedUser         string              `json:"selected_user"`
+	SelectedChannel      string              `json:"selected_channel"`
+	SelectedConversation string              `json:"selected_conversation"`
+	SelectedDate         string              `json:"selected_date"`
+	InitialOption        OptionBlockObject   `json:"initial_option"`
+	InitialUser          string              `json:"initial_user"`
+	InitialChannel       string              `json:"initial_channel"`
+	InitialConversation  string              `json:"initial_conversation"`
+	InitialDate          string              `json:"initial_date"`
 }
 
 // actionType returns the type of the action
