@@ -101,7 +101,7 @@ type Msg struct {
 const (
 	// ResponseTypeInChannel in channel response for slash commands.
 	ResponseTypeInChannel = "in_channel"
-	// ResponseTypeEphemeral ephemeral respone for slash commands.
+	// ResponseTypeEphemeral ephemeral response for slash commands.
 	ResponseTypeEphemeral = "ephemeral"
 )
 

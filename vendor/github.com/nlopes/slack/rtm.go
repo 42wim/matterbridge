@@ -2,7 +2,6 @@ package slack
 
 import (
 	"context"
-	"encoding/json"
 	"net/url"
 	"sync"
 	"time"
@@ -120,7 +119,6 @@ func (api *Client) NewRTM(options ...RTMOption) *RTM {
 		disconnected:     make(chan struct{}),
 		disconnectedm:    &sync.Once{},
 		forcePing:        make(chan bool),
-		rawEvents:        make(chan json.RawMessage),
 		idGen:            NewSafeID(1),
 		mu:               &sync.Mutex{},
 	}

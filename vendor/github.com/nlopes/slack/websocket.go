@@ -1,7 +1,6 @@
 package slack
 
 import (
-	"encoding/json"
 	"net/url"
 	"sync"
 	"time"
@@ -35,7 +34,6 @@ type RTM struct {
 	disconnected     chan struct{}
 	disconnectedm    *sync.Once
 	forcePing        chan bool
-	rawEvents        chan json.RawMessage
 
 	// UserDetails upon connection
 	info *Info

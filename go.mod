@@ -64,8 +64,8 @@ require (
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 )
 
-replace github.com/bwmarrin/discordgo v0.19.0 => github.com/matterbridge/discordgo v0.0.0-20191026232317-01823f4ebba4
+replace github.com/nlopes/slack v0.6.0 => github.com/matterbridge/slack v0.1.1-0.20191207211853-5b5f1326cdab
 
-replace github.com/nlopes/slack v0.6.0 => github.com/matterbridge/slack v0.1.1-0.20191113220225-25f80ef0a0d1
+replace github.com/bwmarrin/discordgo v0.19.0 => github.com/matterbridge/discordgo v0.0.0-20191026232317-01823f4ebba4
 
 go 1.13
