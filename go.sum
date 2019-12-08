@@ -138,6 +138,8 @@ github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749
 github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61/go.mod h1:iXGEotOvwI1R1SjLxRc+BF5rUORTMtE0iMZBT2lxqAU=
 github.com/matterbridge/slack v0.1.1-0.20191207211853-5b5f1326cdab h1:4eNOoF+qvyXTwmlD5PwEwPHEpYAUTh2KpEjmEZOSVyE=
 github.com/matterbridge/slack v0.1.1-0.20191207211853-5b5f1326cdab/go.mod h1:2uCJim0Ct2z1Uj+XQq47KCLLC1b/9UTYaZOvDtbZfK4=
+github.com/matterbridge/slack v0.1.1-0.20191208194820-95190f11bfb6 h1:UvXXR9tHYqJUXZVEtiK2qkEWBXfFneicate5kOshVFk=
+github.com/matterbridge/slack v0.1.1-0.20191208194820-95190f11bfb6/go.mod h1:2uCJim0Ct2z1Uj+XQq47KCLLC1b/9UTYaZOvDtbZfK4=
 github.com/mattermost/mattermost-server v5.5.0+incompatible h1:0wcLGgYtd+YImtLDPf2AOfpBHxbU4suATx+6XKw1XbU=
 github.com/mattermost/mattermost-server v5.5.0+incompatible/go.mod h1:5L6MjAec+XXQwMIt791Ganu45GKsSiM+I0tLR9wUj8Y=
 github.com/mattn/go-colorable v0.1.1 h1:G1f5SKeVxmagw/IyvzvtZE4Gybcc4Tr1tf7I8z0XgOg=

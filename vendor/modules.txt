@@ -138,7 +138,7 @@ github.com/nicksnyder/go-i18n/i18n
 github.com/nicksnyder/go-i18n/i18n/bundle
 github.com/nicksnyder/go-i18n/i18n/language
 github.com/nicksnyder/go-i18n/i18n/translation
-# github.com/nlopes/slack v0.6.0 => github.com/matterbridge/slack v0.1.1-0.20191207211853-5b5f1326cdab
+# github.com/nlopes/slack v0.6.0 => github.com/matterbridge/slack v0.1.1-0.20191208194820-95190f11bfb6
 github.com/nlopes/slack
 github.com/nlopes/slack/internal/errorsx
 github.com/nlopes/slack/internal/timex
