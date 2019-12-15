@@ -1,3 +1,10 @@
+# v1.16.3
+
+## Bugfix
+
+- slack: Fix issues with ratelimiting #959
+- mattermost: Fix bug when using webhookURL and login/token together #960
+
 # v1.16.2
 
 ## New features
