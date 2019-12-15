@@ -67,9 +67,8 @@ func (b *Bmattermost) handleMatter() {
 			b.Log.Debugf("Choosing login/password based receiving")
 		}
 		// if for some reason we only want to sent stuff to mattermost but not receive, return
-		if b.GetString("WebhookBindAddress") == "" && b.GetString("WebhookURL") != "" {
+		if b.GetString("WebhookBindAddress") == "" && b.GetString("WebhookURL") != "" && b.GetString("Token") == "" && b.GetString("Login") == "" {
 			b.Log.Debugf("No WebhookBindAddress specified, only WebhookURL. You will not receive messages from mattermost, only sending is possible.")
-			return
 		}
 		go b.handleMatterClient(messages)
 	}
