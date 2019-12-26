@@ -29,6 +29,8 @@ require (
 	github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18
 	github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61
 	github.com/mattermost/mattermost-server v5.5.0+incompatible
+	github.com/mattn/go-runewidth v0.0.7 // indirect
+	github.com/mattn/godown v0.0.0-20180312012330-2e9e17e0ea51
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/mreiferson/go-httpclient v0.0.0-20160630210159-31f0106b4474 // indirect
 	github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff // indirect
@@ -48,8 +50,10 @@ require (
 	github.com/stretchr/testify v1.4.0
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2 // indirect
+	github.com/yaegashi/msgraph.go v0.0.0-00010101000000-000000000000
 	github.com/zfjagann/golang-ring v0.0.0-20190106091943-a88bb6aef447
 	golang.org/x/image v0.0.0-20191214001246-9130b4cfad52
+	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect

@@ -120,6 +120,10 @@ github.com/mattermost/mattermost-server/utils/markdown
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.11
 github.com/mattn/go-isatty
+# github.com/mattn/go-runewidth v0.0.7
+github.com/mattn/go-runewidth
+# github.com/mattn/godown v0.0.0-20180312012330-2e9e17e0ea51
+github.com/mattn/godown
 # github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b
 github.com/mgutz/ansi
 # github.com/mitchellh/mapstructure v1.1.2
@@ -192,6 +196,10 @@ github.com/technoweenie/multipartstreamer
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.1.0
 github.com/valyala/fasttemplate
+# github.com/yaegashi/msgraph.go v0.0.0-00010101000000-000000000000 => github.com/matterbridge/msgraph.go v0.0.0-20191226214848-9e5d9c08a4e1
+github.com/yaegashi/msgraph.go/beta
+github.com/yaegashi/msgraph.go/jsonx
+github.com/yaegashi/msgraph.go/msauth
 # github.com/zfjagann/golang-ring v0.0.0-20190106091943-a88bb6aef447
 github.com/zfjagann/golang-ring
 # go.uber.org/atomic v1.4.0
@@ -227,8 +235,17 @@ golang.org/x/image/vp8
 golang.org/x/image/vp8l
 golang.org/x/image/webp
 # golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
+golang.org/x/net/context
+golang.org/x/net/context/ctxhttp
+golang.org/x/net/html
+golang.org/x/net/html/atom
 golang.org/x/net/idna
 golang.org/x/net/websocket
+# golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+golang.org/x/oauth2
+golang.org/x/oauth2/clientcredentials
+golang.org/x/oauth2/internal
+golang.org/x/oauth2/microsoft
 # golang.org/x/sys v0.0.0-20191228213918-04cbcbbfeed8
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
@@ -245,6 +262,14 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
+# google.golang.org/appengine v1.4.0
+google.golang.org/appengine/internal
+google.golang.org/appengine/internal/base
+google.golang.org/appengine/internal/datastore
+google.golang.org/appengine/internal/log
+google.golang.org/appengine/internal/remote_api
+google.golang.org/appengine/internal/urlfetch
+google.golang.org/appengine/urlfetch
 # gopkg.in/ini.v1 v1.51.0
 gopkg.in/ini.v1
 # gopkg.in/natefinch/lumberjack.v2 v2.0.0
