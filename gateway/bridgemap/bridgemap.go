@@ -9,6 +9,7 @@ import (
 	bkeybase "github.com/42wim/matterbridge/bridge/keybase"
 	bmatrix "github.com/42wim/matterbridge/bridge/matrix"
 	bmattermost "github.com/42wim/matterbridge/bridge/mattermost"
+	bmsteams "github.com/42wim/matterbridge/bridge/msteams"
 	brocketchat "github.com/42wim/matterbridge/bridge/rocketchat"
 	bslack "github.com/42wim/matterbridge/bridge/slack"
 	bsshchat "github.com/42wim/matterbridge/bridge/sshchat"
@@ -37,6 +38,7 @@ var (
 		"xmpp":         bxmpp.New,
 		"zulip":        bzulip.New,
 		"keybase":      bkeybase.New,
+		"msteams":      bmsteams.New,
 	}
 
 	UserTypingSupport = map[string]struct{}{
