@@ -57,4 +57,6 @@ require (
 
 replace github.com/bwmarrin/discordgo v0.20.2 => github.com/matterbridge/discordgo v0.18.1-0.20200109173909-ed873362fa43
 
+replace github.com/yaegashi/msgraph.go => github.com/matterbridge/msgraph.go v0.0.0-20191226214848-9e5d9c08a4e1
+
 go 1.13
