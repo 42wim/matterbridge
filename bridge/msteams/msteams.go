@@ -1,8 +1,9 @@
-package bgitter
+package bmsteams
 
 import (
 	"context"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -96,6 +97,7 @@ func (b *Bmsteams) getMessages(channel string) ([]msgraph.ChatMessage, error) {
 }
 
 func (b *Bmsteams) poll(channelName string) {
+	re := regexp.MustCompile(`<attachment id=.*?attachment>`)
 	msgmap := make(map[string]time.Time)
 	b.Log.Debug("getting initial messages")
 	res, err := b.getMessages(channelName)
@@ -136,8 +138,28 @@ func (b *Bmsteams) poll(channelName string) {
 			}
 			b.Log.Debugf("<= Sending message from %s on %s to gateway", *msg.From.User.DisplayName, b.Account)
 			text := b.convertToMD(*msg.Body.Content)
-			rmsg := config.Message{Username: *msg.From.User.DisplayName, Text: text, Channel: channelName,
-				Account: b.Account, Avatar: "", UserID: *msg.From.User.ID, ID: *msg.ID}
+			rmsg := config.Message{
+				Username: *msg.From.User.DisplayName,
+				Text:     text,
+				Channel:  channelName,
+				Account:  b.Account,
+				Avatar:   "",
+				UserID:   *msg.From.User.ID,
+				ID:       *msg.ID,
+				Extra:    make(map[string][]interface{}),
+			}
+
+			if len(msg.Attachments) > 0 {
+				for _, a := range msg.Attachments {
+					//remove the attachment tags from the text
+					rmsg.Text = re.ReplaceAllString(rmsg.Text, "")
+					//handle the download
+					err := b.handleDownloadFile(&rmsg, *a.Name, *a.ContentURL)
+					if err != nil {
+						b.Log.Errorf("download of %s failed: %s", *a.Name, err)
+					}
+				}
+			}
 			b.Log.Debugf("<= Message is %#v", rmsg)
 			b.Remote <- rmsg
 		}
