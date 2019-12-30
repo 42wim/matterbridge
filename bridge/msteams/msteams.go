@@ -2,6 +2,7 @@ package bmsteams
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"regexp"
 	"strings"
@@ -9,6 +10,8 @@ import (
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
+
+	//	"github.com/davecgh/go-spew/spew"
 	"github.com/mattn/godown"
 	msgraph "github.com/yaegashi/msgraph.go/beta"
 	"github.com/yaegashi/msgraph.go/msauth"
@@ -75,7 +78,28 @@ func (b *Bmsteams) JoinChannel(channel config.ChannelInfo) error {
 
 func (b *Bmsteams) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
+	if msg.ParentID != "" && msg.ParentID != "msg-parent-not-found" {
+		return b.sendReply(msg)
+	}
+	if msg.ParentID == "msg-parent-not-found" {
+		msg.ParentID = ""
+		msg.Text = fmt.Sprintf("[thread]: %s", msg.Text)
+	}
 	ct := b.gc.Teams().ID(b.GetString("TeamID")).Channels().ID(msg.Channel).Messages().Request()
+	text := msg.Username + msg.Text
+	content := &msgraph.ItemBody{Content: &text}
+	rmsg := &msgraph.ChatMessage{Body: content}
+	res, err := ct.Add(b.ctx, rmsg)
+	if err != nil {
+		return "", err
+	}
+	return *res.ID, nil
+}
+
+func (b *Bmsteams) sendReply(msg config.Message) (string, error) {
+	ct := b.gc.Teams().ID(b.GetString("TeamID")).Channels().ID(msg.Channel).Messages().ID(msg.ParentID).Replies().Request()
+	// Handle prefix hint for unthreaded messages.
+
 	text := msg.Username + msg.Text
 	content := &msgraph.ItemBody{Content: &text}
 	rmsg := &msgraph.ChatMessage{Body: content}
