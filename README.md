@@ -278,7 +278,7 @@ See [FAQ](https://github.com/42wim/matterbridge/wiki/FAQ)
 
 ## Related projects
 
-- [FOSSRIT/infrastructure - roles/matterbridge](https://github.com/FOSSRIT/infrastructure/tree/master/roles/matterbridge) (Ansible role used to automate deployments of Matterbridge)
+- [jwflory/ansible-role-matterbridge](https://galaxy.ansible.com/jwflory/matterbridge) (Ansible role to simplify deploying Matterbridge)
 - [matterbridge autoconfig](https://github.com/patcon/matterbridge-autoconfig)
 - [matterbridge config viewer](https://github.com/patcon/matterbridge-heroku-viewer)
 - [matterbridge-heroku](https://github.com/cadecairos/matterbridge-heroku)
