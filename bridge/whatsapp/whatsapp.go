@@ -233,6 +233,66 @@ func (b *Bwhatsapp) JoinChannel(channel config.ChannelInfo) error {
 	return nil
 }
 
+// Post a document message from the bridge to WhatsApp
+func (b *Bwhatsapp) PostDocumentMessage(msg config.Message, filetype string) (string, error) {
+	fi := msg.Extra["file"][0].(config.FileInfo)
+
+	// Post document message
+	message := whatsapp.DocumentMessage{
+		Info: whatsapp.MessageInfo{
+			RemoteJid: msg.Channel,
+		},
+		Title:    fi.Name,
+		FileName: fi.Name,
+		Type:     filetype,
+		Content:  bytes.NewReader(*fi.Data),
+	}
+
+	b.Log.Debugf("=> Sending %#v", msg)
+
+	// create message ID
+	// TODO follow and act if https://github.com/Rhymen/go-whatsapp/issues/101 implemented
+	idBytes := make([]byte, 10)
+	if _, err := rand.Read(idBytes); err != nil {
+		b.Log.Warn(err.Error())
+	}
+
+	message.Info.Id = strings.ToUpper(hex.EncodeToString(idBytes))
+	_, err := b.conn.Send(message)
+
+	return message.Info.Id, err
+}
+
+// Post an image message from the bridge to WhatsApp
+// Handle, for sure image/jpeg, image/png and image/gif MIME types
+func (b *Bwhatsapp) PostImageMessage(msg config.Message, filetype string) (string, error) {
+	fi := msg.Extra["file"][0].(config.FileInfo)
+
+	// Post image message
+	message := whatsapp.ImageMessage{
+		Info: whatsapp.MessageInfo{
+			RemoteJid: msg.Channel,
+		},
+		Type:    filetype,
+		Caption: msg.Username + fi.Comment,
+		Content: bytes.NewReader(*fi.Data),
+	}
+
+	b.Log.Debugf("=> Sending %#v", msg)
+
+	// create message ID
+	// TODO follow and act if https://github.com/Rhymen/go-whatsapp/issues/101 implemented
+	idBytes := make([]byte, 10)
+	if _, err := rand.Read(idBytes); err != nil {
+		b.Log.Warn(err.Error())
+	}
+
+	message.Info.Id = strings.ToUpper(hex.EncodeToString(idBytes))
+	_, err := b.conn.Send(message)
+
+	return message.Info.Id, err
+}
+
 // Send a message from the bridge to WhatsApp
 // Required implementation of the Bridger interface
 // https://github.com/42wim/matterbridge/blob/2cfd880cdb0df29771bf8f31df8d990ab897889d/bridge/bridge.go#L11-L16
@@ -265,63 +325,18 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 	// Handle Upload a file
 	if msg.Extra["file"] != nil {
 		fi := msg.Extra["file"][0].(config.FileInfo)
-
 		filetype := mime.TypeByExtension(filepath.Ext(fi.Name))
 
 		b.Log.Debugf("Extra file is %#v", filetype)
 
 		// TODO: add different types
 		// TODO: add webp conversion
-		if filetype == "image/jpeg" || filetype == "image/png" || filetype == "image/gif" {
-			// Post image message
-			message := whatsapp.ImageMessage{
-				Info: whatsapp.MessageInfo{
-					RemoteJid: msg.Channel,
-				},
-				Type:    filetype,
-				Caption: msg.Username + fi.Comment,
-				Content: bytes.NewReader(*fi.Data),
-			}
-
-			b.Log.Debugf("=> Sending %#v", msg)
-
-			// create message ID
-			// TODO follow and act if https://github.com/Rhymen/go-whatsapp/issues/101 implemented
-			idbytes := make([]byte, 10)
-			if _, err := rand.Read(idbytes); err != nil {
-				b.Log.Warn(err.Error())
-			}
-
-			message.Info.Id = strings.ToUpper(hex.EncodeToString(idbytes))
-			err := b.conn.Send(message)
-
-			return message.Info.Id, err
+		switch filetype {
+		case "image/jpeg", "image/png", "image/gif":
+			return b.PostImageMessage(msg, filetype)
+		default:
+			return b.PostDocumentMessage(msg, filetype)
 		}
-
-		// Post document message
-		message := whatsapp.DocumentMessage{
-			Info: whatsapp.MessageInfo{
-				RemoteJid: msg.Channel,
-			},
-			Title:    fi.Name,
-			FileName: fi.Name,
-			Type:     filetype,
-			Content:  bytes.NewReader(*fi.Data),
-		}
-
-		b.Log.Debugf("=> Sending %#v", msg)
-
-		// create message ID
-		// TODO follow and act if https://github.com/Rhymen/go-whatsapp/issues/101 implemented
-		idbytes := make([]byte, 10)
-		if _, err := rand.Read(idbytes); err != nil {
-			b.Log.Warn(err.Error())
-		}
-
-		message.Info.Id = strings.ToUpper(hex.EncodeToString(idbytes))
-		err := b.conn.Send(message)
-
-		return message.Info.Id, err
 	}
 
 	// Post text message
@@ -336,13 +351,12 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 
 	// create message ID
 	// TODO follow and act if https://github.com/Rhymen/go-whatsapp/issues/101 implemented
-	idbytes := make([]byte, 10)
-	if _, err := rand.Read(idbytes); err != nil {
+	idBytes := make([]byte, 10)
+	if _, err := rand.Read(idBytes); err != nil {
 		b.Log.Warn(err.Error())
 	}
-
-	message.Info.Id = strings.ToUpper(hex.EncodeToString(idbytes))
-	err := b.conn.Send(message)
+	message.Info.Id = strings.ToUpper(hex.EncodeToString(idBytes))
+	_, err := b.conn.Send(message)
 
 	return message.Info.Id, err
 }

@@ -54,11 +54,14 @@ require (
 	github.com/stretchr/testify v1.4.0
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2 // indirect
-	github.com/zfjagann/golang-ring v0.0.0-20190304061218-d34796e0a6c2
-	golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586 // indirect
-	golang.org/x/image v0.0.0-20190902063713-cb417be4ba39
-	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7 // indirect
-	golang.org/x/text v0.3.2 // indirect
+	github.com/zfjagann/golang-ring v0.0.0-20190106091943-a88bb6aef447
+	gitlab.com/golang-commonmark/html v0.0.0-20180917080848-cfaf75183c4a // indirect
+	gitlab.com/golang-commonmark/linkify v0.0.0-20180917065525-c22b7bdb1179 // indirect
+	gitlab.com/golang-commonmark/markdown v0.0.0-20181102083822-772775880e1f
+	gitlab.com/golang-commonmark/mdurl v0.0.0-20180912090424-e5bce34c34f2 // indirect
+	gitlab.com/golang-commonmark/puny v0.0.0-20180912090636-2cd490539afe // indirect
+	gitlab.com/opennota/wd v0.0.0-20180912061657-c5d65f63c638 // indirect
+	golang.org/x/image v0.0.0-20190220214146-31aff87c08e9
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
