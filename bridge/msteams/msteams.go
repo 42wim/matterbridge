@@ -19,8 +19,8 @@ import (
 	"golang.org/x/oauth2"
 )
 
-//var defaultScopes = []string{"openid", "profile", "offline_access", "User.Read", "Files.Read", "ChannelMessage.Read.All", "Chat.ReadWrite", "User.Read.All", "User.ReadWrite.All", "Group.Read.All", "Group.ReadWrite.All"}
-var defaultScopes = []string{"openid", "profile", "offline_access", "Group.Read.All", "Group.ReadWrite.All"}
+var defaultScopes = []string{} //"openid", "profile", "offline_access", "Group.Read.All", "Group.ReadWrite.All"}
+var attachRE = regexp.MustCompile(`<attachment id=.*?attachment>`)
 
 type Bmsteams struct {
 	gc    *msgraph.GraphServiceRequestBuilder
@@ -121,7 +121,6 @@ func (b *Bmsteams) getMessages(channel string) ([]msgraph.ChatMessage, error) {
 }
 
 func (b *Bmsteams) poll(channelName string) {
-	re := regexp.MustCompile(`<attachment id=.*?attachment>`)
 	msgmap := make(map[string]time.Time)
 	b.Log.Debug("getting initial messages")
 	res, err := b.getMessages(channelName)
@@ -173,17 +172,7 @@ func (b *Bmsteams) poll(channelName string) {
 				Extra:    make(map[string][]interface{}),
 			}
 
-			if len(msg.Attachments) > 0 {
-				for _, a := range msg.Attachments {
-					//remove the attachment tags from the text
-					rmsg.Text = re.ReplaceAllString(rmsg.Text, "")
-					//handle the download
-					err := b.handleDownloadFile(&rmsg, *a.Name, *a.ContentURL)
-					if err != nil {
-						b.Log.Errorf("download of %s failed: %s", *a.Name, err)
-					}
-				}
-			}
+			b.handleAttachments(&rmsg, msg)
 			b.Log.Debugf("<= Message is %#v", rmsg)
 			b.Remote <- rmsg
 		}

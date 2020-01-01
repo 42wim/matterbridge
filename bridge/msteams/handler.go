@@ -5,6 +5,7 @@ import (
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
+	msgraph "github.com/yaegashi/msgraph.go/beta"
 )
 
 func (b *Bmsteams) findFile(weburl string) (string, error) {
@@ -43,4 +44,16 @@ func (b *Bmsteams) handleDownloadFile(rmsg *config.Message, filename, weburl str
 	rmsg.Text = ""
 	helper.HandleDownloadData(b.Log, rmsg, filename, comment, weburl, data, b.General)
 	return nil
+}
+
+func (b *Bmsteams) handleAttachments(rmsg *config.Message, msg msgraph.ChatMessage) {
+	for _, a := range msg.Attachments {
+		//remove the attachment tags from the text
+		rmsg.Text = attachRE.ReplaceAllString(rmsg.Text, "")
+		//handle the download
+		err := b.handleDownloadFile(rmsg, *a.Name, *a.ContentURL)
+		if err != nil {
+			b.Log.Errorf("download of %s failed: %s", *a.Name, err)
+		}
+	}
 }
