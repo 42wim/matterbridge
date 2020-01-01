@@ -67,10 +67,11 @@ require (
 	go.uber.org/zap v1.9.1 // indirect
 	golang.org/x/image v0.0.0-20190220214146-31aff87c08e9
 	golang.org/x/net v0.0.0-20190110200230-915654e7eabc // indirect
-	golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4 // indirect
 	golang.org/x/sys v0.0.0-20190222171317-cd391775e71e // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 )
+
+go 1.13

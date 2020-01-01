@@ -39,16 +39,16 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 	}
 
 	messageTime := time.Unix(int64(message.Info.Timestamp), 0) // TODO check how behaves between timezones
-	groupJid := message.Info.RemoteJid
+	groupJID := message.Info.RemoteJid
 
-	senderJid := message.Info.SenderJid
-	if len(senderJid) == 0 {
+	senderJID := message.Info.SenderJid
+	if len(senderJID) == 0 {
 		// TODO workaround till https://github.com/Rhymen/go-whatsapp/issues/86 resolved
-		senderJid = *message.Info.Source.Participant
+		senderJID = *message.Info.Source.Participant
 	}
 
-	// translate sender's Jid to the nicest username we can get
-	senderName := b.getSenderName(senderJid)
+	// translate sender's JID to the nicest username we can get
+	senderName := b.getSenderName(senderJID)
 	if senderName == "" {
 		senderName = "Someone" // don't expose telephone number
 	}
@@ -56,8 +56,8 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 	extText := message.Info.Source.Message.ExtendedTextMessage
 	if extText != nil && extText.ContextInfo != nil && extText.ContextInfo.MentionedJid != nil {
 		// handle user mentions
-		for _, mentionedJid := range extText.ContextInfo.MentionedJid {
-			numberAndSuffix := strings.SplitN(mentionedJid, "@", 2)
+		for _, mentionedJID := range extText.ContextInfo.MentionedJid {
+			numberAndSuffix := strings.SplitN(mentionedJID, "@", 2)
 
 			// mentions comes as telephone numbers and we don't want to expose it to other bridges
 			// replace it with something more meaninful to others
@@ -69,13 +69,13 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 		}
 	}
 
-	b.Log.Debugf("<= Sending message from %s on %s to gateway", senderJid, b.Account)
+	b.Log.Debugf("<= Sending message from %s on %s to gateway", senderJID, b.Account)
 	rmsg := config.Message{
-		UserID:    senderJid,
+		UserID:    senderJID,
 		Username:  senderName,
 		Text:      message.Text,
 		Timestamp: messageTime,
-		Channel:   groupJid,
+		Channel:   groupJID,
 		Account:   b.Account,
 		Protocol:  b.Protocol,
 		Extra:     make(map[string][]interface{}),
@@ -84,7 +84,7 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 		//	Gateway   string  // will be added during message processing
 		ID: message.Info.Id}
 
-	if avatarURL, exists := b.userAvatars[senderJid]; exists {
+	if avatarURL, exists := b.userAvatars[senderJID]; exists {
 		rmsg.Avatar = avatarURL
 	}
 
@@ -104,26 +104,26 @@ func (b *Bwhatsapp) HandleImageMessage(message whatsapp.ImageMessage) {
 	}
 
 	messageTime := time.Unix(int64(message.Info.Timestamp), 0) // TODO check how behaves between timezones
-	groupJid := message.Info.RemoteJid
+	groupJID := message.Info.RemoteJid
 
-	senderJid := message.Info.SenderJid
+	senderJID := message.Info.SenderJid
 	// if len(senderJid) == 0 {
 	//   // TODO workaround till https://github.com/Rhymen/go-whatsapp/issues/86 resolved
 	//   senderJid = *message.Info.Source.Participant
 	// }
 
 	// translate sender's Jid to the nicest username we can get
-	senderName := b.getSenderName(senderJid)
+	senderName := b.getSenderName(senderJID)
 	if senderName == "" {
 		senderName = "Someone" // don't expose telephone number
 	}
 
-	b.Log.Debugf("<= Sending message from %s on %s to gateway", senderJid, b.Account)
+	b.Log.Debugf("<= Sending message from %s on %s to gateway", senderJID, b.Account)
 	rmsg := config.Message{
-		UserID:    senderJid,
+		UserID:    senderJID,
 		Username:  senderName,
 		Timestamp: messageTime,
-		Channel:   groupJid,
+		Channel:   groupJID,
 		Account:   b.Account,
 		Protocol:  b.Protocol,
 		Extra:     make(map[string][]interface{}),
@@ -132,7 +132,7 @@ func (b *Bwhatsapp) HandleImageMessage(message whatsapp.ImageMessage) {
 		//  Gateway   string     // will be added during message processing
 		ID: message.Info.Id}
 
-	if avatarURL, exists := b.userAvatars[senderJid]; exists {
+	if avatarURL, exists := b.userAvatars[senderJID]; exists {
 		rmsg.Avatar = avatarURL
 	}
 
@@ -144,13 +144,13 @@ func (b *Bwhatsapp) HandleImageMessage(message whatsapp.ImageMessage) {
 	}
 
 	// Get file extension by mimetype
-	fileext, err := mime.ExtensionsByType(message.Type)
+	fileExt, err := mime.ExtensionsByType(message.Type)
 	if err != nil {
 		b.Log.Errorf("%v", err)
 		return
 	}
 
-	filename := fmt.Sprintf("%v%v", message.Info.Id, fileext[0])
+	filename := fmt.Sprintf("%v%v", message.Info.Id, fileExt[0])
 
 	b.Log.Debugf("<= Image downloaded and unencrypted")
 
