@@ -8,9 +8,10 @@ import (
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/zfjagann/golang-ring"
+	ring "github.com/zfjagann/golang-ring"
 )
 
 type API struct {
@@ -44,6 +45,7 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	e.GET("/api/health", b.handleHealthcheck)
 	e.GET("/api/messages", b.handleMessages)
 	e.GET("/api/stream", b.handleStream)
+	e.GET("/api/socket", b.handleWebsocket)
 	e.POST("/api/message", b.handlePostMessage)
 	go func() {
 		if b.GetString("BindAddress") == "" {
@@ -124,6 +126,27 @@ func (b *API) handleStream(c echo.Context) error {
 				return err
 			}
 			c.Response().Flush()
+		}
+		time.Sleep(200 * time.Millisecond)
+	}
+}
+
+func (b *API) handleWebsocket(c echo.Context) error {
+	conn, err := websocket.Upgrade(c.Response().Writer, c.Request(), nil, 1024, 1024)
+	if err != nil {
+		return err
+	}
+
+	greet := config.Message{
+		Event:     config.EventAPIConnected,
+		Timestamp: time.Now(),
+	}
+	conn.WriteJSON(greet)
+
+	for {
+		msg := b.Messages.Dequeue()
+		if msg != nil {
+			conn.WriteJSON(msg)
 		}
 		time.Sleep(200 * time.Millisecond)
 	}
