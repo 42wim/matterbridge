@@ -88,7 +88,6 @@ func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 
 	if m.Content != "" {
 		b.Log.Debugf("== Receiving event %#v", m.Message)
-		m.Message.Content = b.stripCustomoji(m.Message.Content)
 		m.Message.Content = b.replaceChannelMentions(m.Message.Content)
 		rmsg.Text, err = m.ContentWithMoreMentionsReplaced(b.c)
 		if err != nil {
