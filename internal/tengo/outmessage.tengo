@@ -17,3 +17,9 @@ if inProtocol == "irc" && outProtocol != "irc" {
     msgText=re.replace(msgText,"")
 }
 // end - strip irc colors
+
+// strip custom emoji
+if inProtocol == "discord" {
+   re := text.re_compile(`<a?(:.*?:)[0-9]+>`)
+    msgText=re.replace(msgText,"$1")
+}
