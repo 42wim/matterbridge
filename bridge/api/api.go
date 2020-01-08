@@ -45,7 +45,7 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	e.GET("/api/health", b.handleHealthcheck)
 	e.GET("/api/messages", b.handleMessages)
 	e.GET("/api/stream", b.handleStream)
-	e.GET("/api/socket", b.handleWebsocket)
+	e.GET("/api/websocket", b.handleWebsocket)
 	e.POST("/api/message", b.handlePostMessage)
 	go func() {
 		if b.GetString("BindAddress") == "" {
