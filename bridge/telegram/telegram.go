@@ -8,7 +8,7 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 const (
@@ -81,8 +81,8 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 	// Upload a file if it exists
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			if _, err := b.sendMessage(chatid, rmsg.Username, rmsg.Text); err != nil {
-				b.Log.Errorf("sendMessage failed: %s", err)
+			if _, msgErr := b.sendMessage(chatid, rmsg.Username, rmsg.Text); msgErr != nil {
+				b.Log.Errorf("sendMessage failed: %s", msgErr)
 			}
 		}
 		// check if we have files to upload (from slack, telegram or mattermost)
@@ -97,7 +97,14 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 	}
 
 	// Post normal message
-	return b.sendMessage(chatid, msg.Username, msg.Text)
+	// TODO: recheck it.
+	// Ignore empty text field needs for prevent double messages from whatsapp to telegram
+	// when sending media with text caption
+	if msg.Text != "" {
+		return b.sendMessage(chatid, msg.Username, msg.Text)
+	}
+
+	return "", nil
 }
 
 func (b *Btelegram) getFileDirectURL(id string) string {
