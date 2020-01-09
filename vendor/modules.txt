@@ -25,19 +25,12 @@ github.com/Rhymen/go-whatsapp/crypto/curve25519
 github.com/Rhymen/go-whatsapp/crypto/hkdf
 # github.com/bwmarrin/discordgo v0.20.2 => github.com/matterbridge/discordgo v0.18.1-0.20200109173909-ed873362fa43
 github.com/bwmarrin/discordgo
-# github.com/d5/tengo v1.24.8
-github.com/d5/tengo
-github.com/d5/tengo/compiler
-github.com/d5/tengo/compiler/ast
-github.com/d5/tengo/compiler/parser
-github.com/d5/tengo/compiler/scanner
-github.com/d5/tengo/compiler/source
-github.com/d5/tengo/compiler/token
-github.com/d5/tengo/objects
-github.com/d5/tengo/runtime
-github.com/d5/tengo/script
-github.com/d5/tengo/stdlib
-github.com/d5/tengo/stdlib/json
+# github.com/d5/tengo/v2 v2.0.2
+github.com/d5/tengo/v2
+github.com/d5/tengo/v2/parser
+github.com/d5/tengo/v2/stdlib
+github.com/d5/tengo/v2/stdlib/json
+github.com/d5/tengo/v2/token
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/dfordsoft/golib v0.0.0-20180902042739-76ee6ab99bec
