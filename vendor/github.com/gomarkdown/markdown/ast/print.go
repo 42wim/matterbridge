@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"unicode/utf8"
 )
 
 // Print is for debugging. It prints a string representation of parsed
@@ -63,11 +64,11 @@ func shortenString(s string, maxLen int) string {
 	if maxLen < 0 {
 		return s
 	}
-	if len(s) < maxLen {
+	if utf8.RuneCountInString(s) < maxLen {
 		return s
 	}
-	// add "..." to indicate truncation
-	return s[:maxLen-3] + "..."
+	// add "…" to indicate truncation
+	return string(append([]rune(s)[:maxLen-3], '…'))
 }
 
 // get a short name of the type of v which excludes package name

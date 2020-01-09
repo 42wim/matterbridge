@@ -228,7 +228,7 @@ func maybeInlineFootnoteOrSuper(p *Parser, data []byte, offset int) (int, ast.No
 		}
 		sup := &ast.Superscript{}
 		sup.Literal = data[offset+1 : offset+ret]
-		return offset + ret, sup
+		return ret + 1, sup
 	}
 
 	return 0, nil
@@ -536,6 +536,9 @@ func link(p *Parser, data []byte, offset int) (int, ast.Node) {
 			// if inline footnote, title == footnote contents
 			title = lr.title
 			noteID = lr.noteID
+			if len(lr.text) > 0 {
+				altContent = lr.text
+			}
 		}
 
 		// rewind the whitespace
