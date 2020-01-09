@@ -129,7 +129,6 @@ func (b *Bdiscord) getCategoryChannelName(name, parentID string) string {
 var (
 	// See https://discordapp.com/developers/docs/reference#message-formatting.
 	channelMentionRE = regexp.MustCompile("<#[0-9]+>")
-	emojiRE          = regexp.MustCompile("<(:.*?:)[0-9]+>")
 	userMentionRE    = regexp.MustCompile("@[^@\n]{1,32}")
 )
 
@@ -174,10 +173,6 @@ func (b *Bdiscord) replaceUserMentions(text string) string {
 		return strings.Replace(match, "@"+username, member.User.Mention(), 1)
 	}
 	return userMentionRE.ReplaceAllStringFunc(text, replaceUserMentionFunc)
-}
-
-func (b *Bdiscord) stripCustomoji(text string) string {
-	return emojiRE.ReplaceAllString(text, `$1`)
 }
 
 func (b *Bdiscord) replaceAction(text string) (string, bool) {
