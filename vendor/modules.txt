@@ -193,7 +193,7 @@ github.com/technoweenie/multipartstreamer
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.0.1
 github.com/valyala/fasttemplate
-# github.com/zfjagann/golang-ring v0.0.0-20190304061218-d34796e0a6c2
+# github.com/zfjagann/golang-ring v0.0.0-20190106091943-a88bb6aef447
 github.com/zfjagann/golang-ring
 # go.uber.org/atomic v1.4.0
 go.uber.org/atomic
@@ -206,7 +206,7 @@ go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
-# golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586
+# golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/bcrypt
@@ -222,19 +222,19 @@ golang.org/x/crypto/poly1305
 golang.org/x/crypto/salsa20/salsa
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/image v0.0.0-20190902063713-cb417be4ba39
+# golang.org/x/image v0.0.0-20190220214146-31aff87c08e9
 golang.org/x/image/riff
 golang.org/x/image/vp8
 golang.org/x/image/vp8l
 golang.org/x/image/webp
-# golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7
+# golang.org/x/net v0.0.0-20190522155817-f3200d17e092
 golang.org/x/net/idna
 golang.org/x/net/websocket
 # golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/text v0.3.2
+# golang.org/x/text v0.3.0
 golang.org/x/text/encoding
 golang.org/x/text/encoding/internal
 golang.org/x/text/encoding/internal/identifier
