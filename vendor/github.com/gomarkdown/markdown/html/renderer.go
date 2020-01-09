@@ -1298,7 +1298,7 @@ func BlockAttrs(node ast.Node) []string {
 
 	// sort the attributes so it remain stable between runs
 	var keys = []string{}
-	for k, _ := range attr.Attrs {
+	for k := range attr.Attrs {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
