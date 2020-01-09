@@ -21,7 +21,6 @@ type Bdiscord struct {
 	c *discordgo.Session
 
 	nick            string
-	useChannelID    bool
 	guildID         string
 	webhookID       string
 	webhookToken    string
@@ -174,10 +173,6 @@ func (b *Bdiscord) JoinChannel(channel config.ChannelInfo) error {
 	defer b.channelsMutex.Unlock()
 
 	b.channelInfoMap[channel.ID] = &channel
-	idcheck := strings.Split(channel.Name, "ID:")
-	if len(idcheck) > 1 {
-		b.useChannelID = true
-	}
 	return nil
 }
 
