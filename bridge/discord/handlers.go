@@ -8,9 +8,7 @@ import (
 func (b *Bdiscord) messageDelete(s *discordgo.Session, m *discordgo.MessageDelete) { //nolint:unparam
 	rmsg := config.Message{Account: b.Account, ID: m.ID, Event: config.EventMsgDelete, Text: config.EventMsgDelete}
 	rmsg.Channel = b.getChannelName(m.ChannelID)
-	if b.useChannelID {
-		rmsg.Channel = "ID:" + m.ChannelID
-	}
+
 	b.Log.Debugf("<= Sending message from %s to gateway", b.Account)
 	b.Log.Debugf("<= Message is %#v", rmsg)
 	b.Remote <- rmsg
@@ -24,11 +22,7 @@ func (b *Bdiscord) messageDeleteBulk(s *discordgo.Session, m *discordgo.MessageD
 			ID:      msgID,
 			Event:   config.EventMsgDelete,
 			Text:    config.EventMsgDelete,
-			Channel: "ID:" + m.ChannelID,
-		}
-
-		if !b.useChannelID {
-			rmsg.Channel = b.getChannelName(m.ChannelID)
+			Channel: b.getChannelName(m.ChannelID),
 		}
 
 		b.Log.Debugf("<= Sending message from %s to gateway", b.Account)
@@ -44,9 +38,6 @@ func (b *Bdiscord) messageTyping(s *discordgo.Session, m *discordgo.TypingStart)
 
 	rmsg := config.Message{Account: b.Account, Event: config.EventUserTyping}
 	rmsg.Channel = b.getChannelName(m.ChannelID)
-	if b.useChannelID {
-		rmsg.Channel = "ID:" + m.ChannelID
-	}
 	b.Remote <- rmsg
 }
 
@@ -98,9 +89,6 @@ func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 
 	// set channel name
 	rmsg.Channel = b.getChannelName(m.ChannelID)
-	if b.useChannelID {
-		rmsg.Channel = "ID:" + m.ChannelID
-	}
 
 	// set username
 	if !b.GetBool("UseUserName") {
