@@ -19,7 +19,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var defaultScopes = []string{} //"openid", "profile", "offline_access", "Group.Read.All", "Group.ReadWrite.All"}
+var defaultScopes = []string{"openid", "profile", "offline_access", "Group.Read.All", "Group.ReadWrite.All"}
 var attachRE = regexp.MustCompile(`<attachment id=.*?attachment>`)
 
 type Bmsteams struct {
