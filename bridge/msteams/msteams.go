@@ -120,6 +120,7 @@ func (b *Bmsteams) getMessages(channel string) ([]msgraph.ChatMessage, error) {
 	return rct, nil
 }
 
+//nolint:gocognit
 func (b *Bmsteams) poll(channelName string) {
 	msgmap := make(map[string]time.Time)
 	b.Log.Debug("getting initial messages")
