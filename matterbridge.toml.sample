@@ -853,6 +853,10 @@ UseInsecureURL=false
 #OPTIONAL (default false)
 QuoteDisable=false
 
+#Set the max. quoted length if 0 the whole message will be quoted
+#OPTIONAL (default 0)
+QuoteLengthLimit=0
+
 #Format quoted/reply messages
 #OPTIONAL (default "{MESSAGE} (re @{QUOTENICK}: {QUOTEMESSAGE})")
 QuoteFormat="{MESSAGE} (re @{QUOTENICK}: {QUOTEMESSAGE})"
