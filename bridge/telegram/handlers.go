@@ -362,7 +362,7 @@ func (b *Btelegram) handleQuote(message, quoteNick, quoteMessage string) string 
 		runes := []rune(quoteMessage)
 		quoteMessage = string(runes[0:b.GetInt("QuoteLengthLimit")])
 		if quoteMessagelength > b.GetInt("QuoteLengthLimit") {
-			quoteMessage = quoteMessage + "..."
+			quoteMessage += "..."
 		}
 	}
 	format = strings.Replace(format, "{MESSAGE}", message, -1)
