@@ -357,6 +357,14 @@ func (b *Btelegram) handleQuote(message, quoteNick, quoteMessage string) string 
 	if format == "" {
 		format = "{MESSAGE} (re @{QUOTENICK}: {QUOTEMESSAGE})"
 	}
+	quoteMessagelength := len(quoteMessage)
+	if b.GetInt("QuoteLengthLimit") != 0 && quoteMessagelength >= b.GetInt("QuoteLengthLimit") {
+		runes := []rune(quoteMessage)
+		quoteMessage = string(runes[0:b.GetInt("QuoteLengthLimit")])
+		if quoteMessagelength > b.GetInt("QuoteLengthLimit") {
+			quoteMessage += "..."
+		}
+	}
 	format = strings.Replace(format, "{MESSAGE}", message, -1)
 	format = strings.Replace(format, "{QUOTENICK}", quoteNick, -1)
 	format = strings.Replace(format, "{QUOTEMESSAGE}", quoteMessage, -1)

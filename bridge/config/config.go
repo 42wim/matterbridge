@@ -116,6 +116,7 @@ type Protocol struct {
 	Protocol               string     // all protocols
 	QuoteDisable           bool       // telegram
 	QuoteFormat            string     // telegram
+	QuoteLengthLimit       int        // telegram
 	RejoinDelay            int        // IRC
 	ReplaceMessages        [][]string // all protocols
 	ReplaceNicks           [][]string // all protocols
