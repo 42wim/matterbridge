@@ -1,0 +1,10 @@
+text := import("text")
+
+// if we're not sending to a discord bridge,
+// then convert custom emoji tags into url's
+if (inProtocol == "discord" && outProtocol != "discord") {
+    rePNG := text.re_compile(`<:.*?:([0-9]+)>`)
+    msgText=rePNG.replace(msgText,"https://cdn.discordapp.com/emojis/$1.png")
+    reGIF := text.re_compile(`<a:.*?:([0-9]+)>`)
+    msgText=reGIF.replace(msgText,"https://cdn.discordapp.com/emojis/$1.gif")
+}
