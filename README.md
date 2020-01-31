@@ -268,6 +268,20 @@ Create your matterbridge.toml file locally eg in `/tmp/matterbridge.toml`
 docker run -ti -v /tmp/matterbridge.toml:/matterbridge.toml 42wim/matterbridge
 ```
 
+### Docker Compose
+
+Create your matterbridge.toml file locally eg in `/tmp/matterbridge.toml` and use this yaml as `docker-compose.yml`
+
+```yml
+version: '3'
+services:
+  matterbridge:
+    image: 42wim/matterbridge
+    restart: unless-stopped
+    volumes:
+    - /tmp/matterbridge.toml:/matterbridge.toml
+```
+
 ## Changelog
 
 See [changelog.md](https://github.com/42wim/matterbridge/blob/master/changelog.md)
