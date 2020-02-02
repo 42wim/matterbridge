@@ -131,6 +131,9 @@ func (b *Btelegram) sendMessage(chatid int64, username, text string) (string, er
 		m.Text = username + html.EscapeString(text)
 		m.ParseMode = tgbotapi.ModeHTML
 	}
+
+	m.DisableWebPagePreview = b.GetBool("DisableWebPagePreview")
+
 	res, err := b.c.Send(m)
 	if err != nil {
 		return "", err

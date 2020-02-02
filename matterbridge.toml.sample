@@ -837,6 +837,10 @@ Token="Yourtokenhere"
 #HTMLNick only allows HTML for the nick, the message itself will be html-escaped
 MessageFormat=""
 
+#OPTIONAL (default false)
+#Disables link previews for links in messages
+DisableWebPagePreview=false
+
 #If enabled use the "First Name" as username. If this is empty use the Username
 #If disabled use the "Username" as username. If this is empty use the First Name 
 #If all names are empty, username will be "unknown"
