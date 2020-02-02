@@ -262,11 +262,7 @@ Usage of ./matterbridge:
 
 ### Docker
 
-Create your matterbridge.toml file locally eg in `/tmp/matterbridge.toml`
-
-```
-docker run -ti -v /tmp/matterbridge.toml:/matterbridge.toml 42wim/matterbridge
-```
+Please take a look at the [Docker Wiki page](https://github.com/42wim/matterbridge/wiki/Deploy:-Docker) for more information.
 
 ## Changelog
 
