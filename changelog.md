@@ -1,3 +1,29 @@
+# v1.16.4
+
+## New features
+
+- whatsapp: Add support for WhatsApp media (jpeg/png/gif) bridging (#974)
+- telegram: Add QuoteLengthLimit option (telegram) fixes #963 (#985)
+- telegram: Add DisableWebPagePreview option (telegram). Closes #980 (#994)
+
+## Enhancements
+
+- general: update dependencies
+- tengo: update to tengo v2
+- general: Add Docker Compose configuration (#990)
+
+## Bugfix
+
+- general: Fail with message instead of panic. #988 (#991)
+- telegram: Add extra mimetypes to docker image. Fixes #969
+- discord: Fix channel ID problem with multiple gateways (discord). Fixes #953 (#977)
+- discord: Show file comment in webhook if normal message is empty (discord). Fixes #962 (#995)
+- matrix: Fix parsing issues - Disable smartypants in markdown parser. Fixes #989, #983 (#993)
+- sshchat: Fix duplicated messages (sshchat). Fixes #950 (#996)
+
+This release couldn't exist without the following contributors:
+@jwflory, @42wim, @pbek, @Humorhenker, @c0ncord2, @glazzara
+
 # v1.16.3
 
 ## Bugfix
