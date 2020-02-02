@@ -11,7 +11,7 @@ require (
 	github.com/dfordsoft/golib v0.0.0-20180902042739-76ee6ab99bec
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.5-0.20181225215658-ec221ba9ea45+incompatible
-	github.com/gomarkdown/markdown v0.0.0-20200105192015-0948ad373b2c
+	github.com/gomarkdown/markdown v0.0.0-20200127000047-1813ea067497
 	github.com/google/gops v0.3.6
 	github.com/gopackage/ddp v0.0.0-20170117053602-652027933df4 // indirect
 	github.com/gorilla/schema v1.1.0

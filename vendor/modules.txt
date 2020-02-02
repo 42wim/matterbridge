@@ -44,7 +44,7 @@ github.com/go-telegram-bot-api/telegram-bot-api
 # github.com/golang/protobuf v1.3.1
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go/descriptor
-# github.com/gomarkdown/markdown v0.0.0-20200105192015-0948ad373b2c
+# github.com/gomarkdown/markdown v0.0.0-20200127000047-1813ea067497
 github.com/gomarkdown/markdown
 github.com/gomarkdown/markdown/ast
 github.com/gomarkdown/markdown/html
