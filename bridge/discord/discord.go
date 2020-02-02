@@ -407,6 +407,10 @@ func (b *Bdiscord) webhookSend(msg *config.Message, webhookID, token string) (*d
 				ContentType: "",
 				Reader:      bytes.NewReader(*fi.Data),
 			}
+			content := ""
+			if msg.Text == "" {
+				content = fi.Comment
+			}
 			_, e2 := b.c.WebhookExecute(
 				webhookID,
 				token,
@@ -415,6 +419,7 @@ func (b *Bdiscord) webhookSend(msg *config.Message, webhookID, token string) (*d
 					Username:  msg.Username,
 					AvatarURL: msg.Avatar,
 					File:      &file,
+					Content:   content,
 				},
 			)
 			if e2 != nil {
