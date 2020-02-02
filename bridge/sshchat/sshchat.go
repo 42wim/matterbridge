@@ -130,6 +130,10 @@ func (b *Bsshchat) handleSSHChat() error {
 			if strings.Contains(b.r.Text(), "Rate limiting is in effect") {
 				continue
 			}
+			// skip our own messages
+			if !strings.HasPrefix(b.r.Text(), "["+b.GetString("Nick")+"] \x1b") {
+				continue
+			}
 			res := strings.Split(stripPrompt(b.r.Text()), ":")
 			if res[0] == "-> Set theme" {
 				wait = false
