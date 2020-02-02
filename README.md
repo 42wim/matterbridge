@@ -44,28 +44,34 @@ And more...
   </a>
 </p>
 
-### Table of Contents
+# Table of Contents
 
-- [Features](https://github.com/42wim/matterbridge/wiki/Features)
-  - [Natively supported](#natively-supported)
-  - [3rd party via matterbridge api](#3rd-party-via-matterbridge-api)
-  - [API](#API)
-- [Chat with us](#chat-with-us)
-- [Screenshots](https://github.com/42wim/matterbridge/wiki/)
-- [Installing/upgrading](#installing--upgrading)
-  - [Binaries](#binaries)
-- [Building](#building)
-- [Configuration](#configuration)
-  - [Howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config)
-  - [Settings](#settings)
-  - [Examples](#examples)
-- [Running](#running)
-  - [Docker](#docker)
-- [Changelog](#changelog)
-- [FAQ](#faq)
-- [Related projects](#related-projects)
-- [Articles](#articles)
-- [Thanks](#thanks)
+- [matterbridge](#matterbridge)
+- [Table of Contents](#table-of-contents)
+  - [Features](#features)
+    - [Natively supported](#natively-supported)
+    - [3rd party via matterbridge api](#3rd-party-via-matterbridge-api)
+    - [API](#api)
+  - [Chat with us](#chat-with-us)
+  - [Screenshots](#screenshots)
+  - [Installing / upgrading](#installing--upgrading)
+    - [Binaries](#binaries)
+    - [Packages](#packages)
+  - [Building](#building)
+  - [Configuration](#configuration)
+    - [Basic configuration](#basic-configuration)
+    - [Settings](#settings)
+    - [Advanced configuration](#advanced-configuration)
+    - [Examples](#examples)
+      - [Bridge mattermost (off-topic) - irc (#testing)](#bridge-mattermost-off-topic---irc-testing)
+      - [Bridge slack (#general) - discord (general)](#bridge-slack-general---discord-general)
+  - [Running](#running)
+    - [Docker](#docker)
+  - [Changelog](#changelog)
+  - [FAQ](#faq)
+  - [Related projects](#related-projects)
+  - [Articles](#articles)
+  - [Thanks](#thanks)
 
 ## Features
 
@@ -142,7 +148,7 @@ See https://github.com/42wim/matterbridge/wiki
 
 ### Binaries
 
-- Latest stable release [v1.16.4](https://github.com/42wim/matterbridge/releases/latest)
+- Latest stable release [v1.16.5](https://github.com/42wim/matterbridge/releases/latest)
 - Development releases (follows master) can be downloaded [here](https://dl.bintray.com/42wim/nightly/)
 
 To install or upgrade just download the latest [binary](https://github.com/42wim/matterbridge/releases/latest) and follow the instructions on the [howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config) for a step by step walkthrough for creating your configuration.
