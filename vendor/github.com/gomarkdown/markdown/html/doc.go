@@ -8,7 +8,7 @@ A renderer can be configured with multiple options:
 	import "github.com/gomarkdown/markdown/html"
 
 	flags := html.CommonFlags | html.CompletePage | html.HrefTargetBlank
-	opts := html.RenderOptions{
+	opts := html.RendererOptions{
 		TItle: "A custom title",
 		Flags: flags,
 	}
