@@ -126,7 +126,7 @@ func (b *Bdiscord) Connect() error {
 	} else {
 		b.canEditWebhooks = true
 		for _, info := range b.Channels {
-			id := b.getChannelID(info.Name)
+			id := b.getChannelID(info.Name) // note(qaisjp): this readlocks channelsMutex
 			b.Log.Debugf("Verifying PermissionManageWebhooks for %s with ID %s", info.ID, id)
 			perms, permsErr := b.c.State.UserChannelPermissions(userinfo.ID, id)
 			manageWebhooks := discordgo.PermissionManageWebhooks
