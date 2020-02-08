@@ -9,6 +9,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/Rhymen/go-whatsapp"
+	"github.com/jpillora/backoff"
 )
 
 /*
@@ -25,7 +26,38 @@ func (b *Bwhatsapp) HandleError(err error) {
 	if strings.Contains(err.Error(), "error processing data: received invalid data") {
 		return
 	}
-	b.Log.Errorf("%v", err) // TODO implement proper handling? at least respond to different error types
+
+	switch err.(type) {
+	case *whatsapp.ErrConnectionClosed, *whatsapp.ErrConnectionFailed:
+		b.reconnect(err)
+	default:
+		switch err {
+		case whatsapp.ErrConnectionTimeout:
+			b.reconnect(err)
+		default:
+			b.Log.Errorf("%v", err)
+		}
+	}
+}
+
+func (b *Bwhatsapp) reconnect(err error) {
+	bf := &backoff.Backoff{
+		Min:    time.Second,
+		Max:    5 * time.Minute,
+		Jitter: true,
+	}
+	for {
+		d := bf.Duration()
+		b.Log.Errorf("Connection failed, underlying error: %v", err)
+		b.Log.Infof("Waiting %s...", d)
+		time.Sleep(d)
+		b.Log.Info("Reconnecting...")
+		err := b.conn.Restore()
+		if err == nil {
+			bf.Reset()
+			return
+		}
+	}
 }
 
 // HandleTextMessage sent from WhatsApp, relay it to the brige
