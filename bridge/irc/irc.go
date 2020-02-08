@@ -167,12 +167,8 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 			return "", nil
 		}
 
-		b.Local <- config.Message{
-			Text:     msgLines[i],
-			Username: msg.Username,
-			Channel:  msg.Channel,
-			Event:    msg.Event,
-		}
+		msg.Text = msgLines[i]
+		b.Local <- msg
 	}
 	return "", nil
 }
