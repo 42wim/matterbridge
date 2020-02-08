@@ -90,16 +90,17 @@ func (b *Bkeybase) Send(msg config.Message) (string, error) {
 				return "", err
 			}
 
-			_, _ = b.kbc.SendAttachmentByTeam(b.team, fpath, fcaption, &b.channel)
+			_, _ = b.kbc.SendAttachmentByTeam(b.team, &b.channel, fpath, fcaption)
 		}
 
 		return "", nil
 	}
 
 	// Send regular message
-	resp, err := b.kbc.SendMessageByTeamName(b.team, msg.Username+msg.Text, &b.channel)
+	text := msg.Username + msg.Text
+	resp, err := b.kbc.SendMessageByTeamName(b.team, &b.channel, text)
 	if err != nil {
 		return "", err
 	}
-	return strconv.Itoa(resp.Result.MsgID), err
+	return strconv.Itoa(int(*resp.Result.MessageID)), err
 }
