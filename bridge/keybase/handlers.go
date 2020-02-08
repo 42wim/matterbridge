@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/42wim/matterbridge/bridge/config"
-	"github.com/keybase/go-keybase-chat-bot/kbchat"
+	"github.com/keybase/go-keybase-chat-bot/kbchat/types/chat1"
 )
 
 func (b *Bkeybase) handleKeybase() {
@@ -20,7 +20,7 @@ func (b *Bkeybase) handleKeybase() {
 				b.Log.Errorf("failed to read message: %s", err.Error())
 			}
 
-			if msg.Message.Content.Type != "text" {
+			if msg.Message.Content.TypeName != "text" {
 				continue
 			}
 
@@ -34,7 +34,7 @@ func (b *Bkeybase) handleKeybase() {
 	}()
 }
 
-func (b *Bkeybase) handleMessage(msg kbchat.Message) {
+func (b *Bkeybase) handleMessage(msg chat1.MsgSummary) {
 	b.Log.Debugf("== Receiving event: %#v", msg)
 	if msg.Channel.TopicName != b.channel || msg.Channel.Name != b.team {
 		return
@@ -45,10 +45,10 @@ func (b *Bkeybase) handleMessage(msg kbchat.Message) {
 		// TODO download avatar
 
 		// Create our message
-		rmsg := config.Message{Username: msg.Sender.Username, Text: msg.Content.Text.Body, UserID: msg.Sender.Uid, Channel: msg.Channel.TopicName, ID: strconv.Itoa(msg.MsgID), Account: b.Account}
+		rmsg := config.Message{Username: msg.Sender.Username, Text: msg.Content.Text.Body, UserID: string(msg.Sender.Uid), Channel: msg.Channel.TopicName, ID: strconv.Itoa(int(msg.Id)), Account: b.Account}
 
 		// Text must be a string
-		if msg.Content.Type != "text" {
+		if msg.Content.TypeName != "text" {
 			b.Log.Errorf("message is not text")
 			return
 		}
