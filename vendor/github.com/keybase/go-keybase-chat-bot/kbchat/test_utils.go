@@ -41,9 +41,7 @@ func copyFile(t *testing.T, source, dest string) {
 
 // Creates the working directory and copies over the keybase binary in PATH.
 // We do this to avoid any version mismatch issues.
-func prepWorkingDir(t *testing.T, workingDir string) string {
-	kbLocation := whichKeybase(t)
-
+func prepWorkingDir(t *testing.T, workingDir string, kbLocation string) string {
 	err := os.Mkdir(workingDir, 0777)
 	require.NoError(t, err)
 	kbDestination := path.Join(workingDir, "keybase")

@@ -19,7 +19,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.3
 	github.com/hpcloud/tail v1.0.0 // indirect
 	github.com/jpillora/backoff v1.0.0
-	github.com/keybase/go-keybase-chat-bot v0.0.0-20190816161829-561f10822eb2
+	github.com/keybase/go-keybase-chat-bot v0.0.0-20200207200343-9aca502dc88a
 	github.com/labstack/echo/v4 v4.1.13
 	github.com/lrstanley/girc v0.0.0-20190801035559-4fc93959e1a7
 	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20190210153444-cc9d05784d5d

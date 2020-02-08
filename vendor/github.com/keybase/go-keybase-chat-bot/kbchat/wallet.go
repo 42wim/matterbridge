@@ -5,25 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+
+	"github.com/keybase/go-keybase-chat-bot/kbchat/types/stellar1"
 )
 
 type WalletOutput struct {
-	Result WalletResult `json:"result"`
-}
-
-type WalletResult struct {
-	TxID         string      `json:"txID"`
-	Status       string      `json:"status"`
-	Amount       string      `json:"amount"`
-	Asset        WalletAsset `json:"asset"`
-	FromUsername string      `json:"fromUsername"`
-	ToUsername   string      `json:"toUsername"`
-}
-
-type WalletAsset struct {
-	Type   string `json:"type"`
-	Code   string `json:"code"`
-	Issuer string `json:"issuer"`
+	Result stellar1.PaymentCLILocal `json:"result"`
 }
 
 func (a *API) GetWalletTxDetails(txID string) (wOut WalletOutput, err error) {
