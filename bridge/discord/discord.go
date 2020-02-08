@@ -381,6 +381,19 @@ func (b *Bdiscord) webhookSend(msg *config.Message, webhookID, token string) (*d
 		err error
 	)
 
+	// If avatar is unset, maybe we need to set the local avatar
+	if msg.Avatar == "" {
+		for _, val := range b.GetStringSlice("UseLocalAvatar") {
+			if msg.Protocol != val {
+				continue
+			}
+			if avatar, ok := b.findAvatar(msg); ok {
+				msg.Avatar = avatar
+			}
+			break
+		}
+	}
+
 	// WebhookParams can have either `Content` or `File`.
 
 	// We can't send empty messages.
@@ -429,4 +442,12 @@ func (b *Bdiscord) webhookSend(msg *config.Message, webhookID, token string) (*d
 		}
 	}
 	return res, err
+}
+
+func (b *Bdiscord) findAvatar(m *config.Message) (string, bool) {
+	member, err := b.getGuildMemberByNick(m.Username)
+	if err != nil {
+		return "", false
+	}
+	return member.User.AvatarURL(""), true
 }
