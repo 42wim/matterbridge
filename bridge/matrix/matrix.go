@@ -172,10 +172,15 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 			return
 		}
 
-		// TODO download avatar
-
 		// Create our message
-		rmsg := config.Message{Username: ev.Sender[1:], Channel: channel, Account: b.Account, UserID: ev.Sender, ID: ev.ID}
+		rmsg := config.Message{
+			Username: ev.Sender[1:],
+			Channel:  channel,
+			Account:  b.Account,
+			UserID:   ev.Sender,
+			ID:       ev.ID,
+			Avatar:   b.getAvatarURL(ev.Sender),
+		}
 
 		// Text must be a string
 		if rmsg.Text, ok = ev.Content["body"].(string); !ok {
@@ -357,4 +362,16 @@ func (b *Bmatrix) containsAttachment(content map[string]interface{}) bool {
 		return false
 	}
 	return true
+}
+
+// getAvatarURL returns the avatar URL of the specified sender
+func (b *Bmatrix) getAvatarURL(sender string) string {
+	mxcURL, err := b.mc.GetSenderAvatarURL(sender)
+	if err != nil {
+		b.Log.Errorf("getAvatarURL failed: %s", err)
+		return ""
+	}
+	url := strings.ReplaceAll(mxcURL, "mxc://", b.GetString("Server")+"/_matrix/media/r0/thumbnail/")
+	url += "?width=37&height=37&method=crop"
+	return url
 }

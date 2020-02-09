@@ -475,6 +475,21 @@ func (cli *Client) GetAvatarURL() (string, error) {
 	return s.AvatarURL, nil
 }
 
+// GetAvatarURL gets the user's avatar URL. See http://matrix.org/docs/spec/client_server/r0.2.0.html#get-matrix-client-r0-profile-userid-avatar-url
+func (cli *Client) GetSenderAvatarURL(sender string) (string, error) {
+	urlPath := cli.BuildURL("profile", sender, "avatar_url")
+	s := struct {
+		AvatarURL string `json:"avatar_url"`
+	}{}
+
+	err := cli.MakeRequest("GET", urlPath, nil, &s)
+	if err != nil {
+		return "", err
+	}
+
+	return s.AvatarURL, nil
+}
+
 // SetAvatarURL sets the user's avatar URL. See http://matrix.org/docs/spec/client_server/r0.2.0.html#put-matrix-client-r0-profile-userid-avatar-url
 func (cli *Client) SetAvatarURL(url string) error {
 	urlPath := cli.BuildURL("profile", cli.UserID, "avatar_url")
