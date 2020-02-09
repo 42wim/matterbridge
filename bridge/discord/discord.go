@@ -381,16 +381,16 @@ func (b *Bdiscord) webhookSend(msg *config.Message, webhookID, token string) (*d
 		err error
 	)
 
-	// If avatar is unset, maybe we need to set the local avatar
+	// If avatar is unset, check if UseLocalAvatar contains the message's
+	// account or protocol, and if so, try to find a local avatar
 	if msg.Avatar == "" {
 		for _, val := range b.GetStringSlice("UseLocalAvatar") {
-			if msg.Protocol != val && msg.Account != val {
-				continue
+			if msg.Protocol == val || msg.Account == val {
+				if avatar := b.findAvatar(msg); avatar != "" {
+					msg.Avatar = avatar
+				}
+				break
 			}
-			if avatar, ok := b.findAvatar(msg); ok {
-				msg.Avatar = avatar
-			}
-			break
 		}
 	}
 
@@ -444,10 +444,10 @@ func (b *Bdiscord) webhookSend(msg *config.Message, webhookID, token string) (*d
 	return res, err
 }
 
-func (b *Bdiscord) findAvatar(m *config.Message) (string, bool) {
+func (b *Bdiscord) findAvatar(m *config.Message) string {
 	member, err := b.getGuildMemberByNick(m.Username)
 	if err != nil {
-		return "", false
+		return ""
 	}
-	return member.User.AvatarURL(""), true
+	return member.User.AvatarURL("")
 }
