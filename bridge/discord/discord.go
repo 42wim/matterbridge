@@ -384,7 +384,7 @@ func (b *Bdiscord) webhookSend(msg *config.Message, webhookID, token string) (*d
 	// If avatar is unset, maybe we need to set the local avatar
 	if msg.Avatar == "" {
 		for _, val := range b.GetStringSlice("UseLocalAvatar") {
-			if msg.Protocol != val {
+			if msg.Protocol != val && msg.Account != val {
 				continue
 			}
 			if avatar, ok := b.findAvatar(msg); ok {
