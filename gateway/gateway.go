@@ -306,8 +306,6 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 }
 
 func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) string {
-	br := gw.Bridges[msg.Account]
-	msg.Protocol = br.Protocol
 	if dest.GetBool("StripNick") {
 		re := regexp.MustCompile("[^a-zA-Z0-9]+")
 		msg.Username = re.ReplaceAllString(msg.Username, "")
@@ -315,6 +313,7 @@ func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) stri
 	nick := dest.GetString("RemoteNickFormat")
 
 	// loop to replace nicks
+	br := gw.Bridges[msg.Account]
 	for _, outer := range br.GetStringSlice2D("ReplaceNicks") {
 		search := outer[0]
 		replace := outer[1]

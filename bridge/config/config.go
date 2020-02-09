@@ -138,6 +138,7 @@ type Protocol struct {
 	Topic                  string     // zulip
 	URL                    string     // mattermost, slack // DEPRECATED
 	UseAPI                 bool       // mattermost, slack
+	UseLocalAvatar         []string   // discord
 	UseSASL                bool       // IRC
 	UseTLS                 bool       // IRC
 	UseDiscriminator       bool       // discord

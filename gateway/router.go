@@ -132,6 +132,9 @@ func (r *Router) handleReceive() {
 		r.handleEventFailure(&msg)
 		r.handleEventRejoinChannels(&msg)
 
+		// Set message protocol based on the account it came from
+		msg.Protocol = r.getBridge(msg.Account).Protocol
+
 		filesHandled := false
 		for _, gw := range r.Gateways {
 			// record all the message ID's of the different bridges

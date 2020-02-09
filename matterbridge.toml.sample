@@ -724,6 +724,12 @@ Server="yourservername"
 #OPTIONAL (default false)
 ShowEmbeds=false
 
+#Show Discord avatars of remote users with matching names
+#This only works for webhooks & if the source message has no avatar
+#
+#OPTIONAL (default empty)
+UseLocalAvatar=["irc"]
+
 #Shows the username instead of the server nickname
 #OPTIONAL (default false)
 UseUserName=false
