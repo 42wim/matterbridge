@@ -132,8 +132,8 @@ github.com/matterbridge/emoji v2.1.1-0.20191117213217-af507f6b02db+incompatible 
 github.com/matterbridge/emoji v2.1.1-0.20191117213217-af507f6b02db+incompatible/go.mod h1:igE6rUAn3jai2wCdsjFHfhUoekjrFthoEjFObKKwSb4=
 github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91 h1:KzDEcy8eDbTx881giW8a6llsAck3e2bJvMyKvh1IK+k=
 github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91/go.mod h1:ECDRehsR9TYTKCAsRS8/wLeOk6UUqDydw47ln7wG41Q=
-github.com/matterbridge/gomatrix v0.0.0-20191026211822-6fc7accd00ca h1:3ypqEpFpt6vg5Sv2xxA8/v4WiSOnWMXW7DqxTxpM4XI=
-github.com/matterbridge/gomatrix v0.0.0-20191026211822-6fc7accd00ca/go.mod h1:+jWeaaUtXQbBRdKYWfjW6JDDYiI2XXE+3NnTjW5kg8g=
+github.com/matterbridge/gomatrix v0.0.0-20200209221412-326bea8d866e h1:i1wiGiwjRZ1Yy0JbERoDeikLzOnM6tkkQTT20b3Yy1E=
+github.com/matterbridge/gomatrix v0.0.0-20200209221412-326bea8d866e/go.mod h1:+jWeaaUtXQbBRdKYWfjW6JDDYiI2XXE+3NnTjW5kg8g=
 github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18 h1:fLhwXtWGtfTgZVxHG1lcKjv+re7dRwyyuYFNu69xdho=
 github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18/go.mod h1:yAjnZ34DuDyPHMPHHjOsTk/FefW4JJjoMMCGt/8uuQA=
 github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61 h1:R/MgM/eUyRBQx2FiH6JVmXck8PaAuKfe2M1tWIzW7nE=
