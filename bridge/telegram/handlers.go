@@ -95,7 +95,7 @@ func (b *Btelegram) handleUsername(rmsg *config.Message, message *tgbotapi.Messa
 			}
 		}
 		// only download avatars if we have a place to upload them (configured mediaserver)
-		if b.General.MediaServerUpload != "" {
+		if b.General.MediaServerUpload != "" || (b.General.MediaServerDownload != "" && b.General.MediaDownloadPath != "") {
 			b.handleDownloadAvatar(message.From.ID, rmsg.Channel)
 		}
 	}
