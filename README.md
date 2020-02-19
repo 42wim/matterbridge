@@ -139,6 +139,7 @@ Questions or want to test on your favorite platform? Join below:
 - [Twitch][mb-twitch]
 - [Zulip][mb-zulip]
 - [Telegram][mb-telegram]
+- [Keybase][mb-keybase]
 
 ## Screenshots
 
@@ -345,6 +346,6 @@ Matterbridge wouldn't exist without these libraries:
 [mb-xmpp]: https://inverse.chat/
 [mb-twitch]: https://www.twitch.tv/matterbridge
 [mb-whatsapp]: https://www.whatsapp.com/
-[mb-keybase]: https://keybase.io
+[mb-keybase]: https://keybase.io/team/matterbridge
 [mb-zulip]: https://matterbridge.zulipchat.com/register/
 [mb-telegram]: https://t.me/Matterbridge
