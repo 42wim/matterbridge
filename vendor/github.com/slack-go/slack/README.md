@@ -1,5 +1,6 @@
-Slack API in Go [![GoDoc](https://godoc.org/github.com/nlopes/slack?status.svg)](https://godoc.org/github.com/nlopes/slack) [![Build Status](https://travis-ci.org/nlopes/slack.svg)](https://travis-ci.org/nlopes/slack)
+Slack API in Go [![GoDoc](https://godoc.org/github.com/slack-go/slack?status.svg)](https://godoc.org/github.com/slack-go/slack) [![Build Status](https://travis-ci.org/slack-go/slack.svg)](https://travis-ci.org/slack-go/slack)
 ===============
+This is the original Slack library for Go created by Norberto Lopez, transferred to a Github organization.
 
 [![Join the chat at https://gitter.im/go-slack/Lobby](https://badges.gitter.im/go-slack/Lobby.svg)](https://gitter.im/go-slack/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -12,13 +13,13 @@ a fully managed way.
 
 ## Changelog
 
-[CHANGELOG.md](https://github.com/nlopes/slack/blob/master/CHANGELOG.md) is available. Please visit it for updates.
+[CHANGELOG.md](https://github.com/slack-go/slack/blob/master/CHANGELOG.md) is available. Please visit it for updates.
 
 ## Installing
 
 ### *go get*
 
-    $ go get -u github.com/nlopes/slack
+    $ go get -u github.com/slack-go/slack
 
 ## Example
 
@@ -28,7 +29,7 @@ a fully managed way.
 import (
 	"fmt"
 
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 func main() {
@@ -53,7 +54,7 @@ func main() {
 import (
     "fmt"
 
-    "github.com/nlopes/slack"
+    "github.com/slack-go/slack"
 )
 
 func main() {
@@ -69,18 +70,26 @@ func main() {
 
 ## Minimal RTM usage:
 
-See https://github.com/nlopes/slack/blob/master/examples/websocket/websocket.go
+See https://github.com/slack-go/slack/blob/master/examples/websocket/websocket.go
 
 
 ## Minimal EventsAPI usage:
 
-See https://github.com/nlopes/slack/blob/master/examples/eventsapi/events.go
+See https://github.com/slack-go/slack/blob/master/examples/eventsapi/events.go
 
 
 ## Contributing
 
 You are more than welcome to contribute to this project.  Fork and
 make a Pull Request, or create an Issue if you see any problem.
+
+Before making any Pull Request please run the following:
+
+```
+make pr-prep
+```
+
+This will check/update code formatting, linting and then run all tests
 
 ## License
 

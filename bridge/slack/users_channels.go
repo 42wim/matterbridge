@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/42wim/matterbridge/bridge/config"
-	"github.com/nlopes/slack"
 	"github.com/sirupsen/logrus"
+	"github.com/slack-go/slack"
 )
 
 const minimumRefreshInterval = 10 * time.Second

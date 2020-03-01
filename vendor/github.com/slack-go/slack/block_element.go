@@ -3,10 +3,11 @@ package slack
 // https://api.slack.com/reference/messaging/block-elements
 
 const (
-	METImage      MessageElementType = "image"
-	METButton     MessageElementType = "button"
-	METOverflow   MessageElementType = "overflow"
-	METDatepicker MessageElementType = "datepicker"
+	METImage          MessageElementType = "image"
+	METButton         MessageElementType = "button"
+	METOverflow       MessageElementType = "overflow"
+	METDatepicker     MessageElementType = "datepicker"
+	METPlainTextInput MessageElementType = "plain_text_input"
 
 	MixedElementImage MixedElementType = "mixed_image"
 	MixedElementText  MixedElementType = "mixed_text"
@@ -60,20 +61,6 @@ func NewAccessory(element BlockElement) *Accessory {
 // the "elements" value in Slack's JSON response, which varies depending on BlockElement type
 type BlockElements struct {
 	ElementSet []BlockElement `json:"elements,omitempty"`
-}
-
-// UnknownBlockElement any block element that this library does not directly support.
-// See the "Rich Elements" section at the following URL:
-// https://api.slack.com/changelog/2019-09-what-they-see-is-what-you-get-and-more-and-less
-// New block element types may be introduced by Slack at any time; this is a catch-all for any such block elements.
-type UnknownBlockElement struct {
-	Type     MessageElementType `json:"type"`
-	Elements BlockElements
-}
-
-// ElementType returns the type of the Element
-func (s UnknownBlockElement) ElementType() MessageElementType {
-	return s.Type
 }
 
 // ImageBlockElement An element to insert an image - this element can be used
@@ -248,5 +235,33 @@ func NewDatePickerBlockElement(actionID string) *DatePickerBlockElement {
 	return &DatePickerBlockElement{
 		Type:     METDatepicker,
 		ActionID: actionID,
+	}
+}
+
+// PlainTextInputBlockElement creates a field where a user can enter freeform data.
+// Plain-text input elements are currently only available in modals.
+//
+// More Information: https://api.slack.com/reference/messaging/block-elements#input
+type PlainTextInputBlockElement struct {
+	Type         MessageElementType `json:"type"`
+	ActionID     string             `json:"action_id"`
+	Placeholder  *TextBlockObject   `json:"placeholder,omitempty"`
+	InitialValue string             `json:"initial_value,omitempty"`
+	Multiline    bool               `json:"multiline,omitempty"`
+	MinLength    int                `json:"min_length,omitempty"`
+	MaxLength    int                `json:"max_length,omitempty"`
+}
+
+// ElementType returns the type of the Element
+func (s PlainTextInputBlockElement) ElementType() MessageElementType {
+	return s.Type
+}
+
+// NewPlainTextInputBlockElement returns an instance of a plain-text input element
+func NewPlainTextInputBlockElement(placeholder *TextBlockObject, actionID string) *PlainTextInputBlockElement {
+	return &PlainTextInputBlockElement{
+		Type:        METPlainTextInput,
+		ActionID:    actionID,
+		Placeholder: placeholder,
 	}
 }

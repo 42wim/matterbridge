@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/nlopes/slack/slackutilsx"
+	"github.com/slack-go/slack/slackutilsx"
 )
 
 const (
@@ -347,11 +347,11 @@ func MsgOptionUnfurl(timestamp string, unfurls map[string]Attachment) MsgOption 
 }
 
 // MsgOptionResponseURL supplies a url to use as the endpoint.
-func MsgOptionResponseURL(url string, rt string) MsgOption {
+func MsgOptionResponseURL(url string, responseType string) MsgOption {
 	return func(config *sendConfig) error {
 		config.mode = chatResponse
 		config.endpoint = url
-		config.responseType = rt
+		config.responseType = responseType
 		config.values.Del("ts")
 		return nil
 	}

@@ -7,7 +7,7 @@ import (
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 func (b *Bslack) handleSlack() {

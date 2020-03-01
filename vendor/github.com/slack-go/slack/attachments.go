@@ -61,7 +61,7 @@ type ConfirmationField struct {
 // Attachment contains all the information for an attachment
 type Attachment struct {
 	Color    string `json:"color,omitempty"`
-	Fallback string `json:"fallback"`
+	Fallback string `json:"fallback,omitempty"`
 
 	CallbackID string `json:"callback_id,omitempty"`
 	ID         int    `json:"id,omitempty"`
@@ -84,7 +84,7 @@ type Attachment struct {
 	Actions    []AttachmentAction `json:"actions,omitempty"`
 	MarkdownIn []string           `json:"mrkdwn_in,omitempty"`
 
-	Blocks []Block `json:"blocks,omitempty"`
+	Blocks Blocks `json:"blocks,omitempty"`
 
 	Footer     string `json:"footer,omitempty"`
 	FooterIcon string `json:"footer_icon,omitempty"`

@@ -14,6 +14,7 @@ const (
 	MBTImage   MessageBlockType = "image"
 	MBTAction  MessageBlockType = "actions"
 	MBTContext MessageBlockType = "context"
+	MBTInput   MessageBlockType = "input"
 )
 
 // Block defines an interface all block types should implement

@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/42wim/matterbridge/bridge/config"
-	"github.com/nlopes/slack"
 	"github.com/sirupsen/logrus"
+	"github.com/slack-go/slack"
 )
 
 // populateReceivedMessage shapes the initial Matterbridge message that we will forward to the
