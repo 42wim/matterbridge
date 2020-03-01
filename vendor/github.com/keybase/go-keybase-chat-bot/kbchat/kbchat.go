@@ -8,12 +8,13 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/keybase/go-keybase-chat-bot/kbchat/types/chat1"
+	"github.com/keybase/go-keybase-chat-bot/kbchat/types/keybase1"
 	"github.com/keybase/go-keybase-chat-bot/kbchat/types/stellar1"
 )
 
@@ -29,30 +30,39 @@ type API struct {
 }
 
 func getUsername(runOpts RunOptions) (username string, err error) {
-	p := runOpts.Command("status")
+	p := runOpts.Command("whoami", "-json")
 	output, err := p.StdoutPipe()
 	if err != nil {
 		return "", err
 	}
+	p.ExtraFiles = []*os.File{output.(*os.File)}
 	if err = p.Start(); err != nil {
 		return "", err
 	}
 
 	doneCh := make(chan error)
 	go func() {
-		scanner := bufio.NewScanner(output)
-		if !scanner.Scan() {
-			doneCh <- errors.New("unable to find Keybase username")
+		defer func() { close(doneCh) }()
+		statusJSON, err := ioutil.ReadAll(output)
+		if err != nil {
+			doneCh <- fmt.Errorf("error reading whoami output: %v", err)
 			return
 		}
-		text := scanner.Text()
-		toks := strings.Fields(text)
-		if len(toks) != 2 {
-			doneCh <- fmt.Errorf("invalid Keybase username output: %q", text)
+		var status keybase1.CurrentStatus
+		if err := json.Unmarshal(statusJSON, &status); err != nil {
+			doneCh <- fmt.Errorf("invalid whoami JSON %q: %v", statusJSON, err)
 			return
 		}
-		username = toks[1]
-		doneCh <- nil
+		if status.LoggedIn && status.User != nil {
+			username = status.User.Username
+			doneCh <- nil
+		} else {
+			doneCh <- fmt.Errorf("unable to authenticate to keybase service: logged in: %v user: %+v", status.LoggedIn, status.User)
+		}
+		// Cleanup the command
+		if err := p.Wait(); err != nil {
+			log.Printf("unable to wait for cmd: %v", err)
+		}
 	}()
 
 	select {
@@ -176,6 +186,7 @@ func (a *API) startPipes() (err error) {
 	if err != nil {
 		return err
 	}
+	a.apiCmd.ExtraFiles = []*os.File{output.(*os.File)}
 	if err := a.apiCmd.Start(); err != nil {
 		return err
 	}
@@ -360,7 +371,14 @@ func (a *API) Listen(opts ListenOptions) (*NewSubscription, error) {
 	a.registerSubscription(sub)
 	pause := 2 * time.Second
 	readScanner := func(boutput *bufio.Scanner) {
+		defer func() { done <- struct{}{} }()
 		for {
+			select {
+			case <-shutdownCh:
+				log.Printf("readScanner: received shutdown")
+				return
+			default:
+			}
 			boutput.Scan()
 			t := boutput.Text()
 			var typeHolder TypeHolder
@@ -413,12 +431,17 @@ func (a *API) Listen(opts ListenOptions) (*NewSubscription, error) {
 				continue
 			}
 		}
-		done <- struct{}{}
 	}
 
 	attempts := 0
 	maxAttempts := 1800
 	go func() {
+		defer func() {
+			close(newMsgsCh)
+			close(newConvsCh)
+			close(newWalletCh)
+			close(errorCh)
+		}()
 		for {
 			select {
 			case <-shutdownCh:
@@ -428,6 +451,9 @@ func (a *API) Listen(opts ListenOptions) (*NewSubscription, error) {
 			}
 
 			if attempts >= maxAttempts {
+				if err := a.LogSend("Listen: failed to auth, giving up"); err != nil {
+					log.Printf("Listen: logsend failed to send: %v", err)
+				}
 				panic("Listen: failed to auth, giving up")
 			}
 			attempts++
@@ -456,8 +482,10 @@ func (a *API) Listen(opts ListenOptions) (*NewSubscription, error) {
 				time.Sleep(pause)
 				continue
 			}
+			p.ExtraFiles = []*os.File{stderr.(*os.File), output.(*os.File)}
 			boutput := bufio.NewScanner(output)
 			if err := p.Start(); err != nil {
+
 				log.Printf("Listen: failed to make listen scanner: %s", err)
 				time.Sleep(pause)
 				continue
@@ -504,6 +532,11 @@ func (a *API) Shutdown() error {
 	defer a.Unlock()
 	for _, sub := range a.subscriptions {
 		sub.Shutdown()
+	}
+	if a.apiCmd != nil {
+		if err := a.apiCmd.Wait(); err != nil {
+			return err
+		}
 	}
 
 	if a.runOpts.Oneshot != nil {

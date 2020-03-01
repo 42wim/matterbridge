@@ -77,7 +77,7 @@ github.com/hashicorp/hcl/json/token
 github.com/jpillora/backoff
 # github.com/kardianos/osext v0.0.0-20170510131534-ae77be60afb1
 github.com/kardianos/osext
-# github.com/keybase/go-keybase-chat-bot v0.0.0-20200207200343-9aca502dc88a
+# github.com/keybase/go-keybase-chat-bot v0.0.0-20200226211841-4e48f3eaef3e
 github.com/keybase/go-keybase-chat-bot/kbchat
 github.com/keybase/go-keybase-chat-bot/kbchat/types/chat1
 github.com/keybase/go-keybase-chat-bot/kbchat/types/gregor1
