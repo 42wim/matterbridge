@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/gorilla/schema"
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 // OMessage for mattermost incoming webhook. (send to mattermost)
