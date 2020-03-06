@@ -736,25 +736,25 @@ UseUserName=false
 # UseDiscriminator appends the `#xxxx` discriminator when used with UseUserName
 UseDiscriminator=false
 
-# WebhookURL, if specified, will send messages in the style of puppets.
+# WebhookURL sends messages in the style of puppets.
 # This only works if you have one discord channel, if you have multiple discord channels you'll have to specify it in the gateway config
 # Example: "https://discordapp.com/api/webhooks/1234/abcd_xyzw"
 WebhookURL=""
 
-# EditDisable allows you to disable sending of edits to other bridges
+# EditDisable disables sending of edits to other bridges
 EditDisable=false
 
 # EditSuffix specifies the message to be appended to every edited message
 # Example: " (edited)"
 EditSuffix=""
 
-# IgnoreNicks allows you to mute outgoing messages from certain users.
+# IgnoreNicks mutes outgoing messages from certain users.
 # Messages from these users will not be transmitted to other bridges.
 # Regular expressions are also supported.
 # Example: "ircspammer1 ircspammer2"
 IgnoreNicks=""
 
-# IgnoreMessages allows you to mute outgoing messages of a certain format.
+# IgnoreMessages mutes outgoing messages of a certain format.
 # Messages matching this regular expression will not be transmitted sent to other bridges
 # See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #
@@ -801,26 +801,26 @@ ReplaceNicks=[]
 #
 ExtractNicks=[]
 
-# Label can be used as an extra identifier for use in the RemoteNickFormat setting.
+# Label is as an extra identifier for use in the RemoteNickFormat setting.
 Label=""
 
-# RemoteNickFormat specifies how remote users appear on this bridge.
+# RemoteNickFormat formats how remote users appear on this bridge.
 # See the [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-# ShowJoinPart will emit messages that show joins/parts from other bridges
+# ShowJoinPart emits messages that show joins/parts from other bridges
 # Supported from the following bridges: irc, mattermost, slack, discord
 ShowJoinPart=false
 
-# StripNick will strip non-alphanumeric characters from nicknames.
+# StripNick strips non-alphanumeric characters from nicknames.
 # Recommended reading: https://github.com/42wim/matterbridge/issues/285
 StripNick=false
 
-# ShowTopicChange will emit messages that show topic/purpose updates from other bridges
+# ShowTopicChange emits messages that show topic/purpose updates from other bridges
 # Supported from the following bridges: slack
 ShowTopicChange=false
 
-# SyncTopic will sync topic/purpose updates from other bridges
+# SyncTopic synchronises topic/purpose updates from other bridges
 # Supported from the following bridges: slack
 SyncTopic=false
 
