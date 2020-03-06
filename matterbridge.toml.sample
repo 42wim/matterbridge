@@ -12,7 +12,7 @@
 #In this example we use [irc.freenode]
 #REQUIRED
 [irc.freenode]
-#irc server to connect to. 
+#irc server to connect to.
 #REQUIRED
 Server="irc.freenode.net:6667"
 
@@ -20,7 +20,7 @@ Server="irc.freenode.net:6667"
 #OPTIONAL (default "")
 Password=""
 
-#Enable to use TLS connection to your irc server. 
+#Enable to use TLS connection to your irc server.
 #OPTIONAL (default false)
 UseTLS=false
 
@@ -34,28 +34,28 @@ UseSASL=false
 #OPTIONAL (default false)
 SkipTLSVerify=true
 
-#If you know your charset, you can specify it manually. 
+#If you know your charset, you can specify it manually.
 #Otherwise it tries to detect this automatically. Select one below
-# "iso-8859-2:1987", "iso-8859-9:1989", "866", "latin9", "iso-8859-10:1992", "iso-ir-109", "hebrew", 
-# "cp932", "iso-8859-15", "cp437", "utf-16be", "iso-8859-3:1988", "windows-1251", "utf16", "latin6", 
-# "latin3", "iso-8859-1:1987", "iso-8859-9", "utf-16le", "big5", "cp819", "asmo-708", "utf-8", 
-# "ibm437", "iso-ir-157", "iso-ir-144", "latin4", "850", "iso-8859-5", "iso-8859-5:1988", "l3", 
-# "windows-31j", "utf8", "iso-8859-3", "437", "greek", "iso-8859-8", "l6", "l9-iso-8859-15", 
-# "iso-8859-2", "latin2", "iso-ir-100", "iso-8859-6", "arabic", "iso-ir-148", "us-ascii", "x-sjis", 
-# "utf16be", "iso-8859-8:1988", "utf16le", "l4", "utf-16", "iso-ir-138", "iso-8859-7", "iso-8859-7:1987", 
-# "windows-1252", "l2", "koi8-r", "iso8859-1", "latin1", "ecma-114", "iso-ir-110", "elot-928", 
-# "iso-ir-126", "iso-8859-1", "iso-ir-127", "cp850", "cyrillic", "greek8", "windows-1250", "iso-latin-1", 
-# "l5", "ibm866", "cp866", "ms-kanji", "ibm850", "ecma-118", "iso-ir-101", "ibm819", "l1", "iso-8859-6:1987", 
+# "iso-8859-2:1987", "iso-8859-9:1989", "866", "latin9", "iso-8859-10:1992", "iso-ir-109", "hebrew",
+# "cp932", "iso-8859-15", "cp437", "utf-16be", "iso-8859-3:1988", "windows-1251", "utf16", "latin6",
+# "latin3", "iso-8859-1:1987", "iso-8859-9", "utf-16le", "big5", "cp819", "asmo-708", "utf-8",
+# "ibm437", "iso-ir-157", "iso-ir-144", "latin4", "850", "iso-8859-5", "iso-8859-5:1988", "l3",
+# "windows-31j", "utf8", "iso-8859-3", "437", "greek", "iso-8859-8", "l6", "l9-iso-8859-15",
+# "iso-8859-2", "latin2", "iso-ir-100", "iso-8859-6", "arabic", "iso-ir-148", "us-ascii", "x-sjis",
+# "utf16be", "iso-8859-8:1988", "utf16le", "l4", "utf-16", "iso-ir-138", "iso-8859-7", "iso-8859-7:1987",
+# "windows-1252", "l2", "koi8-r", "iso8859-1", "latin1", "ecma-114", "iso-ir-110", "elot-928",
+# "iso-ir-126", "iso-8859-1", "iso-ir-127", "cp850", "cyrillic", "greek8", "windows-1250", "iso-latin-1",
+# "l5", "ibm866", "cp866", "ms-kanji", "ibm850", "ecma-118", "iso-ir-101", "ibm819", "l1", "iso-8859-6:1987",
 # "latin5", "ascii", "sjis", "iso-8859-10", "iso-8859-4", "iso-8859-4:1988", "shift-jis
 # The select charset will be converted to utf-8 when sent to other bridges.
 #OPTIONAL (default "")
 Charset=""
 
-#Your nick on irc. 
+#Your nick on irc.
 #REQUIRED
 Nick="matterbot"
 
-#If you registered your bot with a service like Nickserv on freenode. 
+#If you registered your bot with a service like Nickserv on freenode.
 #Also being used when UseSASL=true
 #
 #Note: if you want do to quakenet auth, set NickServNick="Q@CServe.quakenet.org"
@@ -74,8 +74,8 @@ NickServUsername="username"
 #OPTIONAL (default 1300)
 MessageDelay=1300
 
-#Maximum amount of messages to hold in queue. If queue is full 
-#messages will be dropped. 
+#Maximum amount of messages to hold in queue. If queue is full
+#messages will be dropped.
 #<message clipped> will be add to the message that fills the queue.
 #OPTIONAL (default 30)
 MessageQueue=30
@@ -103,13 +103,13 @@ ColorNicks=false
 #OPTIONAL (default empty)
 RunCommands=["PRIVMSG user hello","PRIVMSG chanserv something"]
 
-#Nicks you want to ignore. 
+#Nicks you want to ignore.
 #Regular expressions supported
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
 IgnoreNicks="ircspammer1 ircspammer2"
 
-#Messages you want to ignore. 
+#Messages you want to ignore.
 #Messages matching these regexp will be ignored and not sent to other bridges
 #See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
@@ -147,12 +147,12 @@ ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
 #optional (default empty)
 Label=""
 
-#RemoteNickFormat defines how remote users appear on this bridge 
+#RemoteNickFormat defines how remote users appear on this bridge
 #See [general] config section for default options
 #The string "{NOPINGNICK}" (case sensitive) will be replaced by the actual nick / username, but with a ZWSP inside the nick, so the irc user with the same nick won't get pinged. See https://github.com/42wim/matterbridge/issues/175 for more information
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges 
+#Enable to show users joins/parts from other bridges
 #Currently works for messages from the following bridges: irc, mattermost, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
@@ -172,7 +172,7 @@ NoSendJoinPart=false
 #OPTIONAL (default false)
 StripNick=false
 
-#Enable to show topic changes from other bridges 
+#Enable to show topic changes from other bridges
 #Only works hiding/show topic changes from slack bridge for now
 #OPTIONAL (default false)
 ShowTopicChange=false
@@ -186,7 +186,7 @@ ShowTopicChange=false
 #In this example we use [xmpp.jabber]
 #REQUIRED
 [xmpp.jabber]
-#xmpp server to connect to. 
+#xmpp server to connect to.
 #REQUIRED
 Server="jabber.example.com:5222"
 
@@ -214,13 +214,13 @@ SkipTLSVerify=true
 ## RELOADABLE SETTINGS
 ## Settings below can be reloaded by editing the file
 
-#Nicks you want to ignore. 
+#Nicks you want to ignore.
 #Regular expressions supported
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
 IgnoreNicks="ircspammer1 ircspammer2"
 
-#Messages you want to ignore. 
+#Messages you want to ignore.
 #Messages matching these regexp will be ignored and not sent to other bridges
 #See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
@@ -258,11 +258,11 @@ ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
 #optional (default empty)
 Label=""
 
-#RemoteNickFormat defines how remote users appear on this bridge 
+#RemoteNickFormat defines how remote users appear on this bridge
 #See [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges 
+#Enable to show users joins/parts from other bridges
 #Currently works for messages from the following bridges: irc, mattermost, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
@@ -272,7 +272,7 @@ ShowJoinPart=false
 #OPTIONAL (default false)
 StripNick=false
 
-#Enable to show topic changes from other bridges 
+#Enable to show topic changes from other bridges
 #Only works hiding/show topic changes from slack bridge for now
 #OPTIONAL (default false)
 ShowTopicChange=false
@@ -288,14 +288,14 @@ ShowTopicChange=false
 [mattermost.work]
 #The mattermost hostname. (do not prefix it with http or https)
 #REQUIRED (when not using webhooks)
-Server="yourmattermostserver.domain" 
+Server="yourmattermostserver.domain"
 
-#Your team on mattermost. 
+#Your team on mattermost.
 #REQUIRED (when not using webhooks)
 Team="yourteam"
 
-#login/pass of your bot. 
-#Use a dedicated user for this and not your own! 
+#login/pass of your bot.
+#Use a dedicated user for this and not your own!
 #REQUIRED (when not using webhooks)
 Login="yourlogin"
 Password="yourpass"
@@ -305,16 +305,16 @@ Password="yourpass"
 #OPTIONAL (you can use token instead of login/password)
 #Token="abcdefghijklm"
 
-#Enable this to make a http connection (instead of https) to your mattermost. 
+#Enable this to make a http connection (instead of https) to your mattermost.
 #OPTIONAL (default false)
 NoTLS=false
 
 #### Settings for webhook matterbridge.
 #NOT RECOMMENDED TO USE INCOMING/OUTGOING WEBHOOK. USE DEDICATED BOT USER WHEN POSSIBLE!
-#You don't need to configure this, if you have configured the settings 
+#You don't need to configure this, if you have configured the settings
 #above.
 
-#Url is your incoming webhook url as specified in mattermost. 
+#Url is your incoming webhook url as specified in mattermost.
 #See account settings - integrations - incoming webhooks on mattermost.
 #If specified, messages will be sent to mattermost using this URL
 #OPTIONAL
@@ -324,17 +324,17 @@ WebhookURL="https://yourdomain/hooks/yourhookkey"
 #See account settings - integrations - outgoing webhooks on mattermost.
 #If specified, messages will be received from mattermost on this ip:port
 #(this will only work if WebhookURL above is also configured)
-#OPTIONAL 
+#OPTIONAL
 WebhookBindAddress="0.0.0.0:9999"
 
-#Icon that will be showed in mattermost. 
+#Icon that will be showed in mattermost.
 #This only works when WebhookURL is configured
 #OPTIONAL
 IconURL="http://youricon.png"
 
 #### End settings for webhook matterbridge.
 
-#Enable to not verify the certificate on your mattermost server. 
+#Enable to not verify the certificate on your mattermost server.
 #e.g. when using selfsigned certificates
 #OPTIONAL (default false)
 SkipTLSVerify=true
@@ -342,11 +342,11 @@ SkipTLSVerify=true
 ## RELOADABLE SETTINGS
 ## Settings below can be reloaded by editing the file
 
-#how to format the list of IRC nicks when displayed in mattermost. 
+#how to format the list of IRC nicks when displayed in mattermost.
 #Possible options are "table" and "plain"
 #OPTIONAL (default plain)
 NickFormatter="plain"
-#How many nicks to list per row for formatters that support this. 
+#How many nicks to list per row for formatters that support this.
 #OPTIONAL (default 4)
 NicksPerRow=4
 
@@ -356,11 +356,11 @@ NicksPerRow=4
 #OPTIONAL (default false)
 SkipVersionCheck=false
 
-#Whether to prefix messages from other bridges to mattermost with the sender's nick. 
-#Useful if username overrides for incoming webhooks isn't enabled on the 
-#mattermost server. If you set PrefixMessagesWithNick to true, each message 
-#from bridge to Mattermost will by default be prefixed by "bridge-" + nick. You can, 
-#however, modify how the messages appear, by setting (and modifying) RemoteNickFormat 
+#Whether to prefix messages from other bridges to mattermost with the sender's nick.
+#Useful if username overrides for incoming webhooks isn't enabled on the
+#mattermost server. If you set PrefixMessagesWithNick to true, each message
+#from bridge to Mattermost will by default be prefixed by "bridge-" + nick. You can,
+#however, modify how the messages appear, by setting (and modifying) RemoteNickFormat
 #OPTIONAL (default false)
 PrefixMessagesWithNick=false
 
@@ -372,13 +372,13 @@ EditDisable=false
 #OPTIONAL (default empty)
 EditSuffix=" (edited)"
 
-#Nicks you want to ignore. 
+#Nicks you want to ignore.
 #Regular expressions supported
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
 IgnoreNicks="ircspammer1 ircspammer2"
 
-#Messages you want to ignore. 
+#Messages you want to ignore.
 #Messages matching these regexp will be ignored and not sent to other bridges
 #See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
@@ -416,11 +416,11 @@ ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
 #optional (default empty)
 Label=""
 
-#RemoteNickFormat defines how remote users appear on this bridge 
+#RemoteNickFormat defines how remote users appear on this bridge
 #See [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges 
+#Enable to show users joins/parts from other bridges
 #Currently works for messages from the following bridges: irc, mattermost, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
@@ -435,7 +435,7 @@ NoSendJoinPart=false
 #OPTIONAL (default false)
 StripNick=false
 
-#Enable to show topic changes from other bridges 
+#Enable to show topic changes from other bridges
 #Only works hiding/show topic changes from slack bridge for now
 #OPTIONAL (default false)
 ShowTopicChange=false
@@ -459,13 +459,13 @@ Token="Yourtokenhere"
 ## RELOADABLE SETTINGS
 ## Settings below can be reloaded by editing the file
 
-#Nicks you want to ignore. 
+#Nicks you want to ignore.
 #Regular expressions supported
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
 IgnoreNicks="ircspammer1 ircspammer2"
 
-#Messages you want to ignore. 
+#Messages you want to ignore.
 #Messages matching these regexp will be ignored and not sent to other bridges
 #See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
@@ -503,11 +503,11 @@ ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
 #optional (default empty)
 Label=""
 
-#RemoteNickFormat defines how remote users appear on this bridge 
+#RemoteNickFormat defines how remote users appear on this bridge
 #See [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges 
+#Enable to show users joins/parts from other bridges
 #Currently works for messages from the following bridges: irc, mattermost, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
@@ -517,7 +517,7 @@ ShowJoinPart=false
 #OPTIONAL (default false)
 StripNick=false
 
-#Enable to show topic changes from other bridges 
+#Enable to show topic changes from other bridges
 #Only works hiding/show topic changes from slack bridge for now
 #OPTIONAL (default false)
 ShowTopicChange=false
@@ -532,7 +532,7 @@ ShowTopicChange=false
 
 [keybase.myteam]
 
-# RemoteNickFormat defines how remote users appear on this bridge 
+# RemoteNickFormat defines how remote users appear on this bridge
 # See [general] config section for default options
 RemoteNickFormat="{NICK} ({PROTOCOL}): "
 
@@ -596,7 +596,7 @@ IconURL="https://robohash.org/{NICK}.png?size=48x48"
 #Possible options are "table" and "plain"
 #OPTIONAL (default plain)
 NickFormatter="plain"
-#How many nicks to list per row for formatters that support this. 
+#How many nicks to list per row for formatters that support this.
 #OPTIONAL (default 4)
 NicksPerRow=4
 
@@ -609,20 +609,20 @@ EditDisable=true
 EditSuffix=" (edited)"
 
 #Whether to prefix messages from other bridges to mattermost with RemoteNickFormat
-#Useful if username overrides for incoming webhooks isn't enabled on the 
-#slack server. If you set PrefixMessagesWithNick to true, each message 
-#from bridge to Slack will by default be prefixed by "bridge-" + nick. You can, 
-#however, modify how the messages appear, by setting (and modifying) RemoteNickFormat 
+#Useful if username overrides for incoming webhooks isn't enabled on the
+#slack server. If you set PrefixMessagesWithNick to true, each message
+#from bridge to Slack will by default be prefixed by "bridge-" + nick. You can,
+#however, modify how the messages appear, by setting (and modifying) RemoteNickFormat
 #OPTIONAL (default false)
 PrefixMessagesWithNick=false
 
-#Nicks you want to ignore. 
+#Nicks you want to ignore.
 #Regular expressions supported
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
 IgnoreNicks="ircspammer1 ircspammer2"
 
-#Messages you want to ignore. 
+#Messages you want to ignore.
 #Messages matching these regexp will be ignored and not sent to other bridges
 #See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
@@ -660,11 +660,11 @@ ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
 #optional (default empty)
 Label=""
 
-#RemoteNickFormat defines how remote users appear on this bridge 
+#RemoteNickFormat defines how remote users appear on this bridge
 #See [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges 
+#Enable to show users joins/parts from other bridges
 #Currently works for messages from the following bridges: irc, mattermost, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
@@ -679,7 +679,7 @@ NoSendJoinPart=false
 #OPTIONAL (default false)
 StripNick=false
 
-#Enable to show topic changes from other bridges 
+#Enable to show topic changes from other bridges
 #Only works hiding/show topic changes from slack bridge for now
 #OPTIONAL (default false)
 ShowTopicChange=false
@@ -853,7 +853,7 @@ MessageFormat=""
 DisableWebPagePreview=false
 
 #If enabled use the "First Name" as username. If this is empty use the Username
-#If disabled use the "Username" as username. If this is empty use the First Name 
+#If disabled use the "Username" as username. If this is empty use the First Name
 #If all names are empty, username will be "unknown"
 #OPTIONAL (default false)
 UseFirstName=false
@@ -889,13 +889,13 @@ EditDisable=false
 #OPTIONAL (default empty)
 EditSuffix=" (edited)"
 
-#Nicks you want to ignore. 
+#Nicks you want to ignore.
 #Regular expressions supported
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
 IgnoreNicks="spammer1 spammer2"
 
-#Messages you want to ignore. 
+#Messages you want to ignore.
 #Messages matching these regexp will be ignored and not sent to other bridges
 #See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
@@ -933,7 +933,7 @@ ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
 #optional (default empty)
 Label=""
 
-#RemoteNickFormat defines how remote users appear on this bridge 
+#RemoteNickFormat defines how remote users appear on this bridge
 #See [general] config section for default options
 #
 #WARNING: if you have set MessageFormat="HTML" be sure that this format matches the guidelines
@@ -941,7 +941,7 @@ Label=""
 #telegram! eg <{NICK}> should be &lt;{NICK}&gt;
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges 
+#Enable to show users joins/parts from other bridges
 #Currently works for messages from the following bridges: irc, mattermost, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
@@ -951,7 +951,7 @@ ShowJoinPart=false
 #OPTIONAL (default false)
 StripNick=false
 
-#Enable to show topic changes from other bridges 
+#Enable to show topic changes from other bridges
 #Only works hiding/show topic changes from slack bridge for now
 #OPTIONAL (default false)
 ShowTopicChange=false
@@ -969,9 +969,9 @@ ShowTopicChange=false
 #REQUIRED (when not using webhooks)
 Server="https://yourrocketchatserver.domain.com:443"
 
-#login/pass of your bot. 
+#login/pass of your bot.
 #login needs to be the login with email address! user@domain.com
-#Use a dedicated user for this and not your own! 
+#Use a dedicated user for this and not your own!
 #REQUIRED (when not using webhooks)
 Login="yourlogin@domain.com"
 Password="yourpass"
@@ -983,7 +983,7 @@ Password="yourpass"
 
 #### Settings for webhook matterbridge.
 #USE DEDICATED BOT USER WHEN POSSIBLE! This allows you to use advanced features like message editing/deleting and uploads
-#You don't need to configure this, if you have configured the settings 
+#You don't need to configure this, if you have configured the settings
 #above.
 
 #Url is your incoming webhook url as specified in rocketchat
@@ -994,7 +994,7 @@ WebhookURL="https://yourdomain/hooks/yourhookkey"
 
 #Address to listen on for outgoing webhook requests from rocketchat.
 #See administration - integrations - new integration - outgoing webhook
-#REQUIRED 
+#REQUIRED
 WebhookBindAddress="0.0.0.0:9999"
 
 #Your nick/username as specified in your incoming webhook "Post as" setting
@@ -1005,7 +1005,7 @@ Nick="matterbot"
 #OPTIONAL (default false)
 NoTLS=false
 
-#Enable to not verify the certificate on your rocketchat server. 
+#Enable to not verify the certificate on your rocketchat server.
 #e.g. when using selfsigned certificates
 #OPTIONAL (default false)
 SkipTLSVerify=true
@@ -1015,22 +1015,22 @@ SkipTLSVerify=true
 ## RELOADABLE SETTINGS
 ## Settings below can be reloaded by editing the file
 
-#Whether to prefix messages from other bridges to rocketchat with the sender's nick. 
-#Useful if username overrides for incoming webhooks isn't enabled on the 
-#rocketchat server. If you set PrefixMessagesWithNick to true, each message 
+#Whether to prefix messages from other bridges to rocketchat with the sender's nick.
+#Useful if username overrides for incoming webhooks isn't enabled on the
+#rocketchat server. If you set PrefixMessagesWithNick to true, each message
 #from bridge to rocketchat will by default be prefixed by the RemoteNickFormat setting. i
 #if you're using login/pass you can better enable because of this bug:
 #https://github.com/RocketChat/Rocket.Chat/issues/7549
 #OPTIONAL (default false)
 PrefixMessagesWithNick=false
 
-#Nicks you want to ignore. 
+#Nicks you want to ignore.
 #Regular expressions supported
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
 IgnoreNicks="ircspammer1 ircspammer2"
 
-#Messages you want to ignore. 
+#Messages you want to ignore.
 #Messages matching these regexp will be ignored and not sent to other bridges
 #See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
@@ -1068,11 +1068,11 @@ ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
 #optional (default empty)
 Label=""
 
-#RemoteNickFormat defines how remote users appear on this bridge 
+#RemoteNickFormat defines how remote users appear on this bridge
 #See [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges 
+#Enable to show users joins/parts from other bridges
 #Currently works for messages from the following bridges: irc, mattermost, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
@@ -1082,7 +1082,7 @@ ShowJoinPart=false
 #OPTIONAL (default false)
 StripNick=false
 
-#Enable to show topic changes from other bridges 
+#Enable to show topic changes from other bridges
 #Only works hiding/show topic changes from slack bridge for now
 #OPTIONAL (default false)
 ShowTopicChange=false
@@ -1100,10 +1100,10 @@ ShowTopicChange=false
 #REQUIRED
 Server="https://matrix.org"
 
-#login/pass of your bot. 
-#Use a dedicated user for this and not your own! 
+#login/pass of your bot.
+#Use a dedicated user for this and not your own!
 #Messages sent from this user will not be relayed to avoid loops.
-#REQUIRED 
+#REQUIRED
 Login="yourlogin"
 Password="yourpass"
 
@@ -1115,20 +1115,20 @@ NoHomeServerSuffix=false
 ## RELOADABLE SETTINGS
 ## Settings below can be reloaded by editing the file
 
-#Whether to prefix messages from other bridges to matrix with the sender's nick. 
-#Useful if username overrides for incoming webhooks isn't enabled on the 
-#matrix server. If you set PrefixMessagesWithNick to true, each message 
+#Whether to prefix messages from other bridges to matrix with the sender's nick.
+#Useful if username overrides for incoming webhooks isn't enabled on the
+#matrix server. If you set PrefixMessagesWithNick to true, each message
 #from bridge to matrix will by default be prefixed by the RemoteNickFormat setting. i
 #OPTIONAL (default false)
 PrefixMessagesWithNick=false
 
-#Nicks you want to ignore. 
+#Nicks you want to ignore.
 #Regular expressions supported
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
 IgnoreNicks="spammer1 spammer2"
 
-#Messages you want to ignore. 
+#Messages you want to ignore.
 #Messages matching these regexp will be ignored and not sent to other bridges
 #See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
@@ -1166,11 +1166,11 @@ ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
 #optional (default empty)
 Label=""
 
-#RemoteNickFormat defines how remote users appear on this bridge 
+#RemoteNickFormat defines how remote users appear on this bridge
 #See [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges 
+#Enable to show users joins/parts from other bridges
 #Currently works for messages from the following bridges: irc, mattermost, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
@@ -1180,7 +1180,7 @@ ShowJoinPart=false
 #OPTIONAL (default false)
 StripNick=false
 
-#Enable to show topic changes from other bridges 
+#Enable to show topic changes from other bridges
 #Only works hiding/show topic changes from slack bridge for now
 #OPTIONAL (default false)
 ShowTopicChange=false
@@ -1194,33 +1194,33 @@ ShowTopicChange=false
 #REQUIRED
 
 [steam.gamechat]
-#login/pass of your bot. 
-#Use a dedicated user for this and not your own account! 
-#REQUIRED 
+#login/pass of your bot.
+#Use a dedicated user for this and not your own account!
+#REQUIRED
 Login="yourlogin"
 Password="yourpass"
 
 #steamguard mail authcode (not the 2FA code)
-#OPTIONAL 
+#OPTIONAL
 Authcode="ABCE12"
 
 ## RELOADABLE SETTINGS
 ## Settings below can be reloaded by editing the file
 
-#Whether to prefix messages from other bridges to matrix with the sender's nick. 
-#Useful if username overrides for incoming webhooks isn't enabled on the 
-#matrix server. If you set PrefixMessagesWithNick to true, each message 
+#Whether to prefix messages from other bridges to matrix with the sender's nick.
+#Useful if username overrides for incoming webhooks isn't enabled on the
+#matrix server. If you set PrefixMessagesWithNick to true, each message
 #from bridge to matrix will by default be prefixed by the RemoteNickFormat setting. i
 #OPTIONAL (default false)
 PrefixMessagesWithNick=false
 
-#Nicks you want to ignore. 
+#Nicks you want to ignore.
 #Regular expressions supported
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
 IgnoreNicks="spammer1 spammer2"
 
-#Messages you want to ignore. 
+#Messages you want to ignore.
 #Messages matching these regexp will be ignored and not sent to other bridges
 #See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
@@ -1258,11 +1258,11 @@ ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
 #optional (default empty)
 Label=""
 
-#RemoteNickFormat defines how remote users appear on this bridge 
+#RemoteNickFormat defines how remote users appear on this bridge
 #See [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges 
+#Enable to show users joins/parts from other bridges
 #Currently works for messages from the following bridges: irc, mattermost, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
@@ -1272,7 +1272,7 @@ ShowJoinPart=false
 #OPTIONAL (default false)
 StripNick=false
 
-#Enable to show topic changes from other bridges 
+#Enable to show topic changes from other bridges
 #Only works hiding/show topic changes from slack bridge for now
 #OPTIONAL (default false)
 ShowTopicChange=false
@@ -1325,25 +1325,25 @@ Label="Organization"
 #REQUIRED
 Token="Yourtokenhere"
 
-#Username of the bot, normally called yourbot-bot@yourserver.zulipchat.com 
-#See username in Settings - Your bots 
+#Username of the bot, normally called yourbot-bot@yourserver.zulipchat.com
+#See username in Settings - Your bots
 #REQUIRED
 Login="yourbot-bot@yourserver.zulipchat.com"
 
 #Servername of your zulip instance
-#REQUIRED 
+#REQUIRED
 Server="https://yourserver.zulipchat.com"
 
 ## RELOADABLE SETTINGS
 ## Settings below can be reloaded by editing the file
 
-#Nicks you want to ignore. 
+#Nicks you want to ignore.
 #Regular expressions supported
 #Messages from those users will not be sent to other bridges.
 #OPTIONAL
 IgnoreNicks="spammer1 spammer2"
 
-#Messages you want to ignore. 
+#Messages you want to ignore.
 #Messages matching these regexp will be ignored and not sent to other bridges
 #See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
@@ -1381,11 +1381,11 @@ ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
 #optional (default empty)
 Label=""
 
-#RemoteNickFormat defines how remote users appear on this bridge 
+#RemoteNickFormat defines how remote users appear on this bridge
 #See [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges 
+#Enable to show users joins/parts from other bridges
 #Currently works for messages from the following bridges: irc, mattermost, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
@@ -1395,7 +1395,7 @@ ShowJoinPart=false
 #OPTIONAL (default false)
 StripNick=false
 
-#Enable to show topic changes from other bridges 
+#Enable to show topic changes from other bridges
 #Only works hiding/show topic changes from slack bridge for now
 #OPTIONAL (default false)
 ShowTopicChange=false
@@ -1410,7 +1410,7 @@ ShowTopicChange=false
 
 [api.local]
 #Address to listen on for API
-#REQUIRED 
+#REQUIRED
 BindAddress="127.0.0.1:4242"
 
 #Amount of messages to keep in memory
@@ -1426,7 +1426,7 @@ Token="mytoken"
 #optional (default empty)
 Label=""
 
-#RemoteNickFormat defines how remote users appear on this bridge 
+#RemoteNickFormat defines how remote users appear on this bridge
 #See [general] config section for default options
 RemoteNickFormat="{NICK}"
 
@@ -1441,7 +1441,7 @@ RemoteNickFormat="{NICK}"
 ## RELOADABLE SETTINGS
 ## Settings below can be reloaded by editing the file
 
-#RemoteNickFormat defines how remote users appear on this bridge 
+#RemoteNickFormat defines how remote users appear on this bridge
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
 #The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
@@ -1569,7 +1569,7 @@ RemoteNickFormat="remotenickformat.tengo"
 #[[gateway.out]] specifies the account and channels we will send the messages
 #from [[gateway.in]] to.
 #
-#Most of the time [[gateway.in]] and [[gateway.out]] are the same if you 
+#Most of the time [[gateway.in]] and [[gateway.out]] are the same if you
 #want bidirectional bridging. You can then use [[gateway.inout]]
 #
 
@@ -1614,7 +1614,7 @@ enable=true
     #            - "Group Name" if you specify a group name the bridge will hint its JID to specify
     #              as group names might change in time and contain weird emoticons
     # zulip      - stream/topic:topicname (without the #)
-    #                  
+    #
     # REQUIRED
     channel="#testing"
 
@@ -1634,7 +1634,7 @@ enable=true
         #OPTIONAL - your irc / xmpp channel key
         key="yourkey"
 
-    #[[gateway.inout]] can be used when then channel will be used to receive from 
+    #[[gateway.inout]] can be used when then channel will be used to receive from
     #and send messages to
     [[gateway.inout]]
     account="mattermost.work"
