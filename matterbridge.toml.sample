@@ -703,120 +703,125 @@ ShowUserTyping=false
 ###################################################################
 [discord]
 
-#You can configure multiple servers "[discord.name]" or "[discord.name2]"
-#In this example we use [discord.game]
+# You can configure multiple servers "[discord.name]" or "[discord.name2]"
+# In this example we use [discord.game]
 #REQUIRED
 [discord.game]
-#Token to connect with Discord API
-#You can get your token by following the instructions on 
-#https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token
-#If you want roles/groups mentions to be shown with names instead of ID, you'll need to give your bot the "Manage Roles" permission.
-#REQUIRED
+# Token (REQUIRED) is the token to connect with Discord API
+# You can get your token by following the instructions on
+# https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token
+# If you want roles/groups mentions to be shown with names instead of ID, you'll need to give your bot the "Manage Roles" permission.
 Token="Yourtokenhere"
 
-#REQUIRED
+# Server (REQUIRED) is the ID or name of the guild to connect to, selected from the guilds the bot has been invited to
 Server="yourservername"
 
 ## RELOADABLE SETTINGS
-## Settings below can be reloaded by editing the file
+## All settings below can be reloaded by editing the file.
+## They are also all optional.
 
-#Shows title, description and URL of embedded messages (sent by other bots)
-#OPTIONAL (default false)
+# ShowEmbeds shows the title, description and URL of embedded messages (sent by other bots)
 ShowEmbeds=false
 
-#Show Discord avatars of remote users with matching names
-#This only works for webhooks & if the source message has no avatar
+# UseLocalAvatar specifies source bridges for which an avatar should be 'guessed' when an incoming message has no avatar.
+# This works by comparing the username of the message to an existing Discord user, and using the avatar of the Discord user.
 #
-#OPTIONAL (default empty)
-UseLocalAvatar=["irc"]
+# This only works if WebhookURL is set (AND the message has no avatar).
+# Example: ["irc"]
+UseLocalAvatar=[]
 
-#Shows the username instead of the server nickname
-#OPTIONAL (default false)
+# UseUserName shows the username instead of the server nickname
 UseUserName=false
 
-#Show #xxxx discriminator with UseUserName
-#OPTIONAL (default false)
+# UseDiscriminator appends the `#xxxx` discriminator when used with UseUserName
 UseDiscriminator=false
 
-#Specify WebhookURL. If given, will relay messages using the Webhook, which gives a better look to messages.
-#This only works if you have one discord channel, if you have multiple discord channels you'll have to specify it in the gateway config
-#OPTIONAL (default empty)
-WebhookURL="Yourwebhooktokenhere"
+# WebhookURL, if specified, will send messages in the style of puppets.
+# This only works if you have one discord channel, if you have multiple discord channels you'll have to specify it in the gateway config
+# Example: "https://discordapp.com/api/webhooks/1234/abcd_xyzw"
+WebhookURL=""
 
-#Disable sending of edits to other bridges
-#OPTIONAL (default false)
+# EditDisable allows you to disable sending of edits to other bridges
 EditDisable=false
 
-#Message to be appended to every edited message
-#OPTIONAL (default empty)
-EditSuffix=" (edited)"
+# EditSuffix specifies the message to be appended to every edited message
+# Example: " (edited)"
+EditSuffix=""
 
-#Nicks you want to ignore. 
-#Regular expressions supported
-#Messages from those users will not be sent to other bridges.
-#OPTIONAL
-IgnoreNicks="ircspammer1 ircspammer2"
+# IgnoreNicks allows you to mute outgoing messages from certain users.
+# Messages from these users will not be transmitted to other bridges.
+# Regular expressions are also supported.
+# Example: "ircspammer1 ircspammer2"
+IgnoreNicks=""
 
-#Messages you want to ignore. 
-#Messages matching these regexp will be ignored and not sent to other bridges
-#See https://regex-golang.appspot.com/assets/html/index.html for more regex info
-#OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
-IgnoreMessages="^~~ badword"
+# IgnoreMessages allows you to mute outgoing messages of a certain format.
+# Messages matching this regular expression will not be transmitted sent to other bridges
+# See https://regex-golang.appspot.com/assets/html/index.html for more regex info
+#
+# Example that ignores messages starting with ~~ or messages containing badword:
+#   IgnoreMessages="^~~ badword"
+IgnoreMessages=""
 
-#messages you want to replace.
-#it replaces outgoing messages from the bridge.
-#so you need to place it by the sending bridge definition.
-#regular expressions supported
-#some examples:
-#this replaces cat => dog and sleep => awake
-#replacemessages=[ ["cat","dog"], ["sleep","awake"] ]
-#this replaces every number with number.  123 => numbernumbernumber
-#replacemessages=[ ["[0-9]","number"] ]
-#optional (default empty)
-ReplaceMessages=[ ["cat","dog"] ]
+# ReplaceMessages replaces substrings of messages in outgoing messages.
+# Regular expressions are supported.
+#
+# Example that replaces 'cat' => 'dog' and 'sleep' => 'awake':
+#   ReplaceMessages=[ ["cat","dog"], ["sleep","awake"] ]
+# Example that replaces all digits with the letter 'X', so 'hello123' becomes 'helloXXX':
+#   ReplaceMessages=[ ["[0-9]","X"] ]
+ReplaceMessages=[]
 
-#nicks you want to replace.
-#see replacemessages for syntaxa
-#optional (default empty)
-ReplaceNicks=[ ["user--","user"] ]
+# ReplaceNicks replaces substrings of usernames in outgoing messages.
+# See the ReplaceMessages setting for examples.
+# Example: [ ["user--","user"] ]
+ReplaceNicks=[]
 
-#Extractnicks is used to for example rewrite messages from other relaybots
-#See https://github.com/42wim/matterbridge/issues/713 and https://github.com/42wim/matterbridge/issues/466
-#some examples:
-#this replaces a message like "Relaybot: <relayeduser> something interesting" to "relayeduser: something interesting"
-#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ] ]
-#you can use multiple entries for multiplebots
-#this also replaces a message like "otherbot: (relayeduser) something else" to "relayeduser: something else"
-#ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ],[ "otherbot","\\((.*?)\\)\\s+" ]
-#OPTIONAL (default empty)
-ExtractNicks=[ ["otherbot","<(.*?)>\\s+" ] ]
+# ExtractNicks allows for interoperability with other bridge software by rewriting messages and extracting usernames.
+#
+# Recommended reading:
+# - https://github.com/42wim/matterbridge/issues/466
+# - https://github.com/42wim/matterbridge/issues/713
+#
+# This example translates the following message
+#   "Relaybot: <relayeduser> something interesting"
+# into this message
+#   "relayeduser: something interesting"
+# like so:
+#   ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ] ]
+#
+# This example translates the following message
+#   "otherbot: (relayeduser) something else"
+# into this message
+#   "relayeduser: something else"
+# like so:
+#   ExtractNicks=[ [ "otherbot","\\((.*?)\\)\\s+" ] ]
+#
+# This example combines both of the above examples into one:
+#   ExtractNicks=[ [ "Relaybot", "<(.*?)>\\s+" ],[ "otherbot","\\((.*?)\\)\\s+" ]
+#
+ExtractNicks=[]
 
-#extra label that can be used in the RemoteNickFormat
-#optional (default empty)
+# Label can be used as an extra identifier for use in the RemoteNickFormat setting.
 Label=""
 
-#RemoteNickFormat defines how remote users appear on this bridge 
-#See [general] config section for default options
+# RemoteNickFormat specifies how remote users appear on this bridge.
+# See the [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-#Enable to show users joins/parts from other bridges 
-#Currently works for messages from the following bridges: irc, mattermost, slack, discord
-#OPTIONAL (default false)
+# ShowJoinPart will emit messages that show joins/parts from other bridges
+# Supported from the following bridges: irc, mattermost, slack, discord
 ShowJoinPart=false
 
-#StripNick only allows alphanumerical nicks. See https://github.com/42wim/matterbridge/issues/285
-#It will strip other characters from the nick
-#OPTIONAL (default false)
+# StripNick will strip non-alphanumeric characters from nicknames.
+# Recommended reading: https://github.com/42wim/matterbridge/issues/285
 StripNick=false
 
-#Enable to show topic/purpose changes from other bridges
-#Only works hiding/show topic changes from slack bridge for now
-#OPTIONAL (default false)
+# ShowTopicChange will emit messages that show topic/purpose updates from other bridges
+# Supported from the following bridges: slack
 ShowTopicChange=false
 
-#Enable to sync topic/purpose changes from other bridges
-#Only works syncing topic changes from slack bridge for now
-#OPTIONAL (default false)
+# SyncTopic will sync topic/purpose updates from other bridges
+# Supported from the following bridges: slack
 SyncTopic=false
 
 ###################################################################
