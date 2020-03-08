@@ -125,8 +125,8 @@ github.com/magiconair/properties v1.8.1 h1:ZC2Vc7/ZFkGmsVC9KvOjumD+G5lXy2RtTKyzR
 github.com/magiconair/properties v1.8.1/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
 github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20190210153444-cc9d05784d5d h1:F+Sr+C0ojSlYQ37BLylQtSFmyQULe3jbAygcyXQ9mVs=
 github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20190210153444-cc9d05784d5d/go.mod h1:c6MxwqHD+0HvtAJjsHMIdPCiAwGiQwPRPTp69ACMg8A=
-github.com/matterbridge/discordgo v0.18.1-0.20200109173909-ed873362fa43 h1:xTcLiEPMp9jVh/lHEPpLc87RZ4sRWRZe0rM578/waOk=
-github.com/matterbridge/discordgo v0.18.1-0.20200109173909-ed873362fa43/go.mod h1:O9S4p+ofTFwB02em7jkpkV8M3R0/PUVOwN61zSZ0r4Q=
+github.com/matterbridge/discordgo v0.18.1-0.20200308151012-aa40f01cbcc3 h1:VP/DNRn2HtrVRN6+X3h4FDcQI2OOKT+88WUi21ZD1Kw=
+github.com/matterbridge/discordgo v0.18.1-0.20200308151012-aa40f01cbcc3/go.mod h1:5a1bHtG/38ofcx9cgwM5eTW/Pl4SpbQksNDnTRcGA2Y=
 github.com/matterbridge/emoji v2.1.1-0.20191117213217-af507f6b02db+incompatible h1:oaOqwbg5HxHRxvAbd84ks0Okwoc1ISyUZ87EiVJFhGI=
 github.com/matterbridge/emoji v2.1.1-0.20191117213217-af507f6b02db+incompatible/go.mod h1:igE6rUAn3jai2wCdsjFHfhUoekjrFthoEjFObKKwSb4=
 github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91 h1:KzDEcy8eDbTx881giW8a6llsAck3e2bJvMyKvh1IK+k=
@@ -137,8 +137,8 @@ github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18 h1:fLhwXtW
 github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18/go.mod h1:yAjnZ34DuDyPHMPHHjOsTk/FefW4JJjoMMCGt/8uuQA=
 github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61 h1:R/MgM/eUyRBQx2FiH6JVmXck8PaAuKfe2M1tWIzW7nE=
 github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61/go.mod h1:iXGEotOvwI1R1SjLxRc+BF5rUORTMtE0iMZBT2lxqAU=
-github.com/matterbridge/msgraph.go v0.0.0-20191226214848-9e5d9c08a4e1 h1:Yzi9wh9al/7R84U+TETBdNW1XkE/Nbvz7RFPN4y2o2o=
-github.com/matterbridge/msgraph.go v0.0.0-20191226214848-9e5d9c08a4e1/go.mod h1:l0kx9L8Z+NbBCGrQ/y+ldKZ/fiwBZjPoXwDS55LTumI=
+github.com/matterbridge/msgraph.go v0.0.0-20200308150230-9e043fe9dbaa h1:ZP87nK5Mhgvt6Rpgbztdmq9+6cb3aZ6MgW/JWKbnMrI=
+github.com/matterbridge/msgraph.go v0.0.0-20200308150230-9e043fe9dbaa/go.mod h1:l0kx9L8Z+NbBCGrQ/y+ldKZ/fiwBZjPoXwDS55LTumI=
 github.com/mattermost/mattermost-server v5.5.0+incompatible h1:0wcLGgYtd+YImtLDPf2AOfpBHxbU4suATx+6XKw1XbU=
 github.com/mattermost/mattermost-server v5.5.0+incompatible/go.mod h1:5L6MjAec+XXQwMIt791Ganu45GKsSiM+I0tLR9wUj8Y=
 github.com/mattn/go-colorable v0.1.1/go.mod h1:FuOcm+DKB9mbwrcAfNl7/TZVBZ6rcnceauSikq3lYCQ=
