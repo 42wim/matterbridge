@@ -129,6 +129,8 @@ const (
 	keyRight
 	keyAltLeft
 	keyAltRight
+	keyAltF
+	keyAltB
 	keyHome
 	keyEnd
 	keyDeleteWord
@@ -155,8 +157,12 @@ func bytesToKey(b []byte, pasteActive bool) (rune, []byte) {
 		switch b[0] {
 		case 1: // ^A
 			return keyHome, b[1:]
+		case 2: // ^B
+			return keyLeft, b[1:]
 		case 5: // ^E
 			return keyEnd, b[1:]
+		case 6: // ^F
+			return keyRight, b[1:]
 		case 8: // ^H
 			return keyBackspace, b[1:]
 		case 11: // ^K
@@ -203,6 +209,15 @@ func bytesToKey(b []byte, pasteActive bool) (rune, []byte) {
 			return keyAltRight, b[6:]
 		case 'D':
 			return keyAltLeft, b[6:]
+		}
+	}
+
+	if !pasteActive && len(b) >= 2 && b[0] == keyEscape {
+		switch b[1] {
+		case 'f':
+			return keyAltF, b[2:]
+		case 'b':
+			return keyAltB, b[2:]
 		}
 	}
 
@@ -467,10 +482,14 @@ func (t *Terminal) handleKey(key rune) (line string, ok bool) {
 			return
 		}
 		t.eraseNPreviousChars(1)
+	case keyAltB:
+		fallthrough
 	case keyAltLeft:
 		// move left by a word.
 		t.pos -= t.countToLeftWord()
 		t.moveCursorToPos(t.pos)
+	case keyAltF:
+		fallthrough
 	case keyAltRight:
 		// move right by a word.
 		t.pos += t.countToRightWord()
