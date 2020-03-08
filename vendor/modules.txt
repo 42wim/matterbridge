@@ -23,8 +23,6 @@ github.com/Rhymen/go-whatsapp/binary/token
 github.com/Rhymen/go-whatsapp/crypto/cbc
 github.com/Rhymen/go-whatsapp/crypto/curve25519
 github.com/Rhymen/go-whatsapp/crypto/hkdf
-# github.com/bwmarrin/discordgo v0.20.2 => github.com/matterbridge/discordgo v0.18.1-0.20200109173909-ed873362fa43
-github.com/bwmarrin/discordgo
 # github.com/d5/tengo/v2 v2.0.2
 github.com/d5/tengo/v2
 github.com/d5/tengo/v2/parser
@@ -101,6 +99,8 @@ github.com/magiconair/properties
 github.com/matterbridge/Rocket.Chat.Go.SDK/models
 github.com/matterbridge/Rocket.Chat.Go.SDK/realtime
 github.com/matterbridge/Rocket.Chat.Go.SDK/rest
+# github.com/matterbridge/discordgo v0.18.1-0.20200308151012-aa40f01cbcc3
+github.com/matterbridge/discordgo
 # github.com/matterbridge/emoji v2.1.1-0.20191117213217-af507f6b02db+incompatible
 github.com/matterbridge/emoji
 # github.com/matterbridge/go-xmpp v0.0.0-20180529212104-cd19799fba91
@@ -111,6 +111,10 @@ github.com/matterbridge/gomatrix
 github.com/matterbridge/gozulipbot
 # github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61
 github.com/matterbridge/logrus-prefixed-formatter
+# github.com/matterbridge/msgraph.go v0.0.0-20200308150230-9e043fe9dbaa
+github.com/matterbridge/msgraph.go/beta
+github.com/matterbridge/msgraph.go/jsonx
+github.com/matterbridge/msgraph.go/msauth
 # github.com/mattermost/mattermost-server v5.5.0+incompatible
 github.com/mattermost/mattermost-server/mlog
 github.com/mattermost/mattermost-server/model
@@ -196,10 +200,6 @@ github.com/technoweenie/multipartstreamer
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.1.0
 github.com/valyala/fasttemplate
-# github.com/yaegashi/msgraph.go v0.0.0-00010101000000-000000000000 => github.com/matterbridge/msgraph.go v0.0.0-20191226214848-9e5d9c08a4e1
-github.com/yaegashi/msgraph.go/beta
-github.com/yaegashi/msgraph.go/jsonx
-github.com/yaegashi/msgraph.go/msauth
 # github.com/zfjagann/golang-ring v0.0.0-20190106091943-a88bb6aef447
 github.com/zfjagann/golang-ring
 # go.uber.org/atomic v1.4.0
