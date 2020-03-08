@@ -162,7 +162,7 @@ github.com/russross/blackfriday
 github.com/saintfish/chardet
 # github.com/shazow/rateio v0.0.0-20150116013248-e8e00881e5c1
 github.com/shazow/rateio
-# github.com/shazow/ssh-chat v1.8.2
+# github.com/shazow/ssh-chat v1.8.3-0.20200308224626-80ddf1f43a98
 github.com/shazow/ssh-chat/internal/sanitize
 github.com/shazow/ssh-chat/sshd
 github.com/shazow/ssh-chat/sshd/terminal

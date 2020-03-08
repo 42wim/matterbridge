@@ -4,12 +4,13 @@
 
 // +build solaris
 
-package terminal // import "golang.org/x/crypto/ssh/terminal"
+package terminal
 
 import (
-	"golang.org/x/sys/unix"
 	"io"
 	"syscall"
+
+	"golang.org/x/sys/unix"
 )
 
 // State contains the state of a terminal.

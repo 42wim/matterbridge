@@ -44,7 +44,7 @@ require (
 	github.com/rs/xid v1.2.1
 	github.com/russross/blackfriday v1.5.2
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca
-	github.com/shazow/ssh-chat v1.8.2
+	github.com/shazow/ssh-chat v1.8.3-0.20200308224626-80ddf1f43a98
 	github.com/sirupsen/logrus v1.4.2
 	github.com/slack-go/slack v0.6.3-0.20200228121756-f56d616d5901
 	github.com/spf13/viper v1.6.1

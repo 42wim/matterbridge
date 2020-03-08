@@ -2,6 +2,7 @@ package sshd
 
 import (
 	"net"
+	"time"
 
 	"github.com/shazow/rateio"
 	"golang.org/x/crypto/ssh"
@@ -31,6 +32,12 @@ func (l *SSHListener) handleConn(conn net.Conn) (*Terminal, error) {
 		// TODO: Configurable Limiter?
 		conn = ReadLimitConn(conn, l.RateLimit())
 	}
+
+	// If the connection doesn't write anything back for too long before we get
+	// a valid session, it should be dropped.
+	var handleTimeout = 20 * time.Second
+	conn.SetReadDeadline(time.Now().Add(handleTimeout))
+	defer conn.SetReadDeadline(time.Time{})
 
 	// Upgrade TCP connection to SSH connection
 	sshConn, channels, requests, err := ssh.NewServerConn(conn, l.config)
