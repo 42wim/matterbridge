@@ -112,8 +112,6 @@ github.com/matterbridge/gozulipbot
 # github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61
 github.com/matterbridge/logrus-prefixed-formatter
 # github.com/matterbridge/msgraph.go v0.0.0-20200308150230-9e043fe9dbaa
-github.com/matterbridge/msgraph.go/beta
-github.com/matterbridge/msgraph.go/jsonx
 github.com/matterbridge/msgraph.go/msauth
 # github.com/mattermost/mattermost-server v5.5.0+incompatible
 github.com/mattermost/mattermost-server/mlog
@@ -154,6 +152,10 @@ github.com/pelletier/go-toml
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
+# github.com/rickb777/date v1.12.4
+github.com/rickb777/date/period
+# github.com/rickb777/plural v1.2.0
+github.com/rickb777/plural
 # github.com/rs/xid v1.2.1
 github.com/rs/xid
 # github.com/russross/blackfriday v1.5.2
@@ -200,6 +202,9 @@ github.com/technoweenie/multipartstreamer
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.1.0
 github.com/valyala/fasttemplate
+# github.com/yaegashi/msgraph.go v0.1.2
+github.com/yaegashi/msgraph.go/beta
+github.com/yaegashi/msgraph.go/jsonx
 # github.com/zfjagann/golang-ring v0.0.0-20190106091943-a88bb6aef447
 github.com/zfjagann/golang-ring
 # go.uber.org/atomic v1.4.0
@@ -241,7 +246,7 @@ golang.org/x/net/html
 golang.org/x/net/html/atom
 golang.org/x/net/idna
 golang.org/x/net/websocket
-# golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+# golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 golang.org/x/oauth2
 golang.org/x/oauth2/clientcredentials
 golang.org/x/oauth2/internal

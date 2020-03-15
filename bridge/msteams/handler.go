@@ -9,7 +9,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 
-	msgraph "github.com/matterbridge/msgraph.go/beta"
+	msgraph "github.com/yaegashi/msgraph.go/beta"
 )
 
 func (b *Bmsteams) findFile(weburl string) (string, error) {

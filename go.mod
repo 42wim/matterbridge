@@ -51,16 +51,15 @@ require (
 	github.com/stretchr/testify v1.4.0
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2 // indirect
+	github.com/yaegashi/msgraph.go v0.1.2
 	github.com/zfjagann/golang-ring v0.0.0-20190106091943-a88bb6aef447
 	golang.org/x/image v0.0.0-20191214001246-9130b4cfad52
-	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 )
 
 //replace github.com/bwmarrin/discordgo v0.20.2 => github.com/matterbridge/discordgo v0.18.1-0.20200109173909-ed873362fa43
-
-//replace github.com/yaegashi/msgraph.go => github.com/matterbridge/msgraph.go v0.0.0-20191226214848-9e5d9c08a4e1
 
 go 1.13
