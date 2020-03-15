@@ -12,9 +12,9 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 
 	//	"github.com/davecgh/go-spew/spew"
-	msgraph "github.com/matterbridge/msgraph.go/beta"
 	"github.com/matterbridge/msgraph.go/msauth"
 	"github.com/mattn/godown"
+	msgraph "github.com/yaegashi/msgraph.go/beta"
 
 	"golang.org/x/oauth2"
 )
