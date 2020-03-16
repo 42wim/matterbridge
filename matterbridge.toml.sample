@@ -842,10 +842,11 @@ Token="Yourtokenhere"
 ## Settings below can be reloaded by editing the file
 
 #OPTIONAL (default empty)
-#Supported formats are "HTML", "Markdown" and "HTMLNick"
-#See https://core.telegram.org/bots/api#html-style
-#See https://core.telegram.org/bots/api#markdown-style
-#HTMLNick only allows HTML for the nick, the message itself will be html-escaped
+#Supported formats are:
+#"HTML" https://core.telegram.org/bots/api#html-style
+#"Markdown" https://core.telegram.org/bots/api#markdown-style - deprecated, doesn't display links with underscores correctly
+#"MarkdownV2" https://core.telegram.org/bots/api#markdownv2-style
+#"HTMLNick" - only allows HTML for the nick, the message itself will be html-escaped
 MessageFormat=""
 
 #OPTIONAL (default false)
