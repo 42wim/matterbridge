@@ -78,7 +78,6 @@ func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 			// should now tell that we are a member of it.
 			b.channels.registerChannel(ev.Channel)
 		case *slack.ConnectedEvent:
-			b.si = ev.Info
 			b.channels.populateChannels(true)
 			b.users.populateUsers(true)
 		case *slack.InvalidAuthEvent:
@@ -112,6 +111,7 @@ func (b *Bslack) handleMatterHook(messages chan *config.Message) {
 
 // skipMessageEvent skips event that need to be skipped :-)
 func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
+	fromSelf := (ev.User == b.userID) || (ev.BotID == b.botID)
 	switch ev.SubType {
 	case sChannelLeave, sChannelJoin:
 		return b.GetBool(noSendJoinConfig)
@@ -119,14 +119,14 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 		return true
 	case sChannelTopic, sChannelPurpose:
 		// Skip the event if our bot/user account changed the topic/purpose
-		if ev.User == b.si.User.ID {
+		if fromSelf {
 			return true
 		}
 	}
 
 	// Skip any messages that we made ourselves or from 'slackbot' (see #527).
 	if ev.Username == sSlackBotUser ||
-		(b.rtm != nil && ev.Username == b.si.User.Name) ||
+		(b.rtm != nil && fromSelf) ||
 		(len(ev.Attachments) > 0 && ev.Attachments[0].CallbackID == "matterbridge_"+b.uuid) {
 		return true
 	}

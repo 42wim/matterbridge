@@ -24,11 +24,14 @@ type Bslack struct {
 	mh  *matterhook.Client
 	sc  *slack.Client
 	rtm *slack.RTM
-	si  *slack.Info
 
 	cache        *lru.Cache
 	uuid         string
 	useChannelID bool
+	userID       string
+
+	// botID is only set for bot accounts
+	botID string
 
 	channels *channels
 	users    *users
@@ -111,6 +114,25 @@ func (b *Bslack) Connect() error {
 
 		b.channels = newChannelManager(b.Log, b.sc)
 		b.users = newUserManager(b.Log, b.sc)
+
+		// Get our own user ID
+		authTestResp, err := b.sc.AuthTest()
+		if err != nil {
+			return errors.New("auth_test: " + err.Error())
+		}
+		b.userID = authTestResp.UserID
+
+		// Get the info of our user ID so that we can determine our bot ID
+		user, err := b.sc.GetUserInfo(b.userID)
+		if err != nil {
+			return errors.New("get_user_info: " + err.Error())
+		}
+		if user.IsBot {
+			b.botID = user.Profile.BotID
+			b.Log.Debugf("Our bot ID is %#v\n", b.botID)
+		} else {
+			b.Log.Debugln("We are not a bot.")
+		}
 
 		b.rtm = b.sc.NewRTM()
 		go b.rtm.ManageConnection()
