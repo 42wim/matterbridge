@@ -90,12 +90,12 @@ func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	// set channel name
 	rmsg.Channel = b.getChannelName(m.ChannelID)
 
-	// set username
-	if !b.GetBool("UseUserName") {
+	fromWebhook := m.WebhookID != ""
+	if !fromWebhook && !b.GetBool("UseUserName") {
 		rmsg.Username = b.getNick(m.Author, m.GuildID)
 	} else {
 		rmsg.Username = m.Author.Username
-		if b.GetBool("UseDiscriminator") {
+		if !fromWebhook && b.GetBool("UseDiscriminator") {
 			rmsg.Username += "#" + m.Author.Discriminator
 		}
 	}
