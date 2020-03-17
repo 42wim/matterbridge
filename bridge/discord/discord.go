@@ -124,25 +124,27 @@ func (b *Bdiscord) Connect() error {
 			b.Log.Debugf("found channel %#v", channel)
 		}
 	} else {
-		b.canEditWebhooks = true
+		manageWebhooks := discordgo.PermissionManageWebhooks
+		var channelsDenied []string
 		for _, info := range b.Channels {
 			id := b.getChannelID(info.Name) // note(qaisjp): this readlocks channelsMutex
 			b.Log.Debugf("Verifying PermissionManageWebhooks for %s with ID %s", info.ID, id)
-			perms, permsErr := b.c.UserChannelPermissions(userinfo.ID, id)
 
-			manageWebhooks := discordgo.PermissionManageWebhooks
+			perms, permsErr := b.c.UserChannelPermissions(userinfo.ID, id)
 			if permsErr != nil {
-				b.Log.Warnf("Can't manage webhooks in channel \"%s\", because: %s", info.Name, permsErr.Error())
-				b.canEditWebhooks = false
-			} else if perms&manageWebhooks != manageWebhooks {
-				b.Log.Warnf("Can't manage webhooks in channel \"%s\"", info.Name)
-				b.canEditWebhooks = false
+				b.Log.Warnf("Failed to check PermissionManageWebhooks in channel \"%s\": %s", info.Name, permsErr.Error())
+			} else if perms&manageWebhooks == manageWebhooks {
+				continue
 			}
+			channelsDenied = append(channelsDenied, fmt.Sprintf("%#v", info.Name))
 		}
+
+		b.canEditWebhooks = len(channelsDenied) == 0
 		if b.canEditWebhooks {
 			b.Log.Info("Can manage webhooks; will edit channel for global webhook on send")
 		} else {
 			b.Log.Warn("Can't manage webhooks; won't edit channel for global webhook on send")
+			b.Log.Warn("Can't manage webhooks in channels: ", strings.Join(channelsDenied, ", "))
 		}
 	}
 	b.channelsMutex.RUnlock()
