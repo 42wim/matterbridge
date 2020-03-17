@@ -114,10 +114,10 @@ func (b *Bdiscord) Connect() error {
 			b.Log.Infof("Server=\"%s\" # Server ID", guild.ID)
 		}
 	}
-
 	if err != nil {
 		return err
 	}
+
 	b.channelsMutex.RLock()
 	if b.GetString("WebhookURL") == "" {
 		for _, channel := range b.channels {
@@ -128,9 +128,13 @@ func (b *Bdiscord) Connect() error {
 		for _, info := range b.Channels {
 			id := b.getChannelID(info.Name) // note(qaisjp): this readlocks channelsMutex
 			b.Log.Debugf("Verifying PermissionManageWebhooks for %s with ID %s", info.ID, id)
-			perms, permsErr := b.c.State.UserChannelPermissions(userinfo.ID, id)
+			perms, permsErr := b.c.UserChannelPermissions(userinfo.ID, id)
+
 			manageWebhooks := discordgo.PermissionManageWebhooks
-			if permsErr != nil || perms&manageWebhooks != manageWebhooks {
+			if permsErr != nil {
+				b.Log.Warnf("Can't manage webhooks in channel \"%s\", because: %s", info.Name, permsErr.Error())
+				b.canEditWebhooks = false
+			} else if perms&manageWebhooks != manageWebhooks {
 				b.Log.Warnf("Can't manage webhooks in channel \"%s\"", info.Name)
 				b.canEditWebhooks = false
 			}
