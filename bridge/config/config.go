@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	"io/ioutil"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -233,7 +234,8 @@ func NewConfig(rootLogger *logrus.Logger, cfgfile string) Config {
 		logger.Fatalf("Failed to read configuration file: %#v", err)
 	}
 
-	mycfg := newConfigFromString(logger, input)
+	cfgtype := detectConfigType(cfgfile)
+	mycfg := newConfigFromString(logger, input, cfgtype)
 	if mycfg.cv.General.MediaDownloadSize == 0 {
 		mycfg.cv.General.MediaDownloadSize = 1000000
 	}
@@ -244,14 +246,26 @@ func NewConfig(rootLogger *logrus.Logger, cfgfile string) Config {
 	return mycfg
 }
 
+// detectConfigType detects JSON and YAML formats, defaults to TOML.
+func detectConfigType(cfgfile string) string {
+	fileExt := filepath.Ext(cfgfile)
+	switch fileExt {
+	case ".json":
+		return "json"
+	case ".yaml", ".yml":
+		return "yaml"
+	}
+	return "toml"
+}
+
 // NewConfigFromString instantiates a new configuration based on the specified string.
 func NewConfigFromString(rootLogger *logrus.Logger, input []byte) Config {
 	logger := rootLogger.WithFields(logrus.Fields{"prefix": "config"})
-	return newConfigFromString(logger, input)
+	return newConfigFromString(logger, input, "toml")
 }
 
-func newConfigFromString(logger *logrus.Entry, input []byte) *config {
-	viper.SetConfigType("toml")
+func newConfigFromString(logger *logrus.Entry, input []byte, cfgtype string) *config {
+	viper.SetConfigType(cfgtype)
 	viper.SetEnvPrefix("matterbridge")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
 	viper.AutomaticEnv()
