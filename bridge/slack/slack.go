@@ -110,29 +110,12 @@ func (b *Bslack) Connect() error {
 	if token := b.GetString(tokenConfig); token != "" {
 		b.Log.Info("Connecting using token")
 
-		b.sc = slack.New(token, slack.OptionDebug(b.GetBool("Debug")))
+		if err := b.createSlackClient(); err != nil {
+			return err
+		}
 
 		b.channels = newChannelManager(b.Log, b.sc)
 		b.users = newUserManager(b.Log, b.sc)
-
-		// Get our own user ID
-		authTestResp, err := b.sc.AuthTest()
-		if err != nil {
-			return errors.New("auth_test: " + err.Error())
-		}
-		b.userID = authTestResp.UserID
-
-		// Get the info of our user ID so that we can determine our bot ID
-		user, err := b.sc.GetUserInfo(b.userID)
-		if err != nil {
-			return errors.New("get_user_info: " + err.Error())
-		}
-		if user.IsBot {
-			b.botID = user.Profile.BotID
-			b.Log.Debugf("Our bot ID is %#v\n", b.botID)
-		} else {
-			b.Log.Debugln("We are not a bot.")
-		}
 
 		b.rtm = b.sc.NewRTM()
 		go b.rtm.ManageConnection()
@@ -163,6 +146,35 @@ func (b *Bslack) Connect() error {
 
 func (b *Bslack) Disconnect() error {
 	return b.rtm.Disconnect()
+}
+
+func (b *Bslack) createSlackClient() error {
+	if b.sc != nil {
+		panic("createSlackClient should be called exactly once")
+	}
+
+	b.sc = slack.New(b.GetString(tokenConfig), slack.OptionDebug(b.GetBool("Debug")))
+
+	// Get our own user ID
+	authTestResp, err := b.sc.AuthTest()
+	if err != nil {
+		return errors.New("auth_test: " + err.Error())
+	}
+	b.userID = authTestResp.UserID
+
+	// Get the info of our user ID so that we can determine our bot ID
+	user, err := b.sc.GetUserInfo(b.userID)
+	if err != nil {
+		return errors.New("get_user_info: " + err.Error())
+	}
+	if user.IsBot {
+		b.botID = user.Profile.BotID
+		b.Log.Debugf("Our bot ID is %#v\n", b.botID)
+	} else {
+		b.Log.Debugln("We are not a bot.")
+	}
+
+	return nil
 }
 
 // JoinChannel only acts as a verification method that checks whether Matterbridge's

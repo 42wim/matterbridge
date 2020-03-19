@@ -5,7 +5,6 @@ import (
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/matterhook"
-	"github.com/slack-go/slack"
 )
 
 type BLegacy struct {
@@ -31,7 +30,9 @@ func (b *BLegacy) Connect() error {
 			})
 		case b.GetString(tokenConfig) != "":
 			b.Log.Info("Connecting using token (sending)")
-			b.sc = slack.New(b.GetString(tokenConfig))
+			if err := b.createSlackClient(); err != nil {
+				return err
+			}
 			b.rtm = b.sc.NewRTM()
 			go b.rtm.ManageConnection()
 			b.Log.Info("Connecting using webhookbindaddress (receiving)")
@@ -57,7 +58,9 @@ func (b *BLegacy) Connect() error {
 		})
 		if b.GetString(tokenConfig) != "" {
 			b.Log.Info("Connecting using token (receiving)")
-			b.sc = slack.New(b.GetString(tokenConfig), slack.OptionDebug(b.GetBool("debug")))
+			if err := b.createSlackClient(); err != nil {
+				return err
+			}
 			b.channels = newChannelManager(b.Log, b.sc)
 			b.users = newUserManager(b.Log, b.sc)
 			b.rtm = b.sc.NewRTM()
@@ -66,7 +69,9 @@ func (b *BLegacy) Connect() error {
 		}
 	} else if b.GetString(tokenConfig) != "" {
 		b.Log.Info("Connecting using token (sending and receiving)")
-		b.sc = slack.New(b.GetString(tokenConfig), slack.OptionDebug(b.GetBool("debug")))
+		if err := b.createSlackClient(); err != nil {
+			return err
+		}
 		b.channels = newChannelManager(b.Log, b.sc)
 		b.users = newUserManager(b.Log, b.sc)
 		b.rtm = b.sc.NewRTM()
