@@ -111,7 +111,13 @@ func (b *Bslack) handleMatterHook(messages chan *config.Message) {
 
 // skipMessageEvent skips event that need to be skipped :-)
 func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
-	fromSelf := (ev.User == b.userID) || (ev.BotID == b.botID)
+	// In legacy mode, fromSelf is only true for messages with a callback ID
+	// If not legacy, we also check user ID or bot ID
+	fromSelf := len(ev.Attachments) > 0 && ev.Attachments[0].CallbackID == "matterbridge_"+b.uuid
+	if !b.legacy {
+		fromSelf = fromSelf || (ev.User == b.userID) || (ev.BotID == b.botID)
+	}
+
 	switch ev.SubType {
 	case sChannelLeave, sChannelJoin:
 		return b.GetBool(noSendJoinConfig)
@@ -125,9 +131,7 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 	}
 
 	// Skip any messages that we made ourselves or from 'slackbot' (see #527).
-	if ev.Username == sSlackBotUser ||
-		(b.rtm != nil && fromSelf) ||
-		(len(ev.Attachments) > 0 && ev.Attachments[0].CallbackID == "matterbridge_"+b.uuid) {
+	if ev.Username == sSlackBotUser || (b.rtm != nil && fromSelf) {
 		return true
 	}
 
