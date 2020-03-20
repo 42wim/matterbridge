@@ -13,8 +13,8 @@ import (
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/42wim/matterbridge/matterhook"
 	lru "github.com/hashicorp/golang-lru"
-	"github.com/nlopes/slack"
 	"github.com/rs/xid"
+	"github.com/slack-go/slack"
 )
 
 type Bslack struct {

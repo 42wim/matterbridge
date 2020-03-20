@@ -5,7 +5,7 @@ import (
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/matterhook"
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 type BLegacy struct {

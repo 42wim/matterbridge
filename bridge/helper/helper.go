@@ -15,6 +15,7 @@ import (
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
 	"github.com/sirupsen/logrus"
 )
@@ -179,9 +180,12 @@ func ClipMessage(text string, length int) string {
 
 // ParseMarkdown takes in an input string as markdown and parses it to html
 func ParseMarkdown(input string) string {
-	extensions := parser.HardLineBreak
+	extensions := parser.HardLineBreak | parser.NoIntraEmphasis
 	markdownParser := parser.NewWithExtensions(extensions)
-	parsedMarkdown := markdown.ToHTML([]byte(input), markdownParser, nil)
+	renderer := html.NewRenderer(html.RendererOptions{
+		Flags: 0,
+	})
+	parsedMarkdown := markdown.ToHTML([]byte(input), markdownParser, renderer)
 	res := string(parsedMarkdown)
 	res = strings.TrimPrefix(res, "<p>")
 	res = strings.TrimSuffix(res, "</p>\n")

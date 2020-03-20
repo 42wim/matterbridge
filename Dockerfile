@@ -2,7 +2,7 @@ FROM alpine:edge
 ENTRYPOINT ["/bin/matterbridge"]
 
 COPY . /go/src/github.com/42wim/matterbridge
-RUN apk update && apk add go git gcc musl-dev ca-certificates \
+RUN apk update && apk add go git gcc musl-dev ca-certificates mailcap \
         && cd /go/src/github.com/42wim/matterbridge \
         && export GOPATH=/go \
         && go get \

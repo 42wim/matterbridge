@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	"io/ioutil"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -76,9 +77,11 @@ type Protocol struct {
 	BindAddress            string // mattermost, slack // DEPRECATED
 	Buffer                 int    // api
 	Charset                string // irc
+	ClientID               string // msteams
 	ColorNicks             bool   // only irc for now
 	Debug                  bool   // general
 	DebugLevel             int    // only for irc now
+	DisableWebPagePreview  bool   // telegram
 	EditSuffix             string // mattermost, slack, discord, telegram, gitter
 	EditDisable            bool   // mattermost, slack, discord, telegram, gitter
 	IconURL                string // mattermost, slack
@@ -116,12 +119,14 @@ type Protocol struct {
 	Protocol               string     // all protocols
 	QuoteDisable           bool       // telegram
 	QuoteFormat            string     // telegram
+	QuoteLengthLimit       int        // telegram
 	RejoinDelay            int        // IRC
 	ReplaceMessages        [][]string // all protocols
 	ReplaceNicks           [][]string // all protocols
 	RemoteNickFormat       string     // all protocols
 	RunCommands            []string   // IRC
 	Server                 string     // IRC,mattermost,XMPP,discord
+	SessionFile            string     // msteams,whatsapp
 	ShowJoinPart           bool       // all protocols
 	ShowTopicChange        bool       // slack
 	ShowUserTyping         bool       // slack
@@ -132,10 +137,13 @@ type Protocol struct {
 	SyncTopic              bool       // slack
 	TengoModifyMessage     string     // general
 	Team                   string     // mattermost, keybase
+	TeamID                 string     // msteams
+	TenantID               string     // msteams
 	Token                  string     // gitter, slack, discord, api
 	Topic                  string     // zulip
 	URL                    string     // mattermost, slack // DEPRECATED
 	UseAPI                 bool       // mattermost, slack
+	UseLocalAvatar         []string   // discord
 	UseSASL                bool       // IRC
 	UseTLS                 bool       // IRC
 	UseDiscriminator       bool       // discord
@@ -233,7 +241,8 @@ func NewConfig(rootLogger *logrus.Logger, cfgfile string) Config {
 		logger.Fatalf("Failed to read configuration file: %#v", err)
 	}
 
-	mycfg := newConfigFromString(logger, input)
+	cfgtype := detectConfigType(cfgfile)
+	mycfg := newConfigFromString(logger, input, cfgtype)
 	if mycfg.cv.General.MediaDownloadSize == 0 {
 		mycfg.cv.General.MediaDownloadSize = 1000000
 	}
@@ -244,14 +253,26 @@ func NewConfig(rootLogger *logrus.Logger, cfgfile string) Config {
 	return mycfg
 }
 
+// detectConfigType detects JSON and YAML formats, defaults to TOML.
+func detectConfigType(cfgfile string) string {
+	fileExt := filepath.Ext(cfgfile)
+	switch fileExt {
+	case ".json":
+		return "json"
+	case ".yaml", ".yml":
+		return "yaml"
+	}
+	return "toml"
+}
+
 // NewConfigFromString instantiates a new configuration based on the specified string.
 func NewConfigFromString(rootLogger *logrus.Logger, input []byte) Config {
 	logger := rootLogger.WithFields(logrus.Fields{"prefix": "config"})
-	return newConfigFromString(logger, input)
+	return newConfigFromString(logger, input, "toml")
 }
 
-func newConfigFromString(logger *logrus.Entry, input []byte) *config {
-	viper.SetConfigType("toml")
+func newConfigFromString(logger *logrus.Entry, input []byte, cfgtype string) *config {
+	viper.SetConfigType(cfgtype)
 	viper.SetEnvPrefix("matterbridge")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
 	viper.AutomaticEnv()

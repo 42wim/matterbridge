@@ -1,6 +1,7 @@
 package bridge
 
 import (
+	"log"
 	"strings"
 	"sync"
 
@@ -41,6 +42,10 @@ type Factory func(*Config) Bridger
 
 func New(bridge *config.Bridge) *Bridge {
 	accInfo := strings.Split(bridge.Account, ".")
+	if len(accInfo) != 2 {
+		log.Fatalf("config failure, account incorrect: %s", bridge.Account)
+	}
+
 	protocol := accInfo[0]
 	name := accInfo[1]
 

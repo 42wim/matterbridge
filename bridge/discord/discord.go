@@ -10,7 +10,7 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	"github.com/bwmarrin/discordgo"
+	"github.com/matterbridge/discordgo"
 )
 
 const MessageLength = 1950
@@ -21,7 +21,6 @@ type Bdiscord struct {
 	c *discordgo.Session
 
 	nick            string
-	useChannelID    bool
 	guildID         string
 	webhookID       string
 	webhookToken    string
@@ -115,30 +114,37 @@ func (b *Bdiscord) Connect() error {
 			b.Log.Infof("Server=\"%s\" # Server ID", guild.ID)
 		}
 	}
-
 	if err != nil {
 		return err
 	}
+
 	b.channelsMutex.RLock()
 	if b.GetString("WebhookURL") == "" {
 		for _, channel := range b.channels {
 			b.Log.Debugf("found channel %#v", channel)
 		}
 	} else {
-		b.canEditWebhooks = true
-		for _, channel := range b.channels {
-			b.Log.Debugf("found channel %#v; verifying PermissionManageWebhooks", channel)
-			perms, permsErr := b.c.State.UserChannelPermissions(userinfo.ID, channel.ID)
-			manageWebhooks := discordgo.PermissionManageWebhooks
-			if permsErr != nil || perms&manageWebhooks != manageWebhooks {
-				b.Log.Warnf("Can't manage webhooks in channel \"%s\"", channel.Name)
-				b.canEditWebhooks = false
+		manageWebhooks := discordgo.PermissionManageWebhooks
+		var channelsDenied []string
+		for _, info := range b.Channels {
+			id := b.getChannelID(info.Name) // note(qaisjp): this readlocks channelsMutex
+			b.Log.Debugf("Verifying PermissionManageWebhooks for %s with ID %s", info.ID, id)
+
+			perms, permsErr := b.c.UserChannelPermissions(userinfo.ID, id)
+			if permsErr != nil {
+				b.Log.Warnf("Failed to check PermissionManageWebhooks in channel \"%s\": %s", info.Name, permsErr.Error())
+			} else if perms&manageWebhooks == manageWebhooks {
+				continue
 			}
+			channelsDenied = append(channelsDenied, fmt.Sprintf("%#v", info.Name))
 		}
+
+		b.canEditWebhooks = len(channelsDenied) == 0
 		if b.canEditWebhooks {
 			b.Log.Info("Can manage webhooks; will edit channel for global webhook on send")
 		} else {
 			b.Log.Warn("Can't manage webhooks; won't edit channel for global webhook on send")
+			b.Log.Warn("Can't manage webhooks in channels: ", strings.Join(channelsDenied, ", "))
 		}
 	}
 	b.channelsMutex.RUnlock()
@@ -174,10 +180,6 @@ func (b *Bdiscord) JoinChannel(channel config.ChannelInfo) error {
 	defer b.channelsMutex.Unlock()
 
 	b.channelInfoMap[channel.ID] = &channel
-	idcheck := strings.Split(channel.Name, "ID:")
-	if len(idcheck) > 1 {
-		b.useChannelID = true
-	}
 	return nil
 }
 
@@ -385,6 +387,19 @@ func (b *Bdiscord) webhookSend(msg *config.Message, webhookID, token string) (*d
 		err error
 	)
 
+	// If avatar is unset, check if UseLocalAvatar contains the message's
+	// account or protocol, and if so, try to find a local avatar
+	if msg.Avatar == "" {
+		for _, val := range b.GetStringSlice("UseLocalAvatar") {
+			if msg.Protocol == val || msg.Account == val {
+				if avatar := b.findAvatar(msg); avatar != "" {
+					msg.Avatar = avatar
+				}
+				break
+			}
+		}
+	}
+
 	// WebhookParams can have either `Content` or `File`.
 
 	// We can't send empty messages.
@@ -412,6 +427,10 @@ func (b *Bdiscord) webhookSend(msg *config.Message, webhookID, token string) (*d
 				ContentType: "",
 				Reader:      bytes.NewReader(*fi.Data),
 			}
+			content := ""
+			if msg.Text == "" {
+				content = fi.Comment
+			}
 			_, e2 := b.c.WebhookExecute(
 				webhookID,
 				token,
@@ -420,6 +439,7 @@ func (b *Bdiscord) webhookSend(msg *config.Message, webhookID, token string) (*d
 					Username:  msg.Username,
 					AvatarURL: msg.Avatar,
 					File:      &file,
+					Content:   content,
 				},
 			)
 			if e2 != nil {
@@ -428,4 +448,12 @@ func (b *Bdiscord) webhookSend(msg *config.Message, webhookID, token string) (*d
 		}
 	}
 	return res, err
+}
+
+func (b *Bdiscord) findAvatar(m *config.Message) string {
+	member, err := b.getGuildMemberByNick(m.Username)
+	if err != nil {
+		return ""
+	}
+	return member.User.AvatarURL("")
 }

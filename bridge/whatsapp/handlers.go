@@ -1,11 +1,15 @@
 package bwhatsapp
 
 import (
+	"fmt"
+	"mime"
 	"strings"
 	"time"
 
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/Rhymen/go-whatsapp"
+	"github.com/jpillora/backoff"
 )
 
 /*
@@ -22,7 +26,38 @@ func (b *Bwhatsapp) HandleError(err error) {
 	if strings.Contains(err.Error(), "error processing data: received invalid data") {
 		return
 	}
-	b.Log.Errorf("%v", err) // TODO implement proper handling? at least respond to different error types
+
+	switch err.(type) {
+	case *whatsapp.ErrConnectionClosed, *whatsapp.ErrConnectionFailed:
+		b.reconnect(err)
+	default:
+		switch err {
+		case whatsapp.ErrConnectionTimeout:
+			b.reconnect(err)
+		default:
+			b.Log.Errorf("%v", err)
+		}
+	}
+}
+
+func (b *Bwhatsapp) reconnect(err error) {
+	bf := &backoff.Backoff{
+		Min:    time.Second,
+		Max:    5 * time.Minute,
+		Jitter: true,
+	}
+	for {
+		d := bf.Duration()
+		b.Log.Errorf("Connection failed, underlying error: %v", err)
+		b.Log.Infof("Waiting %s...", d)
+		time.Sleep(d)
+		b.Log.Info("Reconnecting...")
+		err := b.conn.Restore()
+		if err == nil {
+			bf.Reset()
+			return
+		}
+	}
 }
 
 // HandleTextMessage sent from WhatsApp, relay it to the brige
@@ -36,16 +71,16 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 	}
 
 	messageTime := time.Unix(int64(message.Info.Timestamp), 0) // TODO check how behaves between timezones
-	groupJid := message.Info.RemoteJid
+	groupJID := message.Info.RemoteJid
 
-	senderJid := message.Info.SenderJid
-	if len(senderJid) == 0 {
+	senderJID := message.Info.SenderJid
+	if len(senderJID) == 0 {
 		// TODO workaround till https://github.com/Rhymen/go-whatsapp/issues/86 resolved
-		senderJid = *message.Info.Source.Participant
+		senderJID = *message.Info.Source.Participant
 	}
 
-	// translate sender's Jid to the nicest username we can get
-	senderName := b.getSenderName(senderJid)
+	// translate sender's JID to the nicest username we can get
+	senderName := b.getSenderName(senderJID)
 	if senderName == "" {
 		senderName = "Someone" // don't expose telephone number
 	}
@@ -53,8 +88,8 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 	extText := message.Info.Source.Message.ExtendedTextMessage
 	if extText != nil && extText.ContextInfo != nil && extText.ContextInfo.MentionedJid != nil {
 		// handle user mentions
-		for _, mentionedJid := range extText.ContextInfo.MentionedJid {
-			numberAndSuffix := strings.SplitN(mentionedJid, "@", 2)
+		for _, mentionedJID := range extText.ContextInfo.MentionedJid {
+			numberAndSuffix := strings.SplitN(mentionedJID, "@", 2)
 
 			// mentions comes as telephone numbers and we don't want to expose it to other bridges
 			// replace it with something more meaninful to others
@@ -66,22 +101,22 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 		}
 	}
 
-	b.Log.Debugf("<= Sending message from %s on %s to gateway", senderJid, b.Account)
+	b.Log.Debugf("<= Sending message from %s on %s to gateway", senderJID, b.Account)
 	rmsg := config.Message{
-		UserID:    senderJid,
+		UserID:    senderJID,
 		Username:  senderName,
 		Text:      message.Text,
 		Timestamp: messageTime,
-		Channel:   groupJid,
+		Channel:   groupJID,
 		Account:   b.Account,
 		Protocol:  b.Protocol,
 		Extra:     make(map[string][]interface{}),
-		//		ParentID: TODO, // TODO handle thread replies  // map from Info.QuotedMessageID string
+		//	ParentID: TODO, // TODO handle thread replies  // map from Info.QuotedMessageID string
 		//	Event     string    `json:"event"`
 		//	Gateway   string  // will be added during message processing
 		ID: message.Info.Id}
 
-	if avatarURL, exists := b.userAvatars[senderJid]; exists {
+	if avatarURL, exists := b.userAvatars[senderJID]; exists {
 		rmsg.Avatar = avatarURL
 	}
 
@@ -89,11 +124,75 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 	b.Remote <- rmsg
 }
 
-//
-//func (b *Bwhatsapp) HandleImageMessage(message whatsapp.ImageMessage) {
-//	fmt.Println(message) // TODO implement
-//}
-//
+// HandleImageMessage sent from WhatsApp, relay it to the brige
+func (b *Bwhatsapp) HandleImageMessage(message whatsapp.ImageMessage) {
+	if message.Info.FromMe { // || !strings.Contains(strings.ToLower(message.Text), "@echo") {
+		return
+	}
+
+	// whatsapp sends last messages to show context , cut them
+	if message.Info.Timestamp < b.startedAt {
+		return
+	}
+
+	messageTime := time.Unix(int64(message.Info.Timestamp), 0) // TODO check how behaves between timezones
+	groupJID := message.Info.RemoteJid
+
+	senderJID := message.Info.SenderJid
+	// if len(senderJid) == 0 {
+	//   // TODO workaround till https://github.com/Rhymen/go-whatsapp/issues/86 resolved
+	//   senderJid = *message.Info.Source.Participant
+	// }
+
+	// translate sender's Jid to the nicest username we can get
+	senderName := b.getSenderName(senderJID)
+	if senderName == "" {
+		senderName = "Someone" // don't expose telephone number
+	}
+
+	b.Log.Debugf("<= Sending message from %s on %s to gateway", senderJID, b.Account)
+	rmsg := config.Message{
+		UserID:    senderJID,
+		Username:  senderName,
+		Timestamp: messageTime,
+		Channel:   groupJID,
+		Account:   b.Account,
+		Protocol:  b.Protocol,
+		Extra:     make(map[string][]interface{}),
+		//  ParentID: TODO,      // TODO handle thread replies  // map from Info.QuotedMessageID string
+		//  Event     string    `json:"event"`
+		//  Gateway   string     // will be added during message processing
+		ID: message.Info.Id}
+
+	if avatarURL, exists := b.userAvatars[senderJID]; exists {
+		rmsg.Avatar = avatarURL
+	}
+
+	// Download and unencrypt content
+	data, err := message.Download()
+	if err != nil {
+		b.Log.Errorf("%v", err)
+		return
+	}
+
+	// Get file extension by mimetype
+	fileExt, err := mime.ExtensionsByType(message.Type)
+	if err != nil {
+		b.Log.Errorf("%v", err)
+		return
+	}
+
+	filename := fmt.Sprintf("%v%v", message.Info.Id, fileExt[0])
+
+	b.Log.Debugf("<= Image downloaded and unencrypted")
+
+	// Move file to bridge storage
+	helper.HandleDownloadData(b.Log, &rmsg, filename, message.Caption, "", &data, b.General)
+
+	b.Log.Debugf("<= Image Message is %#v", rmsg)
+	b.Remote <- rmsg
+}
+
 //func (b *Bwhatsapp) HandleVideoMessage(message whatsapp.VideoMessage) {
 //	fmt.Println(message) // TODO implement
 //}

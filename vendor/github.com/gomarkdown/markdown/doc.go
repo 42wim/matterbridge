@@ -21,7 +21,7 @@ You can customize parser and HTML renderer:
 		"github.com/gomarkdown/markdown"
 	)
 	extensions := parser.CommonExtensions | parser.AutoHeadingIDs
-	p := parser.NewWithExensions(extensions)
+	p := parser.NewWithExtensions(extensions)
 
 	htmlFlags := html.CommonFlags | html.HrefTargetBlank
 	opts := html.RendererOptions{Flags: htmlFlags}

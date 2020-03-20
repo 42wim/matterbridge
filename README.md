@@ -44,28 +44,34 @@ And more...
   </a>
 </p>
 
-### Table of Contents
+# Table of Contents
 
-- [Features](https://github.com/42wim/matterbridge/wiki/Features)
-  - [Natively supported](#natively-supported)
-  - [3rd party via matterbridge api](#3rd-party-via-matterbridge-api)
-  - [API](#API)
-- [Chat with us](#chat-with-us)
-- [Screenshots](https://github.com/42wim/matterbridge/wiki/)
-- [Installing/upgrading](#installing--upgrading)
-  - [Binaries](#binaries)
-- [Building](#building)
-- [Configuration](#configuration)
-  - [Howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config)
-  - [Settings](#settings)
-  - [Examples](#examples)
-- [Running](#running)
-  - [Docker](#docker)
-- [Changelog](#changelog)
-- [FAQ](#faq)
-- [Related projects](#related-projects)
-- [Articles](#articles)
-- [Thanks](#thanks)
+- [matterbridge](#matterbridge)
+- [Table of Contents](#table-of-contents)
+  - [Features](#features)
+    - [Natively supported](#natively-supported)
+    - [3rd party via matterbridge api](#3rd-party-via-matterbridge-api)
+    - [API](#api)
+  - [Chat with us](#chat-with-us)
+  - [Screenshots](#screenshots)
+  - [Installing / upgrading](#installing--upgrading)
+    - [Binaries](#binaries)
+    - [Packages](#packages)
+  - [Building](#building)
+  - [Configuration](#configuration)
+    - [Basic configuration](#basic-configuration)
+    - [Settings](#settings)
+    - [Advanced configuration](#advanced-configuration)
+    - [Examples](#examples)
+      - [Bridge mattermost (off-topic) - irc (#testing)](#bridge-mattermost-off-topic---irc-testing)
+      - [Bridge slack (#general) - discord (general)](#bridge-slack-general---discord-general)
+  - [Running](#running)
+    - [Docker](#docker)
+  - [Changelog](#changelog)
+  - [FAQ](#faq)
+  - [Related projects](#related-projects)
+  - [Articles](#articles)
+  - [Thanks](#thanks)
 
 ## Features
 
@@ -133,6 +139,7 @@ Questions or want to test on your favorite platform? Join below:
 - [Twitch][mb-twitch]
 - [Zulip][mb-zulip]
 - [Telegram][mb-telegram]
+- [Keybase][mb-keybase]
 
 ## Screenshots
 
@@ -142,7 +149,7 @@ See https://github.com/42wim/matterbridge/wiki
 
 ### Binaries
 
-- Latest stable release [v1.16.3](https://github.com/42wim/matterbridge/releases/latest)
+- Latest stable release [v1.16.5](https://github.com/42wim/matterbridge/releases/latest)
 - Development releases (follows master) can be downloaded [here](https://dl.bintray.com/42wim/nightly/)
 
 To install or upgrade just download the latest [binary](https://github.com/42wim/matterbridge/releases/latest) and follow the instructions on the [howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config) for a step by step walkthrough for creating your configuration.
@@ -262,11 +269,7 @@ Usage of ./matterbridge:
 
 ### Docker
 
-Create your matterbridge.toml file locally eg in `/tmp/matterbridge.toml`
-
-```
-docker run -ti -v /tmp/matterbridge.toml:/matterbridge.toml 42wim/matterbridge
-```
+Please take a look at the [Docker Wiki page](https://github.com/42wim/matterbridge/wiki/Deploy:-Docker) for more information.
 
 ## Changelog
 
@@ -343,6 +346,6 @@ Matterbridge wouldn't exist without these libraries:
 [mb-xmpp]: https://inverse.chat/
 [mb-twitch]: https://www.twitch.tv/matterbridge
 [mb-whatsapp]: https://www.whatsapp.com/
-[mb-keybase]: https://keybase.io
+[mb-keybase]: https://keybase.io/team/matterbridge
 [mb-zulip]: https://matterbridge.zulipchat.com/register/
 [mb-telegram]: https://t.me/Matterbridge

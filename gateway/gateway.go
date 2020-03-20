@@ -10,8 +10,8 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/internal"
-	"github.com/d5/tengo/script"
-	"github.com/d5/tengo/stdlib"
+	"github.com/d5/tengo/v2"
+	"github.com/d5/tengo/v2/stdlib"
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/matterbridge/emoji"
 	"github.com/sirupsen/logrus"
@@ -306,8 +306,6 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 }
 
 func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) string {
-	br := gw.Bridges[msg.Account]
-	msg.Protocol = br.Protocol
 	if dest.GetBool("StripNick") {
 		re := regexp.MustCompile("[^a-zA-Z0-9]+")
 		msg.Username = re.ReplaceAllString(msg.Username, "")
@@ -315,6 +313,7 @@ func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) stri
 	nick := dest.GetString("RemoteNickFormat")
 
 	// loop to replace nicks
+	br := gw.Bridges[msg.Account]
 	for _, outer := range br.GetStringSlice2D("ReplaceNicks") {
 		search := outer[0]
 		replace := outer[1]
@@ -514,7 +513,7 @@ func modifyMessageTengo(filename string, msg *config.Message) error {
 	if err != nil {
 		return err
 	}
-	s := script.New(res)
+	s := tengo.NewScript(res)
 	s.SetImports(stdlib.GetModuleMap(stdlib.AllModuleNames()...))
 	_ = s.Add("msgText", msg.Text)
 	_ = s.Add("msgUsername", msg.Username)
@@ -541,7 +540,7 @@ func (gw *Gateway) modifyUsernameTengo(msg *config.Message, br *bridge.Bridge) (
 	if err != nil {
 		return "", err
 	}
-	s := script.New(res)
+	s := tengo.NewScript(res)
 	s.SetImports(stdlib.GetModuleMap(stdlib.AllModuleNames()...))
 	_ = s.Add("result", "")
 	_ = s.Add("msgText", msg.Text)
@@ -580,7 +579,7 @@ func (gw *Gateway) modifySendMessageTengo(origmsg *config.Message, msg *config.M
 			return err
 		}
 	}
-	s := script.New(res)
+	s := tengo.NewScript(res)
 	s.SetImports(stdlib.GetModuleMap(stdlib.AllModuleNames()...))
 	_ = s.Add("inAccount", origmsg.Account)
 	_ = s.Add("inProtocol", origmsg.Protocol)

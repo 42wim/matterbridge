@@ -6,7 +6,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/bwmarrin/discordgo"
+	"github.com/matterbridge/discordgo"
 )
 
 func (b *Bdiscord) getNick(user *discordgo.User, guildID string) string {
@@ -96,6 +96,13 @@ func (b *Bdiscord) getChannelName(id string) string {
 	b.channelsMutex.RLock()
 	defer b.channelsMutex.RUnlock()
 
+	for _, c := range b.channelInfoMap {
+		if c.Name == "ID:"+id {
+			// if we have ID: specified in our gateway configuration return this
+			return c.Name
+		}
+	}
+
 	for _, channel := range b.channels {
 		if channel.ID == id {
 			return b.getCategoryChannelName(channel.Name, channel.ParentID)
@@ -129,7 +136,6 @@ func (b *Bdiscord) getCategoryChannelName(name, parentID string) string {
 var (
 	// See https://discordapp.com/developers/docs/reference#message-formatting.
 	channelMentionRE = regexp.MustCompile("<#[0-9]+>")
-	emojiRE          = regexp.MustCompile("<(:.*?:)[0-9]+>")
 	userMentionRE    = regexp.MustCompile("@[^@\n]{1,32}")
 )
 
@@ -174,10 +180,6 @@ func (b *Bdiscord) replaceUserMentions(text string) string {
 		return strings.Replace(match, "@"+username, member.User.Mention(), 1)
 	}
 	return userMentionRE.ReplaceAllStringFunc(text, replaceUserMentionFunc)
-}
-
-func (b *Bdiscord) stripCustomoji(text string) string {
-	return emojiRE.ReplaceAllString(text, `$1`)
 }
 
 func (b *Bdiscord) replaceAction(text string) (string, bool) {

@@ -7,7 +7,7 @@ import (
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 func (b *Bslack) handleSlack() {
@@ -87,7 +87,7 @@ func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 			b.Log.Errorf("Connection failed %#v %#v", ev.Error(), ev.ErrorObj)
 		case *slack.MemberJoinedChannelEvent:
 			b.users.populateUser(ev.User)
-		case *slack.HelloEvent, *slack.LatencyReport:
+		case *slack.HelloEvent, *slack.LatencyReport, *slack.ConnectingEvent:
 			continue
 		default:
 			b.Log.Debugf("Unhandled incoming event: %T", ev)
