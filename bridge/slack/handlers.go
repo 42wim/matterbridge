@@ -124,10 +124,16 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 		}
 	}
 
+	// Check for our callback ID
+	hasOurCallbackID := false
+	if len(ev.Blocks.BlockSet) == 1 {
+		block, ok := ev.Blocks.BlockSet[0].(*slack.SectionBlock)
+		hasOurCallbackID = ok && block.BlockID == "matterbridge_"+b.uuid
+	}
+
 	// Skip any messages that we made ourselves or from 'slackbot' (see #527).
 	if ev.Username == sSlackBotUser ||
-		(b.rtm != nil && ev.Username == b.si.User.Name) ||
-		(len(ev.Attachments) > 0 && ev.Attachments[0].CallbackID == "matterbridge_"+b.uuid) {
+		(b.rtm != nil && ev.Username == b.si.User.Name) || hasOurCallbackID {
 		return true
 	}
 

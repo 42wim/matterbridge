@@ -408,7 +408,6 @@ func (b *Bslack) editMessage(msg *config.Message, channelInfo *slack.Channel) (b
 	}
 	messageOptions := b.prepareMessageOptions(msg)
 	for {
-		messageOptions = append(messageOptions, slack.MsgOptionText(msg.Text, false))
 		_, _, _, err := b.rtm.UpdateMessage(channelInfo.ID, msg.ID, messageOptions...)
 		if err == nil {
 			return true, nil
@@ -427,11 +426,6 @@ func (b *Bslack) postMessage(msg *config.Message, channelInfo *slack.Channel) (s
 		return "", nil
 	}
 	messageOptions := b.prepareMessageOptions(msg)
-	messageOptions = append(
-		messageOptions,
-		slack.MsgOptionText(msg.Text, false),
-		slack.MsgOptionEnableLinkUnfurl(),
-	)
 	for {
 		_, id, err := b.rtm.PostMessage(channelInfo.ID, messageOptions...)
 		if err == nil {
@@ -497,9 +491,6 @@ func (b *Bslack) prepareMessageOptions(msg *config.Message) []slack.MsgOption {
 	}
 
 	var attachments []slack.Attachment
-	// add a callback ID so we can see we created it
-	const zeroWidthSpace = "\u200b"
-	attachments = append(attachments, slack.Attachment{CallbackID: "matterbridge_" + b.uuid, Fallback: zeroWidthSpace})
 	// add file attachments
 	attachments = append(attachments, b.createAttach(msg.Extra)...)
 	// add slack attachments (from another slack bridge)
@@ -510,6 +501,19 @@ func (b *Bslack) prepareMessageOptions(msg *config.Message) []slack.MsgOption {
 	}
 
 	var opts []slack.MsgOption
+	opts = append(opts,
+		// provide regular text field (fallback used in Slack notifications, etc.)
+		slack.MsgOptionText(msg.Text, false),
+
+		// add a callback ID so we can see we created it
+		slack.MsgOptionBlocks(slack.NewSectionBlock(
+			slack.NewTextBlockObject(slack.MarkdownType, msg.Text, false, false),
+			nil, nil,
+			slack.SectionBlockOptionBlockID("matterbridge_"+b.uuid),
+		)),
+
+		slack.MsgOptionEnableLinkUnfurl(),
+	)
 	opts = append(opts, slack.MsgOptionAttachments(attachments...))
 	opts = append(opts, slack.MsgOptionPostMessageParameters(params))
 	return opts
