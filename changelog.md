@@ -1,3 +1,38 @@
+# v1.17.0
+
+## New features
+
+- msteams: new protocol added. Add initial Microsoft Teams support #967
+  See https://github.com/42wim/matterbridge/wiki/MS-Teams-setup for a complete walkthrough
+- discord: Add ability to procure avatars from the destination bridge #1000
+- matrix: Add support for avatars from matrix. #1007
+- general: support JSON and YAML config formats #1045
+
+## Enhancements
+
+- discord: Check only bridged channels for PermManageWebhooks #1001
+- irc: Be less lossy when throttling IRC messages #1004
+- keybase: updated library #1002, #1019
+- matrix: Rebase gomatrix vendor with upstream #1006
+- slack: Use upstream slack-go/slack again #1018
+- slack: Ignore ConnectingEvent #1041
+- slack: use blocks not attachments #1048
+- sshchat: Update vendor shazow/ssh-chat #1029
+- telegram: added markdownv2 mode for telegram #1037
+- whatsapp: Implement basic reconnect (whatsapp). Fixes #987 #1003
+
+## Bugfix
+
+- discord: Fix webhook permission checks sometimes failing #1043
+- discord: Fix #1027: warning when handling inbound webhooks #1044
+- discord: Fix duplicate separator on empty description/url (discord) #1035
+- matrix: Fix issue with underscores in links #999
+- slack: Fix #1039: messages sent to Slack being synced back #1046
+- telegram: Make avatars download work with mediaserverdownload (telegram). Fixes #920 
+
+This release couldn't exist without the following contributors:
+@qaisjp, @jakubgs, @burner1024, @notpushkin, @MartijnBraam, @42wim
+
 # v1.16.5
 
 - Fix version bump
