@@ -498,7 +498,8 @@ func (b *Bslack) prepareMessageOptions(msg *config.Message) []slack.MsgOption {
 
 	var attachments []slack.Attachment
 	// add a callback ID so we can see we created it
-	attachments = append(attachments, slack.Attachment{CallbackID: "matterbridge_" + b.uuid})
+	const zeroWidthSpace = "\u200b"
+	attachments = append(attachments, slack.Attachment{CallbackID: "matterbridge_" + b.uuid, Fallback: zeroWidthSpace})
 	// add file attachments
 	attachments = append(attachments, b.createAttach(msg.Extra)...)
 	// add slack attachments (from another slack bridge)
