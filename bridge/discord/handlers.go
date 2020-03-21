@@ -103,7 +103,7 @@ func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	// if we have embedded content add it to text
 	if b.GetBool("ShowEmbeds") && m.Message.Embeds != nil {
 		for _, embed := range m.Message.Embeds {
-			rmsg.Text = rmsg.Text + "embed: " + embed.Title + " - " + embed.Description + " - " + embed.URL + "\n"
+			rmsg.Text += handleEmbed(embed)
 		}
 	}
 
@@ -191,4 +191,34 @@ func (b *Bdiscord) memberRemove(s *discordgo.Session, m *discordgo.GuildMemberRe
 	b.Log.Debugf("<= Sending message from %s to gateway", b.Account)
 	b.Log.Debugf("<= Message is %#v", rmsg)
 	b.Remote <- rmsg
+}
+
+func handleEmbed(embed *discordgo.MessageEmbed) string {
+	var t []string
+	var result string
+
+	t = append(t, embed.Title)
+	t = append(t, embed.Description)
+	t = append(t, embed.URL)
+
+	i := 0
+	for _, e := range t {
+		if e == "" {
+			continue
+		}
+
+		i++
+		if i == 1 {
+			result += "embed: " + e
+			continue
+		}
+
+		result += " - " + e
+	}
+
+	if result != "" {
+		result += "\n"
+	}
+
+	return result
 }
