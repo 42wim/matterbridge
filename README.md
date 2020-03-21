@@ -22,6 +22,7 @@ Letting people be where they want to be.<br />
 [Zulip][mb-zulip] |
 [Telegram][mb-telegram] |
 [Keybase][mb-keybase] |
+[MSTeams][mb-msteams] |
 And more...
 </sup>
 
@@ -95,6 +96,7 @@ And more...
 - [Telegram](https://telegram.org)
 - [Rocket.chat](https://rocket.chat)
 - [Matrix](https://matrix.org)
+- [Microsoft Teams](https://teams.microsoft.com)
 - [Steam](https://store.steampowered.com/)
 - [Twitch](https://twitch.tv)
 - [Ssh-chat](https://github.com/shazow/ssh-chat)
@@ -333,6 +335,7 @@ Matterbridge wouldn't exist without these libraries:
 - zulip - https://github.com/ifo/gozulipbot
 - tengo - https://github.com/d5/tengo
 - keybase - https://github.com/keybase/go-keybase-chat-bot
+- msgraph.go - https://github.com/yaegashi/msgraph.go
 
 <!-- Links -->
 
@@ -349,3 +352,4 @@ Matterbridge wouldn't exist without these libraries:
 [mb-keybase]: https://keybase.io/team/matterbridge
 [mb-zulip]: https://matterbridge.zulipchat.com/register/
 [mb-telegram]: https://t.me/Matterbridge
+[mb-msteams]: https://teams.microsoft.com/join/hj92x75gd3y7
