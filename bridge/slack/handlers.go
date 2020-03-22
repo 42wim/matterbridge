@@ -1,6 +1,7 @@
 package bslack
 
 import (
+	"errors"
 	"fmt"
 	"html"
 	"time"
@@ -9,6 +10,9 @@ import (
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/slack-go/slack"
 )
+
+// ErrEventIgnored is for events that should be ignored
+var ErrEventIgnored = errors.New("this event message should ignored")
 
 func (b *Bslack) handleSlack() {
 	messages := make(chan *config.Message)
@@ -53,7 +57,9 @@ func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 				continue
 			}
 			rmsg, err := b.handleTypingEvent(ev)
-			if err != nil {
+			if err == ErrEventIgnored {
+				continue
+			} else if err != nil {
 				b.Log.Errorf("%#v", err)
 				continue
 			}
@@ -276,6 +282,9 @@ func (b *Bslack) handleAttachments(ev *slack.MessageEvent, rmsg *config.Message)
 }
 
 func (b *Bslack) handleTypingEvent(ev *slack.UserTypingEvent) (*config.Message, error) {
+	if ev.User == b.si.User.ID {
+		return nil, ErrEventIgnored
+	}
 	channelInfo, err := b.channels.getChannelByID(ev.Channel)
 	if err != nil {
 		return nil, err

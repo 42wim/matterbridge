@@ -21,6 +21,7 @@ type Bdiscord struct {
 	c *discordgo.Session
 
 	nick            string
+	userID          string
 	guildID         string
 	webhookID       string
 	webhookToken    string
@@ -92,6 +93,7 @@ func (b *Bdiscord) Connect() error {
 	}
 	serverName := strings.Replace(b.GetString("Server"), "ID:", "", -1)
 	b.nick = userinfo.Username
+	b.userID = userinfo.ID
 	b.channelsMutex.Lock()
 	for _, guild := range guilds {
 		if guild.Name == serverName || guild.ID == serverName {
