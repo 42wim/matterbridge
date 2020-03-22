@@ -119,6 +119,9 @@ func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 		rmsg.Event = config.EventUserAction
 	}
 
+	// Replace emotes
+	rmsg.Text = replaceEmotes(rmsg.Text)
+
 	b.Log.Debugf("<= Sending message from %s on %s to gateway", m.Author.Username, b.Account)
 	b.Log.Debugf("<= Message is %#v", rmsg)
 	b.Remote <- rmsg
