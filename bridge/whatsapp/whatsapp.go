@@ -67,6 +67,7 @@ func (b *Bwhatsapp) Connect() error {
 	// https://github.com/Rhymen/go-whatsapp#creating-a-connection
 	b.Log.Debugln("Connecting to WhatsApp..")
 	conn, err := whatsapp.NewConn(20 * time.Second)
+	conn.SetClientVersion(0, 4, 1307)
 	if err != nil {
 		return errors.New("failed to connect to WhatsApp: " + err.Error())
 	}
