@@ -1,3 +1,20 @@
+# v1.17.1
+
+## Enhancements
+
+- docker: Remove build dependencies from final image (multistage build) #1057
+
+## Bugfix
+
+- general: Don't transmit typing events from ourselves #1056
+- general: Add support for build tags #1054
+- discord: Strip extra info from emotes (discord) #1052
+- msteams: fix macos build: Update vendor yaegashi/msgraph.go to v0.1.2 #1036
+- whatsapp: Update client version whatsapp. Fixes #1061 #1062
+
+This release couldn't exist without the following contributors:
+@awigen, @qaisjp, @42wim
+
 # v1.17.0
 
 ## New features
