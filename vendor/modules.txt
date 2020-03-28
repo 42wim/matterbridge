@@ -111,8 +111,6 @@ github.com/matterbridge/gomatrix
 github.com/matterbridge/gozulipbot
 # github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61
 github.com/matterbridge/logrus-prefixed-formatter
-# github.com/matterbridge/msgraph.go v0.0.0-20200308150230-9e043fe9dbaa
-github.com/matterbridge/msgraph.go/msauth
 # github.com/mattermost/mattermost-server v5.5.0+incompatible
 github.com/mattermost/mattermost-server/mlog
 github.com/mattermost/mattermost-server/model
@@ -205,6 +203,7 @@ github.com/valyala/fasttemplate
 # github.com/yaegashi/msgraph.go v0.1.2
 github.com/yaegashi/msgraph.go/beta
 github.com/yaegashi/msgraph.go/jsonx
+github.com/yaegashi/msgraph.go/msauth
 # github.com/zfjagann/golang-ring v0.0.0-20190106091943-a88bb6aef447
 github.com/zfjagann/golang-ring
 # go.uber.org/atomic v1.4.0
