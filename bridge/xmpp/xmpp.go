@@ -114,6 +114,9 @@ func (b *Bxmpp) createXMPP() error {
 		ServerName:         strings.Split(b.GetString("Jid"), "@")[1],
 		InsecureSkipVerify: b.GetBool("SkipTLSVerify"), // nolint: gosec
 	}
+
+	xmpp.DebugWriter = b.Log.Writer()
+
 	options := xmpp.Options{
 		Host:                         b.GetString("Server"),
 		User:                         b.GetString("Jid"),
@@ -122,7 +125,6 @@ func (b *Bxmpp) createXMPP() error {
 		StartTLS:                     true,
 		TLSConfig:                    tc,
 		Debug:                        b.GetBool("debug"),
-		Logger:                       b.Log.Writer(),
 		Session:                      true,
 		Status:                       "",
 		StatusMessage:                "",
