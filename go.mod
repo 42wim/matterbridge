@@ -28,7 +28,6 @@ require (
 	github.com/matterbridge/gomatrix v0.0.0-20200209224845-c2104d7936a6
 	github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18
 	github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61
-	github.com/matterbridge/msgraph.go v0.0.0-20200308150230-9e043fe9dbaa
 	github.com/mattermost/mattermost-server v5.5.0+incompatible
 	github.com/mattn/go-runewidth v0.0.7 // indirect
 	github.com/mattn/godown v0.0.0-20180312012330-2e9e17e0ea51

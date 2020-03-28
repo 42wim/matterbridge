@@ -138,8 +138,6 @@ github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18 h1:fLhwXtW
 github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18/go.mod h1:yAjnZ34DuDyPHMPHHjOsTk/FefW4JJjoMMCGt/8uuQA=
 github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61 h1:R/MgM/eUyRBQx2FiH6JVmXck8PaAuKfe2M1tWIzW7nE=
 github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61/go.mod h1:iXGEotOvwI1R1SjLxRc+BF5rUORTMtE0iMZBT2lxqAU=
-github.com/matterbridge/msgraph.go v0.0.0-20200308150230-9e043fe9dbaa h1:ZP87nK5Mhgvt6Rpgbztdmq9+6cb3aZ6MgW/JWKbnMrI=
-github.com/matterbridge/msgraph.go v0.0.0-20200308150230-9e043fe9dbaa/go.mod h1:l0kx9L8Z+NbBCGrQ/y+ldKZ/fiwBZjPoXwDS55LTumI=
 github.com/mattermost/mattermost-server v5.5.0+incompatible h1:0wcLGgYtd+YImtLDPf2AOfpBHxbU4suATx+6XKw1XbU=
 github.com/mattermost/mattermost-server v5.5.0+incompatible/go.mod h1:5L6MjAec+XXQwMIt791Ganu45GKsSiM+I0tLR9wUj8Y=
 github.com/mattn/go-colorable v0.1.1/go.mod h1:FuOcm+DKB9mbwrcAfNl7/TZVBZ6rcnceauSikq3lYCQ=
@@ -290,8 +288,6 @@ golang.org/x/net v0.0.0-20190522155817-f3200d17e092/go.mod h1:HSz+uSET+XFnRR8LxR
 golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553 h1:efeOvDhwQ29Dj3SdAV/MJf8oukgn+8D8WgaCaRMchF8=
 golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=
 golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be/go.mod h1:N/0e6XlmueqKjAGxoOufVs8QHGRruUQn6yWY3a++T0U=
-golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45 h1:SVwTIAaPC2U/AvvLNZ2a7OVsmBpC8L5BlwK1whH3hm0=
-golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=
 golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d h1:TzXSXBo42m9gQenoE3b9BGiEpg5IG2JkU5FkPIawgtw=
 golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=
 golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
