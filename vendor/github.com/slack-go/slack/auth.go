@@ -27,7 +27,7 @@ func (api *Client) SendAuthRevoke(token string) (*AuthRevokeResponse, error) {
 	return api.SendAuthRevokeContext(context.Background(), token)
 }
 
-// SendAuthRevokeContext will retrieve the satus from api.test
+// SendAuthRevokeContext will send a revocation request for our token to api.revoke with context
 func (api *Client) SendAuthRevokeContext(ctx context.Context, token string) (*AuthRevokeResponse, error) {
 	if token == "" {
 		token = api.token

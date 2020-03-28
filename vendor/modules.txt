@@ -172,7 +172,7 @@ github.com/sirupsen/logrus
 github.com/skip2/go-qrcode
 github.com/skip2/go-qrcode/bitset
 github.com/skip2/go-qrcode/reedsolomon
-# github.com/slack-go/slack v0.6.3-0.20200228121756-f56d616d5901
+# github.com/slack-go/slack v0.6.3
 github.com/slack-go/slack
 github.com/slack-go/slack/internal/errorsx
 github.com/slack-go/slack/internal/timex

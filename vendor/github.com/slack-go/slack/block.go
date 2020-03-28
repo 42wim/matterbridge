@@ -14,6 +14,7 @@ const (
 	MBTImage   MessageBlockType = "image"
 	MBTAction  MessageBlockType = "actions"
 	MBTContext MessageBlockType = "context"
+	MBTFile    MessageBlockType = "file"
 	MBTInput   MessageBlockType = "input"
 )
 

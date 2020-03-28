@@ -577,5 +577,6 @@ var EventMapping = map[string]interface{}{
 	"subteam_self_removed": SubteamSelfRemovedEvent{},
 	"subteam_updated":      SubteamUpdatedEvent{},
 
-	"desktop_notification": DesktopNotificationEvent{},
+	"desktop_notification":       DesktopNotificationEvent{},
+	"mobile_in_app_notification": MobileInAppNotificationEvent{},
 }
