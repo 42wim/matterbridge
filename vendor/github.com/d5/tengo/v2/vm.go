@@ -80,14 +80,14 @@ func (v *VM) Run() (err error) {
 	if err != nil {
 		filePos := v.fileSet.Position(
 			v.curFrame.fn.SourcePos(v.ip - 1))
-		err = fmt.Errorf("Runtime Error: %s\n\tat %s",
-			err.Error(), filePos)
+		err = fmt.Errorf("Runtime Error: %w\n\tat %s",
+			err, filePos)
 		for v.framesIndex > 1 {
 			v.framesIndex--
 			v.curFrame = &v.frames[v.framesIndex-1]
 			filePos = v.fileSet.Position(
 				v.curFrame.fn.SourcePos(v.curFrame.ip - 1))
-			err = fmt.Errorf("%s\n\tat %s", err.Error(), filePos)
+			err = fmt.Errorf("%w\n\tat %s", err, filePos)
 		}
 		return err
 	}
