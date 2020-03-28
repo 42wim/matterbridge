@@ -6,7 +6,7 @@ require (
 	github.com/Jeffail/gabs v1.1.1 // indirect
 	github.com/Philipp15b/go-steam v1.0.1-0.20190816133340-b04c5a83c1c0
 	github.com/Rhymen/go-whatsapp v0.1.0
-	github.com/d5/tengo/v2 v2.0.2
+	github.com/d5/tengo/v2 v2.1.2
 	github.com/dfordsoft/golib v0.0.0-20180902042739-76ee6ab99bec
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.5-0.20181225215658-ec221ba9ea45+incompatible

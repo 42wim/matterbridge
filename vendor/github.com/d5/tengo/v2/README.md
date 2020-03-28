@@ -7,7 +7,6 @@
 [![GoDoc](https://godoc.org/github.com/d5/tengo?status.svg)](https://godoc.org/github.com/d5/tengo)
 [![Go Report Card](https://goreportcard.com/badge/github.com/d5/tengo)](https://goreportcard.com/report/github.com/d5/tengo)
 [![CircleCI](https://circleci.com/gh/d5/tengo.svg?style=svg)](https://circleci.com/gh/d5/tengo)
-[![Sourcegraph](https://sourcegraph.com/github.com/d5/tengo/-/badge.svg)](https://sourcegraph.com/github.com/d5/tengo?badge)
 
 **Tengo is a small, dynamic, fast, secure script language for Go.** 
 
@@ -74,6 +73,10 @@ _* **Go** does not read the source code from file, while all other cases do_
 _* See [here](https://github.com/d5/tengobench) for commands/codes used_
 
 ## Quick Start
+
+```
+go get github.com/d5/tengo/v2
+```
 
 A simple Go example code that compiles/runs Tengo script code with some input/output values:
 

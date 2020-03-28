@@ -23,7 +23,7 @@ github.com/Rhymen/go-whatsapp/binary/token
 github.com/Rhymen/go-whatsapp/crypto/cbc
 github.com/Rhymen/go-whatsapp/crypto/curve25519
 github.com/Rhymen/go-whatsapp/crypto/hkdf
-# github.com/d5/tengo/v2 v2.0.2
+# github.com/d5/tengo/v2 v2.1.2
 github.com/d5/tengo/v2
 github.com/d5/tengo/v2/parser
 github.com/d5/tengo/v2/stdlib
