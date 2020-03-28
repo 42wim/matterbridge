@@ -45,7 +45,7 @@ type ChannelRenameEvent struct {
 type ChannelRenameInfo struct {
 	ID      string `json:"id"`
 	Name    string `json:"name"`
-	Created string `json:"created"`
+	Created int    `json:"created"`
 }
 
 // ChannelHistoryChangedEvent represents the Channel history changed event

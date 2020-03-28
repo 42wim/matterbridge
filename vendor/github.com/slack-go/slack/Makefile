@@ -25,12 +25,12 @@ lint:
 	@go vet .
 
 test:
-	@go test -count=1 -timeout 300s -short .
+	@go test -v -count=1 -timeout 300s -short ./...
 
 test-race:
-	@go test -count=1 -timeout 300s -short -race .
+	@go test -v -count=1 -timeout 300s -short -race ./...
 
 test-integration:
-	@go test -count=1 -timeout 600s .
+	@go test -v -count=1 -timeout 600s ./...
 
 pr-prep: fmt lint test-race test-integration

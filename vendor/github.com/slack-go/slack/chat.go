@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/slack-go/slack/slackutilsx"
 )
@@ -25,10 +26,11 @@ const (
 )
 
 type chatResponseFull struct {
-	Channel          string `json:"channel"`
-	Timestamp        string `json:"ts"`         //Regular message timestamp
-	MessageTimeStamp string `json:"message_ts"` //Ephemeral message timestamp
-	Text             string `json:"text"`
+	Channel            string `json:"channel"`
+	Timestamp          string `json:"ts"`                             //Regular message timestamp
+	MessageTimeStamp   string `json:"message_ts"`                     //Ephemeral message timestamp
+	ScheduledMessageID string `json:"scheduled_message_id,omitempty"` //Scheduled message id
+	Text               string `json:"text"`
 	SlackResponse
 }
 
@@ -82,13 +84,34 @@ func NewPostMessageParameters() PostMessageParameters {
 
 // DeleteMessage deletes a message in a channel
 func (api *Client) DeleteMessage(channel, messageTimestamp string) (string, string, error) {
-	respChannel, respTimestamp, _, err := api.SendMessageContext(context.Background(), channel, MsgOptionDelete(messageTimestamp))
+	respChannel, respTimestamp, _, err := api.SendMessageContext(
+		context.Background(),
+		channel,
+		MsgOptionDelete(messageTimestamp),
+	)
 	return respChannel, respTimestamp, err
 }
 
 // DeleteMessageContext deletes a message in a channel with a custom context
 func (api *Client) DeleteMessageContext(ctx context.Context, channel, messageTimestamp string) (string, string, error) {
-	respChannel, respTimestamp, _, err := api.SendMessageContext(ctx, channel, MsgOptionDelete(messageTimestamp))
+	respChannel, respTimestamp, _, err := api.SendMessageContext(
+		ctx,
+		channel,
+		MsgOptionDelete(messageTimestamp),
+	)
+	return respChannel, respTimestamp, err
+}
+
+// ScheduleMessage sends a message to a channel.
+// Message is escaped by default according to https://api.slack.com/docs/formatting
+// Use http://davestevens.github.io/slack-message-builder/ to help crafting your message.
+func (api *Client) ScheduleMessage(channelID, postAt string, options ...MsgOption) (string, string, error) {
+	respChannel, respTimestamp, _, err := api.SendMessageContext(
+		context.Background(),
+		channelID,
+		MsgOptionSchedule(postAt),
+		MsgOptionCompose(options...),
+	)
 	return respChannel, respTimestamp, err
 }
 
@@ -132,18 +155,33 @@ func (api *Client) PostEphemeral(channelID, userID string, options ...MsgOption)
 // PostEphemeralContext sends an ephemeal message to a user in a channel with a custom context
 // For more details, see PostEphemeral documentation
 func (api *Client) PostEphemeralContext(ctx context.Context, channelID, userID string, options ...MsgOption) (timestamp string, err error) {
-	_, timestamp, _, err = api.SendMessageContext(ctx, channelID, MsgOptionPostEphemeral(userID), MsgOptionCompose(options...))
+	_, timestamp, _, err = api.SendMessageContext(
+		ctx,
+		channelID,
+		MsgOptionPostEphemeral(userID),
+		MsgOptionCompose(options...),
+	)
 	return timestamp, err
 }
 
 // UpdateMessage updates a message in a channel
 func (api *Client) UpdateMessage(channelID, timestamp string, options ...MsgOption) (string, string, string, error) {
-	return api.SendMessageContext(context.Background(), channelID, MsgOptionUpdate(timestamp), MsgOptionCompose(options...))
+	return api.SendMessageContext(
+		context.Background(),
+		channelID,
+		MsgOptionUpdate(timestamp),
+		MsgOptionCompose(options...),
+	)
 }
 
 // UpdateMessageContext updates a message in a channel
 func (api *Client) UpdateMessageContext(ctx context.Context, channelID, timestamp string, options ...MsgOption) (string, string, string, error) {
-	return api.SendMessageContext(ctx, channelID, MsgOptionUpdate(timestamp), MsgOptionCompose(options...))
+	return api.SendMessageContext(
+		ctx,
+		channelID,
+		MsgOptionUpdate(timestamp),
+		MsgOptionCompose(options...),
+	)
 }
 
 // UnfurlMessage unfurls a message in a channel
@@ -212,13 +250,14 @@ func buildSender(apiurl string, options ...MsgOption) sendConfig {
 type sendMode string
 
 const (
-	chatUpdate        sendMode = "chat.update"
-	chatPostMessage   sendMode = "chat.postMessage"
-	chatDelete        sendMode = "chat.delete"
-	chatPostEphemeral sendMode = "chat.postEphemeral"
-	chatResponse      sendMode = "chat.responseURL"
-	chatMeMessage     sendMode = "chat.meMessage"
-	chatUnfurl        sendMode = "chat.unfurl"
+	chatUpdate          sendMode = "chat.update"
+	chatPostMessage     sendMode = "chat.postMessage"
+	chatScheduleMessage sendMode = "chat.scheduleMessage"
+	chatDelete          sendMode = "chat.delete"
+	chatPostEphemeral   sendMode = "chat.postEphemeral"
+	chatResponse        sendMode = "chat.responseURL"
+	chatMeMessage       sendMode = "chat.meMessage"
+	chatUnfurl          sendMode = "chat.unfurl"
 )
 
 type sendConfig struct {
@@ -286,6 +325,15 @@ func (t responseURLSender) BuildRequest() (*http.Request, func(*chatResponseFull
 
 // MsgOption option provided when sending a message.
 type MsgOption func(*sendConfig) error
+
+// MsgOptionSchedule schedules a messages.
+func MsgOptionSchedule(postAt string) MsgOption {
+	return func(config *sendConfig) error {
+		config.endpoint = config.apiurl + string(chatScheduleMessage)
+		config.values.Add("post_at", postAt)
+		return nil
+	}
+}
 
 // MsgOptionPost posts a messages, this is the default.
 func MsgOptionPost() MsgOption {
@@ -624,4 +672,82 @@ func (api *Client) GetPermalinkContext(ctx context.Context, params *PermalinkPar
 		return "", err
 	}
 	return response.Permalink, response.Err()
+}
+
+type GetScheduledMessagesParameters struct {
+	Channel string
+	Cursor  string
+	Latest  string
+	Limit   int
+	Oldest  string
+}
+
+// GetScheduledMessages returns the list of scheduled messages based on params
+func (api *Client) GetScheduledMessages(params *GetScheduledMessagesParameters) (channels []Message, nextCursor string, err error) {
+	return api.GetScheduledMessagesContext(context.Background(), params)
+}
+
+// GetScheduledMessagesContext returns the list of scheduled messages in a Slack team with a custom context
+func (api *Client) GetScheduledMessagesContext(ctx context.Context, params *GetScheduledMessagesParameters) (channels []Message, nextCursor string, err error) {
+	values := url.Values{
+		"token": {api.token},
+	}
+	if params.Channel != "" {
+		values.Add("channel", params.Channel)
+	}
+	if params.Cursor != "" {
+		values.Add("cursor", params.Cursor)
+	}
+	if params.Limit != 0 {
+		values.Add("limit", strconv.Itoa(params.Limit))
+	}
+	if params.Latest != "" {
+		values.Add("latest", params.Latest)
+	}
+	if params.Oldest != "" {
+		values.Add("oldest", params.Oldest)
+	}
+	response := struct {
+		Messages         []Message        `json:"scheduled_messages"`
+		ResponseMetaData responseMetaData `json:"response_metadata"`
+		SlackResponse
+	}{}
+
+	err = api.postMethod(ctx, "chat.scheduledMessages.list", values, &response)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return response.Messages, response.ResponseMetaData.NextCursor, response.Err()
+}
+
+type DeleteScheduledMessageParameters struct {
+	Channel            string
+	ScheduledMessageID string
+	AsUser             bool
+}
+
+// DeleteScheduledMessage returns the list of scheduled messages based on params
+func (api *Client) DeleteScheduledMessage(params *DeleteScheduledMessageParameters) (bool, error) {
+	return api.DeleteScheduledMessageContext(context.Background(), params)
+}
+
+// DeleteScheduledMessageContext returns the list of scheduled messages in a Slack team with a custom context
+func (api *Client) DeleteScheduledMessageContext(ctx context.Context, params *DeleteScheduledMessageParameters) (bool, error) {
+	values := url.Values{
+		"token":                {api.token},
+		"channel":              {params.Channel},
+		"scheduled_message_id": {params.ScheduledMessageID},
+		"as_user":              {strconv.FormatBool(params.AsUser)},
+	}
+	response := struct {
+		SlackResponse
+	}{}
+
+	err := api.postMethod(ctx, "chat.deleteScheduledMessage", values, &response)
+	if err != nil {
+		return false, err
+	}
+
+	return response.Ok, response.Err()
 }

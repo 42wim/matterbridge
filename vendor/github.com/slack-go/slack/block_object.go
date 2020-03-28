@@ -145,6 +145,14 @@ func NewTextBlockObject(elementType, text string, emoji, verbatim bool) *TextBlo
 	}
 }
 
+// BlockType returns the type of the block
+func (t TextBlockObject) BlockType() MessageBlockType {
+	if t.Type == "mrkdown" {
+		return MarkdownType
+	}
+	return PlainTextType
+}
+
 // ConfirmationBlockObject defines a dialog that provides a confirmation step to
 // any interactive element. This dialog will ask the user to confirm their action by
 // offering a confirm and deny buttons.

@@ -8,6 +8,7 @@ const (
 	METOverflow       MessageElementType = "overflow"
 	METDatepicker     MessageElementType = "datepicker"
 	METPlainTextInput MessageElementType = "plain_text_input"
+	METRadioButtons   MessageElementType = "radio_buttons"
 
 	MixedElementImage MixedElementType = "mixed_image"
 	MixedElementText  MixedElementType = "mixed_text"
@@ -17,6 +18,12 @@ const (
 	OptTypeUser          string = "users_select"
 	OptTypeConversations string = "conversations_select"
 	OptTypeChannels      string = "channels_select"
+
+	MultiOptTypeStatic        string = "multi_static_select"
+	MultiOptTypeExternal      string = "multi_external_select"
+	MultiOptTypeUser          string = "multi_users_select"
+	MultiOptTypeConversations string = "multi_conversations_select"
+	MultiOptTypeChannels      string = "multi_channels_select"
 )
 
 type MessageElementType string
@@ -32,11 +39,15 @@ type MixedElement interface {
 }
 
 type Accessory struct {
-	ImageElement      *ImageBlockElement
-	ButtonElement     *ButtonBlockElement
-	OverflowElement   *OverflowBlockElement
-	DatePickerElement *DatePickerBlockElement
-	SelectElement     *SelectBlockElement
+	ImageElement          *ImageBlockElement
+	ButtonElement         *ButtonBlockElement
+	OverflowElement       *OverflowBlockElement
+	DatePickerElement     *DatePickerBlockElement
+	PlainTextInputElement *PlainTextInputBlockElement
+	RadioButtonsElement   *RadioButtonsBlockElement
+	SelectElement         *SelectBlockElement
+	MultiSelectElement    *MultiSelectBlockElement
+	UnknownElement        *UnknownBlockElement
 }
 
 // NewAccessory returns a new Accessory for a given block element
@@ -50,17 +61,37 @@ func NewAccessory(element BlockElement) *Accessory {
 		return &Accessory{OverflowElement: element.(*OverflowBlockElement)}
 	case *DatePickerBlockElement:
 		return &Accessory{DatePickerElement: element.(*DatePickerBlockElement)}
+	case *PlainTextInputBlockElement:
+		return &Accessory{PlainTextInputElement: element.(*PlainTextInputBlockElement)}
+	case *RadioButtonsBlockElement:
+		return &Accessory{RadioButtonsElement: element.(*RadioButtonsBlockElement)}
 	case *SelectBlockElement:
 		return &Accessory{SelectElement: element.(*SelectBlockElement)}
+	case *MultiSelectBlockElement:
+		return &Accessory{MultiSelectElement: element.(*MultiSelectBlockElement)}
+	default:
+		return &Accessory{UnknownElement: element.(*UnknownBlockElement)}
 	}
-
-	return nil
 }
 
 // BlockElements is a convenience struct defined to allow dynamic unmarshalling of
 // the "elements" value in Slack's JSON response, which varies depending on BlockElement type
 type BlockElements struct {
 	ElementSet []BlockElement `json:"elements,omitempty"`
+}
+
+// UnknownBlockElement any block element that this library does not directly support.
+// See the "Rich Elements" section at the following URL:
+// https://api.slack.com/changelog/2019-09-what-they-see-is-what-you-get-and-more-and-less
+// New block element types may be introduced by Slack at any time; this is a catch-all for any such block elements.
+type UnknownBlockElement struct {
+	Type     MessageElementType `json:"type"`
+	Elements BlockElements
+}
+
+// ElementType returns the type of the Element
+func (s UnknownBlockElement) ElementType() MessageElementType {
+	return s.Type
 }
 
 // ImageBlockElement An element to insert an image - this element can be used
@@ -135,6 +166,20 @@ func NewButtonBlockElement(actionID, value string, text *TextBlockObject) *Butto
 	}
 }
 
+// OptionsResponse defines the response used for select block typahead.
+//
+// More Information: https://api.slack.com/reference/block-kit/block-elements#external_multi_select
+type OptionsResponse struct {
+	Options []*OptionBlockObject `json:"options,omitempty"`
+}
+
+// OptionGroupsResponse defines the response used for select block typahead.
+//
+// More Information: https://api.slack.com/reference/block-kit/block-elements#external_multi_select
+type OptionGroupsResponse struct {
+	OptionGroups []*OptionGroupBlockObject `json:"option_groups,omitempty"`
+}
+
 // SelectBlockElement defines the simplest form of select menu, with a static list
 // of options passed in when defining the element.
 //
@@ -149,7 +194,7 @@ type SelectBlockElement struct {
 	InitialUser         string                    `json:"initial_user,omitempty"`
 	InitialConversation string                    `json:"initial_conversation,omitempty"`
 	InitialChannel      string                    `json:"initial_channel,omitempty"`
-	MinQueryLength      int                       `json:"min_query_length,omitempty"`
+	MinQueryLength      *int                      `json:"min_query_length,omitempty"`
 	Confirm             *ConfirmationBlockObject  `json:"confirm,omitempty"`
 }
 
@@ -178,6 +223,56 @@ func NewOptionsGroupSelectBlockElement(
 	optGroups ...*OptionGroupBlockObject,
 ) *SelectBlockElement {
 	return &SelectBlockElement{
+		Type:         optType,
+		Placeholder:  placeholder,
+		ActionID:     actionID,
+		OptionGroups: optGroups,
+	}
+}
+
+// MultiSelectBlockElement defines a multiselect menu, with a static list
+// of options passed in when defining the element.
+//
+// More Information: https://api.slack.com/reference/messaging/block-elements#multi_select
+type MultiSelectBlockElement struct {
+	Type                 string                    `json:"type,omitempty"`
+	Placeholder          *TextBlockObject          `json:"placeholder,omitempty"`
+	ActionID             string                    `json:"action_id,omitempty"`
+	Options              []*OptionBlockObject      `json:"options,omitempty"`
+	OptionGroups         []*OptionGroupBlockObject `json:"option_groups,omitempty"`
+	InitialOptions       []*OptionBlockObject      `json:"initial_options,omitempty"`
+	InitialUsers         []string                  `json:"initial_users,omitempty"`
+	InitialConversations []string                  `json:"initial_conversations,omitempty"`
+	InitialChannels      []string                  `json:"initial_channels,omitempty"`
+	MinQueryLength       *int                      `json:"min_query_length,omitempty"`
+	Confirm              *ConfirmationBlockObject  `json:"confirm,omitempty"`
+}
+
+// ElementType returns the type of the Element
+func (s MultiSelectBlockElement) ElementType() MessageElementType {
+	return MessageElementType(s.Type)
+}
+
+// NewOptionsMultiSelectBlockElement returns a new instance of SelectBlockElement for use with
+// the Options object only.
+func NewOptionsMultiSelectBlockElement(optType string, placeholder *TextBlockObject, actionID string, options ...*OptionBlockObject) *MultiSelectBlockElement {
+	return &MultiSelectBlockElement{
+		Type:        optType,
+		Placeholder: placeholder,
+		ActionID:    actionID,
+		Options:     options,
+	}
+}
+
+// NewOptionsGroupMultiSelectBlockElement returns a new instance of MultiSelectBlockElement for use with
+// the Options object only.
+func NewOptionsGroupMultiSelectBlockElement(
+	optType string,
+	placeholder *TextBlockObject,
+	actionID string,
+	optGroups ...*OptionGroupBlockObject,
+) *MultiSelectBlockElement {
+	return &MultiSelectBlockElement{
 		Type:         optType,
 		Placeholder:  placeholder,
 		ActionID:     actionID,
@@ -238,10 +333,11 @@ func NewDatePickerBlockElement(actionID string) *DatePickerBlockElement {
 	}
 }
 
-// PlainTextInputBlockElement creates a field where a user can enter freeform data.
+// PlainTextInputBlockElement creates a field where a user can enter freeform
+// data.
 // Plain-text input elements are currently only available in modals.
 //
-// More Information: https://api.slack.com/reference/messaging/block-elements#input
+// More Information: https://api.slack.com/reference/block-kit/block-elements#input
 type PlainTextInputBlockElement struct {
 	Type         MessageElementType `json:"type"`
 	ActionID     string             `json:"action_id"`
@@ -257,11 +353,38 @@ func (s PlainTextInputBlockElement) ElementType() MessageElementType {
 	return s.Type
 }
 
-// NewPlainTextInputBlockElement returns an instance of a plain-text input element
+// NewPlainTextInputBlockElement returns an instance of a plain-text input
+// element
 func NewPlainTextInputBlockElement(placeholder *TextBlockObject, actionID string) *PlainTextInputBlockElement {
 	return &PlainTextInputBlockElement{
 		Type:        METPlainTextInput,
 		ActionID:    actionID,
 		Placeholder: placeholder,
+	}
+}
+
+// RadioButtonsBlockElement defines an element which lets users choose one item
+// from a list of possible options.
+//
+// More Information: https://api.slack.com/reference/block-kit/block-elements#radio
+type RadioButtonsBlockElement struct {
+	Type          MessageElementType       `json:"type"`
+	ActionID      string                   `json:"action_id"`
+	Options       []*OptionBlockObject     `json:"options"`
+	InitialOption *OptionBlockObject       `json:"initial_option,omitempty"`
+	Confirm       *ConfirmationBlockObject `json:"confirm,omitempty"`
+}
+
+// ElementType returns the type of the Element
+func (s RadioButtonsBlockElement) ElementType() MessageElementType {
+	return s.Type
+}
+
+// NewRadioButtonsBlockElement returns an instance of a radio buttons element.
+func NewRadioButtonsBlockElement(actionID string, options ...*OptionBlockObject) *RadioButtonsBlockElement {
+	return &RadioButtonsBlockElement{
+		Type:     METRadioButtons,
+		ActionID: actionID,
+		Options:  options,
 	}
 }

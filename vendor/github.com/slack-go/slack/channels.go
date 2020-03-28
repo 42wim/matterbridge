@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/url"
 	"strconv"
+	"time"
 )
 
 type channelResponseFull struct {
@@ -14,6 +15,7 @@ type channelResponseFull struct {
 	NotInChannel bool      `json:"not_in_channel"`
 	History
 	SlackResponse
+	Metadata ResponseMetadata `json:"response_metadata"`
 }
 
 // Channel contains information about the channel
@@ -35,25 +37,21 @@ func (api *Client) channelRequest(ctx context.Context, path string, values url.V
 	return response, response.Err()
 }
 
-type channelsConfig struct {
-	values url.Values
-}
-
 // GetChannelsOption option provided when getting channels.
-type GetChannelsOption func(*channelsConfig) error
+type GetChannelsOption func(*ChannelPagination) error
 
 // GetChannelsOptionExcludeMembers excludes the members collection from each channel.
 func GetChannelsOptionExcludeMembers() GetChannelsOption {
-	return func(config *channelsConfig) error {
-		config.values.Add("exclude_members", "true")
+	return func(p *ChannelPagination) error {
+		p.excludeMembers = true
 		return nil
 	}
 }
 
 // GetChannelsOptionExcludeArchived excludes archived channels from results.
 func GetChannelsOptionExcludeArchived() GetChannelsOption {
-	return func(config *channelsConfig) error {
-		config.values.Add("exclude_archived", "true")
+	return func(p *ChannelPagination) error {
+		p.excludeArchived = true
 		return nil
 	}
 }
@@ -266,6 +264,78 @@ func (api *Client) KickUserFromChannelContext(ctx context.Context, channelID, us
 	return err
 }
 
+func newChannelPagination(c *Client, options ...GetChannelsOption) (cp ChannelPagination) {
+	cp = ChannelPagination{
+		c:     c,
+		limit: 200, // per slack api documentation.
+	}
+
+	for _, opt := range options {
+		opt(&cp)
+	}
+
+	return cp
+}
+
+// ChannelPagination allows for paginating over the channels
+type ChannelPagination struct {
+	Channels        []Channel
+	limit           int
+	excludeArchived bool
+	excludeMembers  bool
+	previousResp    *ResponseMetadata
+	c               *Client
+}
+
+// Done checks if the pagination has completed
+func (ChannelPagination) Done(err error) bool {
+	return err == errPaginationComplete
+}
+
+// Failure checks if pagination failed.
+func (t ChannelPagination) Failure(err error) error {
+	if t.Done(err) {
+		return nil
+	}
+
+	return err
+}
+
+func (t ChannelPagination) Next(ctx context.Context) (_ ChannelPagination, err error) {
+	var (
+		resp *channelResponseFull
+	)
+
+	if t.c == nil || (t.previousResp != nil && t.previousResp.Cursor == "") {
+		return t, errPaginationComplete
+	}
+
+	t.previousResp = t.previousResp.initialize()
+
+	values := url.Values{
+		"limit":            {strconv.Itoa(t.limit)},
+		"exclude_archived": {strconv.FormatBool(t.excludeArchived)},
+		"exclude_members":  {strconv.FormatBool(t.excludeMembers)},
+		"token":            {t.c.token},
+		"cursor":           {t.previousResp.Cursor},
+	}
+
+	if resp, err = t.c.channelRequest(ctx, "channels.list", values); err != nil {
+		return t, err
+	}
+
+	t.c.Debugf("GetChannelsContext: got %d channels; metadata %v", len(resp.Channels), resp.Metadata)
+	t.Channels = resp.Channels
+	t.previousResp = &resp.Metadata
+
+	return t, nil
+}
+
+// GetChannelsPaginated fetches channels in a paginated fashion, see GetChannelsContext for usage.
+func (api *Client) GetChannelsPaginated(options ...GetChannelsOption) ChannelPagination {
+	return newChannelPagination(api, options...)
+}
+
 // GetChannels retrieves all the channels
 // see https://api.slack.com/methods/channels.list
 func (api *Client) GetChannels(excludeArchived bool, options ...GetChannelsOption) ([]Channel, error) {
@@ -274,28 +344,27 @@ func (api *Client) GetChannels(excludeArchived bool, options ...GetChannelsOptio
 
 // GetChannelsContext retrieves all the channels with a custom context
 // see https://api.slack.com/methods/channels.list
-func (api *Client) GetChannelsContext(ctx context.Context, excludeArchived bool, options ...GetChannelsOption) ([]Channel, error) {
-	config := channelsConfig{
-		values: url.Values{
-			"token": {api.token},
-		},
-	}
-
+func (api *Client) GetChannelsContext(ctx context.Context, excludeArchived bool, options ...GetChannelsOption) (results []Channel, err error) {
 	if excludeArchived {
 		options = append(options, GetChannelsOptionExcludeArchived())
 	}
 
-	for _, opt := range options {
-		if err := opt(&config); err != nil {
-			return nil, err
+	p := api.GetChannelsPaginated(options...)
+	for err == nil {
+		p, err = p.Next(ctx)
+		if err == nil {
+			results = append(results, p.Channels...)
+		} else if rateLimitedError, ok := err.(*RateLimitedError); ok {
+			select {
+			case <-ctx.Done():
+				err = ctx.Err()
+			case <-time.After(rateLimitedError.RetryAfter):
+				err = nil
+			}
 		}
 	}
 
-	response, err := api.channelRequest(ctx, "channels.list", config.values)
-	if err != nil {
-		return nil, err
-	}
-	return response.Channels, nil
+	return results, p.Failure(err)
 }
 
 // SetChannelReadMark sets the read mark of a given channel to a specific point
