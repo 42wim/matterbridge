@@ -644,7 +644,20 @@ func (c *Client) Recv() (stanza interface{}, err error) {
 		case *clientMessage:
 			if v.Event.XMLNS == XMPPNS_PUBSUB_EVENT {
 				// Handle Pubsub notifications
-				return pubsubClientToReturn(v.Event), nil
+				switch v.Event.Items.Node {
+				case XMPPNS_AVATAR_PEP_METADATA:
+					return handleAvatarMetadata(v.Event.Items.Items[0].Body,
+						v.From)
+				// I am not sure whether this can even happen.
+				// XEP-0084 only specifies a subscription to
+				// the metadata node.
+				/*case XMPPNS_AVATAR_PEP_DATA:
+				return handleAvatarData(v.Event.Items.Items[0].Body,
+					v.From,
+					v.Event.Items.Items[0].ID)*/
+				default:
+					return pubsubClientToReturn(v.Event), nil
+				}
 			}
 
 			stamp, _ := time.Parse(
@@ -745,10 +758,41 @@ func (c *Client) Recv() (stanza interface{}, err error) {
 						return PubsubItems{}, err
 					}
 
-					return PubsubItems{
-						p.Node,
-						pubsubItemsToReturn(p.Items),
-					}, nil
+					switch p.Node {
+					case XMPPNS_AVATAR_PEP_DATA:
+						return handleAvatarData(p.Items[0].Body,
+							v.From,
+							p.Items[0].ID)
+					case XMPPNS_AVATAR_PEP_METADATA:
+						return handleAvatarMetadata(p.Items[0].Body,
+							v.From)
+					default:
+						return PubsubItems{
+							p.Node,
+							pubsubItemsToReturn(p.Items),
+						}, nil
+					}
+					// Note: XEP-0084 states that metadata and data
+					// should be fetched with an id of retrieve1.
+					// Since we already have PubSub implemented, we
+					// can just use items1 and items3 to do the same
+					// as an Avatar node is just a PEP (PubSub) node.
+					/*case "retrieve1":
+					var p clientPubsubItems
+					err := xml.Unmarshal([]byte(v.Query.InnerXML), &p)
+					if err != nil {
+						return PubsubItems{}, err
+					}
+
+					switch p.Node {
+					case XMPPNS_AVATAR_PEP_DATA:
+						return handleAvatarData(p.Items[0].Body,
+							v.From,
+							p.Items[0].ID)
+					case XMPPNS_AVATAR_PEP_METADATA:
+						return handleAvatarMetadata(p.Items[0].Body,
+							v
+					}*/
 				}
 			case v.Query.XMLName.Local == "":
 				return IQ{ID: v.ID, From: v.From, To: v.To, Type: v.Type}, nil
