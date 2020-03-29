@@ -23,12 +23,15 @@ type Bxmpp struct {
 	xmppMap   map[string]string
 	connected bool
 	sync.RWMutex
+
+	avatarMap map[string]string
 }
 
 func New(cfg *bridge.Config) bridge.Bridger {
 	return &Bxmpp{
-		Config:  cfg,
-		xmppMap: make(map[string]string),
+		Config:    cfg,
+		xmppMap:   make(map[string]string),
+		avatarMap: make(map[string]string),
 	}
 }
 
@@ -68,6 +71,10 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 		return "", nil
 	}
 	b.Log.Debugf("=> Receiving %#v", msg)
+
+	if msg.Event == config.EventAvatarDownload {
+		return b.cacheAvatar(&msg), nil
+	}
 
 	// Upload a file (in XMPP case send the upload URL because XMPP has no native upload support).
 	if msg.Extra != nil {
@@ -230,6 +237,12 @@ func (b *Bxmpp) handleXMPP() error {
 					event = config.EventTopicChange
 				}
 
+				avatar := getAvatar(b.avatarMap, v.Remote, b.General)
+				if avatar == "" {
+					b.Log.Debugf("Requesting avatar data")
+					b.xc.AvatarRequestData(v.Remote)
+				}
+
 				msgID := v.ID
 				if v.ReplaceID != "" {
 					msgID = v.ReplaceID
@@ -239,6 +252,7 @@ func (b *Bxmpp) handleXMPP() error {
 					Text:     v.Text,
 					Channel:  b.parseChannel(v.Remote),
 					Account:  b.Account,
+					Avatar:   avatar,
 					UserID:   v.Remote,
 					ID:       msgID,
 					Event:    event,
@@ -255,6 +269,8 @@ func (b *Bxmpp) handleXMPP() error {
 				b.Log.Debugf("<= Message is %#v", rmsg)
 				b.Remote <- rmsg
 			}
+		case xmpp.AvatarData:
+			b.handleDownloadAvatar(v)
 		case xmpp.Presence:
 			// Do nothing.
 		}
