@@ -55,6 +55,7 @@ func (b *Bwhatsapp) reconnect(err error) {
 		err := b.conn.Restore()
 		if err == nil {
 			bf.Reset()
+			b.startedAt = uint64(time.Now().Unix())
 			return
 		}
 	}
