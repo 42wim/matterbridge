@@ -18,7 +18,7 @@ import (
 )
 
 //represents the WhatsAppWeb client version
-var waVersion = []int{0, 3, 3324}
+var waVersion = []int{0, 4, 2080}
 
 /*
 Session contains session individual information. To be able to resume the connection without scanning the qr code
@@ -110,7 +110,7 @@ func CheckCurrentServerVersion() ([]int, error) {
 	login := []interface{}{"admin", "init", waVersion, []string{wac.longClientName, wac.shortClientName}, b64ClientId, true}
 	loginChan, err := wac.writeJson(login)
 	if err != nil {
-		return nil, fmt.Errorf("error writing login", err)
+		return nil, fmt.Errorf("error writing login: %s", err.Error())
 	}
 
 	// Retrieve an answer from the websocket
@@ -123,7 +123,7 @@ func CheckCurrentServerVersion() ([]int, error) {
 
 	var resp map[string]interface{}
 	if err = json.Unmarshal([]byte(r), &resp); err != nil {
-		return nil, fmt.Errorf("error decoding login", err)
+		return nil, fmt.Errorf("error decoding login: %s", err.Error())
 	}
 
 	// Take the curr property as X.Y.Z and split it into as int slice
@@ -151,7 +151,7 @@ func (wac *Conn) SetClientName(long, short string) error {
 
 /*
 SetClientVersion sets WhatsApp client version
-Default value is 0.3.3324
+Default value is 0.4.2080
 */
 func (wac *Conn) SetClientVersion(major int, minor int, patch int) {
 	waVersion = []int{major, minor, patch}
