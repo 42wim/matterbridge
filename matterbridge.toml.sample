@@ -1679,34 +1679,44 @@ enable=true
     # REQUIRED
     account="irc.freenode"
 
-    # channel to connect on that account
-    # How to specify them for the different bridges:
+    # The channel key in each gateway is mapped to a similar group chat ID on the chat platform 
+    # To find the group chat ID for different platforms, refer to the table below
     #
-    # irc        - #channel (# is required) (this needs to be lowercase!)
-    # mattermost - channel (the channel name as seen in the URL, not the displayname)
-    # gitter     - username/room
-    # xmpp       - channel
-    # slack      - channel (without the #)
-    #            - ID:C123456 (where C123456 is the channel ID) does not work with webhook
-    # discord    - channel (without the #)
-    #            - ID:123456789 (where 123456789 is the channel ID)
-    #               (https://github.com/42wim/matterbridge/issues/57)
-    #            - category/channel (without the #) if you're using discord categories to group your channels
-    # telegram   - chatid (a large negative number, eg -123456789)
-    #             see (https://www.linkedin.com/pulse/telegram-bots-beginners-marco-frau)
-    # hipchat    - id_channel (see https://www.hipchat.com/account/xmpp for the correct channel)
-    # rocketchat - #channel (# is required (also needed for private channels!)
-    # matrix     - #channel:server (eg #yourchannel:matrix.org)
-    #            - encrypted rooms are not supported in matrix
-    # msteams    - 19:xxxxxxxxxxxxxxxxxxxxxxxxxx@thread.skype
-    #            - You'll find the channel ID in the URL in the threadId=19:82abcxxxxxxxxx@thread.skype
-    # steam      - chatid (a large number).
-    #             The number in the URL when you click "enter chat room" in the browser
-    # whatsapp   - 48111222333-123455678999@g.us A unique group JID;
-    #              if you specify an empty string bridge will list all the possibilities
-    #            - "Group Name" if you specify a group name the bridge will hint its JID to specify
-    #              as group names might change in time and contain weird emoticons
-    # zulip      - stream/topic:topicname (without the #)
+    # Platform   |   Identifier name  |            Example            | Description
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    #            |      channel       |            general            | Do not include the # symbol
+    #  discord   |    channel id      |          ID:123456789         | See https://github.com/42wim/matterbridge/issues/57
+    #            | category/channel   |          Media/gaming         | Without # symbol. If you're using discord categories to group your channels
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    #   gitter   |  username/room     |            general            | As seen in the gitter.im URL
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    #   hipchat  |    id_channel      |         example needed        | See https://www.hipchat.com/account/xmpp for the correct channel
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    #    irc     |      channel       |            #general           | The # symbol is required and should be lowercase!
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    # mattermost |      channel       |            general            | This is the channel name as seen in the URL, not the display name
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    #   matrix   | #channel:server    |    #yourchannel:matrix.org    | Encrypted rooms are not supported in matrix
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    #   msteams  |      threadId      |    19:82abcxx@thread.skype    | You'll find the threadId in the URL
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    # rocketchat |      channel       |            #channel           | # is required for private channels too
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    #   slack    |   channel name     |            general            | Do not include the # symbol
+    #            |    channel id      |           ID:C123456          | The underlying ID of a channel. This doesn't work with
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    #   steam    |      chatid        |         example needed        | The number in the URL when you click "enter chat room" in the browser
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    #  telegram  |      chatid        |          -123456789           | A large negative number. see https://www.linkedin.com/pulse/telegram-bots-beginners-marco-frau
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    #  whatsapp  |     group JID      | 48111222333-123455678999@g.us | A unique group JID. If you specify an empty string, bridge will list all the possibilities
+    #            |    "Group Name"    |         "Family Chat"         | if you specify a group name, the bridge will find hint the JID to specify. Names can change over time and are not stable.
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    #    xmpp    |      channel       |            general            | The room name
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    #   zulip    | stream/topic:topic |     general/off-topic:food    | Do not use the # when specifying a topic
+    # -------------------------------------------------------------------------------------------------------------------------------------
+
     #
     # REQUIRED
     channel="#testing"
