@@ -1,3 +1,19 @@
+# v1.17.2
+
+## Enhancements
+
+- slack: Update vendor slack-go/slack (#1068)
+- general: Update vendor d5/tengo (#1066)
+- general: Clarify terminology used in mapping group chat IDs to channels in config (#1079)
+
+## Bugfix
+
+- whatsapp: Update Rhymen/go-whatsapp vendor and whatsapp version (#1078). Fixes Media upload #1074
+- whatsapp: Reset start timestamp on reconnect (whatsapp). Fixes #1059 (#1064)
+
+This release couldn't exist without the following contributors:
+@42wim, @jheiselman
+
 # v1.17.1
 
 ## Enhancements
