@@ -2,6 +2,7 @@ package brocketchat
 
 import (
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/matterbridge/Rocket.Chat.Go.SDK/models"
 )
 
 func (b *Brocketchat) handleRocket() {
@@ -38,6 +39,23 @@ func (b *Brocketchat) handleRocketHook(messages chan *config.Message) {
 	}
 }
 
+func (b *Brocketchat) handleStatusEvent(ev models.Message, rmsg *config.Message) bool {
+	switch ev.Type {
+		case "":
+			// this is a normal message, no processing needed
+			// return true so the message is not dropped
+			return true
+		case sUserJoined, sUserLeft:
+			rmsg.Event = config.EventJoinLeave
+			return true
+		case sRoomChangedTopic:
+			rmsg.Event = config.EventTopicChange
+			return true
+	}
+	b.Log.Debugf("Dropping message with unknown type: %s", ev.Type)
+	return false
+}
+
 func (b *Brocketchat) handleRocketClient(messages chan *config.Message) {
 	for message := range b.messageChan {
 		// skip messages with same ID, apparently messages get duplicated for an unknown reason
@@ -59,7 +77,12 @@ func (b *Brocketchat) handleRocketClient(messages chan *config.Message) {
 			UserID:   message.User.ID,
 			ID:       message.ID,
 		}
-		messages <- rmsg
+
+		// handleStatusEvent returns false if the message should be dropped
+		// in that case it is probably some modification to the channel we do not want to relay
+		if b.handleStatusEvent(m, rmsg) {
+			messages <- rmsg
+		}
 	}
 }
 
