@@ -179,7 +179,7 @@ func (gw *Gateway) ignoreEvent(event string, dest *bridge.Bridge) bool {
 		}
 	case config.EventTopicChange:
 		// only relay topic change when used in some way on other side
-		if dest.GetBool("ShowTopicChange") && dest.GetBool("SyncTopic") {
+		if !dest.GetBool("ShowTopicChange") && !dest.GetBool("SyncTopic") {
 			return true
 		}
 	}
