@@ -21,7 +21,7 @@ require (
 	github.com/keybase/go-keybase-chat-bot v0.0.0-20200226211841-4e48f3eaef3e
 	github.com/labstack/echo/v4 v4.1.13
 	github.com/lrstanley/girc v0.0.0-20190801035559-4fc93959e1a7
-	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20190210153444-cc9d05784d5d
+	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20200411204219-d5c18ce75048
 	github.com/matterbridge/discordgo v0.18.1-0.20200308151012-aa40f01cbcc3
 	github.com/matterbridge/emoji v2.1.1-0.20191117213217-af507f6b02db+incompatible
 	github.com/matterbridge/go-xmpp v0.0.0-20200329150250-5812999b292b
