@@ -6,12 +6,13 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 )
 
+var pathRegex = regexp.MustCompile("[^a-zA-Z0-9]+")
+
 // GetAvatar constructs a URL for a given user-avatar if it is available in the cache.
 func getAvatar(av map[string]string, userid string, general *config.Protocol) string {
 	if hash, ok := av[userid]; ok {
 		// NOTE: This does not happen in bridge/helper/helper.go but messes up XMPP
-		reg := regexp.MustCompile("[^a-zA-Z0-9]+")
-		id := reg.ReplaceAllString(userid, "_")
+		id := pathRegex.ReplaceAllString(userid, "_")
 		return general.MediaServerDownload + "/" + hash + "/" + id + ".png"
 	}
 	return ""
