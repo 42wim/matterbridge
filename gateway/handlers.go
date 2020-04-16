@@ -169,7 +169,7 @@ func (gw *Gateway) ignoreEvent(event string, dest *bridge.Bridge) bool {
 	switch event {
 	case config.EventAvatarDownload:
 		// Avatar downloads are only relevant for telegram and mattermost for now
-		if dest.Protocol != "mattermost" && dest.Protocol != "telegram" {
+		if dest.Protocol != "mattermost" && dest.Protocol != "telegram" && dest.Protocol != "xmpp" {
 			return true
 		}
 	case config.EventJoinLeave:
