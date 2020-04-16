@@ -95,7 +95,7 @@ github.com/labstack/gommon/random
 github.com/lrstanley/girc
 # github.com/magiconair/properties v1.8.1
 github.com/magiconair/properties
-# github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20190210153444-cc9d05784d5d
+# github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20200411204219-d5c18ce75048
 github.com/matterbridge/Rocket.Chat.Go.SDK/models
 github.com/matterbridge/Rocket.Chat.Go.SDK/realtime
 github.com/matterbridge/Rocket.Chat.Go.SDK/rest

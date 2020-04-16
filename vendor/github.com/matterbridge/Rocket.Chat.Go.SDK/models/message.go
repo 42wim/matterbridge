@@ -7,6 +7,7 @@ type Message struct {
 	RoomID   string `json:"rid"`
 	Msg      string `json:"msg"`
 	EditedBy string `json:"editedBy,omitempty"`
+	Type     string `json:"t,omitempty"`
 
 	Groupable bool `json:"groupable,omitempty"`
 
@@ -16,6 +17,9 @@ type Message struct {
 
 	Mentions []User `json:"mentions,omitempty"`
 	User     *User  `json:"u,omitempty"`
+
+	Attachments []Attachment `json:"attachments,omitempty"`
+
 	PostMessage
 
 	// Bot         interface{}  `json:"bot"`
