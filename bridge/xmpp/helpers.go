@@ -4,6 +4,7 @@ import (
 	"regexp"
 
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/matterbridge/go-xmpp"
 )
 
 var pathRegex = regexp.MustCompile("[^a-zA-Z0-9]+")
@@ -27,4 +28,24 @@ func (b *Bxmpp) cacheAvatar(msg *config.Message) string {
 		b.avatarMap[msg.UserID] = fi.SHA
 	}
 	return ""
+}
+
+func discoSupportsAvatar(items []*xmpp.DiscoItems) bool {
+	for _, item := range items {
+		if item.Node == xmpp.XMPPNS_AVATAR_PEP_DATA {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (b *Bxmpp) handleDisco(items xmpp.DiscoItems) {
+	if discoSupportsAvatar(items) {
+		b.Log.Debugf("%s supports avatars", items.Jid)
+		b.avatarAvailability[items.Jid] = avatarAvailable
+	} else {
+		b.Log.Debugf("%s does not support avatars", items.Jid)
+		b.avatarAvailability[items.Jid] = avatarUnavailable
+	}
 }

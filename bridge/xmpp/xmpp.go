@@ -15,6 +15,14 @@ import (
 	"github.com/rs/xid"
 )
 
+type avatarAvailability int
+
+const (
+	avatarDiscoSent avatarAvailability = iota
+	avatarAvailable
+	avatarUnavailable
+)
+
 type Bxmpp struct {
 	*bridge.Config
 
@@ -24,14 +32,16 @@ type Bxmpp struct {
 	connected bool
 	sync.RWMutex
 
-	avatarMap map[string]string
+	avatarMap          map[string]string
+	avatarAvailability map[string]avatarAvailability
 }
 
 func New(cfg *bridge.Config) bridge.Bridger {
 	return &Bxmpp{
-		Config:    cfg,
-		xmppMap:   make(map[string]string),
-		avatarMap: make(map[string]string),
+		Config:             cfg,
+		xmppMap:            make(map[string]string),
+		avatarMap:          make(map[string]string),
+		avatarAvailability: make(map[string]avatarAvailability),
 	}
 }
 
@@ -237,10 +247,20 @@ func (b *Bxmpp) handleXMPP() error {
 					event = config.EventTopicChange
 				}
 
-				avatar := getAvatar(b.avatarMap, v.Remote, b.General)
-				if avatar == "" {
-					b.Log.Debugf("Requesting avatar data")
-					b.xc.AvatarRequestData(v.Remote)
+				// First check whether the user even supports
+				// avatars
+				avatar := ""
+				state, sok := b.avatarAvailability[v.Remote]
+				if !sok {
+					b.Log.Debugf("Sending disco to %s", v.Remote)
+					b.xc.DiscoverEntityItems(v.Remote)
+					b.avatarAvailability[v.Remote] = avatarDiscoSent
+				} else if state == avatarAvailable {
+					avatar = getAvatar(b.avatarMap, v.Remote, b.General)
+					if avatar == "" {
+						b.Log.Debugf("Requesting avatar data")
+						b.xc.AvatarRequestData(v.Remote)
+					}
 				}
 
 				msgID := v.ID
@@ -271,6 +291,8 @@ func (b *Bxmpp) handleXMPP() error {
 			}
 		case xmpp.AvatarData:
 			b.handleDownloadAvatar(v)
+		case xmpp.DiscoItems:
+			b.handleDisco(v)
 		case xmpp.Presence:
 			// Do nothing.
 		}
