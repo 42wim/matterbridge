@@ -41,16 +41,16 @@ func (b *Brocketchat) handleRocketHook(messages chan *config.Message) {
 
 func (b *Brocketchat) handleStatusEvent(ev models.Message, rmsg *config.Message) bool {
 	switch ev.Type {
-		case "":
-			// this is a normal message, no processing needed
-			// return true so the message is not dropped
-			return true
-		case sUserJoined, sUserLeft:
-			rmsg.Event = config.EventJoinLeave
-			return true
-		case sRoomChangedTopic:
-			rmsg.Event = config.EventTopicChange
-			return true
+	case "":
+		// this is a normal message, no processing needed
+		// return true so the message is not dropped
+		return true
+	case sUserJoined, sUserLeft:
+		rmsg.Event = config.EventJoinLeave
+		return true
+	case sRoomChangedTopic:
+		rmsg.Event = config.EventTopicChange
+		return true
 	}
 	b.Log.Debugf("Dropping message with unknown type: %s", ev.Type)
 	return false

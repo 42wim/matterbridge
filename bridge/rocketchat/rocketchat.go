@@ -30,8 +30,8 @@ type Brocketchat struct {
 }
 
 const (
-	sUserJoined = "uj"
-	sUserLeft = "ul"
+	sUserJoined       = "uj"
+	sUserLeft         = "ul"
 	sRoomChangedTopic = "room_changed_topic"
 )
 
