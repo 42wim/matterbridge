@@ -130,8 +130,8 @@ github.com/matterbridge/discordgo v0.18.1-0.20200308151012-aa40f01cbcc3 h1:VP/DN
 github.com/matterbridge/discordgo v0.18.1-0.20200308151012-aa40f01cbcc3/go.mod h1:5a1bHtG/38ofcx9cgwM5eTW/Pl4SpbQksNDnTRcGA2Y=
 github.com/matterbridge/emoji v2.1.1-0.20191117213217-af507f6b02db+incompatible h1:oaOqwbg5HxHRxvAbd84ks0Okwoc1ISyUZ87EiVJFhGI=
 github.com/matterbridge/emoji v2.1.1-0.20191117213217-af507f6b02db+incompatible/go.mod h1:igE6rUAn3jai2wCdsjFHfhUoekjrFthoEjFObKKwSb4=
-github.com/matterbridge/go-xmpp v0.0.0-20200418162626-e69b0b8696ef h1:CDIIh3ZViXddwWh9vctOmOOQPXhWeuHdGnwNkPc5JtE=
-github.com/matterbridge/go-xmpp v0.0.0-20200418162626-e69b0b8696ef/go.mod h1:ECDRehsR9TYTKCAsRS8/wLeOk6UUqDydw47ln7wG41Q=
+github.com/matterbridge/go-xmpp v0.0.0-20200418225040-c8a3a57b4050 h1:kWkP1lXpkvtoNL08jkP3XQH/zvDOEXJpdCJd/DlIvMw=
+github.com/matterbridge/go-xmpp v0.0.0-20200418225040-c8a3a57b4050/go.mod h1:ECDRehsR9TYTKCAsRS8/wLeOk6UUqDydw47ln7wG41Q=
 github.com/matterbridge/gomatrix v0.0.0-20200209224845-c2104d7936a6 h1:Kl65VJv38HjYFnnwH+MP6Z8hcJT5UHuSpHVU5vW1HH0=
 github.com/matterbridge/gomatrix v0.0.0-20200209224845-c2104d7936a6/go.mod h1:+jWeaaUtXQbBRdKYWfjW6JDDYiI2XXE+3NnTjW5kg8g=
 github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18 h1:fLhwXtWGtfTgZVxHG1lcKjv+re7dRwyyuYFNu69xdho=
