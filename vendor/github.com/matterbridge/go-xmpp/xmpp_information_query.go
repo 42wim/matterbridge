@@ -10,10 +10,26 @@ const IQTypeSet = "set"
 const IQTypeResult = "result"
 
 func (c *Client) Discovery() (string, error) {
-	const namespace = "http://jabber.org/protocol/disco#items"
 	// use getCookie for a pseudo random id.
 	reqID := strconv.FormatUint(uint64(getCookie()), 10)
-	return c.RawInformationQuery(c.jid, c.domain, reqID, IQTypeGet, namespace, "")
+	return c.RawInformationQuery(c.jid, c.domain, reqID, IQTypeGet, XMPPNS_DISCO_ITEMS, "")
+}
+
+// Discover information about a node
+func (c *Client) DiscoverNodeInfo(node string) (string, error) {
+	query := fmt.Sprintf("<query xmlns='%s' node='%s'/>", XMPPNS_DISCO_INFO, node)
+	return c.RawInformation(c.jid, c.domain, "info3", IQTypeGet, query)
+}
+
+// Discover items that the server exposes
+func (c *Client) DiscoverServerItems() (string, error) {
+	return c.DiscoverEntityItems(c.domain)
+}
+
+// Discover items that an entity exposes
+func (c *Client) DiscoverEntityItems(jid string) (string, error) {
+	query := fmt.Sprintf("<query xmlns='%s'/>", XMPPNS_DISCO_ITEMS)
+	return c.RawInformation(c.jid, jid, "info1", IQTypeGet, query)
 }
 
 // RawInformationQuery sends an information query request to the server.

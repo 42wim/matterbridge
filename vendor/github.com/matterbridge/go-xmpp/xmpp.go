@@ -713,15 +713,44 @@ func (c *Client) Recv() (stanza interface{}, err error) {
 						Errors: errsStr,
 					}, nil
 				}
-			case v.Type == "result" && v.ID == "unsub1":
-				// Unsubscribing MAY contain a pubsub element. But it does
-				// not have to
-				return PubsubUnsubscription{
-					SubID:  "",
-					JID:    v.From,
-					Node:   "",
-					Errors: nil,
-				}, nil
+			case v.Type == "result":
+				switch v.ID {
+				case "unsub1":
+					// Unsubscribing MAY contain a pubsub element. But it does
+					// not have to
+					return PubsubUnsubscription{
+						SubID:  "",
+						JID:    v.From,
+						Node:   "",
+						Errors: nil,
+					}, nil
+				case "info1":
+					if v.Query.XMLName.Space == XMPPNS_DISCO_ITEMS {
+						var itemsQuery clientDiscoItemsQuery
+						err := xml.Unmarshal(v.InnerXML, &itemsQuery)
+						if err != nil {
+							return []DiscoItem{}, err
+						}
+
+						return DiscoItems{
+							Jid:   v.From,
+							Items: clientDiscoItemsToReturn(itemsQuery.Items),
+						}, nil
+					}
+				case "info3":
+					if v.Query.XMLName.Space == XMPPNS_DISCO_INFO {
+						var disco clientDiscoQuery
+						err := xml.Unmarshal(v.InnerXML, &disco)
+						if err != nil {
+							return DiscoResult{}, err
+						}
+
+						return DiscoResult{
+							Features:   clientFeaturesToReturn(disco.Features),
+							Identities: clientIdentitiesToReturn(disco.Identities),
+						}, nil
+					}
+				}
 			case v.Query.XMLName.Local == "pubsub":
 				switch v.ID {
 				case "sub1":
@@ -1049,6 +1078,8 @@ type clientIQ struct {
 	Query   XMLElement `xml:",any"`
 	Error   clientError
 	Bind    bindBind
+
+	InnerXML []byte `xml:",innerxml"`
 }
 
 type clientError struct {
