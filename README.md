@@ -9,20 +9,20 @@ Letting people be where they want to be.<br />
 
    <sup>
 
+[Discord][mb-discord] |
 [Gitter][mb-gitter] |
 [IRC][mb-irc] |
-[Discord][mb-discord] |
+[Keybase][mb-keybase] |
 [Matrix][mb-matrix] |
-[Slack][mb-slack] |
 [Mattermost][mb-mattermost] |
+[MSTeams][mb-msteams] |
 [Rocket.Chat][mb-rocketchat] |
-[XMPP][mb-xmpp] |
+[Slack][mb-slack] |
+[Telegram][mb-telegram] |
 [Twitch][mb-twitch] |
 [WhatsApp][mb-whatsapp] |
+[XMPP][mb-xmpp] |
 [Zulip][mb-zulip] |
-[Telegram][mb-telegram] |
-[Keybase][mb-keybase] |
-[MSTeams][mb-msteams] |
 And more...
 </sup>
 
@@ -87,29 +87,29 @@ And more...
 
 ### Natively supported
 
-- [Mattermost](https://github.com/mattermost/mattermost-server/) 4.x, 5.x
-- [IRC](http://www.mirc.com/servers.html)
-- [XMPP](https://xmpp.org)
-- [Gitter](https://gitter.im)
-- [Slack](https://slack.com)
 - [Discord](https://discordapp.com)
-- [Telegram](https://telegram.org)
-- [Rocket.chat](https://rocket.chat)
-- [Matrix](https://matrix.org)
-- [Microsoft Teams](https://teams.microsoft.com)
-- [Steam](https://store.steampowered.com/)
-- [Twitch](https://twitch.tv)
-- [Ssh-chat](https://github.com/shazow/ssh-chat)
-- [WhatsApp](https://www.whatsapp.com/)
-- [Zulip](https://zulipchat.com)
+- [Gitter](https://gitter.im)
+- [IRC](http://www.mirc.com/servers.html)
 - [Keybase](https://keybase.io)
+- [Matrix](https://matrix.org)
+- [Mattermost](https://github.com/mattermost/mattermost-server/) 4.x, 5.x
+- [Microsoft Teams](https://teams.microsoft.com)
+- [Rocket.chat](https://rocket.chat)
+- [Slack](https://slack.com)
+- [Ssh-chat](https://github.com/shazow/ssh-chat)
+- [Steam](https://store.steampowered.com/)
+- [Telegram](https://telegram.org)
+- [Twitch](https://twitch.tv)
+- [WhatsApp](https://www.whatsapp.com/)
+- [XMPP](https://xmpp.org)
+- [Zulip](https://zulipchat.com)
 
 ### 3rd party via matterbridge api
 
+- [Discourse](https://github.com/DeclanHoare/matterbabble)
+- [Facebook messenger](https://github.com/VictorNine/fbridge)
 - [Minecraft](https://github.com/elytra/MatterLink)
 - [Reddit](https://github.com/bonehurtingjuice/mattereddit)
-- [Facebook messenger](https://github.com/VictorNine/fbridge)
-- [Discourse](https://github.com/DeclanHoare/matterbabble)
 - [Counter-Strike, half-life and more](https://forums.alliedmods.net/showthread.php?t=319430)
 
 ### API
@@ -130,18 +130,18 @@ Used by the projects below. Feel free to make a PR to add your project to this l
 
 Questions or want to test on your favorite platform? Join below:
 
+- [Discord][mb-discord]
 - [Gitter][mb-gitter]
 - [IRC][mb-irc]
-- [Discord][mb-discord]
+- [Keybase][mb-keybase]
 - [Matrix][mb-matrix]
-- [Slack][mb-slack]
 - [Mattermost][mb-mattermost]
 - [Rocket.Chat][mb-rocketchat]
-- [XMPP][mb-xmpp] (matterbridge@conference.jabber.de)
-- [Twitch][mb-twitch]
-- [Zulip][mb-zulip]
+- [Slack][mb-slack]
 - [Telegram][mb-telegram]
-- [Keybase][mb-keybase]
+- [Twitch][mb-twitch]
+- [XMPP][mb-xmpp] (matterbridge@conference.jabber.de)
+- [Zulip][mb-zulip]
 
 ## Screenshots
 
@@ -324,32 +324,32 @@ Matterbridge wouldn't exist without these libraries:
 - gops - https://github.com/google/gops
 - gozulipbot - https://github.com/ifo/gozulipbot
 - irc - https://github.com/lrstanley/girc
-- mattermost - https://github.com/mattermost/mattermost-server
+- keybase - https://github.com/keybase/go-keybase-chat-bot
 - matrix - https://github.com/matrix-org/gomatrix
-- sshchat - https://github.com/shazow/ssh-chat
+- mattermost - https://github.com/mattermost/mattermost-server
+- msgraph.go - https://github.com/yaegashi/msgraph.go
 - slack - https://github.com/nlopes/slack
+- sshchat - https://github.com/shazow/ssh-chat
 - steam - https://github.com/Philipp15b/go-steam
 - telegram - https://github.com/go-telegram-bot-api/telegram-bot-api
-- xmpp - https://github.com/mattn/go-xmpp
-- whatsapp - https://github.com/Rhymen/go-whatsapp/
-- zulip - https://github.com/ifo/gozulipbot
 - tengo - https://github.com/d5/tengo
-- keybase - https://github.com/keybase/go-keybase-chat-bot
-- msgraph.go - https://github.com/yaegashi/msgraph.go
+- whatsapp - https://github.com/Rhymen/go-whatsapp/
+- xmpp - https://github.com/mattn/go-xmpp
+- zulip - https://github.com/ifo/gozulipbot
 
 <!-- Links -->
 
+[mb-discord]: https://discord.gg/AkKPtrQ
 [mb-gitter]: https://gitter.im/42wim/matterbridge
 [mb-irc]: https://webchat.freenode.net/?channels=matterbridgechat
-[mb-discord]: https://discord.gg/AkKPtrQ
+[mb-keybase]: https://keybase.io/team/matterbridge
 [mb-matrix]: https://riot.im/app/#/room/#matterbridge:matrix.org
-[mb-slack]: https://join.slack.com/matterbridgechat/shared_invite/MjEwODMxNjU1NDMwLTE0OTk2MTU3NTMtMzZkZmRiNDZhOA
 [mb-mattermost]: https://framateam.org/signup_user_complete/?id=tfqm33ggop8x3qgu4boeieta6e
+[mb-msteams]: https://teams.microsoft.com/join/hj92x75gd3y7
 [mb-rocketchat]: https://open.rocket.chat/channel/matterbridge
-[mb-xmpp]: https://inverse.chat/
+[mb-slack]: https://join.slack.com/matterbridgechat/shared_invite/MjEwODMxNjU1NDMwLTE0OTk2MTU3NTMtMzZkZmRiNDZhOA
+[mb-telegram]: https://t.me/Matterbridge
 [mb-twitch]: https://www.twitch.tv/matterbridge
 [mb-whatsapp]: https://www.whatsapp.com/
-[mb-keybase]: https://keybase.io/team/matterbridge
+[mb-xmpp]: https://inverse.chat/
 [mb-zulip]: https://matterbridge.zulipchat.com/register/
-[mb-telegram]: https://t.me/Matterbridge
-[mb-msteams]: https://teams.microsoft.com/join/hj92x75gd3y7
