@@ -29,6 +29,12 @@ type Brocketchat struct {
 	sync.RWMutex
 }
 
+const (
+	sUserJoined       = "uj"
+	sUserLeft         = "ul"
+	sRoomChangedTopic = "room_changed_topic"
+)
+
 func New(cfg *bridge.Config) bridge.Bridger {
 	newCache, err := lru.New(100)
 	if err != nil {
