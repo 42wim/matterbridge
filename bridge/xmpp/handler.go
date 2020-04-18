@@ -32,3 +32,13 @@ func (b *Bxmpp) handleDownloadAvatar(avatar xmpp.AvatarData) {
 		b.Remote <- rmsg
 	}
 }
+
+func (b *Bxmpp) handleDisco(items xmpp.DiscoItems) {
+	if discoSupportsAvatar(items.Items) {
+		b.Log.Debugf("%s supports avatars", items.Jid)
+		b.avatarAvailability[items.Jid] = avatarAvailable
+	} else {
+		b.Log.Debugf("%s does not support avatars", items.Jid)
+		b.avatarAvailability[items.Jid] = avatarUnavailable
+	}
+}

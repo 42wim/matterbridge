@@ -1,6 +1,7 @@
 package bxmpp
 
 import (
+	"fmt"
 	"regexp"
 
 	"github.com/42wim/matterbridge/bridge/config"
@@ -30,7 +31,7 @@ func (b *Bxmpp) cacheAvatar(msg *config.Message) string {
 	return ""
 }
 
-func discoSupportsAvatar(items []*xmpp.DiscoItems) bool {
+func discoSupportsAvatar(items []xmpp.DiscoItem) bool {
 	for _, item := range items {
 		if item.Node == xmpp.XMPPNS_AVATAR_PEP_DATA {
 			return true
@@ -38,14 +39,4 @@ func discoSupportsAvatar(items []*xmpp.DiscoItems) bool {
 	}
 
 	return false
-}
-
-func (b *Bxmpp) handleDisco(items xmpp.DiscoItems) {
-	if discoSupportsAvatar(items) {
-		b.Log.Debugf("%s supports avatars", items.Jid)
-		b.avatarAvailability[items.Jid] = avatarAvailable
-	} else {
-		b.Log.Debugf("%s does not support avatars", items.Jid)
-		b.avatarAvailability[items.Jid] = avatarUnavailable
-	}
 }
