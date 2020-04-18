@@ -137,12 +137,6 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 		hasOurCallbackID = ok && block.BlockID == "matterbridge_"+b.uuid
 	}
 
-	// Skip any messages that we made ourselves or from 'slackbot' (see #527).
-	if ev.Username == sSlackBotUser ||
-		(b.rtm != nil && ev.Username == b.si.User.Name) || hasOurCallbackID {
-		return true
-	}
-
 	if ev.SubMessage != nil {
 		// It seems ev.SubMessage.Edited == nil when slack unfurls.
 		// Do not forward these messages. See Github issue #266.
@@ -155,6 +149,16 @@ func (b *Bslack) skipMessageEvent(ev *slack.MessageEvent) bool {
 		if ev.SubType == "message_replied" && ev.Hidden {
 			return true
 		}
+		if len(ev.SubMessage.Blocks.BlockSet) == 1 {
+			block, ok := ev.SubMessage.Blocks.BlockSet[0].(*slack.SectionBlock)
+			hasOurCallbackID = ok && block.BlockID == "matterbridge_"+b.uuid
+		}
+	}
+
+	// Skip any messages that we made ourselves or from 'slackbot' (see #527).
+	if ev.Username == sSlackBotUser ||
+		(b.rtm != nil && ev.Username == b.si.User.Name) || hasOurCallbackID {
+		return true
 	}
 
 	if len(ev.Files) > 0 {
