@@ -24,7 +24,7 @@ require (
 	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20200411204219-d5c18ce75048
 	github.com/matterbridge/discordgo v0.18.1-0.20200308151012-aa40f01cbcc3
 	github.com/matterbridge/emoji v2.1.1-0.20191117213217-af507f6b02db+incompatible
-	github.com/matterbridge/go-xmpp v0.0.0-20200418162626-e69b0b8696ef
+	github.com/matterbridge/go-xmpp v0.0.0-20200418225040-c8a3a57b4050
 	github.com/matterbridge/gomatrix v0.0.0-20200209224845-c2104d7936a6
 	github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18
 	github.com/matterbridge/logrus-prefixed-formatter v0.0.0-20180806162718-01618749af61
