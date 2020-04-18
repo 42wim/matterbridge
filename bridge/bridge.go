@@ -4,6 +4,7 @@ import (
 	"log"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/sirupsen/logrus"
@@ -74,6 +75,7 @@ func (b *Bridge) joinChannels(channels map[string]config.ChannelInfo, exists map
 	for ID, channel := range channels {
 		if !exists[ID] {
 			b.Log.Infof("%s: joining %s (ID: %s)", b.Account, channel.Name, ID)
+			time.Sleep(time.Duration(b.GetInt("JoinDelay")) * time.Millisecond)
 			err := b.JoinChannel(channel)
 			if err != nil {
 				return err

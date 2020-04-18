@@ -177,6 +177,12 @@ StripNick=false
 #OPTIONAL (default false)
 ShowTopicChange=false
 
+#Delay in milliseconds between channel joins
+#Only useful when you have a LOT of channels to join
+#See https://github.com/42wim/matterbridge/issues/1084
+#OPTIONAL (default 0)
+JoinDelay=0
+
 ###################################################################
 #XMPP section
 ###################################################################
