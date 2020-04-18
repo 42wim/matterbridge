@@ -16,10 +16,8 @@ import (
 )
 
 type avatarAvailability int
-
 const (
-	avatarDiscoSent avatarAvailability = iota
-	avatarAvailable
+	avatarAvailable avatarAvailability = iota
 	avatarUnavailable
 )
 
@@ -254,7 +252,7 @@ func (b *Bxmpp) handleXMPP() error {
 				if !sok {
 					b.Log.Debugf("Sending disco to %s", v.Remote)
 					b.xc.DiscoverEntityItems(v.Remote)
-					b.avatarAvailability[v.Remote] = avatarDiscoSent
+					b.avatarAvailability[v.Remote] = avatarUnavailable
 				} else if state == avatarAvailable {
 					avatar = getAvatar(b.avatarMap, v.Remote, b.General)
 					if avatar == "" {
