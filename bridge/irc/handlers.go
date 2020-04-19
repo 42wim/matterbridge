@@ -54,12 +54,12 @@ func (b *Birc) handleFiles(msg *config.Message) bool {
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo)
 		if fi.Comment != "" {
-			msg.Text += fi.Comment + ": "
+			msg.Text += fi.Comment + " : "
 		}
 		if fi.URL != "" {
 			msg.Text = fi.URL
 			if fi.Comment != "" {
-				msg.Text = fi.Comment + ": " + fi.URL
+				msg.Text = fi.Comment + " : " + fi.URL
 			}
 		}
 		b.Local <- config.Message{Text: msg.Text, Username: msg.Username, Channel: msg.Channel, Event: msg.Event}
