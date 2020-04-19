@@ -1,3 +1,22 @@
+# v1.17.3
+
+## Enhancements
+
+- xmpp: Implement User Avatar spoofing of XMPP users #1090
+- rocketchat: Relay Joins/Topic changes in RocketChat bridge (#1085)
+- irc: Add JoinDelay option (irc). Fixes #1084 (#1098)
+- slack: Clip too long messages on 3000 length (slack). Fixes #1081 (#1102)
+
+## Bugfix
+
+- general: Fix the behavior of ShowTopicChange and SyncTopic (#1086)
+- slack: Prevent image/message looping (slack). Fixes #1088 (#1096)
+- whatsapp: Ignore non-critical errors (whatsapp). Fixes #1094 (#1100)
+- irc: Add extra space before colon in attachments (irc). Fixes #1089 (#1101)
+
+This release couldn't exist without the following contributors:
+@42wim, @ldruschk, @qaisjp, @Polynomdivision
+
 # v1.17.2
 
 ## Enhancements
