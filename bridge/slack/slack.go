@@ -64,6 +64,7 @@ const (
 	editSuffixConfig      = "EditSuffix"
 	iconURLConfig         = "iconurl"
 	noSendJoinConfig      = "nosendjoinpart"
+	messageLength         = 3000
 )
 
 func New(cfg *bridge.Config) bridge.Bridger {
@@ -194,6 +195,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 		b.Log.Debugf("=> Receiving %#v", msg)
 	}
 
+	msg.Text = helper.ClipMessage(msg.Text, messageLength)
 	msg.Text = b.replaceCodeFence(msg.Text)
 
 	// Make a action /me of the message
