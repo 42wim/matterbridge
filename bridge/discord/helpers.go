@@ -208,6 +208,40 @@ func (b *Bdiscord) splitURL(url string) (string, string) {
 	return webhookURLSplit[webhookIdxID], webhookURLSplit[webhookIdxToken]
 }
 
+// getcacheID tries to find a corresponding msgID in the webhook cache.
+// if not found returns the original request.
+func (b *Bdiscord) getCacheID(msgID string) string {
+	b.webhookMutex.RLock()
+	defer b.webhookMutex.RUnlock()
+	for k, v := range b.webhookCache {
+		if msgID == k {
+			return v
+		}
+	}
+	return msgID
+}
+
+// updateCacheID updates the cache so that the newID takes the place of
+// the original ID. This is used for edit/deletes in combination with webhooks
+// as editing a message via webhook means deleting the message and creating a
+// new message (with a new ID). This ID needs to be set instead of the original ID
+func (b *Bdiscord) updateCacheID(origID, newID string) {
+	b.webhookMutex.Lock()
+	match := false
+	for k, v := range b.webhookCache {
+		if v == origID {
+			delete(b.webhookCache, k)
+			b.webhookCache[origID] = newID
+			match = true
+			continue
+		}
+	}
+	if !match && origID != "" {
+		b.webhookCache[origID] = newID
+	}
+	b.webhookMutex.Unlock()
+}
+
 func enumerateUsernames(s string) []string {
 	onlySpace := true
 	for _, r := range s {
