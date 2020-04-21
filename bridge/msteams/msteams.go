@@ -71,7 +71,15 @@ func (b *Bmsteams) Disconnect() error {
 }
 
 func (b *Bmsteams) JoinChannel(channel config.ChannelInfo) error {
-	go b.poll(channel.Name)
+	go func(name string) {
+		for {
+			err := b.poll(name)
+			if err != nil {
+				b.Log.Errorf("polling failed for %s: %s. retrying in 5 seconds", name, err)
+			}
+			time.Sleep(time.Second * 5)
+		}
+	}(channel.Name)
 	return nil
 }
 
@@ -120,12 +128,12 @@ func (b *Bmsteams) getMessages(channel string) ([]msgraph.ChatMessage, error) {
 }
 
 //nolint:gocognit
-func (b *Bmsteams) poll(channelName string) {
+func (b *Bmsteams) poll(channelName string) error {
 	msgmap := make(map[string]time.Time)
 	b.Log.Debug("getting initial messages")
 	res, err := b.getMessages(channelName)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	for _, msg := range res {
 		msgmap[*msg.ID] = *msg.CreatedDateTime
@@ -138,7 +146,7 @@ func (b *Bmsteams) poll(channelName string) {
 	for {
 		res, err := b.getMessages(channelName)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		for i := len(res) - 1; i >= 0; i-- {
 			msg := res[i]
