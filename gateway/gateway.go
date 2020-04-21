@@ -108,7 +108,7 @@ func (gw *Gateway) AddBridge(cfg *config.Bridge) error {
 func (gw *Gateway) checkConfig(cfg *config.Bridge) {
 	match := false
 	for _, key := range gw.Router.Config.Viper().AllKeys() {
-		if strings.HasPrefix(key, cfg.Account) {
+		if strings.HasPrefix(key, strings.ToLower(cfg.Account)) {
 			match = true
 			break
 		}
