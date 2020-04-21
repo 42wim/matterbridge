@@ -1,3 +1,12 @@
+# v1.17.4
+
+## Bugfix
+
+- general: Lowercase account names. Fixes #1108 (#1110)
+- msteams: Remove panics and retry polling on failure (msteams). Fixes #1104 (#1105
+- whatsapp: Update Rhymen/go-whatsapp. Fixes #1107 (#1109) (make whatsapp working again)
+- discord: Add an ID cache (discord). Fixes #1106 (#1111) (fix delete/edits with webhooks)
+
 # v1.17.3
 
 ## Enhancements
