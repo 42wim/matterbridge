@@ -188,8 +188,9 @@ func replaceEmotes(text string) string {
 }
 
 func (b *Bdiscord) replaceAction(text string) (string, bool) {
-	if strings.HasPrefix(text, "_") && strings.HasSuffix(text, "_") {
-		return text[1 : len(text)-1], true
+	length := len(text)
+	if length > 1 && text[0] == '_' && text[length-1] == '_' {
+		return text[1 : length-1], true
 	}
 	return text, false
 }
