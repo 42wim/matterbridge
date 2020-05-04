@@ -217,7 +217,7 @@ func handleEmbed(embed *discordgo.MessageEmbed) string {
 
 		i++
 		if i == 1 {
-			result += "embed: " + e
+			result += " embed: " + e
 			continue
 		}
 
