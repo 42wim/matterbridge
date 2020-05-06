@@ -20,14 +20,14 @@ func TestHandleEmbed(t *testing.T) {
 			embed: &discordgo.MessageEmbed{
 				Title: "blah",
 			},
-			result: "embed: blah\n",
+			result: " embed: blah\n",
 		},
 		"two": {
 			embed: &discordgo.MessageEmbed{
 				Title:       "blah",
 				Description: "blah2",
 			},
-			result: "embed: blah - blah2\n",
+			result: " embed: blah - blah2\n",
 		},
 		"three": {
 			embed: &discordgo.MessageEmbed{
@@ -35,20 +35,20 @@ func TestHandleEmbed(t *testing.T) {
 				Description: "blah2",
 				URL:         "blah3",
 			},
-			result: "embed: blah - blah2 - blah3\n",
+			result: " embed: blah - blah2 - blah3\n",
 		},
 		"twob": {
 			embed: &discordgo.MessageEmbed{
 				Description: "blah2",
 				URL:         "blah3",
 			},
-			result: "embed: blah2 - blah3\n",
+			result: " embed: blah2 - blah3\n",
 		},
 		"oneb": {
 			embed: &discordgo.MessageEmbed{
 				URL: "blah3",
 			},
-			result: "embed: blah3\n",
+			result: " embed: blah3\n",
 		},
 	}
 
