@@ -372,6 +372,8 @@ func (b *Bmatrix) getAvatarURL(sender string) string {
 		return ""
 	}
 	url := strings.ReplaceAll(mxcURL, "mxc://", b.GetString("Server")+"/_matrix/media/r0/thumbnail/")
-	url += "?width=37&height=37&method=crop"
+	if url != "" {
+		url += "?width=37&height=37&method=crop"
+	}
 	return url
 }
