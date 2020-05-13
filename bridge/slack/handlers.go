@@ -16,7 +16,7 @@ var ErrEventIgnored = errors.New("this event message should ignored")
 
 func (b *Bslack) handleSlack() {
 	messages := make(chan *config.Message)
-	if b.GetString(incomingWebhookConfig) != "" {
+	if b.GetString(incomingWebhookConfig) != "" && b.GetString(tokenConfig) == "" {
 		b.Log.Debugf("Choosing webhooks based receiving")
 		go b.handleMatterHook(messages)
 	} else {
