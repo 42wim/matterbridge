@@ -84,6 +84,7 @@ type Protocol struct {
 	DisableWebPagePreview  bool   // telegram
 	EditSuffix             string // mattermost, slack, discord, telegram, gitter
 	EditDisable            bool   // mattermost, slack, discord, telegram, gitter
+	HTMLDisable            bool   // matrix
 	IconURL                string // mattermost, slack
 	IgnoreFailureOnStart   bool   // general
 	IgnoreNicks            string // all protocols
