@@ -204,7 +204,7 @@ func (b *Bslack) Send(msg config.Message) (string, error) {
 	}
 
 	// Use webhook to send the message
-	if b.GetString(outgoingWebhookConfig) != "" {
+	if b.GetString(outgoingWebhookConfig) != "" && b.GetString(tokenConfig) == "" {
 		return "", b.sendWebhook(msg)
 	}
 	return b.sendRTM(msg)
