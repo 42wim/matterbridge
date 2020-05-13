@@ -124,6 +124,14 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 		return resp.EventID, err
 	}
 
+	if b.GetBool("HTMLDisable") {
+		resp, err := b.mc.SendText(channel, msg.Username+msg.Text)
+		if err != nil {
+			return "", err
+		}
+		return resp.EventID, err
+	}
+
 	username := html.EscapeString(msg.Username)
 	// check if we have a </tag>. if we have, we don't escape HTML. #696
 	if b.htmlTag.MatchString(msg.Username) {

@@ -1209,6 +1209,11 @@ Password="yourpass"
 #OPTIONAL (default false)
 NoHomeServerSuffix=false
 
+#Whether to disable sending of HTML content to matrix
+#See https://github.com/42wim/matterbridge/issues/1022
+#OPTIONAL (default false)
+HTMLDisable=false
+
 ## RELOADABLE SETTINGS
 ## Settings below can be reloaded by editing the file
 
