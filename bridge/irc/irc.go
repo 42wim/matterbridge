@@ -14,6 +14,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/lrstanley/girc"
+	stripmd "github.com/writeas/go-strip-markdown"
 
 	// We need to import the 'data' package as an implicit dependency.
 	// See: https://godoc.org/github.com/paulrosania/go-charset/charset
@@ -156,6 +157,10 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 	}
 
 	var msgLines []string
+	if b.GetBool("StripMarkdown") {
+		msg.Text = stripmd.Strip(msg.Text)
+	}
+
 	if b.GetBool("MessageSplit") {
 		msgLines = helper.GetSubLines(msg.Text, b.MessageLength)
 	} else {

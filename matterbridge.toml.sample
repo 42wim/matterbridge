@@ -103,6 +103,10 @@ ColorNicks=false
 #OPTIONAL (default empty)
 RunCommands=["PRIVMSG user hello","PRIVMSG chanserv something"]
 
+#StripMarkdown strips markdown from messages
+#OPTIONAL (default false)
+StripMarkdown=false
+
 #Nicks you want to ignore.
 #Regular expressions supported
 #Messages from those users will not be sent to other bridges.

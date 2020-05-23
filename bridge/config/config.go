@@ -136,6 +136,7 @@ type Protocol struct {
 	SkipTLSVerify          bool       // IRC, mattermost
 	SkipVersionCheck       bool       // mattermost
 	StripNick              bool       // all protocols
+	StripMarkdown          bool       // irc
 	SyncTopic              bool       // slack
 	TengoModifyMessage     string     // general
 	Team                   string     // mattermost, keybase

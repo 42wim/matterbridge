@@ -49,6 +49,7 @@ require (
 	github.com/spf13/viper v1.6.1
 	github.com/stretchr/testify v1.4.0
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
+	github.com/writeas/go-strip-markdown v2.0.1+incompatible
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2 // indirect
 	github.com/yaegashi/msgraph.go v0.1.2
 	github.com/zfjagann/golang-ring v0.0.0-20190106091943-a88bb6aef447
@@ -56,6 +57,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
+	github.com/writeas/go-strip-markdown v2.0.1+incompatible
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 )
 
