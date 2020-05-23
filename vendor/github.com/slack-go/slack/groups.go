@@ -353,3 +353,24 @@ func (api *Client) SetGroupTopicContext(ctx context.Context, group, topic string
 	}
 	return response.Topic, nil
 }
+
+// GetGroupReplies gets an entire thread (a message plus all the messages in reply to it).
+// see https://api.slack.com/methods/groups.replies
+func (api *Client) GetGroupReplies(channelID, thread_ts string) ([]Message, error) {
+	return api.GetGroupRepliesContext(context.Background(), channelID, thread_ts)
+}
+
+// GetGroupRepliesContext gets an entire thread (a message plus all the messages in reply to it) with a custom context
+// see https://api.slack.com/methods/groups.replies
+func (api *Client) GetGroupRepliesContext(ctx context.Context, channelID, thread_ts string) ([]Message, error) {
+	values := url.Values{
+		"token":     {api.token},
+		"channel":   {channelID},
+		"thread_ts": {thread_ts},
+	}
+	response, err := api.groupRequest(ctx, "groups.replies", values)
+	if err != nil {
+		return nil, err
+	}
+	return response.History.Messages, nil
+}

@@ -3,6 +3,7 @@ package tengo
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"sync"
 
 	"github.com/d5/tengo/v2/parser"
@@ -16,6 +17,7 @@ type Script struct {
 	maxAllocs        int64
 	maxConstObjects  int
 	enableFileImport bool
+	importDir        string
 }
 
 // NewScript creates a Script instance with an input script.
@@ -56,6 +58,16 @@ func (s *Script) SetImports(modules *ModuleMap) {
 	s.modules = modules
 }
 
+// SetImportDir sets the initial import directory for script files.
+func (s *Script) SetImportDir(dir string) error {
+	dir, err := filepath.Abs(dir)
+	if err != nil {
+		return err
+	}
+	s.importDir = dir
+	return nil
+}
+
 // SetMaxAllocs sets the maximum number of objects allocations during the run
 // time. Compiled script will return ErrObjectAllocLimit error if it
 // exceeds this limit.
@@ -93,6 +105,7 @@ func (s *Script) Compile() (*Compiled, error) {
 
 	c := NewCompiler(srcFile, symbolTable, nil, s.modules, nil)
 	c.EnableFileImport(s.enableFileImport)
+	c.SetImportDir(s.importDir)
 	if err := c.Compile(file); err != nil {
 		return nil, err
 	}

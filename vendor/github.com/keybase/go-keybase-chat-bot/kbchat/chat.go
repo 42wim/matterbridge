@@ -70,7 +70,11 @@ func (a *API) GetConversations(unreadOnly bool) ([]chat1.ConvSummary, error) {
 }
 
 func (a *API) GetConversation(convID chat1.ConvIDStr) (res chat1.ConvSummary, err error) {
-	apiInput := fmt.Sprintf(`{"method":"list", "params": { "options": { "conversation_id": "%s"}}}`, convID)
+	convIDEscaped, err := json.Marshal(convID)
+	if err != nil {
+		return res, err
+	}
+	apiInput := fmt.Sprintf(`{"method":"list", "params": { "options": { "conversation_id": %s}}}`, convIDEscaped)
 	output, err := a.doFetch(apiInput)
 	if err != nil {
 		return res, err
@@ -94,7 +98,7 @@ func (a *API) GetTextMessages(channel chat1.ChatChannel, unreadOnly bool) ([]cha
 	if err != nil {
 		return nil, err
 	}
-	apiInput := fmt.Sprintf(`{"method": "read", "params": {"options": {"channel": %s}}}`, string(channelBytes))
+	apiInput := fmt.Sprintf(`{"method": "read", "params": {"options": {"channel": %s}}}`, channelBytes)
 	output, err := a.doFetch(apiInput)
 	if err != nil {
 		return nil, err
@@ -324,7 +328,11 @@ type LeaveChannel struct {
 }
 
 func (a *API) ListChannels(teamName string) ([]string, error) {
-	apiInput := fmt.Sprintf(`{"method": "listconvsonname", "params": {"options": {"topic_type": "CHAT", "members_type": "team", "name": "%s"}}}`, teamName)
+	teamNameEscaped, err := json.Marshal(teamName)
+	if err != nil {
+		return nil, err
+	}
+	apiInput := fmt.Sprintf(`{"method": "listconvsonname", "params": {"options": {"topic_type": "CHAT", "members_type": "team", "name": %s}}}`, teamNameEscaped)
 	output, err := a.doFetch(apiInput)
 	if err != nil {
 		return nil, err
@@ -347,7 +355,16 @@ func (a *API) ListChannels(teamName string) ([]string, error) {
 func (a *API) JoinChannel(teamName string, channelName string) (chat1.EmptyRes, error) {
 	empty := chat1.EmptyRes{}
 
-	apiInput := fmt.Sprintf(`{"method": "join", "params": {"options": {"channel": {"name": "%s", "members_type": "team", "topic_name": "%s"}}}}`, teamName, channelName)
+	teamNameEscaped, err := json.Marshal(teamName)
+	if err != nil {
+		return empty, err
+	}
+	channelNameEscaped, err := json.Marshal(channelName)
+	if err != nil {
+		return empty, err
+	}
+	apiInput := fmt.Sprintf(`{"method": "join", "params": {"options": {"channel": {"name": %s, "members_type": "team", "topic_name": %s}}}}`,
+		teamNameEscaped, channelNameEscaped)
 	output, err := a.doFetch(apiInput)
 	if err != nil {
 		return empty, err
@@ -367,7 +384,16 @@ func (a *API) JoinChannel(teamName string, channelName string) (chat1.EmptyRes, 
 func (a *API) LeaveChannel(teamName string, channelName string) (chat1.EmptyRes, error) {
 	empty := chat1.EmptyRes{}
 
-	apiInput := fmt.Sprintf(`{"method": "leave", "params": {"options": {"channel": {"name": "%s", "members_type": "team", "topic_name": "%s"}}}}`, teamName, channelName)
+	teamNameEscaped, err := json.Marshal(teamName)
+	if err != nil {
+		return empty, err
+	}
+	channelNameEscaped, err := json.Marshal(channelName)
+	if err != nil {
+		return empty, err
+	}
+	apiInput := fmt.Sprintf(`{"method": "leave", "params": {"options": {"channel": {"name": %s, "members_type": "team", "topic_name": %s}}}}`,
+		teamNameEscaped, channelNameEscaped)
 	output, err := a.doFetch(apiInput)
 	if err != nil {
 		return empty, err
@@ -461,13 +487,28 @@ func (a *API) AdvertiseCommands(ad Advertisement) (SendResponse, error) {
 	return a.doSend(newAdvertiseCmdsMsgArg(ad))
 }
 
-func (a *API) ClearCommands() error {
-	arg := struct {
-		Method string
-	}{
+type clearCmdsOptions struct {
+	Filter *chat1.ClearCommandAPIParam `json:"filter"`
+}
+
+type clearCmdsParams struct {
+	Options clearCmdsOptions `json:"options"`
+}
+
+type clearCmdsArg struct {
+	Method string          `json:"method"`
+	Params clearCmdsParams `json:"params,omitempty"`
+}
+
+func (a *API) ClearCommands(filter *chat1.ClearCommandAPIParam) error {
+	_, err := a.doSend(clearCmdsArg{
 		Method: "clearcommands",
-	}
-	_, err := a.doSend(arg)
+		Params: clearCmdsParams{
+			Options: clearCmdsOptions{
+				Filter: filter,
+			},
+		},
+	})
 	return err
 }
 

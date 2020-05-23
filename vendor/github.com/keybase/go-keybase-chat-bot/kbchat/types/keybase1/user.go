@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.6 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/keybase1/user.avdl
 
 package keybase1
@@ -88,28 +88,48 @@ func (o Proofs) DeepCopy() Proofs {
 }
 
 type UserSummary struct {
-	Uid          UID    `codec:"uid" json:"uid"`
-	Username     string `codec:"username" json:"username"`
-	Thumbnail    string `codec:"thumbnail" json:"thumbnail"`
-	IdVersion    int    `codec:"idVersion" json:"idVersion"`
-	FullName     string `codec:"fullName" json:"fullName"`
-	Bio          string `codec:"bio" json:"bio"`
-	Proofs       Proofs `codec:"proofs" json:"proofs"`
-	SigIDDisplay string `codec:"sigIDDisplay" json:"sigIDDisplay"`
-	TrackTime    Time   `codec:"trackTime" json:"trackTime"`
+	Uid      UID     `codec:"uid" json:"uid"`
+	Username string  `codec:"username" json:"username"`
+	FullName string  `codec:"fullName" json:"fullName"`
+	LinkID   *LinkID `codec:"linkID,omitempty" json:"linkID,omitempty"`
 }
 
 func (o UserSummary) DeepCopy() UserSummary {
 	return UserSummary{
-		Uid:          o.Uid.DeepCopy(),
-		Username:     o.Username,
-		Thumbnail:    o.Thumbnail,
-		IdVersion:    o.IdVersion,
-		FullName:     o.FullName,
-		Bio:          o.Bio,
-		Proofs:       o.Proofs.DeepCopy(),
-		SigIDDisplay: o.SigIDDisplay,
-		TrackTime:    o.TrackTime.DeepCopy(),
+		Uid:      o.Uid.DeepCopy(),
+		Username: o.Username,
+		FullName: o.FullName,
+		LinkID: (func(x *LinkID) *LinkID {
+			if x == nil {
+				return nil
+			}
+			tmp := (*x).DeepCopy()
+			return &tmp
+		})(o.LinkID),
+	}
+}
+
+type UserSummarySet struct {
+	Users   []UserSummary `codec:"users" json:"users"`
+	Time    Time          `codec:"time" json:"time"`
+	Version int           `codec:"version" json:"version"`
+}
+
+func (o UserSummarySet) DeepCopy() UserSummarySet {
+	return UserSummarySet{
+		Users: (func(x []UserSummary) []UserSummary {
+			if x == nil {
+				return nil
+			}
+			ret := make([]UserSummary, len(x))
+			for i, v := range x {
+				vCopy := v.DeepCopy()
+				ret[i] = vCopy
+			}
+			return ret
+		})(o.Users),
+		Time:    o.Time.DeepCopy(),
+		Version: o.Version,
 	}
 }
 
@@ -169,50 +189,6 @@ func (o UserSettings) DeepCopy() UserSettings {
 	}
 }
 
-type UserSummary2 struct {
-	Uid        UID    `codec:"uid" json:"uid"`
-	Username   string `codec:"username" json:"username"`
-	Thumbnail  string `codec:"thumbnail" json:"thumbnail"`
-	FullName   string `codec:"fullName" json:"fullName"`
-	IsFollower bool   `codec:"isFollower" json:"isFollower"`
-	IsFollowee bool   `codec:"isFollowee" json:"isFollowee"`
-}
-
-func (o UserSummary2) DeepCopy() UserSummary2 {
-	return UserSummary2{
-		Uid:        o.Uid.DeepCopy(),
-		Username:   o.Username,
-		Thumbnail:  o.Thumbnail,
-		FullName:   o.FullName,
-		IsFollower: o.IsFollower,
-		IsFollowee: o.IsFollowee,
-	}
-}
-
-type UserSummary2Set struct {
-	Users   []UserSummary2 `codec:"users" json:"users"`
-	Time    Time           `codec:"time" json:"time"`
-	Version int            `codec:"version" json:"version"`
-}
-
-func (o UserSummary2Set) DeepCopy() UserSummary2Set {
-	return UserSummary2Set{
-		Users: (func(x []UserSummary2) []UserSummary2 {
-			if x == nil {
-				return nil
-			}
-			ret := make([]UserSummary2, len(x))
-			for i, v := range x {
-				vCopy := v.DeepCopy()
-				ret[i] = vCopy
-			}
-			return ret
-		})(o.Users),
-		Time:    o.Time.DeepCopy(),
-		Version: o.Version,
-	}
-}
-
 type InterestingPerson struct {
 	Uid        UID               `codec:"uid" json:"uid"`
 	Username   string            `codec:"username" json:"username"`
@@ -263,15 +239,16 @@ func (o ProofSuggestionsRes) DeepCopy() ProofSuggestionsRes {
 }
 
 type ProofSuggestion struct {
-	Key              string             `codec:"key" json:"key"`
-	BelowFold        bool               `codec:"belowFold" json:"belowFold"`
-	ProfileText      string             `codec:"profileText" json:"profileText"`
-	ProfileIcon      []SizedImage       `codec:"profileIcon" json:"profileIcon"`
-	ProfileIconWhite []SizedImage       `codec:"profileIconWhite" json:"profileIconWhite"`
-	PickerText       string             `codec:"pickerText" json:"pickerText"`
-	PickerSubtext    string             `codec:"pickerSubtext" json:"pickerSubtext"`
-	PickerIcon       []SizedImage       `codec:"pickerIcon" json:"pickerIcon"`
-	Metas            []Identify3RowMeta `codec:"metas" json:"metas"`
+	Key                 string             `codec:"key" json:"key"`
+	BelowFold           bool               `codec:"belowFold" json:"belowFold"`
+	ProfileText         string             `codec:"profileText" json:"profileText"`
+	ProfileIcon         []SizedImage       `codec:"profileIcon" json:"profileIcon"`
+	ProfileIconDarkmode []SizedImage       `codec:"profileIconDarkmode" json:"profileIconDarkmode"`
+	PickerText          string             `codec:"pickerText" json:"pickerText"`
+	PickerSubtext       string             `codec:"pickerSubtext" json:"pickerSubtext"`
+	PickerIcon          []SizedImage       `codec:"pickerIcon" json:"pickerIcon"`
+	PickerIconDarkmode  []SizedImage       `codec:"pickerIconDarkmode" json:"pickerIconDarkmode"`
+	Metas               []Identify3RowMeta `codec:"metas" json:"metas"`
 }
 
 func (o ProofSuggestion) DeepCopy() ProofSuggestion {
@@ -290,7 +267,7 @@ func (o ProofSuggestion) DeepCopy() ProofSuggestion {
 			}
 			return ret
 		})(o.ProfileIcon),
-		ProfileIconWhite: (func(x []SizedImage) []SizedImage {
+		ProfileIconDarkmode: (func(x []SizedImage) []SizedImage {
 			if x == nil {
 				return nil
 			}
@@ -300,7 +277,7 @@ func (o ProofSuggestion) DeepCopy() ProofSuggestion {
 				ret[i] = vCopy
 			}
 			return ret
-		})(o.ProfileIconWhite),
+		})(o.ProfileIconDarkmode),
 		PickerText:    o.PickerText,
 		PickerSubtext: o.PickerSubtext,
 		PickerIcon: (func(x []SizedImage) []SizedImage {
@@ -314,6 +291,17 @@ func (o ProofSuggestion) DeepCopy() ProofSuggestion {
 			}
 			return ret
 		})(o.PickerIcon),
+		PickerIconDarkmode: (func(x []SizedImage) []SizedImage {
+			if x == nil {
+				return nil
+			}
+			ret := make([]SizedImage, len(x))
+			for i, v := range x {
+				vCopy := v.DeepCopy()
+				ret[i] = vCopy
+			}
+			return ret
+		})(o.PickerIconDarkmode),
 		Metas: (func(x []Identify3RowMeta) []Identify3RowMeta {
 			if x == nil {
 				return nil

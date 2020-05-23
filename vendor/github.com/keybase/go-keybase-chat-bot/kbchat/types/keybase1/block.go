@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.6 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/keybase1/block.avdl
 
 package keybase1
@@ -54,6 +54,38 @@ func (o GetBlockRes) DeepCopy() GetBlockRes {
 		})(o.Buf),
 		Size:   o.Size,
 		Status: o.Status.DeepCopy(),
+	}
+}
+
+type GetBlockSizesRes struct {
+	Sizes    []int         `codec:"sizes" json:"sizes"`
+	Statuses []BlockStatus `codec:"statuses" json:"statuses"`
+}
+
+func (o GetBlockSizesRes) DeepCopy() GetBlockSizesRes {
+	return GetBlockSizesRes{
+		Sizes: (func(x []int) []int {
+			if x == nil {
+				return nil
+			}
+			ret := make([]int, len(x))
+			for i, v := range x {
+				vCopy := v
+				ret[i] = vCopy
+			}
+			return ret
+		})(o.Sizes),
+		Statuses: (func(x []BlockStatus) []BlockStatus {
+			if x == nil {
+				return nil
+			}
+			ret := make([]BlockStatus, len(x))
+			for i, v := range x {
+				vCopy := v.DeepCopy()
+				ret[i] = vCopy
+			}
+			return ret
+		})(o.Statuses),
 	}
 }
 
@@ -150,4 +182,76 @@ type BlockPingResponse struct {
 
 func (o BlockPingResponse) DeepCopy() BlockPingResponse {
 	return BlockPingResponse{}
+}
+
+type UsageStatRecord struct {
+	Write      int64 `codec:"write" json:"write"`
+	Archive    int64 `codec:"archive" json:"archive"`
+	Read       int64 `codec:"read" json:"read"`
+	MdWrite    int64 `codec:"mdWrite" json:"mdWrite"`
+	GitWrite   int64 `codec:"gitWrite" json:"gitWrite"`
+	GitArchive int64 `codec:"gitArchive" json:"gitArchive"`
+}
+
+func (o UsageStatRecord) DeepCopy() UsageStatRecord {
+	return UsageStatRecord{
+		Write:      o.Write,
+		Archive:    o.Archive,
+		Read:       o.Read,
+		MdWrite:    o.MdWrite,
+		GitWrite:   o.GitWrite,
+		GitArchive: o.GitArchive,
+	}
+}
+
+type UsageStat struct {
+	Bytes  UsageStatRecord `codec:"bytes" json:"bytes"`
+	Blocks UsageStatRecord `codec:"blocks" json:"blocks"`
+	Mtime  Time            `codec:"mtime" json:"mtime"`
+}
+
+func (o UsageStat) DeepCopy() UsageStat {
+	return UsageStat{
+		Bytes:  o.Bytes.DeepCopy(),
+		Blocks: o.Blocks.DeepCopy(),
+		Mtime:  o.Mtime.DeepCopy(),
+	}
+}
+
+type FolderUsageStat struct {
+	FolderID string    `codec:"folderID" json:"folderID"`
+	Stats    UsageStat `codec:"stats" json:"stats"`
+}
+
+func (o FolderUsageStat) DeepCopy() FolderUsageStat {
+	return FolderUsageStat{
+		FolderID: o.FolderID,
+		Stats:    o.Stats.DeepCopy(),
+	}
+}
+
+type BlockQuotaInfo struct {
+	Folders  []FolderUsageStat `codec:"folders" json:"folders"`
+	Total    UsageStat         `codec:"total" json:"total"`
+	Limit    int64             `codec:"limit" json:"limit"`
+	GitLimit int64             `codec:"gitLimit" json:"gitLimit"`
+}
+
+func (o BlockQuotaInfo) DeepCopy() BlockQuotaInfo {
+	return BlockQuotaInfo{
+		Folders: (func(x []FolderUsageStat) []FolderUsageStat {
+			if x == nil {
+				return nil
+			}
+			ret := make([]FolderUsageStat, len(x))
+			for i, v := range x {
+				vCopy := v.DeepCopy()
+				ret[i] = vCopy
+			}
+			return ret
+		})(o.Folders),
+		Total:    o.Total.DeepCopy(),
+		Limit:    o.Limit,
+		GitLimit: o.GitLimit,
+	}
 }

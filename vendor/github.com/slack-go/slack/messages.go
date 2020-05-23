@@ -22,7 +22,7 @@ type Message struct {
 // Msg contains information about a slack message
 type Msg struct {
 	// Basic Message
-	ClientMsgID     string       `json:"client_msg_id"`
+	ClientMsgID     string       `json:"client_msg_id,omitempty"`
 	Type            string       `json:"type,omitempty"`
 	Channel         string       `json:"channel,omitempty"`
 	User            string       `json:"user,omitempty"`

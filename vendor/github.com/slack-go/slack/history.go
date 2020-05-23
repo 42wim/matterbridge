@@ -22,6 +22,7 @@ type History struct {
 	Latest   string    `json:"latest"`
 	Messages []Message `json:"messages"`
 	HasMore  bool      `json:"has_more"`
+	Unread   int       `json:"unread_count_display"`
 }
 
 // NewHistoryParameters provides an instance of HistoryParameters with all the sane default values set

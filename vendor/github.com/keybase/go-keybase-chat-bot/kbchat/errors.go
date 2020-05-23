@@ -1,8 +1,13 @@
 package kbchat
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type ErrorCode int
+
+var errAPIDisconnected = errors.New("chat API disconnected")
 
 const (
 	RevisionErrorCode          ErrorCode = 2760
