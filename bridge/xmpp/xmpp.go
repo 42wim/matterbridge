@@ -70,10 +70,17 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 	if msg.Event == config.EventMsgDelete {
 		return "", nil
 	}
+
 	b.Log.Debugf("=> Receiving %#v", msg)
 
 	if msg.Event == config.EventAvatarDownload {
 		return b.cacheAvatar(&msg), nil
+	}
+
+	// Make a action /me of the message, prepend the username with it.
+	// https://xmpp.org/extensions/xep-0245.html
+	if msg.Event == config.EventUserAction {
+		msg.Username = "/me " + msg.Username
 	}
 
 	// Upload a file (in XMPP case send the upload URL because XMPP has no native upload support).
