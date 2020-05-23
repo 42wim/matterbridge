@@ -200,6 +200,8 @@ github.com/technoweenie/multipartstreamer
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.1.0
 github.com/valyala/fasttemplate
+# github.com/writeas/go-strip-markdown v2.0.1+incompatible
+github.com/writeas/go-strip-markdown
 # github.com/yaegashi/msgraph.go v0.1.2
 github.com/yaegashi/msgraph.go/beta
 github.com/yaegashi/msgraph.go/jsonx
