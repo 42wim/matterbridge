@@ -5,8 +5,8 @@
 # The Tengo Language
 
 [![GoDoc](https://godoc.org/github.com/d5/tengo?status.svg)](https://godoc.org/github.com/d5/tengo)
+![test](https://github.com/d5/tengo/workflows/test/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/d5/tengo)](https://goreportcard.com/report/github.com/d5/tengo)
-[![CircleCI](https://circleci.com/gh/d5/tengo.svg?style=svg)](https://circleci.com/gh/d5/tengo)
 
 **Tengo is a small, dynamic, fast, secure script language for Go.** 
 
@@ -51,19 +51,21 @@ fmt.println(sum("", [1, 2, 3]))  // "123"
 
 ## Benchmark
 
-| | fib(35) | fibt(35) |  Type  |
+| | fib(35) | fibt(35) |  Language (Type)  |
 | :--- |    ---: |     ---: |  :---: |
-| Go | `48ms` | `3ms` | Go (native) |
-| [**Tengo**](https://github.com/d5/tengo) | `2,349ms` | `5ms` | VM on Go |
-| Lua | `1,416ms` | `3ms` | Lua (native) |
-| [go-lua](https://github.com/Shopify/go-lua) | `4,402ms` | `5ms` | Lua VM on Go |
-| [GopherLua](https://github.com/yuin/gopher-lua) | `4,023ms` | `5ms` | Lua VM on Go |
-| Python | `2,588ms` | `26ms` | Python (native) |
-| [starlark-go](https://github.com/google/starlark-go) | `11,126ms` | `6ms` | Python-like Interpreter on Go |
-| [gpython](https://github.com/go-python/gpython) | `15,035ms` | `4ms` | Python Interpreter on Go |
-| [goja](https://github.com/dop251/goja) | `5,089ms` | `5ms` | JS VM on Go |
-| [otto](https://github.com/robertkrimen/otto) | `68,377ms` | `11ms` | JS Interpreter on Go |
-| [Anko](https://github.com/mattn/anko) | `92,579ms` | `18ms` | Interpreter on Go |
+| [**Tengo**](https://github.com/d5/tengo) | `2,931ms` | `4ms` | Tengo (VM) |
+| [go-lua](https://github.com/Shopify/go-lua) | `4,824ms` | `4ms` | Lua (VM) |
+| [GopherLua](https://github.com/yuin/gopher-lua) | `5,365ms` | `4ms` | Lua (VM) |
+| [goja](https://github.com/dop251/goja) | `5,533ms` | `5ms` | JavaScript (VM) |
+| [starlark-go](https://github.com/google/starlark-go) | `11,495ms` | `5ms` | Starlark (Interpreter) |
+| [Yaegi](https://github.com/containous/yaegi) | `15,645ms` | `12ms` | Yaegi (Interpreter) |
+| [gpython](https://github.com/go-python/gpython) | `16,322ms` | `5ms` | Python (Interpreter) |
+| [otto](https://github.com/robertkrimen/otto) | `73,093ms` | `10ms` | JavaScript (Interpreter) |
+| [Anko](https://github.com/mattn/anko) | `79,809ms` | `8ms` | Anko (Interpreter) |
+| - | - | - | - |
+| Go | `53ms` | `3ms` | Go (Native) |
+| Lua | `1,612ms` | `3ms` | Lua (Native) |
+| Python | `2,632ms` | `23ms` | Python 2 (Native) |
 
 _* [fib(35)](https://github.com/d5/tengobench/blob/master/code/fib.tengo):
 Fibonacci(35)_  
@@ -136,3 +138,10 @@ each([a, b, c, d], func(x) {
 - [Interoperability](https://github.com/d5/tengo/blob/master/docs/interoperability.md)
 - [Tengo CLI](https://github.com/d5/tengo/blob/master/docs/tengo-cli.md)
 - [Standard Library](https://github.com/d5/tengo/blob/master/docs/stdlib.md)
+- Syntax Highlighters: [VSCode](https://github.com/lissein/vscode-tengo), [Atom](https://github.com/d5/tengo-atom)
+- **Why the name Tengo?** It's from [1Q84](https://en.wikipedia.org/wiki/1Q84).
+
+##
+
+:hearts: Like writing Go code? Come work at Skool. [We're hiring!](https://jobs.lever.co/skool)
+

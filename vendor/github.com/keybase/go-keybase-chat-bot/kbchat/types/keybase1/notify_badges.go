@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.6 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/keybase1/notify_badges.avdl
 
 package keybase1
@@ -74,6 +74,20 @@ func (o ResetState) DeepCopy() ResetState {
 	}
 }
 
+type WotUpdate struct {
+	Voucher string        `codec:"voucher" json:"voucher"`
+	Vouchee string        `codec:"vouchee" json:"vouchee"`
+	Status  WotStatusType `codec:"status" json:"status"`
+}
+
+func (o WotUpdate) DeepCopy() WotUpdate {
+	return WotUpdate{
+		Voucher: o.Voucher,
+		Vouchee: o.Vouchee,
+		Status:  o.Status.DeepCopy(),
+	}
+}
+
 type BadgeState struct {
 	NewTlfs                   int                     `codec:"newTlfs" json:"newTlfs"`
 	RekeysNeeded              int                     `codec:"rekeysNeeded" json:"rekeysNeeded"`
@@ -82,27 +96,33 @@ type BadgeState struct {
 	HomeTodoItems             int                     `codec:"homeTodoItems" json:"homeTodoItems"`
 	UnverifiedEmails          int                     `codec:"unverifiedEmails" json:"unverifiedEmails"`
 	UnverifiedPhones          int                     `codec:"unverifiedPhones" json:"unverifiedPhones"`
+	SmallTeamBadgeCount       int                     `codec:"smallTeamBadgeCount" json:"smallTeamBadgeCount"`
+	BigTeamBadgeCount         int                     `codec:"bigTeamBadgeCount" json:"bigTeamBadgeCount"`
+	NewTeamAccessRequestCount int                     `codec:"newTeamAccessRequestCount" json:"newTeamAccessRequestCount"`
 	NewDevices                []DeviceID              `codec:"newDevices" json:"newDevices"`
 	RevokedDevices            []DeviceID              `codec:"revokedDevices" json:"revokedDevices"`
 	Conversations             []BadgeConversationInfo `codec:"conversations" json:"conversations"`
 	NewGitRepoGlobalUniqueIDs []string                `codec:"newGitRepoGlobalUniqueIDs" json:"newGitRepoGlobalUniqueIDs"`
 	NewTeams                  []TeamID                `codec:"newTeams" json:"newTeams"`
 	DeletedTeams              []DeletedTeamInfo       `codec:"deletedTeams" json:"deletedTeams"`
-	NewTeamAccessRequests     []TeamID                `codec:"newTeamAccessRequests" json:"newTeamAccessRequests"`
 	TeamsWithResetUsers       []TeamMemberOutReset    `codec:"teamsWithResetUsers" json:"teamsWithResetUsers"`
 	UnreadWalletAccounts      []WalletAccountInfo     `codec:"unreadWalletAccounts" json:"unreadWalletAccounts"`
+	WotUpdates                map[string]WotUpdate    `codec:"wotUpdates" json:"wotUpdates"`
 	ResetState                ResetState              `codec:"resetState" json:"resetState"`
 }
 
 func (o BadgeState) DeepCopy() BadgeState {
 	return BadgeState{
-		NewTlfs:          o.NewTlfs,
-		RekeysNeeded:     o.RekeysNeeded,
-		NewFollowers:     o.NewFollowers,
-		InboxVers:        o.InboxVers,
-		HomeTodoItems:    o.HomeTodoItems,
-		UnverifiedEmails: o.UnverifiedEmails,
-		UnverifiedPhones: o.UnverifiedPhones,
+		NewTlfs:                   o.NewTlfs,
+		RekeysNeeded:              o.RekeysNeeded,
+		NewFollowers:              o.NewFollowers,
+		InboxVers:                 o.InboxVers,
+		HomeTodoItems:             o.HomeTodoItems,
+		UnverifiedEmails:          o.UnverifiedEmails,
+		UnverifiedPhones:          o.UnverifiedPhones,
+		SmallTeamBadgeCount:       o.SmallTeamBadgeCount,
+		BigTeamBadgeCount:         o.BigTeamBadgeCount,
+		NewTeamAccessRequestCount: o.NewTeamAccessRequestCount,
 		NewDevices: (func(x []DeviceID) []DeviceID {
 			if x == nil {
 				return nil
@@ -169,17 +189,6 @@ func (o BadgeState) DeepCopy() BadgeState {
 			}
 			return ret
 		})(o.DeletedTeams),
-		NewTeamAccessRequests: (func(x []TeamID) []TeamID {
-			if x == nil {
-				return nil
-			}
-			ret := make([]TeamID, len(x))
-			for i, v := range x {
-				vCopy := v.DeepCopy()
-				ret[i] = vCopy
-			}
-			return ret
-		})(o.NewTeamAccessRequests),
 		TeamsWithResetUsers: (func(x []TeamMemberOutReset) []TeamMemberOutReset {
 			if x == nil {
 				return nil
@@ -202,31 +211,32 @@ func (o BadgeState) DeepCopy() BadgeState {
 			}
 			return ret
 		})(o.UnreadWalletAccounts),
+		WotUpdates: (func(x map[string]WotUpdate) map[string]WotUpdate {
+			if x == nil {
+				return nil
+			}
+			ret := make(map[string]WotUpdate, len(x))
+			for k, v := range x {
+				kCopy := k
+				vCopy := v.DeepCopy()
+				ret[kCopy] = vCopy
+			}
+			return ret
+		})(o.WotUpdates),
 		ResetState: o.ResetState.DeepCopy(),
 	}
 }
 
 type BadgeConversationInfo struct {
 	ConvID         ChatConversationID `codec:"convID" json:"convID"`
-	BadgeCounts    map[DeviceType]int `codec:"badgeCounts" json:"badgeCounts"`
+	BadgeCount     int                `codec:"badgeCount" json:"badgeCount"`
 	UnreadMessages int                `codec:"unreadMessages" json:"unreadMessages"`
 }
 
 func (o BadgeConversationInfo) DeepCopy() BadgeConversationInfo {
 	return BadgeConversationInfo{
-		ConvID: o.ConvID.DeepCopy(),
-		BadgeCounts: (func(x map[DeviceType]int) map[DeviceType]int {
-			if x == nil {
-				return nil
-			}
-			ret := make(map[DeviceType]int, len(x))
-			for k, v := range x {
-				kCopy := k.DeepCopy()
-				vCopy := v
-				ret[kCopy] = vCopy
-			}
-			return ret
-		})(o.BadgeCounts),
+		ConvID:         o.ConvID.DeepCopy(),
+		BadgeCount:     o.BadgeCount,
 		UnreadMessages: o.UnreadMessages,
 	}
 }

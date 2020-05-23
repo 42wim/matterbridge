@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.6 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/keybase1/pgp.avdl
 
 package keybase1
@@ -88,6 +88,7 @@ type PGPSigVerification struct {
 	Verified bool      `codec:"verified" json:"verified"`
 	Signer   User      `codec:"signer" json:"signer"`
 	SignKey  PublicKey `codec:"signKey" json:"signKey"`
+	Warnings []string  `codec:"warnings" json:"warnings"`
 }
 
 func (o PGPSigVerification) DeepCopy() PGPSigVerification {
@@ -96,6 +97,17 @@ func (o PGPSigVerification) DeepCopy() PGPSigVerification {
 		Verified: o.Verified,
 		Signer:   o.Signer.DeepCopy(),
 		SignKey:  o.SignKey.DeepCopy(),
+		Warnings: (func(x []string) []string {
+			if x == nil {
+				return nil
+			}
+			ret := make([]string, len(x))
+			for i, v := range x {
+				vCopy := v
+				ret[i] = vCopy
+			}
+			return ret
+		})(o.Warnings),
 	}
 }
 

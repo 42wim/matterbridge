@@ -97,6 +97,7 @@ func (b *Bytecode) RemoveDuplicates() {
 	var deduped []Object
 
 	indexMap := make(map[int]int) // mapping from old constant index to new index
+	fns := make(map[*CompiledFunction]int)
 	ints := make(map[int64]int)
 	strings := make(map[string]int)
 	floats := make(map[float64]int)
@@ -106,9 +107,14 @@ func (b *Bytecode) RemoveDuplicates() {
 	for curIdx, c := range b.Constants {
 		switch c := c.(type) {
 		case *CompiledFunction:
-			// add to deduped list
-			indexMap[curIdx] = len(deduped)
-			deduped = append(deduped, c)
+			if newIdx, ok := fns[c]; ok {
+				indexMap[curIdx] = newIdx
+			} else {
+				newIdx = len(deduped)
+				fns[c] = newIdx
+				indexMap[curIdx] = newIdx
+				deduped = append(deduped, c)
+			}
 		case *ImmutableMap:
 			modName := inferModuleName(c)
 			newIdx, ok := immutableMaps[modName]

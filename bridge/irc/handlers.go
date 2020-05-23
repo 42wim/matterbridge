@@ -10,8 +10,8 @@ import (
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	"github.com/dfordsoft/golib/ic"
 	"github.com/lrstanley/girc"
+	"github.com/missdeer/golib/ic"
 	"github.com/paulrosania/go-charset/charset"
 	"github.com/saintfish/chardet"
 

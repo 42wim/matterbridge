@@ -59,6 +59,8 @@ import (
 	"github.com/labstack/gommon/log"
 	"golang.org/x/crypto/acme"
 	"golang.org/x/crypto/acme/autocert"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 )
 
 type (
@@ -88,6 +90,7 @@ type (
 		Validator        Validator
 		Renderer         Renderer
 		Logger           Logger
+		IPExtractor      IPExtractor
 	}
 
 	// Route contains a handler and information for matching against requests.
@@ -227,7 +230,7 @@ const (
 
 const (
 	// Version of Echo
-	Version = "4.1.13"
+	Version = "4.1.16"
 	website = "https://echo.labstack.com"
 	// http://patorjk.com/software/taag/#p=display&f=Small%20Slant&t=Echo
 	banner = `
@@ -723,6 +726,34 @@ func (e *Echo) StartServer(s *http.Server) (err error) {
 	return s.Serve(e.TLSListener)
 }
 
+// StartH2CServer starts a custom http/2 server with h2c (HTTP/2 Cleartext).
+func (e *Echo) StartH2CServer(address string, h2s *http2.Server) (err error) {
+	// Setup
+	s := e.Server
+	s.Addr = address
+	e.colorer.SetOutput(e.Logger.Output())
+	s.ErrorLog = e.StdLogger
+	s.Handler = h2c.NewHandler(e, h2s)
+	if e.Debug {
+		e.Logger.SetLevel(log.DEBUG)
+	}
+
+	if !e.HideBanner {
+		e.colorer.Printf(banner, e.colorer.Red("v"+Version), e.colorer.Blue(website))
+	}
+
+	if e.Listener == nil {
+		e.Listener, err = newListener(s.Addr)
+		if err != nil {
+			return err
+		}
+	}
+	if !e.HidePort {
+		e.colorer.Printf("⇨ http server started on %s\n", e.colorer.Green(e.Listener.Addr()))
+	}
+	return s.Serve(e.Listener)
+}
+
 // Close immediately stops the server.
 // It internally calls `http.Server#Close()`.
 func (e *Echo) Close() error {
@@ -752,6 +783,9 @@ func NewHTTPError(code int, message ...interface{}) *HTTPError {
 
 // Error makes it compatible with `error` interface.
 func (he *HTTPError) Error() string {
+	if he.Internal == nil {
+		return fmt.Sprintf("code=%d, message=%v", he.Code, he.Message)
+	}
 	return fmt.Sprintf("code=%d, message=%v, internal=%v", he.Code, he.Message, he.Internal)
 }
 
@@ -826,9 +860,10 @@ func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
 		return
 	} else if err = c.(*net.TCPConn).SetKeepAlive(true); err != nil {
 		return
-	} else if err = c.(*net.TCPConn).SetKeepAlivePeriod(3 * time.Minute); err != nil {
-		return
 	}
+	// Ignore error from setting the KeepAlivePeriod as some systems, such as
+	// OpenBSD, do not support setting TCP_USER_TIMEOUT on IPPROTO_TCP
+	_ = c.(*net.TCPConn).SetKeepAlivePeriod(3 * time.Minute)
 	return
 }
 

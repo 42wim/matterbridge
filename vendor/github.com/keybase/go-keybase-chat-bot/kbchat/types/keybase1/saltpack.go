@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.6 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/keybase1/saltpack.avdl
 
 package keybase1
@@ -46,6 +46,7 @@ type SaltpackEncryptOptions struct {
 	NoSelfEncrypt             bool             `codec:"noSelfEncrypt" json:"noSelfEncrypt"`
 	Binary                    bool             `codec:"binary" json:"binary"`
 	SaltpackVersion           int              `codec:"saltpackVersion" json:"saltpackVersion"`
+	NoForcePoll               bool             `codec:"noForcePoll" json:"noForcePoll"`
 	UseKBFSKeysOnlyForTesting bool             `codec:"useKBFSKeysOnlyForTesting" json:"useKBFSKeysOnlyForTesting"`
 }
 
@@ -80,6 +81,7 @@ func (o SaltpackEncryptOptions) DeepCopy() SaltpackEncryptOptions {
 		NoSelfEncrypt:             o.NoSelfEncrypt,
 		Binary:                    o.Binary,
 		SaltpackVersion:           o.SaltpackVersion,
+		NoForcePoll:               o.NoForcePoll,
 		UseKBFSKeysOnlyForTesting: o.UseKBFSKeysOnlyForTesting,
 	}
 }

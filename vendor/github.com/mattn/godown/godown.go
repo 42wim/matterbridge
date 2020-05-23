@@ -354,6 +354,7 @@ func walk(node *html.Node, w io.Writer, nest int, option *Option) {
 	}
 }
 
+// Option is optional information for Convert.
 type Option struct {
 	GuessLang func(string) (string, error)
 	Script    bool

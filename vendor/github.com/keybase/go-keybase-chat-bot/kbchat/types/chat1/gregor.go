@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.6 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/chat1/gregor.avdl
 
 package chat1
@@ -450,16 +450,6 @@ func (o UpdateConversations) DeepCopy() UpdateConversations {
 			}
 			return ret
 		})(o.ConvUpdates),
-	}
-}
-
-type TeamChannelUpdate struct {
-	TeamID TLFID `codec:"teamID" json:"teamID"`
-}
-
-func (o TeamChannelUpdate) DeepCopy() TeamChannelUpdate {
-	return TeamChannelUpdate{
-		TeamID: o.TeamID.DeepCopy(),
 	}
 }
 

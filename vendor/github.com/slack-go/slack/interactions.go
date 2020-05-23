@@ -27,6 +27,7 @@ const (
 	InteractionTypeBlockSuggestion    = InteractionType("block_suggestion")
 	InteractionTypeViewSubmission     = InteractionType("view_submission")
 	InteractionTypeViewClosed         = InteractionType("view_closed")
+	InteractionTypeShortcut           = InteractionType("shortcut")
 )
 
 // InteractionCallback is sent from slack when a user interactions with a button or dialog.

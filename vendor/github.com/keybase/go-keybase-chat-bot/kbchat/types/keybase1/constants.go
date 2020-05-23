@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.6 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/keybase1/constants.avdl
 
 package keybase1
@@ -12,6 +12,7 @@ type StatusCode int
 const (
 	StatusCode_SCOk                                        StatusCode = 0
 	StatusCode_SCInputError                                StatusCode = 100
+	StatusCode_SCAssertionParseError                       StatusCode = 101
 	StatusCode_SCLoginRequired                             StatusCode = 201
 	StatusCode_SCBadSession                                StatusCode = 202
 	StatusCode_SCBadLoginUserNotFound                      StatusCode = 203
@@ -34,11 +35,13 @@ const (
 	StatusCode_SCWrongCryptoFormat                         StatusCode = 279
 	StatusCode_SCDecryptionError                           StatusCode = 280
 	StatusCode_SCInvalidAddress                            StatusCode = 281
+	StatusCode_SCWrongCryptoMsgType                        StatusCode = 282
 	StatusCode_SCNoSession                                 StatusCode = 283
 	StatusCode_SCAccountReset                              StatusCode = 290
 	StatusCode_SCIdentifiesFailed                          StatusCode = 295
 	StatusCode_SCNoSpaceOnDevice                           StatusCode = 297
 	StatusCode_SCMerkleClientError                         StatusCode = 299
+	StatusCode_SCMerkleUpdateRoot                          StatusCode = 300
 	StatusCode_SCBadEmail                                  StatusCode = 472
 	StatusCode_SCRateLimit                                 StatusCode = 602
 	StatusCode_SCBadSignupUsernameTaken                    StatusCode = 701
@@ -69,6 +72,7 @@ const (
 	StatusCode_SCKeyDuplicateUpdate                        StatusCode = 921
 	StatusCode_SCSibkeyAlreadyExists                       StatusCode = 922
 	StatusCode_SCDecryptionKeyNotFound                     StatusCode = 924
+	StatusCode_SCVerificationKeyNotFound                   StatusCode = 925
 	StatusCode_SCKeyNoPGPEncryption                        StatusCode = 927
 	StatusCode_SCKeyNoNaClEncryption                       StatusCode = 928
 	StatusCode_SCKeySyncedPGPNotFound                      StatusCode = 929
@@ -102,6 +106,7 @@ const (
 	StatusCode_SCGenericAPIError                           StatusCode = 1600
 	StatusCode_SCAPINetworkError                           StatusCode = 1601
 	StatusCode_SCTimeout                                   StatusCode = 1602
+	StatusCode_SCKBFSClientTimeout                         StatusCode = 1603
 	StatusCode_SCProofError                                StatusCode = 1701
 	StatusCode_SCIdentificationExpired                     StatusCode = 1702
 	StatusCode_SCSelfNotFound                              StatusCode = 1703
@@ -142,6 +147,8 @@ const (
 	StatusCode_SCChatNotInTeam                             StatusCode = 2517
 	StatusCode_SCChatStalePreviousState                    StatusCode = 2518
 	StatusCode_SCChatEphemeralRetentionPolicyViolatedError StatusCode = 2519
+	StatusCode_SCChatUsersAlreadyInConversationError       StatusCode = 2520
+	StatusCode_SCChatBadConversationError                  StatusCode = 2521
 	StatusCode_SCTeamBadMembership                         StatusCode = 2604
 	StatusCode_SCTeamSelfNotOwner                          StatusCode = 2607
 	StatusCode_SCTeamNotFound                              StatusCode = 2614
@@ -152,6 +159,8 @@ const (
 	StatusCode_SCNoOp                                      StatusCode = 2638
 	StatusCode_SCTeamInviteBadCancel                       StatusCode = 2645
 	StatusCode_SCTeamInviteBadToken                        StatusCode = 2646
+	StatusCode_SCTeamInviteCompletionMissing               StatusCode = 2648
+	StatusCode_SCTeamBadNameReservedDB                     StatusCode = 2650
 	StatusCode_SCTeamTarDuplicate                          StatusCode = 2663
 	StatusCode_SCTeamTarNotFound                           StatusCode = 2664
 	StatusCode_SCTeamMemberExists                          StatusCode = 2665
@@ -188,6 +197,7 @@ const (
 	StatusCode_SCTeamStorageBadGeneration                  StatusCode = 2761
 	StatusCode_SCTeamStorageNotFound                       StatusCode = 2762
 	StatusCode_SCTeamContactSettingsBlock                  StatusCode = 2763
+	StatusCode_SCTeamSeitanInviteNeedPUK                   StatusCode = 2770
 	StatusCode_SCEphemeralKeyBadGeneration                 StatusCode = 2900
 	StatusCode_SCEphemeralKeyUnexpectedBox                 StatusCode = 2901
 	StatusCode_SCEphemeralKeyMissingBox                    StatusCode = 2902
@@ -242,143 +252,154 @@ const (
 	StatusCode_SCTeambotKeyOldBoxedGeneration              StatusCode = 3801
 	StatusCode_SCTeambotKeyBadGeneration                   StatusCode = 3802
 	StatusCode_SCAirdropRegisterFailedMisc                 StatusCode = 4207
+	StatusCode_SCSimpleFSNameExists                        StatusCode = 5101
+	StatusCode_SCSimpleFSDirNotEmpty                       StatusCode = 5102
+	StatusCode_SCSimpleFSNotExist                          StatusCode = 5103
+	StatusCode_SCSimpleFSNoAccess                          StatusCode = 5104
 )
 
 func (o StatusCode) DeepCopy() StatusCode { return o }
 
 var StatusCodeMap = map[string]StatusCode{
-	"SCOk":                        0,
-	"SCInputError":                100,
-	"SCLoginRequired":             201,
-	"SCBadSession":                202,
-	"SCBadLoginUserNotFound":      203,
-	"SCBadLoginPassword":          204,
-	"SCNotFound":                  205,
-	"SCThrottleControl":           210,
-	"SCDeleted":                   216,
-	"SCGeneric":                   218,
-	"SCAlreadyLoggedIn":           235,
-	"SCExists":                    230,
-	"SCCanceled":                  237,
-	"SCInputCanceled":             239,
-	"SCBadUsername":               243,
-	"SCOffline":                   267,
-	"SCReloginRequired":           274,
-	"SCResolutionFailed":          275,
-	"SCProfileNotPublic":          276,
-	"SCIdentifyFailed":            277,
-	"SCTrackingBroke":             278,
-	"SCWrongCryptoFormat":         279,
-	"SCDecryptionError":           280,
-	"SCInvalidAddress":            281,
-	"SCNoSession":                 283,
-	"SCAccountReset":              290,
-	"SCIdentifiesFailed":          295,
-	"SCNoSpaceOnDevice":           297,
-	"SCMerkleClientError":         299,
-	"SCBadEmail":                  472,
-	"SCRateLimit":                 602,
-	"SCBadSignupUsernameTaken":    701,
-	"SCDuplicate":                 706,
-	"SCBadInvitationCode":         707,
-	"SCBadSignupUsernameReserved": 710,
-	"SCBadSignupTeamName":         711,
-	"SCFeatureFlag":               712,
-	"SCEmailTaken":                713,
-	"SCEmailAlreadyAdded":         714,
-	"SCEmailLimitExceeded":        715,
-	"SCEmailCannotDeletePrimary":  716,
-	"SCEmailUnknown":              717,
-	"SCBotSignupTokenNotFound":    719,
-	"SCNoUpdate":                  723,
-	"SCMissingResult":             801,
-	"SCKeyNotFound":               901,
-	"SCKeyCorrupted":              905,
-	"SCKeyInUse":                  907,
-	"SCKeyBadGen":                 913,
-	"SCKeyNoSecret":               914,
-	"SCKeyBadUIDs":                915,
-	"SCKeyNoActive":               916,
-	"SCKeyNoSig":                  917,
-	"SCKeyBadSig":                 918,
-	"SCKeyBadEldest":              919,
-	"SCKeyNoEldest":               920,
-	"SCKeyDuplicateUpdate":        921,
-	"SCSibkeyAlreadyExists":       922,
-	"SCDecryptionKeyNotFound":     924,
-	"SCKeyNoPGPEncryption":        927,
-	"SCKeyNoNaClEncryption":       928,
-	"SCKeySyncedPGPNotFound":      929,
-	"SCKeyNoMatchingGPG":          930,
-	"SCKeyRevoked":                931,
-	"SCSigCannotVerify":           1002,
-	"SCSigWrongKey":               1008,
-	"SCSigOldSeqno":               1010,
-	"SCSigCreationDisallowed":     1016,
-	"SCSigMissingRatchet":         1021,
-	"SCSigBadTotalOrder":          1022,
-	"SCBadTrackSession":           1301,
-	"SCDeviceBadName":             1404,
-	"SCDeviceBadStatus":           1405,
-	"SCDeviceNameInUse":           1408,
-	"SCDeviceNotFound":            1409,
-	"SCDeviceMismatch":            1410,
-	"SCDeviceRequired":            1411,
-	"SCDevicePrevProvisioned":     1413,
-	"SCDeviceNoProvision":         1414,
-	"SCDeviceProvisionViaDevice":  1415,
-	"SCRevokeCurrentDevice":       1416,
-	"SCRevokeLastDevice":          1417,
-	"SCDeviceProvisionOffline":    1418,
-	"SCRevokeLastDevicePGP":       1419,
-	"SCStreamExists":              1501,
-	"SCStreamNotFound":            1502,
-	"SCStreamWrongKind":           1503,
-	"SCStreamEOF":                 1504,
-	"SCStreamUnknown":             1505,
-	"SCGenericAPIError":           1600,
-	"SCAPINetworkError":           1601,
-	"SCTimeout":                   1602,
-	"SCProofError":                1701,
-	"SCIdentificationExpired":     1702,
-	"SCSelfNotFound":              1703,
-	"SCBadKexPhrase":              1704,
-	"SCNoUIDelegation":            1705,
-	"SCNoUI":                      1706,
-	"SCGPGUnavailable":            1707,
-	"SCInvalidVersionError":       1800,
-	"SCOldVersionError":           1801,
-	"SCInvalidLocationError":      1802,
-	"SCServiceStatusError":        1803,
-	"SCInstallError":              1804,
-	"SCLoadKextError":             1810,
-	"SCLoadKextPermError":         1811,
-	"SCGitInternal":               2300,
-	"SCGitRepoAlreadyExists":      2301,
-	"SCGitInvalidRepoName":        2302,
-	"SCGitCannotDelete":           2303,
-	"SCGitRepoDoesntExist":        2304,
-	"SCLoginStateTimeout":         2400,
-	"SCChatInternal":              2500,
-	"SCChatRateLimit":             2501,
-	"SCChatConvExists":            2502,
-	"SCChatUnknownTLFID":          2503,
-	"SCChatNotInConv":             2504,
-	"SCChatBadMsg":                2505,
-	"SCChatBroadcast":             2506,
-	"SCChatAlreadySuperseded":     2507,
-	"SCChatAlreadyDeleted":        2508,
-	"SCChatTLFFinalized":          2509,
-	"SCChatCollision":             2510,
-	"SCIdentifySummaryError":      2511,
-	"SCNeedSelfRekey":             2512,
-	"SCNeedOtherRekey":            2513,
-	"SCChatMessageCollision":      2514,
-	"SCChatDuplicateMessage":      2515,
-	"SCChatClientError":           2516,
-	"SCChatNotInTeam":             2517,
-	"SCChatStalePreviousState":    2518,
+	"SCOk":                                        0,
+	"SCInputError":                                100,
+	"SCAssertionParseError":                       101,
+	"SCLoginRequired":                             201,
+	"SCBadSession":                                202,
+	"SCBadLoginUserNotFound":                      203,
+	"SCBadLoginPassword":                          204,
+	"SCNotFound":                                  205,
+	"SCThrottleControl":                           210,
+	"SCDeleted":                                   216,
+	"SCGeneric":                                   218,
+	"SCAlreadyLoggedIn":                           235,
+	"SCExists":                                    230,
+	"SCCanceled":                                  237,
+	"SCInputCanceled":                             239,
+	"SCBadUsername":                               243,
+	"SCOffline":                                   267,
+	"SCReloginRequired":                           274,
+	"SCResolutionFailed":                          275,
+	"SCProfileNotPublic":                          276,
+	"SCIdentifyFailed":                            277,
+	"SCTrackingBroke":                             278,
+	"SCWrongCryptoFormat":                         279,
+	"SCDecryptionError":                           280,
+	"SCInvalidAddress":                            281,
+	"SCWrongCryptoMsgType":                        282,
+	"SCNoSession":                                 283,
+	"SCAccountReset":                              290,
+	"SCIdentifiesFailed":                          295,
+	"SCNoSpaceOnDevice":                           297,
+	"SCMerkleClientError":                         299,
+	"SCMerkleUpdateRoot":                          300,
+	"SCBadEmail":                                  472,
+	"SCRateLimit":                                 602,
+	"SCBadSignupUsernameTaken":                    701,
+	"SCDuplicate":                                 706,
+	"SCBadInvitationCode":                         707,
+	"SCBadSignupUsernameReserved":                 710,
+	"SCBadSignupTeamName":                         711,
+	"SCFeatureFlag":                               712,
+	"SCEmailTaken":                                713,
+	"SCEmailAlreadyAdded":                         714,
+	"SCEmailLimitExceeded":                        715,
+	"SCEmailCannotDeletePrimary":                  716,
+	"SCEmailUnknown":                              717,
+	"SCBotSignupTokenNotFound":                    719,
+	"SCNoUpdate":                                  723,
+	"SCMissingResult":                             801,
+	"SCKeyNotFound":                               901,
+	"SCKeyCorrupted":                              905,
+	"SCKeyInUse":                                  907,
+	"SCKeyBadGen":                                 913,
+	"SCKeyNoSecret":                               914,
+	"SCKeyBadUIDs":                                915,
+	"SCKeyNoActive":                               916,
+	"SCKeyNoSig":                                  917,
+	"SCKeyBadSig":                                 918,
+	"SCKeyBadEldest":                              919,
+	"SCKeyNoEldest":                               920,
+	"SCKeyDuplicateUpdate":                        921,
+	"SCSibkeyAlreadyExists":                       922,
+	"SCDecryptionKeyNotFound":                     924,
+	"SCVerificationKeyNotFound":                   925,
+	"SCKeyNoPGPEncryption":                        927,
+	"SCKeyNoNaClEncryption":                       928,
+	"SCKeySyncedPGPNotFound":                      929,
+	"SCKeyNoMatchingGPG":                          930,
+	"SCKeyRevoked":                                931,
+	"SCSigCannotVerify":                           1002,
+	"SCSigWrongKey":                               1008,
+	"SCSigOldSeqno":                               1010,
+	"SCSigCreationDisallowed":                     1016,
+	"SCSigMissingRatchet":                         1021,
+	"SCSigBadTotalOrder":                          1022,
+	"SCBadTrackSession":                           1301,
+	"SCDeviceBadName":                             1404,
+	"SCDeviceBadStatus":                           1405,
+	"SCDeviceNameInUse":                           1408,
+	"SCDeviceNotFound":                            1409,
+	"SCDeviceMismatch":                            1410,
+	"SCDeviceRequired":                            1411,
+	"SCDevicePrevProvisioned":                     1413,
+	"SCDeviceNoProvision":                         1414,
+	"SCDeviceProvisionViaDevice":                  1415,
+	"SCRevokeCurrentDevice":                       1416,
+	"SCRevokeLastDevice":                          1417,
+	"SCDeviceProvisionOffline":                    1418,
+	"SCRevokeLastDevicePGP":                       1419,
+	"SCStreamExists":                              1501,
+	"SCStreamNotFound":                            1502,
+	"SCStreamWrongKind":                           1503,
+	"SCStreamEOF":                                 1504,
+	"SCStreamUnknown":                             1505,
+	"SCGenericAPIError":                           1600,
+	"SCAPINetworkError":                           1601,
+	"SCTimeout":                                   1602,
+	"SCKBFSClientTimeout":                         1603,
+	"SCProofError":                                1701,
+	"SCIdentificationExpired":                     1702,
+	"SCSelfNotFound":                              1703,
+	"SCBadKexPhrase":                              1704,
+	"SCNoUIDelegation":                            1705,
+	"SCNoUI":                                      1706,
+	"SCGPGUnavailable":                            1707,
+	"SCInvalidVersionError":                       1800,
+	"SCOldVersionError":                           1801,
+	"SCInvalidLocationError":                      1802,
+	"SCServiceStatusError":                        1803,
+	"SCInstallError":                              1804,
+	"SCLoadKextError":                             1810,
+	"SCLoadKextPermError":                         1811,
+	"SCGitInternal":                               2300,
+	"SCGitRepoAlreadyExists":                      2301,
+	"SCGitInvalidRepoName":                        2302,
+	"SCGitCannotDelete":                           2303,
+	"SCGitRepoDoesntExist":                        2304,
+	"SCLoginStateTimeout":                         2400,
+	"SCChatInternal":                              2500,
+	"SCChatRateLimit":                             2501,
+	"SCChatConvExists":                            2502,
+	"SCChatUnknownTLFID":                          2503,
+	"SCChatNotInConv":                             2504,
+	"SCChatBadMsg":                                2505,
+	"SCChatBroadcast":                             2506,
+	"SCChatAlreadySuperseded":                     2507,
+	"SCChatAlreadyDeleted":                        2508,
+	"SCChatTLFFinalized":                          2509,
+	"SCChatCollision":                             2510,
+	"SCIdentifySummaryError":                      2511,
+	"SCNeedSelfRekey":                             2512,
+	"SCNeedOtherRekey":                            2513,
+	"SCChatMessageCollision":                      2514,
+	"SCChatDuplicateMessage":                      2515,
+	"SCChatClientError":                           2516,
+	"SCChatNotInTeam":                             2517,
+	"SCChatStalePreviousState":                    2518,
 	"SCChatEphemeralRetentionPolicyViolatedError": 2519,
+	"SCChatUsersAlreadyInConversationError":       2520,
+	"SCChatBadConversationError":                  2521,
 	"SCTeamBadMembership":                         2604,
 	"SCTeamSelfNotOwner":                          2607,
 	"SCTeamNotFound":                              2614,
@@ -389,6 +410,8 @@ var StatusCodeMap = map[string]StatusCode{
 	"SCNoOp":                                      2638,
 	"SCTeamInviteBadCancel":                       2645,
 	"SCTeamInviteBadToken":                        2646,
+	"SCTeamInviteCompletionMissing":               2648,
+	"SCTeamBadNameReservedDB":                     2650,
 	"SCTeamTarDuplicate":                          2663,
 	"SCTeamTarNotFound":                           2664,
 	"SCTeamMemberExists":                          2665,
@@ -425,6 +448,7 @@ var StatusCodeMap = map[string]StatusCode{
 	"SCTeamStorageBadGeneration":                  2761,
 	"SCTeamStorageNotFound":                       2762,
 	"SCTeamContactSettingsBlock":                  2763,
+	"SCTeamSeitanInviteNeedPUK":                   2770,
 	"SCEphemeralKeyBadGeneration":                 2900,
 	"SCEphemeralKeyUnexpectedBox":                 2901,
 	"SCEphemeralKeyMissingBox":                    2902,
@@ -479,11 +503,16 @@ var StatusCodeMap = map[string]StatusCode{
 	"SCTeambotKeyOldBoxedGeneration":              3801,
 	"SCTeambotKeyBadGeneration":                   3802,
 	"SCAirdropRegisterFailedMisc":                 4207,
+	"SCSimpleFSNameExists":                        5101,
+	"SCSimpleFSDirNotEmpty":                       5102,
+	"SCSimpleFSNotExist":                          5103,
+	"SCSimpleFSNoAccess":                          5104,
 }
 
 var StatusCodeRevMap = map[StatusCode]string{
 	0:    "SCOk",
 	100:  "SCInputError",
+	101:  "SCAssertionParseError",
 	201:  "SCLoginRequired",
 	202:  "SCBadSession",
 	203:  "SCBadLoginUserNotFound",
@@ -506,11 +535,13 @@ var StatusCodeRevMap = map[StatusCode]string{
 	279:  "SCWrongCryptoFormat",
 	280:  "SCDecryptionError",
 	281:  "SCInvalidAddress",
+	282:  "SCWrongCryptoMsgType",
 	283:  "SCNoSession",
 	290:  "SCAccountReset",
 	295:  "SCIdentifiesFailed",
 	297:  "SCNoSpaceOnDevice",
 	299:  "SCMerkleClientError",
+	300:  "SCMerkleUpdateRoot",
 	472:  "SCBadEmail",
 	602:  "SCRateLimit",
 	701:  "SCBadSignupUsernameTaken",
@@ -541,6 +572,7 @@ var StatusCodeRevMap = map[StatusCode]string{
 	921:  "SCKeyDuplicateUpdate",
 	922:  "SCSibkeyAlreadyExists",
 	924:  "SCDecryptionKeyNotFound",
+	925:  "SCVerificationKeyNotFound",
 	927:  "SCKeyNoPGPEncryption",
 	928:  "SCKeyNoNaClEncryption",
 	929:  "SCKeySyncedPGPNotFound",
@@ -574,6 +606,7 @@ var StatusCodeRevMap = map[StatusCode]string{
 	1600: "SCGenericAPIError",
 	1601: "SCAPINetworkError",
 	1602: "SCTimeout",
+	1603: "SCKBFSClientTimeout",
 	1701: "SCProofError",
 	1702: "SCIdentificationExpired",
 	1703: "SCSelfNotFound",
@@ -614,6 +647,8 @@ var StatusCodeRevMap = map[StatusCode]string{
 	2517: "SCChatNotInTeam",
 	2518: "SCChatStalePreviousState",
 	2519: "SCChatEphemeralRetentionPolicyViolatedError",
+	2520: "SCChatUsersAlreadyInConversationError",
+	2521: "SCChatBadConversationError",
 	2604: "SCTeamBadMembership",
 	2607: "SCTeamSelfNotOwner",
 	2614: "SCTeamNotFound",
@@ -624,6 +659,8 @@ var StatusCodeRevMap = map[StatusCode]string{
 	2638: "SCNoOp",
 	2645: "SCTeamInviteBadCancel",
 	2646: "SCTeamInviteBadToken",
+	2648: "SCTeamInviteCompletionMissing",
+	2650: "SCTeamBadNameReservedDB",
 	2663: "SCTeamTarDuplicate",
 	2664: "SCTeamTarNotFound",
 	2665: "SCTeamMemberExists",
@@ -660,6 +697,7 @@ var StatusCodeRevMap = map[StatusCode]string{
 	2761: "SCTeamStorageBadGeneration",
 	2762: "SCTeamStorageNotFound",
 	2763: "SCTeamContactSettingsBlock",
+	2770: "SCTeamSeitanInviteNeedPUK",
 	2900: "SCEphemeralKeyBadGeneration",
 	2901: "SCEphemeralKeyUnexpectedBox",
 	2902: "SCEphemeralKeyMissingBox",
@@ -714,6 +752,10 @@ var StatusCodeRevMap = map[StatusCode]string{
 	3801: "SCTeambotKeyOldBoxedGeneration",
 	3802: "SCTeambotKeyBadGeneration",
 	4207: "SCAirdropRegisterFailedMisc",
+	5101: "SCSimpleFSNameExists",
+	5102: "SCSimpleFSDirNotEmpty",
+	5103: "SCSimpleFSNotExist",
+	5104: "SCSimpleFSNoAccess",
 }
 
 func (e StatusCode) String() string {

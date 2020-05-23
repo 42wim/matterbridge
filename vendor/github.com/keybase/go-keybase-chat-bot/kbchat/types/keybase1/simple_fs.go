@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.6 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/keybase1/simple_fs.avdl
 
 package keybase1
@@ -744,9 +744,10 @@ func (o WriteArgs) DeepCopy() WriteArgs {
 }
 
 type CopyArgs struct {
-	OpID OpID `codec:"opID" json:"opID"`
-	Src  Path `codec:"src" json:"src"`
-	Dest Path `codec:"dest" json:"dest"`
+	OpID                   OpID `codec:"opID" json:"opID"`
+	Src                    Path `codec:"src" json:"src"`
+	Dest                   Path `codec:"dest" json:"dest"`
+	OverwriteExistingFiles bool `codec:"overwriteExistingFiles" json:"overwriteExistingFiles"`
 }
 
 func (o CopyArgs) DeepCopy() CopyArgs {
@@ -754,13 +755,15 @@ func (o CopyArgs) DeepCopy() CopyArgs {
 		OpID: o.OpID.DeepCopy(),
 		Src:  o.Src.DeepCopy(),
 		Dest: o.Dest.DeepCopy(),
+		OverwriteExistingFiles: o.OverwriteExistingFiles,
 	}
 }
 
 type MoveArgs struct {
-	OpID OpID `codec:"opID" json:"opID"`
-	Src  Path `codec:"src" json:"src"`
-	Dest Path `codec:"dest" json:"dest"`
+	OpID                   OpID `codec:"opID" json:"opID"`
+	Src                    Path `codec:"src" json:"src"`
+	Dest                   Path `codec:"dest" json:"dest"`
+	OverwriteExistingFiles bool `codec:"overwriteExistingFiles" json:"overwriteExistingFiles"`
 }
 
 func (o MoveArgs) DeepCopy() MoveArgs {
@@ -768,6 +771,7 @@ func (o MoveArgs) DeepCopy() MoveArgs {
 		OpID: o.OpID.DeepCopy(),
 		Src:  o.Src.DeepCopy(),
 		Dest: o.Dest.DeepCopy(),
+		OverwriteExistingFiles: o.OverwriteExistingFiles,
 	}
 }
 
@@ -1286,12 +1290,14 @@ func (e KbfsOnlineStatus) String() string {
 type FSSettings struct {
 	SpaceAvailableNotificationThreshold int64 `codec:"spaceAvailableNotificationThreshold" json:"spaceAvailableNotificationThreshold"`
 	SfmiBannerDismissed                 bool  `codec:"sfmiBannerDismissed" json:"sfmiBannerDismissed"`
+	SyncOnCellular                      bool  `codec:"syncOnCellular" json:"syncOnCellular"`
 }
 
 func (o FSSettings) DeepCopy() FSSettings {
 	return FSSettings{
 		SpaceAvailableNotificationThreshold: o.SpaceAvailableNotificationThreshold,
 		SfmiBannerDismissed:                 o.SfmiBannerDismissed,
+		SyncOnCellular:                      o.SyncOnCellular,
 	}
 }
 
@@ -1351,6 +1357,7 @@ const (
 	SubscriptionTopic_FILES_TAB_BADGE     SubscriptionTopic = 4
 	SubscriptionTopic_OVERALL_SYNC_STATUS SubscriptionTopic = 5
 	SubscriptionTopic_SETTINGS            SubscriptionTopic = 6
+	SubscriptionTopic_UPLOAD_STATUS       SubscriptionTopic = 7
 )
 
 func (o SubscriptionTopic) DeepCopy() SubscriptionTopic { return o }
@@ -1363,6 +1370,7 @@ var SubscriptionTopicMap = map[string]SubscriptionTopic{
 	"FILES_TAB_BADGE":     4,
 	"OVERALL_SYNC_STATUS": 5,
 	"SETTINGS":            6,
+	"UPLOAD_STATUS":       7,
 }
 
 var SubscriptionTopicRevMap = map[SubscriptionTopic]string{
@@ -1373,6 +1381,7 @@ var SubscriptionTopicRevMap = map[SubscriptionTopic]string{
 	4: "FILES_TAB_BADGE",
 	5: "OVERALL_SYNC_STATUS",
 	6: "SETTINGS",
+	7: "UPLOAD_STATUS",
 }
 
 func (e SubscriptionTopic) String() string {
@@ -1480,6 +1489,28 @@ func (o DownloadStatus) DeepCopy() DownloadStatus {
 	}
 }
 
+type UploadState struct {
+	UploadID   string   `codec:"uploadID" json:"uploadID"`
+	TargetPath KBFSPath `codec:"targetPath" json:"targetPath"`
+	Error      *string  `codec:"error,omitempty" json:"error,omitempty"`
+	Canceled   bool     `codec:"canceled" json:"canceled"`
+}
+
+func (o UploadState) DeepCopy() UploadState {
+	return UploadState{
+		UploadID:   o.UploadID,
+		TargetPath: o.TargetPath.DeepCopy(),
+		Error: (func(x *string) *string {
+			if x == nil {
+				return nil
+			}
+			tmp := (*x)
+			return &tmp
+		})(o.Error),
+		Canceled: o.Canceled,
+	}
+}
+
 type FilesTabBadge int
 
 const (
@@ -1561,5 +1592,77 @@ func (o GUIFileContext) DeepCopy() GUIFileContext {
 		ViewType:    o.ViewType.DeepCopy(),
 		ContentType: o.ContentType,
 		Url:         o.Url,
+	}
+}
+
+type SimpleFSSearchHit struct {
+	Path string `codec:"path" json:"path"`
+}
+
+func (o SimpleFSSearchHit) DeepCopy() SimpleFSSearchHit {
+	return SimpleFSSearchHit{
+		Path: o.Path,
+	}
+}
+
+type SimpleFSSearchResults struct {
+	Hits       []SimpleFSSearchHit `codec:"hits" json:"hits"`
+	NextResult int                 `codec:"nextResult" json:"nextResult"`
+}
+
+func (o SimpleFSSearchResults) DeepCopy() SimpleFSSearchResults {
+	return SimpleFSSearchResults{
+		Hits: (func(x []SimpleFSSearchHit) []SimpleFSSearchHit {
+			if x == nil {
+				return nil
+			}
+			ret := make([]SimpleFSSearchHit, len(x))
+			for i, v := range x {
+				vCopy := v.DeepCopy()
+				ret[i] = vCopy
+			}
+			return ret
+		})(o.Hits),
+		NextResult: o.NextResult,
+	}
+}
+
+type IndexProgressRecord struct {
+	EndEstimate Time  `codec:"endEstimate" json:"endEstimate"`
+	BytesTotal  int64 `codec:"bytesTotal" json:"bytesTotal"`
+	BytesSoFar  int64 `codec:"bytesSoFar" json:"bytesSoFar"`
+}
+
+func (o IndexProgressRecord) DeepCopy() IndexProgressRecord {
+	return IndexProgressRecord{
+		EndEstimate: o.EndEstimate.DeepCopy(),
+		BytesTotal:  o.BytesTotal,
+		BytesSoFar:  o.BytesSoFar,
+	}
+}
+
+type SimpleFSIndexProgress struct {
+	OverallProgress IndexProgressRecord `codec:"overallProgress" json:"overallProgress"`
+	CurrFolder      Folder              `codec:"currFolder" json:"currFolder"`
+	CurrProgress    IndexProgressRecord `codec:"currProgress" json:"currProgress"`
+	FoldersLeft     []Folder            `codec:"foldersLeft" json:"foldersLeft"`
+}
+
+func (o SimpleFSIndexProgress) DeepCopy() SimpleFSIndexProgress {
+	return SimpleFSIndexProgress{
+		OverallProgress: o.OverallProgress.DeepCopy(),
+		CurrFolder:      o.CurrFolder.DeepCopy(),
+		CurrProgress:    o.CurrProgress.DeepCopy(),
+		FoldersLeft: (func(x []Folder) []Folder {
+			if x == nil {
+				return nil
+			}
+			ret := make([]Folder, len(x))
+			for i, v := range x {
+				vCopy := v.DeepCopy()
+				ret[i] = vCopy
+			}
+			return ret
+		})(o.FoldersLeft),
 	}
 }

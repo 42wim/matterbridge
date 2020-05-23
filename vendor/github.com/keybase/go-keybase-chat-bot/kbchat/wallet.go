@@ -17,7 +17,11 @@ func (a *API) GetWalletTxDetails(txID string) (wOut WalletOutput, err error) {
 	a.Lock()
 	defer a.Unlock()
 
-	apiInput := fmt.Sprintf(`{"method": "details", "params": {"options": {"txid": "%s"}}}`, txID)
+	txIDEscaped, err := json.Marshal(txID)
+	if err != nil {
+		return wOut, err
+	}
+	apiInput := fmt.Sprintf(`{"method": "details", "params": {"options": {"txid": %s}}}`, txIDEscaped)
 	cmd := a.runOpts.Command("wallet", "api")
 	cmd.Stdin = strings.NewReader(apiInput)
 	var out bytes.Buffer

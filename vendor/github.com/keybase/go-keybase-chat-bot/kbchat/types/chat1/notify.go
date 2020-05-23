@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.6 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/chat1/notify.avdl
 
 package chat1
@@ -115,7 +115,7 @@ func (o IncomingMessage) DeepCopy() IncomingMessage {
 			tmp := (*x).DeepCopy()
 			return &tmp
 		})(o.ModifiedMessage),
-		ConvID:                     o.ConvID.DeepCopy(),
+		ConvID: o.ConvID.DeepCopy(),
 		DisplayDesktopNotification: o.DisplayDesktopNotification,
 		DesktopNotificationSnippet: o.DesktopNotificationSnippet,
 		Conv: (func(x *InboxUIItem) *InboxUIItem {
@@ -324,8 +324,8 @@ func (o EphemeralPurgeNotifInfo) DeepCopy() EphemeralPurgeNotifInfo {
 }
 
 type ReactionUpdate struct {
-	Reactions   ReactionMap `codec:"reactions" json:"reactions"`
-	TargetMsgID MessageID   `codec:"targetMsgID" json:"targetMsgID"`
+	Reactions   UIReactionMap `codec:"reactions" json:"reactions"`
+	TargetMsgID MessageID     `codec:"targetMsgID" json:"targetMsgID"`
 }
 
 func (o ReactionUpdate) DeepCopy() ReactionUpdate {
@@ -758,20 +758,16 @@ func (o ChatActivity) DeepCopy() ChatActivity {
 }
 
 type TyperInfo struct {
-	Uid        keybase1.UID      `codec:"uid" json:"uid"`
-	Username   string            `codec:"username" json:"username"`
-	DeviceID   keybase1.DeviceID `codec:"deviceID" json:"deviceID"`
-	DeviceName string            `codec:"deviceName" json:"deviceName"`
-	DeviceType string            `codec:"deviceType" json:"deviceType"`
+	Uid      keybase1.UID      `codec:"uid" json:"uid"`
+	Username string            `codec:"username" json:"username"`
+	DeviceID keybase1.DeviceID `codec:"deviceID" json:"deviceID"`
 }
 
 func (o TyperInfo) DeepCopy() TyperInfo {
 	return TyperInfo{
-		Uid:        o.Uid.DeepCopy(),
-		Username:   o.Username,
-		DeviceID:   o.DeviceID.DeepCopy(),
-		DeviceName: o.DeviceName,
-		DeviceType: o.DeviceType,
+		Uid:      o.Uid.DeepCopy(),
+		Username: o.Username,
+		DeviceID: o.DeviceID.DeepCopy(),
 	}
 }
 

@@ -3,6 +3,7 @@ package slack
 // https://api.slack.com/reference/messaging/block-elements
 
 const (
+	METCheckboxGroups MessageElementType = "checkboxes"
 	METImage          MessageElementType = "image"
 	METButton         MessageElementType = "button"
 	METOverflow       MessageElementType = "overflow"
@@ -360,6 +361,32 @@ func NewPlainTextInputBlockElement(placeholder *TextBlockObject, actionID string
 		Type:        METPlainTextInput,
 		ActionID:    actionID,
 		Placeholder: placeholder,
+	}
+}
+
+// CheckboxGroupsBlockElement defines an element which allows users to choose
+// one or more items from a list of possible options.
+//
+// More Information: https://api.slack.com/reference/block-kit/block-elements#checkboxes
+type CheckboxGroupsBlockElement struct {
+	Type           MessageElementType       `json:"type"`
+	ActionID       string                   `json:"action_id"`
+	Options        []*OptionBlockObject     `json:"options"`
+	InitialOptions []*OptionBlockObject     `json:"initial_options,omitempty"`
+	Confirm        *ConfirmationBlockObject `json:"confirm,omitempty"`
+}
+
+// ElementType returns the type of the Element
+func (c CheckboxGroupsBlockElement) ElementType() MessageElementType {
+	return c.Type
+}
+
+// NewRadioButtonsBlockElement returns an instance of a radio block element
+func NewCheckboxGroupsBlockElement(actionID string, options ...*OptionBlockObject) *CheckboxGroupsBlockElement {
+	return &CheckboxGroupsBlockElement{
+		Type:     METCheckboxGroups,
+		ActionID: actionID,
+		Options:  options,
 	}
 }
 

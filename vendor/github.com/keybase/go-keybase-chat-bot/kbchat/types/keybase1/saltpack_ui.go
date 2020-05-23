@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.6 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/keybase1/saltpack_ui.avdl
 
 package keybase1
@@ -54,6 +54,7 @@ func (e SaltpackSenderType) String() string {
 type SaltpackSender struct {
 	Uid        UID                `codec:"uid" json:"uid"`
 	Username   string             `codec:"username" json:"username"`
+	Fullname   string             `codec:"fullname" json:"fullname"`
 	SenderType SaltpackSenderType `codec:"senderType" json:"senderType"`
 }
 
@@ -61,6 +62,7 @@ func (o SaltpackSender) DeepCopy() SaltpackSender {
 	return SaltpackSender{
 		Uid:        o.Uid.DeepCopy(),
 		Username:   o.Username,
+		Fullname:   o.Fullname,
 		SenderType: o.SenderType.DeepCopy(),
 	}
 }

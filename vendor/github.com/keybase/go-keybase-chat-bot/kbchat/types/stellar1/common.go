@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.6 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/stellar1/common.avdl
 
 package stellar1
@@ -86,6 +86,7 @@ type Asset struct {
 	AuthEndpoint       string `codec:"authEndpoint" json:"authEndpoint"`
 	DepositReqAuth     bool   `codec:"depositReqAuth" json:"depositReqAuth"`
 	WithdrawReqAuth    bool   `codec:"withdrawReqAuth" json:"withdrawReqAuth"`
+	UseSep24           bool   `codec:"useSep24" json:"useSep24"`
 }
 
 func (o Asset) DeepCopy() Asset {
@@ -107,6 +108,7 @@ func (o Asset) DeepCopy() Asset {
 		AuthEndpoint:       o.AuthEndpoint,
 		DepositReqAuth:     o.DepositReqAuth,
 		WithdrawReqAuth:    o.WithdrawReqAuth,
+		UseSep24:           o.UseSep24,
 	}
 }
 

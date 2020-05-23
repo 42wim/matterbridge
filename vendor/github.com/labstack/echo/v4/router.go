@@ -347,7 +347,14 @@ func (r *Router) Find(method, path string, c Context) {
 		if l == pl {
 			// Continue search
 			search = search[l:]
-		} else {
+			// Finish routing if no remaining search and we are on an leaf node
+			if search == "" && (nn == nil || cn.parent == nil || cn.ppath != "") {
+				break
+			}
+		}
+
+		// Attempt to go back up the tree on no matching prefix or no remaining search
+		if l != pl || search == "" {
 			if nn == nil { // Issue #1348
 				return // Not found
 			}
@@ -358,10 +365,6 @@ func (r *Router) Find(method, path string, c Context) {
 			} else if nk == akind {
 				goto Any
 			}
-		}
-
-		if search == "" {
-			break
 		}
 
 		// Static node
@@ -376,8 +379,8 @@ func (r *Router) Find(method, path string, c Context) {
 			continue
 		}
 
-		// Param node
 	Param:
+		// Param node
 		if child = cn.findChildByKind(pkind); child != nil {
 			// Issue #378
 			if len(pvalues) == n {
@@ -401,43 +404,58 @@ func (r *Router) Find(method, path string, c Context) {
 			continue
 		}
 
-		// Any node
 	Any:
-		if cn = cn.findChildByKind(akind); cn == nil {
-			if nn != nil {
-				// No next node to go down in routing (issue #954)
-				// Find nearest "any" route going up the routing tree
-				search = ns
-				np := nn.parent
-				// Consider param route one level up only
-				// if no slash is remaining in search string
-				if cn = nn.findChildByKind(pkind); cn != nil && strings.IndexByte(ns, '/') == -1 {
+		// Any node
+		if cn = cn.findChildByKind(akind); cn != nil {
+			// If any node is found, use remaining path for pvalues
+			pvalues[len(cn.pnames)-1] = search
+			break
+		}
+
+		// No node found, continue at stored next node
+		// or find nearest "any" route
+		if nn != nil {
+			// No next node to go down in routing (issue #954)
+			// Find nearest "any" route going up the routing tree
+			search = ns
+			np := nn.parent
+			// Consider param route one level up only
+			if cn = nn.findChildByKind(pkind); cn != nil {
+				pos := strings.IndexByte(ns, '/')
+				if pos == -1 {
+					// If no slash is remaining in search string set param value
 					pvalues[len(cn.pnames)-1] = search
 					break
-				}
-				for {
-					np = nn.parent
-					if cn = nn.findChildByKind(akind); cn != nil {
-						break
-					}
-					if np == nil {
-						break // no further parent nodes in tree, abort
-					}
-					var str strings.Builder
-					str.WriteString(nn.prefix)
-					str.WriteString(search)
-					search = str.String()
-					nn = np
-				}
-				if cn != nil { // use the found "any" route and update path
-					pvalues[len(cn.pnames)-1] = search
-					break
+				} else if pos > 0 {
+					// Otherwise continue route processing with restored next node
+					cn = nn
+					nn = nil
+					ns = ""
+					goto Param
 				}
 			}
-			return // Not found
+			// No param route found, try to resolve nearest any route
+			for {
+				np = nn.parent
+				if cn = nn.findChildByKind(akind); cn != nil {
+					break
+				}
+				if np == nil {
+					break // no further parent nodes in tree, abort
+				}
+				var str strings.Builder
+				str.WriteString(nn.prefix)
+				str.WriteString(search)
+				search = str.String()
+				nn = np
+			}
+			if cn != nil { // use the found "any" route and update path
+				pvalues[len(cn.pnames)-1] = search
+				break
+			}
 		}
-		pvalues[len(cn.pnames)-1] = search
-		break
+		return // Not found
+
 	}
 
 	ctx.handler = cn.findHandler(method)

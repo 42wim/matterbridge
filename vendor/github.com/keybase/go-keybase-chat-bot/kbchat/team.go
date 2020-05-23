@@ -26,7 +26,11 @@ type ListUserMemberships struct {
 }
 
 func (a *API) ListMembersOfTeam(teamName string) (res keybase1.TeamMembersDetails, err error) {
-	apiInput := fmt.Sprintf(`{"method": "list-team-memberships", "params": {"options": {"team": "%s"}}}`, teamName)
+	teamNameEscaped, err := json.Marshal(teamName)
+	if err != nil {
+		return res, err
+	}
+	apiInput := fmt.Sprintf(`{"method": "list-team-memberships", "params": {"options": {"team": %s}}}`, teamNameEscaped)
 	cmd := a.runOpts.Command("team", "api")
 	cmd.Stdin = strings.NewReader(apiInput)
 	var stderr bytes.Buffer
@@ -51,7 +55,11 @@ func (a *API) ListMembersOfTeam(teamName string) (res keybase1.TeamMembersDetail
 }
 
 func (a *API) ListUserMemberships(username string) ([]keybase1.AnnotatedMemberInfo, error) {
-	apiInput := fmt.Sprintf(`{"method": "list-user-memberships", "params": {"options": {"username": "%s"}}}`, username)
+	usernameEscaped, err := json.Marshal(username)
+	if err != nil {
+		return nil, err
+	}
+	apiInput := fmt.Sprintf(`{"method": "list-user-memberships", "params": {"options": {"username": %s}}}`, usernameEscaped)
 	cmd := a.runOpts.Command("team", "api")
 	cmd.Stdin = strings.NewReader(apiInput)
 	var stderr bytes.Buffer

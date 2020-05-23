@@ -38,7 +38,6 @@ type OAuthV2Response struct {
 	Scope       string                    `json:"scope"`
 	BotUserID   string                    `json:"bot_user_id"`
 	AppID       string                    `json:"app_id"`
-	TeamID      string                    `json:"team_id"`
 	Team        OAuthV2ResponseTeam       `json:"team"`
 	Enterprise  OAuthV2ResponseEnterprise `json:"enterprise"`
 	AuthedUser  OAuthV2ResponseAuthedUser `json:"authed_user"`
