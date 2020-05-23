@@ -39,22 +39,32 @@ func (b *Btelegram) handleGroups(rmsg *config.Message, message *tgbotapi.Message
 
 // handleForwarded handles forwarded messages
 func (b *Btelegram) handleForwarded(rmsg *config.Message, message *tgbotapi.Message) {
-	if message.ForwardFrom != nil {
-		usernameForward := ""
-		if b.GetBool("UseFirstName") {
+	if message.ForwardDate == 0 {
+		return
+	}
+
+	if message.ForwardFrom == nil {
+		rmsg.Text = "Forwarded from " + unknownUser + ": " + rmsg.Text
+		return
+	}
+
+	usernameForward := ""
+	if b.GetBool("UseFirstName") {
+		usernameForward = message.ForwardFrom.FirstName
+	}
+
+	if usernameForward == "" {
+		usernameForward = message.ForwardFrom.UserName
+		if usernameForward == "" {
 			usernameForward = message.ForwardFrom.FirstName
 		}
-		if usernameForward == "" {
-			usernameForward = message.ForwardFrom.UserName
-			if usernameForward == "" {
-				usernameForward = message.ForwardFrom.FirstName
-			}
-		}
-		if usernameForward == "" {
-			usernameForward = unknownUser
-		}
-		rmsg.Text = "Forwarded from " + usernameForward + ": " + rmsg.Text
 	}
+
+	if usernameForward == "" {
+		usernameForward = unknownUser
+	}
+
+	rmsg.Text = "Forwarded from " + usernameForward + ": " + rmsg.Text
 }
 
 // handleQuoting handles quoting of previous messages
