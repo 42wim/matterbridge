@@ -10,4 +10,7 @@ RUN apk update && apk add go git gcc musl-dev \
 FROM alpine:edge
 RUN apk --no-cache add ca-certificates mailcap
 COPY --from=builder /bin/matterbridge /bin/matterbridge
-ENTRYPOINT ["/bin/matterbridge"]
+RUN mkdir /etc/matterbridge
+RUN touch /etc/matterbridge/matterbridge.toml
+RUN ln -sf /matterbridge.toml /etc/matterbridge/matterbridge.toml
+ENTRYPOINT ["/bin/matterbridge", "-conf", "/etc/matterbridge/matterbridge.toml"]
