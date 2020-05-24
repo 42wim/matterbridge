@@ -7,6 +7,7 @@ require (
 	github.com/Philipp15b/go-steam v1.0.1-0.20190816133340-b04c5a83c1c0
 	github.com/Rhymen/go-whatsapp v0.1.1-0.20200421062035-31e8111ac334
 	github.com/d5/tengo/v2 v2.4.2
+	github.com/davecgh/go-spew v1.1.1
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.5-0.20181225215658-ec221ba9ea45+incompatible
 	github.com/gomarkdown/markdown v0.0.0-20200127000047-1813ea067497
