@@ -10,6 +10,7 @@ import (
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/davecgh/go-spew/spew"
 
 	"github.com/mattn/godown"
 	msgraph "github.com/yaegashi/msgraph.go/beta"
@@ -158,11 +159,22 @@ func (b *Bmsteams) poll(channelName string) error {
 					continue
 				}
 			}
+
+			if b.GetBool("debug") {
+				b.Log.Debug("Msg dump: ", spew.Sdump(msg))
+			}
+
+			// skip non-user message for now.
+			if msg.From.User == nil {
+				continue
+			}
+
 			if *msg.From.User.ID == b.botID {
 				b.Log.Debug("skipping own message")
 				msgmap[*msg.ID] = *msg.CreatedDateTime
 				continue
 			}
+
 			msgmap[*msg.ID] = *msg.CreatedDateTime
 			if msg.LastModifiedDateTime != nil {
 				msgmap[*msg.ID] = *msg.LastModifiedDateTime
