@@ -151,7 +151,7 @@ See https://github.com/42wim/matterbridge/wiki
 
 ### Binaries
 
-- Latest stable release [v1.17.4](https://github.com/42wim/matterbridge/releases/latest)
+- Latest stable release [v1.17.5](https://github.com/42wim/matterbridge/releases/latest)
 - Development releases (follows master) can be downloaded [here](https://dl.bintray.com/42wim/nightly/)
 
 To install or upgrade just download the latest [binary](https://github.com/42wim/matterbridge/releases/latest) and follow the instructions on the [howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config) for a step by step walkthrough for creating your configuration.

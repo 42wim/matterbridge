@@ -1,3 +1,27 @@
+# v1.17.5
+
+## Enhancements
+
+- irc: Add StripMarkdown option (irc). (#1145)
+- general: Increase debug logging with function,file and linenumber (#1147)
+- general: Update Dockerfile so inotify works (#1148)
+- matrix: Add an option to disable sending HTML to matrix. Fixes #1022 (#1135)
+- xmpp: Implement xep-0245 (xmpp). Closes #1137 (#1144)
+
+## Bugfix
+
+- discord: Fix #1120: replaceAction "_" crash (discord) (#1121)
+- discord: Fix #1049: missing space before embeds (discord) (#1124)
+- discord: Fix webhook EventUserAction messages being skipped (discord) (#1133)
+- matrix: Avoid creating invalid url when the user doesn't have an avatar (matrix) (#1130)
+- msteams: Ignore non-user messages (msteams). Fixes #1141 (#1149)
+- slack: Do not use webhooks when token is configured (slack) (fixes #1123) (#1134)
+- telegram: Fix forward from hidden users (telegram). Closes #1131 (#1143)
+- xmpp: Prevent re-requesting avatar data (xmpp) (#1117)
+
+This release couldn't exist without the following contributors:
+@qaisjp, @xnaas, @42wim, @Polynomdivision, @tfve
+
 # v1.17.4
 
 ## Bugfix
