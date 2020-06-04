@@ -86,8 +86,16 @@ func (b *Bridge) joinChannels(channels map[string]config.ChannelInfo, exists map
 	return nil
 }
 
+func (b *Bridge) GetConfigKey(key string) string {
+	return b.Account + "." + key
+}
+
+func (b *Bridge) IsKeySet(key string) bool {
+	return b.Config.IsKeySet(b.GetConfigKey(key)) || b.Config.IsKeySet("general."+key)
+}
+
 func (b *Bridge) GetBool(key string) bool {
-	val, ok := b.Config.GetBool(b.Account + "." + key)
+	val, ok := b.Config.GetBool(b.GetConfigKey(key))
 	if !ok {
 		val, _ = b.Config.GetBool("general." + key)
 	}
@@ -95,7 +103,7 @@ func (b *Bridge) GetBool(key string) bool {
 }
 
 func (b *Bridge) GetInt(key string) int {
-	val, ok := b.Config.GetInt(b.Account + "." + key)
+	val, ok := b.Config.GetInt(b.GetConfigKey(key))
 	if !ok {
 		val, _ = b.Config.GetInt("general." + key)
 	}
@@ -103,7 +111,7 @@ func (b *Bridge) GetInt(key string) int {
 }
 
 func (b *Bridge) GetString(key string) string {
-	val, ok := b.Config.GetString(b.Account + "." + key)
+	val, ok := b.Config.GetString(b.GetConfigKey(key))
 	if !ok {
 		val, _ = b.Config.GetString("general." + key)
 	}
@@ -111,7 +119,7 @@ func (b *Bridge) GetString(key string) string {
 }
 
 func (b *Bridge) GetStringSlice(key string) []string {
-	val, ok := b.Config.GetStringSlice(b.Account + "." + key)
+	val, ok := b.Config.GetStringSlice(b.GetConfigKey(key))
 	if !ok {
 		val, _ = b.Config.GetStringSlice("general." + key)
 	}
@@ -119,7 +127,7 @@ func (b *Bridge) GetStringSlice(key string) []string {
 }
 
 func (b *Bridge) GetStringSlice2D(key string) [][]string {
-	val, ok := b.Config.GetStringSlice2D(b.Account + "." + key)
+	val, ok := b.Config.GetStringSlice2D(b.GetConfigKey(key))
 	if !ok {
 		val, _ = b.Config.GetStringSlice2D("general." + key)
 	}

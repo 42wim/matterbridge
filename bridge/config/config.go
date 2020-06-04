@@ -219,6 +219,7 @@ type BridgeValues struct {
 type Config interface {
 	Viper() *viper.Viper
 	BridgeValues() *BridgeValues
+	IsKeySet(key string) bool
 	GetBool(key string) (bool, bool)
 	GetInt(key string) (int, bool)
 	GetString(key string) (string, bool)
@@ -303,6 +304,12 @@ func (c *config) Viper() *viper.Viper {
 	return c.v
 }
 
+func (c *config) IsKeySet(key string) bool {
+	c.RLock()
+	defer c.RUnlock()
+	return c.v.IsSet(key)
+}
+
 func (c *config) GetBool(key string) (bool, bool) {
 	c.RLock()
 	defer c.RUnlock()
@@ -360,6 +367,11 @@ type TestConfig struct {
 	Config
 
 	Overrides map[string]interface{}
+}
+
+func (c *TestConfig) IsKeySet(key string) bool {
+	_, ok := c.Overrides[key]
+	return ok || c.Config.IsKeySet(key)
 }
 
 func (c *TestConfig) GetBool(key string) (bool, bool) {
