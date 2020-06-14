@@ -80,8 +80,33 @@ func (b *Bwhatsapp) getSenderName(senderJid string) string {
 		// if user is not in phone contacts
 		// it is the most obvious scenario unless you sync your phone contacts with some remote updated source
 		// users can change it in their WhatsApp settings -> profile -> click on Avatar
-		return sender.Notify
+		if sender.Notify != "" {
+			return sender.Notify
+		}
+
+		if sender.Short != "" {
+			return sender.Short
+		}
 	}
+
+	// try to reload this contact
+	_, err := b.conn.Contacts()
+	if err != nil {
+		b.Log.Errorf("error on update of contacts: %v", err)
+	}
+
+	if contact, exists := b.conn.Store.Contacts[senderJid]; exists {
+		// Add it to the user map
+		b.users[senderJid] = contact
+
+		if contact.Name != "" {
+			return contact.Name
+		}
+		// if user is not in phone contacts
+		// same as above
+		return contact.Notify
+	}
+
 	return ""
 }
 
