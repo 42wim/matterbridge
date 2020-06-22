@@ -180,9 +180,21 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 			return
 		}
 
+		// Use display name (/nick) if available
+		// XXX: no support for per-room display names or disambiguation yet
+		hasDisplayName := false
+		displayName := ev.Sender[1:]
+		if b.GetBool("UseDisplayName") {
+			if resp, err := b.mc.GetDisplayName(ev.Sender); err == nil {
+				displayName = resp.DisplayName
+				b.Log.Debugf("Got display name %s for user %s", displayName, ev.Sender)
+				hasDisplayName = true
+			}
+		}
+
 		// Create our message
 		rmsg := config.Message{
-			Username: ev.Sender[1:],
+			Username: displayName,
 			Channel:  channel,
 			Account:  b.Account,
 			UserID:   ev.Sender,
@@ -198,7 +210,7 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 		}
 
 		// Remove homeserver suffix if configured
-		if b.GetBool("NoHomeServerSuffix") {
+		if b.GetBool("NoHomeServerSuffix") && !hasDisplayName {
 			re := regexp.MustCompile("(.*?):.*")
 			rmsg.Username = re.ReplaceAllString(rmsg.Username, `$1`)
 		}
