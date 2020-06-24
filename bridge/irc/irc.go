@@ -250,6 +250,8 @@ func (b *Birc) getClient() (*girc.Client, error) {
 		SSL:        b.GetBool("UseTLS"),
 		TLSConfig:  &tls.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"), ServerName: server}, //nolint:gosec
 		PingDelay:  time.Minute,
+		// skip gIRC internal rate limiting, since we have our own throttling
+		AllowFlood: true,
 	})
 	return i, nil
 }
