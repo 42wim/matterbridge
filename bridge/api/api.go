@@ -10,7 +10,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/zfjagann/golang-ring"
+	ring "github.com/zfjagann/golang-ring"
 )
 
 type API struct {
@@ -41,6 +41,13 @@ func New(cfg *bridge.Config) bridge.Bridger {
 			return key == b.GetString("Token"), nil
 		}))
 	}
+
+	// Set RemoteNickFormat to a sane default
+	if !b.IsKeySet("RemoteNickFormat") {
+		b.Log.Debugln("RemoteNickFormat is unset, defaulting to \"{NICK}\"")
+		b.Config.Config.Viper().Set(b.GetConfigKey("RemoteNickFormat"), "{NICK}")
+	}
+
 	e.GET("/api/health", b.handleHealthcheck)
 	e.GET("/api/messages", b.handleMessages)
 	e.GET("/api/stream", b.handleStream)
