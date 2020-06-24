@@ -176,6 +176,10 @@ linters:
     - prealloc
     - wsl
     - gomnd
+    - godox
+    - goerr113
+    - testpackage
+    - godot
 
 
 # rules to deal with reported isues
