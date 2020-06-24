@@ -1,6 +1,5 @@
 name: Development
 on: [push, pull_request]
-name: Test
 jobs:
   lint:
     name: golangci-lint
