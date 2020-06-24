@@ -10,7 +10,7 @@ jobs:
         uses: golangci/golangci-lint-action@v1
         with:
           version: v1.27
-          args: "run -v"
+          args: "-v --new-from-rev HEAD~1"
   test:
     strategy:
       matrix:
