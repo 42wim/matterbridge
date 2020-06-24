@@ -6,6 +6,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 20
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v1
         with:
