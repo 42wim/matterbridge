@@ -131,6 +131,17 @@ func (b *API) handleStream(c echo.Context) error {
 	}
 }
 
+func (b *API) handleWebsocketMessage(message config.Message) {
+	message.Channel = "api"
+	message.Protocol = "api"
+	message.Account = b.Account
+	message.ID = ""
+	message.Timestamp = time.Now()
+
+	b.Log.Debugf("Sending websocket message from %s on %s to gateway", message.Username, "api")
+	b.Remote <- message
+}
+
 func (b *API) handleWebsocket(c echo.Context) error {
 	conn, err := websocket.Upgrade(c.Response().Writer, c.Request(), nil, 1024, 1024)
 	if err != nil {
@@ -148,6 +159,11 @@ func (b *API) handleWebsocket(c echo.Context) error {
 		if msg != nil {
 			conn.WriteJSON(msg)
 		}
-		time.Sleep(200 * time.Millisecond)
+
+		message := config.Message{}
+		err := conn.ReadJSON(&message)
+		if err == nil {
+			b.handleWebsocketMessage(message)
+		}
 	}
 }
