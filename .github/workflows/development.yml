@@ -31,7 +31,7 @@ jobs:
     - name: Build
       run: |
         mkdir -p output/{win,lin,arm,mac}
-        VERSION = $(git describe --tags)
+        VERSION=$(git describe --tags)
         GOOS=linux GOARCH=amd64 go build -ldflags "-s -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o output/lin/matterbridge-$VERSION-linux-amd64
         GOOS=windows GOARCH=amd64 go build -ldflags "-s -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o output/win/matterbridge-$VERSION-windows-amd64.exe
         GOOS=darwin GOARCH=amd64 go build -ldflags "-s -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o output/mac/matterbridge-$VERSION-darwin-amd64
