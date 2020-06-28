@@ -27,7 +27,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
       with:
-          fetch-depth: 100
+          fetch-depth: 0
     - name: Test
       run: go test ./... -mod=vendor
     - name: Build
