@@ -7,7 +7,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 100
+          fetch-depth: 20
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v1
         with:
@@ -26,15 +26,17 @@ jobs:
         go-version: ${{ matrix.go-version }}
     - name: Checkout code
       uses: actions/checkout@v2
+      with:
+          fetch-depth: 100
     - name: Test
-      run: go test ./...
+      run: go test ./... -mod=vendor
     - name: Build
       run: |
         mkdir -p output/{win,lin,arm,mac}
         VERSION=$(git describe --tags)
-        GOOS=linux GOARCH=amd64 go build -ldflags "-s -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o output/lin/matterbridge-$VERSION-linux-amd64
-        GOOS=windows GOARCH=amd64 go build -ldflags "-s -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o output/win/matterbridge-$VERSION-windows-amd64.exe
-        GOOS=darwin GOARCH=amd64 go build -ldflags "-s -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o output/mac/matterbridge-$VERSION-darwin-amd64
+        GOOS=linux GOARCH=amd64 go build -mod=vendor -ldflags "-s -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o output/lin/matterbridge-$VERSION-linux-amd64
+        GOOS=windows GOARCH=amd64 go build -mod=vendor -ldflags "-s -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o output/win/matterbridge-$VERSION-windows-amd64.exe
+        GOOS=darwin GOARCH=amd64 go build -mod=vendor -ldflags "-s -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o output/mac/matterbridge-$VERSION-darwin-amd64
     - name: Upload linux 64-bit
       if: startsWith(matrix.go-version,'1.14')
       uses: actions/upload-artifact@v2
