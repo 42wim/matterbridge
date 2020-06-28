@@ -157,7 +157,7 @@ func (b *API) handleWebsocket(c echo.Context) error {
 	for {
 		msg := b.Messages.Dequeue()
 		if msg != nil {
-			conn.WriteJSON(msg)
+			_ = conn.WriteJSON(msg)
 		}
 
 		message := config.Message{}
