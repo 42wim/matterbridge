@@ -29,7 +29,6 @@ And more...
 ---
 
 [![Download stable](https://img.shields.io/github/release/42wim/matterbridge.svg?label=download%20stable)](https://github.com/42wim/matterbridge/releases/latest)
-[![Download dev](https://img.shields.io/bintray/v/42wim/nightly/Matterbridge.svg?label=download%20dev&colorB=007ec6)](https://bintray.com/42wim/nightly/Matterbridge/_latestVersion)
 [![Maintainability](https://api.codeclimate.com/v1/badges/82dff70ef2ba85a6173a/maintainability)](https://codeclimate.com/github/42wim/matterbridge/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/82dff70ef2ba85a6173a/test_coverage)](https://codeclimate.com/github/42wim/matterbridge/test_coverage)<br />
 
@@ -152,7 +151,7 @@ See https://github.com/42wim/matterbridge/wiki
 ### Binaries
 
 - Latest stable release [v1.17.5](https://github.com/42wim/matterbridge/releases/latest)
-- Development releases (follows master) can be downloaded [here](https://dl.bintray.com/42wim/nightly/)
+- Development releases (follows master) can be downloaded [here](https://github.com/42wim/matterbridge/actions) selecting the latest green build and then artifacts.
 
 To install or upgrade just download the latest [binary](https://github.com/42wim/matterbridge/releases/latest) and follow the instructions on the [howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config) for a step by step walkthrough for creating your configuration.
 

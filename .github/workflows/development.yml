@@ -41,17 +41,17 @@ jobs:
       if: startsWith(matrix.go-version,'1.14')
       uses: actions/upload-artifact@v2
       with:
-        name: linux
+        name: matterbridge-linux-64bit
         path: output/lin
     - name: Upload windows 64-bit
       if: startsWith(matrix.go-version,'1.14')
       uses: actions/upload-artifact@v2
       with:
-        name: windows
+        name: matterbridge-windows-64bit
         path: output/win
     - name: Upload darwin 64-bit
       if: startsWith(matrix.go-version,'1.14')
       uses: actions/upload-artifact@v2
       with:
-        name: darwin
+        name: matterbridge-darwin-64bit
         path: output/mac
