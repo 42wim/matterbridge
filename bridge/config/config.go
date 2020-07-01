@@ -1,9 +1,9 @@
 package config
 
 import (
-	"os"
 	"bytes"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -253,7 +253,7 @@ func NewConfig(rootLogger *logrus.Logger, cfgfile string) Config {
 		logfile, err := os.OpenFile(mycfg.cv.General.LogFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 		if err == nil {
 			logger.Info("Opening log file ", mycfg.cv.General.LogFile)
-		        rootLogger.Out = logfile
+			rootLogger.Out = logfile
 		} else {
 			logger.Warn("Failed to open ", mycfg.cv.General.LogFile)
 		}
