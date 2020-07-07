@@ -51,6 +51,14 @@ func main() {
 	cfg := config.NewConfig(rootLogger, *flagConfig)
 	cfg.BridgeValues().General.Debug = *flagDebug
 
+	// if logging to a file, ensure it is closed when the program terminates
+	defer func() {
+		if f, ok := rootLogger.Out.(*os.File); ok {
+			f.Sync()
+			f.Close()
+		}
+	}()
+
 	r, err := gateway.NewRouter(rootLogger, cfg, bridgemap.FullMap)
 	if err != nil {
 		logger.Fatalf("Starting gateway failed: %s", err)
