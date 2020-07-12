@@ -8,6 +8,7 @@ import (
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	ring "github.com/zfjagann/golang-ring"
@@ -51,6 +52,7 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	e.GET("/api/health", b.handleHealthcheck)
 	e.GET("/api/messages", b.handleMessages)
 	e.GET("/api/stream", b.handleStream)
+	e.GET("/api/websocket", b.handleWebsocket)
 	e.POST("/api/message", b.handlePostMessage)
 	go func() {
 		if b.GetString("BindAddress") == "" {
@@ -113,13 +115,17 @@ func (b *API) handleMessages(c echo.Context) error {
 	return nil
 }
 
-func (b *API) handleStream(c echo.Context) error {
-	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	c.Response().WriteHeader(http.StatusOK)
-	greet := config.Message{
+func (b *API) getGreeting() config.Message {
+	return config.Message{
 		Event:     config.EventAPIConnected,
 		Timestamp: time.Now(),
 	}
+}
+
+func (b *API) handleStream(c echo.Context) error {
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	c.Response().WriteHeader(http.StatusOK)
+	greet := b.getGreeting()
 	if err := json.NewEncoder(c.Response()).Encode(greet); err != nil {
 		return err
 	}
@@ -134,4 +140,53 @@ func (b *API) handleStream(c echo.Context) error {
 		}
 		time.Sleep(200 * time.Millisecond)
 	}
+}
+
+func (b *API) handleWebsocketMessage(message config.Message) {
+	message.Channel = "api"
+	message.Protocol = "api"
+	message.Account = b.Account
+	message.ID = ""
+	message.Timestamp = time.Now()
+
+	b.Log.Debugf("Sending websocket message from %s on %s to gateway", message.Username, "api")
+	b.Remote <- message
+}
+
+func (b *API) writePump(conn *websocket.Conn) {
+	for {
+		msg := b.Messages.Dequeue()
+		if msg != nil {
+			err := conn.WriteJSON(msg)
+			if err != nil {
+				break
+			}
+		}
+	}
+}
+
+func (b *API) readPump(conn *websocket.Conn) {
+	for {
+		message := config.Message{}
+		err := conn.ReadJSON(&message)
+		if err != nil {
+			break
+		}
+		b.handleWebsocketMessage(message)
+	}
+}
+
+func (b *API) handleWebsocket(c echo.Context) error {
+	conn, err := websocket.Upgrade(c.Response().Writer, c.Request(), nil, 1024, 1024)
+	if err != nil {
+		return err
+	}
+
+	greet := b.getGreeting()
+	_ = conn.WriteJSON(greet)
+
+	go b.writePump(conn)
+	go b.readPump(conn)
+
+	return nil
 }
