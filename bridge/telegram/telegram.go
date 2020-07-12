@@ -15,6 +15,7 @@ const (
 	unknownUser = "unknown"
 	HTMLFormat  = "HTML"
 	HTMLNick    = "htmlnick"
+	MarkdownV2  = "MarkdownV2"
 )
 
 type Btelegram struct {
@@ -125,6 +126,10 @@ func (b *Btelegram) sendMessage(chatid int64, username, text string) (string, er
 	if b.GetString("MessageFormat") == "Markdown" {
 		b.Log.Debug("Using mode markdown")
 		m.ParseMode = tgbotapi.ModeMarkdown
+	}
+	if b.GetString("MessageFormat") == MarkdownV2 {
+		b.Log.Debug("Using mode MarkdownV2")
+		m.ParseMode = MarkdownV2
 	}
 	if strings.ToLower(b.GetString("MessageFormat")) == HTMLNick {
 		b.Log.Debug("Using mode HTML - nick only")

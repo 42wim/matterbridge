@@ -322,6 +322,9 @@ func (b *Btelegram) handleEdit(msg *config.Message, chatid int64) (string, error
 	case "Markdown":
 		b.Log.Debug("Using mode markdown")
 		m.ParseMode = tgbotapi.ModeMarkdown
+	case MarkdownV2:
+		b.Log.Debug("Using mode MarkdownV2")
+		m.ParseMode = MarkdownV2
 	}
 	if strings.ToLower(b.GetString("MessageFormat")) == HTMLNick {
 		b.Log.Debug("Using mode HTML - nick only")
