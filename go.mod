@@ -47,7 +47,6 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	github.com/slack-go/slack v0.6.4
 	github.com/spf13/viper v1.7.0
-	github.com/stretchr/objx v0.1.1 // indirect
 	github.com/stretchr/testify v1.5.1
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/writeas/go-strip-markdown v2.0.1+incompatible
