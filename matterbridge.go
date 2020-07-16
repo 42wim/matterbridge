@@ -52,6 +52,7 @@ func main() {
 	cfg.BridgeValues().General.Debug = *flagDebug
 
 	// if logging to a file, ensure it is closed when the program terminates
+	// nolint:errcheck
 	defer func() {
 		if f, ok := rootLogger.Out.(*os.File); ok {
 			f.Sync()
