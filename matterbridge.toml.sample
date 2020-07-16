@@ -1604,6 +1604,14 @@ MediaDownloadBlacklist=[".html$",".htm$"]
 #OPTIONAL (default false)
 IgnoreFailureOnStart=false
 
+#LogFile defines the location of a file to write logs into, rather
+#than stdout.
+#Logging will still happen on stdout if the file cannot be open for
+#writing, or if the value is empty. Note the the log won't roll, so
+#you might want to use logrotate(8) with this feature.
+#OPTIONAL (default empty)
+LogFile=/var/log/matterbridge.log
+
 ###################################################################
 #Tengo configuration
 ###################################################################
