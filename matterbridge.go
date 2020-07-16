@@ -54,9 +54,8 @@ func main() {
 	// if logging to a file, ensure it is closed when the program terminates
 	defer func() {
 		if f, ok := rootLogger.Out.(*os.File); ok {
-			if err := f.Sync(); err != nil {
-				f.Close()
-			}
+			f.Sync()
+			f.Close()
 		}
 	}()
 
