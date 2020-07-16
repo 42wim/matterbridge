@@ -250,7 +250,7 @@ func NewConfig(rootLogger *logrus.Logger, cfgfile string) Config {
 	cfgtype := detectConfigType(cfgfile)
 	mycfg := newConfigFromString(logger, input, cfgtype)
 	if mycfg.cv.General.LogFile != "" {
-		logfile, err := os.OpenFile(mycfg.cv.General.LogFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		logfile, err := os.OpenFile(mycfg.cv.General.LogFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 		if err == nil {
 			logger.Info("Opening log file ", mycfg.cv.General.LogFile)
 			rootLogger.Out = logfile
