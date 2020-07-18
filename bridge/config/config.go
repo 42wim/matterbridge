@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -93,6 +94,7 @@ type Protocol struct {
 	JoinDelay              string // all protocols
 	Label                  string // all protocols
 	Login                  string // mattermost, matrix
+	LogFile                string // general
 	MediaDownloadBlackList []string
 	MediaDownloadPath      string // Basically MediaServerUpload, but instead of uploading it, just write it to a file on the same server.
 	MediaDownloadSize      int    // all protocols
@@ -247,6 +249,15 @@ func NewConfig(rootLogger *logrus.Logger, cfgfile string) Config {
 
 	cfgtype := detectConfigType(cfgfile)
 	mycfg := newConfigFromString(logger, input, cfgtype)
+	if mycfg.cv.General.LogFile != "" {
+		logfile, err := os.OpenFile(mycfg.cv.General.LogFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+		if err == nil {
+			logger.Info("Opening log file ", mycfg.cv.General.LogFile)
+			rootLogger.Out = logfile
+		} else {
+			logger.Warn("Failed to open ", mycfg.cv.General.LogFile)
+		}
+	}
 	if mycfg.cv.General.MediaDownloadSize == 0 {
 		mycfg.cv.General.MediaDownloadSize = 1000000
 	}
