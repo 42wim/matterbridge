@@ -93,6 +93,7 @@ And more...
 - [Matrix](https://matrix.org)
 - [Mattermost](https://github.com/mattermost/mattermost-server/) 4.x, 5.x
 - [Microsoft Teams](https://teams.microsoft.com)
+- [Nextcloud Talk](https://nextcloud.com/talk/)
 - [Rocket.chat](https://rocket.chat)
 - [Slack](https://slack.com)
 - [Ssh-chat](https://github.com/shazow/ssh-chat)
@@ -110,6 +111,7 @@ And more...
 - [Minecraft](https://github.com/elytra/MatterLink)
 - [Reddit](https://github.com/bonehurtingjuice/mattereddit)
 - [Counter-Strike, half-life and more](https://forums.alliedmods.net/showthread.php?t=319430)
+- [MatterAMXX](https://github.com/GabeIggy/MatterAMXX)
 
 ### API
 
@@ -158,6 +160,7 @@ To install or upgrade just download the latest [binary](https://github.com/42wim
 ### Packages
 
 - [Overview](https://repology.org/metapackage/matterbridge/versions)
+- [snap](https://snapcraft.io/matterbridge)
 
 ## Building
 
@@ -305,6 +308,7 @@ See [FAQ](https://github.com/42wim/matterbridge/wiki/FAQ)
 - https://kopano.com/blog/matterbridge-bridging-mattermost-chat/
 - https://www.stitcher.com/s/?eid=52382713
 - https://daniele.tech/2019/02/how-to-use-matterbridge-to-connect-2-different-slack-workspaces/
+- https://userlinux.net/mattermost-and-matterbridge.html
 
 ## Thanks
 
