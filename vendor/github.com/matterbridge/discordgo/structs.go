@@ -29,8 +29,10 @@ type Session struct {
 	// General configurable settings.
 
 	// Authentication token for this session
+	// TODO: Remove Below, Deprecated, Use Identify struct
 	Token string
-	MFA   bool
+
+	MFA bool
 
 	// Debug for printing JSON request/responses
 	Debug    bool // Deprecated, will be removed.
@@ -39,6 +41,11 @@ type Session struct {
 	// Should the session reconnect the websocket on errors.
 	ShouldReconnectOnError bool
 
+	// Identify is sent during initial handshake with the discord gateway.
+	// https://discord.com/developers/docs/topics/gateway#identify
+	Identify Identify
+
+	// TODO: Remove Below, Deprecated, Use Identify struct
 	// Should the session request compressed websocket data.
 	Compress bool
 
@@ -587,12 +594,13 @@ type VoiceState struct {
 
 // A Presence stores the online, offline, or idle and game status of Guild members.
 type Presence struct {
-	User   *User    `json:"user"`
-	Status Status   `json:"status"`
-	Game   *Game    `json:"game"`
-	Nick   string   `json:"nick"`
-	Roles  []string `json:"roles"`
-	Since  *int     `json:"since"`
+	User       *User    `json:"user"`
+	Status     Status   `json:"status"`
+	Game       *Game    `json:"game"`
+	Activities []*Game  `json:"activities"`
+	Nick       string   `json:"nick"`
+	Roles      []string `json:"roles"`
+	Since      *int     `json:"since"`
 }
 
 // GameType is the type of "game" (see GameType* consts) in the Game struct
@@ -604,6 +612,7 @@ const (
 	GameTypeStreaming
 	GameTypeListening
 	GameTypeWatching
+	GameTypeCustom
 )
 
 // A Game struct holds the name of the "playing .." game for a user
@@ -687,7 +696,7 @@ type Settings struct {
 	RenderEmbeds           bool               `json:"render_embeds"`
 	InlineEmbedMedia       bool               `json:"inline_embed_media"`
 	InlineAttachmentMedia  bool               `json:"inline_attachment_media"`
-	EnableTtsCommand       bool               `json:"enable_tts_command"`
+	EnableTTSCommand       bool               `json:"enable_tts_command"`
 	MessageDisplayCompact  bool               `json:"message_display_compact"`
 	ShowCurrentGame        bool               `json:"show_current_game"`
 	ConvertEmoticons       bool               `json:"convert_emoticons"`
@@ -909,8 +918,63 @@ type GatewayBotResponse struct {
 	Shards int    `json:"shards"`
 }
 
+// GatewayStatusUpdate is sent by the client to indicate a presence or status update
+// https://discord.com/developers/docs/topics/gateway#update-status-gateway-status-update-structure
+type GatewayStatusUpdate struct {
+	Since  int      `json:"since"`
+	Game   Activity `json:"game"`
+	Status string   `json:"status"`
+	AFK    bool     `json:"afk"`
+}
+
+// Activity defines the Activity sent with GatewayStatusUpdate
+// https://discord.com/developers/docs/topics/gateway#activity-object
+type Activity struct {
+	Name string
+	Type ActivityType
+	URL  string
+}
+
+// ActivityType is the type of Activity (see ActivityType* consts) in the Activity struct
+// https://discord.com/developers/docs/topics/gateway#activity-object-activity-types
+type ActivityType int
+
+// Valid ActivityType values
+// https://discord.com/developers/docs/topics/gateway#activity-object-activity-types
+const (
+	ActivityTypeGame GameType = iota
+	ActivityTypeStreaming
+	ActivityTypeListening
+	//	ActivityTypeWatching // not valid in this use case?
+	ActivityTypeCustom = 4
+)
+
+// Identify is sent during initial handshake with the discord gateway.
+// https://discord.com/developers/docs/topics/gateway#identify
+type Identify struct {
+	Token              string              `json:"token"`
+	Properties         IdentifyProperties  `json:"properties"`
+	Compress           bool                `json:"compress"`
+	LargeThreshold     int                 `json:"large_threshold"`
+	Shard              *[2]int             `json:"shard,omitempty"`
+	Presence           GatewayStatusUpdate `json:"presence,omitempty"`
+	GuildSubscriptions bool                `json:"guild_subscriptions"`
+	Intents            *Intent             `json:"intents,omitempty"`
+}
+
+// IdentifyProperties contains the "properties" portion of an Identify packet
+// https://discord.com/developers/docs/topics/gateway#identify-identify-connection-properties
+type IdentifyProperties struct {
+	OS              string `json:"$os"`
+	Browser         string `json:"$browser"`
+	Device          string `json:"$device"`
+	Referer         string `json:"$referer"`
+	ReferringDomain string `json:"$referring_domain"`
+}
+
 // Constants for the different bit offsets of text channel permissions
 const (
+	// Deprecated: PermissionReadMessages has been replaced with PermissionViewChannel for text and voice channels
 	PermissionReadMessages = 1 << (iota + 10)
 	PermissionSendMessages
 	PermissionSendTTSMessages
@@ -952,8 +1016,9 @@ const (
 	PermissionManageServer
 	PermissionAddReactions
 	PermissionViewAuditLogs
+	PermissionViewChannel = 1 << (iota + 2)
 
-	PermissionAllText = PermissionReadMessages |
+	PermissionAllText = PermissionViewChannel |
 		PermissionSendMessages |
 		PermissionSendTTSMessages |
 		PermissionManageMessages |
@@ -961,7 +1026,8 @@ const (
 		PermissionAttachFiles |
 		PermissionReadMessageHistory |
 		PermissionMentionEveryone
-	PermissionAllVoice = PermissionVoiceConnect |
+	PermissionAllVoice = PermissionViewChannel |
+		PermissionVoiceConnect |
 		PermissionVoiceSpeak |
 		PermissionVoiceMuteMembers |
 		PermissionVoiceDeafenMembers |
@@ -1037,3 +1103,49 @@ const (
 
 	ErrCodeReactionBlocked = 90001
 )
+
+// Intent is the type of a Gateway Intent
+// https://discord.com/developers/docs/topics/gateway#gateway-intents
+type Intent int
+
+// Constants for the different bit offsets of intents
+const (
+	IntentsGuilds Intent = 1 << iota
+	IntentsGuildMembers
+	IntentsGuildBans
+	IntentsGuildEmojis
+	IntentsGuildIntegrations
+	IntentsGuildWebhooks
+	IntentsGuildInvites
+	IntentsGuildVoiceStates
+	IntentsGuildPresences
+	IntentsGuildMessages
+	IntentsGuildMessageReactions
+	IntentsGuildMessageTyping
+	IntentsDirectMessages
+	IntentsDirectMessageReactions
+	IntentsDirectMessageTyping
+
+	IntentsAllWithoutPrivileged = IntentsGuilds |
+		IntentsGuildBans |
+		IntentsGuildEmojis |
+		IntentsGuildIntegrations |
+		IntentsGuildWebhooks |
+		IntentsGuildInvites |
+		IntentsGuildVoiceStates |
+		IntentsGuildMessages |
+		IntentsGuildMessageReactions |
+		IntentsGuildMessageTyping |
+		IntentsDirectMessages |
+		IntentsDirectMessageReactions |
+		IntentsDirectMessageTyping
+	IntentsAll = IntentsAllWithoutPrivileged |
+		IntentsGuildMembers |
+		IntentsGuildPresences
+	IntentsNone Intent = 0
+)
+
+// MakeIntent helps convert a gateway intent value for use in the Identify structure.
+func MakeIntent(intents Intent) *Intent {
+	return &intents
+}

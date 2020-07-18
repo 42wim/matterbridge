@@ -78,10 +78,26 @@ func GetOAuthTokenContext(ctx context.Context, client httpClient, clientID, clie
 	return response.AccessToken, response.Scope, nil
 }
 
+// GetBotOAuthToken retrieves top-level and bot AccessToken - https://api.slack.com/legacy/oauth#bot_user_access_tokens
+func GetBotOAuthToken(client httpClient, clientID, clientSecret, code, redirectURI string) (accessToken string, scope string, bot OAuthResponseBot, err error) {
+	return GetBotOAuthTokenContext(context.Background(), client, clientID, clientSecret, code, redirectURI)
+}
+
+// GetBotOAuthTokenContext retrieves top-level and bot AccessToken with a custom context
+func GetBotOAuthTokenContext(ctx context.Context, client httpClient, clientID, clientSecret, code, redirectURI string) (accessToken string, scope string, bot OAuthResponseBot, err error) {
+	response, err := GetOAuthResponseContext(ctx, client, clientID, clientSecret, code, redirectURI)
+	if err != nil {
+		return "", "", OAuthResponseBot{}, err
+	}
+	return response.AccessToken, response.Scope, response.Bot, nil
+}
+
+// GetOAuthResponse retrieves OAuth response
 func GetOAuthResponse(client httpClient, clientID, clientSecret, code, redirectURI string) (resp *OAuthResponse, err error) {
 	return GetOAuthResponseContext(context.Background(), client, clientID, clientSecret, code, redirectURI)
 }
 
+// GetOAuthResponseContext retrieves OAuth response with custom context
 func GetOAuthResponseContext(ctx context.Context, client httpClient, clientID, clientSecret, code, redirectURI string) (resp *OAuthResponse, err error) {
 	values := url.Values{
 		"client_id":     {clientID},

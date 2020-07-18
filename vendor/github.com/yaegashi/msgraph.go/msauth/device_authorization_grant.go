@@ -39,9 +39,10 @@ func (m *Manager) DeviceAuthorizationGrant(ctx context.Context, tenantID, client
 		Endpoint: endpoint,
 		Scopes:   scopes,
 	}
-	if t, ok := m.TokenCache[generateKey(tenantID, clientID)]; ok {
+	if t, ok := m.GetToken(CacheKey(tenantID, clientID)); ok {
 		tt, err := config.TokenSource(ctx, t).Token()
 		if err == nil {
+			m.PutToken(CacheKey(tenantID, clientID), tt)
 			return config.TokenSource(ctx, tt), nil
 		}
 		if _, ok := err.(*oauth2.RetrieveError); !ok {
@@ -85,7 +86,7 @@ func (m *Manager) DeviceAuthorizationGrant(ctx context.Context, tenantID, client
 		time.Sleep(time.Second * time.Duration(interval))
 		token, err := m.requestToken(ctx, tenantID, clientID, values)
 		if err == nil {
-			m.Cache(tenantID, clientID, token)
+			m.PutToken(CacheKey(tenantID, clientID), token)
 			return config.TokenSource(ctx, token), nil
 		}
 		tokenError, ok := err.(*TokenError)

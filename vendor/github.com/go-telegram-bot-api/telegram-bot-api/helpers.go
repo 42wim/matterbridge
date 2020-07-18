@@ -29,7 +29,8 @@ func NewDeleteMessage(chatID int64, messageID int) DeleteMessageConfig {
 // NewMessageToChannel creates a new Message that is sent to a channel
 // by username.
 //
-// username is the username of the channel, text is the message text.
+// username is the username of the channel, text is the message text,
+// and the username should be in the form of `@username`.
 func NewMessageToChannel(username string, text string) MessageConfig {
 	return MessageConfig{
 		BaseChat: BaseChat{
@@ -604,6 +605,18 @@ func NewInlineQueryResultLocation(id, title string, latitude, longitude float64)
 	}
 }
 
+// NewInlineQueryResultVenue creates a new inline query venue.
+func NewInlineQueryResultVenue(id, title, address string, latitude, longitude float64) InlineQueryResultVenue {
+	return InlineQueryResultVenue{
+		Type:      "venue",
+		ID:        id,
+		Title:     title,
+		Address:   address,
+		Latitude:  latitude,
+		Longitude: longitude,
+	}
+}
+
 // NewEditMessageText allows you to edit the text of a message.
 func NewEditMessageText(chatID int64, messageID int, text string) EditMessageTextConfig {
 	return EditMessageTextConfig{
@@ -622,7 +635,7 @@ func NewEditMessageCaption(chatID int64, messageID int, caption string) EditMess
 			ChatID:    chatID,
 			MessageID: messageID,
 		},
-		Caption:   caption,
+		Caption: caption,
 	}
 }
 

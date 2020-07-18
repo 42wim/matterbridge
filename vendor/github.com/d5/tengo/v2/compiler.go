@@ -506,7 +506,11 @@ func (c *Compiler) Compile(node parser.Node) error {
 				return err
 			}
 		}
-		c.emit(node, parser.OpCall, len(node.Args))
+		ellipsis := 0
+		if node.Ellipsis.IsValid() {
+			ellipsis = 1
+		}
+		c.emit(node, parser.OpCall, len(node.Args), ellipsis)
 	case *parser.ImportExpr:
 		if node.ModuleName == "" {
 			return c.errorf(node, "empty module name")
@@ -526,7 +530,7 @@ func (c *Compiler) Compile(node parser.Node) error {
 					return err
 				}
 				c.emit(node, parser.OpConstant, c.addConstant(compiled))
-				c.emit(node, parser.OpCall, 0)
+				c.emit(node, parser.OpCall, 0, 0)
 			case Object: // builtin module
 				c.emit(node, parser.OpConstant, c.addConstant(v))
 			default:
@@ -556,7 +560,7 @@ func (c *Compiler) Compile(node parser.Node) error {
 				return err
 			}
 			c.emit(node, parser.OpConstant, c.addConstant(compiled))
-			c.emit(node, parser.OpCall, 0)
+			c.emit(node, parser.OpCall, 0, 0)
 		} else {
 			return c.errorf(node, "module '%s' not found", node.ModuleName)
 		}

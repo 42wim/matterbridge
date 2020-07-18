@@ -1,8 +1,10 @@
 package slack
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -204,6 +206,15 @@ func (api *Client) SendMessageContext(ctx context.Context, channelID string, opt
 
 	if req, parser, err = buildSender(api.endpoint, options...).BuildRequest(api.token, channelID); err != nil {
 		return "", "", "", err
+	}
+
+	if api.Debug() {
+		reqBody, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			return "", "", "", err
+		}
+		req.Body = ioutil.NopCloser(bytes.NewBuffer(reqBody))
+		api.Debugf("Sending request: %s", string(reqBody))
 	}
 
 	if err = doPost(ctx, api.httpclient, req, parser(&response), api); err != nil {

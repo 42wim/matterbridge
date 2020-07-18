@@ -17,11 +17,12 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"runtime"
 	"time"
 )
 
 // VERSION of DiscordGo, follows Semantic Versioning. (http://semver.org/)
-const VERSION = "0.20.2"
+const VERSION = "0.21.1"
 
 // ErrMFA will be risen by New when the user has 2FA.
 var ErrMFA = errors.New("account has 2FA enabled")
@@ -30,10 +31,13 @@ var ErrMFA = errors.New("account has 2FA enabled")
 // tasks if given enough information to do so.  Currently you can pass zero
 // arguments and it will return an empty Discord session.
 // There are 3 ways to call New:
-//     With a single auth token - All requests will use the token blindly,
+//     With a single auth token - All requests will use the token blindly
+//         (just tossing it into the HTTP Authorization header);
 //         no verification of the token will be done and requests may fail.
 //         IF THE TOKEN IS FOR A BOT, IT MUST BE PREFIXED WITH `BOT `
 //         eg: `"Bot <token>"`
+//         IF IT IS AN OAUTH2 ACCESS TOKEN, IT MUST BE PREFIXED WITH `Bearer `
+//         eg: `"Bearer <token>"`
 //     With an email and password - Discord will sign in with the provided
 //         credentials.
 //     With an email, password and auth token - Discord will verify the auth
@@ -62,6 +66,15 @@ func New(args ...interface{}) (s *Session, err error) {
 		sequence:               new(int64),
 		LastHeartbeatAck:       time.Now().UTC(),
 	}
+
+	// Initilize the Identify Package with defaults
+	// These can be modified prior to calling Open()
+	s.Identify.Compress = true
+	s.Identify.LargeThreshold = 250
+	s.Identify.GuildSubscriptions = true
+	s.Identify.Properties.OS = runtime.GOOS
+	s.Identify.Properties.Browser = "DiscordGo v" + VERSION
+	s.Identify.Intents = MakeIntent(IntentsAllWithoutPrivileged)
 
 	// If no arguments are passed return the empty Session interface.
 	if args == nil {
@@ -94,7 +107,8 @@ func New(args ...interface{}) (s *Session, err error) {
 
 			// If third string exists, it must be an auth token.
 			if len(v) > 2 {
-				s.Token = v[2]
+				s.Identify.Token = v[2]
+				s.Token = v[2] // TODO: Remove, Deprecated - Kept for backwards compatibility.
 			}
 
 		case string:
@@ -107,7 +121,8 @@ func New(args ...interface{}) (s *Session, err error) {
 			} else if pass == "" {
 				pass = v
 			} else if s.Token == "" {
-				s.Token = v
+				s.Identify.Token = v
+				s.Token = v // TODO: Remove, Deprecated - Kept for backwards compatibility.
 			} else {
 				err = fmt.Errorf("too many string parameters provided")
 				return
@@ -127,10 +142,12 @@ func New(args ...interface{}) (s *Session, err error) {
 	// Discord will verify it for free, or log the user in if it is
 	// invalid.
 	if pass == "" {
-		s.Token = auth
+		s.Identify.Token = auth
+		s.Token = auth // TODO: Remove, Deprecated - Kept for backwards compatibility.
 	} else {
 		err = s.Login(auth, pass)
-		if err != nil || s.Token == "" {
+		// TODO: Remove last s.Token part, Deprecated - Kept for backwards compatibility.
+		if err != nil || s.Identify.Token == "" || s.Token == "" {
 			if s.MFA {
 				err = ErrMFA
 			} else {
@@ -139,9 +156,6 @@ func New(args ...interface{}) (s *Session, err error) {
 			return
 		}
 	}
-
-	// The Session is now able to have RestAPI methods called on it.
-	// It is recommended that you now call Open() so that events will trigger.
 
 	return
 }

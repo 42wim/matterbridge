@@ -1,16 +1,16 @@
 # DiscordGo
 
-[![GoDoc](https://godoc.org/github.com/bwmarrin/discordgo?status.svg)](https://godoc.org/github.com/bwmarrin/discordgo) [![Go report](http://goreportcard.com/badge/bwmarrin/discordgo)](http://goreportcard.com/report/bwmarrin/discordgo) [![Build Status](https://travis-ci.org/bwmarrin/discordgo.svg?branch=master)](https://travis-ci.org/bwmarrin/discordgo) [![Discord Gophers](https://img.shields.io/badge/Discord%20Gophers-%23discordgo-blue.svg)](https://discord.gg/0f1SbxBZjYoCtNPP) [![Discord API](https://img.shields.io/badge/Discord%20API-%23go_discordgo-blue.svg)](https://discordapp.com/invite/discord-api)
+[![GoDoc](https://godoc.org/github.com/bwmarrin/discordgo?status.svg)](https://godoc.org/github.com/bwmarrin/discordgo) [![Go report](http://goreportcard.com/badge/bwmarrin/discordgo)](http://goreportcard.com/report/bwmarrin/discordgo) [![Build Status](https://travis-ci.org/bwmarrin/discordgo.svg?branch=master)](https://travis-ci.org/bwmarrin/discordgo) [![Discord Gophers](https://img.shields.io/badge/Discord%20Gophers-%23discordgo-blue.svg)](https://discord.gg/0f1SbxBZjYoCtNPP) [![Discord API](https://img.shields.io/badge/Discord%20API-%23go_discordgo-blue.svg)](https://discord.com/invite/discord-api)
 
 <img align="right" src="http://bwmarrin.github.io/discordgo/img/discordgo.png">
 
 DiscordGo is a [Go](https://golang.org/) package that provides low level 
-bindings to the [Discord](https://discordapp.com/) chat client API. DiscordGo 
+bindings to the [Discord](https://discord.com/) chat client API. DiscordGo 
 has nearly complete support for all of the Discord API endpoints, websocket
 interface, and voice interface.
 
 If you would like to help the DiscordGo package please use 
-[this link](https://discordapp.com/oauth2/authorize?client_id=173113690092994561&scope=bot)
+[this link](https://discord.com/oauth2/authorize?client_id=173113690092994561&scope=bot)
 to add the official DiscordGo test bot **dgo** to your server. This provides 
 indispensable help to this project.
 

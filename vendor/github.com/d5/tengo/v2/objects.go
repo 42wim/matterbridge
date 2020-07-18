@@ -1342,6 +1342,38 @@ func (o *String) BinaryOp(op token.Token, rhs Object) (Object, error) {
 			}
 			return &String{Value: o.Value + rhsStr}, nil
 		}
+	case token.Less:
+		switch rhs := rhs.(type) {
+		case *String:
+			if o.Value < rhs.Value {
+				return TrueValue, nil
+			}
+			return FalseValue, nil
+		}
+	case token.LessEq:
+		switch rhs := rhs.(type) {
+		case *String:
+			if o.Value <= rhs.Value {
+				return TrueValue, nil
+			}
+			return FalseValue, nil
+		}
+	case token.Greater:
+		switch rhs := rhs.(type) {
+		case *String:
+			if o.Value > rhs.Value {
+				return TrueValue, nil
+			}
+			return FalseValue, nil
+		}
+	case token.GreaterEq:
+		switch rhs := rhs.(type) {
+		case *String:
+			if o.Value >= rhs.Value {
+				return TrueValue, nil
+			}
+			return FalseValue, nil
+		}
 	}
 	return nil, ErrInvalidOperator
 }
