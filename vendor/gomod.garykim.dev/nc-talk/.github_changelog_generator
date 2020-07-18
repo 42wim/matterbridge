@@ -1,0 +1,12 @@
+user=gary-kim
+project=go-nc-talk
+add_sections={"dependencies": {"labels": ["dependencies"], "prefix": "### Dependencies"}, "Added": {"labels": ["feature"], "prefix": "### Added"}}
+output=
+header_label=# Go Library for Nextcloud Talk
+enhancement_prefix=### Changed
+deprecated_prefix=### Deprecated
+removed_prefix=### Removed
+security_prefix=### Security
+bug_prefix=### Fixed
+add_pr_wo_labels=false
+issues=false

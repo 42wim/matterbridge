@@ -224,6 +224,8 @@ github.com/mitchellh/mapstructure v1.1.2 h1:fmNYVwqnSfB9mZU6OS2O6GsXM+wcskZDuKQz
 github.com/mitchellh/mapstructure v1.1.2/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/reflect2 v1.0.1/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3RllmbCylyMrvgv0=
+github.com/monaco-io/request v1.0.3 h1:FsiIwXCCbHEyWx9A7lgg6JBTMHhHlEEsADsgAOvZ9HA=
+github.com/monaco-io/request v1.0.3/go.mod h1:EmggwHktBsbJmCgwZXqy7o0H1NNsAstQBWZrFVd3xtQ=
 github.com/mreiferson/go-httpclient v0.0.0-20160630210159-31f0106b4474 h1:oKIteTqeSpenyTrOVj5zkiyCaflLa8B+CD0324otT+o=
 github.com/mreiferson/go-httpclient v0.0.0-20160630210159-31f0106b4474/go.mod h1:OQA4XLvDbMgS8P0CevmM4m9Q3Jq4phKUzcocxuGJ5m8=
 github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff h1:HLGD5/9UxxfEuO9DtP8gnTmNtMxbPyhYltfxsITel8g=
@@ -448,6 +450,8 @@ golang.org/x/tools v0.0.0-20190911174233-4f2ddba30aff/go.mod h1:b+2E5dAYhXwXZwtn
 golang.org/x/tools v0.0.0-20191012152004-8de300cfc20a/go.mod h1:b+2E5dAYhXwXZwtnZ6UAqBI28+e2cm9otk0dWdXHAEo=
 golang.org/x/tools v0.0.0-20191112195655-aa38f8e97acc/go.mod h1:b+2E5dAYhXwXZwtnZ6UAqBI28+e2cm9otk0dWdXHAEo=
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
+gomod.garykim.dev/nc-talk v0.0.1 h1:6mgjcAf5/HMkV0CFGeXVfYHG7FAUCQcGR8eg9oM6fCc=
+gomod.garykim.dev/nc-talk v0.0.1/go.mod h1:0/Ksg0osAYmnWKs1OcCG+gBQ4HU1xiF1699g9B6jWZw=
 google.golang.org/api v0.4.0/go.mod h1:8k5glujaEP+g9n7WNsDg8QP6cUVNI86fCNMcbazEtwE=
 google.golang.org/api v0.7.0/go.mod h1:WtwebWUNSVBH/HAw79HIFXZNqEvBhG+Ra+ax0hx3E3M=
 google.golang.org/api v0.8.0/go.mod h1:o4eAsZoiT+ibD93RtjEohWalFOjRDx6CVaqeizhEnKg=

@@ -1,0 +1,20 @@
+kind: pipeline
+type: docker
+name: test
+
+steps:
+  - name: golangci-lint
+    image: golangci/golangci-lint:latest-alpine
+    commands:
+      - golangci-lint run
+  - name: build-test
+    image: golang:1.13
+    commands:
+      - go build
+
+trigger:
+  branch:
+    - master
+  event:
+    - pull_request
+    - push

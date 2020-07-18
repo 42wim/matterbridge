@@ -128,6 +128,8 @@ github.com/mgutz/ansi
 github.com/missdeer/golib/ic
 # github.com/mitchellh/mapstructure v1.1.2
 github.com/mitchellh/mapstructure
+# github.com/monaco-io/request v1.0.3
+github.com/monaco-io/request
 # github.com/mreiferson/go-httpclient v0.0.0-20160630210159-31f0106b4474
 github.com/mreiferson/go-httpclient
 # github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff
@@ -273,6 +275,12 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
+# gomod.garykim.dev/nc-talk v0.0.1
+gomod.garykim.dev/nc-talk
+gomod.garykim.dev/nc-talk/constants
+gomod.garykim.dev/nc-talk/ocs
+gomod.garykim.dev/nc-talk/room
+gomod.garykim.dev/nc-talk/user
 # google.golang.org/appengine v1.6.1
 google.golang.org/appengine/internal
 google.golang.org/appengine/internal/base

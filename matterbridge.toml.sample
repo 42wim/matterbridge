@@ -1383,7 +1383,22 @@ StripNick=false
 #OPTIONAL (default false)
 ShowTopicChange=false
 
+###################################################################
+#
+# NCTalk (Nextcloud Talk)
+#
+###################################################################
 
+[nctalk.bridge]
+
+# Url of your Nextcloud server
+Server = "https://cloud.youdomain.me"
+
+# Username of the bot
+Login = "talkuser"
+
+# Password of the bot
+Password = "talkuserpass"
 
 ###################################################################
 #
@@ -1702,7 +1717,7 @@ enable=true
     # REQUIRED
     account="irc.freenode"
 
-    # The channel key in each gateway is mapped to a similar group chat ID on the chat platform 
+    # The channel key in each gateway is mapped to a similar group chat ID on the chat platform
     # To find the group chat ID for different platforms, refer to the table below
     #
     # Platform   |   Identifier name  |            Example            | Description
@@ -1729,6 +1744,8 @@ enable=true
     #            |    channel id      |           ID:C123456          | The underlying ID of a channel. This doesn't work with
     # -------------------------------------------------------------------------------------------------------------------------------------
     #   steam    |      chatid        |         example needed        | The number in the URL when you click "enter chat room" in the browser
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    #   nctalk   |      token         |           xs25tz5y            | The token in the URL when you are in a chat. It will be the last part of the URL.
     # -------------------------------------------------------------------------------------------------------------------------------------
     #  telegram  |      chatid        |          -123456789           | A large negative number. see https://www.linkedin.com/pulse/telegram-bots-beginners-marco-frau
     # -------------------------------------------------------------------------------------------------------------------------------------
