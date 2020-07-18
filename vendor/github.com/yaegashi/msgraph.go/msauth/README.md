@@ -58,6 +58,32 @@ var scopes = []string{msauth.DefaultMSGraphScope}
     ...
 ```
 
+### Resource owner password credentials grant
+
+- [OAuth 2.0 resource owner passowrd credentials grant flow]
+
+```go
+const (
+	tenantID     = "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+	clientID     = "YYYYYYYY-YYYY-YYYY-YYYY-YYYYYYYYYYYY"
+	clientSecret = "ZZZZZZZZZZZZZZZZZZZZZZZZ"
+	username     = "user.name@your-domain.com"
+	password     = "secure-password"
+)
+
+var scopes = []string{msauth.DefaultMSGraphScope}
+
+	ctx := context.Background()
+	m := msauth.NewManager()
+	ts, err := m.ResourceOwnerPasswordGrant(ctx, tenantID, clientID, clientSecret, username, password, scopes)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	httpClient := oauth2.NewClient(ctx, ts)
+    ...
+```
+
 ### Authorization code grant
 
 - [OAuth 2.0 authorization code grant flow]
@@ -68,3 +94,4 @@ var scopes = []string{msauth.DefaultMSGraphScope}
 [OAuth 2.0 device authorization grant flow]: https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-device-code
 [OAuth 2.0 client credentials grant flow]: https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow
 [OAuth 2.0 authorization code grant flow]: https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow
+[OAuth 2.0 resource owner passowrd credentials grant flow]: https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc

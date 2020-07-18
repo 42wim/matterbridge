@@ -40,15 +40,16 @@ type MixedElement interface {
 }
 
 type Accessory struct {
-	ImageElement          *ImageBlockElement
-	ButtonElement         *ButtonBlockElement
-	OverflowElement       *OverflowBlockElement
-	DatePickerElement     *DatePickerBlockElement
-	PlainTextInputElement *PlainTextInputBlockElement
-	RadioButtonsElement   *RadioButtonsBlockElement
-	SelectElement         *SelectBlockElement
-	MultiSelectElement    *MultiSelectBlockElement
-	UnknownElement        *UnknownBlockElement
+	ImageElement               *ImageBlockElement
+	ButtonElement              *ButtonBlockElement
+	OverflowElement            *OverflowBlockElement
+	DatePickerElement          *DatePickerBlockElement
+	PlainTextInputElement      *PlainTextInputBlockElement
+	RadioButtonsElement        *RadioButtonsBlockElement
+	SelectElement              *SelectBlockElement
+	MultiSelectElement         *MultiSelectBlockElement
+	CheckboxGroupsBlockElement *CheckboxGroupsBlockElement
+	UnknownElement             *UnknownBlockElement
 }
 
 // NewAccessory returns a new Accessory for a given block element
@@ -70,6 +71,8 @@ func NewAccessory(element BlockElement) *Accessory {
 		return &Accessory{SelectElement: element.(*SelectBlockElement)}
 	case *MultiSelectBlockElement:
 		return &Accessory{MultiSelectElement: element.(*MultiSelectBlockElement)}
+	case *CheckboxGroupsBlockElement:
+		return &Accessory{CheckboxGroupsBlockElement: element.(*CheckboxGroupsBlockElement)}
 	default:
 		return &Accessory{UnknownElement: element.(*UnknownBlockElement)}
 	}
@@ -152,9 +155,10 @@ func (s ButtonBlockElement) ElementType() MessageElementType {
 	return s.Type
 }
 
-// add styling to button object
-func (s *ButtonBlockElement) WithStyle(style Style) {
+// WithStyling adds styling to the button object and returns the modified ButtonBlockElement
+func (s *ButtonBlockElement) WithStyle(style Style) *ButtonBlockElement {
 	s.Style = style
+	return s
 }
 
 // NewButtonBlockElement returns an instance of a new button element to be used within a block
@@ -186,17 +190,19 @@ type OptionGroupsResponse struct {
 //
 // More Information: https://api.slack.com/reference/messaging/block-elements#select
 type SelectBlockElement struct {
-	Type                string                    `json:"type,omitempty"`
-	Placeholder         *TextBlockObject          `json:"placeholder,omitempty"`
-	ActionID            string                    `json:"action_id,omitempty"`
-	Options             []*OptionBlockObject      `json:"options,omitempty"`
-	OptionGroups        []*OptionGroupBlockObject `json:"option_groups,omitempty"`
-	InitialOption       *OptionBlockObject        `json:"initial_option,omitempty"`
-	InitialUser         string                    `json:"initial_user,omitempty"`
-	InitialConversation string                    `json:"initial_conversation,omitempty"`
-	InitialChannel      string                    `json:"initial_channel,omitempty"`
-	MinQueryLength      *int                      `json:"min_query_length,omitempty"`
-	Confirm             *ConfirmationBlockObject  `json:"confirm,omitempty"`
+	Type                         string                    `json:"type,omitempty"`
+	Placeholder                  *TextBlockObject          `json:"placeholder,omitempty"`
+	ActionID                     string                    `json:"action_id,omitempty"`
+	Options                      []*OptionBlockObject      `json:"options,omitempty"`
+	OptionGroups                 []*OptionGroupBlockObject `json:"option_groups,omitempty"`
+	InitialOption                *OptionBlockObject        `json:"initial_option,omitempty"`
+	InitialUser                  string                    `json:"initial_user,omitempty"`
+	InitialConversation          string                    `json:"initial_conversation,omitempty"`
+	InitialChannel               string                    `json:"initial_channel,omitempty"`
+	DefaultToCurrentConversation bool                      `json:"default_to_current_conversation,omitempty"`
+	ResponseURLEnabled           bool                      `json:"response_url_enabled,omitempty"`
+	MinQueryLength               *int                      `json:"min_query_length,omitempty"`
+	Confirm                      *ConfirmationBlockObject  `json:"confirm,omitempty"`
 }
 
 // ElementType returns the type of the Element
@@ -315,7 +321,7 @@ func NewOverflowBlockElement(actionID string, options ...*OptionBlockObject) *Ov
 // More Information: https://api.slack.com/reference/messaging/block-elements#datepicker
 type DatePickerBlockElement struct {
 	Type        MessageElementType       `json:"type"`
-	ActionID    string                   `json:"action_id"`
+	ActionID    string                   `json:"action_id,omitempty"`
 	Placeholder *TextBlockObject         `json:"placeholder,omitempty"`
 	InitialDate string                   `json:"initial_date,omitempty"`
 	Confirm     *ConfirmationBlockObject `json:"confirm,omitempty"`
@@ -341,7 +347,7 @@ func NewDatePickerBlockElement(actionID string) *DatePickerBlockElement {
 // More Information: https://api.slack.com/reference/block-kit/block-elements#input
 type PlainTextInputBlockElement struct {
 	Type         MessageElementType `json:"type"`
-	ActionID     string             `json:"action_id"`
+	ActionID     string             `json:"action_id,omitempty"`
 	Placeholder  *TextBlockObject   `json:"placeholder,omitempty"`
 	InitialValue string             `json:"initial_value,omitempty"`
 	Multiline    bool               `json:"multiline,omitempty"`
@@ -370,7 +376,7 @@ func NewPlainTextInputBlockElement(placeholder *TextBlockObject, actionID string
 // More Information: https://api.slack.com/reference/block-kit/block-elements#checkboxes
 type CheckboxGroupsBlockElement struct {
 	Type           MessageElementType       `json:"type"`
-	ActionID       string                   `json:"action_id"`
+	ActionID       string                   `json:"action_id,omitempty"`
 	Options        []*OptionBlockObject     `json:"options"`
 	InitialOptions []*OptionBlockObject     `json:"initial_options,omitempty"`
 	Confirm        *ConfirmationBlockObject `json:"confirm,omitempty"`
@@ -381,7 +387,7 @@ func (c CheckboxGroupsBlockElement) ElementType() MessageElementType {
 	return c.Type
 }
 
-// NewRadioButtonsBlockElement returns an instance of a radio block element
+// NewCheckboxGroupsBlockElement returns an instance of a radio block element
 func NewCheckboxGroupsBlockElement(actionID string, options ...*OptionBlockObject) *CheckboxGroupsBlockElement {
 	return &CheckboxGroupsBlockElement{
 		Type:     METCheckboxGroups,
@@ -396,7 +402,7 @@ func NewCheckboxGroupsBlockElement(actionID string, options ...*OptionBlockObjec
 // More Information: https://api.slack.com/reference/block-kit/block-elements#radio
 type RadioButtonsBlockElement struct {
 	Type          MessageElementType       `json:"type"`
-	ActionID      string                   `json:"action_id"`
+	ActionID      string                   `json:"action_id,omitempty"`
 	Options       []*OptionBlockObject     `json:"options"`
 	InitialOption *OptionBlockObject       `json:"initial_option,omitempty"`
 	Confirm       *ConfirmationBlockObject `json:"confirm,omitempty"`

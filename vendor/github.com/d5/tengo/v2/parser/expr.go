@@ -111,10 +111,11 @@ func (e *BoolLit) String() string {
 
 // CallExpr represents a function call expression.
 type CallExpr struct {
-	Func   Expr
-	LParen Pos
-	Args   []Expr
-	RParen Pos
+	Func     Expr
+	LParen   Pos
+	Args     []Expr
+	Ellipsis Pos
+	RParen   Pos
 }
 
 func (e *CallExpr) exprNode() {}
@@ -133,6 +134,9 @@ func (e *CallExpr) String() string {
 	var args []string
 	for _, e := range e.Args {
 		args = append(args, e.String())
+	}
+	if len(args) > 0 && e.Ellipsis.IsValid() {
+		args[len(args)-1] = args[len(args)-1] + "..."
 	}
 	return e.Func.String() + "(" + strings.Join(args, ", ") + ")"
 }

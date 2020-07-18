@@ -8,7 +8,7 @@ type ImageBlock struct {
 	ImageURL string           `json:"image_url"`
 	AltText  string           `json:"alt_text"`
 	BlockID  string           `json:"block_id,omitempty"`
-	Title    *TextBlockObject `json:"title"`
+	Title    *TextBlockObject `json:"title,omitempty"`
 }
 
 // BlockType returns the type of the block

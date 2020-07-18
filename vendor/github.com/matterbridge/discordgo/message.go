@@ -63,7 +63,7 @@ type Message struct {
 	MentionRoles []string `json:"mention_roles"`
 
 	// Whether the message is text-to-speech.
-	Tts bool `json:"tts"`
+	TTS bool `json:"tts"`
 
 	// Whether the message mentions everyone.
 	MentionEveryone bool `json:"mention_everyone"`
@@ -129,10 +129,11 @@ type File struct {
 
 // MessageSend stores all parameters you can send with ChannelMessageSendComplex.
 type MessageSend struct {
-	Content string        `json:"content,omitempty"`
-	Embed   *MessageEmbed `json:"embed,omitempty"`
-	Tts     bool          `json:"tts"`
-	Files   []*File       `json:"-"`
+	Content         string                  `json:"content,omitempty"`
+	Embed           *MessageEmbed           `json:"embed,omitempty"`
+	TTS             bool                    `json:"tts"`
+	Files           []*File                 `json:"-"`
+	AllowedMentions *MessageAllowedMentions `json:"allowed_mentions,omitempty"`
 
 	// TODO: Remove this when compatibility is not required.
 	File *File `json:"-"`
@@ -141,8 +142,9 @@ type MessageSend struct {
 // MessageEdit is used to chain parameters via ChannelMessageEditComplex, which
 // is also where you should get the instance from.
 type MessageEdit struct {
-	Content *string       `json:"content,omitempty"`
-	Embed   *MessageEmbed `json:"embed,omitempty"`
+	Content         *string                 `json:"content,omitempty"`
+	Embed           *MessageEmbed           `json:"embed,omitempty"`
+	AllowedMentions *MessageAllowedMentions `json:"allowed_mentions,omitempty"`
 
 	ID      string
 	Channel string
@@ -169,6 +171,42 @@ func (m *MessageEdit) SetContent(str string) *MessageEdit {
 func (m *MessageEdit) SetEmbed(embed *MessageEmbed) *MessageEdit {
 	m.Embed = embed
 	return m
+}
+
+// AllowedMentionType describes the types of mentions used
+// in the MessageAllowedMentions type.
+type AllowedMentionType string
+
+// The types of mentions used in MessageAllowedMentions.
+const (
+	AllowedMentionTypeRoles    AllowedMentionType = "roles"
+	AllowedMentionTypeUsers    AllowedMentionType = "users"
+	AllowedMentionTypeEveryone AllowedMentionType = "everyone"
+)
+
+// MessageAllowedMentions allows the user to specify which mentions
+// Discord is allowed to parse in this message. This is useful when
+// sending user input as a message, as it prevents unwanted mentions.
+// If this type is used, all mentions must be explicitly whitelisted,
+// either by putting an AllowedMentionType in the Parse slice
+// (allowing all mentions of that type) or, in the case of roles and
+// users, explicitly allowing those mentions on an ID-by-ID basis.
+// For more information on this functionality, see:
+// https://discordapp.com/developers/docs/resources/channel#allowed-mentions-object-allowed-mentions-reference
+type MessageAllowedMentions struct {
+	// The mention types that are allowed to be parsed in this message.
+	// Please note that this is purposely **not** marked as omitempty,
+	// so if a zero-value MessageAllowedMentions object is provided no
+	// mentions will be allowed.
+	Parse []AllowedMentionType `json:"parse"`
+
+	// A list of role IDs to allow. This cannot be used when specifying
+	// AllowedMentionTypeRoles in the Parse slice.
+	Roles []string `json:"roles,omitempty"`
+
+	// A list of user IDs to allow. This cannot be used when specifying
+	// AllowedMentionTypeUsers in the Parse slice.
+	Users []string `json:"users,omitempty"`
 }
 
 // A MessageAttachment stores data for message attachments.

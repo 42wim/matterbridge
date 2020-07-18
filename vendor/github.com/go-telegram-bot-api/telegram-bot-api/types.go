@@ -64,6 +64,9 @@ type User struct {
 // It is normally a user's username, but falls back to a first/last
 // name as available.
 func (u *User) String() string {
+	if u == nil {
+		return ""
+	}
 	if u.UserName != "" {
 		return u.UserName
 	}
@@ -100,6 +103,7 @@ type Chat struct {
 	Photo               *ChatPhoto `json:"photo"`
 	Description         string     `json:"description,omitempty"` // optional
 	InviteLink          string     `json:"invite_link,omitempty"` // optional
+	PinnedMessage       *Message   `json:"pinned_message"`        // optional
 }
 
 // IsPrivate returns if the Chat is a private conversation.
@@ -142,6 +146,7 @@ type Message struct {
 	EditDate              int                `json:"edit_date"`               // optional
 	Text                  string             `json:"text"`                    // optional
 	Entities              *[]MessageEntity   `json:"entities"`                // optional
+	CaptionEntities       *[]MessageEntity   `json:"caption_entities"`        // optional
 	Audio                 *Audio             `json:"audio"`                   // optional
 	Document              *Document          `json:"document"`                // optional
 	Animation             *ChatAnimation     `json:"animation"`               // optional
@@ -183,7 +188,7 @@ func (m *Message) IsCommand() bool {
 	}
 
 	entity := (*m.Entities)[0]
-	return entity.Offset == 0 && entity.Type == "bot_command"
+	return entity.Offset == 0 && entity.IsCommand()
 }
 
 // Command checks if the message was a command and if it was, returns the
@@ -249,12 +254,62 @@ type MessageEntity struct {
 }
 
 // ParseURL attempts to parse a URL contained within a MessageEntity.
-func (entity MessageEntity) ParseURL() (*url.URL, error) {
-	if entity.URL == "" {
+func (e MessageEntity) ParseURL() (*url.URL, error) {
+	if e.URL == "" {
 		return nil, errors.New(ErrBadURL)
 	}
 
-	return url.Parse(entity.URL)
+	return url.Parse(e.URL)
+}
+
+// IsMention returns true if the type of the message entity is "mention" (@username).
+func (e MessageEntity) IsMention() bool {
+	return e.Type == "mention"
+}
+
+// IsHashtag returns true if the type of the message entity is "hashtag".
+func (e MessageEntity) IsHashtag() bool {
+	return e.Type == "hashtag"
+}
+
+// IsCommand returns true if the type of the message entity is "bot_command".
+func (e MessageEntity) IsCommand() bool {
+	return e.Type == "bot_command"
+}
+
+// IsUrl returns true if the type of the message entity is "url".
+func (e MessageEntity) IsUrl() bool {
+	return e.Type == "url"
+}
+
+// IsEmail returns true if the type of the message entity is "email".
+func (e MessageEntity) IsEmail() bool {
+	return e.Type == "email"
+}
+
+// IsBold returns true if the type of the message entity is "bold" (bold text).
+func (e MessageEntity) IsBold() bool {
+	return e.Type == "bold"
+}
+
+// IsItalic returns true if the type of the message entity is "italic" (italic text).
+func (e MessageEntity) IsItalic() bool {
+	return e.Type == "italic"
+}
+
+// IsCode returns true if the type of the message entity is "code" (monowidth string).
+func (e MessageEntity) IsCode() bool {
+	return e.Type == "code"
+}
+
+// IsPre returns true if the type of the message entity is "pre" (monowidth block).
+func (e MessageEntity) IsPre() bool {
+	return e.Type == "pre"
+}
+
+// IsTextLink returns true if the type of the message entity is "text_link" (clickable text URL).
+func (e MessageEntity) IsTextLink() bool {
+	return e.Type == "text_link"
 }
 
 // PhotoSize contains information about photos.
@@ -286,13 +341,23 @@ type Document struct {
 
 // Sticker contains information about a sticker.
 type Sticker struct {
-	FileID    string     `json:"file_id"`
-	Width     int        `json:"width"`
-	Height    int        `json:"height"`
-	Thumbnail *PhotoSize `json:"thumb"`     // optional
-	Emoji     string     `json:"emoji"`     // optional
-	FileSize  int        `json:"file_size"` // optional
-	SetName   string     `json:"set_name"`  // optional
+	FileUniqueID string     `json:"file_unique_id"`
+	FileID       string     `json:"file_id"`
+	Width        int        `json:"width"`
+	Height       int        `json:"height"`
+	Thumbnail    *PhotoSize `json:"thumb"`       // optional
+	Emoji        string     `json:"emoji"`       // optional
+	FileSize     int        `json:"file_size"`   // optional
+	SetName      string     `json:"set_name"`    // optional
+	IsAnimated   bool       `json:"is_animated"` // optional
+}
+
+type StickerSet struct {
+	Name          string    `json:"name"`
+	Title         string    `json:"title"`
+	IsAnimated    bool      `json:"is_animated"`
+	ContainsMasks bool      `json:"contains_masks"`
+	Stickers      []Sticker `json:"stickers"`
 }
 
 // ChatAnimation contains information about an animation.
@@ -582,6 +647,7 @@ type InlineQueryResultPhoto struct {
 	Title               string                `json:"title"`
 	Description         string                `json:"description"`
 	Caption             string                `json:"caption"`
+	ParseMode           string                `json:"parse_mode"`
 	ReplyMarkup         *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
 	InputMessageContent interface{}           `json:"input_message_content,omitempty"`
 }
@@ -601,15 +667,15 @@ type InlineQueryResultCachedPhoto struct {
 
 // InlineQueryResultGIF is an inline query response GIF.
 type InlineQueryResultGIF struct {
-	Type                string                `json:"type"`    // required
-	ID                  string                `json:"id"`      // required
-	URL                 string                `json:"gif_url"` // required
-	Width               int                   `json:"gif_width"`
-	Height              int                   `json:"gif_height"`
-	Duration            int                   `json:"gif_duration"`
-	ThumbURL            string                `json:"thumb_url"`
-	Title               string                `json:"title"`
-	Caption             string                `json:"caption"`
+	Type                string                `json:"type"`      // required
+	ID                  string                `json:"id"`        // required
+	URL                 string                `json:"gif_url"`   // required
+	ThumbURL            string                `json:"thumb_url"` // required
+	Width               int                   `json:"gif_width,omitempty"`
+	Height              int                   `json:"gif_height,omitempty"`
+	Duration            int                   `json:"gif_duration,omitempty"`
+	Title               string                `json:"title,omitempty"`
+	Caption             string                `json:"caption,omitempty"`
 	ReplyMarkup         *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
 	InputMessageContent interface{}           `json:"input_message_content,omitempty"`
 }
@@ -775,6 +841,23 @@ type InlineQueryResultLocation struct {
 	ThumbHeight         int                   `json:"thumb_height"`
 }
 
+// InlineQueryResultVenue is an inline query response venue.
+type InlineQueryResultVenue struct {
+	Type                string                `json:"type"`      // required
+	ID                  string                `json:"id"`        // required
+	Latitude            float64               `json:"latitude"`  // required
+	Longitude           float64               `json:"longitude"` // required
+	Title               string                `json:"title"`     // required
+	Address             string                `json:"address"`   // required
+	FoursquareID        string                `json:"foursquare_id"`
+	FoursquareType      string                `json:"foursquare_type"`
+	ReplyMarkup         *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
+	InputMessageContent interface{}           `json:"input_message_content,omitempty"`
+	ThumbURL            string                `json:"thumb_url"`
+	ThumbWidth          int                   `json:"thumb_width"`
+	ThumbHeight         int                   `json:"thumb_height"`
+}
+
 // InlineQueryResultGame is an inline query response game.
 type InlineQueryResultGame struct {
 	Type          string                `json:"type"`
@@ -897,6 +980,7 @@ type PreCheckoutQuery struct {
 
 // Error is an error containing extra information returned by the Telegram API.
 type Error struct {
+	Code    int
 	Message string
 	ResponseParameters
 }

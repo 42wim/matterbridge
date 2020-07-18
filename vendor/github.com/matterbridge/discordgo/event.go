@@ -110,7 +110,7 @@ func (s *Session) addEventHandlerOnce(eventHandler EventHandler) func() {
 //     })
 //
 // List of events can be found at this page, with corresponding names in the
-// library for each event: https://discordapp.com/developers/docs/topics/gateway#event-names
+// library for each event: https://discord.com/developers/docs/topics/gateway#event-names
 // There are also synthetic events fired by the library internally which are
 // available for handling, like Connect, Disconnect, and RateLimit.
 // events.go contains all of the Discord WSAPI and synthetic events that can be handled.

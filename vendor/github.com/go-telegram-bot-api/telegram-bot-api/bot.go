@@ -19,34 +19,50 @@ import (
 	"github.com/technoweenie/multipartstreamer"
 )
 
+type HttpClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
 // BotAPI allows you to interact with the Telegram Bot API.
 type BotAPI struct {
 	Token  string `json:"token"`
 	Debug  bool   `json:"debug"`
 	Buffer int    `json:"buffer"`
 
-	Self   User         `json:"-"`
-	Client *http.Client `json:"-"`
+	Self            User       `json:"-"`
+	Client          HttpClient `json:"-"`
 	shutdownChannel chan interface{}
+
+	apiEndpoint string
 }
 
 // NewBotAPI creates a new BotAPI instance.
 //
 // It requires a token, provided by @BotFather on Telegram.
 func NewBotAPI(token string) (*BotAPI, error) {
-	return NewBotAPIWithClient(token, &http.Client{})
+	return NewBotAPIWithClient(token, APIEndpoint, &http.Client{})
+}
+
+// NewBotAPIWithAPIEndpoint creates a new BotAPI instance
+// and allows you to pass API endpoint.
+//
+// It requires a token, provided by @BotFather on Telegram and API endpoint.
+func NewBotAPIWithAPIEndpoint(token, apiEndpoint string) (*BotAPI, error) {
+	return NewBotAPIWithClient(token, apiEndpoint, &http.Client{})
 }
 
 // NewBotAPIWithClient creates a new BotAPI instance
 // and allows you to pass a http.Client.
 //
-// It requires a token, provided by @BotFather on Telegram.
-func NewBotAPIWithClient(token string, client *http.Client) (*BotAPI, error) {
+// It requires a token, provided by @BotFather on Telegram and API endpoint.
+func NewBotAPIWithClient(token, apiEndpoint string, client HttpClient) (*BotAPI, error) {
 	bot := &BotAPI{
-		Token:  token,
-		Client: client,
-		Buffer: 100,
+		Token:           token,
+		Client:          client,
+		Buffer:          100,
 		shutdownChannel: make(chan interface{}),
+
+		apiEndpoint: apiEndpoint,
 	}
 
 	self, err := bot.GetMe()
@@ -59,11 +75,21 @@ func NewBotAPIWithClient(token string, client *http.Client) (*BotAPI, error) {
 	return bot, nil
 }
 
+func (b *BotAPI) SetAPIEndpoint(apiEndpoint string) {
+	b.apiEndpoint = apiEndpoint
+}
+
 // MakeRequest makes a request to a specific endpoint with our token.
 func (bot *BotAPI) MakeRequest(endpoint string, params url.Values) (APIResponse, error) {
-	method := fmt.Sprintf(APIEndpoint, bot.Token, endpoint)
+	method := fmt.Sprintf(bot.apiEndpoint, bot.Token, endpoint)
 
-	resp, err := bot.Client.PostForm(method, params)
+	req, err := http.NewRequest("POST", method, strings.NewReader(params.Encode()))
+	if err != nil {
+		return APIResponse{}, err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := bot.Client.Do(req)
 	if err != nil {
 		return APIResponse{}, err
 	}
@@ -84,7 +110,7 @@ func (bot *BotAPI) MakeRequest(endpoint string, params url.Values) (APIResponse,
 		if apiResp.Parameters != nil {
 			parameters = *apiResp.Parameters
 		}
-		return apiResp, Error{apiResp.Description, parameters}
+		return apiResp, &Error{Code: apiResp.ErrorCode, Message: apiResp.Description, ResponseParameters: parameters}
 	}
 
 	return apiResp, nil
@@ -186,7 +212,7 @@ func (bot *BotAPI) UploadFile(endpoint string, params map[string]string, fieldna
 		return APIResponse{}, errors.New(ErrBadFileType)
 	}
 
-	method := fmt.Sprintf(APIEndpoint, bot.Token, endpoint)
+	method := fmt.Sprintf(bot.apiEndpoint, bot.Token, endpoint)
 
 	req, err := http.NewRequest("POST", method, nil)
 	if err != nil {
@@ -430,7 +456,7 @@ func (bot *BotAPI) GetUpdates(config UpdateConfig) ([]Update, error) {
 
 // RemoveWebhook unsets the webhook.
 func (bot *BotAPI) RemoveWebhook() (APIResponse, error) {
-	return bot.MakeRequest("setWebhook", url.Values{})
+	return bot.MakeRequest("deleteWebhook", url.Values{})
 }
 
 // SetWebhook sets a webhook.
@@ -487,10 +513,11 @@ func (bot *BotAPI) GetUpdatesChan(config UpdateConfig) (UpdatesChannel, error) {
 		for {
 			select {
 			case <-bot.shutdownChannel:
+				close(ch)
 				return
 			default:
 			}
-			
+
 			updates, err := bot.GetUpdates(config)
 			if err != nil {
 				log.Println(err)
@@ -965,4 +992,23 @@ func (bot *BotAPI) DeleteChatPhoto(config DeleteChatPhotoConfig) (APIResponse, e
 	bot.debugLog(config.method(), v, nil)
 
 	return bot.MakeRequest(config.method(), v)
+}
+
+// GetStickerSet get a sticker set.
+func (bot *BotAPI) GetStickerSet(config GetStickerSetConfig) (StickerSet, error) {
+	v, err := config.values()
+	if err != nil {
+		return StickerSet{}, err
+	}
+	bot.debugLog(config.method(), v, nil)
+	res, err := bot.MakeRequest(config.method(), v)
+	if err != nil {
+		return StickerSet{}, err
+	}
+	stickerSet := StickerSet{}
+	err = json.Unmarshal(res.Result, &stickerSet)
+	if err != nil {
+		return StickerSet{}, err
+	}
+	return stickerSet, nil
 }

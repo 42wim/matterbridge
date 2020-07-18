@@ -163,11 +163,17 @@ type ConfirmationBlockObject struct {
 	Text    *TextBlockObject `json:"text"`
 	Confirm *TextBlockObject `json:"confirm"`
 	Deny    *TextBlockObject `json:"deny"`
+	Style   Style            `json:"style,omitempty"`
 }
 
 // validateType enforces block objects for element and block parameters
 func (s ConfirmationBlockObject) validateType() MessageObjectType {
 	return motConfirmation
+}
+
+// add styling to confirmation object
+func (s *ConfirmationBlockObject) WithStyle(style Style) {
+	s.Style = style
 }
 
 // NewConfirmationBlockObject returns an instance of a new Confirmation Block Object

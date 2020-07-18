@@ -28,6 +28,7 @@ const (
 	Safelink                                  // Only link to trusted protocols
 	NofollowLinks                             // Only link with rel="nofollow"
 	NoreferrerLinks                           // Only link with rel="noreferrer"
+	NoopenerLinks                             // Only link with rel="noopener"
 	HrefTargetBlank                           // Add a blank target
 	CompletePage                              // Generate a complete HTML page
 	UseXHTML                                  // Generate XHTML output instead of HTML
@@ -294,6 +295,9 @@ func appendLinkAttrs(attrs []string, flags Flags, link []byte) []string {
 	}
 	if flags&NoreferrerLinks != 0 {
 		val = append(val, "noreferrer")
+	}
+	if flags&NoopenerLinks != 0 {
+		val = append(val, "noopener")
 	}
 	if flags&HrefTargetBlank != 0 {
 		attrs = append(attrs, `target="_blank"`)
@@ -1110,7 +1114,9 @@ func (r *Renderer) writeTOC(w io.Writer, doc ast.Node) {
 				buf.WriteString("</a>")
 				return ast.GoToNext
 			}
-			nodeData.HeadingID = fmt.Sprintf("toc_%d", headingCount)
+			if nodeData.HeadingID == "" {
+				nodeData.HeadingID = fmt.Sprintf("toc_%d", headingCount)
+			}
 			if nodeData.Level == tocLevel {
 				buf.WriteString("</li>\n\n<li>")
 			} else if nodeData.Level < tocLevel {
@@ -1126,7 +1132,7 @@ func (r *Renderer) writeTOC(w io.Writer, doc ast.Node) {
 				}
 			}
 
-			fmt.Fprintf(&buf, `<a href="#toc_%d">`, headingCount)
+			fmt.Fprintf(&buf, `<a href="#%s">`, nodeData.HeadingID)
 			headingCount++
 			return ast.GoToNext
 		}

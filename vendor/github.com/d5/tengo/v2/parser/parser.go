@@ -270,9 +270,13 @@ func (p *Parser) parseCall(x Expr) *CallExpr {
 	p.exprLevel++
 
 	var list []Expr
-	for p.token != token.RParen && p.token != token.EOF {
+	var ellipsis Pos
+	for p.token != token.RParen && p.token != token.EOF && !ellipsis.IsValid() {
 		list = append(list, p.parseExpr())
-
+		if p.token == token.Ellipsis {
+			ellipsis = p.pos
+			p.next()
+		}
 		if !p.expectComma(token.RParen, "call argument") {
 			break
 		}
@@ -281,10 +285,11 @@ func (p *Parser) parseCall(x Expr) *CallExpr {
 	p.exprLevel--
 	rparen := p.expect(token.RParen)
 	return &CallExpr{
-		Func:   x,
-		LParen: lparen,
-		RParen: rparen,
-		Args:   list,
+		Func:     x,
+		LParen:   lparen,
+		RParen:   rparen,
+		Ellipsis: ellipsis,
+		Args:     list,
 	}
 }
 

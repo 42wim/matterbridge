@@ -1262,3 +1262,18 @@ func (config DeleteChatPhotoConfig) values() (url.Values, error) {
 
 	return v, nil
 }
+
+// GetStickerSetConfig contains information for get sticker set.
+type GetStickerSetConfig struct {
+	Name string
+}
+
+func (config GetStickerSetConfig) method() string {
+	return "getStickerSet"
+}
+
+func (config GetStickerSetConfig) values() (url.Values, error) {
+	v := url.Values{}
+	v.Add("name", config.Name)
+	return v, nil
+}
