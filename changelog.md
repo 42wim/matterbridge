@@ -1,3 +1,29 @@
+# v1.18.0
+
+## New features
+
+- nctalk: new protocol added. Add Nextcloud Talk support #1167
+- general: Add an option to log into a file rather than stdout (#1168)
+- api: Add websocket to API (#970)
+
+## Enhancements
+
+- telegram: Fix MarkdownV2 support in Telegram (#1169)
+- whatsapp: Reload user information when a new contact is detected (whatsapp) (#1160)
+- api: Add sane RemoteNickFormat default for API (#1157)
+- irc: Skip gIRC built-in rate limiting (irc) (#1164)
+- irc: Only colour IRC nicks if there is one. (#1161)
+- docker: Combine runs to one layer (#1151)
+
+## Bugfix
+
+- general: Update dependencies for 1.18.0 release (#1175)
+
+Discord users are encouraged to upgrade, this release works with the move to the discord.com domain.
+
+This release couldn't exist without the following contributors:
+@42wim, @jlu5, @qaisjp, @TheHolyRoger, @SuperSandro2000, @gary-kim, @z3bra, @greenx, @haykam821, @nathanaelhoun
+
 # v1.17.5
 
 ## Enhancements
