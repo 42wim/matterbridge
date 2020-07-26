@@ -9,10 +9,10 @@ jobs:
         with:
           fetch-depth: 20
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v1
+        uses: golangci/golangci-lint-action@v2
         with:
-          version: v1.27
-          args: "-v --new-from-rev HEAD~1"
+          version: v1.29
+          args: "-v --new-from-rev HEAD~5"
   test-build-upload:
     strategy:
       matrix:

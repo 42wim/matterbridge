@@ -180,7 +180,9 @@ linters:
     - goerr113
     - testpackage
     - godot
-
+    - interfacer
+    - goheader
+    - noctx
 
 # rules to deal with reported isues
 issues:
