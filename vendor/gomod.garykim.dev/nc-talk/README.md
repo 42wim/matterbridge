@@ -5,6 +5,16 @@
 
 A Go library that can be used to communicate with [Nextcloud Talk](https://github.com/nextcloud/spreed) instances.
 
+### Installing
+
+You can use this library in your Go projects by installing it with go mod:
+
+```bash
+GO111MODULE=on go get gomod.garykim.dev/nc-talk
+```
+
+Check out the documentation for the package [here](https://pkg.go.dev/gomod.garykim.dev/nc-talk).
+
 ### License
 
 Copyright © 2020 Gary Kim &lt;<gary@garykim.dev>&gt;, All Rights Reserved

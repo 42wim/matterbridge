@@ -15,10 +15,12 @@
 package user
 
 import (
-	"encoding/xml"
-	"reflect"
+	"encoding/json"
+	"strings"
 
 	"github.com/monaco-io/request"
+
+	"gomod.garykim.dev/nc-talk/ocs"
 )
 
 const (
@@ -35,6 +37,8 @@ type TalkUser struct {
 
 // Capabilities describes the capabilities that the Nextcloud Talk instance is capable of. Visit https://nextcloud-talk.readthedocs.io/en/latest/capabilities/ for more info.
 type Capabilities struct {
+	AttachmentsFolder      string `ocscapability:"config => attachments => folder"`
+	ChatMaxLength          int
 	Audio                  bool `ocscapability:"audio"`
 	Video                  bool `ocscapability:"video"`
 	Chat                   bool `ocscapability:"chat"`
@@ -60,16 +64,10 @@ type Capabilities struct {
 	ChatReplies            bool `ocscapability:"chat-replies"`
 	CirclesSupport         bool `ocscapability:"circles-support"`
 	AttachmentsAllowed     bool `ocscapability:"config => attachments => allowed"`
-	AttachmentsFolder      bool `ocscapability:"config => attachments => folder"`
 	ConversationsCanCreate bool `ocscapability:"config => conversations => can-create"`
 	ForceMute              bool `ocscapability:"force-mute"`
 	ConversationV2         bool `ocscapability:"conversation-v2"`
 	ChatReferenceID        bool `ocscapability:"chat-reference-id"`
-}
-
-type capabilitiesRequest struct {
-	XMLName      xml.Name `xml:"ocs"`
-	Capabilities []string `xml:"ocs>data>capabilities>spreed>features>element"`
 }
 
 // RequestClient returns a monaco-io that is preconfigured to make OCS API calls
@@ -87,6 +85,12 @@ func (t *TalkUser) RequestClient(client request.Client) *request.Client {
 		Username: t.User,
 		Password: t.Pass,
 	}
+
+	// Set Nextcloud URL if there is no host
+	if !strings.HasPrefix(client.URL, t.NextcloudURL) {
+		client.URL = t.NextcloudURL + "/" + client.URL
+	}
+
 	return &client
 }
 
@@ -98,35 +102,67 @@ func (t *TalkUser) Capabilities() (*Capabilities, error) {
 
 	client := t.RequestClient(request.Client{
 		URL: ocsCapabilitiesEndpoint,
-		Header: map[string]string{
-			"Accept": "application/xml",
-		},
 	})
 	res, err := client.Do()
 	if err != nil {
 		return nil, err
 	}
 
-	capabilities := &capabilitiesRequest{}
-	err = xml.Unmarshal(res.Data, capabilities)
+	capabilitiesRequest := &struct {
+		Ocs ocs.Capabilities `json:"ocs"`
+	}{}
+
+	err = json.Unmarshal(res.Data, capabilitiesRequest)
 	if err != nil {
 		return nil, err
 	}
 
-	tr := &Capabilities{}
+	sc := capabilitiesRequest.Ocs.Data.Capabilities.SpreedCapabilities
 
-	c := reflect.ValueOf(tr)
-	for i := 0; i < c.NumField(); i++ {
-		field := c.Field(i)
-		tag := field.Type().Field(0).Tag.Get("ocscapability")
-
-		for _, capability := range capabilities.Capabilities {
-			if capability == tag && field.CanSet() {
-				field.SetBool(true)
-			}
-		}
+	tr := &Capabilities{
+		Audio:                  sliceContains(sc.Features, "audio"),
+		Video:                  sliceContains(sc.Features, "video"),
+		Chat:                   sliceContains(sc.Features, "chat"),
+		GuestSignaling:         sliceContains(sc.Features, "guest-signaling"),
+		EmptyGroupRoom:         sliceContains(sc.Features, "empty-group-room"),
+		GuestDisplayNames:      sliceContains(sc.Features, "guest-display-names"),
+		MultiRoomUsers:         sliceContains(sc.Features, "multi-room-users"),
+		ChatV2:                 sliceContains(sc.Features, "chat-v2"),
+		Favorites:              sliceContains(sc.Features, "favorites"),
+		LastRoomActivity:       sliceContains(sc.Features, "last-room-activity"),
+		NoPing:                 sliceContains(sc.Features, "no-ping"),
+		SystemMessages:         sliceContains(sc.Features, "system-messages"),
+		MentionFlag:            sliceContains(sc.Features, "mention-flag"),
+		InCallFlags:            sliceContains(sc.Features, "in-call-flags"),
+		InviteByMail:           sliceContains(sc.Features, "invite-by-mail"),
+		NotificationLevels:     sliceContains(sc.Features, "notification-levels"),
+		InviteGroupsAndMails:   sliceContains(sc.Features, "invite-groups-and-mails"),
+		LockedOneToOneRooms:    sliceContains(sc.Features, "locked-one-to-one-rooms"),
+		ReadOnlyRooms:          sliceContains(sc.Features, "read-only-rooms"),
+		ChatReadMarker:         sliceContains(sc.Features, "chat-read-marker"),
+		WebinaryLobby:          sliceContains(sc.Features, "webinary-lobby"),
+		StartCallFlag:          sliceContains(sc.Features, "start-call-flag"),
+		ChatReplies:            sliceContains(sc.Features, "chat-replies"),
+		CirclesSupport:         sliceContains(sc.Features, "circles-support"),
+		AttachmentsAllowed:     sc.Config.Attachments.Allowed,
+		AttachmentsFolder:      sc.Config.Attachments.Folder,
+		ConversationsCanCreate: sc.Config.Conversations.CanCreate,
+		ForceMute:              sliceContains(sc.Features, "force-mute"),
+		ConversationV2:         sliceContains(sc.Features, "conversation-v2"),
+		ChatReferenceID:        sliceContains(sc.Features, "chat-reference-id"),
+		ChatMaxLength:          sc.Config.Chat.MaxLength,
 	}
 
 	t.capabilities = tr
 	return tr, nil
+}
+
+// sliceContains does the slice contain the string
+func sliceContains(s []string, search string) bool {
+	for _, n := range s {
+		if n == search {
+			return true
+		}
+	}
+	return false
 }

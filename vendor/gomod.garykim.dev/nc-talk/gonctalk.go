@@ -20,6 +20,7 @@ import (
 )
 
 // NewUser returns a TalkUser instance
+// The url should be the full URL of the Nextcloud instance (e.g. https://cloud.mydomain.me)
 func NewUser(url string, username string, password string) *user.TalkUser {
 	return &user.TalkUser{
 		NextcloudURL: url,
@@ -29,6 +30,7 @@ func NewUser(url string, username string, password string) *user.TalkUser {
 }
 
 // NewRoom returns a new TalkRoom instance
+// Token should be the Nextcloud Room Token (e.g. "d6zoa2zs" if the room URL is https://cloud.mydomain.me/call/d6zoa2zs)
 func NewRoom(tuser *user.TalkUser, token string) *room.TalkRoom {
 	tr := &room.TalkRoom{
 		User:  tuser,

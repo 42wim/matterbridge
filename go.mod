@@ -54,7 +54,7 @@ require (
 	github.com/zfjagann/golang-ring v0.0.0-20190304061218-d34796e0a6c2
 	golang.org/x/image v0.0.0-20200618115811-c13761719519
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	gomod.garykim.dev/nc-talk v0.0.1
+	gomod.garykim.dev/nc-talk v0.0.2
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect

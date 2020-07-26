@@ -450,6 +450,8 @@ golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898/go.mod h1:I/5z698sn9Ka8T
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 gomod.garykim.dev/nc-talk v0.0.1 h1:6mgjcAf5/HMkV0CFGeXVfYHG7FAUCQcGR8eg9oM6fCc=
 gomod.garykim.dev/nc-talk v0.0.1/go.mod h1:0/Ksg0osAYmnWKs1OcCG+gBQ4HU1xiF1699g9B6jWZw=
+gomod.garykim.dev/nc-talk v0.0.2 h1:QagJzL1Ie/sJDachAC42fEXlIh2mK8IDk1/ue0u8IcI=
+gomod.garykim.dev/nc-talk v0.0.2/go.mod h1:0/Ksg0osAYmnWKs1OcCG+gBQ4HU1xiF1699g9B6jWZw=
 google.golang.org/api v0.4.0/go.mod h1:8k5glujaEP+g9n7WNsDg8QP6cUVNI86fCNMcbazEtwE=
 google.golang.org/api v0.7.0/go.mod h1:WtwebWUNSVBH/HAw79HIFXZNqEvBhG+Ra+ax0hx3E3M=
 google.golang.org/api v0.8.0/go.mod h1:o4eAsZoiT+ibD93RtjEohWalFOjRDx6CVaqeizhEnKg=
