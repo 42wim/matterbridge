@@ -274,7 +274,7 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-# gomod.garykim.dev/nc-talk v0.0.1
+# gomod.garykim.dev/nc-talk v0.0.2
 gomod.garykim.dev/nc-talk
 gomod.garykim.dev/nc-talk/constants
 gomod.garykim.dev/nc-talk/ocs
