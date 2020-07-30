@@ -1625,7 +1625,7 @@ IgnoreFailureOnStart=false
 #writing, or if the value is empty. Note that the log won't roll, so
 #you might want to use logrotate(8) with this feature.
 #OPTIONAL (default empty)
-LogFile=/var/log/matterbridge.log
+LogFile="/var/log/matterbridge.log"
 
 ###################################################################
 #Tengo configuration
