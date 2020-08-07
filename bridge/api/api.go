@@ -1,9 +1,8 @@
 package api
 
 import (
-	"bytes"
 	"encoding/json"
-	"io"
+	"github.com/grafov/bcast"
 	"net/http"
 	"sync"
 	"time"
@@ -11,8 +10,10 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/gorilla/websocket"
+	//"github.com/grafov/bcast"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	ring "github.com/zfjagann/golang-ring"
 )
 
 const (
@@ -20,14 +21,19 @@ const (
 	writeWait = 10 * time.Second
 
 	// Time allowed to read the next pong message from the peer.
-	pongWait = 10 * time.Second // TODO: 60 seconds
+	pongWait = 60 * time.Second // TODO: 60 seconds
 
 	// Send pings to peer with this period. Must be less than pongWait.
 	pingPeriod = (pongWait * 9) / 10
 )
 
 type API struct {
-	send chan config.Message
+	Messages       ring.Ring
+	group          bcast.Group
+	//messageMember  bcast.Member
+	//messageChannel chan config.Message
+	//streamMember   bcast.Member
+	//streamChannel  chan config.Message
 	sync.RWMutex
 	*bridge.Config
 }
@@ -45,7 +51,16 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
-	b.send = make(chan config.Message, b.GetInt("Buffer"))
+	b.group = *bcast.NewGroup()
+	go b.group.Broadcast(0) // TODO: cancel this group broadcast at some point ?
+
+	b.Messages = ring.Ring{}
+	if b.GetInt("Buffer") != 0 {
+		b.Messages.SetCapacity(b.GetInt("Buffer"))
+	} else {
+		// TODO: set default capacity ?
+	}
+
 	if b.GetString("Token") != "" {
 		e.Use(middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
 			return key == b.GetString("Token"), nil
@@ -81,6 +96,7 @@ func (b *API) Disconnect() error {
 
 }
 func (b *API) JoinChannel(channel config.ChannelInfo) error {
+	// we could have a `chan config.Message` for each text channel here, instead of hardcoded "api"
 	return nil
 
 }
@@ -92,7 +108,9 @@ func (b *API) Send(msg config.Message) (string, error) {
 	if msg.Event == config.EventMsgDelete {
 		return "", nil
 	}
-	b.send <- msg
+	b.Log.Debugf("enqueueing message from %s to group broadcast", msg.Username)
+	b.Messages.Enqueue(msg)
+	b.group.Send(msg)
 	return "", nil
 }
 
@@ -119,20 +137,8 @@ func (b *API) handlePostMessage(c echo.Context) error {
 func (b *API) handleMessages(c echo.Context) error {
 	b.Lock()
 	defer b.Unlock()
-	// collect all messages until the channel has no more messages in the buffer
-	var messages []config.Message
-	loop: for {
-		select {
-		case msg := <- b.send:
-			messages = append(messages, msg)
-		default:
-			break loop
-		}
-	}
-	// TODO: get all messages from send channel
-	c.JSONPretty(http.StatusOK, messages, " ")
-	// TODO: clear send channel ?
-	//b.send = make(chan config.Message, b.GetInt("Buffer"))
+	_ = c.JSONPretty(http.StatusOK, b.Messages.Values(), " ")
+	// not clearing history.. intentionally
 	//b.Messages = ring.Ring{}
 	return nil
 }
@@ -147,15 +153,26 @@ func (b *API) getGreeting() config.Message {
 func (b *API) handleStream(c echo.Context) error {
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	c.Response().WriteHeader(http.StatusOK)
+
 	greet := b.getGreeting()
 	if err := json.NewEncoder(c.Response()).Encode(greet); err != nil {
 		return err
 	}
 	c.Response().Flush()
+
+	// TODO: currently this skips sending history
+	// TODO: send history from ringbuffer ?
+
+	member := *b.group.Join()
+	defer func() {
+		// i hope this will properly close it..
+		member.Close()
+	}()
+
 	for {
 		select {
 		// block until channel has message
-		case msg := <- b.send:
+		case msg := <-member.Read:
 			if err := json.NewEncoder(c.Response()).Encode(msg); err != nil {
 				return err
 			}
@@ -176,18 +193,20 @@ func (b *API) handleWebsocketMessage(message config.Message) {
 	b.Remote <- message
 }
 
-func (b *API) writePump(conn *websocket.Conn) {
+func (b *API) writePump(conn *websocket.Conn, member bcast.Member) {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		b.Log.Debug("closing websocket")
 		ticker.Stop()
-		conn.Close()
+		_ = conn.Close()
+		member.Close()
 	}()
 
 	for {
 		select {
-		case msg := <-b.send:
-			conn.SetWriteDeadline(time.Now().Add(writeWait))
+		case msg := <-member.Read:
+			_ = conn.SetWriteDeadline(time.Now().Add(writeWait))
+			b.Log.Debugf("sending message %v", msg)
 			err := conn.WriteJSON(msg)
 			if err != nil {
 				b.Log.Errorf("error: %v", err)
@@ -195,7 +214,7 @@ func (b *API) writePump(conn *websocket.Conn) {
 			}
 		case <-ticker.C:
 			b.Log.Debug("sending ping")
-			conn.SetWriteDeadline(time.Now().Add(writeWait))
+			_ = conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				b.Log.Errorf("error: %v", err)
 				return
@@ -207,36 +226,22 @@ func (b *API) writePump(conn *websocket.Conn) {
 func (b *API) readPump(conn *websocket.Conn) {
 	defer func() {
 		b.Log.Debug("closing websocket")
-		conn.Close()
+		_ = conn.Close()
 	}()
 
 	_ = conn.SetReadDeadline(time.Now().Add(pongWait))
 	conn.SetPongHandler(
 		func(string) error {
 			b.Log.Debug("received pong")
-			conn.SetReadDeadline(time.Now().Add(pongWait))
+			_ = conn.SetReadDeadline(time.Now().Add(pongWait))
 			return nil
 		},
 	)
 
-    for {
+	for {
 		message := config.Message{}
-		//err := conn.ReadJSON(&message)
-		//if err != nil {
-		//	b.Log.Errorf("error: %v", err)
-		//	return
-		//}
-		_, messageBytes, err := conn.ReadMessage()
+		err := conn.ReadJSON(&message)
 		if err != nil {
-			b.Log.Errorf("error: %v", err)
-			return
-		}
-		err = json.NewDecoder(bytes.NewReader(messageBytes)).Decode(&message)
-		if err != nil {
-			if err == io.EOF {
-				// One value is expected in the message.
-				err = io.ErrUnexpectedEOF
-			}
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				b.Log.Errorf("Websocket closed unexpectedly: %v", err)
 			}
@@ -257,7 +262,22 @@ func (b *API) handleWebsocket(c echo.Context) error {
 	greet := b.getGreeting()
 	_ = conn.WriteJSON(greet)
 
-	go b.writePump(conn)
+	// TODO: maybe send all history as single message as json array ?
+
+	// send all messages from history
+	for _, msg := range b.Messages.Values() {
+		_ = conn.SetWriteDeadline(time.Now().Add(writeWait))
+		b.Log.Debugf("sending message %v", msg)
+		err := conn.WriteJSON(msg)
+		if err != nil {
+			b.Log.Errorf("error: %v", err)
+			break
+		}
+	}
+
+	member := *b.group.Join()
+
+	go b.writePump(conn, member)
 	go b.readPump(conn)
 
 	return nil

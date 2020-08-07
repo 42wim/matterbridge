@@ -65,6 +65,8 @@ github.com/gopackage/ddp
 github.com/gorilla/schema
 # github.com/gorilla/websocket v1.4.2
 github.com/gorilla/websocket
+# github.com/grafov/bcast v0.0.0-20190217190352-1447f067e08d
+github.com/grafov/bcast
 # github.com/hashicorp/golang-lru v0.5.4
 github.com/hashicorp/golang-lru
 github.com/hashicorp/golang-lru/simplelru
