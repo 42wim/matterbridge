@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/mattermost/mattermost-server/model"
+	"github.com/mattermost/mattermost-server/v5/model"
 )
 
 func (m *MMClient) GetNickName(userId string) string { //nolint:golint

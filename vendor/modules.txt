@@ -23,6 +23,8 @@ github.com/Rhymen/go-whatsapp/binary/token
 github.com/Rhymen/go-whatsapp/crypto/cbc
 github.com/Rhymen/go-whatsapp/crypto/curve25519
 github.com/Rhymen/go-whatsapp/crypto/hkdf
+# github.com/blang/semver v3.5.1+incompatible
+github.com/blang/semver
 # github.com/d5/tengo/v2 v2.6.0
 github.com/d5/tengo/v2
 github.com/d5/tengo/v2/parser
@@ -33,11 +35,17 @@ github.com/d5/tengo/v2/token
 github.com/davecgh/go-spew/spew
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
 github.com/dgrijalva/jwt-go
+# github.com/dyatlov/go-opengraph v0.0.0-20180429202543-816b6608b3c8
+github.com/dyatlov/go-opengraph/opengraph
+# github.com/francoispqt/gojay v1.2.13
+github.com/francoispqt/gojay
 # github.com/fsnotify/fsnotify v1.4.9
 github.com/fsnotify/fsnotify
+# github.com/go-asn1-ber/asn1-ber v1.4.1
+github.com/go-asn1-ber/asn1-ber
 # github.com/go-telegram-bot-api/telegram-bot-api v1.0.1-0.20200524105306-7434b0456e81
 github.com/go-telegram-bot-api/telegram-bot-api
-# github.com/golang/protobuf v1.3.2
+# github.com/golang/protobuf v1.4.2
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go/descriptor
 # github.com/gomarkdown/markdown v0.0.0-20200609195525-3f9352745725
@@ -49,6 +57,8 @@ github.com/gomarkdown/markdown/parser
 github.com/google/gops/agent
 github.com/google/gops/internal
 github.com/google/gops/signal
+# github.com/google/uuid v1.1.1
+github.com/google/uuid
 # github.com/gopackage/ddp v0.0.0-20170117053602-652027933df4
 github.com/gopackage/ddp
 # github.com/gorilla/schema v1.1.0
@@ -107,16 +117,24 @@ github.com/matterbridge/gomatrix
 github.com/matterbridge/gozulipbot
 # github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba
 github.com/matterbridge/logrus-prefixed-formatter
-# github.com/mattermost/mattermost-server v5.5.0+incompatible
-github.com/mattermost/mattermost-server/mlog
-github.com/mattermost/mattermost-server/model
-github.com/mattermost/mattermost-server/utils/jsonutils
-github.com/mattermost/mattermost-server/utils/markdown
+# github.com/mattermost/go-i18n v1.11.0
+github.com/mattermost/go-i18n/i18n
+github.com/mattermost/go-i18n/i18n/bundle
+github.com/mattermost/go-i18n/i18n/language
+github.com/mattermost/go-i18n/i18n/translation
+# github.com/mattermost/ldap v0.0.0-20191128190019-9f62ba4b8d4d
+github.com/mattermost/ldap
+# github.com/mattermost/mattermost-server/v5 v5.25.2
+github.com/mattermost/mattermost-server/v5/mlog
+github.com/mattermost/mattermost-server/v5/model
+github.com/mattermost/mattermost-server/v5/services/timezones
+github.com/mattermost/mattermost-server/v5/utils/jsonutils
+github.com/mattermost/mattermost-server/v5/utils/markdown
 # github.com/mattn/go-colorable v0.1.6
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.12
 github.com/mattn/go-isatty
-# github.com/mattn/go-runewidth v0.0.8
+# github.com/mattn/go-runewidth v0.0.9
 github.com/mattn/go-runewidth
 # github.com/mattn/godown v0.0.0-20200217152941-afc959f6a561
 github.com/mattn/godown
@@ -124,7 +142,7 @@ github.com/mattn/godown
 github.com/mgutz/ansi
 # github.com/missdeer/golib v1.0.3
 github.com/missdeer/golib/ic
-# github.com/mitchellh/mapstructure v1.1.2
+# github.com/mitchellh/mapstructure v1.2.3
 github.com/mitchellh/mapstructure
 # github.com/monaco-io/request v1.0.3
 github.com/monaco-io/request
@@ -134,19 +152,14 @@ github.com/mreiferson/go-httpclient
 github.com/mrexodia/wray
 # github.com/nelsonken/gomf v0.0.0-20180504123937-a9dd2f9deae9
 github.com/nelsonken/gomf
-# github.com/nicksnyder/go-i18n v1.4.0
-github.com/nicksnyder/go-i18n/i18n
-github.com/nicksnyder/go-i18n/i18n/bundle
-github.com/nicksnyder/go-i18n/i18n/language
-github.com/nicksnyder/go-i18n/i18n/translation
 # github.com/paulrosania/go-charset v0.0.0-20190326053356-55c9d7a5834c
 github.com/paulrosania/go-charset/charset
 github.com/paulrosania/go-charset/data
-# github.com/pborman/uuid v0.0.0-20160216163710-c55201b03606
+# github.com/pborman/uuid v1.2.0
 github.com/pborman/uuid
-# github.com/pelletier/go-toml v1.2.0
+# github.com/pelletier/go-toml v1.7.0
 github.com/pelletier/go-toml
-# github.com/pkg/errors v0.8.1
+# github.com/pkg/errors v0.9.1
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
@@ -177,14 +190,14 @@ github.com/slack-go/slack
 github.com/slack-go/slack/internal/errorsx
 github.com/slack-go/slack/internal/timex
 github.com/slack-go/slack/slackutilsx
-# github.com/spf13/afero v1.1.2
+# github.com/spf13/afero v1.2.2
 github.com/spf13/afero
 github.com/spf13/afero/mem
-# github.com/spf13/cast v1.3.0
+# github.com/spf13/cast v1.3.1
 github.com/spf13/cast
-# github.com/spf13/jwalterweatherman v1.0.0
+# github.com/spf13/jwalterweatherman v1.1.0
 github.com/spf13/jwalterweatherman
-# github.com/spf13/pflag v1.0.3
+# github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
 # github.com/spf13/viper v1.7.0
 github.com/spf13/viper
@@ -208,11 +221,11 @@ github.com/yaegashi/msgraph.go/jsonx
 github.com/yaegashi/msgraph.go/msauth
 # github.com/zfjagann/golang-ring v0.0.0-20190304061218-d34796e0a6c2
 github.com/zfjagann/golang-ring
-# go.uber.org/atomic v1.4.0
+# go.uber.org/atomic v1.6.0
 go.uber.org/atomic
-# go.uber.org/multierr v1.1.0
+# go.uber.org/multierr v1.5.0
 go.uber.org/multierr
-# go.uber.org/zap v1.10.0
+# go.uber.org/zap v1.15.0
 go.uber.org/zap
 go.uber.org/zap/buffer
 go.uber.org/zap/internal/bufferpool
@@ -241,7 +254,7 @@ golang.org/x/image/riff
 golang.org/x/image/vp8
 golang.org/x/image/vp8l
 golang.org/x/image/webp
-# golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e
+# golang.org/x/net v0.0.0-20200501053045-e0ff5e5a1de5
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/html
@@ -270,6 +283,10 @@ golang.org/x/text/encoding/japanese
 golang.org/x/text/encoding/korean
 golang.org/x/text/encoding/simplifiedchinese
 golang.org/x/text/encoding/traditionalchinese
+golang.org/x/text/internal/language
+golang.org/x/text/internal/language/compact
+golang.org/x/text/internal/tag
+golang.org/x/text/language
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
@@ -288,7 +305,36 @@ google.golang.org/appengine/internal/log
 google.golang.org/appengine/internal/remote_api
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
-# gopkg.in/ini.v1 v1.51.0
+# google.golang.org/protobuf v1.23.0
+google.golang.org/protobuf/encoding/prototext
+google.golang.org/protobuf/encoding/protowire
+google.golang.org/protobuf/internal/descfmt
+google.golang.org/protobuf/internal/descopts
+google.golang.org/protobuf/internal/detrand
+google.golang.org/protobuf/internal/encoding/defval
+google.golang.org/protobuf/internal/encoding/messageset
+google.golang.org/protobuf/internal/encoding/tag
+google.golang.org/protobuf/internal/encoding/text
+google.golang.org/protobuf/internal/errors
+google.golang.org/protobuf/internal/fieldnum
+google.golang.org/protobuf/internal/fieldsort
+google.golang.org/protobuf/internal/filedesc
+google.golang.org/protobuf/internal/filetype
+google.golang.org/protobuf/internal/flags
+google.golang.org/protobuf/internal/genname
+google.golang.org/protobuf/internal/impl
+google.golang.org/protobuf/internal/mapsort
+google.golang.org/protobuf/internal/pragma
+google.golang.org/protobuf/internal/set
+google.golang.org/protobuf/internal/strs
+google.golang.org/protobuf/internal/version
+google.golang.org/protobuf/proto
+google.golang.org/protobuf/reflect/protoreflect
+google.golang.org/protobuf/reflect/protoregistry
+google.golang.org/protobuf/runtime/protoiface
+google.golang.org/protobuf/runtime/protoimpl
+google.golang.org/protobuf/types/descriptorpb
+# gopkg.in/ini.v1 v1.55.0
 gopkg.in/ini.v1
 # gopkg.in/natefinch/lumberjack.v2 v2.0.0
 gopkg.in/natefinch/lumberjack.v2

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/mattermost/mattermost-server/model"
+	"github.com/mattermost/mattermost-server/v5/model"
 )
 
 // GetChannels returns all channels we're members off
@@ -167,7 +167,7 @@ func (m *MMClient) JoinChannel(channelId string) error { //nolint:golint
 }
 
 func (m *MMClient) UpdateChannelsTeam(teamID string) error {
-	mmchannels, resp := m.Client.GetChannelsForTeamForUser(teamID, m.User.Id, "")
+	mmchannels, resp := m.Client.GetChannelsForTeamForUser(teamID, m.User.Id, false, "")
 	if resp.Error != nil {
 		return errors.New(resp.Error.DetailedError)
 	}
