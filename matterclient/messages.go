@@ -3,7 +3,7 @@ package matterclient
 import (
 	"strings"
 
-	"github.com/mattermost/mattermost-server/model"
+	"github.com/mattermost/mattermost-server/v5/model"
 )
 
 func (m *MMClient) parseActionPost(rmsg *Message) {

@@ -13,7 +13,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/jpillora/backoff"
-	"github.com/mattermost/mattermost-server/model"
+	"github.com/mattermost/mattermost-server/v5/model"
 )
 
 func (m *MMClient) doLogin(firstConnection bool, b *backoff.Backoff) error {
@@ -154,7 +154,7 @@ func (m *MMClient) initUser() error {
 
 		t := &Team{Team: team, Users: usermap, Id: team.Id}
 
-		mmchannels, resp := m.Client.GetChannelsForTeamForUser(team.Id, m.User.Id, "")
+		mmchannels, resp := m.Client.GetChannelsForTeamForUser(team.Id, m.User.Id, false, "")
 		if resp.Error != nil {
 			return resp.Error
 		}
