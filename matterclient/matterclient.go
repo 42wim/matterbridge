@@ -69,6 +69,7 @@ type MMClient struct {
 	logger     *logrus.Entry
 	rootLogger *logrus.Logger
 	lruCache   *lru.Cache
+	allevents  bool
 }
 
 // New will instantiate a new Matterclient with the specified login details without connecting.
@@ -117,6 +118,10 @@ func (m *MMClient) SetLogLevel(level string) {
 	} else {
 		m.rootLogger.SetLevel(l)
 	}
+}
+
+func (m *MMClient) EnableAllEvents() {
+	m.allevents = true
 }
 
 // Login tries to connect the client with the loging details with which it was initialized.
@@ -219,6 +224,10 @@ func (m *MMClient) WsReceiver() {
 					m.MessageChan <- msg
 					continue
 				}
+			}
+			if m.allevents {
+				m.MessageChan <- msg
+				continue
 			}
 			switch msg.Raw.Event {
 			case model.WEBSOCKET_EVENT_USER_ADDED,
