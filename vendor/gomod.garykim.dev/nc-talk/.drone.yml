@@ -7,6 +7,10 @@ steps:
     image: golangci/golangci-lint:latest-alpine
     commands:
       - golangci-lint run
+  - name: test
+    image: golang:1.13
+    commands:
+      - go test ./...
   - name: build-test
     image: golang:1.13
     commands:

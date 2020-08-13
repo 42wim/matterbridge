@@ -1394,6 +1394,11 @@ ShowTopicChange=false
 # Url of your Nextcloud server
 Server = "https://cloud.youdomain.me"
 
+# Enable to not verify the certificate on your Nextcloud server.
+# e.g. when using selfsigned certificates
+# OPTIONAL (default false)
+SkipTLSVerify=true
+
 # Username of the bot
 Login = "talkuser"
 

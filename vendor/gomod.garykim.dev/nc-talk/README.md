@@ -15,6 +15,11 @@ GO111MODULE=on go get gomod.garykim.dev/nc-talk
 
 Check out the documentation for the package [here](https://pkg.go.dev/gomod.garykim.dev/nc-talk).
 
+
+### Software using this library
+
+* [Matterbridge](https://github.com/42wim/matterbridge)
+
 ### License
 
 Copyright © 2020 Gary Kim &lt;<gary@garykim.dev>&gt;, All Rights Reserved

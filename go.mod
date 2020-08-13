@@ -42,14 +42,14 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	github.com/slack-go/slack v0.6.5
 	github.com/spf13/viper v1.7.0
-	github.com/stretchr/testify v1.5.1
+	github.com/stretchr/testify v1.6.1
 	github.com/writeas/go-strip-markdown v2.0.1+incompatible
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2 // indirect
 	github.com/yaegashi/msgraph.go v0.1.3
 	github.com/zfjagann/golang-ring v0.0.0-20190304061218-d34796e0a6c2
 	golang.org/x/image v0.0.0-20200618115811-c13761719519
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	gomod.garykim.dev/nc-talk v0.0.2
+	gomod.garykim.dev/nc-talk v0.1.1
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 )
 

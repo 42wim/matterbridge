@@ -12,14 +12,14 @@ type requestURL struct {
 func (ru *requestURL) EncodeURL() (err error) {
 	ru.httpURL, err = url.Parse(ru.urlString)
 	if err != nil {
-		return err
+		return
 	}
 	query := ru.httpURL.Query()
 	for k := range ru.parameters {
 		query.Set(k, ru.parameters[k])
 	}
 	ru.httpURL.RawQuery = query.Encode()
-	return err
+	return
 }
 
 // String return example: https://www.google.com/search?a=1&b=2

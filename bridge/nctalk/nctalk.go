@@ -2,6 +2,7 @@ package nctalk
 
 import (
 	"context"
+	"crypto/tls"
 	"strconv"
 
 	"github.com/42wim/matterbridge/bridge"
@@ -31,8 +32,18 @@ type Broom struct {
 
 func (b *Btalk) Connect() error {
 	b.Log.Info("Connecting")
-	b.user = talk.NewUser(b.GetString("Server"), b.GetString("Login"), b.GetString("Password"))
-	_, err := b.user.Capabilities()
+	tconfig := &user.TalkUserConfig{
+		TLSConfig: &tls.Config{
+			InsecureSkipVerify: b.GetBool("SkipTLSVerify"), //nolint:gosec
+		},
+	}
+	var err error
+	b.user, err = user.NewUser(b.GetString("Server"), b.GetString("Login"), b.GetString("Password"), tconfig)
+	if err != nil {
+		b.Log.Error("Config could not be used")
+		return err
+	}
+	_, err = b.user.Capabilities()
 	if err != nil {
 		b.Log.Error("Cannot Connect")
 		return err
