@@ -59,6 +59,7 @@ func (q *Queue) EventsChan() (chan EventMessage, func()) {
 			case err == BackoffError:
 				time.Sleep(time.Until(backoffTime))
 				atomic.AddInt64(&q.Bot.Retries, 1)
+				continue
 			case err == UnauthorizedError:
 				// TODO? have error channel when ending the continuously running process?
 				return
@@ -81,7 +82,7 @@ func (q *Queue) EventsChan() (chan EventMessage, func()) {
 	return out, endFunc
 }
 
-// EventsCallback will repeatedly call provided callback function with
+// EventsCallback will repeatedly call the provided callback function with
 // the output of continual queue.GetEvents calls.
 // It returns a function which can be called to end the calls.
 //
@@ -107,6 +108,7 @@ func (q *Queue) EventsCallback(fn func(EventMessage, error)) func() {
 			case err == BackoffError:
 				time.Sleep(time.Until(backoffTime))
 				atomic.AddInt64(&q.Bot.Retries, 1)
+				continue
 			case err == UnauthorizedError:
 				// TODO? have error channel when ending the continuously running process?
 				return
@@ -221,9 +223,19 @@ func (q *Queue) ParseEventMessages(rawEventResponse []byte) ([]EventMessage, err
 	}
 
 	messages := []EventMessage{}
+	newLastEventID := 0
 	for _, event := range events {
-		// if the event is a heartbeat, return a special error
+		// Update the lastEventID
+		var id int
+		json.Unmarshal(event["id"], &id)
+		if id > newLastEventID {
+			newLastEventID = id
+		}
+
+		// If the event is a heartbeat, there won't be any more events.
+		// So update the last event id and return a special error.
 		if string(event["type"]) == `"heartbeat"` {
+			q.LastEventID = newLastEventID
 			return nil, HeartbeatError
 		}
 		var msg EventMessage
@@ -235,6 +247,8 @@ func (q *Queue) ParseEventMessages(rawEventResponse []byte) ([]EventMessage, err
 		msg.Queue = q
 		messages = append(messages, msg)
 	}
+
+	q.LastEventID = newLastEventID
 
 	return messages, nil
 }
