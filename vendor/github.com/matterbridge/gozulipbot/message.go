@@ -194,8 +194,10 @@ func (b *Bot) UpdateMessage(id string, content string) (*http.Response, error) {
 
 // React adds an emoji reaction to an EventMessage.
 func (b *Bot) React(e EventMessage, emoji string) (*http.Response, error) {
-	url := fmt.Sprintf("messages/%d/emoji_reactions/%s", e.ID, emoji)
-	req, err := b.constructRequest("PUT", url, "")
+	requestURL := fmt.Sprintf("messages/%d/reactions", e.ID)
+	values := url.Values{}
+	values.Set("emoji_name", emoji)
+	req, err := b.constructRequest("POST", requestURL, values.Encode())
 	if err != nil {
 		return nil, err
 	}
@@ -204,8 +206,10 @@ func (b *Bot) React(e EventMessage, emoji string) (*http.Response, error) {
 
 // Unreact removes an emoji reaction from an EventMessage.
 func (b *Bot) Unreact(e EventMessage, emoji string) (*http.Response, error) {
-	url := fmt.Sprintf("messages/%d/emoji_reactions/%s", e.ID, emoji)
-	req, err := b.constructRequest("DELETE", url, "")
+	requestURL := fmt.Sprintf("messages/%d/reactions", e.ID)
+	values := url.Values{}
+	values.Set("emoji_name", emoji)
+	req, err := b.constructRequest("DELETE", requestURL, values.Encode())
 	if err != nil {
 		return nil, err
 	}

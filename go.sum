@@ -354,8 +354,8 @@ github.com/matterbridge/go-xmpp v0.0.0-20200418225040-c8a3a57b4050 h1:kWkP1lXpkv
 github.com/matterbridge/go-xmpp v0.0.0-20200418225040-c8a3a57b4050/go.mod h1:ECDRehsR9TYTKCAsRS8/wLeOk6UUqDydw47ln7wG41Q=
 github.com/matterbridge/gomatrix v0.0.0-20200209224845-c2104d7936a6 h1:Kl65VJv38HjYFnnwH+MP6Z8hcJT5UHuSpHVU5vW1HH0=
 github.com/matterbridge/gomatrix v0.0.0-20200209224845-c2104d7936a6/go.mod h1:+jWeaaUtXQbBRdKYWfjW6JDDYiI2XXE+3NnTjW5kg8g=
-github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18 h1:fLhwXtWGtfTgZVxHG1lcKjv+re7dRwyyuYFNu69xdho=
-github.com/matterbridge/gozulipbot v0.0.0-20190212232658-7aa251978a18/go.mod h1:yAjnZ34DuDyPHMPHHjOsTk/FefW4JJjoMMCGt/8uuQA=
+github.com/matterbridge/gozulipbot v0.0.0-20200820220548-be5824faa913 h1:5UGr9fLsvAvhjP6i5XJmd0ZIwYVR2gZCzU1lJZ7wfLY=
+github.com/matterbridge/gozulipbot v0.0.0-20200820220548-be5824faa913/go.mod h1:yAjnZ34DuDyPHMPHHjOsTk/FefW4JJjoMMCGt/8uuQA=
 github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba h1:XleOY4IjAEIcxAh+IFwT5JT5Ze3RHiYz6m+4ZfZ0rc0=
 github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba/go.mod h1:iXGEotOvwI1R1SjLxRc+BF5rUORTMtE0iMZBT2lxqAU=
 github.com/mattermost/go-i18n v1.11.0 h1:1hLKqn/ZvhZ80OekjVPGYcCrBfMz+YxNNgqS+beL7zE=
