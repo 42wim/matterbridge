@@ -1,3 +1,23 @@
+# v1.18.1
+
+## New features
+
+- telegram: Support Telegram animated stickers (tgs) format (#1173). See https://github.com/42wim/matterbridge/wiki/Settings#mediaConverttgs for more info
+
+## Enhancements
+
+- matrix: Remove HTML formatting for push messages (#1188) (#1189)
+- mattermost: Use mattermost v5 module (#1192)
+
+## Bugfix
+
+- whatsapp: Handle panic in whatsapp. Fixes #1180 (#1184)
+- nctalk: Fix Nextcloud Talk connection failure (#1179)
+- matrix: Sleep when ratelimited on joins (matrix). Fixes #1201 (#1206)
+
+This release couldn't exist without the following contributors:
+@42wim, @BenWiederhake, @Dellle, @gary-kim
+
 # v1.18.0
 
 ## New features
