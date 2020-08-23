@@ -1540,6 +1540,8 @@ Buffer=1000
 
 #Bearer token used for authentication
 #curl -H "Authorization: Bearer token" http://localhost:4242/api/messages
+# https://github.com/vi/websocat
+# websocat -H="Authorization: Bearer token" ws://localhost:4242/api/websocket
 #OPTIONAL (no authorization if token is empty)
 Token="mytoken"
 

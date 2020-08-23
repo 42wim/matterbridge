@@ -338,5 +338,7 @@ google.golang.org/protobuf/types/descriptorpb
 gopkg.in/ini.v1
 # gopkg.in/natefinch/lumberjack.v2 v2.0.0
 gopkg.in/natefinch/lumberjack.v2
+# gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
+gopkg.in/olahol/melody.v1
 # gopkg.in/yaml.v2 v2.2.8
 gopkg.in/yaml.v2
