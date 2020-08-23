@@ -2,12 +2,14 @@ package bmatrix
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html"
 	"mime"
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -23,6 +25,12 @@ type Bmatrix struct {
 	htmlTag            *regexp.Regexp
 	htmlReplacementTag *regexp.Regexp
 	*bridge.Config
+}
+
+type httpError struct {
+	Errcode      string `json:"errcode"`
+	Err          string `json:"error"`
+	RetryAfterMs int    `json:"retry_after_ms"`
 }
 
 func New(cfg *bridge.Config) bridge.Bridger {
@@ -60,14 +68,25 @@ func (b *Bmatrix) Disconnect() error {
 }
 
 func (b *Bmatrix) JoinChannel(channel config.ChannelInfo) error {
+retry:
 	resp, err := b.mc.JoinRoom(channel.Name, "", nil)
 	if err != nil {
+		httpErr := handleError(err)
+		if httpErr.Errcode == "M_LIMIT_EXCEEDED" {
+			b.Log.Infof("getting ratelimited by matrix, sleeping approx %d seconds before joining %s", httpErr.RetryAfterMs/1000, channel.Name)
+			time.Sleep((time.Duration(httpErr.RetryAfterMs) * time.Millisecond))
+
+			goto retry
+		}
+
 		return err
 	}
+
 	b.Lock()
 	b.RoomMap[resp.RoomID] = channel.Name
 	b.Unlock()
-	return err
+
+	return nil
 }
 
 func (b *Bmatrix) Send(msg config.Message) (string, error) {
@@ -393,4 +412,23 @@ func (b *Bmatrix) getAvatarURL(sender string) string {
 		url += "?width=37&height=37&method=crop"
 	}
 	return url
+}
+
+func handleError(err error) *httpError {
+	mErr, ok := err.(matrix.HTTPError)
+	if !ok {
+		return &httpError{
+			Err: "not a HTTPError",
+		}
+	}
+
+	var httpErr httpError
+
+	if err := json.Unmarshal(mErr.Contents, &httpErr); err != nil {
+		return &httpError{
+			Err: "unmarshal failed",
+		}
+	}
+
+	return &httpErr
 }
