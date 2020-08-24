@@ -146,8 +146,8 @@ func (b *Bzulip) handleQueue() error {
 			b.Log.Debugf("<= Sending message from %s on %s to gateway", rmsg.Username, b.Account)
 			b.Log.Debugf("<= Message is %#v", rmsg)
 			b.Remote <- rmsg
-			b.q.LastEventID = m.ID
 		}
+
 		time.Sleep(time.Second * 3)
 	}
 }
