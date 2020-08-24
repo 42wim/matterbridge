@@ -78,7 +78,7 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 	senderJID := message.Info.SenderJid
 	if len(senderJID) == 0 {
 		// TODO workaround till https://github.com/Rhymen/go-whatsapp/issues/86 resolved
-		if message.Info.Source != nil {
+		if message.Info.Source != nil && message.Info.Source.Participant != nil {
 			senderJID = *message.Info.Source.Participant
 		}
 	}

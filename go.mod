@@ -5,7 +5,7 @@ require (
 	github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f
 	github.com/Jeffail/gabs v1.1.1 // indirect
 	github.com/Philipp15b/go-steam v1.0.1-0.20190816133340-b04c5a83c1c0
-	github.com/Rhymen/go-whatsapp v0.1.1-0.20200421062035-31e8111ac334
+	github.com/Rhymen/go-whatsapp v0.1.1-0.20200818115958-f07a700b9819
 	github.com/d5/tengo/v2 v2.6.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/fsnotify/fsnotify v1.4.9
