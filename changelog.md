@@ -1,3 +1,13 @@
+# v1.18.2
+
+## Bugfix
+
+- zulip: Fix error loop (zulip) (#1210)
+- whatsapp: Update whatsapp vendor and fix a panic (#1209)
+
+This release couldn't exist without the following contributors:
+@SuperSandro2000, @42wim
+
 # v1.18.1
 
 ## New features
