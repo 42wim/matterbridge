@@ -44,7 +44,7 @@ func New(cfg *bridge.Config) bridge.Bridger {
 			b.Log.Errorf("failed to decode message from byte[] '%s'", string(msg))
 			return
 		}
-		b.handleWebsocketMessage(message)
+		b.handleWebsocketMessage(message, s)
 	})
 	b.mrouter.HandleConnect(func(session *melody.Session) {
 		greet := b.getGreeting()
@@ -178,12 +178,19 @@ func (b *API) handleStream(c echo.Context) error {
 	}
 }
 
-func (b *API) handleWebsocketMessage(message config.Message) {
+func (b *API) handleWebsocketMessage(message config.Message, s *melody.Session) {
 	message.Channel = "api"
 	message.Protocol = "api"
 	message.Account = b.Account
 	message.ID = ""
 	message.Timestamp = time.Now()
+
+	data, err := json.Marshal(message)
+	if err != nil {
+		b.Log.Errorf("failed to encode message for loopback '%v'", message)
+		return
+	}
+	_ = b.mrouter.BroadcastOthers(data, s)
 
 	b.Log.Debugf("Sending websocket message from %s on %s to gateway", message.Username, "api")
 	b.Remote <- message
