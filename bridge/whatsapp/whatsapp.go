@@ -184,7 +184,7 @@ func (b *Bwhatsapp) Disconnect() error {
 }
 
 func isGroupJid(identifier string) bool {
-	return strings.HasSuffix(identifier, "@g.us") || strings.HasSuffix(identifier, "@temp")
+	return strings.HasSuffix(identifier, "@g.us") || strings.HasSuffix(identifier, "@temp") || strings.HasSuffix(identifier, "@broadcast")
 }
 
 // JoinChannel Join a WhatsApp group specified in gateway config as channel='number-id@g.us' or channel='Channel name'
