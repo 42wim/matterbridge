@@ -20,11 +20,11 @@ require (
 	github.com/keybase/go-keybase-chat-bot v0.0.0-20200505163032-5cacf52379da
 	github.com/labstack/echo/v4 v4.1.16
 	github.com/lrstanley/girc v0.0.0-20190801035559-4fc93959e1a7
+	github.com/matrix-org/gomatrix v0.0.0-20200827122206-7dd5e2a05bcd
 	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20200411204219-d5c18ce75048
 	github.com/matterbridge/discordgo v0.21.2-0.20200718144317-01fe5db6c78d
 	github.com/matterbridge/emoji v2.1.1-0.20191117213217-af507f6b02db+incompatible
 	github.com/matterbridge/go-xmpp v0.0.0-20200418225040-c8a3a57b4050
-	github.com/matterbridge/gomatrix v0.0.0-20200209224845-c2104d7936a6
 	github.com/matterbridge/gozulipbot v0.0.0-20200820220548-be5824faa913
 	github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba
 	github.com/mattermost/mattermost-server/v5 v5.25.2
