@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"io/ioutil"
+	"strconv"
 	"time"
 
 	"github.com/monaco-io/request"
@@ -98,16 +99,16 @@ func (t *TalkRoom) ReceiveMessages(ctx context.Context) (chan ocs.TalkRoomMessag
 		"includeLastKnown": "0",
 	}
 	lastKnown := ""
-	client := t.User.RequestClient(request.Client{
-		URL:     url,
-		Params:  requestParam,
-		Timeout: time.Second * 60,
-	})
-	res, err := client.Resp()
+	res, err := t.User.GetRooms()
 	if err != nil {
 		return nil, err
 	}
-	lastKnown = res.Header.Get("X-Chat-Last-Given")
+	for _, r := range *res {
+		if r.Token == t.Token {
+			lastKnown = strconv.Itoa(r.LastReadMessage)
+			break
+		}
+	}
 	go func() {
 		for {
 			if ctx.Err() != nil {

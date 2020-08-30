@@ -28,6 +28,7 @@ import (
 
 const (
 	ocsCapabilitiesEndpoint = "/ocs/v2.php/cloud/capabilities"
+	ocsRoomsEndpoint        = "/ocs/v2.php/apps/spreed/api/v2/room"
 )
 
 var (
@@ -84,6 +85,35 @@ type Capabilities struct {
 	ChatReferenceID        bool `ocscapability:"chat-reference-id"`
 }
 
+// RoomInfo contains information about a room
+type RoomInfo struct {
+	Token                 string                  `json:"token"`
+	Name                  string                  `json:"name"`
+	DisplayName           string                  `json:"displayName"`
+	SessionID             string                  `json:"sessionId"`
+	ObjectType            string                  `json:"objectType"`
+	ObjectID              string                  `json:"objectId"`
+	Type                  int                     `json:"type"`
+	ParticipantType       int                     `json:"participantType"`
+	ParticipantFlags      int                     `json:"participantFlags"`
+	ReadOnly              int                     `json:"readOnly"`
+	LastPing              int                     `json:"lastPing"`
+	LastActivity          int                     `json:"lastActivity"`
+	NotificationLevel     int                     `json:"notificationLevel"`
+	LobbyState            int                     `json:"lobbyState"`
+	LobbyTimer            int                     `json:"lobbyTimer"`
+	UnreadMessages        int                     `json:"unreadMessages"`
+	LastReadMessage       int                     `json:"lastReadMessage"`
+	HasPassword           bool                    `json:"hasPassword"`
+	HasCall               bool                    `json:"hasCall"`
+	CanStartCall          bool                    `json:"canStartCall"`
+	CanDeleteConversation bool                    `json:"canDeleteConversation"`
+	CanLeaveConversation  bool                    `json:"canLeaveConversation"`
+	IsFavorite            bool                    `json:"isFavorite"`
+	UnreadMention         bool                    `json:"unreadMention"`
+	LastMessage           ocs.TalkRoomMessageData `json:"lastMessage"`
+}
+
 // NewUser returns a TalkUser instance
 // The url should be the full URL of the Nextcloud instance (e.g. https://cloud.mydomain.me)
 func NewUser(url string, username string, password string, config *TalkUserConfig) (*TalkUser, error) {
@@ -122,6 +152,30 @@ func (t *TalkUser) RequestClient(client request.Client) *request.Client {
 	}
 
 	return &client
+}
+
+// GetRooms returns a list of all rooms the user is in
+func (t *TalkUser) GetRooms() (*[]RoomInfo, error) {
+	client := t.RequestClient(request.Client{
+		URL: ocsRoomsEndpoint,
+	})
+	res, err := client.Do()
+	if err != nil {
+		return nil, err
+	}
+
+	var roomsRequest struct {
+		OCS struct {
+			Data []RoomInfo `json:"data"`
+		} `json:"ocs"`
+	}
+
+	err = json.Unmarshal(res.Data, &roomsRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	return &roomsRequest.OCS.Data, nil
 }
 
 // Capabilities returns an instance of Capabilities that describes what the Nextcloud Talk instance supports
