@@ -45,8 +45,8 @@ func (event *Event) MessageType() (msgtype string, ok bool) {
 type TextMessage struct {
 	MsgType       string `json:"msgtype"`
 	Body          string `json:"body"`
-	Format        string `json:"format,omitempty"`
-	FormattedBody string `json:"formatted_body,omitempty"`
+	FormattedBody string `json:"formatted_body"`
+	Format        string `json:"format"`
 }
 
 // ThumbnailInfo contains info about an thumbnail image - http://matrix.org/docs/spec/client_server/r0.2.0.html#m-image
@@ -78,21 +78,6 @@ type VideoInfo struct {
 	Size          uint          `json:"size,omitempty"`
 }
 
-// AudioInfo contains info about a file - http://matrix.org/docs/spec/client_server/r0.2.0.html#m-audio
-type AudioInfo struct {
-	Mimetype string `json:"mimetype,omitempty"`
-	Size     uint   `json:"size,omitempty"`
-	Duration uint   `json:"duration,omitempty"`
-}
-
-// FileInfo contains info about a file - http://matrix.org/docs/spec/client_server/r0.2.0.html#m-file
-type FileInfo struct {
-	Mimetype      string    `json:"mimetype,omitempty"`
-	ThumbnailInfo ImageInfo `json:"thumbnail_info"`
-	ThumbnailURL  string    `json:"thumbnail_url,omitempty"`
-	Size          uint      `json:"size,omitempty"`
-}
-
 // VideoMessage is an m.video  - http://matrix.org/docs/spec/client_server/r0.2.0.html#m-video
 type VideoMessage struct {
 	MsgType string    `json:"msgtype"`
@@ -109,28 +94,53 @@ type ImageMessage struct {
 	Info    ImageInfo `json:"info"`
 }
 
-// AudioMessage is an m.audio event
-type AudioMessage struct {
-	MsgType string    `json:"msgtype"`
-	Body    string    `json:"body"`
-	URL     string    `json:"url"`
-	Info    AudioInfo `json:"info"`
-}
-
-// FileMessage is a m.file event
-type FileMessage struct {
-	MsgType string   `json:"msgtype"`
-	Body    string   `json:"body"`
-	URL     string   `json:"url"`
-	Info    FileInfo `json:"info"`
-}
-
 // An HTMLMessage is the contents of a Matrix HTML formated message event.
 type HTMLMessage struct {
 	Body          string `json:"body"`
 	MsgType       string `json:"msgtype"`
 	Format        string `json:"format"`
 	FormattedBody string `json:"formatted_body"`
+}
+
+// FileInfo contains info about an file - http://matrix.org/docs/spec/client_server/r0.2.0.html#m-file
+type FileInfo struct {
+	Mimetype string `json:"mimetype,omitempty"`
+	Size     uint   `json:"size,omitempty"` //filesize in bytes
+}
+
+// FileMessage is an m.file event - http://matrix.org/docs/spec/client_server/r0.2.0.html#m-file
+type FileMessage struct {
+	MsgType       string    `json:"msgtype"`
+	Body          string    `json:"body"`
+	URL           string    `json:"url"`
+	Filename      string    `json:"filename"`
+	Info          FileInfo  `json:"info,omitempty"`
+	ThumbnailURL  string    `json:"thumbnail_url,omitempty"`
+	ThumbnailInfo ImageInfo `json:"thumbnail_info,omitempty"`
+}
+
+// LocationMessage is an m.location event - http://matrix.org/docs/spec/client_server/r0.2.0.html#m-location
+type LocationMessage struct {
+	MsgType       string    `json:"msgtype"`
+	Body          string    `json:"body"`
+	GeoURI        string    `json:"geo_uri"`
+	ThumbnailURL  string    `json:"thumbnail_url,omitempty"`
+	ThumbnailInfo ImageInfo `json:"thumbnail_info,omitempty"`
+}
+
+// AudioInfo contains info about an file - http://matrix.org/docs/spec/client_server/r0.2.0.html#m-audio
+type AudioInfo struct {
+	Mimetype string `json:"mimetype,omitempty"`
+	Size     uint   `json:"size,omitempty"`     //filesize in bytes
+	Duration uint   `json:"duration,omitempty"` //audio duration in ms
+}
+
+// AudioMessage is an m.audio event - http://matrix.org/docs/spec/client_server/r0.2.0.html#m-audio
+type AudioMessage struct {
+	MsgType string    `json:"msgtype"`
+	Body    string    `json:"body"`
+	URL     string    `json:"url"`
+	Info    AudioInfo `json:"info,omitempty"`
 }
 
 var htmlRegex = regexp.MustCompile("<[^<]+?>")

@@ -64,6 +64,10 @@ func (s *DefaultSyncer) ProcessResponse(res *RespSync, since string) (err error)
 			event.RoomID = roomID
 			s.notifyListeners(&event)
 		}
+		for _, event := range roomData.Ephemeral.Events {
+			event.RoomID = roomID
+			s.notifyListeners(&event)
+		}
 	}
 	for roomID, roomData := range res.Rooms.Invite {
 		room := s.getOrCreateRoom(roomID)

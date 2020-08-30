@@ -344,6 +344,8 @@ github.com/magiconair/properties v1.8.1/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czP
 github.com/mailru/easyjson v0.0.0-20190312143242-1de009706dbe/go.mod h1:C1wdFJiN94OJF2b5HbByQZoLdCWB1Yqtg26g4irojpc=
 github.com/mailru/easyjson v0.7.1/go.mod h1:KAzv3t3aY1NaHWoQz1+4F1ccyAH66Jk7yos7ldAVICs=
 github.com/marstr/guid v0.0.0-20170427235115-8bdf7d1a087c/go.mod h1:74gB1z2wpxxInTG6yaqA7KrtM0NZ+RbrcqDvYHefzho=
+github.com/matrix-org/gomatrix v0.0.0-20200827122206-7dd5e2a05bcd h1:xVrqJK3xHREMNjwjljkAUaadalWc0rRbmVuQatzmgwg=
+github.com/matrix-org/gomatrix v0.0.0-20200827122206-7dd5e2a05bcd/go.mod h1:/gBX06Kw0exX1HrwmoBibFA98yBk/jxKpGVeyQbff+s=
 github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20200411204219-d5c18ce75048 h1:B9HaistmV+MD8/33BXmZe1zPIn+RImAFVXNNSOrwU2E=
 github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20200411204219-d5c18ce75048/go.mod h1:c6MxwqHD+0HvtAJjsHMIdPCiAwGiQwPRPTp69ACMg8A=
 github.com/matterbridge/discordgo v0.21.2-0.20200718144317-01fe5db6c78d h1:NBckP4nw7qVspbt7cOZYsrOrEbq7tATdMjSjc1hW63A=
@@ -352,8 +354,6 @@ github.com/matterbridge/emoji v2.1.1-0.20191117213217-af507f6b02db+incompatible 
 github.com/matterbridge/emoji v2.1.1-0.20191117213217-af507f6b02db+incompatible/go.mod h1:igE6rUAn3jai2wCdsjFHfhUoekjrFthoEjFObKKwSb4=
 github.com/matterbridge/go-xmpp v0.0.0-20200418225040-c8a3a57b4050 h1:kWkP1lXpkvtoNL08jkP3XQH/zvDOEXJpdCJd/DlIvMw=
 github.com/matterbridge/go-xmpp v0.0.0-20200418225040-c8a3a57b4050/go.mod h1:ECDRehsR9TYTKCAsRS8/wLeOk6UUqDydw47ln7wG41Q=
-github.com/matterbridge/gomatrix v0.0.0-20200209224845-c2104d7936a6 h1:Kl65VJv38HjYFnnwH+MP6Z8hcJT5UHuSpHVU5vW1HH0=
-github.com/matterbridge/gomatrix v0.0.0-20200209224845-c2104d7936a6/go.mod h1:+jWeaaUtXQbBRdKYWfjW6JDDYiI2XXE+3NnTjW5kg8g=
 github.com/matterbridge/gozulipbot v0.0.0-20200820220548-be5824faa913 h1:5UGr9fLsvAvhjP6i5XJmd0ZIwYVR2gZCzU1lJZ7wfLY=
 github.com/matterbridge/gozulipbot v0.0.0-20200820220548-be5824faa913/go.mod h1:yAjnZ34DuDyPHMPHHjOsTk/FefW4JJjoMMCGt/8uuQA=
 github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba h1:XleOY4IjAEIcxAh+IFwT5JT5Ze3RHiYz6m+4ZfZ0rc0=

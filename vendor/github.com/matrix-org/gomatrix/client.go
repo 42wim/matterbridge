@@ -55,10 +55,7 @@ func (e HTTPError) Error() string {
 
 // BuildURL builds a URL with the Client's homserver/prefix/access_token set already.
 func (cli *Client) BuildURL(urlPath ...string) string {
-	ps := []string{cli.Prefix}
-	for _, p := range urlPath {
-		ps = append(ps, p)
-	}
+	ps := append([]string{cli.Prefix}, urlPath...)
 	return cli.BuildBaseURL(ps...)
 }
 
@@ -357,10 +354,18 @@ func (cli *Client) Login(req *ReqLogin) (resp *RespLogin, err error) {
 	return
 }
 
-// Logout the current user. See http://matrix.org/docs/spec/client_server/r0.2.0.html#post-matrix-client-r0-logout
+// Logout the current user. See http://matrix.org/docs/spec/client_server/r0.6.0.html#post-matrix-client-r0-logout
 // This does not clear the credentials from the client instance. See ClearCredentials() instead.
 func (cli *Client) Logout() (resp *RespLogout, err error) {
 	urlPath := cli.BuildURL("logout")
+	err = cli.MakeRequest("POST", urlPath, nil, &resp)
+	return
+}
+
+// LogoutAll logs the current user out on all devices. See https://matrix.org/docs/spec/client_server/r0.6.0#post-matrix-client-r0-logout-all
+// This does not clear the credentials from the client instance. See ClearCredentails() instead.
+func (cli *Client) LogoutAll() (resp *RespLogoutAll, err error) {
+	urlPath := cli.BuildURL("logout/all")
 	err = cli.MakeRequest("POST", urlPath, nil, &resp)
 	return
 }
@@ -475,21 +480,6 @@ func (cli *Client) GetAvatarURL() (string, error) {
 	return s.AvatarURL, nil
 }
 
-// GetAvatarURL gets the user's avatar URL. See http://matrix.org/docs/spec/client_server/r0.2.0.html#get-matrix-client-r0-profile-userid-avatar-url
-func (cli *Client) GetSenderAvatarURL(sender string) (string, error) {
-	urlPath := cli.BuildURL("profile", sender, "avatar_url")
-	s := struct {
-		AvatarURL string `json:"avatar_url"`
-	}{}
-
-	err := cli.MakeRequest("GET", urlPath, nil, &s)
-	if err != nil {
-		return "", err
-	}
-
-	return s.AvatarURL, nil
-}
-
 // SetAvatarURL sets the user's avatar URL. See http://matrix.org/docs/spec/client_server/r0.2.0.html#put-matrix-client-r0-profile-userid-avatar-url
 func (cli *Client) SetAvatarURL(url string) error {
 	urlPath := cli.BuildURL("profile", cli.UserID, "avatar_url")
@@ -502,6 +492,29 @@ func (cli *Client) SetAvatarURL(url string) error {
 	}
 
 	return nil
+}
+
+// GetStatus returns the status of the user from the specified MXID. See https://matrix.org/docs/spec/client_server/r0.6.0#get-matrix-client-r0-presence-userid-status
+func (cli *Client) GetStatus(mxid string) (resp *RespUserStatus, err error) {
+	urlPath := cli.BuildURL("presence", mxid, "status")
+	err = cli.MakeRequest("GET", urlPath, nil, &resp)
+	return
+}
+
+// GetOwnStatus returns the user's status. See https://matrix.org/docs/spec/client_server/r0.6.0#get-matrix-client-r0-presence-userid-status
+func (cli *Client) GetOwnStatus() (resp *RespUserStatus, err error) {
+	return cli.GetStatus(cli.UserID)
+}
+
+// SetStatus sets the user's status. See https://matrix.org/docs/spec/client_server/r0.6.0#put-matrix-client-r0-presence-userid-status
+func (cli *Client) SetStatus(presence, status string) (err error) {
+	urlPath := cli.BuildURL("presence", cli.UserID, "status")
+	s := struct {
+		Presence  string `json:"presence"`
+		StatusMsg string `json:"status_msg"`
+	}{presence, status}
+	err = cli.MakeRequest("PUT", urlPath, &s, nil)
+	return
 }
 
 // SendMessageEvent sends a message event into a room. See http://matrix.org/docs/spec/client_server/r0.2.0.html#put-matrix-client-r0-rooms-roomid-send-eventtype-txnid
@@ -525,12 +538,14 @@ func (cli *Client) SendStateEvent(roomID, eventType, stateKey string, contentJSO
 // See http://matrix.org/docs/spec/client_server/r0.2.0.html#m-text
 func (cli *Client) SendText(roomID, text string) (*RespSendEvent, error) {
 	return cli.SendMessageEvent(roomID, "m.room.message",
-		TextMessage{"m.text", text, "", ""})
+		TextMessage{MsgType: "m.text", Body: text})
 }
 
-func (cli *Client) SendHTML(roomID, textclear, text string) (*RespSendEvent, error) {
+// SendFormattedText sends an m.room.message event into the given room with a msgtype of m.text, supports a subset of HTML for formatting.
+// See https://matrix.org/docs/spec/client_server/r0.6.0#m-text
+func (cli *Client) SendFormattedText(roomID, text, formattedText string) (*RespSendEvent, error) {
 	return cli.SendMessageEvent(roomID, "m.room.message",
-		TextMessage{"m.text", textclear, "org.matrix.custom.html", text})
+		TextMessage{MsgType: "m.text", Body: text, FormattedBody: formattedText, Format: "org.matrix.custom.html"})
 }
 
 // SendImage sends an m.room.message event into the given room with a msgtype of m.image
@@ -555,46 +570,11 @@ func (cli *Client) SendVideo(roomID, body, url string) (*RespSendEvent, error) {
 		})
 }
 
-// SendAudio sends an m.room.message event into the given room with a msgtype of m.audio
-// See https://matrix.org/docs/spec/client_server/r0.2.0.html#m-audio
-func (cli *Client) SendAudio(roomID, body, url, mimetype string, size uint) (*RespSendEvent, error) {
-	return cli.SendMessageEvent(roomID, "m.room.message",
-		AudioMessage{
-			MsgType: "m.audio",
-			Body:    body,
-			URL:     url,
-			Info: AudioInfo{
-				Size:     size,
-				Mimetype: mimetype,
-			},
-		})
-}
-
-// SendFile sends an m.room.message event into the given room with a msgtype of m.file
-// See https://matrix.org/docs/spec/client_server/r0.2.0.html#m-file
-func (cli *Client) SendFile(roomID, body, url, mimetype string, size uint) (*RespSendEvent, error) {
-	return cli.SendMessageEvent(roomID, "m.room.message",
-		FileMessage{
-			MsgType: "m.file",
-			Body:    body,
-			URL:     url,
-			Info: FileInfo{
-				Size:     size,
-				Mimetype: mimetype,
-			},
-		})
-}
-
 // SendNotice sends an m.room.message event into the given room with a msgtype of m.notice
 // See http://matrix.org/docs/spec/client_server/r0.2.0.html#m-notice
 func (cli *Client) SendNotice(roomID, text string) (*RespSendEvent, error) {
 	return cli.SendMessageEvent(roomID, "m.room.message",
-		TextMessage{"m.notice", text, "", ""})
-}
-
-func (cli *Client) SendNoticeHTML(roomID, textclear, text string) (*RespSendEvent, error) {
-	return cli.SendMessageEvent(roomID, "m.room.message",
-		TextMessage{"m.notice", textclear, "org.matrix.custom.html", text})
+		TextMessage{MsgType: "m.notice", Body: text})
 }
 
 // RedactEvent redacts the given event. See http://matrix.org/docs/spec/client_server/r0.2.0.html#put-matrix-client-r0-rooms-roomid-redact-eventid-txnid
@@ -603,6 +583,12 @@ func (cli *Client) RedactEvent(roomID, eventID string, req *ReqRedact) (resp *Re
 	urlPath := cli.BuildURL("rooms", roomID, "redact", eventID, txnID)
 	err = cli.MakeRequest("PUT", urlPath, req, &resp)
 	return
+}
+
+// MarkRead marks eventID in roomID as read, signifying the event, and all before it have been read. See https://matrix.org/docs/spec/client_server/r0.6.0#post-matrix-client-r0-rooms-roomid-receipt-receipttype-eventid
+func (cli *Client) MarkRead(roomID, eventID string) error {
+	urlPath := cli.BuildURL("rooms", roomID, "receipt", "m.read", eventID)
+	return cli.MakeRequest("POST", urlPath, nil, nil)
 }
 
 // CreateRoom creates a new Matrix room. See https://matrix.org/docs/spec/client_server/r0.2.0.html#post-matrix-client-r0-createroom

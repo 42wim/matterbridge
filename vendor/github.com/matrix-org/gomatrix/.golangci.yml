@@ -1,0 +1,21 @@
+run:
+  timeout: 5m
+  linters:
+    enable:
+      - vet
+      - vetshadow
+      - typecheck
+      - deadcode
+      - gocyclo
+      - golint
+      - varcheck
+      - structcheck
+      - maligned
+      - ineffassign
+      - misspell
+      - unparam
+      - goimports
+      - goconst
+      - unconvert
+      - errcheck
+      - interfacer

@@ -31,8 +31,8 @@ func (room Room) UpdateState(event *Event) {
 
 // GetStateEvent returns the state event for the given type/state_key combo, or nil.
 func (room Room) GetStateEvent(eventType string, stateKey string) *Event {
-	stateEventMap, _ := room.State[eventType]
-	event, _ := stateEventMap[stateKey]
+	stateEventMap := room.State[eventType]
+	event := stateEventMap[stateKey]
 	return event
 }
 

@@ -14,7 +14,7 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	matrix "github.com/matterbridge/gomatrix"
+	matrix "github.com/matrix-org/gomatrix"
 )
 
 type Bmatrix struct {
@@ -49,9 +49,10 @@ func (b *Bmatrix) Connect() error {
 		return err
 	}
 	resp, err := b.mc.Login(&matrix.ReqLogin{
-		Type:     "m.login.password",
-		User:     b.GetString("Login"),
-		Password: b.GetString("Password"),
+		Type:       "m.login.password",
+		User:       b.GetString("Login"),
+		Password:   b.GetString("Password"),
+		Identifier: matrix.NewUserIdentifier(b.GetString("Login")),
 	})
 	if err != nil {
 		return err
@@ -166,7 +167,7 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	}
 
 	// Post normal message with HTML support (eg riot.im)
-	resp, err := b.mc.SendHTML(channel, plainUsername+msg.Text, username+helper.ParseMarkdown(msg.Text))
+	resp, err := b.mc.SendFormattedText(channel, plainUsername+msg.Text, username+helper.ParseMarkdown(msg.Text))
 	if err != nil {
 		return "", err
 	}
@@ -370,13 +371,29 @@ func (b *Bmatrix) handleUploadFile(msg *config.Message, channel string, fi *conf
 		}
 	case strings.Contains(mtype, "application"):
 		b.Log.Debugf("sendFile %s", res.ContentURI)
-		_, err = b.mc.SendFile(channel, fi.Name, res.ContentURI, mtype, uint(len(*fi.Data)))
+		_, err = b.mc.SendMessageEvent(channel, "m.room.message", matrix.FileMessage{
+			MsgType: "m.file",
+			Body:    fi.Name,
+			URL:     res.ContentURI,
+			Info: matrix.FileInfo{
+				Mimetype: mtype,
+				Size:     uint(len(*fi.Data)),
+			},
+		})
 		if err != nil {
 			b.Log.Errorf("sendFile failed: %#v", err)
 		}
 	case strings.Contains(mtype, "audio"):
 		b.Log.Debugf("sendAudio %s", res.ContentURI)
-		_, err = b.mc.SendAudio(channel, fi.Name, res.ContentURI, mtype, uint(len(*fi.Data)))
+		_, err = b.mc.SendMessageEvent(channel, "m.room.message", matrix.AudioMessage{
+			MsgType: "m.audio",
+			Body:    fi.Name,
+			URL:     res.ContentURI,
+			Info: matrix.AudioInfo{
+				Mimetype: mtype,
+				Size:     uint(len(*fi.Data)),
+			},
+		})
 		if err != nil {
 			b.Log.Errorf("sendAudio failed: %#v", err)
 		}
@@ -402,12 +419,18 @@ func (b *Bmatrix) containsAttachment(content map[string]interface{}) bool {
 
 // getAvatarURL returns the avatar URL of the specified sender
 func (b *Bmatrix) getAvatarURL(sender string) string {
-	mxcURL, err := b.mc.GetSenderAvatarURL(sender)
+	urlPath := b.mc.BuildURL("profile", sender, "avatar_url")
+
+	s := struct {
+		AvatarURL string `json:"avatar_url"`
+	}{}
+
+	err := b.mc.MakeRequest("GET", urlPath, nil, &s)
 	if err != nil {
 		b.Log.Errorf("getAvatarURL failed: %s", err)
 		return ""
 	}
-	url := strings.ReplaceAll(mxcURL, "mxc://", b.GetString("Server")+"/_matrix/media/r0/thumbnail/")
+	url := strings.ReplaceAll(s.AvatarURL, "mxc://", b.GetString("Server")+"/_matrix/media/r0/thumbnail/")
 	if url != "" {
 		url += "?width=37&height=37&method=crop"
 	}
