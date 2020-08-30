@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"strconv"
+	"strings"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -78,7 +79,7 @@ func (b *Btalk) JoinChannel(channel config.ChannelInfo) error {
 				continue
 			}
 			remoteMessage := config.Message{
-				Text:     msg.Message,
+				Text:     formatRichObjectString(msg.Message, msg.MessageParameters),
 				Channel:  newRoom.room.Token,
 				Username: msg.ActorDisplayName,
 				UserID:   msg.ActorID,
@@ -122,4 +123,24 @@ func (b *Btalk) getRoom(token string) *Broom {
 		}
 	}
 	return nil
+}
+
+// Spec: https://github.com/nextcloud/server/issues/1706#issue-182308785
+func formatRichObjectString(message string, parameters map[string]ocs.RichObjectString) string {
+	for id, parameter := range parameters {
+		text := parameter.Name
+
+		switch parameter.Type {
+		case ocs.ROSTypeUser, ocs.ROSTypeGroup:
+			text = "@" + text
+		case ocs.ROSTypeFile:
+			if parameter.Link != "" {
+				text = parameter.Link
+			}
+		}
+
+		message = strings.ReplaceAll(message, "{"+id+"}", text)
+	}
+
+	return message
 }
