@@ -15,11 +15,14 @@
 package user
 
 import (
+	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"strings"
 
 	"github.com/monaco-io/request"
 
+	"gomod.garykim.dev/nc-talk/constants"
 	"gomod.garykim.dev/nc-talk/ocs"
 )
 
@@ -27,12 +30,23 @@ const (
 	ocsCapabilitiesEndpoint = "/ocs/v2.php/cloud/capabilities"
 )
 
+var (
+	// ErrUserIsNil is returned when a funciton is called with an nil user.
+	ErrUserIsNil = errors.New("user is nil")
+)
+
 // TalkUser represents a user of Nextcloud Talk
 type TalkUser struct {
 	User         string
 	Pass         string
 	NextcloudURL string
+	Config       *TalkUserConfig
 	capabilities *Capabilities
+}
+
+// TalkUserConfig is configuration options for TalkUsers
+type TalkUserConfig struct {
+	TLSConfig *tls.Config
 }
 
 // Capabilities describes the capabilities that the Nextcloud Talk instance is capable of. Visit https://nextcloud-talk.readthedocs.io/en/latest/capabilities/ for more info.
@@ -70,6 +84,17 @@ type Capabilities struct {
 	ChatReferenceID        bool `ocscapability:"chat-reference-id"`
 }
 
+// NewUser returns a TalkUser instance
+// The url should be the full URL of the Nextcloud instance (e.g. https://cloud.mydomain.me)
+func NewUser(url string, username string, password string, config *TalkUserConfig) (*TalkUser, error) {
+	return &TalkUser{
+		NextcloudURL: url,
+		User:         username,
+		Pass:         password,
+		Config:       config,
+	}, nil
+}
+
 // RequestClient returns a monaco-io that is preconfigured to make OCS API calls
 func (t *TalkUser) RequestClient(client request.Client) *request.Client {
 	if client.Header == nil {
@@ -89,6 +114,11 @@ func (t *TalkUser) RequestClient(client request.Client) *request.Client {
 	// Set Nextcloud URL if there is no host
 	if !strings.HasPrefix(client.URL, t.NextcloudURL) {
 		client.URL = t.NextcloudURL + "/" + client.URL
+	}
+
+	// Set TLS Config
+	if t.Config != nil {
+		client.TLSConfig = t.Config.TLSConfig
 	}
 
 	return &client
@@ -165,4 +195,20 @@ func sliceContains(s []string, search string) bool {
 		}
 	}
 	return false
+}
+
+// DownloadFile downloads the file at the given path
+//
+// Meant to be used with rich object string's path.
+func (t *TalkUser) DownloadFile(path string) (data *[]byte, err error) {
+	url := t.NextcloudURL + constants.RemoteDavEndpoint(t.User, "files") + path
+	c := t.RequestClient(request.Client{
+		URL: url,
+	})
+	res, err := c.Do()
+	if err != nil || res.StatusCode() != 200 {
+		return
+	}
+	data = &res.Data
+	return
 }

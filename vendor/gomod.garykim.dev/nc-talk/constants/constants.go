@@ -18,3 +18,8 @@ const (
 	// BaseEndpoint is the api endpoint for Nextcloud Talk
 	BaseEndpoint = "/ocs/v2.php/apps/spreed/api/v1/"
 )
+
+// RemoteDavEndpoint returns the endpoint for the Dav API for Nextcloud
+func RemoteDavEndpoint(username string, davType string) string {
+	return "/remote.php/dav/" + username + "/" + davType + "/"
+}

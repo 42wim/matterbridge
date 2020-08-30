@@ -144,7 +144,7 @@ github.com/mgutz/ansi
 github.com/missdeer/golib/ic
 # github.com/mitchellh/mapstructure v1.2.3
 github.com/mitchellh/mapstructure
-# github.com/monaco-io/request v1.0.3
+# github.com/monaco-io/request v1.0.4
 github.com/monaco-io/request
 # github.com/mreiferson/go-httpclient v0.0.0-20160630210159-31f0106b4474
 github.com/mreiferson/go-httpclient
@@ -201,7 +201,7 @@ github.com/spf13/jwalterweatherman
 github.com/spf13/pflag
 # github.com/spf13/viper v1.7.0
 github.com/spf13/viper
-# github.com/stretchr/testify v1.5.1
+# github.com/stretchr/testify v1.6.1
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 github.com/stretchr/testify/suite
@@ -291,7 +291,7 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-# gomod.garykim.dev/nc-talk v0.0.2
+# gomod.garykim.dev/nc-talk v0.1.1
 gomod.garykim.dev/nc-talk
 gomod.garykim.dev/nc-talk/constants
 gomod.garykim.dev/nc-talk/ocs
@@ -342,3 +342,5 @@ gopkg.in/natefinch/lumberjack.v2
 gopkg.in/olahol/melody.v1
 # gopkg.in/yaml.v2 v2.2.8
 gopkg.in/yaml.v2
+# gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+gopkg.in/yaml.v3
