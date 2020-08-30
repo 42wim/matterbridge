@@ -49,7 +49,7 @@ require (
 	github.com/zfjagann/golang-ring v0.0.0-20190304061218-d34796e0a6c2
 	golang.org/x/image v0.0.0-20200618115811-c13761719519
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	gomod.garykim.dev/nc-talk v0.1.1
+	gomod.garykim.dev/nc-talk v0.1.2
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 )
 
