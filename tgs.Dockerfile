@@ -1,4 +1,4 @@
-FROM alpine:edge AS builder
+FROM alpine AS builder
 
 COPY . /go/src/github.com/42wim/matterbridge
 RUN apk add \
@@ -11,7 +11,7 @@ RUN apk add \
   && go get \
   && go build -x -ldflags "-X main.githash=$(git log --pretty=format:'%h' -n 1)" -o /bin/matterbridge
 
-FROM alpine:edge
+FROM alpine
 RUN apk --no-cache add \
     ca-certificates \
     cairo \
