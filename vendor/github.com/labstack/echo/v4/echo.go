@@ -48,6 +48,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"path/filepath"
 	"reflect"
@@ -230,7 +231,7 @@ const (
 
 const (
 	// Version of Echo
-	Version = "4.1.16"
+	Version = "4.1.17"
 	website = "https://echo.labstack.com"
 	// http://patorjk.com/software/taag/#p=display&f=Small%20Slant&t=Echo
 	banner = `
@@ -479,7 +480,20 @@ func (common) static(prefix, root string, get func(string, HandlerFunc, ...Middl
 		if err != nil {
 			return err
 		}
+
 		name := filepath.Join(root, path.Clean("/"+p)) // "/"+ for security
+		fi, err := os.Stat(name)
+		if err != nil {
+			// The access path does not exist
+			return NotFoundHandler(c)
+		}
+
+		// If the request is for a directory and does not end with "/"
+		p = c.Request().URL.Path // path must not be empty.
+		if fi.IsDir() && p[len(p)-1] != '/' {
+			// Redirect to ends with "/"
+			return c.Redirect(http.StatusMovedPermanently, p+"/")
+		}
 		return c.File(name)
 	}
 	if prefix == "/" {
@@ -504,11 +518,7 @@ func (e *Echo) add(host, method, path string, handler HandlerFunc, middleware ..
 	name := handlerName(handler)
 	router := e.findRouter(host)
 	router.Add(method, path, func(c Context) error {
-		h := handler
-		// Chain middleware
-		for i := len(middleware) - 1; i >= 0; i-- {
-			h = middleware[i](h)
-		}
+		h := applyMiddleware(handler, middleware...)
 		return h(c)
 	})
 	r := &Route{
@@ -606,12 +616,12 @@ func (e *Echo) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h := NotFoundHandler
 
 	if e.premiddleware == nil {
-		e.findRouter(r.Host).Find(r.Method, getPath(r), c)
+		e.findRouter(r.Host).Find(r.Method, GetPath(r), c)
 		h = c.Handler()
 		h = applyMiddleware(h, e.middleware...)
 	} else {
 		h = func(c Context) error {
-			e.findRouter(r.Host).Find(r.Method, getPath(r), c)
+			e.findRouter(r.Host).Find(r.Method, GetPath(r), c)
 			h := c.Handler()
 			h = applyMiddleware(h, e.middleware...)
 			return h(c)
@@ -795,6 +805,11 @@ func (he *HTTPError) SetInternal(err error) *HTTPError {
 	return he
 }
 
+// Unwrap satisfies the Go 1.13 error wrapper interface.
+func (he *HTTPError) Unwrap() error {
+	return he.Internal
+}
+
 // WrapHandler wraps `http.Handler` into `echo.HandlerFunc`.
 func WrapHandler(h http.Handler) HandlerFunc {
 	return func(c Context) error {
@@ -817,7 +832,8 @@ func WrapMiddleware(m func(http.Handler) http.Handler) MiddlewareFunc {
 	}
 }
 
-func getPath(r *http.Request) string {
+// GetPath returns RawPath, if it's empty returns Path from URL
+func GetPath(r *http.Request) string {
 	path := r.URL.RawPath
 	if path == "" {
 		path = r.URL.Path

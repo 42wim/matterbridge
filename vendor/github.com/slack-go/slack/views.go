@@ -150,6 +150,23 @@ func (api *Client) OpenView(triggerID string, view ModalViewRequest) (*ViewRespo
 	return api.OpenViewContext(context.Background(), triggerID, view)
 }
 
+// ValidateUniqueBlockID will verify if each input block has a unique block ID if set
+func ValidateUniqueBlockID(view ModalViewRequest) bool {
+
+	uniqueBlockID := map[string]bool{}
+
+	for _, b := range view.Blocks.BlockSet {
+		if inputBlock, ok := b.(*InputBlock); ok {
+			if _, ok := uniqueBlockID[inputBlock.BlockID]; ok {
+				return false
+			}
+			uniqueBlockID[inputBlock.BlockID] = true
+		}
+	}
+
+	return true
+}
+
 // OpenViewContext opens a view for a user with a custom context.
 func (api *Client) OpenViewContext(
 	ctx context.Context,
@@ -159,6 +176,11 @@ func (api *Client) OpenViewContext(
 	if triggerID == "" {
 		return nil, ErrParametersMissing
 	}
+
+	if !ValidateUniqueBlockID(view) {
+		return nil, ErrBlockIDNotUnique
+	}
+
 	req := openViewRequest{
 		TriggerID: triggerID,
 		View:      view,

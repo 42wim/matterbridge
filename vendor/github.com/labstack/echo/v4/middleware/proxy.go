@@ -45,6 +45,9 @@ type (
 		// Examples: If custom TLS certificates are required.
 		Transport http.RoundTripper
 
+		// ModifyResponse defines function to modify response from ProxyTarget.
+		ModifyResponse func(*http.Response) error
+
 		rewriteRegex map[*regexp.Regexp]string
 	}
 
@@ -224,7 +227,7 @@ func ProxyWithConfig(config ProxyConfig) echo.MiddlewareFunc {
 
 			// Rewrite
 			for k, v := range config.rewriteRegex {
-				replacer := captureTokens(k, req.URL.Path)
+				replacer := captureTokens(k, echo.GetPath(req))
 				if replacer != nil {
 					req.URL.Path = replacer.Replace(v)
 				}

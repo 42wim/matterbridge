@@ -113,7 +113,7 @@ opts := html.RendererOptions{
 }
 renderer := html.NewRenderer(opts)
 md := "test\n```\nthis code block will be dropped from output\n```\ntext"
-html := markdown.ToHTML([]byte(s), nil, renderer)
+html := markdown.ToHTML([]byte(md), nil, renderer)
 ````
 
 ## Sanitize untrusted content

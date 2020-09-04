@@ -16,6 +16,7 @@ import (
 )
 
 // MessageType is the type of Message
+// https://discord.com/developers/docs/resources/channel#message-object-message-types
 type MessageType int
 
 // Block contains the valid known MessageType values
@@ -33,6 +34,8 @@ const (
 	MessageTypeUserPremiumGuildSubscriptionTierTwo
 	MessageTypeUserPremiumGuildSubscriptionTierThree
 	MessageTypeChannelFollowAdd
+	MessageTypeGuildDiscoveryDisqualified
+	MessageTypeGuildDiscoveryRequalified
 )
 
 // A Message stores all data related to a specific Discord message.
@@ -117,8 +120,21 @@ type Message struct {
 	// The flags of the message, which describe extra features of a message.
 	// This is a combination of bit masks; the presence of a certain permission can
 	// be checked by performing a bitwise AND between this int and the flag.
-	Flags int `json:"flags"`
+	Flags MessageFlags `json:"flags"`
 }
+
+// MessageFlags is the flags of "message" (see MessageFlags* consts)
+// https://discord.com/developers/docs/resources/channel#message-object-message-flags
+type MessageFlags int
+
+// Valid MessageFlags values
+const (
+	MessageFlagsCrossPosted MessageFlags = 1 << iota
+	MessageFlagsIsCrossPosted
+	MessageFlagsSupressEmbeds
+	MessageFlagsSourceMessageDeleted
+	MessageFlagsUrgent
+)
 
 // File stores info about files you e.g. send in messages.
 type File struct {
@@ -245,10 +261,9 @@ type MessageEmbedThumbnail struct {
 
 // MessageEmbedVideo is a part of a MessageEmbed struct.
 type MessageEmbedVideo struct {
-	URL      string `json:"url,omitempty"`
-	ProxyURL string `json:"proxy_url,omitempty"`
-	Width    int    `json:"width,omitempty"`
-	Height   int    `json:"height,omitempty"`
+	URL    string `json:"url,omitempty"`
+	Width  int    `json:"width,omitempty"`
+	Height int    `json:"height,omitempty"`
 }
 
 // MessageEmbedProvider is a part of a MessageEmbed struct.
@@ -275,7 +290,7 @@ type MessageEmbedField struct {
 // An MessageEmbed stores data for message embeds.
 type MessageEmbed struct {
 	URL         string                 `json:"url,omitempty"`
-	Type        string                 `json:"type,omitempty"`
+	Type        EmbedType              `json:"type,omitempty"`
 	Title       string                 `json:"title,omitempty"`
 	Description string                 `json:"description,omitempty"`
 	Timestamp   string                 `json:"timestamp,omitempty"`
@@ -288,6 +303,20 @@ type MessageEmbed struct {
 	Author      *MessageEmbedAuthor    `json:"author,omitempty"`
 	Fields      []*MessageEmbedField   `json:"fields,omitempty"`
 }
+
+// EmbedType is the type of embed
+// https://discord.com/developers/docs/resources/channel#embed-object-embed-types
+type EmbedType string
+
+// Block of valid EmbedTypes
+const (
+	EmbedTypeRich    EmbedType = "rich"
+	EmbedTypeImage   EmbedType = "image"
+	EmbedTypeVideo   EmbedType = "video"
+	EmbedTypeGifv    EmbedType = "gifv"
+	EmbedTypeArticle EmbedType = "article"
+	EmbedTypeLink    EmbedType = "link"
+)
 
 // MessageReactions holds a reactions object for a message.
 type MessageReactions struct {
@@ -307,7 +336,7 @@ type MessageActivityType int
 
 // Constants for the different types of Message Activity
 const (
-	MessageActivityTypeJoin = iota + 1
+	MessageActivityTypeJoin MessageActivityType = iota + 1
 	MessageActivityTypeSpectate
 	MessageActivityTypeListen
 	MessageActivityTypeJoinRequest
@@ -319,7 +348,7 @@ type MessageFlag int
 // Constants for the different bit offsets of Message Flags
 const (
 	// This message has been published to subscribed channels (via Channel Following)
-	MessageFlagCrossposted = 1 << iota
+	MessageFlagCrossposted MessageFlag = 1 << iota
 	// This message originated from a message in another channel (via Channel Following)
 	MessageFlagIsCrosspost
 	// Do not include any embeds when serializing this message

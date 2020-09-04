@@ -111,6 +111,12 @@ func (b *InputBlock) UnmarshalJSON(data []byte) error {
 		e = &SelectBlockElement{}
 	case "multi_static_select", "multi_external_select", "multi_users_select", "multi_conversations_select", "multi_channels_select":
 		e = &MultiSelectBlockElement{}
+	case "checkboxes":
+		e = &CheckboxGroupsBlockElement{}
+	case "overflow":
+		e = &OverflowBlockElement{}
+	case "radio_buttons":
+		e = &RadioButtonsBlockElement{}
 	default:
 		return errors.New("unsupported block element type")
 	}
@@ -175,6 +181,8 @@ func (b *BlockElements) UnmarshalJSON(data []byte) error {
 			blockElement = &PlainTextInputBlockElement{}
 		case "checkboxes":
 			blockElement = &CheckboxGroupsBlockElement{}
+		case "radio_buttons":
+			blockElement = &RadioButtonsBlockElement{}
 		case "static_select", "external_select", "users_select", "conversations_select", "channels_select":
 			blockElement = &SelectBlockElement{}
 		default:
