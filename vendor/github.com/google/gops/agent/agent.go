@@ -222,7 +222,10 @@ func handle(conn io.ReadWriter, msg []byte) error {
 		fmt.Fprintf(conn, "last-gc: %v\n", lastGC)
 		fmt.Fprintf(conn, "gc-pause-total: %v\n", time.Duration(s.PauseTotalNs))
 		fmt.Fprintf(conn, "gc-pause: %v\n", s.PauseNs[(s.NumGC+255)%256])
+		fmt.Fprintf(conn, "gc-pause-end: %v\n", s.PauseEnd[(s.NumGC+255)%256])
 		fmt.Fprintf(conn, "num-gc: %v\n", s.NumGC)
+		fmt.Fprintf(conn, "num-forced-gc: %v\n", s.NumForcedGC)
+		fmt.Fprintf(conn, "gc-cpu-fraction: %v\n", s.GCCPUFraction)
 		fmt.Fprintf(conn, "enable-gc: %v\n", s.EnableGC)
 		fmt.Fprintf(conn, "debug-gc: %v\n", s.DebugGC)
 	case signal.Version:

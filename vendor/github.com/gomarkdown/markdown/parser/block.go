@@ -26,8 +26,10 @@ var (
 	blockTags = map[string]struct{}{
 		"blockquote": {},
 		"del":        {},
+		"dd":         {},
 		"div":        {},
 		"dl":         {},
+		"dt":         {},
 		"fieldset":   {},
 		"form":       {},
 		"h1":         {},
@@ -36,23 +38,28 @@ var (
 		"h4":         {},
 		"h5":         {},
 		"h6":         {},
-		"iframe":     {},
-		"ins":        {},
-		"math":       {},
-		"noscript":   {},
-		"ol":         {},
-		"pre":        {},
-		"p":          {},
-		"script":     {},
-		"style":      {},
-		"table":      {},
-		"ul":         {},
+		// TODO: technically block but breaks Inline HTML (Simple).text
+		//"hr":         {},
+		"iframe":   {},
+		"ins":      {},
+		"li":       {},
+		"math":     {},
+		"noscript": {},
+		"ol":       {},
+		"pre":      {},
+		"p":        {},
+		"script":   {},
+		"style":    {},
+		"table":    {},
+		"ul":       {},
 
 		// HTML5
 		"address":    {},
 		"article":    {},
 		"aside":      {},
 		"canvas":     {},
+		"details":    {},
+		"dialog":     {},
 		"figcaption": {},
 		"figure":     {},
 		"footer":     {},
@@ -230,8 +237,10 @@ func (p *Parser) block(data []byte) {
 		// or
 		// ______
 		if p.isHRule(data) {
-			p.addBlock(&ast.HorizontalRule{})
 			i := skipUntilChar(data, 0, '\n')
+			hr := ast.HorizontalRule{}
+			hr.Literal = bytes.Trim(data[:i], " \n")
+			p.addBlock(&hr)
 			data = data[i:]
 			continue
 		}

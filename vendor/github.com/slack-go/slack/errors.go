@@ -9,6 +9,7 @@ const (
 	ErrRTMGoodbye           = errorsx.String("goodbye detected")
 	ErrRTMDeadman           = errorsx.String("deadman switch triggered")
 	ErrParametersMissing    = errorsx.String("received empty parameters")
+	ErrBlockIDNotUnique     = errorsx.String("Block ID needs to be unique")
 	ErrInvalidConfiguration = errorsx.String("invalid configuration")
 	ErrMissingHeaders       = errorsx.String("missing headers")
 	ErrExpiredTimestamp     = errorsx.String("timestamp is too old")

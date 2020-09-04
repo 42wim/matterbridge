@@ -17,7 +17,7 @@ Therefore a Go version capable of understanding /vN suffixed imports is required
 
 - 1.9.7+
 - 1.10.3+
-- 1.11+
+- 1.14+
 
 Any of these versions will allow you to import Echo as `github.com/labstack/echo/v4` which is the recommended
 way of using Echo going forward.
@@ -52,7 +52,7 @@ Lower is better!
 
 ### Installation
 
-```go
+```sh
 // go get github.com/labstack/echo/{version}
 go get github.com/labstack/echo/v4
 ```

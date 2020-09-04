@@ -33,14 +33,15 @@ type OAuthResponse struct {
 
 // OAuthV2Response ...
 type OAuthV2Response struct {
-	AccessToken string                    `json:"access_token"`
-	TokenType   string                    `json:"token_type"`
-	Scope       string                    `json:"scope"`
-	BotUserID   string                    `json:"bot_user_id"`
-	AppID       string                    `json:"app_id"`
-	Team        OAuthV2ResponseTeam       `json:"team"`
-	Enterprise  OAuthV2ResponseEnterprise `json:"enterprise"`
-	AuthedUser  OAuthV2ResponseAuthedUser `json:"authed_user"`
+	AccessToken     string                       `json:"access_token"`
+	TokenType       string                       `json:"token_type"`
+	Scope           string                       `json:"scope"`
+	BotUserID       string                       `json:"bot_user_id"`
+	AppID           string                       `json:"app_id"`
+	Team            OAuthV2ResponseTeam          `json:"team"`
+	IncomingWebhook OAuthResponseIncomingWebhook `json:"incoming_webhook"`
+	Enterprise      OAuthV2ResponseEnterprise    `json:"enterprise"`
+	AuthedUser      OAuthV2ResponseAuthedUser    `json:"authed_user"`
 	SlackResponse
 }
 

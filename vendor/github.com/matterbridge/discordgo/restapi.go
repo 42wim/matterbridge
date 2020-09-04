@@ -844,13 +844,13 @@ func (s *Session) GuildMemberEdit(guildID, userID string, roles []string) (err e
 // GuildMemberMove moves a guild member from one voice channel to another/none
 //  guildID   : The ID of a Guild.
 //  userID    : The ID of a User.
-//  channelID : The ID of a channel to move user to, or null?
+//  channelID : The ID of a channel to move user to or nil to remove from voice channel
 // NOTE : I am not entirely set on the name of this function and it may change
 // prior to the final 1.0.0 release of Discordgo
-func (s *Session) GuildMemberMove(guildID, userID, channelID string) (err error) {
+func (s *Session) GuildMemberMove(guildID string, userID string, channelID *string) (err error) {
 
 	data := struct {
-		ChannelID string `json:"channel_id"`
+		ChannelID *string `json:"channel_id"`
 	}{channelID}
 
 	_, err = s.RequestWithBucketID("PATCH", EndpointGuildMember(guildID, userID), data, EndpointGuildMember(guildID, ""))
@@ -1306,6 +1306,19 @@ func (s *Session) GuildAuditLog(guildID, userID, beforeID string, actionType, li
 	}
 
 	err = unmarshal(body, &st)
+	return
+}
+
+// GuildEmojis returns all emoji
+// guildID : The ID of a Guild.
+func (s *Session) GuildEmojis(guildID string) (emoji []*Emoji, err error) {
+
+	body, err := s.RequestWithBucketID("GET", EndpointGuildEmojis(guildID), nil, EndpointGuildEmojis(guildID))
+	if err != nil {
+		return
+	}
+
+	err = unmarshal(body, &emoji)
 	return
 }
 
