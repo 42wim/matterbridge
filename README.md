@@ -302,7 +302,6 @@ See [FAQ](https://github.com/42wim/matterbridge/wiki/FAQ)
 - <https://mattermost.com/blog/connect-irc-to-mattermost/>
 - <https://blog.valvin.fr/2016/09/17/mattermost-et-un-channel-irc-cest-possible/>
 - <https://blog.brightscout.com/top-10-mattermost-integrations/>
-- <http://bencey.co.nz/2018/09/17/bridge/>
 - <https://www.algoo.fr/blog/2018/01/19/recouvrez-votre-liberte-en-quittant-slack-pour-un-mattermost-auto-heberge/>
 - <https://kopano.com/blog/matterbridge-bridging-mattermost-chat/>
 - <https://www.stitcher.com/s/?eid=52382713>
