@@ -135,13 +135,19 @@ func (b *Bzulip) handleQueue() error {
 			if m.SenderEmail == b.GetString("login") {
 				continue
 			}
+
+			avatarURL := m.AvatarURL
+			if !strings.HasPrefix(avatarURL, "http") {
+				avatarURL = b.GetString("server") + avatarURL
+			}
+
 			rmsg := config.Message{
 				Username: m.SenderFullName,
 				Text:     m.Content,
 				Channel:  b.getChannel(m.StreamID) + "/topic:" + m.Subject,
 				Account:  b.Account,
 				UserID:   strconv.Itoa(m.SenderID),
-				Avatar:   m.AvatarURL,
+				Avatar:   avatarURL,
 			}
 			b.Log.Debugf("<= Sending message from %s on %s to gateway", rmsg.Username, b.Account)
 			b.Log.Debugf("<= Message is %#v", rmsg)
