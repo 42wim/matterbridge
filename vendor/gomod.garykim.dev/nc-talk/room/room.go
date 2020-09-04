@@ -130,6 +130,7 @@ func (t *TalkRoom) ReceiveMessages(ctx context.Context) (chan ocs.TalkRoomMessag
 			if res.StatusCode == 200 {
 				lastKnown = res.Header.Get("X-Chat-Last-Given")
 				data, err := ioutil.ReadAll(res.Body)
+				_ = res.Body.Close()
 				if err != nil {
 					continue
 				}
@@ -140,7 +141,9 @@ func (t *TalkRoom) ReceiveMessages(ctx context.Context) (chan ocs.TalkRoomMessag
 				for _, msg := range message.OCS.TalkRoomMessage {
 					c <- msg
 				}
+				continue
 			}
+			_ = res.Body.Close()
 		}
 	}()
 	return c, nil
