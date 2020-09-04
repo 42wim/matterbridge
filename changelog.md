@@ -1,3 +1,23 @@
+# v1.18.3
+
+## Enhancements
+
+- nctalk: Add TLSConfig to nctalk (#1195)
+- whatsapp: Handle broadcasts as groups in Whatsapp #1213
+- matrix: switch to upstream gomatrix #1219
+- api: support multiple websocket clients #1205
+
+## Bugfix
+
+- general: update vendor
+- zulip: Check location of avatarURL (zulip). Fixes #1214 (#1227)
+- nctalk: Fix issue with too many open files #1223
+- nctalk: Fix mentions #1222
+- nctalk: Fix message replays #1220
+
+This release couldn't exist without the following contributors:
+@gary-kim, @tilosp, @NikkyAI, @escoand, @42wim
+
 # v1.18.2
 
 ## Bugfix
