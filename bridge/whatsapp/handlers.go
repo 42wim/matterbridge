@@ -143,10 +143,12 @@ func (b *Bwhatsapp) HandleImageMessage(message whatsapp.ImageMessage) {
 	groupJID := message.Info.RemoteJid
 
 	senderJID := message.Info.SenderJid
-	// if len(senderJid) == 0 {
-	//   // TODO workaround till https://github.com/Rhymen/go-whatsapp/issues/86 resolved
-	//   senderJid = *message.Info.Source.Participant
-	// }
+	if len(senderJID) == 0 {
+		// TODO workaround till https://github.com/Rhymen/go-whatsapp/issues/86 resolved
+		if message.Info.Source != nil && message.Info.Source.Participant != nil {
+			senderJID = *message.Info.Source.Participant
+		}
+	}
 
 	// translate sender's Jid to the nicest username we can get
 	senderName := b.getSenderName(senderJID)
