@@ -17,13 +17,16 @@ import (
 	matrix "github.com/matrix-org/gomatrix"
 )
 
+var (
+	htmlTag            = regexp.MustCompile("</.*?>")
+	htmlReplacementTag = regexp.MustCompile("<[^>]*>")
+)
+
 type Bmatrix struct {
 	mc      *matrix.Client
 	UserID  string
 	RoomMap map[string]string
 	sync.RWMutex
-	htmlTag            *regexp.Regexp
-	htmlReplacementTag *regexp.Regexp
 	*bridge.Config
 }
 
@@ -33,10 +36,29 @@ type httpError struct {
 	RetryAfterMs int    `json:"retry_after_ms"`
 }
 
+type matrixUsername struct {
+	plain     string
+	formatted string
+}
+
+func newMatrixUsername(username string) *matrixUsername {
+	mUsername := new(matrixUsername)
+
+	// check if we have a </tag>. if we have, we don't escape HTML. #696
+	if htmlTag.MatchString(username) {
+		mUsername.formatted = username
+		// remove the HTML formatting for beautiful push messages #1188
+		mUsername.plain = htmlReplacementTag.ReplaceAllString(username, "")
+	} else {
+		mUsername.formatted = html.EscapeString(username)
+		mUsername.plain = username
+	}
+
+	return mUsername
+}
+
 func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Bmatrix{Config: cfg}
-	b.htmlTag = regexp.MustCompile("</.*?>")
-	b.htmlReplacementTag = regexp.MustCompile("<[^>]*>")
 	b.RoomMap = make(map[string]string)
 	return b
 }
@@ -96,11 +118,14 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	channel := b.getRoomID(msg.Channel)
 	b.Log.Debugf("Channel %s maps to channel id %s", msg.Channel, channel)
 
+	username := newMatrixUsername(msg.Username)
+
 	// Make a action /me of the message
 	if msg.Event == config.EventUserAction {
 		m := matrix.TextMessage{
-			MsgType: "m.emote",
-			Body:    msg.Username + msg.Text,
+			MsgType:       "m.emote",
+			Body:          username.plain + msg.Text,
+			FormattedBody: username.formatted + msg.Text,
 		}
 		resp, err := b.mc.SendMessageEvent(channel, "m.room.message", m)
 		if err != nil {
@@ -139,7 +164,12 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 
 	// Use notices to send join/leave events
 	if msg.Event == config.EventJoinLeave {
-		resp, err := b.mc.SendNotice(channel, msg.Username+msg.Text)
+		m := matrix.TextMessage{
+			MsgType:       "m.notice",
+			Body:          username.plain + msg.Text,
+			FormattedBody: username.formatted + msg.Text,
+		}
+		resp, err := b.mc.SendMessageEvent(channel, "m.room.message", m)
 		if err != nil {
 			return "", err
 		}
@@ -147,27 +177,15 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	}
 
 	if b.GetBool("HTMLDisable") {
-		resp, err := b.mc.SendText(channel, msg.Username+msg.Text)
+		resp, err := b.mc.SendText(channel, username.plain+msg.Text)
 		if err != nil {
 			return "", err
 		}
 		return resp.EventID, err
 	}
 
-	var username string
-	var plainUsername string
-	// check if we have a </tag>. if we have, we don't escape HTML. #696
-	if b.htmlTag.MatchString(msg.Username) {
-		username = msg.Username
-		// remove the HTML formatting for beautiful push messages #1188
-		plainUsername = b.htmlReplacementTag.ReplaceAllString(msg.Username, "")
-	} else {
-		username = html.EscapeString(msg.Username)
-		plainUsername = msg.Username
-	}
-
 	// Post normal message with HTML support (eg riot.im)
-	resp, err := b.mc.SendFormattedText(channel, plainUsername+msg.Text, username+helper.ParseMarkdown(msg.Text))
+	resp, err := b.mc.SendFormattedText(channel, username.plain+msg.Text, username.formatted+helper.ParseMarkdown(msg.Text))
 	if err != nil {
 		return "", err
 	}
@@ -330,21 +348,16 @@ func (b *Bmatrix) handleUploadFiles(msg *config.Message, channel string) (string
 
 // handleUploadFile handles native upload of a file.
 func (b *Bmatrix) handleUploadFile(msg *config.Message, channel string, fi *config.FileInfo) {
+	username := newMatrixUsername(msg.Username)
 	content := bytes.NewReader(*fi.Data)
 	sp := strings.Split(fi.Name, ".")
 	mtype := mime.TypeByExtension("." + sp[len(sp)-1])
-	if fi.Comment != "" {
-		_, err := b.mc.SendText(channel, msg.Username+fi.Comment)
-		if err != nil {
-			b.Log.Errorf("file comment failed: %#v", err)
-		}
-	} else {
-		// image and video uploads send no username, we have to do this ourself here #715
-		_, err := b.mc.SendText(channel, msg.Username)
-		if err != nil {
-			b.Log.Errorf("file comment failed: %#v", err)
-		}
+	// image and video uploads send no username, we have to do this ourself here #715
+	_, err := b.mc.SendFormattedText(channel, username.plain+fi.Comment, username.formatted+fi.Comment)
+	if err != nil {
+		b.Log.Errorf("file comment failed: %#v", err)
 	}
+
 	b.Log.Debugf("uploading file: %s %s", fi.Name, mtype)
 	res, err := b.mc.UploadToContentRepo(content, mtype, int64(len(*fi.Data)))
 	if err != nil {
