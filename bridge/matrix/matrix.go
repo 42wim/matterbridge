@@ -333,10 +333,6 @@ func (b *Bmatrix) handleUploadFile(msg *config.Message, channel string, fi *conf
 	content := bytes.NewReader(*fi.Data)
 	sp := strings.Split(fi.Name, ".")
 	mtype := mime.TypeByExtension("." + sp[len(sp)-1])
-	if !(strings.Contains(mtype, "image") || strings.Contains(mtype, "video") ||
-		strings.Contains(mtype, "application") || strings.Contains(mtype, "audio")) {
-		return
-	}
 	if fi.Comment != "" {
 		_, err := b.mc.SendText(channel, msg.Username+fi.Comment)
 		if err != nil {
@@ -369,20 +365,6 @@ func (b *Bmatrix) handleUploadFile(msg *config.Message, channel string, fi *conf
 		if err != nil {
 			b.Log.Errorf("sendImage failed: %#v", err)
 		}
-	case strings.Contains(mtype, "application"):
-		b.Log.Debugf("sendFile %s", res.ContentURI)
-		_, err = b.mc.SendMessageEvent(channel, "m.room.message", matrix.FileMessage{
-			MsgType: "m.file",
-			Body:    fi.Name,
-			URL:     res.ContentURI,
-			Info: matrix.FileInfo{
-				Mimetype: mtype,
-				Size:     uint(len(*fi.Data)),
-			},
-		})
-		if err != nil {
-			b.Log.Errorf("sendFile failed: %#v", err)
-		}
 	case strings.Contains(mtype, "audio"):
 		b.Log.Debugf("sendAudio %s", res.ContentURI)
 		_, err = b.mc.SendMessageEvent(channel, "m.room.message", matrix.AudioMessage{
@@ -396,6 +378,20 @@ func (b *Bmatrix) handleUploadFile(msg *config.Message, channel string, fi *conf
 		})
 		if err != nil {
 			b.Log.Errorf("sendAudio failed: %#v", err)
+		}
+	default:
+		b.Log.Debugf("sendFile %s", res.ContentURI)
+		_, err = b.mc.SendMessageEvent(channel, "m.room.message", matrix.FileMessage{
+			MsgType: "m.file",
+			Body:    fi.Name,
+			URL:     res.ContentURI,
+			Info: matrix.FileInfo{
+				Mimetype: mtype,
+				Size:     uint(len(*fi.Data)),
+			},
+		})
+		if err != nil {
+			b.Log.Errorf("sendFile failed: %#v", err)
 		}
 	}
 	b.Log.Debugf("result: %#v", res)
