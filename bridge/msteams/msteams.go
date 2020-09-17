@@ -118,6 +118,16 @@ func (b *Bmsteams) sendReply(msg config.Message) (string, error) {
 	return *res.ID, nil
 }
 
+func (b *Bmsteams) getReplies(channel string, msg msgraph.ChatMessage) ([]msgraph.ChatMessage, error) {
+	ct := b.gc.Teams().ID(b.GetString("TeamID")).Channels().ID(channel).Messages().ID(*msg.ID).Replies().Request()
+	rct, err := ct.Get(b.ctx)
+	if err != nil {
+		return nil, err
+	}
+	b.Log.Debugf("got %#v replies", len(rct))
+	return rct, nil
+}
+
 func (b *Bmsteams) getMessages(channel string) ([]msgraph.ChatMessage, error) {
 	ct := b.gc.Teams().ID(b.GetString("TeamID")).Channels().ID(channel).Messages().Request()
 	rct, err := ct.Get(b.ctx)
@@ -125,6 +135,13 @@ func (b *Bmsteams) getMessages(channel string) ([]msgraph.ChatMessage, error) {
 		return nil, err
 	}
 	b.Log.Debugf("got %#v messages", len(rct))
+	for _, msg := range rct {
+		replyct, replyerr := b.getReplies(channel, msg)
+		if replyerr != nil {
+			return nil, replyerr
+		}
+		rct = append(rct, replyct...)
+	}
 	return rct, nil
 }
 
@@ -190,6 +207,10 @@ func (b *Bmsteams) poll(channelName string) error {
 				UserID:   *msg.From.User.ID,
 				ID:       *msg.ID,
 				Extra:    make(map[string][]interface{}),
+			}
+
+			if msg.ReplyToID != nil {
+				rmsg.ParentID = *msg.ReplyToID
 			}
 
 			b.handleAttachments(&rmsg, msg)
