@@ -1407,6 +1407,52 @@ Password = "talkuserpass"
 
 ###################################################################
 #
+# Mumble
+#
+###################################################################
+
+[mumble.bridge]
+
+# Host and port of your Mumble server
+Server = "mumble.yourdomain.me:64738"
+
+# Nickname to log in as
+Nick = "matterbridge"
+
+# Some servers require a password 
+# OPTIONAL (default empty)
+Password = "serverpasswordhere"
+
+# User comment to set on the Mumble user, visible to other users.
+# OPTIONAL (default empty)
+UserComment="I am bridging text messages between this channel and #general on irc.yourdomain.me"
+
+# Self-signed TLS client certificate + private key used to connect to
+# Mumble.  This is required if you want to register the matterbridge
+# user on your Mumble server, so its nick becomes reserved.
+# You can generate a keypair using e.g.
+#
+#     openssl req -x509 -newkey rsa:2048 -nodes -days 10000 \
+#             -keyout mumble.key -out mumble.crt
+#
+# To actually register the matterbridege user, connect to Mumble as an
+# admin, right click on the user and click "Register".
+#
+# OPTIONAL (default empty)
+TLSClientCertificate="mumble.crt"
+TLSClientKey="mumble.key"
+
+# TLS CA certificate used to validate the Mumble server.
+# OPTIONAL (defaults to Go system CA)
+TLSCACertificate=mumble-ca.crt
+
+# Enable to not verify the certificate on your Nextcloud server.
+# e.g. when using selfsigned certificates
+# OPTIONAL (default false)
+SkipTLSVerify=false
+
+###################################################################
+#
 # WhatsApp
 #
 ###################################################################
@@ -1744,6 +1790,8 @@ enable=true
     #   matrix   | #channel:server    |    #yourchannel:matrix.org    | Encrypted rooms are not supported in matrix
     # -------------------------------------------------------------------------------------------------------------------------------------
     #   msteams  |      threadId      |    19:82abcxx@thread.skype    | You'll find the threadId in the URL
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    #   mumble   |   channel name     |            General            | The channel name, as shown in Mumble
     # -------------------------------------------------------------------------------------------------------------------------------------
     # rocketchat |      channel       |            #channel           | # is required for private channels too
     # -------------------------------------------------------------------------------------------------------------------------------------

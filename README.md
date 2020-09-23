@@ -93,6 +93,7 @@ And more...
 - [Matrix](https://matrix.org)
 - [Mattermost](https://github.com/mattermost/mattermost-server/) 4.x, 5.x
 - [Microsoft Teams](https://teams.microsoft.com)
+- [Mumble](https://www.mumble.info/)
 - [Nextcloud Talk](https://nextcloud.com/talk/)
 - [Rocket.chat](https://rocket.chat)
 - [Slack](https://slack.com)
@@ -324,6 +325,7 @@ Matterbridge wouldn't exist without these libraries:
 - gitter - <https://github.com/sromku/go-gitter>
 - gops - <https://github.com/google/gops>
 - gozulipbot - <https://github.com/ifo/gozulipbot>
+- gumble - <https://github.com/layeh/gumble>
 - irc - <https://github.com/lrstanley/girc>
 - keybase - <https://github.com/keybase/go-keybase-chat-bot>
 - matrix - <https://github.com/matrix-org/gomatrix>
