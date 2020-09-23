@@ -51,6 +51,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
 	gomod.garykim.dev/nc-talk v0.1.3
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
+	layeh.com/gumble v0.0.0-20200818122324-146f9205029b
 )
 
 go 1.13
