@@ -1,9 +1,10 @@
 package bmumble
 
 import (
-	"github.com/42wim/matterbridge/bridge/config"
 	"layeh.com/gumble/gumble"
 	"layeh.com/gumble/gumbleutil"
+
+	"github.com/42wim/matterbridge/bridge/config"
 )
 
 func (b *Bmumble) handleServerConfig(event *gumble.ServerConfigEvent) {
@@ -18,7 +19,7 @@ func (b *Bmumble) handleTextMessage(event *gumble.TextMessageEvent) {
 		UserID:   event.TextMessage.Sender.Name + "@" + b.Host,
 		Account:  b.Account,
 	}
-	b.Log.Debug("<= Remote message is %+v", rmsg)
+	b.Log.Debugf("<= Remote message is %+v", rmsg)
 	b.Remote <- rmsg
 }
 

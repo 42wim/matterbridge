@@ -9,12 +9,13 @@ import (
 	"strconv"
 	"time"
 
+	"layeh.com/gumble/gumble"
+	"layeh.com/gumble/gumbleutil"
+
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	stripmd "github.com/writeas/go-strip-markdown"
-	"layeh.com/gumble/gumble"
-	"layeh.com/gumble/gumbleutil"
 
 	// We need to import the 'data' package as an implicit dependency.
 	// See: https://godoc.org/github.com/paulrosania/go-charset/charset
@@ -59,33 +60,14 @@ func (b *Bmumble) Connect() error {
 		return err
 	}
 
-	b.tlsConfig = tls.Config{}
-	// Load TLS client certificate keypair required for registered user authentication
-	if cpath := b.GetString("TLSClientCertificate"); cpath != "" {
-		if ckey := b.GetString("TLSClientKey"); ckey != "" {
-			cert, err := tls.LoadX509KeyPair(cpath, ckey)
-			if err != nil {
-				return err
-			}
-			b.tlsConfig.Certificates = []tls.Certificate{cert}
-		}
+	if err = b.buildTLSConfig(); err != nil {
+		return err
 	}
-	// Load TLS CA used for server verification.  If not provided, the Go system trust anchor is used
-	if capath := b.GetString("TLSCACertificate"); capath != "" {
-		ca, err := ioutil.ReadFile(capath)
-		if err != nil {
-			return err
-		}
-		b.tlsConfig.RootCAs = x509.NewCertPool()
-		b.tlsConfig.RootCAs.AppendCertsFromPEM(ca)
-	}
-	b.tlsConfig.InsecureSkipVerify = b.GetBool("SkipTLSVerify")
 
 	go b.doSend()
 	go b.connectLoop()
 	err = <-b.running
 	return err
-
 }
 
 func (b *Bmumble) Disconnect() error {
@@ -111,6 +93,31 @@ func (b *Bmumble) Send(msg config.Message) (string, error) {
 
 	b.local <- msg
 	return "", nil
+}
+
+func (b *Bmumble) buildTLSConfig() error {
+	b.tlsConfig = tls.Config{}
+	// Load TLS client certificate keypair required for registered user authentication
+	if cpath := b.GetString("TLSClientCertificate"); cpath != "" {
+		if ckey := b.GetString("TLSClientKey"); ckey != "" {
+			cert, err := tls.LoadX509KeyPair(cpath, ckey)
+			if err != nil {
+				return err
+			}
+			b.tlsConfig.Certificates = []tls.Certificate{cert}
+		}
+	}
+	// Load TLS CA used for server verification.  If not provided, the Go system trust anchor is used
+	if capath := b.GetString("TLSCACertificate"); capath != "" {
+		ca, err := ioutil.ReadFile(capath)
+		if err != nil {
+			return err
+		}
+		b.tlsConfig.RootCAs = x509.NewCertPool()
+		b.tlsConfig.RootCAs.AppendCertsFromPEM(ca)
+	}
+	b.tlsConfig.InsecureSkipVerify = b.GetBool("SkipTLSVerify")
+	return nil
 }
 
 func (b *Bmumble) connectLoop() {
@@ -141,18 +148,19 @@ func (b *Bmumble) connectLoop() {
 			continue
 		case gumble.DisconnectBanned:
 			b.Log.Errorf("Banned from the server (%s), not attempting reconnect", d.String)
-			break
+			close(b.connected)
+			close(b.running)
+			return
 		case gumble.DisconnectUser:
 			b.Log.Infof("Disconnect successful")
-			break
+			close(b.connected)
+			close(b.running)
+			return
 		}
 	}
-	close(b.connected)
-	close(b.running)
 }
 
 func (b *Bmumble) doConnect() error {
-
 	// Create new gumble config and attach event handlers
 	gumbleConfig := gumble.NewConfig()
 	gumbleConfig.Attach(gumbleutil.Listener{
@@ -194,9 +202,9 @@ func (b *Bmumble) doSend() {
 	// with each other.
 	for {
 		select {
-		case config := <-b.serverConfigUpdate:
-			b.Log.Debugf("Received server config update: AllowHTML=%#v, MaximumMessageLength=%#v", config.AllowHTML, config.MaximumMessageLength)
-			b.serverConfig = config
+		case serverConfig := <-b.serverConfigUpdate:
+			b.Log.Debugf("Received server config update: AllowHTML=%#v, MaximumMessageLength=%#v", serverConfig.AllowHTML, serverConfig.MaximumMessageLength)
+			b.serverConfig = serverConfig
 		case msg := <-b.local:
 			b.processMessage(&msg)
 		}
@@ -207,7 +215,7 @@ func (b *Bmumble) processMessage(msg *config.Message) {
 	b.Log.Debugf("Processing message %s", msg.Text)
 
 	// If HTML is allowed, convert markdown into HTML, otherwise strip markdown
-	if allowHtml := b.serverConfig.AllowHTML; allowHtml == nil || !*allowHtml {
+	if allowHTML := b.serverConfig.AllowHTML; allowHTML == nil || !*allowHTML {
 		msg.Text = helper.ParseMarkdown(msg.Text)
 	} else {
 		msg.Text = stripmd.Strip(msg.Text)
@@ -216,7 +224,7 @@ func (b *Bmumble) processMessage(msg *config.Message) {
 	// If there is a maximum message length, split and truncate the lines
 	var msgLines []string
 	if maxLength := b.serverConfig.MaximumMessageLength; maxLength != nil {
-		msgLines = helper.GetSubLines(msg.Text, *maxLength)
+		msgLines = helper.GetSubLines(msg.Text, *maxLength-len(msg.Username))
 	} else {
 		msgLines = helper.GetSubLines(msg.Text, 0)
 	}
@@ -225,5 +233,4 @@ func (b *Bmumble) processMessage(msg *config.Message) {
 		b.Log.Debugf("Sending line: %s", msgLines[i])
 		b.client.Self.Channel.Send(msg.Username+msgLines[i], false)
 	}
-
 }
