@@ -71,14 +71,13 @@ func (b *Bmumble) Connect() error {
 }
 
 func (b *Bmumble) Disconnect() error {
-	b.client.Disconnect()
-	return nil
+	return b.client.Disconnect()
 }
 
 func (b *Bmumble) JoinChannel(channel config.ChannelInfo) error {
 	if b.Channel != "" && channel.Name != b.Channel {
 		b.Log.Fatalf("Cannot join channel '%s', already joined to channel '%s'", channel.Name, b.Channel)
-		return errors.New("The Mumble bridge can only join a single channel")
+		return errors.New("the Mumble bridge can only join a single channel")
 	}
 	b.Channel = channel.Name
 	return b.doJoin(b.client, channel.Name)

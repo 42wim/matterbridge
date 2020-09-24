@@ -33,7 +33,9 @@ func (b *Bmumble) handleConnect(event *gumble.ConnectEvent) {
 	event.Client.Self.SetSelfMuted(true)
 	// if the Channel variable is set, this is a reconnect -> rejoin channel
 	if b.Channel != "" {
-		b.doJoin(event.Client, b.Channel)
+		if err := b.doJoin(event.Client, b.Channel); err != nil {
+			b.Log.Error(err)
+		}
 		b.Remote <- config.Message{
 			Username: "system",
 			Text:     "rejoin",
@@ -51,7 +53,9 @@ func (b *Bmumble) handleUserChange(event *gumble.UserChangeEvent) {
 	}
 	// Someone attempted to move the user out of the configured channel; attempt to join back
 	if b.Channel != "" && b.Channel != event.Client.Self.Channel.Name {
-		b.doJoin(event.Client, b.Channel)
+		if err := b.doJoin(event.Client, b.Channel); err != nil {
+			b.Log.Error(err)
+		}
 	}
 }
 
