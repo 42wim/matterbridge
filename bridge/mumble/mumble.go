@@ -12,31 +12,29 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
+	stripmd "github.com/writeas/go-strip-markdown"
 	"layeh.com/gumble/gumble"
 	"layeh.com/gumble/gumbleutil"
-	stripmd "github.com/writeas/go-strip-markdown"
 
 	// We need to import the 'data' package as an implicit dependency.
 	// See: https://godoc.org/github.com/paulrosania/go-charset/charset
 	_ "github.com/paulrosania/go-charset/data"
 )
 
-
 type Bmumble struct {
-        client               *gumble.Client
-	Nick                 string
-	Host                 string
-	Channel              string
-	local                chan config.Message
-	running              chan error
-	connected            chan gumble.DisconnectEvent
-	serverConfigUpdate   chan gumble.ServerConfigEvent
-	serverConfig         gumble.ServerConfigEvent
-	tlsConfig            tls.Config
+	client             *gumble.Client
+	Nick               string
+	Host               string
+	Channel            string
+	local              chan config.Message
+	running            chan error
+	connected          chan gumble.DisconnectEvent
+	serverConfigUpdate chan gumble.ServerConfigEvent
+	serverConfig       gumble.ServerConfigEvent
+	tlsConfig          tls.Config
 
 	*bridge.Config
 }
-
 
 func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Bmumble{}
@@ -48,7 +46,6 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	b.serverConfigUpdate = make(chan gumble.ServerConfigEvent)
 	return b
 }
-
 
 func (b *Bmumble) Connect() error {
 	b.Log.Infof("Connecting %s", b.GetString("Server"))
@@ -68,7 +65,7 @@ func (b *Bmumble) Connect() error {
 		if ckey := b.GetString("TLSClientKey"); ckey != "" {
 			cert, err := tls.LoadX509KeyPair(cpath, ckey)
 			if err != nil {
-			 	return err
+				return err
 			}
 			b.tlsConfig.Certificates = []tls.Certificate{cert}
 		}
@@ -105,18 +102,16 @@ func (b *Bmumble) JoinChannel(channel config.ChannelInfo) error {
 	return b.doJoin(b.client, channel.Name)
 }
 
-
 func (b *Bmumble) Send(msg config.Message) (string, error) {
 	// Only process text messages
 	b.Log.Debugf("=> Received local message %#v", msg)
 	if msg.Event != "" && msg.Event != config.EventUserAction {
 		return "", nil
 	}
-	
+
 	b.local <- msg
 	return "", nil
 }
-
 
 func (b *Bmumble) connectLoop() {
 	firstConnect := true
@@ -162,10 +157,10 @@ func (b *Bmumble) doConnect() error {
 	gumbleConfig := gumble.NewConfig()
 	gumbleConfig.Attach(gumbleutil.Listener{
 		ServerConfig: b.handleServerConfig,
-		TextMessage: b.handleTextMessage,
-		Connect: b.handleConnect,
-		Disconnect: b.handleDisconnect,
-		UserChange: b.handleUserChange,
+		TextMessage:  b.handleTextMessage,
+		Connect:      b.handleConnect,
+		Disconnect:   b.handleDisconnect,
+		UserChange:   b.handleUserChange,
 	})
 	if b.GetInt("DebugLevel") == 0 {
 		gumbleConfig.Attach(b.makeDebugHandler())
@@ -174,7 +169,7 @@ func (b *Bmumble) doConnect() error {
 	if password := b.GetString("Password"); password != "" {
 		gumbleConfig.Password = password
 	}
-	
+
 	client, err := gumble.DialWithDialer(new(net.Dialer), b.GetString("Server"), gumbleConfig, &b.tlsConfig)
 	if err != nil {
 		return err
@@ -193,7 +188,6 @@ func (b *Bmumble) doJoin(client *gumble.Client, name string) error {
 	return nil
 }
 
-
 func (b *Bmumble) doSend() {
 	// Message sending loop that makes sure server-side
 	// restrictions and client-side message traits don't conflict
@@ -209,17 +203,16 @@ func (b *Bmumble) doSend() {
 	}
 }
 
-
 func (b *Bmumble) processMessage(msg *config.Message) {
 	b.Log.Debugf("Processing message %s", msg.Text)
-	
+
 	// If HTML is allowed, convert markdown into HTML, otherwise strip markdown
-	if allowHtml := b.serverConfig.AllowHTML; allowHtml == nil || !*allowHtml  {
+	if allowHtml := b.serverConfig.AllowHTML; allowHtml == nil || !*allowHtml {
 		msg.Text = helper.ParseMarkdown(msg.Text)
 	} else {
 		msg.Text = stripmd.Strip(msg.Text)
 	}
-	
+
 	// If there is a maximum message length, split and truncate the lines
 	var msgLines []string
 	if maxLength := b.serverConfig.MaximumMessageLength; maxLength != nil {
@@ -230,7 +223,7 @@ func (b *Bmumble) processMessage(msg *config.Message) {
 	// Send the individual lindes
 	for i := range msgLines {
 		b.Log.Debugf("Sending line: %s", msgLines[i])
-		b.client.Self.Channel.Send(msg.Username + msgLines[i], false)
+		b.client.Self.Channel.Send(msg.Username+msgLines[i], false)
 	}
 
 }
