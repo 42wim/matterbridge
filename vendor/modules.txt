@@ -343,3 +343,8 @@ gopkg.in/olahol/melody.v1
 gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 gopkg.in/yaml.v3
+# layeh.com/gumble v0.0.0-20200818122324-146f9205029b
+layeh.com/gumble/gumble
+layeh.com/gumble/gumble/MumbleProto
+layeh.com/gumble/gumble/varint
+layeh.com/gumble/gumbleutil
