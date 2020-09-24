@@ -8,7 +8,7 @@ import (
 
 
 func (b *Bmumble) handleServerConfig(event *gumble.ServerConfigEvent) {
-	
+	b.serverConfigUpdate <- *event
 }
 
 
@@ -60,7 +60,7 @@ func (b *Bmumble) handleUserChange(event *gumble.UserChangeEvent) {
 
 
 func (b *Bmumble) handleDisconnect(event *gumble.DisconnectEvent) {
-	b.connected <- disconnect{event.Type, event.String}
+	b.connected <- *event
 }
 
 

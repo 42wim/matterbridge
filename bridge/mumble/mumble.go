@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net"
 	"strconv"
-//	"strings"
 	"time"
 
 	"github.com/42wim/matterbridge/bridge"
@@ -30,18 +29,12 @@ type Bmumble struct {
 	Channel              string
 	local                chan config.Message
 	running              chan error
-	connected            chan disconnect
-	serverConfigUpdate   chan *gumble.ServerConfigEvent
+	connected            chan gumble.DisconnectEvent
+	serverConfigUpdate   chan gumble.ServerConfigEvent
 	serverConfig         gumble.ServerConfigEvent
 	tlsConfig            tls.Config
 
 	*bridge.Config
-}
-
-
-type disconnect struct {
-	Reason  gumble.DisconnectType
-	Message string
 }
 
 
@@ -51,8 +44,8 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	b.Nick = b.GetString("Nick")
 	b.local = make(chan config.Message)
 	b.running = make(chan error)
-	b.connected = make(chan disconnect)
-	b.serverConfigUpdate = make(chan *gumble.ServerConfigEvent)
+	b.connected = make(chan gumble.DisconnectEvent)
+	b.serverConfigUpdate = make(chan gumble.ServerConfigEvent)
 	return b
 }
 
@@ -104,8 +97,8 @@ func (b *Bmumble) Disconnect() error {
 }
 
 func (b *Bmumble) JoinChannel(channel config.ChannelInfo) error {
-	if b.Channel != "" {
-		b.Log.Fatalf("Cannot join channel '%s', already joined to channel '%'s", channel.Name, b.Channel)
+	if b.Channel != "" && channel.Name != b.Channel {
+		b.Log.Fatalf("Cannot join channel '%s', already joined to channel '%s'", channel.Name, b.Channel)
 		return errors.New("The Mumble bridge can only join a single channel")
 	}
 	b.Channel = channel.Name
@@ -144,15 +137,15 @@ func (b *Bmumble) connectLoop() {
 		}
 		firstConnect = false
 		d := <-b.connected
-		switch d.Reason {
+		switch d.Type {
 		case gumble.DisconnectError:
-			b.Log.Errorf("Lost connection to the server (%s), attempting reconnect", d.Message)
+			b.Log.Errorf("Lost connection to the server (%s), attempting reconnect", d.String)
 			continue
 		case gumble.DisconnectKicked:
-			b.Log.Errorf("Kicked from the server (%s), attempting reconnect", d.Message)
+			b.Log.Errorf("Kicked from the server (%s), attempting reconnect", d.String)
 			continue
 		case gumble.DisconnectBanned:
-			b.Log.Errorf("Banned from the server (%s), not attempting reconnect", d.Message)
+			b.Log.Errorf("Banned from the server (%s), not attempting reconnect", d.String)
 			break
 		case gumble.DisconnectUser:
 			b.Log.Infof("Disconnect successful")
@@ -208,8 +201,8 @@ func (b *Bmumble) doSend() {
 	for {
 		select {
 		case config := <-b.serverConfigUpdate:
-			b.Log.Debugf("Received server config update: AllowHTML=%d, MaxMessageLength=%d", config.AllowHTML, config.MaximumMessageLength)
-			b.serverConfig = *config
+			b.Log.Debugf("Received server config update: AllowHTML=%#v, MaximumMessageLength=%#v", config.AllowHTML, config.MaximumMessageLength)
+			b.serverConfig = config
 		case msg := <-b.local:
 			b.processMessage(&msg)
 		}
