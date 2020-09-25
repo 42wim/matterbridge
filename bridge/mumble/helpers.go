@@ -18,16 +18,31 @@ type MessagePart struct {
 	Image         []byte
 }
 
+func (b *Bmumble) decodeImage(uri string, parts *[]MessagePart) error {
+	// Decode the data:image/... URI
+	image, err := dataurl.DecodeString(uri)
+	if err != nil {
+		b.Log.WithError(err).Info("No image extracted")
+		return err
+	}
+	// Determine the file extensions for that image
+	ext, err := mime.ExtensionsByType(image.MediaType.ContentType())
+	if err != nil || len(ext) == 0 {
+		b.Log.WithError(err).Infof("No file extension registered for MIME type '%s'", image.MediaType.ContentType())
+		return err
+	}
+	// Add the image to the MessagePart slice
+	*parts = append(*parts, MessagePart{"", ext[0], image.Data})
+	return nil
+}
+
 func (b *Bmumble) tokenize(t *string) ([]MessagePart, error) {
-	// `^(.*?)` matches everyting before the image
+	// `^(.*?)` matches everything before the image
 	// `!\[[^\]]*\]\(` matches the `![alt](` part of markdown images
 	// `(data:image\/[^)]+)` matches the data: URI used by Mumble
 	// `\)` matches the closing parenthesis after the URI
 	// `(.*)$` matches the remaining text to be examined in the next iteration
-	p, err := regexp.Compile(`^(.*?)!\[[^\]]*\]\((data:image\/[^)]+)\)(.*)$`)
-	if err != nil {
-		return nil, err
-	}
+	p := regexp.MustCompile(`^(.*?)!\[[^\]]*\]\((data:image\/[^)]+)\)(.*)$`)
 	remaining := *t
 	var parts []MessagePart
 	for {
@@ -41,26 +56,23 @@ func (b *Bmumble) tokenize(t *string) ([]MessagePart, error) {
 			}
 			return parts, nil
 		}
+		// tokens[1] is the text before the image
 		if len(tokens[1]) > 0 {
 			parts = append(parts, MessagePart{tokens[1], "", nil})
 		}
+		// tokens[2] is the image URL
 		uri, err := dataurl.UnescapeToString(strings.ReplaceAll(tokens[2], " ", ""))
 		if err != nil {
 			b.Log.WithError(err).Info("URL unescaping failed")
-		} else {
-			b.Log.Debugf("Raw data: URL: %s", uri)
-			image, err := dataurl.DecodeString(uri)
-			if err == nil {
-				ext, err := mime.ExtensionsByType(image.MediaType.ContentType())
-				if ext != nil && len(ext) > 0 {
-					parts = append(parts, MessagePart{"", ext[0], image.Data})
-				} else {
-					b.Log.WithError(err).Infof("No file extension registered for MIME type '%s'", image.MediaType.ContentType())
-				}
-			} else {
-				b.Log.WithError(err).Info("No image extracted")
-			}
+			remaining = tokens[3]
+			continue
 		}
+		b.Log.Debugf("Raw data: URL: %s", uri)
+		err = b.decodeImage(uri, &parts)
+		if err != nil {
+			b.Log.WithError(err).Info("Decoding the image failed")
+		}
+		// tokens[3] is the text after the image, processed in the next iteration
 		remaining = tokens[3]
 	}
 }
