@@ -90,7 +90,11 @@ func (b *Bmumble) Send(msg config.Message) (string, error) {
 		return "", nil
 	}
 
+	attachments := b.extractFiles(&msg)
 	b.local <- msg
+	for _, a := range attachments {
+		b.local <- a
+	}
 	return "", nil
 }
 
@@ -213,8 +217,28 @@ func (b *Bmumble) doSend() {
 func (b *Bmumble) processMessage(msg *config.Message) {
 	b.Log.Debugf("Processing message %s", msg.Text)
 
+	allowHTML := true
+	if b.serverConfig.AllowHTML != nil {
+		allowHTML = *b.serverConfig.AllowHTML
+	}
+
+	// If this is a specially generated image message, send it unmodified
+	if msg.Event == "mumble_image" {
+		if allowHTML {
+			b.Log.Debugf("Sending image message: %s%s", msg.Username, msg.Text)
+			b.client.Self.Channel.Send(msg.Username+msg.Text, false)
+		} else {
+			b.Log.Info("Can't send image, server does not allow HTML messages")
+		}
+		return
+	}
+
+	// Don't process empty messages
+	if len(msg.Text) == 0 {
+		return
+	}
 	// If HTML is allowed, convert markdown into HTML, otherwise strip markdown
-	if allowHTML := b.serverConfig.AllowHTML; allowHTML == nil || !*allowHTML {
+	if allowHTML {
 		msg.Text = helper.ParseMarkdown(msg.Text)
 	} else {
 		msg.Text = stripmd.Strip(msg.Text)

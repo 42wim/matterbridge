@@ -1,10 +1,13 @@
 package bmumble
 
 import (
+	"strconv"
+
 	"layeh.com/gumble/gumble"
 	"layeh.com/gumble/gumbleutil"
 
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/helper"
 )
 
 func (b *Bmumble) handleServerConfig(event *gumble.ServerConfigEvent) {
@@ -12,15 +15,32 @@ func (b *Bmumble) handleServerConfig(event *gumble.ServerConfigEvent) {
 }
 
 func (b *Bmumble) handleTextMessage(event *gumble.TextMessageEvent) {
-	rmsg := config.Message{
-		Text:     event.TextMessage.Message,
-		Channel:  event.Client.Self.Channel.Name,
-		Username: event.TextMessage.Sender.Name,
-		UserID:   event.TextMessage.Sender.Name + "@" + b.Host,
-		Account:  b.Account,
+	// Convert Mumble HTML messages to markdown
+	parts, err := b.convertHTMLtoMarkdown(event.TextMessage.Message)
+	if err != nil {
+		b.Log.Error(err)
 	}
-	b.Log.Debugf("<= Remote message is %+v", rmsg)
-	b.Remote <- rmsg
+	for i, part := range parts {
+		// Construct matterbridge message and pass on to the gateway
+		rmsg := config.Message{
+			Channel:  event.Client.Self.Channel.Name,
+			Username: event.TextMessage.Sender.Name,
+			UserID:   event.TextMessage.Sender.Name + "@" + b.Host,
+			Account:  b.Account,
+		}
+		if part.Image == nil {
+			rmsg.Text = part.Text
+		} else {
+			rmsg.Extra = make(map[string][]interface{})
+			if err = helper.HandleDownloadSize(b.Log, &rmsg, "image"+strconv.Itoa(i)+part.FileExtension, int64(len(part.Image)), b.General); err != nil {
+				b.Log.WithError(err).Warn("not including image in message")
+				continue
+			}
+			helper.HandleDownloadData(b.Log, &rmsg, "image"+strconv.Itoa(i)+part.FileExtension, "", "", &part.Image, b.General)
+		}
+		b.Log.Debugf("<= Remote message is %+v", rmsg)
+		b.Remote <- rmsg
+	}
 }
 
 func (b *Bmumble) handleConnect(event *gumble.ConnectEvent) {

@@ -4,6 +4,9 @@ github.com/42wim/go-gitter
 github.com/Baozisoftware/qrcode-terminal-go
 # github.com/Jeffail/gabs v1.1.1
 github.com/Jeffail/gabs
+# github.com/JohannesKaufmann/html-to-markdown v1.2.0
+github.com/JohannesKaufmann/html-to-markdown
+github.com/JohannesKaufmann/html-to-markdown/escape
 # github.com/Philipp15b/go-steam v1.0.1-0.20190816133340-b04c5a83c1c0
 github.com/Philipp15b/go-steam
 github.com/Philipp15b/go-steam/cryptoutil
@@ -15,6 +18,8 @@ github.com/Philipp15b/go-steam/protocol/steamlang
 github.com/Philipp15b/go-steam/rwu
 github.com/Philipp15b/go-steam/socialcache
 github.com/Philipp15b/go-steam/steamid
+# github.com/PuerkitoBio/goquery v1.5.1
+github.com/PuerkitoBio/goquery
 # github.com/Rhymen/go-whatsapp v0.1.1-0.20200818115958-f07a700b9819
 github.com/Rhymen/go-whatsapp
 github.com/Rhymen/go-whatsapp/binary
@@ -23,6 +28,8 @@ github.com/Rhymen/go-whatsapp/binary/token
 github.com/Rhymen/go-whatsapp/crypto/cbc
 github.com/Rhymen/go-whatsapp/crypto/curve25519
 github.com/Rhymen/go-whatsapp/crypto/hkdf
+# github.com/andybalholm/cascadia v1.1.0
+github.com/andybalholm/cascadia
 # github.com/blang/semver v3.5.1+incompatible
 github.com/blang/semver
 # github.com/d5/tengo/v2 v2.6.0
@@ -213,6 +220,8 @@ github.com/technoweenie/multipartstreamer
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.2.1
 github.com/valyala/fasttemplate
+# github.com/vincent-petithory/dataurl v0.0.0-20191104211930-d1553a71de50
+github.com/vincent-petithory/dataurl
 # github.com/writeas/go-strip-markdown v2.0.1+incompatible
 github.com/writeas/go-strip-markdown
 # github.com/yaegashi/msgraph.go v0.1.4

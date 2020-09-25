@@ -4,6 +4,7 @@ require (
 	github.com/42wim/go-gitter v0.0.0-20170828205020-017310c2d557
 	github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f
 	github.com/Jeffail/gabs v1.1.1 // indirect
+	github.com/JohannesKaufmann/html-to-markdown v1.2.0
 	github.com/Philipp15b/go-steam v1.0.1-0.20190816133340-b04c5a83c1c0
 	github.com/Rhymen/go-whatsapp v0.1.1-0.20200818115958-f07a700b9819
 	github.com/d5/tengo/v2 v2.6.0
@@ -43,6 +44,7 @@ require (
 	github.com/slack-go/slack v0.6.6
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.6.1
+	github.com/vincent-petithory/dataurl v0.0.0-20191104211930-d1553a71de50
 	github.com/writeas/go-strip-markdown v2.0.1+incompatible
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2 // indirect
 	github.com/yaegashi/msgraph.go v0.1.4
