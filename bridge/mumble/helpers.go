@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/42wim/matterbridge/bridge/config"
-	md "github.com/JohannesKaufmann/html-to-markdown"
+	"github.com/mattn/godown"
 	"github.com/vincent-petithory/dataurl"
 )
 
@@ -42,28 +42,31 @@ func (b *Bmumble) tokenize(t *string) ([]MessagePart, error) {
 	// `(data:image\/[^)]+)` matches the data: URI used by Mumble
 	// `\)` matches the closing parenthesis after the URI
 	// `(.*)$` matches the remaining text to be examined in the next iteration
-	p := regexp.MustCompile(`^(.*?)!\[[^\]]*\]\((data:image\/[^)]+)\)(.*)$`)
+	p := regexp.MustCompile(`^(?ms)(.*?)!\[[^\]]*\]\((data:image\/[^)]+)\)(.*)$`)
 	remaining := *t
 	var parts []MessagePart
 	for {
 		tokens := p.FindStringSubmatch(remaining)
+		b.Log.Debugf("### tokens: %#v", tokens)
 
 		if tokens == nil {
 			// no match -> remaining string is non-image text
-			if len(remaining) > 0 {
-				parts = append(parts, MessagePart{remaining, "", nil})
+			pre := strings.TrimSpace(remaining)
+			if len(pre) > 0 {
+				parts = append(parts, MessagePart{pre, "", nil})
 			}
 			return parts, nil
 		}
 		// tokens[1] is the text before the image
 		if len(tokens[1]) > 0 {
-			parts = append(parts, MessagePart{tokens[1], "", nil})
+			pre := strings.TrimSpace(tokens[1])
+			parts = append(parts, MessagePart{pre, "", nil})
 		}
 		// tokens[2] is the image URL
-		uri, err := dataurl.UnescapeToString(strings.ReplaceAll(tokens[2], " ", ""))
+		uri, err := dataurl.UnescapeToString(strings.TrimSpace(strings.ReplaceAll(tokens[2], " ", "")))
 		if err != nil {
 			b.Log.WithError(err).Info("URL unescaping failed")
-			remaining = tokens[3]
+			remaining = strings.TrimSpace(tokens[3])
 			continue
 		}
 		err = b.decodeImage(uri, &parts)
@@ -71,16 +74,18 @@ func (b *Bmumble) tokenize(t *string) ([]MessagePart, error) {
 			b.Log.WithError(err).Info("Decoding the image failed")
 		}
 		// tokens[3] is the text after the image, processed in the next iteration
-		remaining = tokens[3]
+		remaining = strings.TrimSpace(tokens[3])
 	}
 }
 
 func (b *Bmumble) convertHTMLtoMarkdown(html string) ([]MessagePart, error) {
-	converter := md.NewConverter("", true, nil)
-	markdown, err := converter.ConvertString(html)
+	var sb strings.Builder
+	err := godown.Convert(&sb, strings.NewReader(html), nil)
 	if err != nil {
 		return nil, err
 	}
+	markdown := sb.String()
+	b.Log.Debugf("### to markdown: %s", markdown)
 	return b.tokenize(&markdown)
 }
 

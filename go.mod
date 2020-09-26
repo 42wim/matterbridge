@@ -4,7 +4,6 @@ require (
 	github.com/42wim/go-gitter v0.0.0-20170828205020-017310c2d557
 	github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f
 	github.com/Jeffail/gabs v1.1.1 // indirect
-	github.com/JohannesKaufmann/html-to-markdown v1.2.0
 	github.com/Philipp15b/go-steam v1.0.1-0.20190816133340-b04c5a83c1c0
 	github.com/Rhymen/go-whatsapp v0.1.1-0.20200818115958-f07a700b9819
 	github.com/d5/tengo/v2 v2.6.0
