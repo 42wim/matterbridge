@@ -1446,7 +1446,7 @@ TLSClientKey="mumble.key"
 # OPTIONAL (defaults to Go system CA)
 TLSCACertificate=mumble-ca.crt
 
-# Enable to not verify the certificate on your Nextcloud server.
+# Enable to not verify the certificate on your Mumble server.
 # e.g. when using selfsigned certificates
 # OPTIONAL (default false)
 SkipTLSVerify=false
