@@ -173,9 +173,6 @@ func (b *Bmumble) doConnect() error {
 		Disconnect:   b.handleDisconnect,
 		UserChange:   b.handleUserChange,
 	})
-	if b.GetInt("DebugLevel") == 0 {
-		gumbleConfig.Attach(b.makeDebugHandler())
-	}
 	gumbleConfig.Username = b.GetString("Nick")
 	if password := b.GetString("Password"); password != "" {
 		gumbleConfig.Password = password
@@ -225,7 +222,6 @@ func (b *Bmumble) processMessage(msg *config.Message) {
 	// If this is a specially generated image message, send it unmodified
 	if msg.Event == "mumble_image" {
 		if allowHTML {
-			b.Log.Debugf("Sending image message: %s%s", msg.Username, msg.Text)
 			b.client.Self.Channel.Send(msg.Username+msg.Text, false)
 		} else {
 			b.Log.Info("Can't send image, server does not allow HTML messages")
@@ -253,7 +249,6 @@ func (b *Bmumble) processMessage(msg *config.Message) {
 	}
 	// Send the individual lindes
 	for i := range msgLines {
-		b.Log.Debugf("Sending line: %s", msgLines[i])
 		b.client.Self.Channel.Send(msg.Username+msgLines[i], false)
 	}
 }

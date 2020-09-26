@@ -2,9 +2,9 @@ package bmumble
 
 import (
 	"strconv"
+	"time"
 
 	"layeh.com/gumble/gumble"
-	"layeh.com/gumble/gumbleutil"
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
@@ -20,6 +20,7 @@ func (b *Bmumble) handleTextMessage(event *gumble.TextMessageEvent) {
 	if err != nil {
 		b.Log.Error(err)
 	}
+	now := time.Now().UTC()
 	for i, part := range parts {
 		// Construct matterbridge message and pass on to the gateway
 		rmsg := config.Message{
@@ -31,14 +32,14 @@ func (b *Bmumble) handleTextMessage(event *gumble.TextMessageEvent) {
 		if part.Image == nil {
 			rmsg.Text = part.Text
 		} else {
+			fname := b.Account + "_" + strconv.FormatInt(now.UnixNano(), 10) + "_" + strconv.Itoa(i) + part.FileExtension
 			rmsg.Extra = make(map[string][]interface{})
-			if err = helper.HandleDownloadSize(b.Log, &rmsg, "image"+strconv.Itoa(i)+part.FileExtension, int64(len(part.Image)), b.General); err != nil {
+			if err = helper.HandleDownloadSize(b.Log, &rmsg, fname, int64(len(part.Image)), b.General); err != nil {
 				b.Log.WithError(err).Warn("not including image in message")
 				continue
 			}
-			helper.HandleDownloadData(b.Log, &rmsg, "image"+strconv.Itoa(i)+part.FileExtension, "", "", &part.Image, b.General)
+			helper.HandleDownloadData(b.Log, &rmsg, fname, "", "", &part.Image, b.General)
 		}
-		b.Log.Debugf("<= Remote message is %+v", rmsg)
 		b.Remote <- rmsg
 	}
 }
@@ -81,21 +82,4 @@ func (b *Bmumble) handleUserChange(event *gumble.UserChangeEvent) {
 
 func (b *Bmumble) handleDisconnect(event *gumble.DisconnectEvent) {
 	b.connected <- *event
-}
-
-func (b *Bmumble) makeDebugHandler() *gumbleutil.Listener {
-	handler := gumbleutil.Listener{
-		Connect:             func(e *gumble.ConnectEvent) { b.Log.Debugf("Received connect event: %+v", e) },
-		Disconnect:          func(e *gumble.DisconnectEvent) { b.Log.Debugf("Received disconnect event: %+v", e) },
-		TextMessage:         func(e *gumble.TextMessageEvent) { b.Log.Debugf("Received textmessage event: %+v", e) },
-		UserChange:          func(e *gumble.UserChangeEvent) { b.Log.Debugf("Received userchange event: %+v", e) },
-		ChannelChange:       func(e *gumble.ChannelChangeEvent) { b.Log.Debugf("Received channelchange event: %+v", e) },
-		PermissionDenied:    func(e *gumble.PermissionDeniedEvent) { b.Log.Debugf("Received permissiondenied event: %+v", e) },
-		UserList:            func(e *gumble.UserListEvent) { b.Log.Debugf("Received userlist event: %+v", e) },
-		ACL:                 func(e *gumble.ACLEvent) { b.Log.Debugf("Received acl event: %+v", e) },
-		BanList:             func(e *gumble.BanListEvent) { b.Log.Debugf("Received banlist event: %+v", e) },
-		ContextActionChange: func(e *gumble.ContextActionChangeEvent) { b.Log.Debugf("Received contextactionchange event: %+v", e) },
-		ServerConfig:        func(e *gumble.ServerConfigEvent) { b.Log.Debugf("Received serverconfig event: %+v", e) },
-	}
-	return &handler
 }

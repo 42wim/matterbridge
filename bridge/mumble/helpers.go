@@ -49,7 +49,6 @@ func (b *Bmumble) tokenize(t *string) ([]MessagePart, error) {
 		tokens := p.FindStringSubmatch(remaining)
 
 		if tokens == nil {
-			b.Log.Debugf("Last text token: %s", remaining)
 			// no match -> remaining string is non-image text
 			if len(remaining) > 0 {
 				parts = append(parts, MessagePart{remaining, "", nil})
@@ -67,7 +66,6 @@ func (b *Bmumble) tokenize(t *string) ([]MessagePart, error) {
 			remaining = tokens[3]
 			continue
 		}
-		b.Log.Debugf("Raw data: URL: %s", uri)
 		err = b.decodeImage(uri, &parts)
 		if err != nil {
 			b.Log.WithError(err).Info("Decoding the image failed")
@@ -94,14 +92,43 @@ func (b *Bmumble) extractFiles(msg *config.Message) []config.Message {
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo)
 		if fi.Data == nil || len(*fi.Data) == 0 {
-			// Mumble needs the raw data
-			b.Log.Info("Not forwarding file without local data")
+			if len(fi.URL) > 0 {
+				// no data, send link instead
+				imsg := config.Message{
+					Text:      fmt.Sprintf(`<a href="%s">%s</a>`, fi.URL, fi.URL),
+					Channel:   msg.Channel,
+					Username:  msg.Username,
+					UserID:    msg.UserID,
+					Account:   msg.Account,
+					Protocol:  msg.Protocol,
+					Timestamp: msg.Timestamp,
+					Event:     "mumble_image",
+				}
+				messages = append(messages, imsg)
+			} else {
+				// Mumble needs the raw data
+				b.Log.Info("Not forwarding file without local data")
+			}
 			continue
 		}
 		mimeType := http.DetectContentType(*fi.Data)
 		if !strings.HasPrefix(mimeType, "image/") {
-			// Mumble only supports images
-			b.Log.Infof("Not forwarding file of type %s", mimeType)
+			// Mumble only supports images, send link instead
+			if len(fi.URL) > 0 {
+				imsg := config.Message{
+					Text:      fmt.Sprintf(`<a href="%s">%s</a>`, fi.URL, fi.URL),
+					Channel:   msg.Channel,
+					Username:  msg.Username,
+					UserID:    msg.UserID,
+					Account:   msg.Account,
+					Protocol:  msg.Protocol,
+					Timestamp: msg.Timestamp,
+					Event:     "mumble_image",
+				}
+				messages = append(messages, imsg)
+			} else {
+				b.Log.Infof("Not forwarding file of type %s", mimeType)
+			}
 			continue
 		}
 		mimeType = strings.TrimSpace(strings.Split(mimeType, ";")[0])
@@ -120,7 +147,6 @@ func (b *Bmumble) extractFiles(msg *config.Message) []config.Message {
 			Account:   msg.Account,
 			Protocol:  msg.Protocol,
 			Timestamp: msg.Timestamp,
-			Extra:     make(map[string][]interface{}),
 			Event:     "mumble_image",
 		}
 		messages = append(messages, imsg)
