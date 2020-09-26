@@ -135,12 +135,12 @@ func (b *Bmumble) extractFiles(msg *config.Message) []config.Message {
 		mimeType = strings.TrimSpace(strings.Split(mimeType, ";")[0])
 		// Build data:image/...;base64,... style image URL and embed image directly into the message
 		du := dataurl.New(*fi.Data, mimeType)
-		url, err := du.MarshalText()
+		dataURL, err := du.MarshalText()
 		if err != nil {
 			b.Log.WithError(err).Infof("Image Serialization into data URL failed (type: %s, length: %d)", mimeType, len(*fi.Data))
 			continue
 		}
-		imsg.Text = fmt.Sprintf(`<img src="%s"/>`, url)
+		imsg.Text = fmt.Sprintf(`<img src="%s"/>`, dataURL)
 		messages = append(messages, imsg)
 	}
 	// Remove files from original message
@@ -150,16 +150,19 @@ func (b *Bmumble) extractFiles(msg *config.Message) []config.Message {
 
 func (b *Bmumble) parseChannelPath(client *gumble.Client, name string) ([]string, error) {
 	if strings.HasPrefix(name, "ID:") {
-		if channelId, err := strconv.ParseUint(name[3:], 10, 32); err == nil {
-			if c, ok := client.Channels[uint32(channelId)]; ok {
-				return gumbleutil.ChannelPath(c)[1:], nil
-			}
-			b.Log.Fatalf("No channel with ID %d", channelId)
-			return nil, errors.New("no such channel: " + name)
-		} else {
+		// Parse the ID string into an int
+		channelID, err := strconv.ParseUint(name[3:], 10, 32)
+		if err != nil {
 			b.Log.WithError(err).Fatalf("Cannot parse channel ID: %s", name)
 			return nil, err
 		}
+		// Verify that the ID refers to an existing channel
+		c, ok := client.Channels[uint32(channelID)]
+		if !ok {
+			b.Log.Fatalf("No channel with ID %d", channelID)
+			return nil, errors.New("no such channel: " + name)
+		}
+		return gumbleutil.ChannelPath(c)[1:], nil
 	} else {
 		if !strings.HasPrefix(name, "/") {
 			return nil, errors.New("channel path must start with a '/': " + name)
@@ -168,7 +171,7 @@ func (b *Bmumble) parseChannelPath(client *gumble.Client, name string) ([]string
 		if name == "/" {
 			return make([]string, 0), nil
 		}
-		// Discard first token, which is the empty string before the leading /
+		// Iterate all path components, discarding the first token, which is the empty string before the leading /
 		tokens := strings.Split(name, "/")
 		var channelPath []string
 		for _, token := range tokens[1:] {

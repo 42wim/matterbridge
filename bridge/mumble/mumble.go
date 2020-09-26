@@ -193,7 +193,7 @@ func (b *Bmumble) doConnect() error {
 func (b *Bmumble) doJoin(client *gumble.Client, channelPath []string) error {
 	c := client.Channels.Find(channelPath...)
 	if c == nil {
-		return errors.New(fmt.Sprintf("no such channel: %v", channelPath))
+		return fmt.Errorf("no such channel: %v", channelPath)
 	}
 	b.Channel = gumbleutil.ChannelPath(c)[1:]
 	client.Self.Move(c)
