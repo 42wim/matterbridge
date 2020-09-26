@@ -89,58 +89,10 @@ func (b *Bmumble) extractFiles(msg *config.Message) []config.Message {
 	if msg.Extra == nil || len(msg.Extra["file"]) == 0 {
 		return messages
 	}
+	// Create a separate message for each file
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo)
-		if fi.Data == nil || len(*fi.Data) == 0 {
-			if len(fi.URL) > 0 {
-				// no data, send link instead
-				imsg := config.Message{
-					Text:      fmt.Sprintf(`<a href="%s">%s</a>`, fi.URL, fi.URL),
-					Channel:   msg.Channel,
-					Username:  msg.Username,
-					UserID:    msg.UserID,
-					Account:   msg.Account,
-					Protocol:  msg.Protocol,
-					Timestamp: msg.Timestamp,
-					Event:     "mumble_image",
-				}
-				messages = append(messages, imsg)
-			} else {
-				// Mumble needs the raw data
-				b.Log.Info("Not forwarding file without local data")
-			}
-			continue
-		}
-		mimeType := http.DetectContentType(*fi.Data)
-		if !strings.HasPrefix(mimeType, "image/") {
-			// Mumble only supports images, send link instead
-			if len(fi.URL) > 0 {
-				imsg := config.Message{
-					Text:      fmt.Sprintf(`<a href="%s">%s</a>`, fi.URL, fi.URL),
-					Channel:   msg.Channel,
-					Username:  msg.Username,
-					UserID:    msg.UserID,
-					Account:   msg.Account,
-					Protocol:  msg.Protocol,
-					Timestamp: msg.Timestamp,
-					Event:     "mumble_image",
-				}
-				messages = append(messages, imsg)
-			} else {
-				b.Log.Infof("Not forwarding file of type %s", mimeType)
-			}
-			continue
-		}
-		mimeType = strings.TrimSpace(strings.Split(mimeType, ";")[0])
-		// Build image message
-		du := dataurl.New(*fi.Data, mimeType)
-		url, err := du.MarshalText()
-		if err != nil {
-			b.Log.WithError(err).Infof("Image Serialization into data URL failed (type: %s, length: %d)", mimeType, len(*fi.Data))
-			continue
-		}
 		imsg := config.Message{
-			Text:      fmt.Sprintf(`<img src="%s"/>`, url),
 			Channel:   msg.Channel,
 			Username:  msg.Username,
 			UserID:    msg.UserID,
@@ -149,6 +101,36 @@ func (b *Bmumble) extractFiles(msg *config.Message) []config.Message {
 			Timestamp: msg.Timestamp,
 			Event:     "mumble_image",
 		}
+		// If no data is present for the file, send a link instead
+		if fi.Data == nil || len(*fi.Data) == 0 {
+			if len(fi.URL) > 0 {
+				imsg.Text = fmt.Sprintf(`<a href="%s">%s</a>`, fi.URL, fi.URL)
+				messages = append(messages, imsg)
+			} else {
+				b.Log.Infof("Not forwarding file without local data")
+			}
+			continue
+		}
+		mimeType := http.DetectContentType(*fi.Data)
+		// Mumble only supports images natively, send a link instead
+		if !strings.HasPrefix(mimeType, "image/") {
+			if len(fi.URL) > 0 {
+				imsg.Text = fmt.Sprintf(`<a href="%s">%s</a>`, fi.URL, fi.URL)
+				messages = append(messages, imsg)
+			} else {
+				b.Log.Infof("Not forwarding file of type %s", mimeType)
+			}
+			continue
+		}
+		mimeType = strings.TrimSpace(strings.Split(mimeType, ";")[0])
+		// Build data:image/...;base64,... style image URL and embed image directly into the message
+		du := dataurl.New(*fi.Data, mimeType)
+		url, err := du.MarshalText()
+		if err != nil {
+			b.Log.WithError(err).Infof("Image Serialization into data URL failed (type: %s, length: %d)", mimeType, len(*fi.Data))
+			continue
+		}
+		imsg.Text = fmt.Sprintf(`<img src="%s"/>`, url)
 		messages = append(messages, imsg)
 	}
 	// Remove files from original message
