@@ -1791,7 +1791,8 @@ enable=true
     # -------------------------------------------------------------------------------------------------------------------------------------
     #   msteams  |      threadId      |    19:82abcxx@thread.skype    | You'll find the threadId in the URL
     # -------------------------------------------------------------------------------------------------------------------------------------
-    #   mumble   |   channel name     |            General            | The channel name, as shown in Mumble
+    #   mumble   |    channel id      |             ID:42             | The channel ID, as shown in the channel's "Edit" window
+    #            |   channel path     |  /A%20channel/a%20subchannel  | The urlencoded channel path, as contained in the channel's URL
     # -------------------------------------------------------------------------------------------------------------------------------------
     # rocketchat |      channel       |            #channel           | # is required for private channels too
     # -------------------------------------------------------------------------------------------------------------------------------------

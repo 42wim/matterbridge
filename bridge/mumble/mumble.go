@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"strconv"
@@ -26,7 +27,7 @@ type Bmumble struct {
 	client             *gumble.Client
 	Nick               string
 	Host               string
-	Channel            string
+	Channel            []string
 	local              chan config.Message
 	running            chan error
 	connected          chan gumble.DisconnectEvent
@@ -75,12 +76,15 @@ func (b *Bmumble) Disconnect() error {
 }
 
 func (b *Bmumble) JoinChannel(channel config.ChannelInfo) error {
-	if b.Channel != "" && channel.Name != b.Channel {
-		b.Log.Fatalf("Cannot join channel '%s', already joined to channel '%s'", channel.Name, b.Channel)
+	channelPath, err := b.parseChannelPath(b.client, channel.Name)
+	if err != nil {
+		return err
+	}
+	if b.Channel != nil {
+		b.Log.Fatalf("Cannot join channel '%v', already joined to channel '%v'", channel.Name, b.Channel)
 		return errors.New("the Mumble bridge can only join a single channel")
 	}
-	b.Channel = channel.Name
-	return b.doJoin(b.client, channel.Name)
+	return b.doJoin(b.client, channelPath)
 }
 
 func (b *Bmumble) Send(msg config.Message) (string, error) {
@@ -186,13 +190,13 @@ func (b *Bmumble) doConnect() error {
 	return nil
 }
 
-func (b *Bmumble) doJoin(client *gumble.Client, name string) error {
-	c := client.Channels.Find(name)
+func (b *Bmumble) doJoin(client *gumble.Client, channelPath []string) error {
+	c := client.Channels.Find(channelPath...)
 	if c == nil {
-		return errors.New("No such channel: " + name)
+		return errors.New(fmt.Sprintf("no such channel: %v", channelPath))
 	}
+	b.Channel = gumbleutil.ChannelPath(c)[1:]
 	client.Self.Move(c)
-	b.Channel = c.Name
 	return nil
 }
 

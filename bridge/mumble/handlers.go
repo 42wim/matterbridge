@@ -53,7 +53,7 @@ func (b *Bmumble) handleConnect(event *gumble.ConnectEvent) {
 	event.Client.Self.SetSelfDeafened(true)
 	event.Client.Self.SetSelfMuted(true)
 	// if the Channel variable is set, this is a reconnect -> rejoin channel
-	if b.Channel != "" {
+	if b.Channel != nil {
 		if err := b.doJoin(event.Client, b.Channel); err != nil {
 			b.Log.Error(err)
 		}
@@ -73,7 +73,7 @@ func (b *Bmumble) handleUserChange(event *gumble.UserChangeEvent) {
 		return
 	}
 	// Someone attempted to move the user out of the configured channel; attempt to join back
-	if b.Channel != "" && b.Channel != event.Client.Self.Channel.Name {
+	if b.Channel != nil {
 		if err := b.doJoin(event.Client, b.Channel); err != nil {
 			b.Log.Error(err)
 		}
