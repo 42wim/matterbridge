@@ -27,7 +27,7 @@ type Bmumble struct {
 	client             *gumble.Client
 	Nick               string
 	Host               string
-	Channel            []string
+	Channel            *uint32
 	local              chan config.Message
 	running            chan error
 	connected          chan gumble.DisconnectEvent
@@ -76,15 +76,17 @@ func (b *Bmumble) Disconnect() error {
 }
 
 func (b *Bmumble) JoinChannel(channel config.ChannelInfo) error {
-	channelPath, err := b.parseChannelPath(b.client, channel.Name)
+	cid, err := strconv.ParseUint(channel.Name, 10, 32)
 	if err != nil {
 		return err
 	}
-	if b.Channel != nil {
-		b.Log.Fatalf("Cannot join channel '%v', already joined to channel '%v'", channel.Name, b.Channel)
+	channelID := uint32(cid)
+	if b.Channel != nil && *b.Channel != channelID {
+		b.Log.Fatalf("Cannot join channel ID '%d', already joined to channel ID %d", channelID, *b.Channel)
 		return errors.New("the Mumble bridge can only join a single channel")
 	}
-	return b.doJoin(b.client, channelPath)
+	b.Channel = &channelID
+	return b.doJoin(b.client, channelID)
 }
 
 func (b *Bmumble) Send(msg config.Message) (string, error) {
@@ -190,13 +192,12 @@ func (b *Bmumble) doConnect() error {
 	return nil
 }
 
-func (b *Bmumble) doJoin(client *gumble.Client, channelPath []string) error {
-	c := client.Channels.Find(channelPath...)
-	if c == nil {
-		return fmt.Errorf("no such channel: %v", channelPath)
+func (b *Bmumble) doJoin(client *gumble.Client, channelID uint32) error {
+	channel, ok := client.Channels[channelID]
+	if !ok {
+		return fmt.Errorf("no channel with ID %d", channelID)
 	}
-	b.Channel = gumbleutil.ChannelPath(c)[1:]
-	client.Self.Move(c)
+	client.Self.Move(channel)
 	return nil
 }
 

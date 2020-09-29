@@ -1,17 +1,11 @@
 package bmumble
 
 import (
-	"errors"
 	"fmt"
 	"mime"
 	"net/http"
-	"net/url"
 	"regexp"
-	"strconv"
 	"strings"
-
-	"layeh.com/gumble/gumble"
-	"layeh.com/gumble/gumbleutil"
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/mattn/godown"
@@ -146,48 +140,4 @@ func (b *Bmumble) extractFiles(msg *config.Message) []config.Message {
 	// Remove files from original message
 	msg.Extra["file"] = nil
 	return messages
-}
-
-func (b *Bmumble) parseChannelPath(client *gumble.Client, name string) ([]string, error) {
-	// Parse the channel name as a numeric ID if passed as "ID:42"
-	if strings.HasPrefix(name, "ID:") {
-		// Parse the ID string into an int
-		channelID, err := strconv.ParseUint(name[3:], 10, 32)
-		if err != nil {
-			b.Log.WithError(err).Fatalf("Cannot parse channel ID: %s", name)
-			return nil, err
-		}
-		// Verify that the ID refers to an existing channel
-		c, ok := client.Channels[uint32(channelID)]
-		if !ok {
-			b.Log.Fatalf("No channel with ID %d", channelID)
-			return nil, errors.New("no such channel: " + name)
-		}
-		return gumbleutil.ChannelPath(c)[1:], nil
-	}
-
-	if !strings.HasPrefix(name, "/") {
-		return nil, errors.New("channel path must start with a '/': " + name)
-	}
-	// Special treatment for the root channel: empty slice
-	if name == "/" {
-		return make([]string, 0), nil
-	}
-	// Iterate all path components, discarding the first token, which is the empty string before the leading /
-	tokens := strings.Split(name, "/")
-	var channelPath []string
-	for _, token := range tokens[1:] {
-		// Urldecode each token and append it to the path
-		if channelName, err := url.PathUnescape(token); err == nil && len(channelName) > 0 {
-			channelPath = append(channelPath, channelName)
-		} else {
-			b.Log.WithError(err).Fatalf("Error while decoding path component '%s'", token)
-			return nil, err
-		}
-	}
-	c := client.Channels.Find(channelPath...)
-	if c == nil {
-		return nil, errors.New("no such channel: " + name)
-	}
-	return gumbleutil.ChannelPath(c)[1:], nil
 }
