@@ -24,7 +24,7 @@ func (b *Bmumble) handleTextMessage(event *gumble.TextMessageEvent) {
 	for i, part := range parts {
 		// Construct matterbridge message and pass on to the gateway
 		rmsg := config.Message{
-			Channel:  event.Client.Self.Channel.Name,
+			Channel:  strconv.FormatUint(uint64(event.Client.Self.Channel.ID), 10),
 			Username: event.TextMessage.Sender.Name,
 			UserID:   event.TextMessage.Sender.Name + "@" + b.Host,
 			Account:  b.Account,
@@ -40,6 +40,7 @@ func (b *Bmumble) handleTextMessage(event *gumble.TextMessageEvent) {
 			}
 			helper.HandleDownloadData(b.Log, &rmsg, fname, "", "", &part.Image, b.General)
 		}
+		b.Log.Debugf("Sending message to gateway: %+v", rmsg)
 		b.Remote <- rmsg
 	}
 }
