@@ -22,6 +22,9 @@ import (
 // MessageType describes what kind of message a returned Nextcloud Talk message is
 type MessageType string
 
+// ActorType describes what kind of actor a returned Nextcloud Talk message is from
+type ActorType string
+
 const (
 	// MessageComment is a Nextcloud Talk message that is a comment
 	MessageComment MessageType = "comment"
@@ -31,12 +34,19 @@ const (
 
 	// MessageCommand is a Nextcloud Talk message that is a command
 	MessageCommand MessageType = "command"
+
+	// ActorUser is a Nextcloud Talk message sent by a user
+	ActorUser ActorType = "users"
+
+	// ActorGuest is a Nextcloud Talk message sent by a guest
+	ActorGuest ActorType = "guests"
 )
 
 // TalkRoomMessageData describes the data part of a ocs response for a Talk room message
 type TalkRoomMessageData struct {
 	Message           string                      `json:"message"`
 	ID                int                         `json:"id"`
+	ActorType         ActorType                   `json:"actorType"`
 	ActorID           string                      `json:"actorId"`
 	ActorDisplayName  string                      `json:"actorDisplayName"`
 	SystemMessage     string                      `json:"systemMessage"`
@@ -61,6 +71,17 @@ func (m *TalkRoomMessageData) PlainMessage() string {
 		tr = strings.ReplaceAll(tr, "{"+key+"}", value.Name)
 	}
 	return tr
+}
+
+// DisplayName returns the display name for the sender of the message (" (Guest)" is appended if sent by a guest user)
+func (m *TalkRoomMessageData) DisplayName() string {
+	if m.ActorType == ActorGuest {
+		if m.ActorDisplayName == "" {
+			return "Guest"
+		}
+		return m.ActorDisplayName + " (Guest)"
+	}
+	return m.ActorDisplayName
 }
 
 // TalkRoomMessage describes an ocs response for a Talk room message

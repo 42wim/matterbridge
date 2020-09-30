@@ -1405,6 +1405,9 @@ Login = "talkuser"
 # Password of the bot
 Password = "talkuserpass"
 
+# Suffix for Guest Users
+GuestSuffix = " (Guest)"
+
 ###################################################################
 #
 # WhatsApp
