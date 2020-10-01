@@ -15,6 +15,10 @@ func (b *Bmumble) handleServerConfig(event *gumble.ServerConfigEvent) {
 }
 
 func (b *Bmumble) handleTextMessage(event *gumble.TextMessageEvent) {
+	sender := "unknown"
+	if event.TextMessage.Sender != nil {
+		sender = event.TextMessage.Sender.Name
+	}
 	// Convert Mumble HTML messages to markdown
 	parts, err := b.convertHTMLtoMarkdown(event.TextMessage.Message)
 	if err != nil {
@@ -25,8 +29,8 @@ func (b *Bmumble) handleTextMessage(event *gumble.TextMessageEvent) {
 		// Construct matterbridge message and pass on to the gateway
 		rmsg := config.Message{
 			Channel:  strconv.FormatUint(uint64(event.Client.Self.Channel.ID), 10),
-			Username: event.TextMessage.Sender.Name,
-			UserID:   event.TextMessage.Sender.Name + "@" + b.Host,
+			Username: sender,
+			UserID:   sender + "@" + b.Host,
 			Account:  b.Account,
 		}
 		if part.Image == nil {
@@ -47,7 +51,7 @@ func (b *Bmumble) handleTextMessage(event *gumble.TextMessageEvent) {
 
 func (b *Bmumble) handleConnect(event *gumble.ConnectEvent) {
 	// Set the user's "bio"/comment
-	if comment := b.GetString("UserComment"); comment != "" {
+	if comment := b.GetString("UserComment"); comment != "" && event.Client.Self != nil {
 		event.Client.Self.SetComment(comment)
 	}
 	// No need to talk or listen
