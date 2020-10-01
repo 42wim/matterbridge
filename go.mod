@@ -43,6 +43,7 @@ require (
 	github.com/slack-go/slack v0.6.6
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.6.1
+	github.com/vincent-petithory/dataurl v0.0.0-20191104211930-d1553a71de50
 	github.com/writeas/go-strip-markdown v2.0.1+incompatible
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2 // indirect
 	github.com/yaegashi/msgraph.go v0.1.4
@@ -51,6 +52,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
 	gomod.garykim.dev/nc-talk v0.1.3
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
+	layeh.com/gumble v0.0.0-20200818122324-146f9205029b
 )
 
 go 1.13
