@@ -1407,7 +1407,7 @@ Password = "talkuserpass"
 
 # Suffix for Guest Users
 GuestSuffix = " (Guest)"
-# If true, use the User ID instead of Display Name for non-guest users
+# If true, use the User ID instead of Display Name for non-guest users (default false)
 # WARNING: Before using this, verify that your user IDs are indeed human-readable and intended for display.
 UserIdAsNick = false
 
