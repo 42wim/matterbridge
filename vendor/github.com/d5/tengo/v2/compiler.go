@@ -323,7 +323,7 @@ func (c *Compiler) Compile(node parser.Node) error {
 			return err
 		}
 	case *parser.Ident:
-		symbol, _, ok := c.symbolTable.Resolve(node.Name)
+		symbol, _, ok := c.symbolTable.Resolve(node.Name, false)
 		if !ok {
 			return c.errorf(node, "unresolved reference '%s'", node.Name)
 		}
@@ -659,7 +659,7 @@ func (c *Compiler) compileAssign(
 		return c.errorf(node, "operator ':=' not allowed with selector")
 	}
 
-	symbol, depth, exists := c.symbolTable.Resolve(ident)
+	symbol, depth, exists := c.symbolTable.Resolve(ident, false)
 	if op == token.Define {
 		if depth == 0 && exists {
 			return c.errorf(node, "'%s' redeclared in this block", ident)

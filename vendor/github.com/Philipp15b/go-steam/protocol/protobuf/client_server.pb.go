@@ -67,7 +67,7 @@ func (EMMSLobbyStatus) EnumDescriptor() ([]byte, []int) {
 }
 
 type CMsgClientUDSP2PSessionStarted struct {
-	SteamidRemote        *uint64  `protobuf:"fixed64,1,opt,name=steamid_remote" json:"steamid_remote,omitempty"`
+	SteamidRemote        *uint64  `protobuf:"fixed64,1,opt,name=steamid_remote,json=steamidRemote" json:"steamid_remote,omitempty"`
 	Appid                *int32   `protobuf:"varint,2,opt,name=appid" json:"appid,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -114,16 +114,16 @@ func (m *CMsgClientUDSP2PSessionStarted) GetAppid() int32 {
 }
 
 type CMsgClientUDSP2PSessionEnded struct {
-	SteamidRemote        *uint64  `protobuf:"fixed64,1,opt,name=steamid_remote" json:"steamid_remote,omitempty"`
+	SteamidRemote        *uint64  `protobuf:"fixed64,1,opt,name=steamid_remote,json=steamidRemote" json:"steamid_remote,omitempty"`
 	Appid                *int32   `protobuf:"varint,2,opt,name=appid" json:"appid,omitempty"`
-	SessionLengthSec     *int32   `protobuf:"varint,3,opt,name=session_length_sec" json:"session_length_sec,omitempty"`
-	SessionError         *int32   `protobuf:"varint,4,opt,name=session_error" json:"session_error,omitempty"`
+	SessionLengthSec     *int32   `protobuf:"varint,3,opt,name=session_length_sec,json=sessionLengthSec" json:"session_length_sec,omitempty"`
+	SessionError         *int32   `protobuf:"varint,4,opt,name=session_error,json=sessionError" json:"session_error,omitempty"`
 	Nattype              *int32   `protobuf:"varint,5,opt,name=nattype" json:"nattype,omitempty"`
-	BytesRecv            *int32   `protobuf:"varint,6,opt,name=bytes_recv" json:"bytes_recv,omitempty"`
-	BytesSent            *int32   `protobuf:"varint,7,opt,name=bytes_sent" json:"bytes_sent,omitempty"`
-	BytesSentRelay       *int32   `protobuf:"varint,8,opt,name=bytes_sent_relay" json:"bytes_sent_relay,omitempty"`
-	BytesRecvRelay       *int32   `protobuf:"varint,9,opt,name=bytes_recv_relay" json:"bytes_recv_relay,omitempty"`
-	TimeToConnectMs      *int32   `protobuf:"varint,10,opt,name=time_to_connect_ms" json:"time_to_connect_ms,omitempty"`
+	BytesRecv            *int32   `protobuf:"varint,6,opt,name=bytes_recv,json=bytesRecv" json:"bytes_recv,omitempty"`
+	BytesSent            *int32   `protobuf:"varint,7,opt,name=bytes_sent,json=bytesSent" json:"bytes_sent,omitempty"`
+	BytesSentRelay       *int32   `protobuf:"varint,8,opt,name=bytes_sent_relay,json=bytesSentRelay" json:"bytes_sent_relay,omitempty"`
+	BytesRecvRelay       *int32   `protobuf:"varint,9,opt,name=bytes_recv_relay,json=bytesRecvRelay" json:"bytes_recv_relay,omitempty"`
+	TimeToConnectMs      *int32   `protobuf:"varint,10,opt,name=time_to_connect_ms,json=timeToConnectMs" json:"time_to_connect_ms,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -225,9 +225,9 @@ func (m *CMsgClientUDSP2PSessionEnded) GetTimeToConnectMs() int32 {
 }
 
 type CMsgClientRegisterAuthTicketWithCM struct {
-	ProtocolVersion      *uint32  `protobuf:"varint,1,opt,name=protocol_version" json:"protocol_version,omitempty"`
+	ProtocolVersion      *uint32  `protobuf:"varint,1,opt,name=protocol_version,json=protocolVersion" json:"protocol_version,omitempty"`
 	Ticket               []byte   `protobuf:"bytes,3,opt,name=ticket" json:"ticket,omitempty"`
-	ClientInstanceId     *uint64  `protobuf:"varint,4,opt,name=client_instance_id" json:"client_instance_id,omitempty"`
+	ClientInstanceId     *uint64  `protobuf:"varint,4,opt,name=client_instance_id,json=clientInstanceId" json:"client_instance_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -280,14 +280,14 @@ func (m *CMsgClientRegisterAuthTicketWithCM) GetClientInstanceId() uint64 {
 }
 
 type CMsgClientTicketAuthComplete struct {
-	SteamId              *uint64  `protobuf:"fixed64,1,opt,name=steam_id" json:"steam_id,omitempty"`
-	GameId               *uint64  `protobuf:"fixed64,2,opt,name=game_id" json:"game_id,omitempty"`
+	SteamId              *uint64  `protobuf:"fixed64,1,opt,name=steam_id,json=steamId" json:"steam_id,omitempty"`
+	GameId               *uint64  `protobuf:"fixed64,2,opt,name=game_id,json=gameId" json:"game_id,omitempty"`
 	Estate               *uint32  `protobuf:"varint,3,opt,name=estate" json:"estate,omitempty"`
-	EauthSessionResponse *uint32  `protobuf:"varint,4,opt,name=eauth_session_response" json:"eauth_session_response,omitempty"`
-	DEPRECATEDTicket     []byte   `protobuf:"bytes,5,opt,name=DEPRECATED_ticket" json:"DEPRECATED_ticket,omitempty"`
-	TicketCrc            *uint32  `protobuf:"varint,6,opt,name=ticket_crc" json:"ticket_crc,omitempty"`
-	TicketSequence       *uint32  `protobuf:"varint,7,opt,name=ticket_sequence" json:"ticket_sequence,omitempty"`
-	OwnerSteamId         *uint64  `protobuf:"fixed64,8,opt,name=owner_steam_id" json:"owner_steam_id,omitempty"`
+	EauthSessionResponse *uint32  `protobuf:"varint,4,opt,name=eauth_session_response,json=eauthSessionResponse" json:"eauth_session_response,omitempty"`
+	DEPRECATEDTicket     []byte   `protobuf:"bytes,5,opt,name=DEPRECATED_ticket,json=DEPRECATEDTicket" json:"DEPRECATED_ticket,omitempty"`
+	TicketCrc            *uint32  `protobuf:"varint,6,opt,name=ticket_crc,json=ticketCrc" json:"ticket_crc,omitempty"`
+	TicketSequence       *uint32  `protobuf:"varint,7,opt,name=ticket_sequence,json=ticketSequence" json:"ticket_sequence,omitempty"`
+	OwnerSteamId         *uint64  `protobuf:"fixed64,8,opt,name=owner_steam_id,json=ownerSteamId" json:"owner_steam_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -375,10 +375,10 @@ func (m *CMsgClientTicketAuthComplete) GetOwnerSteamId() uint64 {
 }
 
 type CMsgClientCMList struct {
-	CmAddresses               []uint32 `protobuf:"varint,1,rep,name=cm_addresses" json:"cm_addresses,omitempty"`
-	CmPorts                   []uint32 `protobuf:"varint,2,rep,name=cm_ports" json:"cm_ports,omitempty"`
-	CmWebsocketAddresses      []string `protobuf:"bytes,3,rep,name=cm_websocket_addresses" json:"cm_websocket_addresses,omitempty"`
-	PercentDefaultToWebsocket *uint32  `protobuf:"varint,4,opt,name=percent_default_to_websocket" json:"percent_default_to_websocket,omitempty"`
+	CmAddresses               []uint32 `protobuf:"varint,1,rep,name=cm_addresses,json=cmAddresses" json:"cm_addresses,omitempty"`
+	CmPorts                   []uint32 `protobuf:"varint,2,rep,name=cm_ports,json=cmPorts" json:"cm_ports,omitempty"`
+	CmWebsocketAddresses      []string `protobuf:"bytes,3,rep,name=cm_websocket_addresses,json=cmWebsocketAddresses" json:"cm_websocket_addresses,omitempty"`
+	PercentDefaultToWebsocket *uint32  `protobuf:"varint,4,opt,name=percent_default_to_websocket,json=percentDefaultToWebsocket" json:"percent_default_to_websocket,omitempty"`
 	XXX_NoUnkeyedLiteral      struct{} `json:"-"`
 	XXX_unrecognized          []byte   `json:"-"`
 	XXX_sizecache             int32    `json:"-"`
@@ -438,11 +438,11 @@ func (m *CMsgClientCMList) GetPercentDefaultToWebsocket() uint32 {
 }
 
 type CMsgClientP2PConnectionInfo struct {
-	SteamIdDest          *uint64  `protobuf:"fixed64,1,opt,name=steam_id_dest" json:"steam_id_dest,omitempty"`
-	SteamIdSrc           *uint64  `protobuf:"fixed64,2,opt,name=steam_id_src" json:"steam_id_src,omitempty"`
-	AppId                *uint32  `protobuf:"varint,3,opt,name=app_id" json:"app_id,omitempty"`
+	SteamIdDest          *uint64  `protobuf:"fixed64,1,opt,name=steam_id_dest,json=steamIdDest" json:"steam_id_dest,omitempty"`
+	SteamIdSrc           *uint64  `protobuf:"fixed64,2,opt,name=steam_id_src,json=steamIdSrc" json:"steam_id_src,omitempty"`
+	AppId                *uint32  `protobuf:"varint,3,opt,name=app_id,json=appId" json:"app_id,omitempty"`
 	Candidate            []byte   `protobuf:"bytes,4,opt,name=candidate" json:"candidate,omitempty"`
-	ConnectionIdSrc      *uint64  `protobuf:"fixed64,5,opt,name=connection_id_src" json:"connection_id_src,omitempty"`
+	ConnectionIdSrc      *uint64  `protobuf:"fixed64,5,opt,name=connection_id_src,json=connectionIdSrc" json:"connection_id_src,omitempty"`
 	Rendezvous           []byte   `protobuf:"bytes,6,opt,name=rendezvous" json:"rendezvous,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -517,13 +517,13 @@ func (m *CMsgClientP2PConnectionInfo) GetRendezvous() []byte {
 }
 
 type CMsgClientP2PConnectionFailInfo struct {
-	SteamIdDest          *uint64  `protobuf:"fixed64,1,opt,name=steam_id_dest" json:"steam_id_dest,omitempty"`
-	SteamIdSrc           *uint64  `protobuf:"fixed64,2,opt,name=steam_id_src" json:"steam_id_src,omitempty"`
-	AppId                *uint32  `protobuf:"varint,3,opt,name=app_id" json:"app_id,omitempty"`
-	Ep2PSessionError     *uint32  `protobuf:"varint,4,opt,name=ep2p_session_error" json:"ep2p_session_error,omitempty"`
-	ConnectionIdDest     *uint64  `protobuf:"fixed64,5,opt,name=connection_id_dest" json:"connection_id_dest,omitempty"`
-	CloseReason          *uint32  `protobuf:"varint,7,opt,name=close_reason" json:"close_reason,omitempty"`
-	CloseMessage         *string  `protobuf:"bytes,8,opt,name=close_message" json:"close_message,omitempty"`
+	SteamIdDest          *uint64  `protobuf:"fixed64,1,opt,name=steam_id_dest,json=steamIdDest" json:"steam_id_dest,omitempty"`
+	SteamIdSrc           *uint64  `protobuf:"fixed64,2,opt,name=steam_id_src,json=steamIdSrc" json:"steam_id_src,omitempty"`
+	AppId                *uint32  `protobuf:"varint,3,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	Ep2PSessionError     *uint32  `protobuf:"varint,4,opt,name=ep2p_session_error,json=ep2pSessionError" json:"ep2p_session_error,omitempty"`
+	ConnectionIdDest     *uint64  `protobuf:"fixed64,5,opt,name=connection_id_dest,json=connectionIdDest" json:"connection_id_dest,omitempty"`
+	CloseReason          *uint32  `protobuf:"varint,7,opt,name=close_reason,json=closeReason" json:"close_reason,omitempty"`
+	CloseMessage         *string  `protobuf:"bytes,8,opt,name=close_message,json=closeMessage" json:"close_message,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -604,8 +604,8 @@ func (m *CMsgClientP2PConnectionFailInfo) GetCloseMessage() string {
 }
 
 type CMsgClientNetworkingCertRequest struct {
-	KeyData              []byte   `protobuf:"bytes,2,opt,name=key_data" json:"key_data,omitempty"`
-	AppId                *uint32  `protobuf:"varint,3,opt,name=app_id" json:"app_id,omitempty"`
+	KeyData              []byte   `protobuf:"bytes,2,opt,name=key_data,json=keyData" json:"key_data,omitempty"`
+	AppId                *uint32  `protobuf:"varint,3,opt,name=app_id,json=appId" json:"app_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -652,8 +652,8 @@ func (m *CMsgClientNetworkingCertRequest) GetAppId() uint32 {
 
 type CMsgClientNetworkingCertReply struct {
 	Cert                 []byte   `protobuf:"bytes,4,opt,name=cert" json:"cert,omitempty"`
-	CaKeyId              *uint64  `protobuf:"fixed64,5,opt,name=ca_key_id" json:"ca_key_id,omitempty"`
-	CaSignature          []byte   `protobuf:"bytes,6,opt,name=ca_signature" json:"ca_signature,omitempty"`
+	CaKeyId              *uint64  `protobuf:"fixed64,5,opt,name=ca_key_id,json=caKeyId" json:"ca_key_id,omitempty"`
+	CaSignature          []byte   `protobuf:"bytes,6,opt,name=ca_signature,json=caSignature" json:"ca_signature,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -705,8 +705,86 @@ func (m *CMsgClientNetworkingCertReply) GetCaSignature() []byte {
 	return nil
 }
 
+type CMsgClientNetworkingMobileCertRequest struct {
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CMsgClientNetworkingMobileCertRequest) Reset()         { *m = CMsgClientNetworkingMobileCertRequest{} }
+func (m *CMsgClientNetworkingMobileCertRequest) String() string { return proto.CompactTextString(m) }
+func (*CMsgClientNetworkingMobileCertRequest) ProtoMessage()    {}
+func (*CMsgClientNetworkingMobileCertRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_97f09b42bb99641f, []int{9}
+}
+
+func (m *CMsgClientNetworkingMobileCertRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CMsgClientNetworkingMobileCertRequest.Unmarshal(m, b)
+}
+func (m *CMsgClientNetworkingMobileCertRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CMsgClientNetworkingMobileCertRequest.Marshal(b, m, deterministic)
+}
+func (m *CMsgClientNetworkingMobileCertRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CMsgClientNetworkingMobileCertRequest.Merge(m, src)
+}
+func (m *CMsgClientNetworkingMobileCertRequest) XXX_Size() int {
+	return xxx_messageInfo_CMsgClientNetworkingMobileCertRequest.Size(m)
+}
+func (m *CMsgClientNetworkingMobileCertRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_CMsgClientNetworkingMobileCertRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CMsgClientNetworkingMobileCertRequest proto.InternalMessageInfo
+
+func (m *CMsgClientNetworkingMobileCertRequest) GetAppId() uint32 {
+	if m != nil && m.AppId != nil {
+		return *m.AppId
+	}
+	return 0
+}
+
+type CMsgClientNetworkingMobileCertReply struct {
+	EncodedCert          *string  `protobuf:"bytes,1,opt,name=encoded_cert,json=encodedCert" json:"encoded_cert,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CMsgClientNetworkingMobileCertReply) Reset()         { *m = CMsgClientNetworkingMobileCertReply{} }
+func (m *CMsgClientNetworkingMobileCertReply) String() string { return proto.CompactTextString(m) }
+func (*CMsgClientNetworkingMobileCertReply) ProtoMessage()    {}
+func (*CMsgClientNetworkingMobileCertReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_97f09b42bb99641f, []int{10}
+}
+
+func (m *CMsgClientNetworkingMobileCertReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CMsgClientNetworkingMobileCertReply.Unmarshal(m, b)
+}
+func (m *CMsgClientNetworkingMobileCertReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CMsgClientNetworkingMobileCertReply.Marshal(b, m, deterministic)
+}
+func (m *CMsgClientNetworkingMobileCertReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CMsgClientNetworkingMobileCertReply.Merge(m, src)
+}
+func (m *CMsgClientNetworkingMobileCertReply) XXX_Size() int {
+	return xxx_messageInfo_CMsgClientNetworkingMobileCertReply.Size(m)
+}
+func (m *CMsgClientNetworkingMobileCertReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_CMsgClientNetworkingMobileCertReply.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CMsgClientNetworkingMobileCertReply proto.InternalMessageInfo
+
+func (m *CMsgClientNetworkingMobileCertReply) GetEncodedCert() string {
+	if m != nil && m.EncodedCert != nil {
+		return *m.EncodedCert
+	}
+	return ""
+}
+
 type CMsgClientGetAppOwnershipTicket struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -716,7 +794,7 @@ func (m *CMsgClientGetAppOwnershipTicket) Reset()         { *m = CMsgClientGetAp
 func (m *CMsgClientGetAppOwnershipTicket) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientGetAppOwnershipTicket) ProtoMessage()    {}
 func (*CMsgClientGetAppOwnershipTicket) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{9}
+	return fileDescriptor_97f09b42bb99641f, []int{11}
 }
 
 func (m *CMsgClientGetAppOwnershipTicket) XXX_Unmarshal(b []byte) error {
@@ -746,7 +824,7 @@ func (m *CMsgClientGetAppOwnershipTicket) GetAppId() uint32 {
 
 type CMsgClientGetAppOwnershipTicketResponse struct {
 	Eresult              *uint32  `protobuf:"varint,1,opt,name=eresult,def=2" json:"eresult,omitempty"`
-	AppId                *uint32  `protobuf:"varint,2,opt,name=app_id" json:"app_id,omitempty"`
+	AppId                *uint32  `protobuf:"varint,2,opt,name=app_id,json=appId" json:"app_id,omitempty"`
 	Ticket               []byte   `protobuf:"bytes,3,opt,name=ticket" json:"ticket,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -759,7 +837,7 @@ func (m *CMsgClientGetAppOwnershipTicketResponse) Reset() {
 func (m *CMsgClientGetAppOwnershipTicketResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientGetAppOwnershipTicketResponse) ProtoMessage()    {}
 func (*CMsgClientGetAppOwnershipTicketResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{10}
+	return fileDescriptor_97f09b42bb99641f, []int{12}
 }
 
 func (m *CMsgClientGetAppOwnershipTicketResponse) XXX_Unmarshal(b []byte) error {
@@ -814,7 +892,7 @@ func (m *CMsgClientSessionToken) Reset()         { *m = CMsgClientSessionToken{}
 func (m *CMsgClientSessionToken) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientSessionToken) ProtoMessage()    {}
 func (*CMsgClientSessionToken) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{11}
+	return fileDescriptor_97f09b42bb99641f, []int{13}
 }
 
 func (m *CMsgClientSessionToken) XXX_Unmarshal(b []byte) error {
@@ -843,7 +921,7 @@ func (m *CMsgClientSessionToken) GetToken() uint64 {
 }
 
 type CMsgClientGameConnectTokens struct {
-	MaxTokensToKeep      *uint32  `protobuf:"varint,1,opt,name=max_tokens_to_keep,def=10" json:"max_tokens_to_keep,omitempty"`
+	MaxTokensToKeep      *uint32  `protobuf:"varint,1,opt,name=max_tokens_to_keep,json=maxTokensToKeep,def=10" json:"max_tokens_to_keep,omitempty"`
 	Tokens               [][]byte `protobuf:"bytes,2,rep,name=tokens" json:"tokens,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -854,7 +932,7 @@ func (m *CMsgClientGameConnectTokens) Reset()         { *m = CMsgClientGameConne
 func (m *CMsgClientGameConnectTokens) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientGameConnectTokens) ProtoMessage()    {}
 func (*CMsgClientGameConnectTokens) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{12}
+	return fileDescriptor_97f09b42bb99641f, []int{14}
 }
 
 func (m *CMsgClientGameConnectTokens) XXX_Unmarshal(b []byte) error {
@@ -892,23 +970,23 @@ func (m *CMsgClientGameConnectTokens) GetTokens() [][]byte {
 }
 
 type CMsgGSServerType struct {
-	AppIdServed          *uint32  `protobuf:"varint,1,opt,name=app_id_served" json:"app_id_served,omitempty"`
-	Flags                *uint32  `protobuf:"varint,2,opt,name=flags" json:"flags,omitempty"`
-	GameIpAddress        *uint32  `protobuf:"varint,3,opt,name=game_ip_address" json:"game_ip_address,omitempty"`
-	GamePort             *uint32  `protobuf:"varint,4,opt,name=game_port" json:"game_port,omitempty"`
-	GameDir              *string  `protobuf:"bytes,5,opt,name=game_dir" json:"game_dir,omitempty"`
-	GameVersion          *string  `protobuf:"bytes,6,opt,name=game_version" json:"game_version,omitempty"`
-	GameQueryPort        *uint32  `protobuf:"varint,7,opt,name=game_query_port" json:"game_query_port,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	AppIdServed             *uint32  `protobuf:"varint,1,opt,name=app_id_served,json=appIdServed" json:"app_id_served,omitempty"`
+	Flags                   *uint32  `protobuf:"varint,2,opt,name=flags" json:"flags,omitempty"`
+	DeprecatedGameIpAddress *uint32  `protobuf:"varint,3,opt,name=deprecated_game_ip_address,json=deprecatedGameIpAddress" json:"deprecated_game_ip_address,omitempty"`
+	GamePort                *uint32  `protobuf:"varint,4,opt,name=game_port,json=gamePort" json:"game_port,omitempty"`
+	GameDir                 *string  `protobuf:"bytes,5,opt,name=game_dir,json=gameDir" json:"game_dir,omitempty"`
+	GameVersion             *string  `protobuf:"bytes,6,opt,name=game_version,json=gameVersion" json:"game_version,omitempty"`
+	GameQueryPort           *uint32  `protobuf:"varint,7,opt,name=game_query_port,json=gameQueryPort" json:"game_query_port,omitempty"`
+	XXX_NoUnkeyedLiteral    struct{} `json:"-"`
+	XXX_unrecognized        []byte   `json:"-"`
+	XXX_sizecache           int32    `json:"-"`
 }
 
 func (m *CMsgGSServerType) Reset()         { *m = CMsgGSServerType{} }
 func (m *CMsgGSServerType) String() string { return proto.CompactTextString(m) }
 func (*CMsgGSServerType) ProtoMessage()    {}
 func (*CMsgGSServerType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{13}
+	return fileDescriptor_97f09b42bb99641f, []int{15}
 }
 
 func (m *CMsgGSServerType) XXX_Unmarshal(b []byte) error {
@@ -943,9 +1021,9 @@ func (m *CMsgGSServerType) GetFlags() uint32 {
 	return 0
 }
 
-func (m *CMsgGSServerType) GetGameIpAddress() uint32 {
-	if m != nil && m.GameIpAddress != nil {
-		return *m.GameIpAddress
+func (m *CMsgGSServerType) GetDeprecatedGameIpAddress() uint32 {
+	if m != nil && m.DeprecatedGameIpAddress != nil {
+		return *m.DeprecatedGameIpAddress
 	}
 	return 0
 }
@@ -979,7 +1057,7 @@ func (m *CMsgGSServerType) GetGameQueryPort() uint32 {
 }
 
 type CMsgGSStatusReply struct {
-	IsSecure             *bool    `protobuf:"varint,1,opt,name=is_secure" json:"is_secure,omitempty"`
+	IsSecure             *bool    `protobuf:"varint,1,opt,name=is_secure,json=isSecure" json:"is_secure,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -989,7 +1067,7 @@ func (m *CMsgGSStatusReply) Reset()         { *m = CMsgGSStatusReply{} }
 func (m *CMsgGSStatusReply) String() string { return proto.CompactTextString(m) }
 func (*CMsgGSStatusReply) ProtoMessage()    {}
 func (*CMsgGSStatusReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{14}
+	return fileDescriptor_97f09b42bb99641f, []int{16}
 }
 
 func (m *CMsgGSStatusReply) XXX_Unmarshal(b []byte) error {
@@ -1028,7 +1106,7 @@ func (m *CMsgGSPlayerList) Reset()         { *m = CMsgGSPlayerList{} }
 func (m *CMsgGSPlayerList) String() string { return proto.CompactTextString(m) }
 func (*CMsgGSPlayerList) ProtoMessage()    {}
 func (*CMsgGSPlayerList) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{15}
+	return fileDescriptor_97f09b42bb99641f, []int{17}
 }
 
 func (m *CMsgGSPlayerList) XXX_Unmarshal(b []byte) error {
@@ -1057,19 +1135,20 @@ func (m *CMsgGSPlayerList) GetPlayers() []*CMsgGSPlayerList_Player {
 }
 
 type CMsgGSPlayerList_Player struct {
-	SteamId              *uint64  `protobuf:"varint,1,opt,name=steam_id" json:"steam_id,omitempty"`
-	PublicIp             *uint32  `protobuf:"varint,2,opt,name=public_ip" json:"public_ip,omitempty"`
-	Token                []byte   `protobuf:"bytes,3,opt,name=token" json:"token,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	SteamId              *uint64        `protobuf:"varint,1,opt,name=steam_id,json=steamId" json:"steam_id,omitempty"`
+	DeprecatedPublicIp   *uint32        `protobuf:"varint,2,opt,name=deprecated_public_ip,json=deprecatedPublicIp" json:"deprecated_public_ip,omitempty"`
+	Token                []byte         `protobuf:"bytes,3,opt,name=token" json:"token,omitempty"`
+	PublicIp             *CMsgIPAddress `protobuf:"bytes,4,opt,name=public_ip,json=publicIp" json:"public_ip,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
 }
 
 func (m *CMsgGSPlayerList_Player) Reset()         { *m = CMsgGSPlayerList_Player{} }
 func (m *CMsgGSPlayerList_Player) String() string { return proto.CompactTextString(m) }
 func (*CMsgGSPlayerList_Player) ProtoMessage()    {}
 func (*CMsgGSPlayerList_Player) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{15, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{17, 0}
 }
 
 func (m *CMsgGSPlayerList_Player) XXX_Unmarshal(b []byte) error {
@@ -1097,9 +1176,9 @@ func (m *CMsgGSPlayerList_Player) GetSteamId() uint64 {
 	return 0
 }
 
-func (m *CMsgGSPlayerList_Player) GetPublicIp() uint32 {
-	if m != nil && m.PublicIp != nil {
-		return *m.PublicIp
+func (m *CMsgGSPlayerList_Player) GetDeprecatedPublicIp() uint32 {
+	if m != nil && m.DeprecatedPublicIp != nil {
+		return *m.DeprecatedPublicIp
 	}
 	return 0
 }
@@ -1111,20 +1190,28 @@ func (m *CMsgGSPlayerList_Player) GetToken() []byte {
 	return nil
 }
 
+func (m *CMsgGSPlayerList_Player) GetPublicIp() *CMsgIPAddress {
+	if m != nil {
+		return m.PublicIp
+	}
+	return nil
+}
+
 type CMsgGSUserPlaying struct {
-	SteamId              *uint64  `protobuf:"fixed64,1,opt,name=steam_id" json:"steam_id,omitempty"`
-	PublicIp             *uint32  `protobuf:"varint,2,opt,name=public_ip" json:"public_ip,omitempty"`
-	Token                []byte   `protobuf:"bytes,3,opt,name=token" json:"token,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	SteamId              *uint64        `protobuf:"fixed64,1,opt,name=steam_id,json=steamId" json:"steam_id,omitempty"`
+	DeprecatedPublicIp   *uint32        `protobuf:"varint,2,opt,name=deprecated_public_ip,json=deprecatedPublicIp" json:"deprecated_public_ip,omitempty"`
+	Token                []byte         `protobuf:"bytes,3,opt,name=token" json:"token,omitempty"`
+	PublicIp             *CMsgIPAddress `protobuf:"bytes,4,opt,name=public_ip,json=publicIp" json:"public_ip,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
 }
 
 func (m *CMsgGSUserPlaying) Reset()         { *m = CMsgGSUserPlaying{} }
 func (m *CMsgGSUserPlaying) String() string { return proto.CompactTextString(m) }
 func (*CMsgGSUserPlaying) ProtoMessage()    {}
 func (*CMsgGSUserPlaying) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{16}
+	return fileDescriptor_97f09b42bb99641f, []int{18}
 }
 
 func (m *CMsgGSUserPlaying) XXX_Unmarshal(b []byte) error {
@@ -1152,9 +1239,9 @@ func (m *CMsgGSUserPlaying) GetSteamId() uint64 {
 	return 0
 }
 
-func (m *CMsgGSUserPlaying) GetPublicIp() uint32 {
-	if m != nil && m.PublicIp != nil {
-		return *m.PublicIp
+func (m *CMsgGSUserPlaying) GetDeprecatedPublicIp() uint32 {
+	if m != nil && m.DeprecatedPublicIp != nil {
+		return *m.DeprecatedPublicIp
 	}
 	return 0
 }
@@ -1166,8 +1253,15 @@ func (m *CMsgGSUserPlaying) GetToken() []byte {
 	return nil
 }
 
+func (m *CMsgGSUserPlaying) GetPublicIp() *CMsgIPAddress {
+	if m != nil {
+		return m.PublicIp
+	}
+	return nil
+}
+
 type CMsgGSDisconnectNotice struct {
-	SteamId              *uint64  `protobuf:"fixed64,1,opt,name=steam_id" json:"steam_id,omitempty"`
+	SteamId              *uint64  `protobuf:"fixed64,1,opt,name=steam_id,json=steamId" json:"steam_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -1177,7 +1271,7 @@ func (m *CMsgGSDisconnectNotice) Reset()         { *m = CMsgGSDisconnectNotice{}
 func (m *CMsgGSDisconnectNotice) String() string { return proto.CompactTextString(m) }
 func (*CMsgGSDisconnectNotice) ProtoMessage()    {}
 func (*CMsgGSDisconnectNotice) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{17}
+	return fileDescriptor_97f09b42bb99641f, []int{19}
 }
 
 func (m *CMsgGSDisconnectNotice) XXX_Unmarshal(b []byte) error {
@@ -1206,8 +1300,9 @@ func (m *CMsgGSDisconnectNotice) GetSteamId() uint64 {
 }
 
 type CMsgClientGamesPlayed struct {
-	GamesPlayed          []*CMsgClientGamesPlayed_GamePlayed `protobuf:"bytes,1,rep,name=games_played" json:"games_played,omitempty"`
-	ClientOsType         *uint32                             `protobuf:"varint,2,opt,name=client_os_type" json:"client_os_type,omitempty"`
+	GamesPlayed          []*CMsgClientGamesPlayed_GamePlayed `protobuf:"bytes,1,rep,name=games_played,json=gamesPlayed" json:"games_played,omitempty"`
+	ClientOsType         *uint32                             `protobuf:"varint,2,opt,name=client_os_type,json=clientOsType" json:"client_os_type,omitempty"`
+	CloudGamingPlatform  *uint32                             `protobuf:"varint,3,opt,name=cloud_gaming_platform,json=cloudGamingPlatform" json:"cloud_gaming_platform,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                            `json:"-"`
 	XXX_unrecognized     []byte                              `json:"-"`
 	XXX_sizecache        int32                               `json:"-"`
@@ -1217,7 +1312,7 @@ func (m *CMsgClientGamesPlayed) Reset()         { *m = CMsgClientGamesPlayed{} }
 func (m *CMsgClientGamesPlayed) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientGamesPlayed) ProtoMessage()    {}
 func (*CMsgClientGamesPlayed) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{18}
+	return fileDescriptor_97f09b42bb99641f, []int{20}
 }
 
 func (m *CMsgClientGamesPlayed) XXX_Unmarshal(b []byte) error {
@@ -1252,38 +1347,48 @@ func (m *CMsgClientGamesPlayed) GetClientOsType() uint32 {
 	return 0
 }
 
+func (m *CMsgClientGamesPlayed) GetCloudGamingPlatform() uint32 {
+	if m != nil && m.CloudGamingPlatform != nil {
+		return *m.CloudGamingPlatform
+	}
+	return 0
+}
+
 type CMsgClientGamesPlayed_GamePlayed struct {
-	SteamIdGs                    *uint64  `protobuf:"varint,1,opt,name=steam_id_gs" json:"steam_id_gs,omitempty"`
-	GameId                       *uint64  `protobuf:"fixed64,2,opt,name=game_id" json:"game_id,omitempty"`
-	GameIpAddress                *uint32  `protobuf:"varint,3,opt,name=game_ip_address" json:"game_ip_address,omitempty"`
-	GamePort                     *uint32  `protobuf:"varint,4,opt,name=game_port" json:"game_port,omitempty"`
-	IsSecure                     *bool    `protobuf:"varint,5,opt,name=is_secure" json:"is_secure,omitempty"`
-	Token                        []byte   `protobuf:"bytes,6,opt,name=token" json:"token,omitempty"`
-	GameExtraInfo                *string  `protobuf:"bytes,7,opt,name=game_extra_info" json:"game_extra_info,omitempty"`
-	GameDataBlob                 []byte   `protobuf:"bytes,8,opt,name=game_data_blob" json:"game_data_blob,omitempty"`
-	ProcessId                    *uint32  `protobuf:"varint,9,opt,name=process_id" json:"process_id,omitempty"`
-	StreamingProviderId          *uint32  `protobuf:"varint,10,opt,name=streaming_provider_id" json:"streaming_provider_id,omitempty"`
-	GameFlags                    *uint32  `protobuf:"varint,11,opt,name=game_flags" json:"game_flags,omitempty"`
-	OwnerId                      *uint32  `protobuf:"varint,12,opt,name=owner_id" json:"owner_id,omitempty"`
-	VrHmdVendor                  *string  `protobuf:"bytes,13,opt,name=vr_hmd_vendor" json:"vr_hmd_vendor,omitempty"`
-	VrHmdModel                   *string  `protobuf:"bytes,14,opt,name=vr_hmd_model" json:"vr_hmd_model,omitempty"`
-	LaunchOptionType             *uint32  `protobuf:"varint,15,opt,name=launch_option_type,def=0" json:"launch_option_type,omitempty"`
-	PrimaryControllerType        *int32   `protobuf:"varint,16,opt,name=primary_controller_type,def=-1" json:"primary_controller_type,omitempty"`
-	PrimarySteamControllerSerial *string  `protobuf:"bytes,17,opt,name=primary_steam_controller_serial" json:"primary_steam_controller_serial,omitempty"`
-	TotalSteamControllerCount    *uint32  `protobuf:"varint,18,opt,name=total_steam_controller_count,def=0" json:"total_steam_controller_count,omitempty"`
-	TotalNonSteamControllerCount *uint32  `protobuf:"varint,19,opt,name=total_non_steam_controller_count,def=0" json:"total_non_steam_controller_count,omitempty"`
-	ControllerWorkshopFileId     *uint64  `protobuf:"varint,20,opt,name=controller_workshop_file_id,def=0" json:"controller_workshop_file_id,omitempty"`
-	LaunchSource                 *uint32  `protobuf:"varint,21,opt,name=launch_source,def=0" json:"launch_source,omitempty"`
-	XXX_NoUnkeyedLiteral         struct{} `json:"-"`
-	XXX_unrecognized             []byte   `json:"-"`
-	XXX_sizecache                int32    `json:"-"`
+	SteamIdGs                    *uint64        `protobuf:"varint,1,opt,name=steam_id_gs,json=steamIdGs" json:"steam_id_gs,omitempty"`
+	GameId                       *uint64        `protobuf:"fixed64,2,opt,name=game_id,json=gameId" json:"game_id,omitempty"`
+	DeprecatedGameIpAddress      *uint32        `protobuf:"varint,3,opt,name=deprecated_game_ip_address,json=deprecatedGameIpAddress" json:"deprecated_game_ip_address,omitempty"`
+	GamePort                     *uint32        `protobuf:"varint,4,opt,name=game_port,json=gamePort" json:"game_port,omitempty"`
+	IsSecure                     *bool          `protobuf:"varint,5,opt,name=is_secure,json=isSecure" json:"is_secure,omitempty"`
+	Token                        []byte         `protobuf:"bytes,6,opt,name=token" json:"token,omitempty"`
+	GameExtraInfo                *string        `protobuf:"bytes,7,opt,name=game_extra_info,json=gameExtraInfo" json:"game_extra_info,omitempty"`
+	GameDataBlob                 []byte         `protobuf:"bytes,8,opt,name=game_data_blob,json=gameDataBlob" json:"game_data_blob,omitempty"`
+	ProcessId                    *uint32        `protobuf:"varint,9,opt,name=process_id,json=processId" json:"process_id,omitempty"`
+	StreamingProviderId          *uint32        `protobuf:"varint,10,opt,name=streaming_provider_id,json=streamingProviderId" json:"streaming_provider_id,omitempty"`
+	GameFlags                    *uint32        `protobuf:"varint,11,opt,name=game_flags,json=gameFlags" json:"game_flags,omitempty"`
+	OwnerId                      *uint32        `protobuf:"varint,12,opt,name=owner_id,json=ownerId" json:"owner_id,omitempty"`
+	VrHmdVendor                  *string        `protobuf:"bytes,13,opt,name=vr_hmd_vendor,json=vrHmdVendor" json:"vr_hmd_vendor,omitempty"`
+	VrHmdModel                   *string        `protobuf:"bytes,14,opt,name=vr_hmd_model,json=vrHmdModel" json:"vr_hmd_model,omitempty"`
+	LaunchOptionType             *uint32        `protobuf:"varint,15,opt,name=launch_option_type,json=launchOptionType,def=0" json:"launch_option_type,omitempty"`
+	PrimaryControllerType        *int32         `protobuf:"varint,16,opt,name=primary_controller_type,json=primaryControllerType,def=-1" json:"primary_controller_type,omitempty"`
+	PrimarySteamControllerSerial *string        `protobuf:"bytes,17,opt,name=primary_steam_controller_serial,json=primarySteamControllerSerial" json:"primary_steam_controller_serial,omitempty"`
+	TotalSteamControllerCount    *uint32        `protobuf:"varint,18,opt,name=total_steam_controller_count,json=totalSteamControllerCount,def=0" json:"total_steam_controller_count,omitempty"`
+	TotalNonSteamControllerCount *uint32        `protobuf:"varint,19,opt,name=total_non_steam_controller_count,json=totalNonSteamControllerCount,def=0" json:"total_non_steam_controller_count,omitempty"`
+	ControllerWorkshopFileId     *uint64        `protobuf:"varint,20,opt,name=controller_workshop_file_id,json=controllerWorkshopFileId,def=0" json:"controller_workshop_file_id,omitempty"`
+	LaunchSource                 *uint32        `protobuf:"varint,21,opt,name=launch_source,json=launchSource,def=0" json:"launch_source,omitempty"`
+	VrHmdRuntime                 *uint32        `protobuf:"varint,22,opt,name=vr_hmd_runtime,json=vrHmdRuntime" json:"vr_hmd_runtime,omitempty"`
+	GameIpAddress                *CMsgIPAddress `protobuf:"bytes,23,opt,name=game_ip_address,json=gameIpAddress" json:"game_ip_address,omitempty"`
+	ControllerConnectionType     *uint32        `protobuf:"varint,24,opt,name=controller_connection_type,json=controllerConnectionType,def=0" json:"controller_connection_type,omitempty"`
+	XXX_NoUnkeyedLiteral         struct{}       `json:"-"`
+	XXX_unrecognized             []byte         `json:"-"`
+	XXX_sizecache                int32          `json:"-"`
 }
 
 func (m *CMsgClientGamesPlayed_GamePlayed) Reset()         { *m = CMsgClientGamesPlayed_GamePlayed{} }
 func (m *CMsgClientGamesPlayed_GamePlayed) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientGamesPlayed_GamePlayed) ProtoMessage()    {}
 func (*CMsgClientGamesPlayed_GamePlayed) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{18, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{20, 0}
 }
 
 func (m *CMsgClientGamesPlayed_GamePlayed) XXX_Unmarshal(b []byte) error {
@@ -1310,6 +1415,7 @@ const Default_CMsgClientGamesPlayed_GamePlayed_TotalSteamControllerCount uint32 
 const Default_CMsgClientGamesPlayed_GamePlayed_TotalNonSteamControllerCount uint32 = 0
 const Default_CMsgClientGamesPlayed_GamePlayed_ControllerWorkshopFileId uint64 = 0
 const Default_CMsgClientGamesPlayed_GamePlayed_LaunchSource uint32 = 0
+const Default_CMsgClientGamesPlayed_GamePlayed_ControllerConnectionType uint32 = 0
 
 func (m *CMsgClientGamesPlayed_GamePlayed) GetSteamIdGs() uint64 {
 	if m != nil && m.SteamIdGs != nil {
@@ -1325,9 +1431,9 @@ func (m *CMsgClientGamesPlayed_GamePlayed) GetGameId() uint64 {
 	return 0
 }
 
-func (m *CMsgClientGamesPlayed_GamePlayed) GetGameIpAddress() uint32 {
-	if m != nil && m.GameIpAddress != nil {
-		return *m.GameIpAddress
+func (m *CMsgClientGamesPlayed_GamePlayed) GetDeprecatedGameIpAddress() uint32 {
+	if m != nil && m.DeprecatedGameIpAddress != nil {
+		return *m.DeprecatedGameIpAddress
 	}
 	return 0
 }
@@ -1458,9 +1564,30 @@ func (m *CMsgClientGamesPlayed_GamePlayed) GetLaunchSource() uint32 {
 	return Default_CMsgClientGamesPlayed_GamePlayed_LaunchSource
 }
 
+func (m *CMsgClientGamesPlayed_GamePlayed) GetVrHmdRuntime() uint32 {
+	if m != nil && m.VrHmdRuntime != nil {
+		return *m.VrHmdRuntime
+	}
+	return 0
+}
+
+func (m *CMsgClientGamesPlayed_GamePlayed) GetGameIpAddress() *CMsgIPAddress {
+	if m != nil {
+		return m.GameIpAddress
+	}
+	return nil
+}
+
+func (m *CMsgClientGamesPlayed_GamePlayed) GetControllerConnectionType() uint32 {
+	if m != nil && m.ControllerConnectionType != nil {
+		return *m.ControllerConnectionType
+	}
+	return Default_CMsgClientGamesPlayed_GamePlayed_ControllerConnectionType
+}
+
 type CMsgGSApprove struct {
-	SteamId              *uint64  `protobuf:"fixed64,1,opt,name=steam_id" json:"steam_id,omitempty"`
-	OwnerSteamId         *uint64  `protobuf:"fixed64,2,opt,name=owner_steam_id" json:"owner_steam_id,omitempty"`
+	SteamId              *uint64  `protobuf:"fixed64,1,opt,name=steam_id,json=steamId" json:"steam_id,omitempty"`
+	OwnerSteamId         *uint64  `protobuf:"fixed64,2,opt,name=owner_steam_id,json=ownerSteamId" json:"owner_steam_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -1470,7 +1597,7 @@ func (m *CMsgGSApprove) Reset()         { *m = CMsgGSApprove{} }
 func (m *CMsgGSApprove) String() string { return proto.CompactTextString(m) }
 func (*CMsgGSApprove) ProtoMessage()    {}
 func (*CMsgGSApprove) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{19}
+	return fileDescriptor_97f09b42bb99641f, []int{21}
 }
 
 func (m *CMsgGSApprove) XXX_Unmarshal(b []byte) error {
@@ -1506,9 +1633,9 @@ func (m *CMsgGSApprove) GetOwnerSteamId() uint64 {
 }
 
 type CMsgGSDeny struct {
-	SteamId              *uint64  `protobuf:"fixed64,1,opt,name=steam_id" json:"steam_id,omitempty"`
-	EdenyReason          *int32   `protobuf:"varint,2,opt,name=edeny_reason" json:"edeny_reason,omitempty"`
-	DenyString           *string  `protobuf:"bytes,3,opt,name=deny_string" json:"deny_string,omitempty"`
+	SteamId              *uint64  `protobuf:"fixed64,1,opt,name=steam_id,json=steamId" json:"steam_id,omitempty"`
+	EdenyReason          *int32   `protobuf:"varint,2,opt,name=edeny_reason,json=edenyReason" json:"edeny_reason,omitempty"`
+	DenyString           *string  `protobuf:"bytes,3,opt,name=deny_string,json=denyString" json:"deny_string,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -1518,7 +1645,7 @@ func (m *CMsgGSDeny) Reset()         { *m = CMsgGSDeny{} }
 func (m *CMsgGSDeny) String() string { return proto.CompactTextString(m) }
 func (*CMsgGSDeny) ProtoMessage()    {}
 func (*CMsgGSDeny) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{20}
+	return fileDescriptor_97f09b42bb99641f, []int{22}
 }
 
 func (m *CMsgGSDeny) XXX_Unmarshal(b []byte) error {
@@ -1561,8 +1688,8 @@ func (m *CMsgGSDeny) GetDenyString() string {
 }
 
 type CMsgGSKick struct {
-	SteamId              *uint64  `protobuf:"fixed64,1,opt,name=steam_id" json:"steam_id,omitempty"`
-	EdenyReason          *int32   `protobuf:"varint,2,opt,name=edeny_reason" json:"edeny_reason,omitempty"`
+	SteamId              *uint64  `protobuf:"fixed64,1,opt,name=steam_id,json=steamId" json:"steam_id,omitempty"`
+	EdenyReason          *int32   `protobuf:"varint,2,opt,name=edeny_reason,json=edenyReason" json:"edeny_reason,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -1572,7 +1699,7 @@ func (m *CMsgGSKick) Reset()         { *m = CMsgGSKick{} }
 func (m *CMsgGSKick) String() string { return proto.CompactTextString(m) }
 func (*CMsgGSKick) ProtoMessage()    {}
 func (*CMsgGSKick) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{21}
+	return fileDescriptor_97f09b42bb99641f, []int{23}
 }
 
 func (m *CMsgGSKick) XXX_Unmarshal(b []byte) error {
@@ -1608,12 +1735,12 @@ func (m *CMsgGSKick) GetEdenyReason() int32 {
 }
 
 type CMsgClientAuthList struct {
-	TokensLeft               *uint32           `protobuf:"varint,1,opt,name=tokens_left" json:"tokens_left,omitempty"`
-	LastRequestSeq           *uint32           `protobuf:"varint,2,opt,name=last_request_seq" json:"last_request_seq,omitempty"`
-	LastRequestSeqFromServer *uint32           `protobuf:"varint,3,opt,name=last_request_seq_from_server" json:"last_request_seq_from_server,omitempty"`
+	TokensLeft               *uint32           `protobuf:"varint,1,opt,name=tokens_left,json=tokensLeft" json:"tokens_left,omitempty"`
+	LastRequestSeq           *uint32           `protobuf:"varint,2,opt,name=last_request_seq,json=lastRequestSeq" json:"last_request_seq,omitempty"`
+	LastRequestSeqFromServer *uint32           `protobuf:"varint,3,opt,name=last_request_seq_from_server,json=lastRequestSeqFromServer" json:"last_request_seq_from_server,omitempty"`
 	Tickets                  []*CMsgAuthTicket `protobuf:"bytes,4,rep,name=tickets" json:"tickets,omitempty"`
-	AppIds                   []uint32          `protobuf:"varint,5,rep,name=app_ids" json:"app_ids,omitempty"`
-	MessageSequence          *uint32           `protobuf:"varint,6,opt,name=message_sequence" json:"message_sequence,omitempty"`
+	AppIds                   []uint32          `protobuf:"varint,5,rep,name=app_ids,json=appIds" json:"app_ids,omitempty"`
+	MessageSequence          *uint32           `protobuf:"varint,6,opt,name=message_sequence,json=messageSequence" json:"message_sequence,omitempty"`
 	XXX_NoUnkeyedLiteral     struct{}          `json:"-"`
 	XXX_unrecognized         []byte            `json:"-"`
 	XXX_sizecache            int32             `json:"-"`
@@ -1623,7 +1750,7 @@ func (m *CMsgClientAuthList) Reset()         { *m = CMsgClientAuthList{} }
 func (m *CMsgClientAuthList) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientAuthList) ProtoMessage()    {}
 func (*CMsgClientAuthList) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{22}
+	return fileDescriptor_97f09b42bb99641f, []int{24}
 }
 
 func (m *CMsgClientAuthList) XXX_Unmarshal(b []byte) error {
@@ -1687,9 +1814,9 @@ func (m *CMsgClientAuthList) GetMessageSequence() uint32 {
 }
 
 type CMsgClientAuthListAck struct {
-	TicketCrc            []uint32 `protobuf:"varint,1,rep,name=ticket_crc" json:"ticket_crc,omitempty"`
-	AppIds               []uint32 `protobuf:"varint,2,rep,name=app_ids" json:"app_ids,omitempty"`
-	MessageSequence      *uint32  `protobuf:"varint,3,opt,name=message_sequence" json:"message_sequence,omitempty"`
+	TicketCrc            []uint32 `protobuf:"varint,1,rep,name=ticket_crc,json=ticketCrc" json:"ticket_crc,omitempty"`
+	AppIds               []uint32 `protobuf:"varint,2,rep,name=app_ids,json=appIds" json:"app_ids,omitempty"`
+	MessageSequence      *uint32  `protobuf:"varint,3,opt,name=message_sequence,json=messageSequence" json:"message_sequence,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -1699,7 +1826,7 @@ func (m *CMsgClientAuthListAck) Reset()         { *m = CMsgClientAuthListAck{} }
 func (m *CMsgClientAuthListAck) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientAuthListAck) ProtoMessage()    {}
 func (*CMsgClientAuthListAck) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{23}
+	return fileDescriptor_97f09b42bb99641f, []int{25}
 }
 
 func (m *CMsgClientAuthListAck) XXX_Unmarshal(b []byte) error {
@@ -1753,7 +1880,7 @@ func (m *CMsgClientLicenseList) Reset()         { *m = CMsgClientLicenseList{} }
 func (m *CMsgClientLicenseList) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientLicenseList) ProtoMessage()    {}
 func (*CMsgClientLicenseList) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{24}
+	return fileDescriptor_97f09b42bb99641f, []int{26}
 }
 
 func (m *CMsgClientLicenseList) XXX_Unmarshal(b []byte) error {
@@ -1791,22 +1918,24 @@ func (m *CMsgClientLicenseList) GetLicenses() []*CMsgClientLicenseList_License {
 }
 
 type CMsgClientLicenseList_License struct {
-	PackageId            *uint32  `protobuf:"varint,1,opt,name=package_id" json:"package_id,omitempty"`
-	TimeCreated          *uint32  `protobuf:"fixed32,2,opt,name=time_created" json:"time_created,omitempty"`
-	TimeNextProcess      *uint32  `protobuf:"fixed32,3,opt,name=time_next_process" json:"time_next_process,omitempty"`
-	MinuteLimit          *int32   `protobuf:"varint,4,opt,name=minute_limit" json:"minute_limit,omitempty"`
-	MinutesUsed          *int32   `protobuf:"varint,5,opt,name=minutes_used" json:"minutes_used,omitempty"`
-	PaymentMethod        *uint32  `protobuf:"varint,6,opt,name=payment_method" json:"payment_method,omitempty"`
+	PackageId            *uint32  `protobuf:"varint,1,opt,name=package_id,json=packageId" json:"package_id,omitempty"`
+	TimeCreated          *uint32  `protobuf:"fixed32,2,opt,name=time_created,json=timeCreated" json:"time_created,omitempty"`
+	TimeNextProcess      *uint32  `protobuf:"fixed32,3,opt,name=time_next_process,json=timeNextProcess" json:"time_next_process,omitempty"`
+	MinuteLimit          *int32   `protobuf:"varint,4,opt,name=minute_limit,json=minuteLimit" json:"minute_limit,omitempty"`
+	MinutesUsed          *int32   `protobuf:"varint,5,opt,name=minutes_used,json=minutesUsed" json:"minutes_used,omitempty"`
+	PaymentMethod        *uint32  `protobuf:"varint,6,opt,name=payment_method,json=paymentMethod" json:"payment_method,omitempty"`
 	Flags                *uint32  `protobuf:"varint,7,opt,name=flags" json:"flags,omitempty"`
-	PurchaseCountryCode  *string  `protobuf:"bytes,8,opt,name=purchase_country_code" json:"purchase_country_code,omitempty"`
-	LicenseType          *uint32  `protobuf:"varint,9,opt,name=license_type" json:"license_type,omitempty"`
-	TerritoryCode        *int32   `protobuf:"varint,10,opt,name=territory_code" json:"territory_code,omitempty"`
-	ChangeNumber         *int32   `protobuf:"varint,11,opt,name=change_number" json:"change_number,omitempty"`
-	OwnerId              *uint32  `protobuf:"varint,12,opt,name=owner_id" json:"owner_id,omitempty"`
-	InitialPeriod        *uint32  `protobuf:"varint,13,opt,name=initial_period" json:"initial_period,omitempty"`
-	InitialTimeUnit      *uint32  `protobuf:"varint,14,opt,name=initial_time_unit" json:"initial_time_unit,omitempty"`
-	RenewalPeriod        *uint32  `protobuf:"varint,15,opt,name=renewal_period" json:"renewal_period,omitempty"`
-	RenewalTimeUnit      *uint32  `protobuf:"varint,16,opt,name=renewal_time_unit" json:"renewal_time_unit,omitempty"`
+	PurchaseCountryCode  *string  `protobuf:"bytes,8,opt,name=purchase_country_code,json=purchaseCountryCode" json:"purchase_country_code,omitempty"`
+	LicenseType          *uint32  `protobuf:"varint,9,opt,name=license_type,json=licenseType" json:"license_type,omitempty"`
+	TerritoryCode        *int32   `protobuf:"varint,10,opt,name=territory_code,json=territoryCode" json:"territory_code,omitempty"`
+	ChangeNumber         *int32   `protobuf:"varint,11,opt,name=change_number,json=changeNumber" json:"change_number,omitempty"`
+	OwnerId              *uint32  `protobuf:"varint,12,opt,name=owner_id,json=ownerId" json:"owner_id,omitempty"`
+	InitialPeriod        *uint32  `protobuf:"varint,13,opt,name=initial_period,json=initialPeriod" json:"initial_period,omitempty"`
+	InitialTimeUnit      *uint32  `protobuf:"varint,14,opt,name=initial_time_unit,json=initialTimeUnit" json:"initial_time_unit,omitempty"`
+	RenewalPeriod        *uint32  `protobuf:"varint,15,opt,name=renewal_period,json=renewalPeriod" json:"renewal_period,omitempty"`
+	RenewalTimeUnit      *uint32  `protobuf:"varint,16,opt,name=renewal_time_unit,json=renewalTimeUnit" json:"renewal_time_unit,omitempty"`
+	AccessToken          *uint64  `protobuf:"varint,17,opt,name=access_token,json=accessToken" json:"access_token,omitempty"`
+	MasterPackageId      *uint32  `protobuf:"varint,18,opt,name=master_package_id,json=masterPackageId" json:"master_package_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -1816,7 +1945,7 @@ func (m *CMsgClientLicenseList_License) Reset()         { *m = CMsgClientLicense
 func (m *CMsgClientLicenseList_License) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientLicenseList_License) ProtoMessage()    {}
 func (*CMsgClientLicenseList_License) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{24, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{26, 0}
 }
 
 func (m *CMsgClientLicenseList_License) XXX_Unmarshal(b []byte) error {
@@ -1949,12 +2078,26 @@ func (m *CMsgClientLicenseList_License) GetRenewalTimeUnit() uint32 {
 	return 0
 }
 
+func (m *CMsgClientLicenseList_License) GetAccessToken() uint64 {
+	if m != nil && m.AccessToken != nil {
+		return *m.AccessToken
+	}
+	return 0
+}
+
+func (m *CMsgClientLicenseList_License) GetMasterPackageId() uint32 {
+	if m != nil && m.MasterPackageId != nil {
+		return *m.MasterPackageId
+	}
+	return 0
+}
+
 type CMsgClientLBSSetScore struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	LeaderboardId        *int32   `protobuf:"varint,2,opt,name=leaderboard_id" json:"leaderboard_id,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	LeaderboardId        *int32   `protobuf:"varint,2,opt,name=leaderboard_id,json=leaderboardId" json:"leaderboard_id,omitempty"`
 	Score                *int32   `protobuf:"varint,3,opt,name=score" json:"score,omitempty"`
 	Details              []byte   `protobuf:"bytes,4,opt,name=details" json:"details,omitempty"`
-	UploadScoreMethod    *int32   `protobuf:"varint,5,opt,name=upload_score_method" json:"upload_score_method,omitempty"`
+	UploadScoreMethod    *int32   `protobuf:"varint,5,opt,name=upload_score_method,json=uploadScoreMethod" json:"upload_score_method,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -1964,7 +2107,7 @@ func (m *CMsgClientLBSSetScore) Reset()         { *m = CMsgClientLBSSetScore{} }
 func (m *CMsgClientLBSSetScore) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientLBSSetScore) ProtoMessage()    {}
 func (*CMsgClientLBSSetScore) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{25}
+	return fileDescriptor_97f09b42bb99641f, []int{27}
 }
 
 func (m *CMsgClientLBSSetScore) XXX_Unmarshal(b []byte) error {
@@ -2022,10 +2165,10 @@ func (m *CMsgClientLBSSetScore) GetUploadScoreMethod() int32 {
 
 type CMsgClientLBSSetScoreResponse struct {
 	Eresult               *int32   `protobuf:"varint,1,opt,name=eresult,def=2" json:"eresult,omitempty"`
-	LeaderboardEntryCount *int32   `protobuf:"varint,2,opt,name=leaderboard_entry_count" json:"leaderboard_entry_count,omitempty"`
-	ScoreChanged          *bool    `protobuf:"varint,3,opt,name=score_changed" json:"score_changed,omitempty"`
-	GlobalRankPrevious    *int32   `protobuf:"varint,4,opt,name=global_rank_previous" json:"global_rank_previous,omitempty"`
-	GlobalRankNew         *int32   `protobuf:"varint,5,opt,name=global_rank_new" json:"global_rank_new,omitempty"`
+	LeaderboardEntryCount *int32   `protobuf:"varint,2,opt,name=leaderboard_entry_count,json=leaderboardEntryCount" json:"leaderboard_entry_count,omitempty"`
+	ScoreChanged          *bool    `protobuf:"varint,3,opt,name=score_changed,json=scoreChanged" json:"score_changed,omitempty"`
+	GlobalRankPrevious    *int32   `protobuf:"varint,4,opt,name=global_rank_previous,json=globalRankPrevious" json:"global_rank_previous,omitempty"`
+	GlobalRankNew         *int32   `protobuf:"varint,5,opt,name=global_rank_new,json=globalRankNew" json:"global_rank_new,omitempty"`
 	XXX_NoUnkeyedLiteral  struct{} `json:"-"`
 	XXX_unrecognized      []byte   `json:"-"`
 	XXX_sizecache         int32    `json:"-"`
@@ -2035,7 +2178,7 @@ func (m *CMsgClientLBSSetScoreResponse) Reset()         { *m = CMsgClientLBSSetS
 func (m *CMsgClientLBSSetScoreResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientLBSSetScoreResponse) ProtoMessage()    {}
 func (*CMsgClientLBSSetScoreResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{26}
+	return fileDescriptor_97f09b42bb99641f, []int{28}
 }
 
 func (m *CMsgClientLBSSetScoreResponse) XXX_Unmarshal(b []byte) error {
@@ -2094,9 +2237,9 @@ func (m *CMsgClientLBSSetScoreResponse) GetGlobalRankNew() int32 {
 }
 
 type CMsgClientLBSSetUGC struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	LeaderboardId        *int32   `protobuf:"varint,2,opt,name=leaderboard_id" json:"leaderboard_id,omitempty"`
-	UgcId                *uint64  `protobuf:"fixed64,3,opt,name=ugc_id" json:"ugc_id,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	LeaderboardId        *int32   `protobuf:"varint,2,opt,name=leaderboard_id,json=leaderboardId" json:"leaderboard_id,omitempty"`
+	UgcId                *uint64  `protobuf:"fixed64,3,opt,name=ugc_id,json=ugcId" json:"ugc_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -2106,7 +2249,7 @@ func (m *CMsgClientLBSSetUGC) Reset()         { *m = CMsgClientLBSSetUGC{} }
 func (m *CMsgClientLBSSetUGC) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientLBSSetUGC) ProtoMessage()    {}
 func (*CMsgClientLBSSetUGC) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{27}
+	return fileDescriptor_97f09b42bb99641f, []int{29}
 }
 
 func (m *CMsgClientLBSSetUGC) XXX_Unmarshal(b []byte) error {
@@ -2159,7 +2302,7 @@ func (m *CMsgClientLBSSetUGCResponse) Reset()         { *m = CMsgClientLBSSetUGC
 func (m *CMsgClientLBSSetUGCResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientLBSSetUGCResponse) ProtoMessage()    {}
 func (*CMsgClientLBSSetUGCResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{28}
+	return fileDescriptor_97f09b42bb99641f, []int{30}
 }
 
 func (m *CMsgClientLBSSetUGCResponse) XXX_Unmarshal(b []byte) error {
@@ -2190,11 +2333,11 @@ func (m *CMsgClientLBSSetUGCResponse) GetEresult() int32 {
 }
 
 type CMsgClientLBSFindOrCreateLB struct {
-	AppId                  *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	LeaderboardSortMethod  *int32   `protobuf:"varint,2,opt,name=leaderboard_sort_method" json:"leaderboard_sort_method,omitempty"`
-	LeaderboardDisplayType *int32   `protobuf:"varint,3,opt,name=leaderboard_display_type" json:"leaderboard_display_type,omitempty"`
-	CreateIfNotFound       *bool    `protobuf:"varint,4,opt,name=create_if_not_found" json:"create_if_not_found,omitempty"`
-	LeaderboardName        *string  `protobuf:"bytes,5,opt,name=leaderboard_name" json:"leaderboard_name,omitempty"`
+	AppId                  *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	LeaderboardSortMethod  *int32   `protobuf:"varint,2,opt,name=leaderboard_sort_method,json=leaderboardSortMethod" json:"leaderboard_sort_method,omitempty"`
+	LeaderboardDisplayType *int32   `protobuf:"varint,3,opt,name=leaderboard_display_type,json=leaderboardDisplayType" json:"leaderboard_display_type,omitempty"`
+	CreateIfNotFound       *bool    `protobuf:"varint,4,opt,name=create_if_not_found,json=createIfNotFound" json:"create_if_not_found,omitempty"`
+	LeaderboardName        *string  `protobuf:"bytes,5,opt,name=leaderboard_name,json=leaderboardName" json:"leaderboard_name,omitempty"`
 	XXX_NoUnkeyedLiteral   struct{} `json:"-"`
 	XXX_unrecognized       []byte   `json:"-"`
 	XXX_sizecache          int32    `json:"-"`
@@ -2204,7 +2347,7 @@ func (m *CMsgClientLBSFindOrCreateLB) Reset()         { *m = CMsgClientLBSFindOr
 func (m *CMsgClientLBSFindOrCreateLB) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientLBSFindOrCreateLB) ProtoMessage()    {}
 func (*CMsgClientLBSFindOrCreateLB) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{29}
+	return fileDescriptor_97f09b42bb99641f, []int{31}
 }
 
 func (m *CMsgClientLBSFindOrCreateLB) XXX_Unmarshal(b []byte) error {
@@ -2262,11 +2405,11 @@ func (m *CMsgClientLBSFindOrCreateLB) GetLeaderboardName() string {
 
 type CMsgClientLBSFindOrCreateLBResponse struct {
 	Eresult                *int32   `protobuf:"varint,1,opt,name=eresult,def=2" json:"eresult,omitempty"`
-	LeaderboardId          *int32   `protobuf:"varint,2,opt,name=leaderboard_id" json:"leaderboard_id,omitempty"`
-	LeaderboardEntryCount  *int32   `protobuf:"varint,3,opt,name=leaderboard_entry_count" json:"leaderboard_entry_count,omitempty"`
-	LeaderboardSortMethod  *int32   `protobuf:"varint,4,opt,name=leaderboard_sort_method,def=0" json:"leaderboard_sort_method,omitempty"`
-	LeaderboardDisplayType *int32   `protobuf:"varint,5,opt,name=leaderboard_display_type,def=0" json:"leaderboard_display_type,omitempty"`
-	LeaderboardName        *string  `protobuf:"bytes,6,opt,name=leaderboard_name" json:"leaderboard_name,omitempty"`
+	LeaderboardId          *int32   `protobuf:"varint,2,opt,name=leaderboard_id,json=leaderboardId" json:"leaderboard_id,omitempty"`
+	LeaderboardEntryCount  *int32   `protobuf:"varint,3,opt,name=leaderboard_entry_count,json=leaderboardEntryCount" json:"leaderboard_entry_count,omitempty"`
+	LeaderboardSortMethod  *int32   `protobuf:"varint,4,opt,name=leaderboard_sort_method,json=leaderboardSortMethod,def=0" json:"leaderboard_sort_method,omitempty"`
+	LeaderboardDisplayType *int32   `protobuf:"varint,5,opt,name=leaderboard_display_type,json=leaderboardDisplayType,def=0" json:"leaderboard_display_type,omitempty"`
+	LeaderboardName        *string  `protobuf:"bytes,6,opt,name=leaderboard_name,json=leaderboardName" json:"leaderboard_name,omitempty"`
 	XXX_NoUnkeyedLiteral   struct{} `json:"-"`
 	XXX_unrecognized       []byte   `json:"-"`
 	XXX_sizecache          int32    `json:"-"`
@@ -2276,7 +2419,7 @@ func (m *CMsgClientLBSFindOrCreateLBResponse) Reset()         { *m = CMsgClientL
 func (m *CMsgClientLBSFindOrCreateLBResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientLBSFindOrCreateLBResponse) ProtoMessage()    {}
 func (*CMsgClientLBSFindOrCreateLBResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{30}
+	return fileDescriptor_97f09b42bb99641f, []int{32}
 }
 
 func (m *CMsgClientLBSFindOrCreateLBResponse) XXX_Unmarshal(b []byte) error {
@@ -2344,11 +2487,11 @@ func (m *CMsgClientLBSFindOrCreateLBResponse) GetLeaderboardName() string {
 }
 
 type CMsgClientLBSGetLBEntries struct {
-	AppId                  *int32   `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	LeaderboardId          *int32   `protobuf:"varint,2,opt,name=leaderboard_id" json:"leaderboard_id,omitempty"`
-	RangeStart             *int32   `protobuf:"varint,3,opt,name=range_start" json:"range_start,omitempty"`
-	RangeEnd               *int32   `protobuf:"varint,4,opt,name=range_end" json:"range_end,omitempty"`
-	LeaderboardDataRequest *int32   `protobuf:"varint,5,opt,name=leaderboard_data_request" json:"leaderboard_data_request,omitempty"`
+	AppId                  *int32   `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	LeaderboardId          *int32   `protobuf:"varint,2,opt,name=leaderboard_id,json=leaderboardId" json:"leaderboard_id,omitempty"`
+	RangeStart             *int32   `protobuf:"varint,3,opt,name=range_start,json=rangeStart" json:"range_start,omitempty"`
+	RangeEnd               *int32   `protobuf:"varint,4,opt,name=range_end,json=rangeEnd" json:"range_end,omitempty"`
+	LeaderboardDataRequest *int32   `protobuf:"varint,5,opt,name=leaderboard_data_request,json=leaderboardDataRequest" json:"leaderboard_data_request,omitempty"`
 	Steamids               []uint64 `protobuf:"fixed64,6,rep,name=steamids" json:"steamids,omitempty"`
 	XXX_NoUnkeyedLiteral   struct{} `json:"-"`
 	XXX_unrecognized       []byte   `json:"-"`
@@ -2359,7 +2502,7 @@ func (m *CMsgClientLBSGetLBEntries) Reset()         { *m = CMsgClientLBSGetLBEnt
 func (m *CMsgClientLBSGetLBEntries) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientLBSGetLBEntries) ProtoMessage()    {}
 func (*CMsgClientLBSGetLBEntries) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{31}
+	return fileDescriptor_97f09b42bb99641f, []int{33}
 }
 
 func (m *CMsgClientLBSGetLBEntries) XXX_Unmarshal(b []byte) error {
@@ -2424,7 +2567,7 @@ func (m *CMsgClientLBSGetLBEntries) GetSteamids() []uint64 {
 
 type CMsgClientLBSGetLBEntriesResponse struct {
 	Eresult               *int32                                     `protobuf:"varint,1,opt,name=eresult,def=2" json:"eresult,omitempty"`
-	LeaderboardEntryCount *int32                                     `protobuf:"varint,2,opt,name=leaderboard_entry_count" json:"leaderboard_entry_count,omitempty"`
+	LeaderboardEntryCount *int32                                     `protobuf:"varint,2,opt,name=leaderboard_entry_count,json=leaderboardEntryCount" json:"leaderboard_entry_count,omitempty"`
 	Entries               []*CMsgClientLBSGetLBEntriesResponse_Entry `protobuf:"bytes,3,rep,name=entries" json:"entries,omitempty"`
 	XXX_NoUnkeyedLiteral  struct{}                                   `json:"-"`
 	XXX_unrecognized      []byte                                     `json:"-"`
@@ -2435,7 +2578,7 @@ func (m *CMsgClientLBSGetLBEntriesResponse) Reset()         { *m = CMsgClientLBS
 func (m *CMsgClientLBSGetLBEntriesResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientLBSGetLBEntriesResponse) ProtoMessage()    {}
 func (*CMsgClientLBSGetLBEntriesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{32}
+	return fileDescriptor_97f09b42bb99641f, []int{34}
 }
 
 func (m *CMsgClientLBSGetLBEntriesResponse) XXX_Unmarshal(b []byte) error {
@@ -2480,11 +2623,11 @@ func (m *CMsgClientLBSGetLBEntriesResponse) GetEntries() []*CMsgClientLBSGetLBEn
 }
 
 type CMsgClientLBSGetLBEntriesResponse_Entry struct {
-	SteamIdUser          *uint64  `protobuf:"fixed64,1,opt,name=steam_id_user" json:"steam_id_user,omitempty"`
-	GlobalRank           *int32   `protobuf:"varint,2,opt,name=global_rank" json:"global_rank,omitempty"`
+	SteamIdUser          *uint64  `protobuf:"fixed64,1,opt,name=steam_id_user,json=steamIdUser" json:"steam_id_user,omitempty"`
+	GlobalRank           *int32   `protobuf:"varint,2,opt,name=global_rank,json=globalRank" json:"global_rank,omitempty"`
 	Score                *int32   `protobuf:"varint,3,opt,name=score" json:"score,omitempty"`
 	Details              []byte   `protobuf:"bytes,4,opt,name=details" json:"details,omitempty"`
-	UgcId                *uint64  `protobuf:"fixed64,5,opt,name=ugc_id" json:"ugc_id,omitempty"`
+	UgcId                *uint64  `protobuf:"fixed64,5,opt,name=ugc_id,json=ugcId" json:"ugc_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -2496,7 +2639,7 @@ func (m *CMsgClientLBSGetLBEntriesResponse_Entry) Reset() {
 func (m *CMsgClientLBSGetLBEntriesResponse_Entry) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientLBSGetLBEntriesResponse_Entry) ProtoMessage()    {}
 func (*CMsgClientLBSGetLBEntriesResponse_Entry) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{32, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{34, 0}
 }
 
 func (m *CMsgClientLBSGetLBEntriesResponse_Entry) XXX_Unmarshal(b []byte) error {
@@ -2553,7 +2696,7 @@ func (m *CMsgClientLBSGetLBEntriesResponse_Entry) GetUgcId() uint64 {
 }
 
 type CMsgClientAppMinutesPlayedData struct {
-	MinutesPlayed        []*CMsgClientAppMinutesPlayedData_AppMinutesPlayedData `protobuf:"bytes,1,rep,name=minutes_played" json:"minutes_played,omitempty"`
+	MinutesPlayed        []*CMsgClientAppMinutesPlayedData_AppMinutesPlayedData `protobuf:"bytes,1,rep,name=minutes_played,json=minutesPlayed" json:"minutes_played,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                                               `json:"-"`
 	XXX_unrecognized     []byte                                                 `json:"-"`
 	XXX_sizecache        int32                                                  `json:"-"`
@@ -2563,7 +2706,7 @@ func (m *CMsgClientAppMinutesPlayedData) Reset()         { *m = CMsgClientAppMin
 func (m *CMsgClientAppMinutesPlayedData) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientAppMinutesPlayedData) ProtoMessage()    {}
 func (*CMsgClientAppMinutesPlayedData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{33}
+	return fileDescriptor_97f09b42bb99641f, []int{35}
 }
 
 func (m *CMsgClientAppMinutesPlayedData) XXX_Unmarshal(b []byte) error {
@@ -2592,9 +2735,9 @@ func (m *CMsgClientAppMinutesPlayedData) GetMinutesPlayed() []*CMsgClientAppMinu
 }
 
 type CMsgClientAppMinutesPlayedData_AppMinutesPlayedData struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
 	Forever              *int32   `protobuf:"varint,2,opt,name=forever" json:"forever,omitempty"`
-	LastTwoWeeks         *int32   `protobuf:"varint,3,opt,name=last_two_weeks" json:"last_two_weeks,omitempty"`
+	LastTwoWeeks         *int32   `protobuf:"varint,3,opt,name=last_two_weeks,json=lastTwoWeeks" json:"last_two_weeks,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -2608,7 +2751,7 @@ func (m *CMsgClientAppMinutesPlayedData_AppMinutesPlayedData) String() string {
 }
 func (*CMsgClientAppMinutesPlayedData_AppMinutesPlayedData) ProtoMessage() {}
 func (*CMsgClientAppMinutesPlayedData_AppMinutesPlayedData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{33, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{35, 0}
 }
 
 func (m *CMsgClientAppMinutesPlayedData_AppMinutesPlayedData) XXX_Unmarshal(b []byte) error {
@@ -2651,10 +2794,10 @@ func (m *CMsgClientAppMinutesPlayedData_AppMinutesPlayedData) GetLastTwoWeeks() 
 }
 
 type CMsgClientIsLimitedAccount struct {
-	BisLimitedAccount                       *bool    `protobuf:"varint,1,opt,name=bis_limited_account" json:"bis_limited_account,omitempty"`
-	BisCommunityBanned                      *bool    `protobuf:"varint,2,opt,name=bis_community_banned" json:"bis_community_banned,omitempty"`
-	BisLockedAccount                        *bool    `protobuf:"varint,3,opt,name=bis_locked_account" json:"bis_locked_account,omitempty"`
-	BisLimitedAccountAllowedToInviteFriends *bool    `protobuf:"varint,4,opt,name=bis_limited_account_allowed_to_invite_friends" json:"bis_limited_account_allowed_to_invite_friends,omitempty"`
+	BisLimitedAccount                       *bool    `protobuf:"varint,1,opt,name=bis_limited_account,json=bisLimitedAccount" json:"bis_limited_account,omitempty"`
+	BisCommunityBanned                      *bool    `protobuf:"varint,2,opt,name=bis_community_banned,json=bisCommunityBanned" json:"bis_community_banned,omitempty"`
+	BisLockedAccount                        *bool    `protobuf:"varint,3,opt,name=bis_locked_account,json=bisLockedAccount" json:"bis_locked_account,omitempty"`
+	BisLimitedAccountAllowedToInviteFriends *bool    `protobuf:"varint,4,opt,name=bis_limited_account_allowed_to_invite_friends,json=bisLimitedAccountAllowedToInviteFriends" json:"bis_limited_account_allowed_to_invite_friends,omitempty"`
 	XXX_NoUnkeyedLiteral                    struct{} `json:"-"`
 	XXX_unrecognized                        []byte   `json:"-"`
 	XXX_sizecache                           int32    `json:"-"`
@@ -2664,7 +2807,7 @@ func (m *CMsgClientIsLimitedAccount) Reset()         { *m = CMsgClientIsLimitedA
 func (m *CMsgClientIsLimitedAccount) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientIsLimitedAccount) ProtoMessage()    {}
 func (*CMsgClientIsLimitedAccount) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{34}
+	return fileDescriptor_97f09b42bb99641f, []int{36}
 }
 
 func (m *CMsgClientIsLimitedAccount) XXX_Unmarshal(b []byte) error {
@@ -2713,102 +2856,8 @@ func (m *CMsgClientIsLimitedAccount) GetBisLimitedAccountAllowedToInviteFriends(
 	return false
 }
 
-type CMsgClientServerList struct {
-	Servers              []*CMsgClientServerList_Server `protobuf:"bytes,1,rep,name=servers" json:"servers,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                       `json:"-"`
-	XXX_unrecognized     []byte                         `json:"-"`
-	XXX_sizecache        int32                          `json:"-"`
-}
-
-func (m *CMsgClientServerList) Reset()         { *m = CMsgClientServerList{} }
-func (m *CMsgClientServerList) String() string { return proto.CompactTextString(m) }
-func (*CMsgClientServerList) ProtoMessage()    {}
-func (*CMsgClientServerList) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{35}
-}
-
-func (m *CMsgClientServerList) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CMsgClientServerList.Unmarshal(m, b)
-}
-func (m *CMsgClientServerList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CMsgClientServerList.Marshal(b, m, deterministic)
-}
-func (m *CMsgClientServerList) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CMsgClientServerList.Merge(m, src)
-}
-func (m *CMsgClientServerList) XXX_Size() int {
-	return xxx_messageInfo_CMsgClientServerList.Size(m)
-}
-func (m *CMsgClientServerList) XXX_DiscardUnknown() {
-	xxx_messageInfo_CMsgClientServerList.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CMsgClientServerList proto.InternalMessageInfo
-
-func (m *CMsgClientServerList) GetServers() []*CMsgClientServerList_Server {
-	if m != nil {
-		return m.Servers
-	}
-	return nil
-}
-
-type CMsgClientServerList_Server struct {
-	ServerType           *uint32  `protobuf:"varint,1,opt,name=server_type" json:"server_type,omitempty"`
-	ServerIp             *uint32  `protobuf:"varint,2,opt,name=server_ip" json:"server_ip,omitempty"`
-	ServerPort           *uint32  `protobuf:"varint,3,opt,name=server_port" json:"server_port,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *CMsgClientServerList_Server) Reset()         { *m = CMsgClientServerList_Server{} }
-func (m *CMsgClientServerList_Server) String() string { return proto.CompactTextString(m) }
-func (*CMsgClientServerList_Server) ProtoMessage()    {}
-func (*CMsgClientServerList_Server) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{35, 0}
-}
-
-func (m *CMsgClientServerList_Server) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CMsgClientServerList_Server.Unmarshal(m, b)
-}
-func (m *CMsgClientServerList_Server) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CMsgClientServerList_Server.Marshal(b, m, deterministic)
-}
-func (m *CMsgClientServerList_Server) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CMsgClientServerList_Server.Merge(m, src)
-}
-func (m *CMsgClientServerList_Server) XXX_Size() int {
-	return xxx_messageInfo_CMsgClientServerList_Server.Size(m)
-}
-func (m *CMsgClientServerList_Server) XXX_DiscardUnknown() {
-	xxx_messageInfo_CMsgClientServerList_Server.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CMsgClientServerList_Server proto.InternalMessageInfo
-
-func (m *CMsgClientServerList_Server) GetServerType() uint32 {
-	if m != nil && m.ServerType != nil {
-		return *m.ServerType
-	}
-	return 0
-}
-
-func (m *CMsgClientServerList_Server) GetServerIp() uint32 {
-	if m != nil && m.ServerIp != nil {
-		return *m.ServerIp
-	}
-	return 0
-}
-
-func (m *CMsgClientServerList_Server) GetServerPort() uint32 {
-	if m != nil && m.ServerPort != nil {
-		return *m.ServerPort
-	}
-	return 0
-}
-
 type CMsgClientRequestedClientStats struct {
-	StatsToSend          []*CMsgClientRequestedClientStats_StatsToSend `protobuf:"bytes,1,rep,name=stats_to_send" json:"stats_to_send,omitempty"`
+	StatsToSend          []*CMsgClientRequestedClientStats_StatsToSend `protobuf:"bytes,1,rep,name=stats_to_send,json=statsToSend" json:"stats_to_send,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                                      `json:"-"`
 	XXX_unrecognized     []byte                                        `json:"-"`
 	XXX_sizecache        int32                                         `json:"-"`
@@ -2818,7 +2867,7 @@ func (m *CMsgClientRequestedClientStats) Reset()         { *m = CMsgClientReques
 func (m *CMsgClientRequestedClientStats) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientRequestedClientStats) ProtoMessage()    {}
 func (*CMsgClientRequestedClientStats) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{36}
+	return fileDescriptor_97f09b42bb99641f, []int{37}
 }
 
 func (m *CMsgClientRequestedClientStats) XXX_Unmarshal(b []byte) error {
@@ -2847,8 +2896,8 @@ func (m *CMsgClientRequestedClientStats) GetStatsToSend() []*CMsgClientRequested
 }
 
 type CMsgClientRequestedClientStats_StatsToSend struct {
-	ClientStat           *uint32  `protobuf:"varint,1,opt,name=client_stat" json:"client_stat,omitempty"`
-	StatAggregateMethod  *uint32  `protobuf:"varint,2,opt,name=stat_aggregate_method" json:"stat_aggregate_method,omitempty"`
+	ClientStat           *uint32  `protobuf:"varint,1,opt,name=client_stat,json=clientStat" json:"client_stat,omitempty"`
+	StatAggregateMethod  *uint32  `protobuf:"varint,2,opt,name=stat_aggregate_method,json=statAggregateMethod" json:"stat_aggregate_method,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -2862,7 +2911,7 @@ func (m *CMsgClientRequestedClientStats_StatsToSend) String() string {
 }
 func (*CMsgClientRequestedClientStats_StatsToSend) ProtoMessage() {}
 func (*CMsgClientRequestedClientStats_StatsToSend) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{36, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{37, 0}
 }
 
 func (m *CMsgClientRequestedClientStats_StatsToSend) XXX_Unmarshal(b []byte) error {
@@ -2898,7 +2947,7 @@ func (m *CMsgClientRequestedClientStats_StatsToSend) GetStatAggregateMethod() ui
 }
 
 type CMsgClientStat2 struct {
-	StatDetail           []*CMsgClientStat2_StatDetail `protobuf:"bytes,1,rep,name=stat_detail" json:"stat_detail,omitempty"`
+	StatDetail           []*CMsgClientStat2_StatDetail `protobuf:"bytes,1,rep,name=stat_detail,json=statDetail" json:"stat_detail,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                      `json:"-"`
 	XXX_unrecognized     []byte                        `json:"-"`
 	XXX_sizecache        int32                         `json:"-"`
@@ -2908,7 +2957,7 @@ func (m *CMsgClientStat2) Reset()         { *m = CMsgClientStat2{} }
 func (m *CMsgClientStat2) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientStat2) ProtoMessage()    {}
 func (*CMsgClientStat2) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{37}
+	return fileDescriptor_97f09b42bb99641f, []int{38}
 }
 
 func (m *CMsgClientStat2) XXX_Unmarshal(b []byte) error {
@@ -2937,12 +2986,12 @@ func (m *CMsgClientStat2) GetStatDetail() []*CMsgClientStat2_StatDetail {
 }
 
 type CMsgClientStat2_StatDetail struct {
-	ClientStat           *uint32  `protobuf:"varint,1,opt,name=client_stat" json:"client_stat,omitempty"`
-	LlValue              *int64   `protobuf:"varint,2,opt,name=ll_value" json:"ll_value,omitempty"`
-	TimeOfDay            *uint32  `protobuf:"varint,3,opt,name=time_of_day" json:"time_of_day,omitempty"`
-	CellId               *uint32  `protobuf:"varint,4,opt,name=cell_id" json:"cell_id,omitempty"`
-	DepotId              *uint32  `protobuf:"varint,5,opt,name=depot_id" json:"depot_id,omitempty"`
-	AppId                *uint32  `protobuf:"varint,6,opt,name=app_id" json:"app_id,omitempty"`
+	ClientStat           *uint32  `protobuf:"varint,1,opt,name=client_stat,json=clientStat" json:"client_stat,omitempty"`
+	LlValue              *int64   `protobuf:"varint,2,opt,name=ll_value,json=llValue" json:"ll_value,omitempty"`
+	TimeOfDay            *uint32  `protobuf:"varint,3,opt,name=time_of_day,json=timeOfDay" json:"time_of_day,omitempty"`
+	CellId               *uint32  `protobuf:"varint,4,opt,name=cell_id,json=cellId" json:"cell_id,omitempty"`
+	DepotId              *uint32  `protobuf:"varint,5,opt,name=depot_id,json=depotId" json:"depot_id,omitempty"`
+	AppId                *uint32  `protobuf:"varint,6,opt,name=app_id,json=appId" json:"app_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -2952,7 +3001,7 @@ func (m *CMsgClientStat2_StatDetail) Reset()         { *m = CMsgClientStat2_Stat
 func (m *CMsgClientStat2_StatDetail) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientStat2_StatDetail) ProtoMessage()    {}
 func (*CMsgClientStat2_StatDetail) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{37, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{38, 0}
 }
 
 func (m *CMsgClientStat2_StatDetail) XXX_Unmarshal(b []byte) error {
@@ -3016,10 +3065,10 @@ func (m *CMsgClientStat2_StatDetail) GetAppId() uint32 {
 }
 
 type CMsgClientMMSSetRatelimitPolicyOnClient struct {
-	AppId                     *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	EnableRateLimits          *bool    `protobuf:"varint,2,opt,name=enable_rate_limits" json:"enable_rate_limits,omitempty"`
-	SecondsPerMessage         *int32   `protobuf:"varint,3,opt,name=seconds_per_message" json:"seconds_per_message,omitempty"`
-	MillisecondsPerDataUpdate *int32   `protobuf:"varint,4,opt,name=milliseconds_per_data_update" json:"milliseconds_per_data_update,omitempty"`
+	AppId                     *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	EnableRateLimits          *bool    `protobuf:"varint,2,opt,name=enable_rate_limits,json=enableRateLimits" json:"enable_rate_limits,omitempty"`
+	SecondsPerMessage         *int32   `protobuf:"varint,3,opt,name=seconds_per_message,json=secondsPerMessage" json:"seconds_per_message,omitempty"`
+	MillisecondsPerDataUpdate *int32   `protobuf:"varint,4,opt,name=milliseconds_per_data_update,json=millisecondsPerDataUpdate" json:"milliseconds_per_data_update,omitempty"`
 	XXX_NoUnkeyedLiteral      struct{} `json:"-"`
 	XXX_unrecognized          []byte   `json:"-"`
 	XXX_sizecache             int32    `json:"-"`
@@ -3031,7 +3080,7 @@ func (m *CMsgClientMMSSetRatelimitPolicyOnClient) Reset() {
 func (m *CMsgClientMMSSetRatelimitPolicyOnClient) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSSetRatelimitPolicyOnClient) ProtoMessage()    {}
 func (*CMsgClientMMSSetRatelimitPolicyOnClient) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{38}
+	return fileDescriptor_97f09b42bb99641f, []int{39}
 }
 
 func (m *CMsgClientMMSSetRatelimitPolicyOnClient) XXX_Unmarshal(b []byte) error {
@@ -3081,24 +3130,25 @@ func (m *CMsgClientMMSSetRatelimitPolicyOnClient) GetMillisecondsPerDataUpdate()
 }
 
 type CMsgClientMMSCreateLobby struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	MaxMembers           *int32   `protobuf:"varint,2,opt,name=max_members" json:"max_members,omitempty"`
-	LobbyType            *int32   `protobuf:"varint,3,opt,name=lobby_type" json:"lobby_type,omitempty"`
-	LobbyFlags           *int32   `protobuf:"varint,4,opt,name=lobby_flags" json:"lobby_flags,omitempty"`
-	CellId               *uint32  `protobuf:"varint,5,opt,name=cell_id" json:"cell_id,omitempty"`
-	PublicIp             *uint32  `protobuf:"varint,6,opt,name=public_ip" json:"public_ip,omitempty"`
-	Metadata             []byte   `protobuf:"bytes,7,opt,name=metadata" json:"metadata,omitempty"`
-	PersonaNameOwner     *string  `protobuf:"bytes,8,opt,name=persona_name_owner" json:"persona_name_owner,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	AppId                *uint32        `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	MaxMembers           *int32         `protobuf:"varint,2,opt,name=max_members,json=maxMembers" json:"max_members,omitempty"`
+	LobbyType            *int32         `protobuf:"varint,3,opt,name=lobby_type,json=lobbyType" json:"lobby_type,omitempty"`
+	LobbyFlags           *int32         `protobuf:"varint,4,opt,name=lobby_flags,json=lobbyFlags" json:"lobby_flags,omitempty"`
+	CellId               *uint32        `protobuf:"varint,5,opt,name=cell_id,json=cellId" json:"cell_id,omitempty"`
+	DeprecatedPublicIp   *uint32        `protobuf:"varint,6,opt,name=deprecated_public_ip,json=deprecatedPublicIp" json:"deprecated_public_ip,omitempty"`
+	Metadata             []byte         `protobuf:"bytes,7,opt,name=metadata" json:"metadata,omitempty"`
+	PersonaNameOwner     *string        `protobuf:"bytes,8,opt,name=persona_name_owner,json=personaNameOwner" json:"persona_name_owner,omitempty"`
+	PublicIp             *CMsgIPAddress `protobuf:"bytes,9,opt,name=public_ip,json=publicIp" json:"public_ip,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
 }
 
 func (m *CMsgClientMMSCreateLobby) Reset()         { *m = CMsgClientMMSCreateLobby{} }
 func (m *CMsgClientMMSCreateLobby) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSCreateLobby) ProtoMessage()    {}
 func (*CMsgClientMMSCreateLobby) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{39}
+	return fileDescriptor_97f09b42bb99641f, []int{40}
 }
 
 func (m *CMsgClientMMSCreateLobby) XXX_Unmarshal(b []byte) error {
@@ -3154,9 +3204,9 @@ func (m *CMsgClientMMSCreateLobby) GetCellId() uint32 {
 	return 0
 }
 
-func (m *CMsgClientMMSCreateLobby) GetPublicIp() uint32 {
-	if m != nil && m.PublicIp != nil {
-		return *m.PublicIp
+func (m *CMsgClientMMSCreateLobby) GetDeprecatedPublicIp() uint32 {
+	if m != nil && m.DeprecatedPublicIp != nil {
+		return *m.DeprecatedPublicIp
 	}
 	return 0
 }
@@ -3175,9 +3225,16 @@ func (m *CMsgClientMMSCreateLobby) GetPersonaNameOwner() string {
 	return ""
 }
 
+func (m *CMsgClientMMSCreateLobby) GetPublicIp() *CMsgIPAddress {
+	if m != nil {
+		return m.PublicIp
+	}
+	return nil
+}
+
 type CMsgClientMMSCreateLobbyResponse struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
 	Eresult              *int32   `protobuf:"varint,3,opt,name=eresult,def=2" json:"eresult,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -3188,7 +3245,7 @@ func (m *CMsgClientMMSCreateLobbyResponse) Reset()         { *m = CMsgClientMMSC
 func (m *CMsgClientMMSCreateLobbyResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSCreateLobbyResponse) ProtoMessage()    {}
 func (*CMsgClientMMSCreateLobbyResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{40}
+	return fileDescriptor_97f09b42bb99641f, []int{41}
 }
 
 func (m *CMsgClientMMSCreateLobbyResponse) XXX_Unmarshal(b []byte) error {
@@ -3233,9 +3290,9 @@ func (m *CMsgClientMMSCreateLobbyResponse) GetEresult() int32 {
 }
 
 type CMsgClientMMSJoinLobby struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
-	PersonaName          *string  `protobuf:"bytes,3,opt,name=persona_name" json:"persona_name,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
+	PersonaName          *string  `protobuf:"bytes,3,opt,name=persona_name,json=personaName" json:"persona_name,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -3245,7 +3302,7 @@ func (m *CMsgClientMMSJoinLobby) Reset()         { *m = CMsgClientMMSJoinLobby{}
 func (m *CMsgClientMMSJoinLobby) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSJoinLobby) ProtoMessage()    {}
 func (*CMsgClientMMSJoinLobby) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{41}
+	return fileDescriptor_97f09b42bb99641f, []int{42}
 }
 
 func (m *CMsgClientMMSJoinLobby) XXX_Unmarshal(b []byte) error {
@@ -3288,13 +3345,13 @@ func (m *CMsgClientMMSJoinLobby) GetPersonaName() string {
 }
 
 type CMsgClientMMSJoinLobbyResponse struct {
-	AppId                 *uint32                                  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby          *uint64                                  `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
-	ChatRoomEnterResponse *int32                                   `protobuf:"varint,3,opt,name=chat_room_enter_response" json:"chat_room_enter_response,omitempty"`
-	MaxMembers            *int32                                   `protobuf:"varint,4,opt,name=max_members" json:"max_members,omitempty"`
-	LobbyType             *int32                                   `protobuf:"varint,5,opt,name=lobby_type" json:"lobby_type,omitempty"`
-	LobbyFlags            *int32                                   `protobuf:"varint,6,opt,name=lobby_flags" json:"lobby_flags,omitempty"`
-	SteamIdOwner          *uint64                                  `protobuf:"fixed64,7,opt,name=steam_id_owner" json:"steam_id_owner,omitempty"`
+	AppId                 *uint32                                  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby          *uint64                                  `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
+	ChatRoomEnterResponse *int32                                   `protobuf:"varint,3,opt,name=chat_room_enter_response,json=chatRoomEnterResponse" json:"chat_room_enter_response,omitempty"`
+	MaxMembers            *int32                                   `protobuf:"varint,4,opt,name=max_members,json=maxMembers" json:"max_members,omitempty"`
+	LobbyType             *int32                                   `protobuf:"varint,5,opt,name=lobby_type,json=lobbyType" json:"lobby_type,omitempty"`
+	LobbyFlags            *int32                                   `protobuf:"varint,6,opt,name=lobby_flags,json=lobbyFlags" json:"lobby_flags,omitempty"`
+	SteamIdOwner          *uint64                                  `protobuf:"fixed64,7,opt,name=steam_id_owner,json=steamIdOwner" json:"steam_id_owner,omitempty"`
 	Metadata              []byte                                   `protobuf:"bytes,8,opt,name=metadata" json:"metadata,omitempty"`
 	Members               []*CMsgClientMMSJoinLobbyResponse_Member `protobuf:"bytes,9,rep,name=members" json:"members,omitempty"`
 	XXX_NoUnkeyedLiteral  struct{}                                 `json:"-"`
@@ -3306,7 +3363,7 @@ func (m *CMsgClientMMSJoinLobbyResponse) Reset()         { *m = CMsgClientMMSJoi
 func (m *CMsgClientMMSJoinLobbyResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSJoinLobbyResponse) ProtoMessage()    {}
 func (*CMsgClientMMSJoinLobbyResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{42}
+	return fileDescriptor_97f09b42bb99641f, []int{43}
 }
 
 func (m *CMsgClientMMSJoinLobbyResponse) XXX_Unmarshal(b []byte) error {
@@ -3391,8 +3448,8 @@ func (m *CMsgClientMMSJoinLobbyResponse) GetMembers() []*CMsgClientMMSJoinLobbyR
 }
 
 type CMsgClientMMSJoinLobbyResponse_Member struct {
-	SteamId              *uint64  `protobuf:"fixed64,1,opt,name=steam_id" json:"steam_id,omitempty"`
-	PersonaName          *string  `protobuf:"bytes,2,opt,name=persona_name" json:"persona_name,omitempty"`
+	SteamId              *uint64  `protobuf:"fixed64,1,opt,name=steam_id,json=steamId" json:"steam_id,omitempty"`
+	PersonaName          *string  `protobuf:"bytes,2,opt,name=persona_name,json=personaName" json:"persona_name,omitempty"`
 	Metadata             []byte   `protobuf:"bytes,3,opt,name=metadata" json:"metadata,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -3403,7 +3460,7 @@ func (m *CMsgClientMMSJoinLobbyResponse_Member) Reset()         { *m = CMsgClien
 func (m *CMsgClientMMSJoinLobbyResponse_Member) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSJoinLobbyResponse_Member) ProtoMessage()    {}
 func (*CMsgClientMMSJoinLobbyResponse_Member) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{42, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{43, 0}
 }
 
 func (m *CMsgClientMMSJoinLobbyResponse_Member) XXX_Unmarshal(b []byte) error {
@@ -3446,8 +3503,8 @@ func (m *CMsgClientMMSJoinLobbyResponse_Member) GetMetadata() []byte {
 }
 
 type CMsgClientMMSLeaveLobby struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -3457,7 +3514,7 @@ func (m *CMsgClientMMSLeaveLobby) Reset()         { *m = CMsgClientMMSLeaveLobby
 func (m *CMsgClientMMSLeaveLobby) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSLeaveLobby) ProtoMessage()    {}
 func (*CMsgClientMMSLeaveLobby) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{43}
+	return fileDescriptor_97f09b42bb99641f, []int{44}
 }
 
 func (m *CMsgClientMMSLeaveLobby) XXX_Unmarshal(b []byte) error {
@@ -3493,8 +3550,8 @@ func (m *CMsgClientMMSLeaveLobby) GetSteamIdLobby() uint64 {
 }
 
 type CMsgClientMMSLeaveLobbyResponse struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
 	Eresult              *int32   `protobuf:"varint,3,opt,name=eresult,def=2" json:"eresult,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -3505,7 +3562,7 @@ func (m *CMsgClientMMSLeaveLobbyResponse) Reset()         { *m = CMsgClientMMSLe
 func (m *CMsgClientMMSLeaveLobbyResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSLeaveLobbyResponse) ProtoMessage()    {}
 func (*CMsgClientMMSLeaveLobbyResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{44}
+	return fileDescriptor_97f09b42bb99641f, []int{45}
 }
 
 func (m *CMsgClientMMSLeaveLobbyResponse) XXX_Unmarshal(b []byte) error {
@@ -3550,11 +3607,12 @@ func (m *CMsgClientMMSLeaveLobbyResponse) GetEresult() int32 {
 }
 
 type CMsgClientMMSGetLobbyList struct {
-	AppId                *uint32                             `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	NumLobbiesRequested  *int32                              `protobuf:"varint,3,opt,name=num_lobbies_requested" json:"num_lobbies_requested,omitempty"`
-	CellId               *uint32                             `protobuf:"varint,4,opt,name=cell_id" json:"cell_id,omitempty"`
-	PublicIp             *uint32                             `protobuf:"varint,5,opt,name=public_ip" json:"public_ip,omitempty"`
+	AppId                *uint32                             `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	NumLobbiesRequested  *int32                              `protobuf:"varint,3,opt,name=num_lobbies_requested,json=numLobbiesRequested" json:"num_lobbies_requested,omitempty"`
+	CellId               *uint32                             `protobuf:"varint,4,opt,name=cell_id,json=cellId" json:"cell_id,omitempty"`
+	DeprecatedPublicIp   *uint32                             `protobuf:"varint,5,opt,name=deprecated_public_ip,json=deprecatedPublicIp" json:"deprecated_public_ip,omitempty"`
 	Filters              []*CMsgClientMMSGetLobbyList_Filter `protobuf:"bytes,6,rep,name=filters" json:"filters,omitempty"`
+	PublicIp             *CMsgIPAddress                      `protobuf:"bytes,7,opt,name=public_ip,json=publicIp" json:"public_ip,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                            `json:"-"`
 	XXX_unrecognized     []byte                              `json:"-"`
 	XXX_sizecache        int32                               `json:"-"`
@@ -3564,7 +3622,7 @@ func (m *CMsgClientMMSGetLobbyList) Reset()         { *m = CMsgClientMMSGetLobby
 func (m *CMsgClientMMSGetLobbyList) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSGetLobbyList) ProtoMessage()    {}
 func (*CMsgClientMMSGetLobbyList) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{45}
+	return fileDescriptor_97f09b42bb99641f, []int{46}
 }
 
 func (m *CMsgClientMMSGetLobbyList) XXX_Unmarshal(b []byte) error {
@@ -3606,9 +3664,9 @@ func (m *CMsgClientMMSGetLobbyList) GetCellId() uint32 {
 	return 0
 }
 
-func (m *CMsgClientMMSGetLobbyList) GetPublicIp() uint32 {
-	if m != nil && m.PublicIp != nil {
-		return *m.PublicIp
+func (m *CMsgClientMMSGetLobbyList) GetDeprecatedPublicIp() uint32 {
+	if m != nil && m.DeprecatedPublicIp != nil {
+		return *m.DeprecatedPublicIp
 	}
 	return 0
 }
@@ -3620,11 +3678,18 @@ func (m *CMsgClientMMSGetLobbyList) GetFilters() []*CMsgClientMMSGetLobbyList_Fi
 	return nil
 }
 
+func (m *CMsgClientMMSGetLobbyList) GetPublicIp() *CMsgIPAddress {
+	if m != nil {
+		return m.PublicIp
+	}
+	return nil
+}
+
 type CMsgClientMMSGetLobbyList_Filter struct {
 	Key                  *string  `protobuf:"bytes,1,opt,name=key" json:"key,omitempty"`
 	Value                *string  `protobuf:"bytes,2,opt,name=value" json:"value,omitempty"`
 	Comparision          *int32   `protobuf:"varint,3,opt,name=comparision" json:"comparision,omitempty"`
-	FilterType           *int32   `protobuf:"varint,4,opt,name=filter_type" json:"filter_type,omitempty"`
+	FilterType           *int32   `protobuf:"varint,4,opt,name=filter_type,json=filterType" json:"filter_type,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -3634,7 +3699,7 @@ func (m *CMsgClientMMSGetLobbyList_Filter) Reset()         { *m = CMsgClientMMSG
 func (m *CMsgClientMMSGetLobbyList_Filter) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSGetLobbyList_Filter) ProtoMessage()    {}
 func (*CMsgClientMMSGetLobbyList_Filter) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{45, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{46, 0}
 }
 
 func (m *CMsgClientMMSGetLobbyList_Filter) XXX_Unmarshal(b []byte) error {
@@ -3684,7 +3749,7 @@ func (m *CMsgClientMMSGetLobbyList_Filter) GetFilterType() int32 {
 }
 
 type CMsgClientMMSGetLobbyListResponse struct {
-	AppId                *uint32                                    `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
+	AppId                *uint32                                    `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
 	Eresult              *int32                                     `protobuf:"varint,3,opt,name=eresult,def=2" json:"eresult,omitempty"`
 	Lobbies              []*CMsgClientMMSGetLobbyListResponse_Lobby `protobuf:"bytes,4,rep,name=lobbies" json:"lobbies,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                                   `json:"-"`
@@ -3696,7 +3761,7 @@ func (m *CMsgClientMMSGetLobbyListResponse) Reset()         { *m = CMsgClientMMS
 func (m *CMsgClientMMSGetLobbyListResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSGetLobbyListResponse) ProtoMessage()    {}
 func (*CMsgClientMMSGetLobbyListResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{46}
+	return fileDescriptor_97f09b42bb99641f, []int{47}
 }
 
 func (m *CMsgClientMMSGetLobbyListResponse) XXX_Unmarshal(b []byte) error {
@@ -3741,12 +3806,12 @@ func (m *CMsgClientMMSGetLobbyListResponse) GetLobbies() []*CMsgClientMMSGetLobb
 }
 
 type CMsgClientMMSGetLobbyListResponse_Lobby struct {
-	SteamId              *uint64  `protobuf:"fixed64,1,opt,name=steam_id" json:"steam_id,omitempty"`
-	MaxMembers           *int32   `protobuf:"varint,2,opt,name=max_members" json:"max_members,omitempty"`
-	LobbyType            *int32   `protobuf:"varint,3,opt,name=lobby_type" json:"lobby_type,omitempty"`
-	LobbyFlags           *int32   `protobuf:"varint,4,opt,name=lobby_flags" json:"lobby_flags,omitempty"`
+	SteamId              *uint64  `protobuf:"fixed64,1,opt,name=steam_id,json=steamId" json:"steam_id,omitempty"`
+	MaxMembers           *int32   `protobuf:"varint,2,opt,name=max_members,json=maxMembers" json:"max_members,omitempty"`
+	LobbyType            *int32   `protobuf:"varint,3,opt,name=lobby_type,json=lobbyType" json:"lobby_type,omitempty"`
+	LobbyFlags           *int32   `protobuf:"varint,4,opt,name=lobby_flags,json=lobbyFlags" json:"lobby_flags,omitempty"`
 	Metadata             []byte   `protobuf:"bytes,5,opt,name=metadata" json:"metadata,omitempty"`
-	NumMembers           *int32   `protobuf:"varint,6,opt,name=num_members" json:"num_members,omitempty"`
+	NumMembers           *int32   `protobuf:"varint,6,opt,name=num_members,json=numMembers" json:"num_members,omitempty"`
 	Distance             *float32 `protobuf:"fixed32,7,opt,name=distance" json:"distance,omitempty"`
 	Weight               *int64   `protobuf:"varint,8,opt,name=weight" json:"weight,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -3760,7 +3825,7 @@ func (m *CMsgClientMMSGetLobbyListResponse_Lobby) Reset() {
 func (m *CMsgClientMMSGetLobbyListResponse_Lobby) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSGetLobbyListResponse_Lobby) ProtoMessage()    {}
 func (*CMsgClientMMSGetLobbyListResponse_Lobby) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{46, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{47, 0}
 }
 
 func (m *CMsgClientMMSGetLobbyListResponse_Lobby) XXX_Unmarshal(b []byte) error {
@@ -3838,12 +3903,12 @@ func (m *CMsgClientMMSGetLobbyListResponse_Lobby) GetWeight() int64 {
 }
 
 type CMsgClientMMSSetLobbyData struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
-	SteamIdMember        *uint64  `protobuf:"fixed64,3,opt,name=steam_id_member" json:"steam_id_member,omitempty"`
-	MaxMembers           *int32   `protobuf:"varint,4,opt,name=max_members" json:"max_members,omitempty"`
-	LobbyType            *int32   `protobuf:"varint,5,opt,name=lobby_type" json:"lobby_type,omitempty"`
-	LobbyFlags           *int32   `protobuf:"varint,6,opt,name=lobby_flags" json:"lobby_flags,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
+	SteamIdMember        *uint64  `protobuf:"fixed64,3,opt,name=steam_id_member,json=steamIdMember" json:"steam_id_member,omitempty"`
+	MaxMembers           *int32   `protobuf:"varint,4,opt,name=max_members,json=maxMembers" json:"max_members,omitempty"`
+	LobbyType            *int32   `protobuf:"varint,5,opt,name=lobby_type,json=lobbyType" json:"lobby_type,omitempty"`
+	LobbyFlags           *int32   `protobuf:"varint,6,opt,name=lobby_flags,json=lobbyFlags" json:"lobby_flags,omitempty"`
 	Metadata             []byte   `protobuf:"bytes,7,opt,name=metadata" json:"metadata,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -3854,7 +3919,7 @@ func (m *CMsgClientMMSSetLobbyData) Reset()         { *m = CMsgClientMMSSetLobby
 func (m *CMsgClientMMSSetLobbyData) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSSetLobbyData) ProtoMessage()    {}
 func (*CMsgClientMMSSetLobbyData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{47}
+	return fileDescriptor_97f09b42bb99641f, []int{48}
 }
 
 func (m *CMsgClientMMSSetLobbyData) XXX_Unmarshal(b []byte) error {
@@ -3925,8 +3990,8 @@ func (m *CMsgClientMMSSetLobbyData) GetMetadata() []byte {
 }
 
 type CMsgClientMMSSetLobbyDataResponse struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
 	Eresult              *int32   `protobuf:"varint,3,opt,name=eresult,def=2" json:"eresult,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -3937,7 +4002,7 @@ func (m *CMsgClientMMSSetLobbyDataResponse) Reset()         { *m = CMsgClientMMS
 func (m *CMsgClientMMSSetLobbyDataResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSSetLobbyDataResponse) ProtoMessage()    {}
 func (*CMsgClientMMSSetLobbyDataResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{48}
+	return fileDescriptor_97f09b42bb99641f, []int{49}
 }
 
 func (m *CMsgClientMMSSetLobbyDataResponse) XXX_Unmarshal(b []byte) error {
@@ -3982,8 +4047,8 @@ func (m *CMsgClientMMSSetLobbyDataResponse) GetEresult() int32 {
 }
 
 type CMsgClientMMSGetLobbyData struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -3993,7 +4058,7 @@ func (m *CMsgClientMMSGetLobbyData) Reset()         { *m = CMsgClientMMSGetLobby
 func (m *CMsgClientMMSGetLobbyData) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSGetLobbyData) ProtoMessage()    {}
 func (*CMsgClientMMSGetLobbyData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{49}
+	return fileDescriptor_97f09b42bb99641f, []int{50}
 }
 
 func (m *CMsgClientMMSGetLobbyData) XXX_Unmarshal(b []byte) error {
@@ -4029,17 +4094,17 @@ func (m *CMsgClientMMSGetLobbyData) GetSteamIdLobby() uint64 {
 }
 
 type CMsgClientMMSLobbyData struct {
-	AppId                    *uint32                          `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby             *uint64                          `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
-	NumMembers               *int32                           `protobuf:"varint,3,opt,name=num_members" json:"num_members,omitempty"`
-	MaxMembers               *int32                           `protobuf:"varint,4,opt,name=max_members" json:"max_members,omitempty"`
-	LobbyType                *int32                           `protobuf:"varint,5,opt,name=lobby_type" json:"lobby_type,omitempty"`
-	LobbyFlags               *int32                           `protobuf:"varint,6,opt,name=lobby_flags" json:"lobby_flags,omitempty"`
-	SteamIdOwner             *uint64                          `protobuf:"fixed64,7,opt,name=steam_id_owner" json:"steam_id_owner,omitempty"`
+	AppId                    *uint32                          `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby             *uint64                          `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
+	NumMembers               *int32                           `protobuf:"varint,3,opt,name=num_members,json=numMembers" json:"num_members,omitempty"`
+	MaxMembers               *int32                           `protobuf:"varint,4,opt,name=max_members,json=maxMembers" json:"max_members,omitempty"`
+	LobbyType                *int32                           `protobuf:"varint,5,opt,name=lobby_type,json=lobbyType" json:"lobby_type,omitempty"`
+	LobbyFlags               *int32                           `protobuf:"varint,6,opt,name=lobby_flags,json=lobbyFlags" json:"lobby_flags,omitempty"`
+	SteamIdOwner             *uint64                          `protobuf:"fixed64,7,opt,name=steam_id_owner,json=steamIdOwner" json:"steam_id_owner,omitempty"`
 	Metadata                 []byte                           `protobuf:"bytes,8,opt,name=metadata" json:"metadata,omitempty"`
 	Members                  []*CMsgClientMMSLobbyData_Member `protobuf:"bytes,9,rep,name=members" json:"members,omitempty"`
-	LobbyCellid              *uint32                          `protobuf:"varint,10,opt,name=lobby_cellid" json:"lobby_cellid,omitempty"`
-	OwnerShouldAcceptChanges *bool                            `protobuf:"varint,11,opt,name=owner_should_accept_changes" json:"owner_should_accept_changes,omitempty"`
+	LobbyCellid              *uint32                          `protobuf:"varint,10,opt,name=lobby_cellid,json=lobbyCellid" json:"lobby_cellid,omitempty"`
+	OwnerShouldAcceptChanges *bool                            `protobuf:"varint,11,opt,name=owner_should_accept_changes,json=ownerShouldAcceptChanges" json:"owner_should_accept_changes,omitempty"`
 	XXX_NoUnkeyedLiteral     struct{}                         `json:"-"`
 	XXX_unrecognized         []byte                           `json:"-"`
 	XXX_sizecache            int32                            `json:"-"`
@@ -4049,7 +4114,7 @@ func (m *CMsgClientMMSLobbyData) Reset()         { *m = CMsgClientMMSLobbyData{}
 func (m *CMsgClientMMSLobbyData) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSLobbyData) ProtoMessage()    {}
 func (*CMsgClientMMSLobbyData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{50}
+	return fileDescriptor_97f09b42bb99641f, []int{51}
 }
 
 func (m *CMsgClientMMSLobbyData) XXX_Unmarshal(b []byte) error {
@@ -4148,8 +4213,8 @@ func (m *CMsgClientMMSLobbyData) GetOwnerShouldAcceptChanges() bool {
 }
 
 type CMsgClientMMSLobbyData_Member struct {
-	SteamId              *uint64  `protobuf:"fixed64,1,opt,name=steam_id" json:"steam_id,omitempty"`
-	PersonaName          *string  `protobuf:"bytes,2,opt,name=persona_name" json:"persona_name,omitempty"`
+	SteamId              *uint64  `protobuf:"fixed64,1,opt,name=steam_id,json=steamId" json:"steam_id,omitempty"`
+	PersonaName          *string  `protobuf:"bytes,2,opt,name=persona_name,json=personaName" json:"persona_name,omitempty"`
 	Metadata             []byte   `protobuf:"bytes,3,opt,name=metadata" json:"metadata,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -4160,7 +4225,7 @@ func (m *CMsgClientMMSLobbyData_Member) Reset()         { *m = CMsgClientMMSLobb
 func (m *CMsgClientMMSLobbyData_Member) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSLobbyData_Member) ProtoMessage()    {}
 func (*CMsgClientMMSLobbyData_Member) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{50, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{51, 0}
 }
 
 func (m *CMsgClientMMSLobbyData_Member) XXX_Unmarshal(b []byte) error {
@@ -4203,10 +4268,10 @@ func (m *CMsgClientMMSLobbyData_Member) GetMetadata() []byte {
 }
 
 type CMsgClientMMSSendLobbyChatMsg struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
-	SteamIdTarget        *uint64  `protobuf:"fixed64,3,opt,name=steam_id_target" json:"steam_id_target,omitempty"`
-	LobbyMessage         []byte   `protobuf:"bytes,4,opt,name=lobby_message" json:"lobby_message,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
+	SteamIdTarget        *uint64  `protobuf:"fixed64,3,opt,name=steam_id_target,json=steamIdTarget" json:"steam_id_target,omitempty"`
+	LobbyMessage         []byte   `protobuf:"bytes,4,opt,name=lobby_message,json=lobbyMessage" json:"lobby_message,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -4216,7 +4281,7 @@ func (m *CMsgClientMMSSendLobbyChatMsg) Reset()         { *m = CMsgClientMMSSend
 func (m *CMsgClientMMSSendLobbyChatMsg) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSSendLobbyChatMsg) ProtoMessage()    {}
 func (*CMsgClientMMSSendLobbyChatMsg) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{51}
+	return fileDescriptor_97f09b42bb99641f, []int{52}
 }
 
 func (m *CMsgClientMMSSendLobbyChatMsg) XXX_Unmarshal(b []byte) error {
@@ -4266,10 +4331,10 @@ func (m *CMsgClientMMSSendLobbyChatMsg) GetLobbyMessage() []byte {
 }
 
 type CMsgClientMMSLobbyChatMsg struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
-	SteamIdSender        *uint64  `protobuf:"fixed64,3,opt,name=steam_id_sender" json:"steam_id_sender,omitempty"`
-	LobbyMessage         []byte   `protobuf:"bytes,4,opt,name=lobby_message" json:"lobby_message,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
+	SteamIdSender        *uint64  `protobuf:"fixed64,3,opt,name=steam_id_sender,json=steamIdSender" json:"steam_id_sender,omitempty"`
+	LobbyMessage         []byte   `protobuf:"bytes,4,opt,name=lobby_message,json=lobbyMessage" json:"lobby_message,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -4279,7 +4344,7 @@ func (m *CMsgClientMMSLobbyChatMsg) Reset()         { *m = CMsgClientMMSLobbyCha
 func (m *CMsgClientMMSLobbyChatMsg) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSLobbyChatMsg) ProtoMessage()    {}
 func (*CMsgClientMMSLobbyChatMsg) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{52}
+	return fileDescriptor_97f09b42bb99641f, []int{53}
 }
 
 func (m *CMsgClientMMSLobbyChatMsg) XXX_Unmarshal(b []byte) error {
@@ -4329,9 +4394,9 @@ func (m *CMsgClientMMSLobbyChatMsg) GetLobbyMessage() []byte {
 }
 
 type CMsgClientMMSSetLobbyOwner struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
-	SteamIdNewOwner      *uint64  `protobuf:"fixed64,3,opt,name=steam_id_new_owner" json:"steam_id_new_owner,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
+	SteamIdNewOwner      *uint64  `protobuf:"fixed64,3,opt,name=steam_id_new_owner,json=steamIdNewOwner" json:"steam_id_new_owner,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -4341,7 +4406,7 @@ func (m *CMsgClientMMSSetLobbyOwner) Reset()         { *m = CMsgClientMMSSetLobb
 func (m *CMsgClientMMSSetLobbyOwner) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSSetLobbyOwner) ProtoMessage()    {}
 func (*CMsgClientMMSSetLobbyOwner) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{53}
+	return fileDescriptor_97f09b42bb99641f, []int{54}
 }
 
 func (m *CMsgClientMMSSetLobbyOwner) XXX_Unmarshal(b []byte) error {
@@ -4384,8 +4449,8 @@ func (m *CMsgClientMMSSetLobbyOwner) GetSteamIdNewOwner() uint64 {
 }
 
 type CMsgClientMMSSetLobbyOwnerResponse struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
 	Eresult              *int32   `protobuf:"varint,3,opt,name=eresult,def=2" json:"eresult,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -4396,7 +4461,7 @@ func (m *CMsgClientMMSSetLobbyOwnerResponse) Reset()         { *m = CMsgClientMM
 func (m *CMsgClientMMSSetLobbyOwnerResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSSetLobbyOwnerResponse) ProtoMessage()    {}
 func (*CMsgClientMMSSetLobbyOwnerResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{54}
+	return fileDescriptor_97f09b42bb99641f, []int{55}
 }
 
 func (m *CMsgClientMMSSetLobbyOwnerResponse) XXX_Unmarshal(b []byte) error {
@@ -4441,9 +4506,9 @@ func (m *CMsgClientMMSSetLobbyOwnerResponse) GetEresult() int32 {
 }
 
 type CMsgClientMMSSetLobbyLinked struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
-	SteamIdLobby2        *uint64  `protobuf:"fixed64,3,opt,name=steam_id_lobby2" json:"steam_id_lobby2,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
+	SteamIdLobby2        *uint64  `protobuf:"fixed64,3,opt,name=steam_id_lobby2,json=steamIdLobby2" json:"steam_id_lobby2,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -4453,7 +4518,7 @@ func (m *CMsgClientMMSSetLobbyLinked) Reset()         { *m = CMsgClientMMSSetLob
 func (m *CMsgClientMMSSetLobbyLinked) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSSetLobbyLinked) ProtoMessage()    {}
 func (*CMsgClientMMSSetLobbyLinked) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{55}
+	return fileDescriptor_97f09b42bb99641f, []int{56}
 }
 
 func (m *CMsgClientMMSSetLobbyLinked) XXX_Unmarshal(b []byte) error {
@@ -4496,21 +4561,22 @@ func (m *CMsgClientMMSSetLobbyLinked) GetSteamIdLobby2() uint64 {
 }
 
 type CMsgClientMMSSetLobbyGameServer struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
-	GameServerIp         *uint32  `protobuf:"varint,3,opt,name=game_server_ip" json:"game_server_ip,omitempty"`
-	GameServerPort       *uint32  `protobuf:"varint,4,opt,name=game_server_port" json:"game_server_port,omitempty"`
-	GameServerSteamId    *uint64  `protobuf:"fixed64,5,opt,name=game_server_steam_id" json:"game_server_steam_id,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	AppId                  *uint32        `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby           *uint64        `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
+	DeprecatedGameServerIp *uint32        `protobuf:"varint,3,opt,name=deprecated_game_server_ip,json=deprecatedGameServerIp" json:"deprecated_game_server_ip,omitempty"`
+	GameServerPort         *uint32        `protobuf:"varint,4,opt,name=game_server_port,json=gameServerPort" json:"game_server_port,omitempty"`
+	GameServerSteamId      *uint64        `protobuf:"fixed64,5,opt,name=game_server_steam_id,json=gameServerSteamId" json:"game_server_steam_id,omitempty"`
+	GameServerIp           *CMsgIPAddress `protobuf:"bytes,6,opt,name=game_server_ip,json=gameServerIp" json:"game_server_ip,omitempty"`
+	XXX_NoUnkeyedLiteral   struct{}       `json:"-"`
+	XXX_unrecognized       []byte         `json:"-"`
+	XXX_sizecache          int32          `json:"-"`
 }
 
 func (m *CMsgClientMMSSetLobbyGameServer) Reset()         { *m = CMsgClientMMSSetLobbyGameServer{} }
 func (m *CMsgClientMMSSetLobbyGameServer) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSSetLobbyGameServer) ProtoMessage()    {}
 func (*CMsgClientMMSSetLobbyGameServer) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{56}
+	return fileDescriptor_97f09b42bb99641f, []int{57}
 }
 
 func (m *CMsgClientMMSSetLobbyGameServer) XXX_Unmarshal(b []byte) error {
@@ -4545,9 +4611,9 @@ func (m *CMsgClientMMSSetLobbyGameServer) GetSteamIdLobby() uint64 {
 	return 0
 }
 
-func (m *CMsgClientMMSSetLobbyGameServer) GetGameServerIp() uint32 {
-	if m != nil && m.GameServerIp != nil {
-		return *m.GameServerIp
+func (m *CMsgClientMMSSetLobbyGameServer) GetDeprecatedGameServerIp() uint32 {
+	if m != nil && m.DeprecatedGameServerIp != nil {
+		return *m.DeprecatedGameServerIp
 	}
 	return 0
 }
@@ -4566,22 +4632,30 @@ func (m *CMsgClientMMSSetLobbyGameServer) GetGameServerSteamId() uint64 {
 	return 0
 }
 
+func (m *CMsgClientMMSSetLobbyGameServer) GetGameServerIp() *CMsgIPAddress {
+	if m != nil {
+		return m.GameServerIp
+	}
+	return nil
+}
+
 type CMsgClientMMSLobbyGameServerSet struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
-	GameServerIp         *uint32  `protobuf:"varint,3,opt,name=game_server_ip" json:"game_server_ip,omitempty"`
-	GameServerPort       *uint32  `protobuf:"varint,4,opt,name=game_server_port" json:"game_server_port,omitempty"`
-	GameServerSteamId    *uint64  `protobuf:"fixed64,5,opt,name=game_server_steam_id" json:"game_server_steam_id,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	AppId                  *uint32        `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby           *uint64        `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
+	DeprecatedGameServerIp *uint32        `protobuf:"varint,3,opt,name=deprecated_game_server_ip,json=deprecatedGameServerIp" json:"deprecated_game_server_ip,omitempty"`
+	GameServerPort         *uint32        `protobuf:"varint,4,opt,name=game_server_port,json=gameServerPort" json:"game_server_port,omitempty"`
+	GameServerSteamId      *uint64        `protobuf:"fixed64,5,opt,name=game_server_steam_id,json=gameServerSteamId" json:"game_server_steam_id,omitempty"`
+	GameServerIp           *CMsgIPAddress `protobuf:"bytes,6,opt,name=game_server_ip,json=gameServerIp" json:"game_server_ip,omitempty"`
+	XXX_NoUnkeyedLiteral   struct{}       `json:"-"`
+	XXX_unrecognized       []byte         `json:"-"`
+	XXX_sizecache          int32          `json:"-"`
 }
 
 func (m *CMsgClientMMSLobbyGameServerSet) Reset()         { *m = CMsgClientMMSLobbyGameServerSet{} }
 func (m *CMsgClientMMSLobbyGameServerSet) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSLobbyGameServerSet) ProtoMessage()    {}
 func (*CMsgClientMMSLobbyGameServerSet) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{57}
+	return fileDescriptor_97f09b42bb99641f, []int{58}
 }
 
 func (m *CMsgClientMMSLobbyGameServerSet) XXX_Unmarshal(b []byte) error {
@@ -4616,9 +4690,9 @@ func (m *CMsgClientMMSLobbyGameServerSet) GetSteamIdLobby() uint64 {
 	return 0
 }
 
-func (m *CMsgClientMMSLobbyGameServerSet) GetGameServerIp() uint32 {
-	if m != nil && m.GameServerIp != nil {
-		return *m.GameServerIp
+func (m *CMsgClientMMSLobbyGameServerSet) GetDeprecatedGameServerIp() uint32 {
+	if m != nil && m.DeprecatedGameServerIp != nil {
+		return *m.DeprecatedGameServerIp
 	}
 	return 0
 }
@@ -4637,11 +4711,18 @@ func (m *CMsgClientMMSLobbyGameServerSet) GetGameServerSteamId() uint64 {
 	return 0
 }
 
+func (m *CMsgClientMMSLobbyGameServerSet) GetGameServerIp() *CMsgIPAddress {
+	if m != nil {
+		return m.GameServerIp
+	}
+	return nil
+}
+
 type CMsgClientMMSUserJoinedLobby struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
-	SteamIdUser          *uint64  `protobuf:"fixed64,3,opt,name=steam_id_user" json:"steam_id_user,omitempty"`
-	PersonaName          *string  `protobuf:"bytes,4,opt,name=persona_name" json:"persona_name,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
+	SteamIdUser          *uint64  `protobuf:"fixed64,3,opt,name=steam_id_user,json=steamIdUser" json:"steam_id_user,omitempty"`
+	PersonaName          *string  `protobuf:"bytes,4,opt,name=persona_name,json=personaName" json:"persona_name,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -4651,7 +4732,7 @@ func (m *CMsgClientMMSUserJoinedLobby) Reset()         { *m = CMsgClientMMSUserJ
 func (m *CMsgClientMMSUserJoinedLobby) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSUserJoinedLobby) ProtoMessage()    {}
 func (*CMsgClientMMSUserJoinedLobby) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{58}
+	return fileDescriptor_97f09b42bb99641f, []int{59}
 }
 
 func (m *CMsgClientMMSUserJoinedLobby) XXX_Unmarshal(b []byte) error {
@@ -4701,10 +4782,10 @@ func (m *CMsgClientMMSUserJoinedLobby) GetPersonaName() string {
 }
 
 type CMsgClientMMSUserLeftLobby struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
-	SteamIdUser          *uint64  `protobuf:"fixed64,3,opt,name=steam_id_user" json:"steam_id_user,omitempty"`
-	PersonaName          *string  `protobuf:"bytes,4,opt,name=persona_name" json:"persona_name,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
+	SteamIdUser          *uint64  `protobuf:"fixed64,3,opt,name=steam_id_user,json=steamIdUser" json:"steam_id_user,omitempty"`
+	PersonaName          *string  `protobuf:"bytes,4,opt,name=persona_name,json=personaName" json:"persona_name,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -4714,7 +4795,7 @@ func (m *CMsgClientMMSUserLeftLobby) Reset()         { *m = CMsgClientMMSUserLef
 func (m *CMsgClientMMSUserLeftLobby) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSUserLeftLobby) ProtoMessage()    {}
 func (*CMsgClientMMSUserLeftLobby) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{59}
+	return fileDescriptor_97f09b42bb99641f, []int{60}
 }
 
 func (m *CMsgClientMMSUserLeftLobby) XXX_Unmarshal(b []byte) error {
@@ -4764,9 +4845,9 @@ func (m *CMsgClientMMSUserLeftLobby) GetPersonaName() string {
 }
 
 type CMsgClientMMSInviteToLobby struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
-	SteamIdUserInvited   *uint64  `protobuf:"fixed64,3,opt,name=steam_id_user_invited" json:"steam_id_user_invited,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
+	SteamIdUserInvited   *uint64  `protobuf:"fixed64,3,opt,name=steam_id_user_invited,json=steamIdUserInvited" json:"steam_id_user_invited,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -4776,7 +4857,7 @@ func (m *CMsgClientMMSInviteToLobby) Reset()         { *m = CMsgClientMMSInviteT
 func (m *CMsgClientMMSInviteToLobby) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSInviteToLobby) ProtoMessage()    {}
 func (*CMsgClientMMSInviteToLobby) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{60}
+	return fileDescriptor_97f09b42bb99641f, []int{61}
 }
 
 func (m *CMsgClientMMSInviteToLobby) XXX_Unmarshal(b []byte) error {
@@ -4819,10 +4900,10 @@ func (m *CMsgClientMMSInviteToLobby) GetSteamIdUserInvited() uint64 {
 }
 
 type CMsgClientMMSGetLobbyStatus struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
-	ClaimMembership      *bool    `protobuf:"varint,3,opt,name=claim_membership" json:"claim_membership,omitempty"`
-	ClaimOwnership       *bool    `protobuf:"varint,4,opt,name=claim_ownership" json:"claim_ownership,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby         *uint64  `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
+	ClaimMembership      *bool    `protobuf:"varint,3,opt,name=claim_membership,json=claimMembership" json:"claim_membership,omitempty"`
+	ClaimOwnership       *bool    `protobuf:"varint,4,opt,name=claim_ownership,json=claimOwnership" json:"claim_ownership,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -4832,7 +4913,7 @@ func (m *CMsgClientMMSGetLobbyStatus) Reset()         { *m = CMsgClientMMSGetLob
 func (m *CMsgClientMMSGetLobbyStatus) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSGetLobbyStatus) ProtoMessage()    {}
 func (*CMsgClientMMSGetLobbyStatus) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{61}
+	return fileDescriptor_97f09b42bb99641f, []int{62}
 }
 
 func (m *CMsgClientMMSGetLobbyStatus) XXX_Unmarshal(b []byte) error {
@@ -4882,9 +4963,9 @@ func (m *CMsgClientMMSGetLobbyStatus) GetClaimOwnership() bool {
 }
 
 type CMsgClientMMSGetLobbyStatusResponse struct {
-	AppId                *uint32          `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SteamIdLobby         *uint64          `protobuf:"fixed64,2,opt,name=steam_id_lobby" json:"steam_id_lobby,omitempty"`
-	LobbyStatus          *EMMSLobbyStatus `protobuf:"varint,3,opt,name=lobby_status,enum=EMMSLobbyStatus,def=0" json:"lobby_status,omitempty"`
+	AppId                *uint32          `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SteamIdLobby         *uint64          `protobuf:"fixed64,2,opt,name=steam_id_lobby,json=steamIdLobby" json:"steam_id_lobby,omitempty"`
+	LobbyStatus          *EMMSLobbyStatus `protobuf:"varint,3,opt,name=lobby_status,json=lobbyStatus,enum=EMMSLobbyStatus,def=0" json:"lobby_status,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
 	XXX_unrecognized     []byte           `json:"-"`
 	XXX_sizecache        int32            `json:"-"`
@@ -4894,7 +4975,7 @@ func (m *CMsgClientMMSGetLobbyStatusResponse) Reset()         { *m = CMsgClientM
 func (m *CMsgClientMMSGetLobbyStatusResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientMMSGetLobbyStatusResponse) ProtoMessage()    {}
 func (*CMsgClientMMSGetLobbyStatusResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{62}
+	return fileDescriptor_97f09b42bb99641f, []int{63}
 }
 
 func (m *CMsgClientMMSGetLobbyStatusResponse) XXX_Unmarshal(b []byte) error {
@@ -4939,9 +5020,10 @@ func (m *CMsgClientMMSGetLobbyStatusResponse) GetLobbyStatus() EMMSLobbyStatus {
 }
 
 type CMsgClientInviteToGame struct {
-	SteamIdDest          *uint64  `protobuf:"fixed64,1,opt,name=steam_id_dest" json:"steam_id_dest,omitempty"`
-	SteamIdSrc           *uint64  `protobuf:"fixed64,2,opt,name=steam_id_src" json:"steam_id_src,omitempty"`
-	ConnectString        *string  `protobuf:"bytes,3,opt,name=connect_string" json:"connect_string,omitempty"`
+	SteamIdDest          *uint64  `protobuf:"fixed64,1,opt,name=steam_id_dest,json=steamIdDest" json:"steam_id_dest,omitempty"`
+	SteamIdSrc           *uint64  `protobuf:"fixed64,2,opt,name=steam_id_src,json=steamIdSrc" json:"steam_id_src,omitempty"`
+	ConnectString        *string  `protobuf:"bytes,3,opt,name=connect_string,json=connectString" json:"connect_string,omitempty"`
+	RemotePlay           *string  `protobuf:"bytes,4,opt,name=remote_play,json=remotePlay" json:"remote_play,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -4951,7 +5033,7 @@ func (m *CMsgClientInviteToGame) Reset()         { *m = CMsgClientInviteToGame{}
 func (m *CMsgClientInviteToGame) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientInviteToGame) ProtoMessage()    {}
 func (*CMsgClientInviteToGame) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{63}
+	return fileDescriptor_97f09b42bb99641f, []int{64}
 }
 
 func (m *CMsgClientInviteToGame) XXX_Unmarshal(b []byte) error {
@@ -4993,14 +5075,21 @@ func (m *CMsgClientInviteToGame) GetConnectString() string {
 	return ""
 }
 
+func (m *CMsgClientInviteToGame) GetRemotePlay() string {
+	if m != nil && m.RemotePlay != nil {
+		return *m.RemotePlay
+	}
+	return ""
+}
+
 type CMsgClientChatInvite struct {
-	SteamIdInvited       *uint64  `protobuf:"fixed64,1,opt,name=steam_id_invited" json:"steam_id_invited,omitempty"`
-	SteamIdChat          *uint64  `protobuf:"fixed64,2,opt,name=steam_id_chat" json:"steam_id_chat,omitempty"`
-	SteamIdPatron        *uint64  `protobuf:"fixed64,3,opt,name=steam_id_patron" json:"steam_id_patron,omitempty"`
-	ChatroomType         *int32   `protobuf:"varint,4,opt,name=chatroom_type" json:"chatroom_type,omitempty"`
-	SteamIdFriendChat    *uint64  `protobuf:"fixed64,5,opt,name=steam_id_friend_chat" json:"steam_id_friend_chat,omitempty"`
-	ChatName             *string  `protobuf:"bytes,6,opt,name=chat_name" json:"chat_name,omitempty"`
-	GameId               *uint64  `protobuf:"fixed64,7,opt,name=game_id" json:"game_id,omitempty"`
+	SteamIdInvited       *uint64  `protobuf:"fixed64,1,opt,name=steam_id_invited,json=steamIdInvited" json:"steam_id_invited,omitempty"`
+	SteamIdChat          *uint64  `protobuf:"fixed64,2,opt,name=steam_id_chat,json=steamIdChat" json:"steam_id_chat,omitempty"`
+	SteamIdPatron        *uint64  `protobuf:"fixed64,3,opt,name=steam_id_patron,json=steamIdPatron" json:"steam_id_patron,omitempty"`
+	ChatroomType         *int32   `protobuf:"varint,4,opt,name=chatroom_type,json=chatroomType" json:"chatroom_type,omitempty"`
+	SteamIdFriendChat    *uint64  `protobuf:"fixed64,5,opt,name=steam_id_friend_chat,json=steamIdFriendChat" json:"steam_id_friend_chat,omitempty"`
+	ChatName             *string  `protobuf:"bytes,6,opt,name=chat_name,json=chatName" json:"chat_name,omitempty"`
+	GameId               *uint64  `protobuf:"fixed64,7,opt,name=game_id,json=gameId" json:"game_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -5010,7 +5099,7 @@ func (m *CMsgClientChatInvite) Reset()         { *m = CMsgClientChatInvite{} }
 func (m *CMsgClientChatInvite) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientChatInvite) ProtoMessage()    {}
 func (*CMsgClientChatInvite) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{64}
+	return fileDescriptor_97f09b42bb99641f, []int{65}
 }
 
 func (m *CMsgClientChatInvite) XXX_Unmarshal(b []byte) error {
@@ -5081,8 +5170,8 @@ func (m *CMsgClientChatInvite) GetGameId() uint64 {
 }
 
 type CMsgClientConnectionStats struct {
-	StatsLogon           *CMsgClientConnectionStats_Stats_Logon `protobuf:"bytes,1,opt,name=stats_logon" json:"stats_logon,omitempty"`
-	StatsVconn           *CMsgClientConnectionStats_Stats_VConn `protobuf:"bytes,2,opt,name=stats_vconn" json:"stats_vconn,omitempty"`
+	StatsLogon           *CMsgClientConnectionStats_Stats_Logon `protobuf:"bytes,1,opt,name=stats_logon,json=statsLogon" json:"stats_logon,omitempty"`
+	StatsVconn           *CMsgClientConnectionStats_Stats_VConn `protobuf:"bytes,2,opt,name=stats_vconn,json=statsVconn" json:"stats_vconn,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                               `json:"-"`
 	XXX_unrecognized     []byte                                 `json:"-"`
 	XXX_sizecache        int32                                  `json:"-"`
@@ -5092,7 +5181,7 @@ func (m *CMsgClientConnectionStats) Reset()         { *m = CMsgClientConnectionS
 func (m *CMsgClientConnectionStats) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientConnectionStats) ProtoMessage()    {}
 func (*CMsgClientConnectionStats) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{65}
+	return fileDescriptor_97f09b42bb99641f, []int{66}
 }
 
 func (m *CMsgClientConnectionStats) XXX_Unmarshal(b []byte) error {
@@ -5128,13 +5217,13 @@ func (m *CMsgClientConnectionStats) GetStatsVconn() *CMsgClientConnectionStats_S
 }
 
 type CMsgClientConnectionStats_Stats_Logon struct {
-	ConnectAttempts      *int32   `protobuf:"varint,1,opt,name=connect_attempts" json:"connect_attempts,omitempty"`
-	ConnectSuccesses     *int32   `protobuf:"varint,2,opt,name=connect_successes" json:"connect_successes,omitempty"`
-	ConnectFailures      *int32   `protobuf:"varint,3,opt,name=connect_failures" json:"connect_failures,omitempty"`
-	ConnectionsDropped   *int32   `protobuf:"varint,4,opt,name=connections_dropped" json:"connections_dropped,omitempty"`
-	SecondsRunning       *uint32  `protobuf:"varint,5,opt,name=seconds_running" json:"seconds_running,omitempty"`
-	MsecTologonthistime  *uint32  `protobuf:"varint,6,opt,name=msec_tologonthistime" json:"msec_tologonthistime,omitempty"`
-	CountBadCms          *uint32  `protobuf:"varint,7,opt,name=count_bad_cms" json:"count_bad_cms,omitempty"`
+	ConnectAttempts      *int32   `protobuf:"varint,1,opt,name=connect_attempts,json=connectAttempts" json:"connect_attempts,omitempty"`
+	ConnectSuccesses     *int32   `protobuf:"varint,2,opt,name=connect_successes,json=connectSuccesses" json:"connect_successes,omitempty"`
+	ConnectFailures      *int32   `protobuf:"varint,3,opt,name=connect_failures,json=connectFailures" json:"connect_failures,omitempty"`
+	ConnectionsDropped   *int32   `protobuf:"varint,4,opt,name=connections_dropped,json=connectionsDropped" json:"connections_dropped,omitempty"`
+	SecondsRunning       *uint32  `protobuf:"varint,5,opt,name=seconds_running,json=secondsRunning" json:"seconds_running,omitempty"`
+	MsecTologonthistime  *uint32  `protobuf:"varint,6,opt,name=msec_tologonthistime,json=msecTologonthistime" json:"msec_tologonthistime,omitempty"`
+	CountBadCms          *uint32  `protobuf:"varint,7,opt,name=count_bad_cms,json=countBadCms" json:"count_bad_cms,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -5144,7 +5233,7 @@ func (m *CMsgClientConnectionStats_Stats_Logon) Reset()         { *m = CMsgClien
 func (m *CMsgClientConnectionStats_Stats_Logon) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientConnectionStats_Stats_Logon) ProtoMessage()    {}
 func (*CMsgClientConnectionStats_Stats_Logon) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{65, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{66, 0}
 }
 
 func (m *CMsgClientConnectionStats_Stats_Logon) XXX_Unmarshal(b []byte) error {
@@ -5215,11 +5304,11 @@ func (m *CMsgClientConnectionStats_Stats_Logon) GetCountBadCms() uint32 {
 }
 
 type CMsgClientConnectionStats_Stats_UDP struct {
-	PktsSent             *uint64  `protobuf:"varint,1,opt,name=pkts_sent" json:"pkts_sent,omitempty"`
-	BytesSent            *uint64  `protobuf:"varint,2,opt,name=bytes_sent" json:"bytes_sent,omitempty"`
-	PktsRecv             *uint64  `protobuf:"varint,3,opt,name=pkts_recv" json:"pkts_recv,omitempty"`
-	PktsProcessed        *uint64  `protobuf:"varint,4,opt,name=pkts_processed" json:"pkts_processed,omitempty"`
-	BytesRecv            *uint64  `protobuf:"varint,5,opt,name=bytes_recv" json:"bytes_recv,omitempty"`
+	PktsSent             *uint64  `protobuf:"varint,1,opt,name=pkts_sent,json=pktsSent" json:"pkts_sent,omitempty"`
+	BytesSent            *uint64  `protobuf:"varint,2,opt,name=bytes_sent,json=bytesSent" json:"bytes_sent,omitempty"`
+	PktsRecv             *uint64  `protobuf:"varint,3,opt,name=pkts_recv,json=pktsRecv" json:"pkts_recv,omitempty"`
+	PktsProcessed        *uint64  `protobuf:"varint,4,opt,name=pkts_processed,json=pktsProcessed" json:"pkts_processed,omitempty"`
+	BytesRecv            *uint64  `protobuf:"varint,5,opt,name=bytes_recv,json=bytesRecv" json:"bytes_recv,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -5229,7 +5318,7 @@ func (m *CMsgClientConnectionStats_Stats_UDP) Reset()         { *m = CMsgClientC
 func (m *CMsgClientConnectionStats_Stats_UDP) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientConnectionStats_Stats_UDP) ProtoMessage()    {}
 func (*CMsgClientConnectionStats_Stats_UDP) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{65, 1}
+	return fileDescriptor_97f09b42bb99641f, []int{66, 1}
 }
 
 func (m *CMsgClientConnectionStats_Stats_UDP) XXX_Unmarshal(b []byte) error {
@@ -5286,26 +5375,26 @@ func (m *CMsgClientConnectionStats_Stats_UDP) GetBytesRecv() uint64 {
 }
 
 type CMsgClientConnectionStats_Stats_VConn struct {
-	ConnectionsUdp          *uint32                              `protobuf:"varint,1,opt,name=connections_udp" json:"connections_udp,omitempty"`
-	ConnectionsTcp          *uint32                              `protobuf:"varint,2,opt,name=connections_tcp" json:"connections_tcp,omitempty"`
-	StatsUdp                *CMsgClientConnectionStats_Stats_UDP `protobuf:"bytes,3,opt,name=stats_udp" json:"stats_udp,omitempty"`
-	PktsAbandoned           *uint64                              `protobuf:"varint,4,opt,name=pkts_abandoned" json:"pkts_abandoned,omitempty"`
-	ConnReqReceived         *uint64                              `protobuf:"varint,5,opt,name=conn_req_received" json:"conn_req_received,omitempty"`
-	PktsResent              *uint64                              `protobuf:"varint,6,opt,name=pkts_resent" json:"pkts_resent,omitempty"`
-	MsgsSent                *uint64                              `protobuf:"varint,7,opt,name=msgs_sent" json:"msgs_sent,omitempty"`
-	MsgsSentFailed          *uint64                              `protobuf:"varint,8,opt,name=msgs_sent_failed" json:"msgs_sent_failed,omitempty"`
-	MsgsRecv                *uint64                              `protobuf:"varint,9,opt,name=msgs_recv" json:"msgs_recv,omitempty"`
-	DatagramsSent           *uint64                              `protobuf:"varint,10,opt,name=datagrams_sent" json:"datagrams_sent,omitempty"`
-	DatagramsRecv           *uint64                              `protobuf:"varint,11,opt,name=datagrams_recv" json:"datagrams_recv,omitempty"`
-	BadPktsRecv             *uint64                              `protobuf:"varint,12,opt,name=bad_pkts_recv" json:"bad_pkts_recv,omitempty"`
-	UnknownConnPktsRecv     *uint64                              `protobuf:"varint,13,opt,name=unknown_conn_pkts_recv" json:"unknown_conn_pkts_recv,omitempty"`
-	MissedPktsRecv          *uint64                              `protobuf:"varint,14,opt,name=missed_pkts_recv" json:"missed_pkts_recv,omitempty"`
-	DupPktsRecv             *uint64                              `protobuf:"varint,15,opt,name=dup_pkts_recv" json:"dup_pkts_recv,omitempty"`
-	FailedConnectChallenges *uint64                              `protobuf:"varint,16,opt,name=failed_connect_challenges" json:"failed_connect_challenges,omitempty"`
-	MicroSecAvgLatency      *uint32                              `protobuf:"varint,17,opt,name=micro_sec_avg_latency" json:"micro_sec_avg_latency,omitempty"`
-	MicroSecMinLatency      *uint32                              `protobuf:"varint,18,opt,name=micro_sec_min_latency" json:"micro_sec_min_latency,omitempty"`
-	MicroSecMaxLatency      *uint32                              `protobuf:"varint,19,opt,name=micro_sec_max_latency" json:"micro_sec_max_latency,omitempty"`
-	MemPoolMsgInUse         *uint32                              `protobuf:"varint,20,opt,name=mem_pool_msg_in_use" json:"mem_pool_msg_in_use,omitempty"`
+	ConnectionsUdp          *uint32                              `protobuf:"varint,1,opt,name=connections_udp,json=connectionsUdp" json:"connections_udp,omitempty"`
+	ConnectionsTcp          *uint32                              `protobuf:"varint,2,opt,name=connections_tcp,json=connectionsTcp" json:"connections_tcp,omitempty"`
+	StatsUdp                *CMsgClientConnectionStats_Stats_UDP `protobuf:"bytes,3,opt,name=stats_udp,json=statsUdp" json:"stats_udp,omitempty"`
+	PktsAbandoned           *uint64                              `protobuf:"varint,4,opt,name=pkts_abandoned,json=pktsAbandoned" json:"pkts_abandoned,omitempty"`
+	ConnReqReceived         *uint64                              `protobuf:"varint,5,opt,name=conn_req_received,json=connReqReceived" json:"conn_req_received,omitempty"`
+	PktsResent              *uint64                              `protobuf:"varint,6,opt,name=pkts_resent,json=pktsResent" json:"pkts_resent,omitempty"`
+	MsgsSent                *uint64                              `protobuf:"varint,7,opt,name=msgs_sent,json=msgsSent" json:"msgs_sent,omitempty"`
+	MsgsSentFailed          *uint64                              `protobuf:"varint,8,opt,name=msgs_sent_failed,json=msgsSentFailed" json:"msgs_sent_failed,omitempty"`
+	MsgsRecv                *uint64                              `protobuf:"varint,9,opt,name=msgs_recv,json=msgsRecv" json:"msgs_recv,omitempty"`
+	DatagramsSent           *uint64                              `protobuf:"varint,10,opt,name=datagrams_sent,json=datagramsSent" json:"datagrams_sent,omitempty"`
+	DatagramsRecv           *uint64                              `protobuf:"varint,11,opt,name=datagrams_recv,json=datagramsRecv" json:"datagrams_recv,omitempty"`
+	BadPktsRecv             *uint64                              `protobuf:"varint,12,opt,name=bad_pkts_recv,json=badPktsRecv" json:"bad_pkts_recv,omitempty"`
+	UnknownConnPktsRecv     *uint64                              `protobuf:"varint,13,opt,name=unknown_conn_pkts_recv,json=unknownConnPktsRecv" json:"unknown_conn_pkts_recv,omitempty"`
+	MissedPktsRecv          *uint64                              `protobuf:"varint,14,opt,name=missed_pkts_recv,json=missedPktsRecv" json:"missed_pkts_recv,omitempty"`
+	DupPktsRecv             *uint64                              `protobuf:"varint,15,opt,name=dup_pkts_recv,json=dupPktsRecv" json:"dup_pkts_recv,omitempty"`
+	FailedConnectChallenges *uint64                              `protobuf:"varint,16,opt,name=failed_connect_challenges,json=failedConnectChallenges" json:"failed_connect_challenges,omitempty"`
+	MicroSecAvgLatency      *uint32                              `protobuf:"varint,17,opt,name=micro_sec_avg_latency,json=microSecAvgLatency" json:"micro_sec_avg_latency,omitempty"`
+	MicroSecMinLatency      *uint32                              `protobuf:"varint,18,opt,name=micro_sec_min_latency,json=microSecMinLatency" json:"micro_sec_min_latency,omitempty"`
+	MicroSecMaxLatency      *uint32                              `protobuf:"varint,19,opt,name=micro_sec_max_latency,json=microSecMaxLatency" json:"micro_sec_max_latency,omitempty"`
+	MemPoolMsgInUse         *uint32                              `protobuf:"varint,20,opt,name=mem_pool_msg_in_use,json=memPoolMsgInUse" json:"mem_pool_msg_in_use,omitempty"`
 	XXX_NoUnkeyedLiteral    struct{}                             `json:"-"`
 	XXX_unrecognized        []byte                               `json:"-"`
 	XXX_sizecache           int32                                `json:"-"`
@@ -5315,7 +5404,7 @@ func (m *CMsgClientConnectionStats_Stats_VConn) Reset()         { *m = CMsgClien
 func (m *CMsgClientConnectionStats_Stats_VConn) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientConnectionStats_Stats_VConn) ProtoMessage()    {}
 func (*CMsgClientConnectionStats_Stats_VConn) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{65, 2}
+	return fileDescriptor_97f09b42bb99641f, []int{66, 2}
 }
 
 func (m *CMsgClientConnectionStats_Stats_VConn) XXX_Unmarshal(b []byte) error {
@@ -5477,8 +5566,8 @@ func (m *CMsgClientConnectionStats_Stats_VConn) GetMemPoolMsgInUse() uint32 {
 }
 
 type CMsgClientServersAvailable struct {
-	ServerTypesAvailable      []*CMsgClientServersAvailable_Server_Types_Available `protobuf:"bytes,1,rep,name=server_types_available" json:"server_types_available,omitempty"`
-	ServerTypeForAuthServices *uint32                                              `protobuf:"varint,2,opt,name=server_type_for_auth_services" json:"server_type_for_auth_services,omitempty"`
+	ServerTypesAvailable      []*CMsgClientServersAvailable_Server_Types_Available `protobuf:"bytes,1,rep,name=server_types_available,json=serverTypesAvailable" json:"server_types_available,omitempty"`
+	ServerTypeForAuthServices *uint32                                              `protobuf:"varint,2,opt,name=server_type_for_auth_services,json=serverTypeForAuthServices" json:"server_type_for_auth_services,omitempty"`
 	XXX_NoUnkeyedLiteral      struct{}                                             `json:"-"`
 	XXX_unrecognized          []byte                                               `json:"-"`
 	XXX_sizecache             int32                                                `json:"-"`
@@ -5488,7 +5577,7 @@ func (m *CMsgClientServersAvailable) Reset()         { *m = CMsgClientServersAva
 func (m *CMsgClientServersAvailable) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientServersAvailable) ProtoMessage()    {}
 func (*CMsgClientServersAvailable) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{66}
+	return fileDescriptor_97f09b42bb99641f, []int{67}
 }
 
 func (m *CMsgClientServersAvailable) XXX_Unmarshal(b []byte) error {
@@ -5539,7 +5628,7 @@ func (m *CMsgClientServersAvailable_Server_Types_Available) String() string {
 }
 func (*CMsgClientServersAvailable_Server_Types_Available) ProtoMessage() {}
 func (*CMsgClientServersAvailable_Server_Types_Available) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{66, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{67, 0}
 }
 
 func (m *CMsgClientServersAvailable_Server_Types_Available) XXX_Unmarshal(b []byte) error {
@@ -5575,10 +5664,10 @@ func (m *CMsgClientServersAvailable_Server_Types_Available) GetChanged() bool {
 }
 
 type CMsgClientGetUserStats struct {
-	GameId               *uint64  `protobuf:"fixed64,1,opt,name=game_id" json:"game_id,omitempty"`
-	CrcStats             *uint32  `protobuf:"varint,2,opt,name=crc_stats" json:"crc_stats,omitempty"`
-	SchemaLocalVersion   *int32   `protobuf:"varint,3,opt,name=schema_local_version" json:"schema_local_version,omitempty"`
-	SteamIdForUser       *uint64  `protobuf:"fixed64,4,opt,name=steam_id_for_user" json:"steam_id_for_user,omitempty"`
+	GameId               *uint64  `protobuf:"fixed64,1,opt,name=game_id,json=gameId" json:"game_id,omitempty"`
+	CrcStats             *uint32  `protobuf:"varint,2,opt,name=crc_stats,json=crcStats" json:"crc_stats,omitempty"`
+	SchemaLocalVersion   *int32   `protobuf:"varint,3,opt,name=schema_local_version,json=schemaLocalVersion" json:"schema_local_version,omitempty"`
+	SteamIdForUser       *uint64  `protobuf:"fixed64,4,opt,name=steam_id_for_user,json=steamIdForUser" json:"steam_id_for_user,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -5588,7 +5677,7 @@ func (m *CMsgClientGetUserStats) Reset()         { *m = CMsgClientGetUserStats{}
 func (m *CMsgClientGetUserStats) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientGetUserStats) ProtoMessage()    {}
 func (*CMsgClientGetUserStats) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{67}
+	return fileDescriptor_97f09b42bb99641f, []int{68}
 }
 
 func (m *CMsgClientGetUserStats) XXX_Unmarshal(b []byte) error {
@@ -5638,12 +5727,12 @@ func (m *CMsgClientGetUserStats) GetSteamIdForUser() uint64 {
 }
 
 type CMsgClientGetUserStatsResponse struct {
-	GameId               *uint64                                              `protobuf:"fixed64,1,opt,name=game_id" json:"game_id,omitempty"`
+	GameId               *uint64                                              `protobuf:"fixed64,1,opt,name=game_id,json=gameId" json:"game_id,omitempty"`
 	Eresult              *int32                                               `protobuf:"varint,2,opt,name=eresult,def=2" json:"eresult,omitempty"`
-	CrcStats             *uint32                                              `protobuf:"varint,3,opt,name=crc_stats" json:"crc_stats,omitempty"`
+	CrcStats             *uint32                                              `protobuf:"varint,3,opt,name=crc_stats,json=crcStats" json:"crc_stats,omitempty"`
 	Schema               []byte                                               `protobuf:"bytes,4,opt,name=schema" json:"schema,omitempty"`
 	Stats                []*CMsgClientGetUserStatsResponse_Stats              `protobuf:"bytes,5,rep,name=stats" json:"stats,omitempty"`
-	AchievementBlocks    []*CMsgClientGetUserStatsResponse_Achievement_Blocks `protobuf:"bytes,6,rep,name=achievement_blocks" json:"achievement_blocks,omitempty"`
+	AchievementBlocks    []*CMsgClientGetUserStatsResponse_Achievement_Blocks `protobuf:"bytes,6,rep,name=achievement_blocks,json=achievementBlocks" json:"achievement_blocks,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                                             `json:"-"`
 	XXX_unrecognized     []byte                                               `json:"-"`
 	XXX_sizecache        int32                                                `json:"-"`
@@ -5653,7 +5742,7 @@ func (m *CMsgClientGetUserStatsResponse) Reset()         { *m = CMsgClientGetUse
 func (m *CMsgClientGetUserStatsResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientGetUserStatsResponse) ProtoMessage()    {}
 func (*CMsgClientGetUserStatsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{68}
+	return fileDescriptor_97f09b42bb99641f, []int{69}
 }
 
 func (m *CMsgClientGetUserStatsResponse) XXX_Unmarshal(b []byte) error {
@@ -5719,8 +5808,8 @@ func (m *CMsgClientGetUserStatsResponse) GetAchievementBlocks() []*CMsgClientGet
 }
 
 type CMsgClientGetUserStatsResponse_Stats struct {
-	StatId               *uint32  `protobuf:"varint,1,opt,name=stat_id" json:"stat_id,omitempty"`
-	StatValue            *uint32  `protobuf:"varint,2,opt,name=stat_value" json:"stat_value,omitempty"`
+	StatId               *uint32  `protobuf:"varint,1,opt,name=stat_id,json=statId" json:"stat_id,omitempty"`
+	StatValue            *uint32  `protobuf:"varint,2,opt,name=stat_value,json=statValue" json:"stat_value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -5730,7 +5819,7 @@ func (m *CMsgClientGetUserStatsResponse_Stats) Reset()         { *m = CMsgClient
 func (m *CMsgClientGetUserStatsResponse_Stats) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientGetUserStatsResponse_Stats) ProtoMessage()    {}
 func (*CMsgClientGetUserStatsResponse_Stats) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{68, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{69, 0}
 }
 
 func (m *CMsgClientGetUserStatsResponse_Stats) XXX_Unmarshal(b []byte) error {
@@ -5766,8 +5855,8 @@ func (m *CMsgClientGetUserStatsResponse_Stats) GetStatValue() uint32 {
 }
 
 type CMsgClientGetUserStatsResponse_Achievement_Blocks struct {
-	AchievementId        *uint32  `protobuf:"varint,1,opt,name=achievement_id" json:"achievement_id,omitempty"`
-	UnlockTime           []uint32 `protobuf:"fixed32,2,rep,name=unlock_time" json:"unlock_time,omitempty"`
+	AchievementId        *uint32  `protobuf:"varint,1,opt,name=achievement_id,json=achievementId" json:"achievement_id,omitempty"`
+	UnlockTime           []uint32 `protobuf:"fixed32,2,rep,name=unlock_time,json=unlockTime" json:"unlock_time,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -5781,7 +5870,7 @@ func (m *CMsgClientGetUserStatsResponse_Achievement_Blocks) String() string {
 }
 func (*CMsgClientGetUserStatsResponse_Achievement_Blocks) ProtoMessage() {}
 func (*CMsgClientGetUserStatsResponse_Achievement_Blocks) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{68, 1}
+	return fileDescriptor_97f09b42bb99641f, []int{69, 1}
 }
 
 func (m *CMsgClientGetUserStatsResponse_Achievement_Blocks) XXX_Unmarshal(b []byte) error {
@@ -5817,11 +5906,11 @@ func (m *CMsgClientGetUserStatsResponse_Achievement_Blocks) GetUnlockTime() []ui
 }
 
 type CMsgClientStoreUserStatsResponse struct {
-	GameId                *uint64                                                     `protobuf:"fixed64,1,opt,name=game_id" json:"game_id,omitempty"`
+	GameId                *uint64                                                     `protobuf:"fixed64,1,opt,name=game_id,json=gameId" json:"game_id,omitempty"`
 	Eresult               *int32                                                      `protobuf:"varint,2,opt,name=eresult,def=2" json:"eresult,omitempty"`
-	CrcStats              *uint32                                                     `protobuf:"varint,3,opt,name=crc_stats" json:"crc_stats,omitempty"`
-	StatsFailedValidation []*CMsgClientStoreUserStatsResponse_Stats_Failed_Validation `protobuf:"bytes,4,rep,name=stats_failed_validation" json:"stats_failed_validation,omitempty"`
-	StatsOutOfDate        *bool                                                       `protobuf:"varint,5,opt,name=stats_out_of_date" json:"stats_out_of_date,omitempty"`
+	CrcStats              *uint32                                                     `protobuf:"varint,3,opt,name=crc_stats,json=crcStats" json:"crc_stats,omitempty"`
+	StatsFailedValidation []*CMsgClientStoreUserStatsResponse_Stats_Failed_Validation `protobuf:"bytes,4,rep,name=stats_failed_validation,json=statsFailedValidation" json:"stats_failed_validation,omitempty"`
+	StatsOutOfDate        *bool                                                       `protobuf:"varint,5,opt,name=stats_out_of_date,json=statsOutOfDate" json:"stats_out_of_date,omitempty"`
 	XXX_NoUnkeyedLiteral  struct{}                                                    `json:"-"`
 	XXX_unrecognized      []byte                                                      `json:"-"`
 	XXX_sizecache         int32                                                       `json:"-"`
@@ -5831,7 +5920,7 @@ func (m *CMsgClientStoreUserStatsResponse) Reset()         { *m = CMsgClientStor
 func (m *CMsgClientStoreUserStatsResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientStoreUserStatsResponse) ProtoMessage()    {}
 func (*CMsgClientStoreUserStatsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{69}
+	return fileDescriptor_97f09b42bb99641f, []int{70}
 }
 
 func (m *CMsgClientStoreUserStatsResponse) XXX_Unmarshal(b []byte) error {
@@ -5890,8 +5979,8 @@ func (m *CMsgClientStoreUserStatsResponse) GetStatsOutOfDate() bool {
 }
 
 type CMsgClientStoreUserStatsResponse_Stats_Failed_Validation struct {
-	StatId               *uint32  `protobuf:"varint,1,opt,name=stat_id" json:"stat_id,omitempty"`
-	RevertedStatValue    *uint32  `protobuf:"varint,2,opt,name=reverted_stat_value" json:"reverted_stat_value,omitempty"`
+	StatId               *uint32  `protobuf:"varint,1,opt,name=stat_id,json=statId" json:"stat_id,omitempty"`
+	RevertedStatValue    *uint32  `protobuf:"varint,2,opt,name=reverted_stat_value,json=revertedStatValue" json:"reverted_stat_value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -5905,7 +5994,7 @@ func (m *CMsgClientStoreUserStatsResponse_Stats_Failed_Validation) String() stri
 }
 func (*CMsgClientStoreUserStatsResponse_Stats_Failed_Validation) ProtoMessage() {}
 func (*CMsgClientStoreUserStatsResponse_Stats_Failed_Validation) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{69, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{70, 0}
 }
 
 func (m *CMsgClientStoreUserStatsResponse_Stats_Failed_Validation) XXX_Unmarshal(b []byte) error {
@@ -5941,11 +6030,11 @@ func (m *CMsgClientStoreUserStatsResponse_Stats_Failed_Validation) GetRevertedSt
 }
 
 type CMsgClientStoreUserStats2 struct {
-	GameId               *uint64                            `protobuf:"fixed64,1,opt,name=game_id" json:"game_id,omitempty"`
-	SettorSteamId        *uint64                            `protobuf:"fixed64,2,opt,name=settor_steam_id" json:"settor_steam_id,omitempty"`
-	SetteeSteamId        *uint64                            `protobuf:"fixed64,3,opt,name=settee_steam_id" json:"settee_steam_id,omitempty"`
-	CrcStats             *uint32                            `protobuf:"varint,4,opt,name=crc_stats" json:"crc_stats,omitempty"`
-	ExplicitReset        *bool                              `protobuf:"varint,5,opt,name=explicit_reset" json:"explicit_reset,omitempty"`
+	GameId               *uint64                            `protobuf:"fixed64,1,opt,name=game_id,json=gameId" json:"game_id,omitempty"`
+	SettorSteamId        *uint64                            `protobuf:"fixed64,2,opt,name=settor_steam_id,json=settorSteamId" json:"settor_steam_id,omitempty"`
+	SetteeSteamId        *uint64                            `protobuf:"fixed64,3,opt,name=settee_steam_id,json=setteeSteamId" json:"settee_steam_id,omitempty"`
+	CrcStats             *uint32                            `protobuf:"varint,4,opt,name=crc_stats,json=crcStats" json:"crc_stats,omitempty"`
+	ExplicitReset        *bool                              `protobuf:"varint,5,opt,name=explicit_reset,json=explicitReset" json:"explicit_reset,omitempty"`
 	Stats                []*CMsgClientStoreUserStats2_Stats `protobuf:"bytes,6,rep,name=stats" json:"stats,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                           `json:"-"`
 	XXX_unrecognized     []byte                             `json:"-"`
@@ -5956,7 +6045,7 @@ func (m *CMsgClientStoreUserStats2) Reset()         { *m = CMsgClientStoreUserSt
 func (m *CMsgClientStoreUserStats2) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientStoreUserStats2) ProtoMessage()    {}
 func (*CMsgClientStoreUserStats2) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{70}
+	return fileDescriptor_97f09b42bb99641f, []int{71}
 }
 
 func (m *CMsgClientStoreUserStats2) XXX_Unmarshal(b []byte) error {
@@ -6020,8 +6109,8 @@ func (m *CMsgClientStoreUserStats2) GetStats() []*CMsgClientStoreUserStats2_Stat
 }
 
 type CMsgClientStoreUserStats2_Stats struct {
-	StatId               *uint32  `protobuf:"varint,1,opt,name=stat_id" json:"stat_id,omitempty"`
-	StatValue            *uint32  `protobuf:"varint,2,opt,name=stat_value" json:"stat_value,omitempty"`
+	StatId               *uint32  `protobuf:"varint,1,opt,name=stat_id,json=statId" json:"stat_id,omitempty"`
+	StatValue            *uint32  `protobuf:"varint,2,opt,name=stat_value,json=statValue" json:"stat_value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -6031,7 +6120,7 @@ func (m *CMsgClientStoreUserStats2_Stats) Reset()         { *m = CMsgClientStore
 func (m *CMsgClientStoreUserStats2_Stats) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientStoreUserStats2_Stats) ProtoMessage()    {}
 func (*CMsgClientStoreUserStats2_Stats) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{70, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{71, 0}
 }
 
 func (m *CMsgClientStoreUserStats2_Stats) XXX_Unmarshal(b []byte) error {
@@ -6067,10 +6156,10 @@ func (m *CMsgClientStoreUserStats2_Stats) GetStatValue() uint32 {
 }
 
 type CMsgClientStatsUpdated struct {
-	SteamId              *uint64                                 `protobuf:"fixed64,1,opt,name=steam_id" json:"steam_id,omitempty"`
-	GameId               *uint64                                 `protobuf:"fixed64,2,opt,name=game_id" json:"game_id,omitempty"`
-	CrcStats             *uint32                                 `protobuf:"varint,3,opt,name=crc_stats" json:"crc_stats,omitempty"`
-	UpdatedStats         []*CMsgClientStatsUpdated_Updated_Stats `protobuf:"bytes,4,rep,name=updated_stats" json:"updated_stats,omitempty"`
+	SteamId              *uint64                                 `protobuf:"fixed64,1,opt,name=steam_id,json=steamId" json:"steam_id,omitempty"`
+	GameId               *uint64                                 `protobuf:"fixed64,2,opt,name=game_id,json=gameId" json:"game_id,omitempty"`
+	CrcStats             *uint32                                 `protobuf:"varint,3,opt,name=crc_stats,json=crcStats" json:"crc_stats,omitempty"`
+	UpdatedStats         []*CMsgClientStatsUpdated_Updated_Stats `protobuf:"bytes,4,rep,name=updated_stats,json=updatedStats" json:"updated_stats,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                                `json:"-"`
 	XXX_unrecognized     []byte                                  `json:"-"`
 	XXX_sizecache        int32                                   `json:"-"`
@@ -6080,7 +6169,7 @@ func (m *CMsgClientStatsUpdated) Reset()         { *m = CMsgClientStatsUpdated{}
 func (m *CMsgClientStatsUpdated) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientStatsUpdated) ProtoMessage()    {}
 func (*CMsgClientStatsUpdated) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{71}
+	return fileDescriptor_97f09b42bb99641f, []int{72}
 }
 
 func (m *CMsgClientStatsUpdated) XXX_Unmarshal(b []byte) error {
@@ -6130,8 +6219,8 @@ func (m *CMsgClientStatsUpdated) GetUpdatedStats() []*CMsgClientStatsUpdated_Upd
 }
 
 type CMsgClientStatsUpdated_Updated_Stats struct {
-	StatId               *uint32  `protobuf:"varint,1,opt,name=stat_id" json:"stat_id,omitempty"`
-	StatValue            *uint32  `protobuf:"varint,2,opt,name=stat_value" json:"stat_value,omitempty"`
+	StatId               *uint32  `protobuf:"varint,1,opt,name=stat_id,json=statId" json:"stat_id,omitempty"`
+	StatValue            *uint32  `protobuf:"varint,2,opt,name=stat_value,json=statValue" json:"stat_value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -6141,7 +6230,7 @@ func (m *CMsgClientStatsUpdated_Updated_Stats) Reset()         { *m = CMsgClient
 func (m *CMsgClientStatsUpdated_Updated_Stats) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientStatsUpdated_Updated_Stats) ProtoMessage()    {}
 func (*CMsgClientStatsUpdated_Updated_Stats) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{71, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{72, 0}
 }
 
 func (m *CMsgClientStatsUpdated_Updated_Stats) XXX_Unmarshal(b []byte) error {
@@ -6177,9 +6266,9 @@ func (m *CMsgClientStatsUpdated_Updated_Stats) GetStatValue() uint32 {
 }
 
 type CMsgClientStoreUserStats struct {
-	GameId               *uint64                                    `protobuf:"fixed64,1,opt,name=game_id" json:"game_id,omitempty"`
-	ExplicitReset        *bool                                      `protobuf:"varint,2,opt,name=explicit_reset" json:"explicit_reset,omitempty"`
-	StatsToStore         []*CMsgClientStoreUserStats_Stats_To_Store `protobuf:"bytes,3,rep,name=stats_to_store" json:"stats_to_store,omitempty"`
+	GameId               *uint64                                    `protobuf:"fixed64,1,opt,name=game_id,json=gameId" json:"game_id,omitempty"`
+	ExplicitReset        *bool                                      `protobuf:"varint,2,opt,name=explicit_reset,json=explicitReset" json:"explicit_reset,omitempty"`
+	StatsToStore         []*CMsgClientStoreUserStats_Stats_To_Store `protobuf:"bytes,3,rep,name=stats_to_store,json=statsToStore" json:"stats_to_store,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                                   `json:"-"`
 	XXX_unrecognized     []byte                                     `json:"-"`
 	XXX_sizecache        int32                                      `json:"-"`
@@ -6189,7 +6278,7 @@ func (m *CMsgClientStoreUserStats) Reset()         { *m = CMsgClientStoreUserSta
 func (m *CMsgClientStoreUserStats) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientStoreUserStats) ProtoMessage()    {}
 func (*CMsgClientStoreUserStats) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{72}
+	return fileDescriptor_97f09b42bb99641f, []int{73}
 }
 
 func (m *CMsgClientStoreUserStats) XXX_Unmarshal(b []byte) error {
@@ -6232,8 +6321,8 @@ func (m *CMsgClientStoreUserStats) GetStatsToStore() []*CMsgClientStoreUserStats
 }
 
 type CMsgClientStoreUserStats_Stats_To_Store struct {
-	StatId               *uint32  `protobuf:"varint,1,opt,name=stat_id" json:"stat_id,omitempty"`
-	StatValue            *uint32  `protobuf:"varint,2,opt,name=stat_value" json:"stat_value,omitempty"`
+	StatId               *uint32  `protobuf:"varint,1,opt,name=stat_id,json=statId" json:"stat_id,omitempty"`
+	StatValue            *uint32  `protobuf:"varint,2,opt,name=stat_value,json=statValue" json:"stat_value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -6245,7 +6334,7 @@ func (m *CMsgClientStoreUserStats_Stats_To_Store) Reset() {
 func (m *CMsgClientStoreUserStats_Stats_To_Store) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientStoreUserStats_Stats_To_Store) ProtoMessage()    {}
 func (*CMsgClientStoreUserStats_Stats_To_Store) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{72, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{73, 0}
 }
 
 func (m *CMsgClientStoreUserStats_Stats_To_Store) XXX_Unmarshal(b []byte) error {
@@ -6290,7 +6379,7 @@ func (m *CMsgClientGetClientDetails) Reset()         { *m = CMsgClientGetClientD
 func (m *CMsgClientGetClientDetails) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientGetClientDetails) ProtoMessage()    {}
 func (*CMsgClientGetClientDetails) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{73}
+	return fileDescriptor_97f09b42bb99641f, []int{74}
 }
 
 func (m *CMsgClientGetClientDetails) XXX_Unmarshal(b []byte) error {
@@ -6312,7 +6401,7 @@ func (m *CMsgClientGetClientDetails) XXX_DiscardUnknown() {
 var xxx_messageInfo_CMsgClientGetClientDetails proto.InternalMessageInfo
 
 type CMsgClientReportOverlayDetourFailure struct {
-	FailureStrings       []string `protobuf:"bytes,1,rep,name=failure_strings" json:"failure_strings,omitempty"`
+	FailureStrings       []string `protobuf:"bytes,1,rep,name=failure_strings,json=failureStrings" json:"failure_strings,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -6322,7 +6411,7 @@ func (m *CMsgClientReportOverlayDetourFailure) Reset()         { *m = CMsgClient
 func (m *CMsgClientReportOverlayDetourFailure) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientReportOverlayDetourFailure) ProtoMessage()    {}
 func (*CMsgClientReportOverlayDetourFailure) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{74}
+	return fileDescriptor_97f09b42bb99641f, []int{75}
 }
 
 func (m *CMsgClientReportOverlayDetourFailure) XXX_Unmarshal(b []byte) error {
@@ -6351,14 +6440,14 @@ func (m *CMsgClientReportOverlayDetourFailure) GetFailureStrings() []string {
 }
 
 type CMsgClientGetClientDetailsResponse struct {
-	PackageVersion       *uint32                                    `protobuf:"varint,1,opt,name=package_version" json:"package_version,omitempty"`
-	ProtocolVersion      *uint32                                    `protobuf:"varint,8,opt,name=protocol_version" json:"protocol_version,omitempty"`
+	PackageVersion       *uint32                                    `protobuf:"varint,1,opt,name=package_version,json=packageVersion" json:"package_version,omitempty"`
+	ProtocolVersion      *uint32                                    `protobuf:"varint,8,opt,name=protocol_version,json=protocolVersion" json:"protocol_version,omitempty"`
 	Os                   *string                                    `protobuf:"bytes,2,opt,name=os" json:"os,omitempty"`
-	MachineName          *string                                    `protobuf:"bytes,3,opt,name=machine_name" json:"machine_name,omitempty"`
-	IpPublic             *string                                    `protobuf:"bytes,4,opt,name=ip_public" json:"ip_public,omitempty"`
-	IpPrivate            *string                                    `protobuf:"bytes,5,opt,name=ip_private" json:"ip_private,omitempty"`
-	BytesAvailable       *uint64                                    `protobuf:"varint,7,opt,name=bytes_available" json:"bytes_available,omitempty"`
-	GamesRunning         []*CMsgClientGetClientDetailsResponse_Game `protobuf:"bytes,6,rep,name=games_running" json:"games_running,omitempty"`
+	MachineName          *string                                    `protobuf:"bytes,3,opt,name=machine_name,json=machineName" json:"machine_name,omitempty"`
+	IpPublic             *string                                    `protobuf:"bytes,4,opt,name=ip_public,json=ipPublic" json:"ip_public,omitempty"`
+	IpPrivate            *string                                    `protobuf:"bytes,5,opt,name=ip_private,json=ipPrivate" json:"ip_private,omitempty"`
+	BytesAvailable       *uint64                                    `protobuf:"varint,7,opt,name=bytes_available,json=bytesAvailable" json:"bytes_available,omitempty"`
+	GamesRunning         []*CMsgClientGetClientDetailsResponse_Game `protobuf:"bytes,6,rep,name=games_running,json=gamesRunning" json:"games_running,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                                   `json:"-"`
 	XXX_unrecognized     []byte                                     `json:"-"`
 	XXX_sizecache        int32                                      `json:"-"`
@@ -6368,7 +6457,7 @@ func (m *CMsgClientGetClientDetailsResponse) Reset()         { *m = CMsgClientGe
 func (m *CMsgClientGetClientDetailsResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientGetClientDetailsResponse) ProtoMessage()    {}
 func (*CMsgClientGetClientDetailsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{75}
+	return fileDescriptor_97f09b42bb99641f, []int{76}
 }
 
 func (m *CMsgClientGetClientDetailsResponse) XXX_Unmarshal(b []byte) error {
@@ -6447,8 +6536,8 @@ func (m *CMsgClientGetClientDetailsResponse) GetGamesRunning() []*CMsgClientGetC
 
 type CMsgClientGetClientDetailsResponse_Game struct {
 	Appid                *uint32  `protobuf:"varint,1,opt,name=appid" json:"appid,omitempty"`
-	ExtraInfo            *string  `protobuf:"bytes,2,opt,name=extra_info" json:"extra_info,omitempty"`
-	TimeRunningSec       *uint32  `protobuf:"varint,3,opt,name=time_running_sec" json:"time_running_sec,omitempty"`
+	ExtraInfo            *string  `protobuf:"bytes,2,opt,name=extra_info,json=extraInfo" json:"extra_info,omitempty"`
+	TimeRunningSec       *uint32  `protobuf:"varint,3,opt,name=time_running_sec,json=timeRunningSec" json:"time_running_sec,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -6460,7 +6549,7 @@ func (m *CMsgClientGetClientDetailsResponse_Game) Reset() {
 func (m *CMsgClientGetClientDetailsResponse_Game) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientGetClientDetailsResponse_Game) ProtoMessage()    {}
 func (*CMsgClientGetClientDetailsResponse_Game) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{75, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{76, 0}
 }
 
 func (m *CMsgClientGetClientDetailsResponse_Game) XXX_Unmarshal(b []byte) error {
@@ -6506,8 +6595,8 @@ type CMsgClientGetClientAppList struct {
 	Media                *bool    `protobuf:"varint,1,opt,name=media" json:"media,omitempty"`
 	Tools                *bool    `protobuf:"varint,2,opt,name=tools" json:"tools,omitempty"`
 	Games                *bool    `protobuf:"varint,3,opt,name=games" json:"games,omitempty"`
-	OnlyInstalled        *bool    `protobuf:"varint,4,opt,name=only_installed" json:"only_installed,omitempty"`
-	OnlyChanging         *bool    `protobuf:"varint,5,opt,name=only_changing" json:"only_changing,omitempty"`
+	OnlyInstalled        *bool    `protobuf:"varint,4,opt,name=only_installed,json=onlyInstalled" json:"only_installed,omitempty"`
+	OnlyChanging         *bool    `protobuf:"varint,5,opt,name=only_changing,json=onlyChanging" json:"only_changing,omitempty"`
 	Comics               *bool    `protobuf:"varint,6,opt,name=comics" json:"comics,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -6518,7 +6607,7 @@ func (m *CMsgClientGetClientAppList) Reset()         { *m = CMsgClientGetClientA
 func (m *CMsgClientGetClientAppList) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientGetClientAppList) ProtoMessage()    {}
 func (*CMsgClientGetClientAppList) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{76}
+	return fileDescriptor_97f09b42bb99641f, []int{77}
 }
 
 func (m *CMsgClientGetClientAppList) XXX_Unmarshal(b []byte) error {
@@ -6583,7 +6672,7 @@ func (m *CMsgClientGetClientAppList) GetComics() bool {
 
 type CMsgClientGetClientAppListResponse struct {
 	Apps                 []*CMsgClientGetClientAppListResponse_App `protobuf:"bytes,1,rep,name=apps" json:"apps,omitempty"`
-	BytesAvailable       *uint64                                   `protobuf:"varint,2,opt,name=bytes_available" json:"bytes_available,omitempty"`
+	BytesAvailable       *uint64                                   `protobuf:"varint,2,opt,name=bytes_available,json=bytesAvailable" json:"bytes_available,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                                  `json:"-"`
 	XXX_unrecognized     []byte                                    `json:"-"`
 	XXX_sizecache        int32                                     `json:"-"`
@@ -6593,7 +6682,7 @@ func (m *CMsgClientGetClientAppListResponse) Reset()         { *m = CMsgClientGe
 func (m *CMsgClientGetClientAppListResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientGetClientAppListResponse) ProtoMessage()    {}
 func (*CMsgClientGetClientAppListResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{77}
+	return fileDescriptor_97f09b42bb99641f, []int{78}
 }
 
 func (m *CMsgClientGetClientAppListResponse) XXX_Unmarshal(b []byte) error {
@@ -6631,18 +6720,18 @@ func (m *CMsgClientGetClientAppListResponse) GetBytesAvailable() uint64 {
 type CMsgClientGetClientAppListResponse_App struct {
 	Appid                *uint32                                       `protobuf:"varint,1,opt,name=appid" json:"appid,omitempty"`
 	Category             *string                                       `protobuf:"bytes,2,opt,name=category" json:"category,omitempty"`
-	AppType              *string                                       `protobuf:"bytes,10,opt,name=app_type" json:"app_type,omitempty"`
+	AppType              *string                                       `protobuf:"bytes,10,opt,name=app_type,json=appType" json:"app_type,omitempty"`
 	Favorite             *bool                                         `protobuf:"varint,3,opt,name=favorite" json:"favorite,omitempty"`
 	Installed            *bool                                         `protobuf:"varint,4,opt,name=installed" json:"installed,omitempty"`
-	AutoUpdate           *bool                                         `protobuf:"varint,5,opt,name=auto_update" json:"auto_update,omitempty"`
-	BytesDownloaded      *uint64                                       `protobuf:"varint,6,opt,name=bytes_downloaded" json:"bytes_downloaded,omitempty"`
-	BytesNeeded          *uint64                                       `protobuf:"varint,7,opt,name=bytes_needed" json:"bytes_needed,omitempty"`
-	BytesDownloadRate    *uint32                                       `protobuf:"varint,8,opt,name=bytes_download_rate" json:"bytes_download_rate,omitempty"`
-	DownloadPaused       *bool                                         `protobuf:"varint,11,opt,name=download_paused" json:"download_paused,omitempty"`
-	NumDownloading       *uint32                                       `protobuf:"varint,12,opt,name=num_downloading" json:"num_downloading,omitempty"`
-	NumPaused            *uint32                                       `protobuf:"varint,13,opt,name=num_paused" json:"num_paused,omitempty"`
+	AutoUpdate           *bool                                         `protobuf:"varint,5,opt,name=auto_update,json=autoUpdate" json:"auto_update,omitempty"`
+	BytesDownloaded      *uint64                                       `protobuf:"varint,6,opt,name=bytes_downloaded,json=bytesDownloaded" json:"bytes_downloaded,omitempty"`
+	BytesNeeded          *uint64                                       `protobuf:"varint,7,opt,name=bytes_needed,json=bytesNeeded" json:"bytes_needed,omitempty"`
+	BytesDownloadRate    *uint32                                       `protobuf:"varint,8,opt,name=bytes_download_rate,json=bytesDownloadRate" json:"bytes_download_rate,omitempty"`
+	DownloadPaused       *bool                                         `protobuf:"varint,11,opt,name=download_paused,json=downloadPaused" json:"download_paused,omitempty"`
+	NumDownloading       *uint32                                       `protobuf:"varint,12,opt,name=num_downloading,json=numDownloading" json:"num_downloading,omitempty"`
+	NumPaused            *uint32                                       `protobuf:"varint,13,opt,name=num_paused,json=numPaused" json:"num_paused,omitempty"`
 	Changing             *bool                                         `protobuf:"varint,14,opt,name=changing" json:"changing,omitempty"`
-	AvailableOnPlatform  *bool                                         `protobuf:"varint,15,opt,name=available_on_platform" json:"available_on_platform,omitempty"`
+	AvailableOnPlatform  *bool                                         `protobuf:"varint,15,opt,name=available_on_platform,json=availableOnPlatform" json:"available_on_platform,omitempty"`
 	Dlcs                 []*CMsgClientGetClientAppListResponse_App_DLC `protobuf:"bytes,9,rep,name=dlcs" json:"dlcs,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                                      `json:"-"`
 	XXX_unrecognized     []byte                                        `json:"-"`
@@ -6655,7 +6744,7 @@ func (m *CMsgClientGetClientAppListResponse_App) Reset() {
 func (m *CMsgClientGetClientAppListResponse_App) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientGetClientAppListResponse_App) ProtoMessage()    {}
 func (*CMsgClientGetClientAppListResponse_App) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{77, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{78, 0}
 }
 
 func (m *CMsgClientGetClientAppListResponse_App) XXX_Unmarshal(b []byte) error {
@@ -6797,7 +6886,7 @@ func (m *CMsgClientGetClientAppListResponse_App_DLC) String() string {
 }
 func (*CMsgClientGetClientAppListResponse_App_DLC) ProtoMessage() {}
 func (*CMsgClientGetClientAppListResponse_App_DLC) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{77, 0, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{78, 0, 0}
 }
 
 func (m *CMsgClientGetClientAppListResponse_App_DLC) XXX_Unmarshal(b []byte) error {
@@ -6843,7 +6932,7 @@ func (m *CMsgClientInstallClientApp) Reset()         { *m = CMsgClientInstallCli
 func (m *CMsgClientInstallClientApp) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientInstallClientApp) ProtoMessage()    {}
 func (*CMsgClientInstallClientApp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{78}
+	return fileDescriptor_97f09b42bb99641f, []int{79}
 }
 
 func (m *CMsgClientInstallClientApp) XXX_Unmarshal(b []byte) error {
@@ -6882,7 +6971,7 @@ func (m *CMsgClientInstallClientAppResponse) Reset()         { *m = CMsgClientIn
 func (m *CMsgClientInstallClientAppResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientInstallClientAppResponse) ProtoMessage()    {}
 func (*CMsgClientInstallClientAppResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{79}
+	return fileDescriptor_97f09b42bb99641f, []int{80}
 }
 
 func (m *CMsgClientInstallClientAppResponse) XXX_Unmarshal(b []byte) error {
@@ -6921,7 +7010,7 @@ func (m *CMsgClientUninstallClientApp) Reset()         { *m = CMsgClientUninstal
 func (m *CMsgClientUninstallClientApp) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUninstallClientApp) ProtoMessage()    {}
 func (*CMsgClientUninstallClientApp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{80}
+	return fileDescriptor_97f09b42bb99641f, []int{81}
 }
 
 func (m *CMsgClientUninstallClientApp) XXX_Unmarshal(b []byte) error {
@@ -6960,7 +7049,7 @@ func (m *CMsgClientUninstallClientAppResponse) Reset()         { *m = CMsgClient
 func (m *CMsgClientUninstallClientAppResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUninstallClientAppResponse) ProtoMessage()    {}
 func (*CMsgClientUninstallClientAppResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{81}
+	return fileDescriptor_97f09b42bb99641f, []int{82}
 }
 
 func (m *CMsgClientUninstallClientAppResponse) XXX_Unmarshal(b []byte) error {
@@ -7000,7 +7089,7 @@ func (m *CMsgClientSetClientAppUpdateState) Reset()         { *m = CMsgClientSet
 func (m *CMsgClientSetClientAppUpdateState) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientSetClientAppUpdateState) ProtoMessage()    {}
 func (*CMsgClientSetClientAppUpdateState) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{82}
+	return fileDescriptor_97f09b42bb99641f, []int{83}
 }
 
 func (m *CMsgClientSetClientAppUpdateState) XXX_Unmarshal(b []byte) error {
@@ -7045,10 +7134,12 @@ type CMsgClientSetClientAppUpdateStateResponse struct {
 func (m *CMsgClientSetClientAppUpdateStateResponse) Reset() {
 	*m = CMsgClientSetClientAppUpdateStateResponse{}
 }
-func (m *CMsgClientSetClientAppUpdateStateResponse) String() string { return proto.CompactTextString(m) }
-func (*CMsgClientSetClientAppUpdateStateResponse) ProtoMessage()    {}
+func (m *CMsgClientSetClientAppUpdateStateResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*CMsgClientSetClientAppUpdateStateResponse) ProtoMessage() {}
 func (*CMsgClientSetClientAppUpdateStateResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{83}
+	return fileDescriptor_97f09b42bb99641f, []int{84}
 }
 
 func (m *CMsgClientSetClientAppUpdateStateResponse) XXX_Unmarshal(b []byte) error {
@@ -7077,16 +7168,16 @@ func (m *CMsgClientSetClientAppUpdateStateResponse) GetResult() uint32 {
 }
 
 type CMsgClientUFSUploadFileRequest struct {
-	AppId                     *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	FileSize                  *uint32  `protobuf:"varint,2,opt,name=file_size" json:"file_size,omitempty"`
-	RawFileSize               *uint32  `protobuf:"varint,3,opt,name=raw_file_size" json:"raw_file_size,omitempty"`
-	ShaFile                   []byte   `protobuf:"bytes,4,opt,name=sha_file" json:"sha_file,omitempty"`
-	TimeStamp                 *uint64  `protobuf:"varint,5,opt,name=time_stamp" json:"time_stamp,omitempty"`
-	FileName                  *string  `protobuf:"bytes,6,opt,name=file_name" json:"file_name,omitempty"`
-	PlatformsToSyncDeprecated *uint32  `protobuf:"varint,7,opt,name=platforms_to_sync_deprecated" json:"platforms_to_sync_deprecated,omitempty"`
-	PlatformsToSync           *uint32  `protobuf:"varint,8,opt,name=platforms_to_sync,def=4294967295" json:"platforms_to_sync,omitempty"`
-	CellId                    *uint32  `protobuf:"varint,9,opt,name=cell_id" json:"cell_id,omitempty"`
-	CanEncrypt                *bool    `protobuf:"varint,10,opt,name=can_encrypt" json:"can_encrypt,omitempty"`
+	AppId                     *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	FileSize                  *uint32  `protobuf:"varint,2,opt,name=file_size,json=fileSize" json:"file_size,omitempty"`
+	RawFileSize               *uint32  `protobuf:"varint,3,opt,name=raw_file_size,json=rawFileSize" json:"raw_file_size,omitempty"`
+	ShaFile                   []byte   `protobuf:"bytes,4,opt,name=sha_file,json=shaFile" json:"sha_file,omitempty"`
+	TimeStamp                 *uint64  `protobuf:"varint,5,opt,name=time_stamp,json=timeStamp" json:"time_stamp,omitempty"`
+	FileName                  *string  `protobuf:"bytes,6,opt,name=file_name,json=fileName" json:"file_name,omitempty"`
+	PlatformsToSyncDeprecated *uint32  `protobuf:"varint,7,opt,name=platforms_to_sync_deprecated,json=platformsToSyncDeprecated" json:"platforms_to_sync_deprecated,omitempty"`
+	PlatformsToSync           *uint32  `protobuf:"varint,8,opt,name=platforms_to_sync,json=platformsToSync,def=4294967295" json:"platforms_to_sync,omitempty"`
+	CellId                    *uint32  `protobuf:"varint,9,opt,name=cell_id,json=cellId" json:"cell_id,omitempty"`
+	CanEncrypt                *bool    `protobuf:"varint,10,opt,name=can_encrypt,json=canEncrypt" json:"can_encrypt,omitempty"`
 	XXX_NoUnkeyedLiteral      struct{} `json:"-"`
 	XXX_unrecognized          []byte   `json:"-"`
 	XXX_sizecache             int32    `json:"-"`
@@ -7096,7 +7187,7 @@ func (m *CMsgClientUFSUploadFileRequest) Reset()         { *m = CMsgClientUFSUpl
 func (m *CMsgClientUFSUploadFileRequest) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSUploadFileRequest) ProtoMessage()    {}
 func (*CMsgClientUFSUploadFileRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{84}
+	return fileDescriptor_97f09b42bb99641f, []int{85}
 }
 
 func (m *CMsgClientUFSUploadFileRequest) XXX_Unmarshal(b []byte) error {
@@ -7191,13 +7282,13 @@ func (m *CMsgClientUFSUploadFileRequest) GetCanEncrypt() bool {
 
 type CMsgClientUFSUploadFileResponse struct {
 	Eresult              *int32   `protobuf:"varint,1,opt,name=eresult,def=2" json:"eresult,omitempty"`
-	ShaFile              []byte   `protobuf:"bytes,2,opt,name=sha_file" json:"sha_file,omitempty"`
-	UseHttp              *bool    `protobuf:"varint,3,opt,name=use_http" json:"use_http,omitempty"`
-	HttpHost             *string  `protobuf:"bytes,4,opt,name=http_host" json:"http_host,omitempty"`
-	HttpUrl              *string  `protobuf:"bytes,5,opt,name=http_url" json:"http_url,omitempty"`
-	KvHeaders            []byte   `protobuf:"bytes,6,opt,name=kv_headers" json:"kv_headers,omitempty"`
-	UseHttps             *bool    `protobuf:"varint,7,opt,name=use_https" json:"use_https,omitempty"`
-	EncryptFile          *bool    `protobuf:"varint,8,opt,name=encrypt_file" json:"encrypt_file,omitempty"`
+	ShaFile              []byte   `protobuf:"bytes,2,opt,name=sha_file,json=shaFile" json:"sha_file,omitempty"`
+	UseHttp              *bool    `protobuf:"varint,3,opt,name=use_http,json=useHttp" json:"use_http,omitempty"`
+	HttpHost             *string  `protobuf:"bytes,4,opt,name=http_host,json=httpHost" json:"http_host,omitempty"`
+	HttpUrl              *string  `protobuf:"bytes,5,opt,name=http_url,json=httpUrl" json:"http_url,omitempty"`
+	KvHeaders            []byte   `protobuf:"bytes,6,opt,name=kv_headers,json=kvHeaders" json:"kv_headers,omitempty"`
+	UseHttps             *bool    `protobuf:"varint,7,opt,name=use_https,json=useHttps" json:"use_https,omitempty"`
+	EncryptFile          *bool    `protobuf:"varint,8,opt,name=encrypt_file,json=encryptFile" json:"encrypt_file,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -7207,7 +7298,7 @@ func (m *CMsgClientUFSUploadFileResponse) Reset()         { *m = CMsgClientUFSUp
 func (m *CMsgClientUFSUploadFileResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSUploadFileResponse) ProtoMessage()    {}
 func (*CMsgClientUFSUploadFileResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{85}
+	return fileDescriptor_97f09b42bb99641f, []int{86}
 }
 
 func (m *CMsgClientUFSUploadFileResponse) XXX_Unmarshal(b []byte) error {
@@ -7297,7 +7388,7 @@ func (m *CMsgClientUFSUploadCommit) Reset()         { *m = CMsgClientUFSUploadCo
 func (m *CMsgClientUFSUploadCommit) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSUploadCommit) ProtoMessage()    {}
 func (*CMsgClientUFSUploadCommit) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{86}
+	return fileDescriptor_97f09b42bb99641f, []int{87}
 }
 
 func (m *CMsgClientUFSUploadCommit) XXX_Unmarshal(b []byte) error {
@@ -7327,10 +7418,10 @@ func (m *CMsgClientUFSUploadCommit) GetFiles() []*CMsgClientUFSUploadCommit_File
 
 type CMsgClientUFSUploadCommit_File struct {
 	Eresult              *int32   `protobuf:"varint,1,opt,name=eresult,def=2" json:"eresult,omitempty"`
-	AppId                *uint32  `protobuf:"varint,2,opt,name=app_id" json:"app_id,omitempty"`
-	ShaFile              []byte   `protobuf:"bytes,3,opt,name=sha_file" json:"sha_file,omitempty"`
-	CubFile              *uint32  `protobuf:"varint,4,opt,name=cub_file" json:"cub_file,omitempty"`
-	FileName             *string  `protobuf:"bytes,5,opt,name=file_name" json:"file_name,omitempty"`
+	AppId                *uint32  `protobuf:"varint,2,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	ShaFile              []byte   `protobuf:"bytes,3,opt,name=sha_file,json=shaFile" json:"sha_file,omitempty"`
+	CubFile              *uint32  `protobuf:"varint,4,opt,name=cub_file,json=cubFile" json:"cub_file,omitempty"`
+	FileName             *string  `protobuf:"bytes,5,opt,name=file_name,json=fileName" json:"file_name,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -7340,7 +7431,7 @@ func (m *CMsgClientUFSUploadCommit_File) Reset()         { *m = CMsgClientUFSUpl
 func (m *CMsgClientUFSUploadCommit_File) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSUploadCommit_File) ProtoMessage()    {}
 func (*CMsgClientUFSUploadCommit_File) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{86, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{87, 0}
 }
 
 func (m *CMsgClientUFSUploadCommit_File) XXX_Unmarshal(b []byte) error {
@@ -7409,7 +7500,7 @@ func (m *CMsgClientUFSUploadCommitResponse) Reset()         { *m = CMsgClientUFS
 func (m *CMsgClientUFSUploadCommitResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSUploadCommitResponse) ProtoMessage()    {}
 func (*CMsgClientUFSUploadCommitResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{87}
+	return fileDescriptor_97f09b42bb99641f, []int{88}
 }
 
 func (m *CMsgClientUFSUploadCommitResponse) XXX_Unmarshal(b []byte) error {
@@ -7439,8 +7530,8 @@ func (m *CMsgClientUFSUploadCommitResponse) GetFiles() []*CMsgClientUFSUploadCom
 
 type CMsgClientUFSUploadCommitResponse_File struct {
 	Eresult              *int32   `protobuf:"varint,1,opt,name=eresult,def=2" json:"eresult,omitempty"`
-	AppId                *uint32  `protobuf:"varint,2,opt,name=app_id" json:"app_id,omitempty"`
-	ShaFile              []byte   `protobuf:"bytes,3,opt,name=sha_file" json:"sha_file,omitempty"`
+	AppId                *uint32  `protobuf:"varint,2,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	ShaFile              []byte   `protobuf:"bytes,3,opt,name=sha_file,json=shaFile" json:"sha_file,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -7452,7 +7543,7 @@ func (m *CMsgClientUFSUploadCommitResponse_File) Reset() {
 func (m *CMsgClientUFSUploadCommitResponse_File) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSUploadCommitResponse_File) ProtoMessage()    {}
 func (*CMsgClientUFSUploadCommitResponse_File) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{87, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{88, 0}
 }
 
 func (m *CMsgClientUFSUploadCommitResponse_File) XXX_Unmarshal(b []byte) error {
@@ -7497,8 +7588,8 @@ func (m *CMsgClientUFSUploadCommitResponse_File) GetShaFile() []byte {
 }
 
 type CMsgClientUFSFileChunk struct {
-	ShaFile              []byte   `protobuf:"bytes,1,opt,name=sha_file" json:"sha_file,omitempty"`
-	FileStart            *uint32  `protobuf:"varint,2,opt,name=file_start" json:"file_start,omitempty"`
+	ShaFile              []byte   `protobuf:"bytes,1,opt,name=sha_file,json=shaFile" json:"sha_file,omitempty"`
+	FileStart            *uint32  `protobuf:"varint,2,opt,name=file_start,json=fileStart" json:"file_start,omitempty"`
 	Data                 []byte   `protobuf:"bytes,3,opt,name=data" json:"data,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -7509,7 +7600,7 @@ func (m *CMsgClientUFSFileChunk) Reset()         { *m = CMsgClientUFSFileChunk{}
 func (m *CMsgClientUFSFileChunk) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSFileChunk) ProtoMessage()    {}
 func (*CMsgClientUFSFileChunk) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{88}
+	return fileDescriptor_97f09b42bb99641f, []int{89}
 }
 
 func (m *CMsgClientUFSFileChunk) XXX_Unmarshal(b []byte) error {
@@ -7561,7 +7652,7 @@ func (m *CMsgClientUFSTransferHeartbeat) Reset()         { *m = CMsgClientUFSTra
 func (m *CMsgClientUFSTransferHeartbeat) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSTransferHeartbeat) ProtoMessage()    {}
 func (*CMsgClientUFSTransferHeartbeat) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{89}
+	return fileDescriptor_97f09b42bb99641f, []int{90}
 }
 
 func (m *CMsgClientUFSTransferHeartbeat) XXX_Unmarshal(b []byte) error {
@@ -7584,7 +7675,7 @@ var xxx_messageInfo_CMsgClientUFSTransferHeartbeat proto.InternalMessageInfo
 
 type CMsgClientUFSUploadFileFinished struct {
 	Eresult              *int32   `protobuf:"varint,1,opt,name=eresult,def=2" json:"eresult,omitempty"`
-	ShaFile              []byte   `protobuf:"bytes,2,opt,name=sha_file" json:"sha_file,omitempty"`
+	ShaFile              []byte   `protobuf:"bytes,2,opt,name=sha_file,json=shaFile" json:"sha_file,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -7594,7 +7685,7 @@ func (m *CMsgClientUFSUploadFileFinished) Reset()         { *m = CMsgClientUFSUp
 func (m *CMsgClientUFSUploadFileFinished) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSUploadFileFinished) ProtoMessage()    {}
 func (*CMsgClientUFSUploadFileFinished) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{90}
+	return fileDescriptor_97f09b42bb99641f, []int{91}
 }
 
 func (m *CMsgClientUFSUploadFileFinished) XXX_Unmarshal(b []byte) error {
@@ -7632,9 +7723,9 @@ func (m *CMsgClientUFSUploadFileFinished) GetShaFile() []byte {
 }
 
 type CMsgClientUFSDeleteFileRequest struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	FileName             *string  `protobuf:"bytes,2,opt,name=file_name" json:"file_name,omitempty"`
-	IsExplicitDelete     *bool    `protobuf:"varint,3,opt,name=is_explicit_delete" json:"is_explicit_delete,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	FileName             *string  `protobuf:"bytes,2,opt,name=file_name,json=fileName" json:"file_name,omitempty"`
+	IsExplicitDelete     *bool    `protobuf:"varint,3,opt,name=is_explicit_delete,json=isExplicitDelete" json:"is_explicit_delete,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -7644,7 +7735,7 @@ func (m *CMsgClientUFSDeleteFileRequest) Reset()         { *m = CMsgClientUFSDel
 func (m *CMsgClientUFSDeleteFileRequest) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSDeleteFileRequest) ProtoMessage()    {}
 func (*CMsgClientUFSDeleteFileRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{91}
+	return fileDescriptor_97f09b42bb99641f, []int{92}
 }
 
 func (m *CMsgClientUFSDeleteFileRequest) XXX_Unmarshal(b []byte) error {
@@ -7688,7 +7779,7 @@ func (m *CMsgClientUFSDeleteFileRequest) GetIsExplicitDelete() bool {
 
 type CMsgClientUFSDeleteFileResponse struct {
 	Eresult              *int32   `protobuf:"varint,1,opt,name=eresult,def=2" json:"eresult,omitempty"`
-	FileName             *string  `protobuf:"bytes,2,opt,name=file_name" json:"file_name,omitempty"`
+	FileName             *string  `protobuf:"bytes,2,opt,name=file_name,json=fileName" json:"file_name,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -7698,7 +7789,7 @@ func (m *CMsgClientUFSDeleteFileResponse) Reset()         { *m = CMsgClientUFSDe
 func (m *CMsgClientUFSDeleteFileResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSDeleteFileResponse) ProtoMessage()    {}
 func (*CMsgClientUFSDeleteFileResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{92}
+	return fileDescriptor_97f09b42bb99641f, []int{93}
 }
 
 func (m *CMsgClientUFSDeleteFileResponse) XXX_Unmarshal(b []byte) error {
@@ -7736,8 +7827,8 @@ func (m *CMsgClientUFSDeleteFileResponse) GetFileName() string {
 }
 
 type CMsgClientUFSGetFileListForApp struct {
-	AppsToQuery          []uint32 `protobuf:"varint,1,rep,name=apps_to_query" json:"apps_to_query,omitempty"`
-	SendPathPrefixes     *bool    `protobuf:"varint,2,opt,name=send_path_prefixes" json:"send_path_prefixes,omitempty"`
+	AppsToQuery          []uint32 `protobuf:"varint,1,rep,name=apps_to_query,json=appsToQuery" json:"apps_to_query,omitempty"`
+	SendPathPrefixes     *bool    `protobuf:"varint,2,opt,name=send_path_prefixes,json=sendPathPrefixes" json:"send_path_prefixes,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -7747,7 +7838,7 @@ func (m *CMsgClientUFSGetFileListForApp) Reset()         { *m = CMsgClientUFSGet
 func (m *CMsgClientUFSGetFileListForApp) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSGetFileListForApp) ProtoMessage()    {}
 func (*CMsgClientUFSGetFileListForApp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{93}
+	return fileDescriptor_97f09b42bb99641f, []int{94}
 }
 
 func (m *CMsgClientUFSGetFileListForApp) XXX_Unmarshal(b []byte) error {
@@ -7784,7 +7875,7 @@ func (m *CMsgClientUFSGetFileListForApp) GetSendPathPrefixes() bool {
 
 type CMsgClientUFSGetFileListForAppResponse struct {
 	Files                []*CMsgClientUFSGetFileListForAppResponse_File `protobuf:"bytes,1,rep,name=files" json:"files,omitempty"`
-	PathPrefixes         []string                                       `protobuf:"bytes,2,rep,name=path_prefixes" json:"path_prefixes,omitempty"`
+	PathPrefixes         []string                                       `protobuf:"bytes,2,rep,name=path_prefixes,json=pathPrefixes" json:"path_prefixes,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                                       `json:"-"`
 	XXX_unrecognized     []byte                                         `json:"-"`
 	XXX_sizecache        int32                                          `json:"-"`
@@ -7796,7 +7887,7 @@ func (m *CMsgClientUFSGetFileListForAppResponse) Reset() {
 func (m *CMsgClientUFSGetFileListForAppResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSGetFileListForAppResponse) ProtoMessage()    {}
 func (*CMsgClientUFSGetFileListForAppResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{94}
+	return fileDescriptor_97f09b42bb99641f, []int{95}
 }
 
 func (m *CMsgClientUFSGetFileListForAppResponse) XXX_Unmarshal(b []byte) error {
@@ -7832,14 +7923,14 @@ func (m *CMsgClientUFSGetFileListForAppResponse) GetPathPrefixes() []string {
 }
 
 type CMsgClientUFSGetFileListForAppResponse_File struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	FileName             *string  `protobuf:"bytes,2,opt,name=file_name" json:"file_name,omitempty"`
-	ShaFile              []byte   `protobuf:"bytes,3,opt,name=sha_file" json:"sha_file,omitempty"`
-	TimeStamp            *uint64  `protobuf:"varint,4,opt,name=time_stamp" json:"time_stamp,omitempty"`
-	RawFileSize          *uint32  `protobuf:"varint,5,opt,name=raw_file_size" json:"raw_file_size,omitempty"`
-	IsExplicitDelete     *bool    `protobuf:"varint,6,opt,name=is_explicit_delete" json:"is_explicit_delete,omitempty"`
-	PlatformsToSync      *uint32  `protobuf:"varint,7,opt,name=platforms_to_sync" json:"platforms_to_sync,omitempty"`
-	PathPrefixIndex      *uint32  `protobuf:"varint,8,opt,name=path_prefix_index" json:"path_prefix_index,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	FileName             *string  `protobuf:"bytes,2,opt,name=file_name,json=fileName" json:"file_name,omitempty"`
+	ShaFile              []byte   `protobuf:"bytes,3,opt,name=sha_file,json=shaFile" json:"sha_file,omitempty"`
+	TimeStamp            *uint64  `protobuf:"varint,4,opt,name=time_stamp,json=timeStamp" json:"time_stamp,omitempty"`
+	RawFileSize          *uint32  `protobuf:"varint,5,opt,name=raw_file_size,json=rawFileSize" json:"raw_file_size,omitempty"`
+	IsExplicitDelete     *bool    `protobuf:"varint,6,opt,name=is_explicit_delete,json=isExplicitDelete" json:"is_explicit_delete,omitempty"`
+	PlatformsToSync      *uint32  `protobuf:"varint,7,opt,name=platforms_to_sync,json=platformsToSync" json:"platforms_to_sync,omitempty"`
+	PathPrefixIndex      *uint32  `protobuf:"varint,8,opt,name=path_prefix_index,json=pathPrefixIndex" json:"path_prefix_index,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -7853,7 +7944,7 @@ func (m *CMsgClientUFSGetFileListForAppResponse_File) String() string {
 }
 func (*CMsgClientUFSGetFileListForAppResponse_File) ProtoMessage() {}
 func (*CMsgClientUFSGetFileListForAppResponse_File) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{94, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{95, 0}
 }
 
 func (m *CMsgClientUFSGetFileListForAppResponse_File) XXX_Unmarshal(b []byte) error {
@@ -7931,9 +8022,9 @@ func (m *CMsgClientUFSGetFileListForAppResponse_File) GetPathPrefixIndex() uint3
 }
 
 type CMsgClientUFSDownloadRequest struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	FileName             *string  `protobuf:"bytes,2,opt,name=file_name" json:"file_name,omitempty"`
-	CanHandleHttp        *bool    `protobuf:"varint,3,opt,name=can_handle_http" json:"can_handle_http,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	FileName             *string  `protobuf:"bytes,2,opt,name=file_name,json=fileName" json:"file_name,omitempty"`
+	CanHandleHttp        *bool    `protobuf:"varint,3,opt,name=can_handle_http,json=canHandleHttp" json:"can_handle_http,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -7943,7 +8034,7 @@ func (m *CMsgClientUFSDownloadRequest) Reset()         { *m = CMsgClientUFSDownl
 func (m *CMsgClientUFSDownloadRequest) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSDownloadRequest) ProtoMessage()    {}
 func (*CMsgClientUFSDownloadRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{95}
+	return fileDescriptor_97f09b42bb99641f, []int{96}
 }
 
 func (m *CMsgClientUFSDownloadRequest) XXX_Unmarshal(b []byte) error {
@@ -7987,17 +8078,17 @@ func (m *CMsgClientUFSDownloadRequest) GetCanHandleHttp() bool {
 
 type CMsgClientUFSDownloadResponse struct {
 	Eresult              *int32   `protobuf:"varint,1,opt,name=eresult,def=2" json:"eresult,omitempty"`
-	AppId                *uint32  `protobuf:"varint,2,opt,name=app_id" json:"app_id,omitempty"`
-	FileSize             *uint32  `protobuf:"varint,3,opt,name=file_size" json:"file_size,omitempty"`
-	RawFileSize          *uint32  `protobuf:"varint,4,opt,name=raw_file_size" json:"raw_file_size,omitempty"`
-	ShaFile              []byte   `protobuf:"bytes,5,opt,name=sha_file" json:"sha_file,omitempty"`
-	TimeStamp            *uint64  `protobuf:"varint,6,opt,name=time_stamp" json:"time_stamp,omitempty"`
-	IsExplicitDelete     *bool    `protobuf:"varint,7,opt,name=is_explicit_delete" json:"is_explicit_delete,omitempty"`
-	UseHttp              *bool    `protobuf:"varint,8,opt,name=use_http" json:"use_http,omitempty"`
-	HttpHost             *string  `protobuf:"bytes,9,opt,name=http_host" json:"http_host,omitempty"`
-	HttpUrl              *string  `protobuf:"bytes,10,opt,name=http_url" json:"http_url,omitempty"`
-	KvHeaders            []byte   `protobuf:"bytes,11,opt,name=kv_headers" json:"kv_headers,omitempty"`
-	UseHttps             *bool    `protobuf:"varint,12,opt,name=use_https" json:"use_https,omitempty"`
+	AppId                *uint32  `protobuf:"varint,2,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	FileSize             *uint32  `protobuf:"varint,3,opt,name=file_size,json=fileSize" json:"file_size,omitempty"`
+	RawFileSize          *uint32  `protobuf:"varint,4,opt,name=raw_file_size,json=rawFileSize" json:"raw_file_size,omitempty"`
+	ShaFile              []byte   `protobuf:"bytes,5,opt,name=sha_file,json=shaFile" json:"sha_file,omitempty"`
+	TimeStamp            *uint64  `protobuf:"varint,6,opt,name=time_stamp,json=timeStamp" json:"time_stamp,omitempty"`
+	IsExplicitDelete     *bool    `protobuf:"varint,7,opt,name=is_explicit_delete,json=isExplicitDelete" json:"is_explicit_delete,omitempty"`
+	UseHttp              *bool    `protobuf:"varint,8,opt,name=use_http,json=useHttp" json:"use_http,omitempty"`
+	HttpHost             *string  `protobuf:"bytes,9,opt,name=http_host,json=httpHost" json:"http_host,omitempty"`
+	HttpUrl              *string  `protobuf:"bytes,10,opt,name=http_url,json=httpUrl" json:"http_url,omitempty"`
+	KvHeaders            []byte   `protobuf:"bytes,11,opt,name=kv_headers,json=kvHeaders" json:"kv_headers,omitempty"`
+	UseHttps             *bool    `protobuf:"varint,12,opt,name=use_https,json=useHttps" json:"use_https,omitempty"`
 	Encrypted            *bool    `protobuf:"varint,13,opt,name=encrypted" json:"encrypted,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -8008,7 +8099,7 @@ func (m *CMsgClientUFSDownloadResponse) Reset()         { *m = CMsgClientUFSDown
 func (m *CMsgClientUFSDownloadResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSDownloadResponse) ProtoMessage()    {}
 func (*CMsgClientUFSDownloadResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{96}
+	return fileDescriptor_97f09b42bb99641f, []int{97}
 }
 
 func (m *CMsgClientUFSDownloadResponse) XXX_Unmarshal(b []byte) error {
@@ -8123,8 +8214,8 @@ func (m *CMsgClientUFSDownloadResponse) GetEncrypted() bool {
 }
 
 type CMsgClientUFSLoginRequest struct {
-	ProtocolVersion      *uint32  `protobuf:"varint,1,opt,name=protocol_version" json:"protocol_version,omitempty"`
-	AmSessionToken       *uint64  `protobuf:"varint,2,opt,name=am_session_token" json:"am_session_token,omitempty"`
+	ProtocolVersion      *uint32  `protobuf:"varint,1,opt,name=protocol_version,json=protocolVersion" json:"protocol_version,omitempty"`
+	AmSessionToken       *uint64  `protobuf:"varint,2,opt,name=am_session_token,json=amSessionToken" json:"am_session_token,omitempty"`
 	Apps                 []uint32 `protobuf:"varint,3,rep,name=apps" json:"apps,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -8135,7 +8226,7 @@ func (m *CMsgClientUFSLoginRequest) Reset()         { *m = CMsgClientUFSLoginReq
 func (m *CMsgClientUFSLoginRequest) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSLoginRequest) ProtoMessage()    {}
 func (*CMsgClientUFSLoginRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{97}
+	return fileDescriptor_97f09b42bb99641f, []int{98}
 }
 
 func (m *CMsgClientUFSLoginRequest) XXX_Unmarshal(b []byte) error {
@@ -8188,7 +8279,7 @@ func (m *CMsgClientUFSLoginResponse) Reset()         { *m = CMsgClientUFSLoginRe
 func (m *CMsgClientUFSLoginResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSLoginResponse) ProtoMessage()    {}
 func (*CMsgClientUFSLoginResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{98}
+	return fileDescriptor_97f09b42bb99641f, []int{99}
 }
 
 func (m *CMsgClientUFSLoginResponse) XXX_Unmarshal(b []byte) error {
@@ -8219,7 +8310,7 @@ func (m *CMsgClientUFSLoginResponse) GetEresult() int32 {
 }
 
 type CMsgClientRequestEncryptedAppTicket struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
 	Userdata             []byte   `protobuf:"bytes,2,opt,name=userdata" json:"userdata,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -8230,7 +8321,7 @@ func (m *CMsgClientRequestEncryptedAppTicket) Reset()         { *m = CMsgClientR
 func (m *CMsgClientRequestEncryptedAppTicket) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientRequestEncryptedAppTicket) ProtoMessage()    {}
 func (*CMsgClientRequestEncryptedAppTicket) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{99}
+	return fileDescriptor_97f09b42bb99641f, []int{100}
 }
 
 func (m *CMsgClientRequestEncryptedAppTicket) XXX_Unmarshal(b []byte) error {
@@ -8266,9 +8357,9 @@ func (m *CMsgClientRequestEncryptedAppTicket) GetUserdata() []byte {
 }
 
 type CMsgClientRequestEncryptedAppTicketResponse struct {
-	AppId                *uint32             `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
+	AppId                *uint32             `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
 	Eresult              *int32              `protobuf:"varint,2,opt,name=eresult,def=2" json:"eresult,omitempty"`
-	EncryptedAppTicket   *EncryptedAppTicket `protobuf:"bytes,3,opt,name=encrypted_app_ticket" json:"encrypted_app_ticket,omitempty"`
+	EncryptedAppTicket   *EncryptedAppTicket `protobuf:"bytes,3,opt,name=encrypted_app_ticket,json=encryptedAppTicket" json:"encrypted_app_ticket,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
 	XXX_unrecognized     []byte              `json:"-"`
 	XXX_sizecache        int32               `json:"-"`
@@ -8282,7 +8373,7 @@ func (m *CMsgClientRequestEncryptedAppTicketResponse) String() string {
 }
 func (*CMsgClientRequestEncryptedAppTicketResponse) ProtoMessage() {}
 func (*CMsgClientRequestEncryptedAppTicketResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{100}
+	return fileDescriptor_97f09b42bb99641f, []int{101}
 }
 
 func (m *CMsgClientRequestEncryptedAppTicketResponse) XXX_Unmarshal(b []byte) error {
@@ -8327,12 +8418,12 @@ func (m *CMsgClientRequestEncryptedAppTicketResponse) GetEncryptedAppTicket() *E
 }
 
 type CMsgClientWalletInfoUpdate struct {
-	HasWallet            *bool    `protobuf:"varint,1,opt,name=has_wallet" json:"has_wallet,omitempty"`
+	HasWallet            *bool    `protobuf:"varint,1,opt,name=has_wallet,json=hasWallet" json:"has_wallet,omitempty"`
 	Balance              *int32   `protobuf:"varint,2,opt,name=balance" json:"balance,omitempty"`
 	Currency             *int32   `protobuf:"varint,3,opt,name=currency" json:"currency,omitempty"`
-	BalanceDelayed       *int32   `protobuf:"varint,4,opt,name=balance_delayed" json:"balance_delayed,omitempty"`
+	BalanceDelayed       *int32   `protobuf:"varint,4,opt,name=balance_delayed,json=balanceDelayed" json:"balance_delayed,omitempty"`
 	Balance64            *int64   `protobuf:"varint,5,opt,name=balance64" json:"balance64,omitempty"`
-	Balance64Delayed     *int64   `protobuf:"varint,6,opt,name=balance64_delayed" json:"balance64_delayed,omitempty"`
+	Balance64Delayed     *int64   `protobuf:"varint,6,opt,name=balance64_delayed,json=balance64Delayed" json:"balance64_delayed,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -8342,7 +8433,7 @@ func (m *CMsgClientWalletInfoUpdate) Reset()         { *m = CMsgClientWalletInfo
 func (m *CMsgClientWalletInfoUpdate) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientWalletInfoUpdate) ProtoMessage()    {}
 func (*CMsgClientWalletInfoUpdate) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{101}
+	return fileDescriptor_97f09b42bb99641f, []int{102}
 }
 
 func (m *CMsgClientWalletInfoUpdate) XXX_Unmarshal(b []byte) error {
@@ -8406,8 +8497,8 @@ func (m *CMsgClientWalletInfoUpdate) GetBalance64Delayed() int64 {
 }
 
 type CMsgClientAppInfoUpdate struct {
-	LastChangenumber     *uint32  `protobuf:"varint,1,opt,name=last_changenumber" json:"last_changenumber,omitempty"`
-	SendChangelist       *bool    `protobuf:"varint,2,opt,name=send_changelist" json:"send_changelist,omitempty"`
+	LastChangenumber     *uint32  `protobuf:"varint,1,opt,name=last_changenumber,json=lastChangenumber" json:"last_changenumber,omitempty"`
+	SendChangelist       *bool    `protobuf:"varint,2,opt,name=send_changelist,json=sendChangelist" json:"send_changelist,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -8417,7 +8508,7 @@ func (m *CMsgClientAppInfoUpdate) Reset()         { *m = CMsgClientAppInfoUpdate
 func (m *CMsgClientAppInfoUpdate) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientAppInfoUpdate) ProtoMessage()    {}
 func (*CMsgClientAppInfoUpdate) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{102}
+	return fileDescriptor_97f09b42bb99641f, []int{103}
 }
 
 func (m *CMsgClientAppInfoUpdate) XXX_Unmarshal(b []byte) error {
@@ -8453,8 +8544,8 @@ func (m *CMsgClientAppInfoUpdate) GetSendChangelist() bool {
 }
 
 type CMsgClientAppInfoChanges struct {
-	CurrentChangeNumber  *uint32  `protobuf:"varint,1,opt,name=current_change_number" json:"current_change_number,omitempty"`
-	ForceFullUpdate      *bool    `protobuf:"varint,2,opt,name=force_full_update" json:"force_full_update,omitempty"`
+	CurrentChangeNumber  *uint32  `protobuf:"varint,1,opt,name=current_change_number,json=currentChangeNumber" json:"current_change_number,omitempty"`
+	ForceFullUpdate      *bool    `protobuf:"varint,2,opt,name=force_full_update,json=forceFullUpdate" json:"force_full_update,omitempty"`
 	AppIDs               []uint32 `protobuf:"varint,3,rep,name=appIDs" json:"appIDs,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -8465,7 +8556,7 @@ func (m *CMsgClientAppInfoChanges) Reset()         { *m = CMsgClientAppInfoChang
 func (m *CMsgClientAppInfoChanges) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientAppInfoChanges) ProtoMessage()    {}
 func (*CMsgClientAppInfoChanges) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{103}
+	return fileDescriptor_97f09b42bb99641f, []int{104}
 }
 
 func (m *CMsgClientAppInfoChanges) XXX_Unmarshal(b []byte) error {
@@ -8509,7 +8600,7 @@ func (m *CMsgClientAppInfoChanges) GetAppIDs() []uint32 {
 
 type CMsgClientAppInfoRequest struct {
 	Apps                 []*CMsgClientAppInfoRequest_App `protobuf:"bytes,1,rep,name=apps" json:"apps,omitempty"`
-	SupportsBatches      *bool                           `protobuf:"varint,2,opt,name=supports_batches,def=0" json:"supports_batches,omitempty"`
+	SupportsBatches      *bool                           `protobuf:"varint,2,opt,name=supports_batches,json=supportsBatches,def=0" json:"supports_batches,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                        `json:"-"`
 	XXX_unrecognized     []byte                          `json:"-"`
 	XXX_sizecache        int32                           `json:"-"`
@@ -8519,7 +8610,7 @@ func (m *CMsgClientAppInfoRequest) Reset()         { *m = CMsgClientAppInfoReque
 func (m *CMsgClientAppInfoRequest) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientAppInfoRequest) ProtoMessage()    {}
 func (*CMsgClientAppInfoRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{104}
+	return fileDescriptor_97f09b42bb99641f, []int{105}
 }
 
 func (m *CMsgClientAppInfoRequest) XXX_Unmarshal(b []byte) error {
@@ -8557,9 +8648,9 @@ func (m *CMsgClientAppInfoRequest) GetSupportsBatches() bool {
 }
 
 type CMsgClientAppInfoRequest_App struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	SectionFlags         *uint32  `protobuf:"varint,2,opt,name=section_flags" json:"section_flags,omitempty"`
-	Section_CRC          []uint32 `protobuf:"varint,3,rep,name=section_CRC" json:"section_CRC,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	SectionFlags         *uint32  `protobuf:"varint,2,opt,name=section_flags,json=sectionFlags" json:"section_flags,omitempty"`
+	Section_CRC          []uint32 `protobuf:"varint,3,rep,name=section_CRC,json=sectionCRC" json:"section_CRC,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -8569,7 +8660,7 @@ func (m *CMsgClientAppInfoRequest_App) Reset()         { *m = CMsgClientAppInfoR
 func (m *CMsgClientAppInfoRequest_App) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientAppInfoRequest_App) ProtoMessage()    {}
 func (*CMsgClientAppInfoRequest_App) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{104, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{105, 0}
 }
 
 func (m *CMsgClientAppInfoRequest_App) XXX_Unmarshal(b []byte) error {
@@ -8613,8 +8704,8 @@ func (m *CMsgClientAppInfoRequest_App) GetSection_CRC() []uint32 {
 
 type CMsgClientAppInfoResponse struct {
 	Apps                 []*CMsgClientAppInfoResponse_App `protobuf:"bytes,1,rep,name=apps" json:"apps,omitempty"`
-	AppsUnknown          []uint32                         `protobuf:"varint,2,rep,name=apps_unknown" json:"apps_unknown,omitempty"`
-	AppsPending          *uint32                          `protobuf:"varint,3,opt,name=apps_pending" json:"apps_pending,omitempty"`
+	AppsUnknown          []uint32                         `protobuf:"varint,2,rep,name=apps_unknown,json=appsUnknown" json:"apps_unknown,omitempty"`
+	AppsPending          *uint32                          `protobuf:"varint,3,opt,name=apps_pending,json=appsPending" json:"apps_pending,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                         `json:"-"`
 	XXX_unrecognized     []byte                           `json:"-"`
 	XXX_sizecache        int32                            `json:"-"`
@@ -8624,7 +8715,7 @@ func (m *CMsgClientAppInfoResponse) Reset()         { *m = CMsgClientAppInfoResp
 func (m *CMsgClientAppInfoResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientAppInfoResponse) ProtoMessage()    {}
 func (*CMsgClientAppInfoResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{105}
+	return fileDescriptor_97f09b42bb99641f, []int{106}
 }
 
 func (m *CMsgClientAppInfoResponse) XXX_Unmarshal(b []byte) error {
@@ -8667,8 +8758,8 @@ func (m *CMsgClientAppInfoResponse) GetAppsPending() uint32 {
 }
 
 type CMsgClientAppInfoResponse_App struct {
-	AppId                *uint32                                  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	ChangeNumber         *uint32                                  `protobuf:"varint,2,opt,name=change_number" json:"change_number,omitempty"`
+	AppId                *uint32                                  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	ChangeNumber         *uint32                                  `protobuf:"varint,2,opt,name=change_number,json=changeNumber" json:"change_number,omitempty"`
 	Sections             []*CMsgClientAppInfoResponse_App_Section `protobuf:"bytes,3,rep,name=sections" json:"sections,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                                 `json:"-"`
 	XXX_unrecognized     []byte                                   `json:"-"`
@@ -8679,7 +8770,7 @@ func (m *CMsgClientAppInfoResponse_App) Reset()         { *m = CMsgClientAppInfo
 func (m *CMsgClientAppInfoResponse_App) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientAppInfoResponse_App) ProtoMessage()    {}
 func (*CMsgClientAppInfoResponse_App) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{105, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{106, 0}
 }
 
 func (m *CMsgClientAppInfoResponse_App) XXX_Unmarshal(b []byte) error {
@@ -8722,8 +8813,8 @@ func (m *CMsgClientAppInfoResponse_App) GetSections() []*CMsgClientAppInfoRespon
 }
 
 type CMsgClientAppInfoResponse_App_Section struct {
-	SectionId            *uint32  `protobuf:"varint,1,opt,name=section_id" json:"section_id,omitempty"`
-	SectionKv            []byte   `protobuf:"bytes,2,opt,name=section_kv" json:"section_kv,omitempty"`
+	SectionId            *uint32  `protobuf:"varint,1,opt,name=section_id,json=sectionId" json:"section_id,omitempty"`
+	SectionKv            []byte   `protobuf:"bytes,2,opt,name=section_kv,json=sectionKv" json:"section_kv,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -8733,7 +8824,7 @@ func (m *CMsgClientAppInfoResponse_App_Section) Reset()         { *m = CMsgClien
 func (m *CMsgClientAppInfoResponse_App_Section) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientAppInfoResponse_App_Section) ProtoMessage()    {}
 func (*CMsgClientAppInfoResponse_App_Section) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{105, 0, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{106, 0, 0}
 }
 
 func (m *CMsgClientAppInfoResponse_App_Section) XXX_Unmarshal(b []byte) error {
@@ -8769,8 +8860,8 @@ func (m *CMsgClientAppInfoResponse_App_Section) GetSectionKv() []byte {
 }
 
 type CMsgClientPackageInfoRequest struct {
-	PackageIds           []uint32 `protobuf:"varint,1,rep,name=package_ids" json:"package_ids,omitempty"`
-	MetaDataOnly         *bool    `protobuf:"varint,2,opt,name=meta_data_only" json:"meta_data_only,omitempty"`
+	PackageIds           []uint32 `protobuf:"varint,1,rep,name=package_ids,json=packageIds" json:"package_ids,omitempty"`
+	MetaDataOnly         *bool    `protobuf:"varint,2,opt,name=meta_data_only,json=metaDataOnly" json:"meta_data_only,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -8780,7 +8871,7 @@ func (m *CMsgClientPackageInfoRequest) Reset()         { *m = CMsgClientPackageI
 func (m *CMsgClientPackageInfoRequest) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientPackageInfoRequest) ProtoMessage()    {}
 func (*CMsgClientPackageInfoRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{106}
+	return fileDescriptor_97f09b42bb99641f, []int{107}
 }
 
 func (m *CMsgClientPackageInfoRequest) XXX_Unmarshal(b []byte) error {
@@ -8817,8 +8908,8 @@ func (m *CMsgClientPackageInfoRequest) GetMetaDataOnly() bool {
 
 type CMsgClientPackageInfoResponse struct {
 	Packages             []*CMsgClientPackageInfoResponse_Package `protobuf:"bytes,1,rep,name=packages" json:"packages,omitempty"`
-	PackagesUnknown      []uint32                                 `protobuf:"varint,2,rep,name=packages_unknown" json:"packages_unknown,omitempty"`
-	PackagesPending      *uint32                                  `protobuf:"varint,3,opt,name=packages_pending" json:"packages_pending,omitempty"`
+	PackagesUnknown      []uint32                                 `protobuf:"varint,2,rep,name=packages_unknown,json=packagesUnknown" json:"packages_unknown,omitempty"`
+	PackagesPending      *uint32                                  `protobuf:"varint,3,opt,name=packages_pending,json=packagesPending" json:"packages_pending,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                                 `json:"-"`
 	XXX_unrecognized     []byte                                   `json:"-"`
 	XXX_sizecache        int32                                    `json:"-"`
@@ -8828,7 +8919,7 @@ func (m *CMsgClientPackageInfoResponse) Reset()         { *m = CMsgClientPackage
 func (m *CMsgClientPackageInfoResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientPackageInfoResponse) ProtoMessage()    {}
 func (*CMsgClientPackageInfoResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{107}
+	return fileDescriptor_97f09b42bb99641f, []int{108}
 }
 
 func (m *CMsgClientPackageInfoResponse) XXX_Unmarshal(b []byte) error {
@@ -8871,8 +8962,8 @@ func (m *CMsgClientPackageInfoResponse) GetPackagesPending() uint32 {
 }
 
 type CMsgClientPackageInfoResponse_Package struct {
-	PackageId            *uint32  `protobuf:"varint,1,opt,name=package_id" json:"package_id,omitempty"`
-	ChangeNumber         *uint32  `protobuf:"varint,2,opt,name=change_number" json:"change_number,omitempty"`
+	PackageId            *uint32  `protobuf:"varint,1,opt,name=package_id,json=packageId" json:"package_id,omitempty"`
+	ChangeNumber         *uint32  `protobuf:"varint,2,opt,name=change_number,json=changeNumber" json:"change_number,omitempty"`
 	Sha                  []byte   `protobuf:"bytes,3,opt,name=sha" json:"sha,omitempty"`
 	Buffer               []byte   `protobuf:"bytes,4,opt,name=buffer" json:"buffer,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -8884,7 +8975,7 @@ func (m *CMsgClientPackageInfoResponse_Package) Reset()         { *m = CMsgClien
 func (m *CMsgClientPackageInfoResponse_Package) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientPackageInfoResponse_Package) ProtoMessage()    {}
 func (*CMsgClientPackageInfoResponse_Package) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{107, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{108, 0}
 }
 
 func (m *CMsgClientPackageInfoResponse_Package) XXX_Unmarshal(b []byte) error {
@@ -8934,11 +9025,11 @@ func (m *CMsgClientPackageInfoResponse_Package) GetBuffer() []byte {
 }
 
 type CMsgClientPICSChangesSinceRequest struct {
-	SinceChangeNumber      *uint32  `protobuf:"varint,1,opt,name=since_change_number" json:"since_change_number,omitempty"`
-	SendAppInfoChanges     *bool    `protobuf:"varint,2,opt,name=send_app_info_changes" json:"send_app_info_changes,omitempty"`
-	SendPackageInfoChanges *bool    `protobuf:"varint,3,opt,name=send_package_info_changes" json:"send_package_info_changes,omitempty"`
-	NumAppInfoCached       *uint32  `protobuf:"varint,4,opt,name=num_app_info_cached" json:"num_app_info_cached,omitempty"`
-	NumPackageInfoCached   *uint32  `protobuf:"varint,5,opt,name=num_package_info_cached" json:"num_package_info_cached,omitempty"`
+	SinceChangeNumber      *uint32  `protobuf:"varint,1,opt,name=since_change_number,json=sinceChangeNumber" json:"since_change_number,omitempty"`
+	SendAppInfoChanges     *bool    `protobuf:"varint,2,opt,name=send_app_info_changes,json=sendAppInfoChanges" json:"send_app_info_changes,omitempty"`
+	SendPackageInfoChanges *bool    `protobuf:"varint,3,opt,name=send_package_info_changes,json=sendPackageInfoChanges" json:"send_package_info_changes,omitempty"`
+	NumAppInfoCached       *uint32  `protobuf:"varint,4,opt,name=num_app_info_cached,json=numAppInfoCached" json:"num_app_info_cached,omitempty"`
+	NumPackageInfoCached   *uint32  `protobuf:"varint,5,opt,name=num_package_info_cached,json=numPackageInfoCached" json:"num_package_info_cached,omitempty"`
 	XXX_NoUnkeyedLiteral   struct{} `json:"-"`
 	XXX_unrecognized       []byte   `json:"-"`
 	XXX_sizecache          int32    `json:"-"`
@@ -8948,7 +9039,7 @@ func (m *CMsgClientPICSChangesSinceRequest) Reset()         { *m = CMsgClientPIC
 func (m *CMsgClientPICSChangesSinceRequest) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientPICSChangesSinceRequest) ProtoMessage()    {}
 func (*CMsgClientPICSChangesSinceRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{108}
+	return fileDescriptor_97f09b42bb99641f, []int{109}
 }
 
 func (m *CMsgClientPICSChangesSinceRequest) XXX_Unmarshal(b []byte) error {
@@ -9005,13 +9096,13 @@ func (m *CMsgClientPICSChangesSinceRequest) GetNumPackageInfoCached() uint32 {
 }
 
 type CMsgClientPICSChangesSinceResponse struct {
-	CurrentChangeNumber    *uint32                                             `protobuf:"varint,1,opt,name=current_change_number" json:"current_change_number,omitempty"`
-	SinceChangeNumber      *uint32                                             `protobuf:"varint,2,opt,name=since_change_number" json:"since_change_number,omitempty"`
-	ForceFullUpdate        *bool                                               `protobuf:"varint,3,opt,name=force_full_update" json:"force_full_update,omitempty"`
-	PackageChanges         []*CMsgClientPICSChangesSinceResponse_PackageChange `protobuf:"bytes,4,rep,name=package_changes" json:"package_changes,omitempty"`
-	AppChanges             []*CMsgClientPICSChangesSinceResponse_AppChange     `protobuf:"bytes,5,rep,name=app_changes" json:"app_changes,omitempty"`
-	ForceFullAppUpdate     *bool                                               `protobuf:"varint,6,opt,name=force_full_app_update" json:"force_full_app_update,omitempty"`
-	ForceFullPackageUpdate *bool                                               `protobuf:"varint,7,opt,name=force_full_package_update" json:"force_full_package_update,omitempty"`
+	CurrentChangeNumber    *uint32                                             `protobuf:"varint,1,opt,name=current_change_number,json=currentChangeNumber" json:"current_change_number,omitempty"`
+	SinceChangeNumber      *uint32                                             `protobuf:"varint,2,opt,name=since_change_number,json=sinceChangeNumber" json:"since_change_number,omitempty"`
+	ForceFullUpdate        *bool                                               `protobuf:"varint,3,opt,name=force_full_update,json=forceFullUpdate" json:"force_full_update,omitempty"`
+	PackageChanges         []*CMsgClientPICSChangesSinceResponse_PackageChange `protobuf:"bytes,4,rep,name=package_changes,json=packageChanges" json:"package_changes,omitempty"`
+	AppChanges             []*CMsgClientPICSChangesSinceResponse_AppChange     `protobuf:"bytes,5,rep,name=app_changes,json=appChanges" json:"app_changes,omitempty"`
+	ForceFullAppUpdate     *bool                                               `protobuf:"varint,6,opt,name=force_full_app_update,json=forceFullAppUpdate" json:"force_full_app_update,omitempty"`
+	ForceFullPackageUpdate *bool                                               `protobuf:"varint,7,opt,name=force_full_package_update,json=forceFullPackageUpdate" json:"force_full_package_update,omitempty"`
 	XXX_NoUnkeyedLiteral   struct{}                                            `json:"-"`
 	XXX_unrecognized       []byte                                              `json:"-"`
 	XXX_sizecache          int32                                               `json:"-"`
@@ -9021,7 +9112,7 @@ func (m *CMsgClientPICSChangesSinceResponse) Reset()         { *m = CMsgClientPI
 func (m *CMsgClientPICSChangesSinceResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientPICSChangesSinceResponse) ProtoMessage()    {}
 func (*CMsgClientPICSChangesSinceResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{109}
+	return fileDescriptor_97f09b42bb99641f, []int{110}
 }
 
 func (m *CMsgClientPICSChangesSinceResponse) XXX_Unmarshal(b []byte) error {
@@ -9093,8 +9184,8 @@ func (m *CMsgClientPICSChangesSinceResponse) GetForceFullPackageUpdate() bool {
 
 type CMsgClientPICSChangesSinceResponse_PackageChange struct {
 	Packageid            *uint32  `protobuf:"varint,1,opt,name=packageid" json:"packageid,omitempty"`
-	ChangeNumber         *uint32  `protobuf:"varint,2,opt,name=change_number" json:"change_number,omitempty"`
-	NeedsToken           *bool    `protobuf:"varint,3,opt,name=needs_token" json:"needs_token,omitempty"`
+	ChangeNumber         *uint32  `protobuf:"varint,2,opt,name=change_number,json=changeNumber" json:"change_number,omitempty"`
+	NeedsToken           *bool    `protobuf:"varint,3,opt,name=needs_token,json=needsToken" json:"needs_token,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -9108,7 +9199,7 @@ func (m *CMsgClientPICSChangesSinceResponse_PackageChange) String() string {
 }
 func (*CMsgClientPICSChangesSinceResponse_PackageChange) ProtoMessage() {}
 func (*CMsgClientPICSChangesSinceResponse_PackageChange) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{109, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{110, 0}
 }
 
 func (m *CMsgClientPICSChangesSinceResponse_PackageChange) XXX_Unmarshal(b []byte) error {
@@ -9152,8 +9243,8 @@ func (m *CMsgClientPICSChangesSinceResponse_PackageChange) GetNeedsToken() bool 
 
 type CMsgClientPICSChangesSinceResponse_AppChange struct {
 	Appid                *uint32  `protobuf:"varint,1,opt,name=appid" json:"appid,omitempty"`
-	ChangeNumber         *uint32  `protobuf:"varint,2,opt,name=change_number" json:"change_number,omitempty"`
-	NeedsToken           *bool    `protobuf:"varint,3,opt,name=needs_token" json:"needs_token,omitempty"`
+	ChangeNumber         *uint32  `protobuf:"varint,2,opt,name=change_number,json=changeNumber" json:"change_number,omitempty"`
+	NeedsToken           *bool    `protobuf:"varint,3,opt,name=needs_token,json=needsToken" json:"needs_token,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -9167,7 +9258,7 @@ func (m *CMsgClientPICSChangesSinceResponse_AppChange) String() string {
 }
 func (*CMsgClientPICSChangesSinceResponse_AppChange) ProtoMessage() {}
 func (*CMsgClientPICSChangesSinceResponse_AppChange) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{109, 1}
+	return fileDescriptor_97f09b42bb99641f, []int{110, 1}
 }
 
 func (m *CMsgClientPICSChangesSinceResponse_AppChange) XXX_Unmarshal(b []byte) error {
@@ -9210,20 +9301,21 @@ func (m *CMsgClientPICSChangesSinceResponse_AppChange) GetNeedsToken() bool {
 }
 
 type CMsgClientPICSProductInfoRequest struct {
-	Packages             []*CMsgClientPICSProductInfoRequest_PackageInfo `protobuf:"bytes,1,rep,name=packages" json:"packages,omitempty"`
-	Apps                 []*CMsgClientPICSProductInfoRequest_AppInfo     `protobuf:"bytes,2,rep,name=apps" json:"apps,omitempty"`
-	MetaDataOnly         *bool                                           `protobuf:"varint,3,opt,name=meta_data_only" json:"meta_data_only,omitempty"`
-	NumPrevFailed        *uint32                                         `protobuf:"varint,4,opt,name=num_prev_failed" json:"num_prev_failed,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                                        `json:"-"`
-	XXX_unrecognized     []byte                                          `json:"-"`
-	XXX_sizecache        int32                                           `json:"-"`
+	Packages              []*CMsgClientPICSProductInfoRequest_PackageInfo `protobuf:"bytes,1,rep,name=packages" json:"packages,omitempty"`
+	Apps                  []*CMsgClientPICSProductInfoRequest_AppInfo     `protobuf:"bytes,2,rep,name=apps" json:"apps,omitempty"`
+	MetaDataOnly          *bool                                           `protobuf:"varint,3,opt,name=meta_data_only,json=metaDataOnly" json:"meta_data_only,omitempty"`
+	NumPrevFailed         *uint32                                         `protobuf:"varint,4,opt,name=num_prev_failed,json=numPrevFailed" json:"num_prev_failed,omitempty"`
+	SupportsPackageTokens *uint32                                         `protobuf:"varint,5,opt,name=supports_package_tokens,json=supportsPackageTokens" json:"supports_package_tokens,omitempty"`
+	XXX_NoUnkeyedLiteral  struct{}                                        `json:"-"`
+	XXX_unrecognized      []byte                                          `json:"-"`
+	XXX_sizecache         int32                                           `json:"-"`
 }
 
 func (m *CMsgClientPICSProductInfoRequest) Reset()         { *m = CMsgClientPICSProductInfoRequest{} }
 func (m *CMsgClientPICSProductInfoRequest) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientPICSProductInfoRequest) ProtoMessage()    {}
 func (*CMsgClientPICSProductInfoRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{110}
+	return fileDescriptor_97f09b42bb99641f, []int{111}
 }
 
 func (m *CMsgClientPICSProductInfoRequest) XXX_Unmarshal(b []byte) error {
@@ -9272,10 +9364,17 @@ func (m *CMsgClientPICSProductInfoRequest) GetNumPrevFailed() uint32 {
 	return 0
 }
 
+func (m *CMsgClientPICSProductInfoRequest) GetSupportsPackageTokens() uint32 {
+	if m != nil && m.SupportsPackageTokens != nil {
+		return *m.SupportsPackageTokens
+	}
+	return 0
+}
+
 type CMsgClientPICSProductInfoRequest_AppInfo struct {
 	Appid                *uint32  `protobuf:"varint,1,opt,name=appid" json:"appid,omitempty"`
-	AccessToken          *uint64  `protobuf:"varint,2,opt,name=access_token" json:"access_token,omitempty"`
-	OnlyPublic           *bool    `protobuf:"varint,3,opt,name=only_public" json:"only_public,omitempty"`
+	AccessToken          *uint64  `protobuf:"varint,2,opt,name=access_token,json=accessToken" json:"access_token,omitempty"`
+	OnlyPublic           *bool    `protobuf:"varint,3,opt,name=only_public,json=onlyPublic" json:"only_public,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -9287,7 +9386,7 @@ func (m *CMsgClientPICSProductInfoRequest_AppInfo) Reset() {
 func (m *CMsgClientPICSProductInfoRequest_AppInfo) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientPICSProductInfoRequest_AppInfo) ProtoMessage()    {}
 func (*CMsgClientPICSProductInfoRequest_AppInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{110, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{111, 0}
 }
 
 func (m *CMsgClientPICSProductInfoRequest_AppInfo) XXX_Unmarshal(b []byte) error {
@@ -9331,7 +9430,7 @@ func (m *CMsgClientPICSProductInfoRequest_AppInfo) GetOnlyPublic() bool {
 
 type CMsgClientPICSProductInfoRequest_PackageInfo struct {
 	Packageid            *uint32  `protobuf:"varint,1,opt,name=packageid" json:"packageid,omitempty"`
-	AccessToken          *uint64  `protobuf:"varint,2,opt,name=access_token" json:"access_token,omitempty"`
+	AccessToken          *uint64  `protobuf:"varint,2,opt,name=access_token,json=accessToken" json:"access_token,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -9345,7 +9444,7 @@ func (m *CMsgClientPICSProductInfoRequest_PackageInfo) String() string {
 }
 func (*CMsgClientPICSProductInfoRequest_PackageInfo) ProtoMessage() {}
 func (*CMsgClientPICSProductInfoRequest_PackageInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{110, 1}
+	return fileDescriptor_97f09b42bb99641f, []int{111, 1}
 }
 
 func (m *CMsgClientPICSProductInfoRequest_PackageInfo) XXX_Unmarshal(b []byte) error {
@@ -9382,13 +9481,13 @@ func (m *CMsgClientPICSProductInfoRequest_PackageInfo) GetAccessToken() uint64 {
 
 type CMsgClientPICSProductInfoResponse struct {
 	Apps                 []*CMsgClientPICSProductInfoResponse_AppInfo     `protobuf:"bytes,1,rep,name=apps" json:"apps,omitempty"`
-	UnknownAppids        []uint32                                         `protobuf:"varint,2,rep,name=unknown_appids" json:"unknown_appids,omitempty"`
+	UnknownAppids        []uint32                                         `protobuf:"varint,2,rep,name=unknown_appids,json=unknownAppids" json:"unknown_appids,omitempty"`
 	Packages             []*CMsgClientPICSProductInfoResponse_PackageInfo `protobuf:"bytes,3,rep,name=packages" json:"packages,omitempty"`
-	UnknownPackageids    []uint32                                         `protobuf:"varint,4,rep,name=unknown_packageids" json:"unknown_packageids,omitempty"`
-	MetaDataOnly         *bool                                            `protobuf:"varint,5,opt,name=meta_data_only" json:"meta_data_only,omitempty"`
-	ResponsePending      *bool                                            `protobuf:"varint,6,opt,name=response_pending" json:"response_pending,omitempty"`
-	HttpMinSize          *uint32                                          `protobuf:"varint,7,opt,name=http_min_size" json:"http_min_size,omitempty"`
-	HttpHost             *string                                          `protobuf:"bytes,8,opt,name=http_host" json:"http_host,omitempty"`
+	UnknownPackageids    []uint32                                         `protobuf:"varint,4,rep,name=unknown_packageids,json=unknownPackageids" json:"unknown_packageids,omitempty"`
+	MetaDataOnly         *bool                                            `protobuf:"varint,5,opt,name=meta_data_only,json=metaDataOnly" json:"meta_data_only,omitempty"`
+	ResponsePending      *bool                                            `protobuf:"varint,6,opt,name=response_pending,json=responsePending" json:"response_pending,omitempty"`
+	HttpMinSize          *uint32                                          `protobuf:"varint,7,opt,name=http_min_size,json=httpMinSize" json:"http_min_size,omitempty"`
+	HttpHost             *string                                          `protobuf:"bytes,8,opt,name=http_host,json=httpHost" json:"http_host,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                                         `json:"-"`
 	XXX_unrecognized     []byte                                           `json:"-"`
 	XXX_sizecache        int32                                            `json:"-"`
@@ -9398,7 +9497,7 @@ func (m *CMsgClientPICSProductInfoResponse) Reset()         { *m = CMsgClientPIC
 func (m *CMsgClientPICSProductInfoResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientPICSProductInfoResponse) ProtoMessage()    {}
 func (*CMsgClientPICSProductInfoResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{111}
+	return fileDescriptor_97f09b42bb99641f, []int{112}
 }
 
 func (m *CMsgClientPICSProductInfoResponse) XXX_Unmarshal(b []byte) error {
@@ -9477,11 +9576,11 @@ func (m *CMsgClientPICSProductInfoResponse) GetHttpHost() string {
 
 type CMsgClientPICSProductInfoResponse_AppInfo struct {
 	Appid                *uint32  `protobuf:"varint,1,opt,name=appid" json:"appid,omitempty"`
-	ChangeNumber         *uint32  `protobuf:"varint,2,opt,name=change_number" json:"change_number,omitempty"`
-	MissingToken         *bool    `protobuf:"varint,3,opt,name=missing_token" json:"missing_token,omitempty"`
+	ChangeNumber         *uint32  `protobuf:"varint,2,opt,name=change_number,json=changeNumber" json:"change_number,omitempty"`
+	MissingToken         *bool    `protobuf:"varint,3,opt,name=missing_token,json=missingToken" json:"missing_token,omitempty"`
 	Sha                  []byte   `protobuf:"bytes,4,opt,name=sha" json:"sha,omitempty"`
 	Buffer               []byte   `protobuf:"bytes,5,opt,name=buffer" json:"buffer,omitempty"`
-	OnlyPublic           *bool    `protobuf:"varint,6,opt,name=only_public" json:"only_public,omitempty"`
+	OnlyPublic           *bool    `protobuf:"varint,6,opt,name=only_public,json=onlyPublic" json:"only_public,omitempty"`
 	Size                 *uint32  `protobuf:"varint,7,opt,name=size" json:"size,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -9491,10 +9590,12 @@ type CMsgClientPICSProductInfoResponse_AppInfo struct {
 func (m *CMsgClientPICSProductInfoResponse_AppInfo) Reset() {
 	*m = CMsgClientPICSProductInfoResponse_AppInfo{}
 }
-func (m *CMsgClientPICSProductInfoResponse_AppInfo) String() string { return proto.CompactTextString(m) }
-func (*CMsgClientPICSProductInfoResponse_AppInfo) ProtoMessage()    {}
+func (m *CMsgClientPICSProductInfoResponse_AppInfo) String() string {
+	return proto.CompactTextString(m)
+}
+func (*CMsgClientPICSProductInfoResponse_AppInfo) ProtoMessage() {}
 func (*CMsgClientPICSProductInfoResponse_AppInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{111, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{112, 0}
 }
 
 func (m *CMsgClientPICSProductInfoResponse_AppInfo) XXX_Unmarshal(b []byte) error {
@@ -9566,8 +9667,8 @@ func (m *CMsgClientPICSProductInfoResponse_AppInfo) GetSize() uint32 {
 
 type CMsgClientPICSProductInfoResponse_PackageInfo struct {
 	Packageid            *uint32  `protobuf:"varint,1,opt,name=packageid" json:"packageid,omitempty"`
-	ChangeNumber         *uint32  `protobuf:"varint,2,opt,name=change_number" json:"change_number,omitempty"`
-	MissingToken         *bool    `protobuf:"varint,3,opt,name=missing_token" json:"missing_token,omitempty"`
+	ChangeNumber         *uint32  `protobuf:"varint,2,opt,name=change_number,json=changeNumber" json:"change_number,omitempty"`
+	MissingToken         *bool    `protobuf:"varint,3,opt,name=missing_token,json=missingToken" json:"missing_token,omitempty"`
 	Sha                  []byte   `protobuf:"bytes,4,opt,name=sha" json:"sha,omitempty"`
 	Buffer               []byte   `protobuf:"bytes,5,opt,name=buffer" json:"buffer,omitempty"`
 	Size                 *uint32  `protobuf:"varint,6,opt,name=size" json:"size,omitempty"`
@@ -9584,7 +9685,7 @@ func (m *CMsgClientPICSProductInfoResponse_PackageInfo) String() string {
 }
 func (*CMsgClientPICSProductInfoResponse_PackageInfo) ProtoMessage() {}
 func (*CMsgClientPICSProductInfoResponse_PackageInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{111, 1}
+	return fileDescriptor_97f09b42bb99641f, []int{112, 1}
 }
 
 func (m *CMsgClientPICSProductInfoResponse_PackageInfo) XXX_Unmarshal(b []byte) error {
@@ -9659,7 +9760,7 @@ func (m *CMsgClientPICSAccessTokenRequest) Reset()         { *m = CMsgClientPICS
 func (m *CMsgClientPICSAccessTokenRequest) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientPICSAccessTokenRequest) ProtoMessage()    {}
 func (*CMsgClientPICSAccessTokenRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{112}
+	return fileDescriptor_97f09b42bb99641f, []int{113}
 }
 
 func (m *CMsgClientPICSAccessTokenRequest) XXX_Unmarshal(b []byte) error {
@@ -9695,10 +9796,10 @@ func (m *CMsgClientPICSAccessTokenRequest) GetAppids() []uint32 {
 }
 
 type CMsgClientPICSAccessTokenResponse struct {
-	PackageAccessTokens  []*CMsgClientPICSAccessTokenResponse_PackageToken `protobuf:"bytes,1,rep,name=package_access_tokens" json:"package_access_tokens,omitempty"`
-	PackageDeniedTokens  []uint32                                          `protobuf:"varint,2,rep,name=package_denied_tokens" json:"package_denied_tokens,omitempty"`
-	AppAccessTokens      []*CMsgClientPICSAccessTokenResponse_AppToken     `protobuf:"bytes,3,rep,name=app_access_tokens" json:"app_access_tokens,omitempty"`
-	AppDeniedTokens      []uint32                                          `protobuf:"varint,4,rep,name=app_denied_tokens" json:"app_denied_tokens,omitempty"`
+	PackageAccessTokens  []*CMsgClientPICSAccessTokenResponse_PackageToken `protobuf:"bytes,1,rep,name=package_access_tokens,json=packageAccessTokens" json:"package_access_tokens,omitempty"`
+	PackageDeniedTokens  []uint32                                          `protobuf:"varint,2,rep,name=package_denied_tokens,json=packageDeniedTokens" json:"package_denied_tokens,omitempty"`
+	AppAccessTokens      []*CMsgClientPICSAccessTokenResponse_AppToken     `protobuf:"bytes,3,rep,name=app_access_tokens,json=appAccessTokens" json:"app_access_tokens,omitempty"`
+	AppDeniedTokens      []uint32                                          `protobuf:"varint,4,rep,name=app_denied_tokens,json=appDeniedTokens" json:"app_denied_tokens,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                                          `json:"-"`
 	XXX_unrecognized     []byte                                            `json:"-"`
 	XXX_sizecache        int32                                             `json:"-"`
@@ -9708,7 +9809,7 @@ func (m *CMsgClientPICSAccessTokenResponse) Reset()         { *m = CMsgClientPIC
 func (m *CMsgClientPICSAccessTokenResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientPICSAccessTokenResponse) ProtoMessage()    {}
 func (*CMsgClientPICSAccessTokenResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{113}
+	return fileDescriptor_97f09b42bb99641f, []int{114}
 }
 
 func (m *CMsgClientPICSAccessTokenResponse) XXX_Unmarshal(b []byte) error {
@@ -9759,7 +9860,7 @@ func (m *CMsgClientPICSAccessTokenResponse) GetAppDeniedTokens() []uint32 {
 
 type CMsgClientPICSAccessTokenResponse_PackageToken struct {
 	Packageid            *uint32  `protobuf:"varint,1,opt,name=packageid" json:"packageid,omitempty"`
-	AccessToken          *uint64  `protobuf:"varint,2,opt,name=access_token" json:"access_token,omitempty"`
+	AccessToken          *uint64  `protobuf:"varint,2,opt,name=access_token,json=accessToken" json:"access_token,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -9773,7 +9874,7 @@ func (m *CMsgClientPICSAccessTokenResponse_PackageToken) String() string {
 }
 func (*CMsgClientPICSAccessTokenResponse_PackageToken) ProtoMessage() {}
 func (*CMsgClientPICSAccessTokenResponse_PackageToken) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{113, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{114, 0}
 }
 
 func (m *CMsgClientPICSAccessTokenResponse_PackageToken) XXX_Unmarshal(b []byte) error {
@@ -9810,7 +9911,7 @@ func (m *CMsgClientPICSAccessTokenResponse_PackageToken) GetAccessToken() uint64
 
 type CMsgClientPICSAccessTokenResponse_AppToken struct {
 	Appid                *uint32  `protobuf:"varint,1,opt,name=appid" json:"appid,omitempty"`
-	AccessToken          *uint64  `protobuf:"varint,2,opt,name=access_token" json:"access_token,omitempty"`
+	AccessToken          *uint64  `protobuf:"varint,2,opt,name=access_token,json=accessToken" json:"access_token,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -9824,7 +9925,7 @@ func (m *CMsgClientPICSAccessTokenResponse_AppToken) String() string {
 }
 func (*CMsgClientPICSAccessTokenResponse_AppToken) ProtoMessage() {}
 func (*CMsgClientPICSAccessTokenResponse_AppToken) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{113, 1}
+	return fileDescriptor_97f09b42bb99641f, []int{114, 1}
 }
 
 func (m *CMsgClientPICSAccessTokenResponse_AppToken) XXX_Unmarshal(b []byte) error {
@@ -9870,7 +9971,7 @@ func (m *CMsgClientUFSGetUGCDetails) Reset()         { *m = CMsgClientUFSGetUGCD
 func (m *CMsgClientUFSGetUGCDetails) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSGetUGCDetails) ProtoMessage()    {}
 func (*CMsgClientUFSGetUGCDetails) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{114}
+	return fileDescriptor_97f09b42bb99641f, []int{115}
 }
 
 func (m *CMsgClientUFSGetUGCDetails) XXX_Unmarshal(b []byte) error {
@@ -9903,13 +10004,13 @@ func (m *CMsgClientUFSGetUGCDetails) GetHcontent() uint64 {
 type CMsgClientUFSGetUGCDetailsResponse struct {
 	Eresult              *int32   `protobuf:"varint,1,opt,name=eresult,def=2" json:"eresult,omitempty"`
 	Url                  *string  `protobuf:"bytes,2,opt,name=url" json:"url,omitempty"`
-	AppId                *uint32  `protobuf:"varint,3,opt,name=app_id" json:"app_id,omitempty"`
+	AppId                *uint32  `protobuf:"varint,3,opt,name=app_id,json=appId" json:"app_id,omitempty"`
 	Filename             *string  `protobuf:"bytes,4,opt,name=filename" json:"filename,omitempty"`
-	SteamidCreator       *uint64  `protobuf:"fixed64,5,opt,name=steamid_creator" json:"steamid_creator,omitempty"`
-	FileSize             *uint32  `protobuf:"varint,6,opt,name=file_size" json:"file_size,omitempty"`
-	CompressedFileSize   *uint32  `protobuf:"varint,7,opt,name=compressed_file_size" json:"compressed_file_size,omitempty"`
-	RangecheckHost       *string  `protobuf:"bytes,8,opt,name=rangecheck_host" json:"rangecheck_host,omitempty"`
-	FileEncodedSha1      *string  `protobuf:"bytes,9,opt,name=file_encoded_sha1" json:"file_encoded_sha1,omitempty"`
+	SteamidCreator       *uint64  `protobuf:"fixed64,5,opt,name=steamid_creator,json=steamidCreator" json:"steamid_creator,omitempty"`
+	FileSize             *uint32  `protobuf:"varint,6,opt,name=file_size,json=fileSize" json:"file_size,omitempty"`
+	CompressedFileSize   *uint32  `protobuf:"varint,7,opt,name=compressed_file_size,json=compressedFileSize" json:"compressed_file_size,omitempty"`
+	RangecheckHost       *string  `protobuf:"bytes,8,opt,name=rangecheck_host,json=rangecheckHost" json:"rangecheck_host,omitempty"`
+	FileEncodedSha1      *string  `protobuf:"bytes,9,opt,name=file_encoded_sha1,json=fileEncodedSha1" json:"file_encoded_sha1,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -9919,7 +10020,7 @@ func (m *CMsgClientUFSGetUGCDetailsResponse) Reset()         { *m = CMsgClientUF
 func (m *CMsgClientUFSGetUGCDetailsResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSGetUGCDetailsResponse) ProtoMessage()    {}
 func (*CMsgClientUFSGetUGCDetailsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{115}
+	return fileDescriptor_97f09b42bb99641f, []int{116}
 }
 
 func (m *CMsgClientUFSGetUGCDetailsResponse) XXX_Unmarshal(b []byte) error {
@@ -10006,8 +10107,8 @@ func (m *CMsgClientUFSGetUGCDetailsResponse) GetFileEncodedSha1() string {
 }
 
 type CMsgClientUFSGetSingleFileInfo struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	FileName             *string  `protobuf:"bytes,2,opt,name=file_name" json:"file_name,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	FileName             *string  `protobuf:"bytes,2,opt,name=file_name,json=fileName" json:"file_name,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -10017,7 +10118,7 @@ func (m *CMsgClientUFSGetSingleFileInfo) Reset()         { *m = CMsgClientUFSGet
 func (m *CMsgClientUFSGetSingleFileInfo) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSGetSingleFileInfo) ProtoMessage()    {}
 func (*CMsgClientUFSGetSingleFileInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{116}
+	return fileDescriptor_97f09b42bb99641f, []int{117}
 }
 
 func (m *CMsgClientUFSGetSingleFileInfo) XXX_Unmarshal(b []byte) error {
@@ -10054,12 +10155,12 @@ func (m *CMsgClientUFSGetSingleFileInfo) GetFileName() string {
 
 type CMsgClientUFSGetSingleFileInfoResponse struct {
 	Eresult              *int32   `protobuf:"varint,1,opt,name=eresult,def=2" json:"eresult,omitempty"`
-	AppId                *uint32  `protobuf:"varint,2,opt,name=app_id" json:"app_id,omitempty"`
-	FileName             *string  `protobuf:"bytes,3,opt,name=file_name" json:"file_name,omitempty"`
-	ShaFile              []byte   `protobuf:"bytes,4,opt,name=sha_file" json:"sha_file,omitempty"`
-	TimeStamp            *uint64  `protobuf:"varint,5,opt,name=time_stamp" json:"time_stamp,omitempty"`
-	RawFileSize          *uint32  `protobuf:"varint,6,opt,name=raw_file_size" json:"raw_file_size,omitempty"`
-	IsExplicitDelete     *bool    `protobuf:"varint,7,opt,name=is_explicit_delete" json:"is_explicit_delete,omitempty"`
+	AppId                *uint32  `protobuf:"varint,2,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	FileName             *string  `protobuf:"bytes,3,opt,name=file_name,json=fileName" json:"file_name,omitempty"`
+	ShaFile              []byte   `protobuf:"bytes,4,opt,name=sha_file,json=shaFile" json:"sha_file,omitempty"`
+	TimeStamp            *uint64  `protobuf:"varint,5,opt,name=time_stamp,json=timeStamp" json:"time_stamp,omitempty"`
+	RawFileSize          *uint32  `protobuf:"varint,6,opt,name=raw_file_size,json=rawFileSize" json:"raw_file_size,omitempty"`
+	IsExplicitDelete     *bool    `protobuf:"varint,7,opt,name=is_explicit_delete,json=isExplicitDelete" json:"is_explicit_delete,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -10071,7 +10172,7 @@ func (m *CMsgClientUFSGetSingleFileInfoResponse) Reset() {
 func (m *CMsgClientUFSGetSingleFileInfoResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSGetSingleFileInfoResponse) ProtoMessage()    {}
 func (*CMsgClientUFSGetSingleFileInfoResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{117}
+	return fileDescriptor_97f09b42bb99641f, []int{118}
 }
 
 func (m *CMsgClientUFSGetSingleFileInfoResponse) XXX_Unmarshal(b []byte) error {
@@ -10144,8 +10245,8 @@ func (m *CMsgClientUFSGetSingleFileInfoResponse) GetIsExplicitDelete() bool {
 }
 
 type CMsgClientUFSShareFile struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	FileName             *string  `protobuf:"bytes,2,opt,name=file_name" json:"file_name,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	FileName             *string  `protobuf:"bytes,2,opt,name=file_name,json=fileName" json:"file_name,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -10155,7 +10256,7 @@ func (m *CMsgClientUFSShareFile) Reset()         { *m = CMsgClientUFSShareFile{}
 func (m *CMsgClientUFSShareFile) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSShareFile) ProtoMessage()    {}
 func (*CMsgClientUFSShareFile) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{118}
+	return fileDescriptor_97f09b42bb99641f, []int{119}
 }
 
 func (m *CMsgClientUFSShareFile) XXX_Unmarshal(b []byte) error {
@@ -10202,7 +10303,7 @@ func (m *CMsgClientUFSShareFileResponse) Reset()         { *m = CMsgClientUFSSha
 func (m *CMsgClientUFSShareFileResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUFSShareFileResponse) ProtoMessage()    {}
 func (*CMsgClientUFSShareFileResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{119}
+	return fileDescriptor_97f09b42bb99641f, []int{120}
 }
 
 func (m *CMsgClientUFSShareFileResponse) XXX_Unmarshal(b []byte) error {
@@ -10241,7 +10342,7 @@ func (m *CMsgClientUFSShareFileResponse) GetHcontent() uint64 {
 }
 
 type CMsgClientAMGetClanOfficers struct {
-	SteamidClan          *uint64  `protobuf:"fixed64,1,opt,name=steamid_clan" json:"steamid_clan,omitempty"`
+	SteamidClan          *uint64  `protobuf:"fixed64,1,opt,name=steamid_clan,json=steamidClan" json:"steamid_clan,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -10251,7 +10352,7 @@ func (m *CMsgClientAMGetClanOfficers) Reset()         { *m = CMsgClientAMGetClan
 func (m *CMsgClientAMGetClanOfficers) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientAMGetClanOfficers) ProtoMessage()    {}
 func (*CMsgClientAMGetClanOfficers) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{120}
+	return fileDescriptor_97f09b42bb99641f, []int{121}
 }
 
 func (m *CMsgClientAMGetClanOfficers) XXX_Unmarshal(b []byte) error {
@@ -10281,8 +10382,8 @@ func (m *CMsgClientAMGetClanOfficers) GetSteamidClan() uint64 {
 
 type CMsgClientAMGetClanOfficersResponse struct {
 	Eresult              *int32   `protobuf:"varint,1,opt,name=eresult,def=2" json:"eresult,omitempty"`
-	SteamidClan          *uint64  `protobuf:"fixed64,2,opt,name=steamid_clan" json:"steamid_clan,omitempty"`
-	OfficerCount         *int32   `protobuf:"varint,3,opt,name=officer_count" json:"officer_count,omitempty"`
+	SteamidClan          *uint64  `protobuf:"fixed64,2,opt,name=steamid_clan,json=steamidClan" json:"steamid_clan,omitempty"`
+	OfficerCount         *int32   `protobuf:"varint,3,opt,name=officer_count,json=officerCount" json:"officer_count,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -10292,7 +10393,7 @@ func (m *CMsgClientAMGetClanOfficersResponse) Reset()         { *m = CMsgClientA
 func (m *CMsgClientAMGetClanOfficersResponse) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientAMGetClanOfficersResponse) ProtoMessage()    {}
 func (*CMsgClientAMGetClanOfficersResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{121}
+	return fileDescriptor_97f09b42bb99641f, []int{122}
 }
 
 func (m *CMsgClientAMGetClanOfficersResponse) XXX_Unmarshal(b []byte) error {
@@ -10337,7 +10438,7 @@ func (m *CMsgClientAMGetClanOfficersResponse) GetOfficerCount() int32 {
 }
 
 type CMsgClientAMGetPersonaNameHistory struct {
-	IdCount              *int32                                          `protobuf:"varint,1,opt,name=id_count" json:"id_count,omitempty"`
+	IdCount              *int32                                          `protobuf:"varint,1,opt,name=id_count,json=idCount" json:"id_count,omitempty"`
 	Ids                  []*CMsgClientAMGetPersonaNameHistory_IdInstance `protobuf:"bytes,2,rep,name=Ids" json:"Ids,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                                        `json:"-"`
 	XXX_unrecognized     []byte                                          `json:"-"`
@@ -10348,7 +10449,7 @@ func (m *CMsgClientAMGetPersonaNameHistory) Reset()         { *m = CMsgClientAMG
 func (m *CMsgClientAMGetPersonaNameHistory) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientAMGetPersonaNameHistory) ProtoMessage()    {}
 func (*CMsgClientAMGetPersonaNameHistory) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{122}
+	return fileDescriptor_97f09b42bb99641f, []int{123}
 }
 
 func (m *CMsgClientAMGetPersonaNameHistory) XXX_Unmarshal(b []byte) error {
@@ -10398,7 +10499,7 @@ func (m *CMsgClientAMGetPersonaNameHistory_IdInstance) String() string {
 }
 func (*CMsgClientAMGetPersonaNameHistory_IdInstance) ProtoMessage() {}
 func (*CMsgClientAMGetPersonaNameHistory_IdInstance) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{122, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{123, 0}
 }
 
 func (m *CMsgClientAMGetPersonaNameHistory_IdInstance) XXX_Unmarshal(b []byte) error {
@@ -10436,10 +10537,12 @@ type CMsgClientAMGetPersonaNameHistoryResponse struct {
 func (m *CMsgClientAMGetPersonaNameHistoryResponse) Reset() {
 	*m = CMsgClientAMGetPersonaNameHistoryResponse{}
 }
-func (m *CMsgClientAMGetPersonaNameHistoryResponse) String() string { return proto.CompactTextString(m) }
-func (*CMsgClientAMGetPersonaNameHistoryResponse) ProtoMessage()    {}
+func (m *CMsgClientAMGetPersonaNameHistoryResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*CMsgClientAMGetPersonaNameHistoryResponse) ProtoMessage() {}
 func (*CMsgClientAMGetPersonaNameHistoryResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{123}
+	return fileDescriptor_97f09b42bb99641f, []int{124}
 }
 
 func (m *CMsgClientAMGetPersonaNameHistoryResponse) XXX_Unmarshal(b []byte) error {
@@ -10484,7 +10587,7 @@ func (m *CMsgClientAMGetPersonaNameHistoryResponse_NameTableInstance) String() s
 }
 func (*CMsgClientAMGetPersonaNameHistoryResponse_NameTableInstance) ProtoMessage() {}
 func (*CMsgClientAMGetPersonaNameHistoryResponse_NameTableInstance) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{123, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{124, 0}
 }
 
 func (m *CMsgClientAMGetPersonaNameHistoryResponse_NameTableInstance) XXX_Unmarshal(b []byte) error {
@@ -10529,7 +10632,7 @@ func (m *CMsgClientAMGetPersonaNameHistoryResponse_NameTableInstance) GetNames()
 }
 
 type CMsgClientAMGetPersonaNameHistoryResponse_NameTableInstance_NameInstance struct {
-	NameSince            *uint32  `protobuf:"fixed32,1,opt,name=name_since" json:"name_since,omitempty"`
+	NameSince            *uint32  `protobuf:"fixed32,1,opt,name=name_since,json=nameSince" json:"name_since,omitempty"`
 	Name                 *string  `protobuf:"bytes,2,opt,name=name" json:"name,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -10544,7 +10647,7 @@ func (m *CMsgClientAMGetPersonaNameHistoryResponse_NameTableInstance_NameInstanc
 }
 func (*CMsgClientAMGetPersonaNameHistoryResponse_NameTableInstance_NameInstance) ProtoMessage() {}
 func (*CMsgClientAMGetPersonaNameHistoryResponse_NameTableInstance_NameInstance) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{123, 0, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{124, 0, 0}
 }
 
 func (m *CMsgClientAMGetPersonaNameHistoryResponse_NameTableInstance_NameInstance) XXX_Unmarshal(b []byte) error {
@@ -10581,7 +10684,7 @@ func (m *CMsgClientAMGetPersonaNameHistoryResponse_NameTableInstance_NameInstanc
 
 type CMsgClientDeregisterWithServer struct {
 	Eservertype          *uint32  `protobuf:"varint,1,opt,name=eservertype" json:"eservertype,omitempty"`
-	AppId                *uint32  `protobuf:"varint,2,opt,name=app_id" json:"app_id,omitempty"`
+	AppId                *uint32  `protobuf:"varint,2,opt,name=app_id,json=appId" json:"app_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -10591,7 +10694,7 @@ func (m *CMsgClientDeregisterWithServer) Reset()         { *m = CMsgClientDeregi
 func (m *CMsgClientDeregisterWithServer) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientDeregisterWithServer) ProtoMessage()    {}
 func (*CMsgClientDeregisterWithServer) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{124}
+	return fileDescriptor_97f09b42bb99641f, []int{125}
 }
 
 func (m *CMsgClientDeregisterWithServer) XXX_Unmarshal(b []byte) error {
@@ -10627,13 +10730,13 @@ func (m *CMsgClientDeregisterWithServer) GetAppId() uint32 {
 }
 
 type CMsgClientClanState struct {
-	SteamidClan          *uint64                         `protobuf:"fixed64,1,opt,name=steamid_clan" json:"steamid_clan,omitempty"`
-	ClanAccountFlags     *uint32                         `protobuf:"varint,3,opt,name=clan_account_flags" json:"clan_account_flags,omitempty"`
-	NameInfo             *CMsgClientClanState_NameInfo   `protobuf:"bytes,4,opt,name=name_info" json:"name_info,omitempty"`
-	UserCounts           *CMsgClientClanState_UserCounts `protobuf:"bytes,5,opt,name=user_counts" json:"user_counts,omitempty"`
+	SteamidClan          *uint64                         `protobuf:"fixed64,1,opt,name=steamid_clan,json=steamidClan" json:"steamid_clan,omitempty"`
+	ClanAccountFlags     *uint32                         `protobuf:"varint,3,opt,name=clan_account_flags,json=clanAccountFlags" json:"clan_account_flags,omitempty"`
+	NameInfo             *CMsgClientClanState_NameInfo   `protobuf:"bytes,4,opt,name=name_info,json=nameInfo" json:"name_info,omitempty"`
+	UserCounts           *CMsgClientClanState_UserCounts `protobuf:"bytes,5,opt,name=user_counts,json=userCounts" json:"user_counts,omitempty"`
 	Events               []*CMsgClientClanState_Event    `protobuf:"bytes,6,rep,name=events" json:"events,omitempty"`
 	Announcements        []*CMsgClientClanState_Event    `protobuf:"bytes,7,rep,name=announcements" json:"announcements,omitempty"`
-	ChatRoomPrivate      *bool                           `protobuf:"varint,8,opt,name=chat_room_private" json:"chat_room_private,omitempty"`
+	ChatRoomPrivate      *bool                           `protobuf:"varint,8,opt,name=chat_room_private,json=chatRoomPrivate" json:"chat_room_private,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                        `json:"-"`
 	XXX_unrecognized     []byte                          `json:"-"`
 	XXX_sizecache        int32                           `json:"-"`
@@ -10643,7 +10746,7 @@ func (m *CMsgClientClanState) Reset()         { *m = CMsgClientClanState{} }
 func (m *CMsgClientClanState) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientClanState) ProtoMessage()    {}
 func (*CMsgClientClanState) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{125}
+	return fileDescriptor_97f09b42bb99641f, []int{126}
 }
 
 func (m *CMsgClientClanState) XXX_Unmarshal(b []byte) error {
@@ -10714,8 +10817,8 @@ func (m *CMsgClientClanState) GetChatRoomPrivate() bool {
 }
 
 type CMsgClientClanState_NameInfo struct {
-	ClanName             *string  `protobuf:"bytes,1,opt,name=clan_name" json:"clan_name,omitempty"`
-	ShaAvatar            []byte   `protobuf:"bytes,2,opt,name=sha_avatar" json:"sha_avatar,omitempty"`
+	ClanName             *string  `protobuf:"bytes,1,opt,name=clan_name,json=clanName" json:"clan_name,omitempty"`
+	ShaAvatar            []byte   `protobuf:"bytes,2,opt,name=sha_avatar,json=shaAvatar" json:"sha_avatar,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -10725,7 +10828,7 @@ func (m *CMsgClientClanState_NameInfo) Reset()         { *m = CMsgClientClanStat
 func (m *CMsgClientClanState_NameInfo) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientClanState_NameInfo) ProtoMessage()    {}
 func (*CMsgClientClanState_NameInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{125, 0}
+	return fileDescriptor_97f09b42bb99641f, []int{126, 0}
 }
 
 func (m *CMsgClientClanState_NameInfo) XXX_Unmarshal(b []byte) error {
@@ -10764,8 +10867,8 @@ type CMsgClientClanState_UserCounts struct {
 	Members              *uint32  `protobuf:"varint,1,opt,name=members" json:"members,omitempty"`
 	Online               *uint32  `protobuf:"varint,2,opt,name=online" json:"online,omitempty"`
 	Chatting             *uint32  `protobuf:"varint,3,opt,name=chatting" json:"chatting,omitempty"`
-	InGame               *uint32  `protobuf:"varint,4,opt,name=in_game" json:"in_game,omitempty"`
-	ChatRoomMembers      *uint32  `protobuf:"varint,5,opt,name=chat_room_members" json:"chat_room_members,omitempty"`
+	InGame               *uint32  `protobuf:"varint,4,opt,name=in_game,json=inGame" json:"in_game,omitempty"`
+	ChatRoomMembers      *uint32  `protobuf:"varint,5,opt,name=chat_room_members,json=chatRoomMembers" json:"chat_room_members,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -10775,7 +10878,7 @@ func (m *CMsgClientClanState_UserCounts) Reset()         { *m = CMsgClientClanSt
 func (m *CMsgClientClanState_UserCounts) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientClanState_UserCounts) ProtoMessage()    {}
 func (*CMsgClientClanState_UserCounts) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{125, 1}
+	return fileDescriptor_97f09b42bb99641f, []int{126, 1}
 }
 
 func (m *CMsgClientClanState_UserCounts) XXX_Unmarshal(b []byte) error {
@@ -10833,10 +10936,10 @@ func (m *CMsgClientClanState_UserCounts) GetChatRoomMembers() uint32 {
 
 type CMsgClientClanState_Event struct {
 	Gid                  *uint64  `protobuf:"fixed64,1,opt,name=gid" json:"gid,omitempty"`
-	EventTime            *uint32  `protobuf:"varint,2,opt,name=event_time" json:"event_time,omitempty"`
+	EventTime            *uint32  `protobuf:"varint,2,opt,name=event_time,json=eventTime" json:"event_time,omitempty"`
 	Headline             *string  `protobuf:"bytes,3,opt,name=headline" json:"headline,omitempty"`
-	GameId               *uint64  `protobuf:"fixed64,4,opt,name=game_id" json:"game_id,omitempty"`
-	JustPosted           *bool    `protobuf:"varint,5,opt,name=just_posted" json:"just_posted,omitempty"`
+	GameId               *uint64  `protobuf:"fixed64,4,opt,name=game_id,json=gameId" json:"game_id,omitempty"`
+	JustPosted           *bool    `protobuf:"varint,5,opt,name=just_posted,json=justPosted" json:"just_posted,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -10846,7 +10949,7 @@ func (m *CMsgClientClanState_Event) Reset()         { *m = CMsgClientClanState_E
 func (m *CMsgClientClanState_Event) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientClanState_Event) ProtoMessage()    {}
 func (*CMsgClientClanState_Event) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{125, 2}
+	return fileDescriptor_97f09b42bb99641f, []int{126, 2}
 }
 
 func (m *CMsgClientClanState_Event) XXX_Unmarshal(b []byte) error {
@@ -10903,13 +11006,13 @@ func (m *CMsgClientClanState_Event) GetJustPosted() bool {
 }
 
 type CMsgClientUnsignedInstallScript struct {
-	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id" json:"app_id,omitempty"`
-	FileName             *string  `protobuf:"bytes,2,opt,name=file_name" json:"file_name,omitempty"`
-	FileSize             *uint32  `protobuf:"varint,3,opt,name=file_size" json:"file_size,omitempty"`
-	SignatureBroken      *bool    `protobuf:"varint,4,opt,name=signature_broken" json:"signature_broken,omitempty"`
-	DepotId              *uint32  `protobuf:"varint,5,opt,name=depot_id" json:"depot_id,omitempty"`
-	ManifestId           *uint64  `protobuf:"varint,6,opt,name=manifest_id" json:"manifest_id,omitempty"`
-	FileFlags            *uint32  `protobuf:"varint,7,opt,name=file_flags" json:"file_flags,omitempty"`
+	AppId                *uint32  `protobuf:"varint,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	FileName             *string  `protobuf:"bytes,2,opt,name=file_name,json=fileName" json:"file_name,omitempty"`
+	FileSize             *uint32  `protobuf:"varint,3,opt,name=file_size,json=fileSize" json:"file_size,omitempty"`
+	SignatureBroken      *bool    `protobuf:"varint,4,opt,name=signature_broken,json=signatureBroken" json:"signature_broken,omitempty"`
+	DepotId              *uint32  `protobuf:"varint,5,opt,name=depot_id,json=depotId" json:"depot_id,omitempty"`
+	ManifestId           *uint64  `protobuf:"varint,6,opt,name=manifest_id,json=manifestId" json:"manifest_id,omitempty"`
+	FileFlags            *uint32  `protobuf:"varint,7,opt,name=file_flags,json=fileFlags" json:"file_flags,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -10919,7 +11022,7 @@ func (m *CMsgClientUnsignedInstallScript) Reset()         { *m = CMsgClientUnsig
 func (m *CMsgClientUnsignedInstallScript) String() string { return proto.CompactTextString(m) }
 func (*CMsgClientUnsignedInstallScript) ProtoMessage()    {}
 func (*CMsgClientUnsignedInstallScript) Descriptor() ([]byte, []int) {
-	return fileDescriptor_97f09b42bb99641f, []int{126}
+	return fileDescriptor_97f09b42bb99641f, []int{127}
 }
 
 func (m *CMsgClientUnsignedInstallScript) XXX_Unmarshal(b []byte) error {
@@ -11000,6 +11103,8 @@ func init() {
 	proto.RegisterType((*CMsgClientP2PConnectionFailInfo)(nil), "CMsgClientP2PConnectionFailInfo")
 	proto.RegisterType((*CMsgClientNetworkingCertRequest)(nil), "CMsgClientNetworkingCertRequest")
 	proto.RegisterType((*CMsgClientNetworkingCertReply)(nil), "CMsgClientNetworkingCertReply")
+	proto.RegisterType((*CMsgClientNetworkingMobileCertRequest)(nil), "CMsgClientNetworkingMobileCertRequest")
+	proto.RegisterType((*CMsgClientNetworkingMobileCertReply)(nil), "CMsgClientNetworkingMobileCertReply")
 	proto.RegisterType((*CMsgClientGetAppOwnershipTicket)(nil), "CMsgClientGetAppOwnershipTicket")
 	proto.RegisterType((*CMsgClientGetAppOwnershipTicketResponse)(nil), "CMsgClientGetAppOwnershipTicketResponse")
 	proto.RegisterType((*CMsgClientSessionToken)(nil), "CMsgClientSessionToken")
@@ -11031,8 +11136,6 @@ func init() {
 	proto.RegisterType((*CMsgClientAppMinutesPlayedData)(nil), "CMsgClientAppMinutesPlayedData")
 	proto.RegisterType((*CMsgClientAppMinutesPlayedData_AppMinutesPlayedData)(nil), "CMsgClientAppMinutesPlayedData.AppMinutesPlayedData")
 	proto.RegisterType((*CMsgClientIsLimitedAccount)(nil), "CMsgClientIsLimitedAccount")
-	proto.RegisterType((*CMsgClientServerList)(nil), "CMsgClientServerList")
-	proto.RegisterType((*CMsgClientServerList_Server)(nil), "CMsgClientServerList.Server")
 	proto.RegisterType((*CMsgClientRequestedClientStats)(nil), "CMsgClientRequestedClientStats")
 	proto.RegisterType((*CMsgClientRequestedClientStats_StatsToSend)(nil), "CMsgClientRequestedClientStats.StatsToSend")
 	proto.RegisterType((*CMsgClientStat2)(nil), "CMsgClientStat2")
@@ -11169,436 +11272,592 @@ func init() {
 func init() { proto.RegisterFile("steammessages_clientserver.proto", fileDescriptor_97f09b42bb99641f) }
 
 var fileDescriptor_97f09b42bb99641f = []byte{
-	// 6884 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x7c, 0x4b, 0x8c, 0x1c, 0xc9,
-	0x75, 0xe0, 0xd4, 0xbf, 0xfa, 0x75, 0x57, 0x7f, 0xaa, 0xd9, 0x64, 0xb1, 0xf8, 0x9d, 0xd4, 0x68,
-	0x86, 0x9a, 0xd1, 0xd4, 0x90, 0x2d, 0xce, 0x50, 0x1c, 0x0d, 0x20, 0x35, 0xbb, 0xc9, 0x1e, 0x4a,
-	0x6c, 0x0e, 0x77, 0x9a, 0x1c, 0x2d, 0x84, 0x1d, 0xa5, 0xa2, 0x33, 0xa3, 0xaa, 0x52, 0x9d, 0x15,
-	0x99, 0x93, 0x11, 0xd5, 0xcd, 0x96, 0xf6, 0xa0, 0x05, 0x16, 0x82, 0xb0, 0x58, 0x60, 0xb5, 0xb7,
-	0x95, 0xd6, 0x80, 0x05, 0x03, 0xb2, 0x00, 0x4b, 0xf0, 0x6d, 0x04, 0xd9, 0x96, 0x21, 0xd9, 0x32,
-	0x60, 0xc0, 0x17, 0xc3, 0x06, 0x7c, 0x34, 0xe4, 0x8b, 0x00, 0x5f, 0x7c, 0xf1, 0xc9, 0x17, 0x03,
-	0x46, 0xbc, 0x88, 0xc8, 0x8c, 0xcc, 0xaa, 0xea, 0x6e, 0x6a, 0xc6, 0xba, 0x90, 0xd9, 0xf1, 0x79,
-	0xf1, 0xe2, 0xfd, 0xe2, 0xbd, 0x17, 0x2f, 0x0a, 0xae, 0x72, 0x41, 0xc9, 0x68, 0x44, 0x39, 0x27,
-	0x03, 0xca, 0x5d, 0x2f, 0x0c, 0x28, 0x13, 0x9c, 0x26, 0x07, 0x34, 0xe9, 0xc5, 0x49, 0x24, 0xa2,
-	0x6e, 0x27, 0x3f, 0x62, 0x8f, 0x70, 0xaa, 0x7b, 0xba, 0x94, 0x79, 0xc9, 0x51, 0x2c, 0xa8, 0xef,
-	0x92, 0x38, 0x76, 0x45, 0xe0, 0xed, 0x53, 0xa1, 0xfa, 0x9c, 0x6d, 0xb8, 0xbc, 0xb9, 0xc3, 0x07,
-	0x9b, 0x08, 0xef, 0xc9, 0xd6, 0xee, 0xa3, 0xf5, 0x47, 0xbb, 0x94, 0xf3, 0x20, 0x62, 0xbb, 0x82,
-	0x24, 0x82, 0xfa, 0xed, 0xb3, 0xb0, 0x88, 0x90, 0x03, 0xdf, 0x4d, 0xe8, 0x28, 0x12, 0xb4, 0x53,
-	0xba, 0x5a, 0xba, 0x56, 0x6f, 0xb7, 0xa0, 0x46, 0xe2, 0x38, 0xf0, 0x3b, 0xe5, 0xab, 0xa5, 0x6b,
-	0x35, 0xe7, 0x7f, 0x94, 0xe1, 0xe2, 0x0c, 0x48, 0x77, 0x99, 0x7f, 0x6a, 0x38, 0xed, 0x2e, 0xb4,
-	0xb9, 0x9a, 0xe6, 0x86, 0x94, 0x0d, 0xc4, 0xd0, 0xe5, 0xd4, 0xeb, 0x54, 0xb0, 0x6f, 0x0d, 0x5a,
-	0xa6, 0x8f, 0x26, 0x49, 0x94, 0x74, 0xaa, 0xd8, 0xbc, 0x04, 0x0d, 0x46, 0x84, 0x38, 0x8a, 0x69,
-	0xa7, 0x86, 0x0d, 0x6d, 0x80, 0xbd, 0x23, 0x41, 0xb9, 0x9b, 0x50, 0xef, 0xa0, 0x53, 0xcf, 0xb7,
-	0x71, 0xca, 0x44, 0xa7, 0x81, 0x6d, 0x1d, 0x58, 0xce, 0xda, 0xdc, 0x84, 0x86, 0xe4, 0xa8, 0xd3,
-	0xcc, 0xf7, 0x48, 0x08, 0xba, 0x67, 0xce, 0xe0, 0x27, 0x82, 0x11, 0x75, 0x45, 0xe4, 0x7a, 0x11,
-	0x63, 0xd4, 0x13, 0xee, 0x88, 0x77, 0x00, 0x69, 0xf0, 0x75, 0x70, 0x32, 0x12, 0xbc, 0x4b, 0x07,
-	0x01, 0x17, 0x34, 0xd9, 0x18, 0x8b, 0xe1, 0x63, 0x24, 0xf9, 0x97, 0x03, 0x31, 0xdc, 0xdc, 0x91,
-	0xb0, 0x91, 0xf6, 0x5e, 0x14, 0xba, 0x07, 0x34, 0x91, 0xdb, 0x41, 0x52, 0xb4, 0xda, 0x8b, 0x50,
-	0x57, 0xcc, 0xc1, 0xfd, 0x2e, 0xc8, 0xb5, 0x14, 0xa3, 0xdd, 0x80, 0x71, 0x41, 0x98, 0x47, 0xdd,
-	0xc0, 0xc7, 0x4d, 0x57, 0x9d, 0xbf, 0x2b, 0xd9, 0xf4, 0x56, 0x0b, 0xc8, 0xa5, 0x36, 0xa3, 0x51,
-	0x1c, 0x52, 0x41, 0xdb, 0xcb, 0xd0, 0x44, 0x7a, 0xcb, 0x29, 0x8a, 0xd2, 0x4b, 0xd0, 0x18, 0x90,
-	0x11, 0xc2, 0x28, 0x63, 0xc3, 0x22, 0xd4, 0x29, 0x17, 0x44, 0x50, 0x5c, 0xaf, 0xd5, 0xbe, 0x0c,
-	0x67, 0x29, 0x19, 0x23, 0xc9, 0x15, 0x95, 0x13, 0xca, 0xe3, 0x88, 0x71, 0x8a, 0x6b, 0xb6, 0xda,
-	0xe7, 0x61, 0x65, 0xeb, 0xee, 0xa3, 0x77, 0xef, 0x6e, 0x6e, 0x3c, 0xbe, 0xbb, 0xa5, 0xe5, 0x08,
-	0x49, 0xbe, 0x20, 0xc9, 0xab, 0xfe, 0x76, 0xbd, 0xc4, 0x43, 0x92, 0xb7, 0xda, 0xe7, 0x60, 0x49,
-	0xb7, 0x71, 0xfa, 0xc1, 0x98, 0x32, 0x8f, 0x22, 0xdd, 0x5b, 0x52, 0x14, 0xa2, 0x43, 0x46, 0x13,
-	0x37, 0x45, 0x50, 0x52, 0xbd, 0xee, 0x7c, 0xab, 0x04, 0xcb, 0xd9, 0x9e, 0x36, 0x77, 0x1e, 0x04,
-	0x5c, 0xb4, 0xcf, 0xc0, 0x82, 0x37, 0x72, 0x89, 0xef, 0x27, 0x94, 0x73, 0xca, 0x3b, 0xa5, 0xab,
-	0x95, 0x6b, 0x2d, 0xb9, 0x3b, 0x6f, 0xe4, 0xc6, 0x51, 0x22, 0x78, 0xa7, 0x8c, 0x2d, 0x97, 0xe1,
-	0xac, 0x37, 0x72, 0x0f, 0xe9, 0x1e, 0x8f, 0x70, 0xcd, 0x6c, 0x46, 0xe5, 0x6a, 0xe5, 0xda, 0x5c,
-	0xfb, 0x05, 0xb8, 0x18, 0xd3, 0xc4, 0x93, 0xd4, 0xf4, 0x69, 0x9f, 0x8c, 0x43, 0x21, 0x79, 0x98,
-	0x8e, 0x57, 0x5b, 0x74, 0x7e, 0xaf, 0x04, 0x17, 0x32, 0x14, 0x1e, 0xad, 0x3f, 0xda, 0x54, 0x4c,
-	0x0e, 0x22, 0x76, 0x9f, 0xf5, 0x23, 0x14, 0x41, 0x8d, 0xb4, 0xeb, 0x53, 0x2e, 0x34, 0x69, 0xcf,
-	0xc0, 0x42, 0xda, 0xcc, 0x13, 0x2f, 0xa3, 0xaf, 0x54, 0xb8, 0xc0, 0xd7, 0xf4, 0x5d, 0x81, 0x39,
-	0x8f, 0x30, 0x3f, 0xf0, 0x25, 0xc9, 0xab, 0x48, 0xb7, 0xf3, 0xb0, 0xe2, 0xa5, 0x2b, 0x98, 0xd9,
-	0x35, 0x9c, 0xdd, 0x06, 0x48, 0x28, 0xf3, 0xe9, 0x37, 0x0e, 0xa2, 0x31, 0x47, 0x92, 0x2e, 0x38,
-	0xbf, 0x2a, 0xc1, 0x95, 0x19, 0xe8, 0xdd, 0x23, 0x41, 0xf8, 0xd1, 0x51, 0xec, 0x42, 0x9b, 0xc6,
-	0xeb, 0xb1, 0x3b, 0xa9, 0x67, 0xd8, 0x97, 0xc7, 0x15, 0xa1, 0xd7, 0x0c, 0x74, 0x2f, 0x8c, 0x38,
-	0x75, 0x13, 0x4a, 0x78, 0xc4, 0x34, 0xa3, 0xd7, 0xa0, 0xa5, 0x5a, 0xb5, 0x59, 0x42, 0x3e, 0xcf,
-	0x39, 0x9b, 0xf6, 0x26, 0x1e, 0x52, 0x71, 0x18, 0x25, 0xfb, 0x01, 0x1b, 0x6c, 0xd2, 0x44, 0xbc,
-	0x2b, 0x25, 0x85, 0x0b, 0xc9, 0xdf, 0x7d, 0x7a, 0xe4, 0xfa, 0x44, 0x10, 0xc4, 0x74, 0xa1, 0x88,
-	0xa9, 0xf3, 0x1e, 0x5c, 0x9a, 0x0d, 0x24, 0x0e, 0x8f, 0xda, 0x0b, 0x50, 0xf5, 0x68, 0x22, 0x34,
-	0xa1, 0x91, 0xf6, 0xae, 0x84, 0x19, 0xf8, 0x16, 0xce, 0xc4, 0xe5, 0xc1, 0x80, 0x11, 0x31, 0x4e,
-	0xa8, 0x26, 0xf1, 0x0d, 0x1b, 0xb9, 0x6d, 0x2a, 0x36, 0xe2, 0xf8, 0x1d, 0x29, 0xac, 0x7c, 0x18,
-	0xc4, 0x4a, 0xcd, 0x2c, 0x54, 0x50, 0x6f, 0x9d, 0xf7, 0xe1, 0xa5, 0x13, 0xa6, 0xbc, 0xab, 0x15,
-	0xa9, 0xdd, 0x86, 0x06, 0x4d, 0x28, 0x1f, 0x87, 0x8a, 0x2d, 0xad, 0x37, 0x4b, 0xeb, 0x16, 0xb8,
-	0xf2, 0x34, 0x33, 0xe0, 0xbc, 0x04, 0x67, 0x33, 0xf0, 0xda, 0xa6, 0x3e, 0x8e, 0xf6, 0x29, 0x93,
-	0xb6, 0x53, 0xc8, 0x0f, 0x84, 0x55, 0x75, 0x76, 0x6c, 0xd9, 0xdd, 0x26, 0x23, 0xaa, 0xa5, 0x03,
-	0x07, 0xf3, 0xf6, 0x65, 0x68, 0x8f, 0xc8, 0x53, 0x17, 0x67, 0x70, 0x29, 0xfc, 0xfb, 0x94, 0xc6,
-	0x1a, 0x8d, 0xf2, 0x8d, 0xeb, 0xb8, 0x2e, 0xf6, 0xa1, 0x46, 0x2d, 0x38, 0x3f, 0xd4, 0xea, 0xb8,
-	0xbd, 0xbb, 0x8b, 0x07, 0xcd, 0xe3, 0xa3, 0x98, 0x4a, 0x96, 0x2a, 0x64, 0x5d, 0x3c, 0x7d, 0x34,
-	0x09, 0x24, 0x26, 0xfd, 0x90, 0x0c, 0xb8, 0xde, 0xc2, 0x39, 0x58, 0x52, 0xa6, 0x26, 0x36, 0x7a,
-	0x98, 0xa9, 0x00, 0x76, 0x48, 0xcd, 0xd5, 0x62, 0xb5, 0x0c, 0x4d, 0x6c, 0xf2, 0x83, 0x04, 0x19,
-	0x33, 0x27, 0x19, 0x83, 0x2d, 0xc6, 0x3a, 0xd6, 0xb1, 0xd5, 0xc0, 0xfc, 0x60, 0x4c, 0x93, 0x23,
-	0x05, 0x00, 0xa5, 0xcc, 0x79, 0x11, 0x56, 0x34, 0x9a, 0x82, 0x88, 0x31, 0x57, 0xdc, 0x5f, 0x81,
-	0xb9, 0x40, 0x1a, 0x76, 0x4f, 0x72, 0x56, 0xe2, 0xd8, 0x74, 0xbe, 0x69, 0xb6, 0xf3, 0x28, 0x24,
-	0x47, 0x34, 0x41, 0xeb, 0xf2, 0x29, 0x68, 0xc4, 0xf8, 0x97, 0x32, 0x2c, 0xf3, 0xeb, 0x9d, 0x5e,
-	0x71, 0x4c, 0x4f, 0x7d, 0x76, 0xdf, 0x82, 0xba, 0xfa, 0x9a, 0x30, 0xad, 0x55, 0xb9, 0x5a, 0x3c,
-	0xde, 0x0b, 0x03, 0xcf, 0x0d, 0x62, 0x4d, 0x82, 0x94, 0x37, 0x8a, 0x89, 0xdb, 0x06, 0xc9, 0x27,
-	0x9c, 0x26, 0x12, 0x4e, 0xc0, 0x06, 0x53, 0x6c, 0xf4, 0xc9, 0x80, 0x5e, 0x56, 0xd2, 0xb0, 0xbd,
-	0xbb, 0x15, 0x70, 0xad, 0x8e, 0x0f, 0x23, 0x11, 0x78, 0x53, 0x2c, 0xbe, 0xf3, 0xa3, 0x1a, 0xac,
-	0xe5, 0x25, 0x82, 0xe3, 0x16, 0xfc, 0xf6, 0x2d, 0x45, 0x62, 0xee, 0xe2, 0xee, 0x7d, 0xbd, 0xf9,
-	0xe7, 0x7b, 0x53, 0x47, 0xf7, 0xe4, 0xb7, 0x9e, 0x78, 0x16, 0x16, 0xf5, 0x99, 0x14, 0x71, 0x17,
-	0xcf, 0x5c, 0xc4, 0xb2, 0xfb, 0xf3, 0x2a, 0x80, 0x35, 0x6c, 0x15, 0xe6, 0x53, 0x6b, 0x33, 0xe0,
-	0x9a, 0x4a, 0x13, 0x07, 0xd0, 0xb3, 0x88, 0x49, 0x8e, 0xa1, 0x52, 0x4e, 0x9a, 0x19, 0x65, 0x50,
-	0x73, 0x53, 0x68, 0xf4, 0xa9, 0x48, 0x88, 0x1b, 0xb0, 0x7e, 0x84, 0x02, 0x32, 0x27, 0x71, 0x56,
-	0x12, 0x46, 0x04, 0x71, 0xf7, 0xc2, 0x68, 0x0f, 0xed, 0x10, 0x1e, 0x5a, 0x71, 0x12, 0x79, 0x94,
-	0x73, 0x89, 0xd2, 0x1c, 0x2e, 0x73, 0x09, 0xd6, 0xb8, 0x48, 0xa4, 0x9f, 0xc2, 0x06, 0x6e, 0x9c,
-	0x44, 0x07, 0x81, 0x4f, 0x13, 0xd9, 0x0d, 0xd8, 0xdd, 0x06, 0x40, 0x50, 0x4a, 0xd8, 0xe7, 0x8d,
-	0x00, 0xab, 0xe3, 0x2c, 0xf0, 0x3b, 0x0b, 0xc6, 0xee, 0x1d, 0x24, 0xee, 0x70, 0xe4, 0xbb, 0x07,
-	0x94, 0xf9, 0x51, 0xd2, 0x69, 0x19, 0xb9, 0xd6, 0xcd, 0xa3, 0xc8, 0xa7, 0x61, 0x67, 0x11, 0x5b,
-	0x2f, 0x41, 0x3b, 0x24, 0x63, 0xe6, 0x0d, 0xdd, 0x28, 0x46, 0xcb, 0x8a, 0x54, 0x5d, 0x52, 0xd6,
-	0xe1, 0x7a, 0xfb, 0x13, 0x70, 0x2e, 0x4e, 0x82, 0x11, 0x49, 0x8e, 0xa4, 0xc3, 0x21, 0x92, 0x28,
-	0x0c, 0x69, 0xa2, 0xc6, 0x2c, 0x4b, 0xaf, 0xe3, 0xcd, 0xf2, 0xab, 0x37, 0xda, 0x2f, 0xc1, 0x15,
-	0x33, 0x48, 0x91, 0xdd, 0x1a, 0xca, 0x69, 0x12, 0x90, 0xb0, 0xb3, 0x82, 0x8b, 0xbd, 0x04, 0x17,
-	0x45, 0x24, 0x48, 0x38, 0x39, 0xcc, 0x8b, 0xc6, 0x4c, 0x74, 0xda, 0x66, 0xd9, 0x57, 0xe0, 0xaa,
-	0x1a, 0xc8, 0x22, 0x36, 0x6b, 0xf0, 0xaa, 0x19, 0xfc, 0x22, 0x5c, 0xb0, 0x3a, 0xa5, 0x25, 0xe6,
-	0xc3, 0x28, 0x76, 0xfb, 0x41, 0x88, 0xcc, 0x3e, 0x23, 0xb9, 0x2f, 0xc7, 0x75, 0xa0, 0xa5, 0xb7,
-	0xca, 0xa3, 0x71, 0xe2, 0xd1, 0xce, 0x9a, 0x86, 0xe0, 0xdc, 0x86, 0x96, 0x92, 0xea, 0x8d, 0x58,
-	0x12, 0x7d, 0x9a, 0xfb, 0x32, 0xe9, 0x35, 0xa0, 0x10, 0x39, 0xf7, 0x01, 0xb4, 0x42, 0x50, 0x76,
-	0x34, 0x65, 0xde, 0x19, 0x58, 0xa0, 0x3e, 0x65, 0x47, 0xe6, 0x68, 0x52, 0x7e, 0xe6, 0x2a, 0xcc,
-	0x63, 0x23, 0x17, 0x49, 0xc0, 0x06, 0x28, 0x76, 0x73, 0xce, 0x4d, 0x03, 0xea, 0x4b, 0x81, 0xb7,
-	0x7f, 0x5a, 0x50, 0xce, 0x4f, 0x4b, 0xd0, 0xce, 0xf4, 0x46, 0x3a, 0x61, 0x68, 0x5a, 0x56, 0x61,
-	0x5e, 0x9b, 0xda, 0x90, 0xf6, 0xb5, 0xb9, 0x97, 0xce, 0x5f, 0x48, 0xb8, 0x74, 0x36, 0xf1, 0x9c,
-	0x93, 0x9e, 0x91, 0x56, 0xf3, 0x17, 0xe0, 0x62, 0xb1, 0xc7, 0xed, 0x27, 0xd1, 0x48, 0xd9, 0xd9,
-	0x44, 0x2b, 0xc6, 0x55, 0x68, 0xa8, 0xb3, 0x81, 0x77, 0xaa, 0xa8, 0xb2, 0x4b, 0xa8, 0xb2, 0x99,
-	0x93, 0x29, 0x95, 0x4c, 0x19, 0x68, 0xde, 0xa9, 0xa1, 0x63, 0xd4, 0x81, 0x65, 0x7d, 0xfc, 0x66,
-	0x7e, 0x58, 0x5d, 0x1f, 0xa1, 0x6b, 0x93, 0x78, 0x6f, 0x78, 0xfb, 0x05, 0x6f, 0x4e, 0x79, 0x5c,
-	0x16, 0xdc, 0xf2, 0x4c, 0xb8, 0xea, 0x68, 0xfe, 0xc7, 0x8a, 0x0d, 0xf8, 0x41, 0xe0, 0x51, 0xc6,
-	0x29, 0xd2, 0xa4, 0x70, 0xfc, 0xd5, 0xe4, 0xf1, 0x77, 0x1d, 0x9a, 0xa1, 0x1a, 0xa2, 0x20, 0xcf,
-	0xaf, 0x5f, 0xee, 0x4d, 0x9d, 0xdd, 0xd3, 0xdf, 0xdd, 0x7f, 0x2f, 0x43, 0x43, 0x7f, 0xa3, 0x0e,
-	0x13, 0x6f, 0x5f, 0x62, 0x61, 0xce, 0x63, 0xc9, 0x26, 0xf4, 0xd1, 0xbd, 0x84, 0x12, 0x41, 0x95,
-	0x9c, 0x34, 0xa4, 0xab, 0x85, 0xad, 0x8c, 0x3e, 0x15, 0xae, 0xd6, 0x7b, 0x44, 0xb8, 0x21, 0x27,
-	0x8c, 0x02, 0x36, 0x16, 0xd4, 0x0d, 0x83, 0x51, 0x20, 0x74, 0x5c, 0x91, 0xb6, 0x72, 0x77, 0xcc,
-	0xa9, 0xaf, 0x83, 0x8b, 0xb3, 0xb0, 0x18, 0x93, 0xa3, 0x91, 0xb4, 0x80, 0x23, 0x2a, 0x86, 0x91,
-	0xaf, 0xbd, 0xdd, 0xf4, 0x04, 0x6c, 0x18, 0x3b, 0x12, 0x8f, 0x13, 0x6f, 0x48, 0x38, 0x55, 0xda,
-	0x82, 0xfa, 0xeb, 0x6b, 0x17, 0x48, 0xc2, 0xd6, 0x9b, 0x56, 0xaa, 0x3c, 0x67, 0x1c, 0x63, 0x41,
-	0x93, 0x24, 0x10, 0x91, 0x19, 0x0d, 0x26, 0xf0, 0xf1, 0x86, 0x84, 0x0d, 0xa8, 0xcb, 0xc6, 0xa3,
-	0x3d, 0x9a, 0xa0, 0xe1, 0xa9, 0x4d, 0x31, 0x3c, 0x67, 0x61, 0x31, 0x60, 0x81, 0x08, 0x48, 0xe8,
-	0xc6, 0x34, 0x09, 0x22, 0x1f, 0x2d, 0x0f, 0x7a, 0xee, 0xa6, 0x1d, 0x69, 0x30, 0x66, 0x81, 0x40,
-	0xf3, 0x83, 0x53, 0x12, 0xca, 0xe8, 0x61, 0x36, 0x65, 0xc9, 0x4c, 0x31, 0xed, 0xd9, 0x94, 0x65,
-	0xe4, 0xef, 0x7f, 0xcf, 0xb1, 0xf7, 0xce, 0xee, 0x2e, 0x15, 0xbb, 0x5e, 0x94, 0xd0, 0xa2, 0x63,
-	0x24, 0x61, 0x87, 0x94, 0xf8, 0x34, 0xd9, 0x8b, 0x48, 0xe2, 0xbb, 0x69, 0x90, 0xd7, 0x82, 0x1a,
-	0x97, 0x13, 0x74, 0x5c, 0xb7, 0x04, 0x0d, 0x9f, 0x0a, 0x12, 0x84, 0x5c, 0x3b, 0x6b, 0x17, 0x60,
-	0x75, 0x1c, 0x87, 0x11, 0xf1, 0x5d, 0x1c, 0x66, 0x08, 0x8d, 0x0c, 0x70, 0xfe, 0xa0, 0x64, 0x7b,
-	0x7e, 0xd6, 0xf2, 0xb3, 0x9c, 0x2c, 0x94, 0xb2, 0x2b, 0x70, 0xce, 0x46, 0x85, 0x6a, 0x86, 0x48,
-	0x33, 0x56, 0x4e, 0x83, 0x4b, 0x5c, 0x4c, 0x51, 0x5a, 0xb9, 0x99, 0xcd, 0xf6, 0x45, 0x38, 0x33,
-	0x08, 0xa3, 0x3d, 0x12, 0xba, 0x09, 0x61, 0xfb, 0x6e, 0x9c, 0xd0, 0x83, 0x40, 0xfa, 0xe3, 0x4a,
-	0x44, 0xe4, 0x91, 0x63, 0xf5, 0x32, 0x7a, 0xa8, 0x91, 0xdc, 0x81, 0xd5, 0x22, 0x8e, 0x4f, 0xb6,
-	0x37, 0x4f, 0x4d, 0xa0, 0x45, 0xa8, 0x8f, 0x07, 0x9e, 0x71, 0x76, 0xeb, 0xce, 0x0d, 0xdb, 0xb3,
-	0x4b, 0xc1, 0x1d, 0xb7, 0x61, 0xe7, 0x47, 0xa5, 0xc2, 0x9c, 0x7b, 0x01, 0xf3, 0xdf, 0x49, 0x36,
-	0x51, 0x27, 0x1e, 0xdc, 0x99, 0x40, 0xa5, 0x40, 0x20, 0x1e, 0x25, 0xa9, 0x80, 0x2b, 0x9c, 0xae,
-	0x42, 0xc7, 0x1e, 0xe0, 0x07, 0x5c, 0xfa, 0x0e, 0x4a, 0x7c, 0x15, 0x1f, 0x2f, 0xc0, 0xaa, 0x52,
-	0x39, 0x37, 0xe8, 0xbb, 0x2c, 0x12, 0x6e, 0x3f, 0x1a, 0x33, 0x15, 0xb0, 0x36, 0xd1, 0xf2, 0x59,
-	0xd3, 0x19, 0x19, 0xa9, 0x63, 0x7c, 0xce, 0xf9, 0x87, 0x12, 0x7c, 0xe2, 0x18, 0x4c, 0x8f, 0x65,
-	0xeb, 0x2c, 0x02, 0x1e, 0xc3, 0x6e, 0x85, 0xab, 0x33, 0x7b, 0xbb, 0x55, 0x05, 0x5c, 0x1e, 0xbd,
-	0xb3, 0x77, 0x5c, 0x33, 0x83, 0xa6, 0xed, 0x0b, 0x1d, 0x56, 0xe7, 0xf7, 0x4b, 0x70, 0x3e, 0xb7,
-	0xaf, 0x6d, 0x2a, 0x1e, 0xdc, 0xb9, 0xcb, 0x44, 0x12, 0x50, 0x5e, 0xa0, 0x7f, 0x6d, 0xe6, 0x4e,
-	0x56, 0x61, 0x3e, 0x41, 0xd5, 0xe7, 0x82, 0x24, 0x06, 0xfb, 0x15, 0x98, 0x53, 0x8d, 0x54, 0xd3,
-	0x77, 0x92, 0x3d, 0xd2, 0xd7, 0xd1, 0x67, 0x89, 0xb6, 0x5c, 0xe6, 0x3c, 0x93, 0x26, 0xbc, 0x7e,
-	0xb5, 0x72, 0xad, 0xee, 0xfc, 0x5b, 0x09, 0x9e, 0x9f, 0x89, 0xe1, 0x47, 0x53, 0xa7, 0xdb, 0xd0,
-	0xa0, 0x0a, 0x0e, 0xc6, 0xdf, 0xf3, 0xeb, 0xd7, 0x7a, 0x27, 0xae, 0xd4, 0x93, 0x7f, 0x1f, 0x75,
-	0x3d, 0xa8, 0xe1, 0x47, 0x2e, 0x92, 0x1d, 0x73, 0x9a, 0xe8, 0x53, 0x78, 0x15, 0xe6, 0x2d, 0xa5,
-	0x3b, 0xa5, 0x49, 0xc9, 0x34, 0x0a, 0x83, 0x3f, 0xe7, 0x17, 0x25, 0x3b, 0xf3, 0xb5, 0x11, 0xc7,
-	0x3b, 0xca, 0xd4, 0x2b, 0xff, 0x75, 0x8b, 0x08, 0xd2, 0x7e, 0x00, 0x8b, 0xc6, 0xfe, 0xe7, 0xbc,
-	0xe4, 0x9b, 0xbd, 0xe3, 0x27, 0xf6, 0xa6, 0x35, 0x76, 0xdf, 0x81, 0x33, 0x53, 0x57, 0x29, 0xea,
-	0xe1, 0x12, 0x34, 0xfa, 0x51, 0x42, 0xe5, 0x91, 0x5f, 0x4e, 0x05, 0x43, 0x3a, 0x06, 0xe2, 0x30,
-	0x72, 0x0f, 0x29, 0xdd, 0x57, 0x87, 0x56, 0xcd, 0xf9, 0xa3, 0x12, 0x74, 0x33, 0x44, 0xee, 0xf3,
-	0x07, 0xf2, 0xe8, 0xa2, 0xfe, 0x86, 0x87, 0x6c, 0x90, 0xca, 0xb8, 0x17, 0x70, 0x75, 0xa0, 0x51,
-	0xdf, 0x25, 0xaa, 0x59, 0x85, 0x42, 0xd2, 0xaa, 0xc9, 0x4e, 0x2f, 0x1a, 0x8d, 0xa4, 0x5d, 0x3f,
-	0x72, 0xf7, 0x08, 0x63, 0xfa, 0xa4, 0x6c, 0xca, 0x40, 0x1f, 0xa7, 0x46, 0xde, 0xbe, 0x35, 0x53,
-	0xd9, 0xc3, 0xd7, 0xe1, 0xd5, 0x29, 0x60, 0x5d, 0x12, 0x86, 0xd1, 0x21, 0xf5, 0x65, 0x54, 0x19,
-	0xb0, 0x83, 0x40, 0x50, 0xb7, 0x9f, 0x04, 0x94, 0xf9, 0x8a, 0xfc, 0x4d, 0xe7, 0x7f, 0x97, 0xe0,
-	0x8c, 0x1d, 0xc4, 0x4a, 0x97, 0x06, 0x3d, 0x82, 0x57, 0xa1, 0xa1, 0x1c, 0x1c, 0x13, 0x80, 0x5d,
-	0xec, 0x4d, 0x1b, 0xd7, 0x53, 0x9f, 0xdd, 0xbb, 0x50, 0x57, 0x5f, 0x18, 0x61, 0xe0, 0x97, 0xd2,
-	0xc7, 0x92, 0x09, 0x12, 0x74, 0x63, 0x1a, 0x3e, 0x65, 0xe3, 0x30, 0x98, 0x50, 0x1e, 0xca, 0x8f,
-	0x72, 0xdc, 0xd7, 0x49, 0x07, 0xea, 0xeb, 0x55, 0x05, 0x11, 0xbc, 0x7d, 0x47, 0x0a, 0x1f, 0x11,
-	0x18, 0x28, 0x73, 0xa9, 0x66, 0x0a, 0xbd, 0x57, 0x7a, 0xc7, 0xcf, 0xeb, 0xe1, 0xbf, 0x8f, 0xa3,
-	0x5d, 0xca, 0xfc, 0xee, 0x06, 0xcc, 0x5b, 0x7f, 0x4a, 0x54, 0x74, 0xec, 0x24, 0x21, 0x6b, 0x94,
-	0x31, 0xe0, 0x20, 0xc2, 0x25, 0x83, 0x41, 0x42, 0x07, 0xd2, 0x78, 0x5a, 0x56, 0xb7, 0xe5, 0xfc,
-	0xb2, 0x04, 0x4b, 0x16, 0x41, 0x04, 0x11, 0xd2, 0x63, 0x9a, 0xc7, 0x29, 0x4a, 0xc2, 0x35, 0x62,
-	0x17, 0x7a, 0x85, 0x61, 0x88, 0xc9, 0x16, 0x0e, 0xe9, 0x7e, 0x13, 0x20, 0xfb, 0x6b, 0x3a, 0x1e,
-	0xcb, 0xd0, 0x0c, 0x43, 0xf7, 0x80, 0x84, 0x63, 0x15, 0xd2, 0x55, 0xd0, 0x81, 0x95, 0x27, 0x7f,
-	0xd4, 0x77, 0x7d, 0x72, 0xa4, 0x1d, 0xd0, 0x25, 0x68, 0x78, 0x34, 0x0c, 0x4d, 0x22, 0x12, 0xe7,
-	0xf9, 0x34, 0x8e, 0x84, 0x51, 0xad, 0x96, 0x25, 0xd1, 0xca, 0xcd, 0xfc, 0x7f, 0x25, 0x3b, 0x3f,
-	0xb2, 0xb3, 0x23, 0x4f, 0xaf, 0x77, 0x89, 0xa0, 0x28, 0x43, 0x8f, 0xa2, 0x30, 0xf0, 0x8e, 0xde,
-	0x61, 0xaa, 0x73, 0x42, 0x1b, 0xba, 0xd0, 0xa6, 0x8c, 0xec, 0x85, 0xd4, 0x4d, 0x88, 0x71, 0xcf,
-	0xb8, 0x16, 0xd3, 0x0b, 0xb0, 0xca, 0xa9, 0x17, 0x31, 0x9f, 0x4b, 0xcf, 0x25, 0xcd, 0x31, 0x29,
-	0x03, 0xf0, 0x02, 0x5c, 0x1c, 0x05, 0x61, 0x18, 0xd8, 0x23, 0xd0, 0x26, 0x8e, 0xe3, 0x34, 0xfd,
-	0x56, 0x73, 0xfe, 0xb4, 0x04, 0x9d, 0x1c, 0x6a, 0xfa, 0xd0, 0x89, 0xf6, 0xf6, 0x8e, 0x26, 0x70,
-	0x59, 0x85, 0xf9, 0x11, 0x79, 0xea, 0x8e, 0xa8, 0x74, 0xc1, 0xb8, 0xd6, 0xce, 0x36, 0x40, 0x28,
-	0x47, 0xdb, 0xe7, 0xe0, 0x2a, 0xcc, 0xab, 0x36, 0xe5, 0x10, 0xa6, 0x59, 0x6a, 0x43, 0xb8, 0x9a,
-	0x91, 0xd5, 0x2c, 0xd4, 0xaf, 0x1b, 0x5a, 0x8e, 0xa8, 0x20, 0x98, 0xf5, 0x6a, 0x98, 0x14, 0x70,
-	0x4c, 0x13, 0x1e, 0x31, 0x82, 0x27, 0x8b, 0x8b, 0xfe, 0x9e, 0x4e, 0xa3, 0x7d, 0x15, 0xae, 0xce,
-	0xc2, 0x3d, 0xb5, 0xdd, 0x53, 0x1c, 0x8e, 0xd4, 0xa4, 0x22, 0x8e, 0x3a, 0x12, 0xb7, 0x6c, 0x7c,
-	0xc5, 0x78, 0x10, 0xef, 0xd9, 0x79, 0xa7, 0x9d, 0x9d, 0xdd, 0x2f, 0x46, 0x01, 0x9b, 0x4e, 0x99,
-	0x59, 0x50, 0xcf, 0xc0, 0x82, 0x8d, 0xbd, 0x8e, 0xb2, 0xfe, 0xb6, 0x6c, 0x2b, 0x9f, 0x0d, 0xf8,
-	0x99, 0xd1, 0xbe, 0x0a, 0x1d, 0x6f, 0x48, 0x84, 0x9b, 0x44, 0xd1, 0x48, 0x1e, 0x42, 0x34, 0xc9,
-	0x72, 0xd6, 0x29, 0x2f, 0x6c, 0xa6, 0x55, 0xa7, 0x30, 0xad, 0x36, 0x8d, 0x69, 0x75, 0x63, 0x7b,
-	0xd3, 0x75, 0x15, 0xe9, 0x1b, 0xb8, 0xae, 0xcd, 0x28, 0x95, 0x4b, 0xb8, 0x05, 0x0d, 0xb3, 0xc6,
-	0x1c, 0xea, 0xe3, 0x8b, 0xbd, 0xe3, 0xf7, 0xd8, 0xdb, 0xc1, 0xe1, 0xdd, 0x3b, 0x50, 0x57, 0x5f,
-	0xd3, 0xe3, 0xcd, 0x1c, 0xfd, 0xca, 0x18, 0x3b, 0xd8, 0x8b, 0xab, 0x9c, 0xd0, 0x06, 0x9c, 0xcb,
-	0x2d, 0xf6, 0x80, 0x92, 0x03, 0xfa, 0x4c, 0xac, 0x72, 0xde, 0xb7, 0xd3, 0x9e, 0x39, 0x10, 0x1f,
-	0x8b, 0x2c, 0xfd, 0x6b, 0xce, 0x17, 0xda, 0xd9, 0xc1, 0xf3, 0x5f, 0xce, 0xc1, 0x43, 0xa0, 0x08,
-	0xf9, 0x12, 0xac, 0xb1, 0xf1, 0x08, 0x81, 0x06, 0x78, 0x09, 0xa3, 0xed, 0x6c, 0x76, 0xb8, 0xe7,
-	0x6d, 0x50, 0x4e, 0x95, 0x94, 0x76, 0xad, 0x43, 0xa3, 0x1f, 0x84, 0x42, 0xf2, 0xa3, 0x3e, 0x91,
-	0xdb, 0x2a, 0xac, 0xdf, 0xbb, 0x87, 0x23, 0xbb, 0x0f, 0xa1, 0xae, 0xbe, 0xda, 0xf3, 0x50, 0xd9,
-	0xa7, 0x47, 0x88, 0xcd, 0x9c, 0x74, 0x2d, 0x32, 0xb3, 0x38, 0x87, 0xd6, 0x33, 0x1a, 0xc5, 0x24,
-	0x09, 0x30, 0x39, 0x99, 0x8a, 0x99, 0x5a, 0x4e, 0x89, 0x94, 0xb2, 0x2e, 0x3f, 0x2c, 0xdb, 0xee,
-	0x55, 0x61, 0xd1, 0x99, 0x64, 0x9d, 0x42, 0x3e, 0xe9, 0x4d, 0x69, 0x62, 0xe8, 0xb0, 0xff, 0x5a,
-	0xef, 0x44, 0xc0, 0x3d, 0x6c, 0xe9, 0xfe, 0xa0, 0x04, 0x35, 0x25, 0x0a, 0x93, 0xf2, 0xf5, 0xd1,
-	0x2c, 0x9a, 0x2d, 0x87, 0xea, 0x16, 0x68, 0x15, 0xe6, 0x25, 0xdf, 0x0c, 0xbc, 0xba, 0x19, 0xe6,
-	0x07, 0xea, 0xfa, 0x0a, 0xb5, 0xa7, 0x2c, 0x77, 0x7c, 0x48, 0x83, 0xc1, 0x50, 0xa0, 0xee, 0x54,
-	0x9c, 0x9f, 0x14, 0x85, 0x63, 0x57, 0x6f, 0x67, 0xaa, 0x83, 0x34, 0x4b, 0xec, 0xce, 0xc1, 0x52,
-	0xda, 0xae, 0x30, 0x50, 0xc1, 0xd3, 0x47, 0x34, 0x01, 0x13, 0x36, 0xd9, 0x71, 0x0b, 0x5c, 0xb5,
-	0xb1, 0xfd, 0x58, 0x94, 0x65, 0x73, 0x86, 0xae, 0x3c, 0x0b, 0x39, 0x9c, 0x7f, 0x29, 0x17, 0xcc,
-	0xf7, 0xb3, 0x53, 0xb4, 0xc0, 0xce, 0xdf, 0xad, 0x41, 0x7d, 0xad, 0x68, 0x50, 0x2f, 0xf7, 0xa6,
-	0x6f, 0x47, 0x1b, 0x52, 0x4c, 0xa9, 0xe0, 0x7a, 0xd2, 0x36, 0xa4, 0x09, 0xdb, 0x4f, 0xc0, 0x05,
-	0x9d, 0x35, 0x1c, 0x46, 0xe3, 0x10, 0x1d, 0x56, 0x1a, 0x0b, 0x1d, 0xe4, 0xab, 0x0c, 0x6e, 0xf3,
-	0x63, 0xb1, 0xc1, 0x87, 0x76, 0x56, 0x02, 0xa5, 0x82, 0xf9, 0x88, 0xe3, 0xe6, 0x90, 0x88, 0x1d,
-	0x3e, 0xf8, 0xad, 0xe4, 0x58, 0x90, 0x64, 0xa0, 0xef, 0x81, 0xea, 0x32, 0x1c, 0x52, 0x1b, 0x34,
-	0x9e, 0x0e, 0x46, 0x36, 0x0e, 0x2f, 0x48, 0xcb, 0x47, 0x5e, 0x54, 0x7a, 0xbb, 0xa9, 0xf2, 0xcc,
-	0x58, 0xf4, 0x6b, 0x76, 0xec, 0x61, 0xe9, 0x00, 0xde, 0x7b, 0x9d, 0x7a, 0xd5, 0x2e, 0xb4, 0xd3,
-	0x76, 0x46, 0x0f, 0xb5, 0x44, 0xa8, 0x94, 0xc7, 0xd7, 0xec, 0xcb, 0xf4, 0xe2, 0x0a, 0x1f, 0x8b,
-	0x9a, 0x7d, 0xd5, 0x4e, 0x90, 0x58, 0x2b, 0x3c, 0x08, 0xd8, 0x3e, 0xf5, 0x7f, 0x2b, 0xd2, 0x61,
-	0xfb, 0xba, 0xde, 0xc1, 0xf7, 0x4a, 0x85, 0x33, 0xd5, 0x2c, 0xb0, 0x4d, 0x46, 0x54, 0x47, 0x31,
-	0xa7, 0x5d, 0xc4, 0x5c, 0x61, 0x64, 0xd1, 0x4d, 0xc5, 0xe4, 0x93, 0xed, 0x76, 0xeb, 0xbe, 0xe4,
-	0x22, 0x9c, 0xb1, 0x7b, 0x52, 0xa9, 0xae, 0x4d, 0xc7, 0xad, 0x80, 0xd8, 0xee, 0xe4, 0x35, 0xe7,
-	0xef, 0x0c, 0x37, 0x6e, 0x57, 0x36, 0xec, 0xec, 0xe0, 0x8d, 0x99, 0x74, 0x9f, 0xa8, 0xff, 0x6c,
-	0xde, 0xe7, 0x44, 0xfa, 0xa0, 0x32, 0x55, 0xa1, 0xab, 0xe8, 0x94, 0x7e, 0x50, 0x10, 0x68, 0xb9,
-	0xe8, 0x03, 0xda, 0x17, 0xff, 0x89, 0x4b, 0x7a, 0x85, 0x25, 0xef, 0x63, 0xe0, 0xfc, 0x38, 0x7a,
-	0xb6, 0x25, 0x31, 0x7e, 0xb4, 0x96, 0xd4, 0xf1, 0xb7, 0xc9, 0x1c, 0x3e, 0x2d, 0x08, 0xb9, 0x39,
-	0x4b, 0xd4, 0x5d, 0xe9, 0xa9, 0x57, 0xe9, 0xc0, 0xb2, 0x17, 0x92, 0x20, 0x3d, 0x0c, 0x86, 0x9a,
-	0xcb, 0x4d, 0x29, 0xfe, 0xaa, 0x27, 0x32, 0x57, 0xde, 0x3a, 0xe4, 0xff, 0x3f, 0xb9, 0xb4, 0xde,
-	0xc4, 0xd2, 0xcf, 0xac, 0xc2, 0x5f, 0x30, 0xf6, 0x9d, 0xe3, 0x7c, 0x5c, 0x7e, 0x71, 0x7d, 0xb9,
-	0x77, 0xd7, 0x48, 0xaf, 0x82, 0xfb, 0x66, 0x67, 0xdf, 0x2d, 0x34, 0xdd, 0x67, 0x07, 0x24, 0x0c,
-	0x7c, 0xe7, 0x7d, 0xfb, 0x44, 0x34, 0xd4, 0x96, 0x32, 0xff, 0x6c, 0x35, 0x13, 0x67, 0x61, 0xd1,
-	0x94, 0xfe, 0xe4, 0x6e, 0x8f, 0xfe, 0x24, 0x97, 0xe3, 0x90, 0x16, 0x58, 0xad, 0x21, 0x89, 0x97,
-	0x82, 0x31, 0xdc, 0x29, 0x4d, 0xc8, 0x8b, 0x0c, 0x64, 0xa6, 0x98, 0x94, 0x98, 0x88, 0x44, 0xbb,
-	0x99, 0x75, 0x7d, 0x11, 0x20, 0x30, 0xdc, 0xc9, 0x1c, 0x4d, 0xa9, 0x4f, 0xe9, 0x78, 0x95, 0x77,
-	0x51, 0xd0, 0x6a, 0xe6, 0x4e, 0x19, 0x83, 0xa4, 0x2c, 0x35, 0x69, 0xdf, 0xc4, 0xe2, 0xf9, 0xeb,
-	0xfc, 0xaf, 0xa6, 0x7d, 0x8a, 0x64, 0x55, 0x25, 0x2a, 0x17, 0xf2, 0x39, 0x95, 0x70, 0xe0, 0x6e,
-	0x18, 0x0d, 0x74, 0xb5, 0x52, 0x3e, 0xc0, 0x29, 0x4c, 0x50, 0x49, 0x10, 0xf7, 0x81, 0x1c, 0x9d,
-	0x4d, 0x3e, 0x90, 0x54, 0xc3, 0x1d, 0x9e, 0x66, 0xf2, 0x7b, 0xb2, 0xb9, 0xfb, 0xd7, 0x25, 0x9d,
-	0x42, 0xd1, 0xc0, 0xa4, 0x1c, 0x6a, 0xda, 0x13, 0x21, 0xe8, 0x28, 0x16, 0x5c, 0xe7, 0x4f, 0xb3,
-	0x4a, 0x1a, 0x97, 0x8f, 0x3d, 0x4f, 0x95, 0xfe, 0x94, 0x4d, 0x35, 0x97, 0xe9, 0xea, 0x93, 0x20,
-	0x1c, 0x27, 0x94, 0x5b, 0x19, 0xeb, 0x74, 0x75, 0xee, 0xfa, 0x49, 0x14, 0xc7, 0xd4, 0xcf, 0x92,
-	0xfb, 0x26, 0x7b, 0x90, 0x8c, 0x19, 0x93, 0x8c, 0xae, 0x19, 0xf3, 0x35, 0xe2, 0xd4, 0x73, 0x45,
-	0x84, 0xf4, 0x10, 0xc3, 0x80, 0x8b, 0x40, 0xd3, 0x56, 0x15, 0xbd, 0x60, 0x4e, 0x6c, 0x8f, 0xf8,
-	0xae, 0x37, 0xd2, 0x17, 0x42, 0xdd, 0x0f, 0x60, 0x4e, 0x6d, 0xe4, 0xc9, 0xd6, 0x23, 0x0c, 0x58,
-	0xf6, 0x85, 0x2e, 0x46, 0x53, 0x97, 0xe3, 0xf9, 0x02, 0xb5, 0x72, 0x5a, 0x56, 0x20, 0x87, 0x61,
-	0x1d, 0x5b, 0x05, 0x9b, 0xce, 0xc2, 0x22, 0x36, 0xe9, 0x0b, 0x2c, 0x8d, 0x6c, 0xb5, 0x50, 0xf3,
-	0x26, 0xf1, 0xac, 0x76, 0x3f, 0xac, 0x1a, 0xe2, 0x21, 0x31, 0x51, 0x55, 0xad, 0xdd, 0x8e, 0x7d,
-	0x5d, 0xfd, 0x51, 0xec, 0x10, 0x9e, 0x49, 0x9e, 0xdd, 0x82, 0x39, 0xc5, 0x3b, 0x39, 0xb6, 0x82,
-	0x9c, 0x7b, 0xe1, 0x44, 0xce, 0xc9, 0x0d, 0x1a, 0x34, 0xc9, 0x1e, 0x61, 0x7e, 0xc4, 0x52, 0x34,
-	0x35, 0x97, 0x64, 0x48, 0x27, 0x31, 0xa5, 0xc1, 0x81, 0xbe, 0x58, 0xab, 0x4a, 0x7f, 0x51, 0x6f,
-	0x16, 0x29, 0x50, 0x37, 0x14, 0x18, 0xf1, 0x81, 0x55, 0xb5, 0x57, 0xc5, 0x7b, 0x47, 0xd3, 0x84,
-	0xfc, 0xa4, 0xaa, 0x7e, 0x2c, 0x1b, 0x8c, 0x24, 0x98, 0x33, 0xe4, 0x92, 0x3e, 0xda, 0x20, 0x21,
-	0x23, 0x0d, 0x04, 0x26, 0xdb, 0x71, 0xfc, 0x3c, 0xb6, 0xaf, 0x41, 0x4b, 0xb2, 0x2d, 0xa3, 0xfa,
-	0x02, 0x36, 0x5f, 0x86, 0xb3, 0x63, 0xb6, 0xcf, 0xa2, 0x43, 0x86, 0x55, 0x7f, 0x56, 0x7f, 0x2b,
-	0xc5, 0x29, 0x90, 0xdc, 0xb0, 0x7a, 0x16, 0x0d, 0x40, 0x7f, 0x1c, 0x5b, 0xcd, 0x4b, 0xd8, 0xfc,
-	0x3c, 0x9c, 0x57, 0xa8, 0xa7, 0x55, 0x84, 0xde, 0x90, 0x84, 0x21, 0x45, 0xa7, 0x74, 0x19, 0x87,
-	0x5c, 0x82, 0xb5, 0x51, 0xe0, 0x25, 0x91, 0x2b, 0x45, 0x8d, 0x1c, 0x0c, 0xdc, 0x90, 0x08, 0xca,
-	0xbc, 0x23, 0xbc, 0xc9, 0x6f, 0xe5, 0xbb, 0x47, 0x01, 0x4b, 0xbb, 0xdb, 0x53, 0xba, 0xc9, 0xd3,
-	0xb4, 0x1b, 0x2f, 0xed, 0xa5, 0xe0, 0x8f, 0xe8, 0xc8, 0x8d, 0xa3, 0x28, 0x74, 0x47, 0x7c, 0xe0,
-	0x06, 0x4c, 0x1e, 0x1e, 0x78, 0x53, 0xdf, 0x72, 0xfe, 0x3e, 0x97, 0x59, 0x56, 0x0e, 0x01, 0xdf,
-	0x38, 0x20, 0x41, 0x48, 0xf6, 0x42, 0xda, 0x7e, 0x17, 0xce, 0x5a, 0x99, 0x57, 0xee, 0x12, 0xd3,
-	0xa3, 0x33, 0x91, 0xeb, 0xbd, 0xd9, 0x93, 0x75, 0x1e, 0xd7, 0x7d, 0x8c, 0x33, 0x33, 0x98, 0x9f,
-	0x84, 0x4b, 0x16, 0x4c, 0xb7, 0x1f, 0x25, 0xae, 0xae, 0x44, 0x4c, 0x0e, 0x02, 0x4f, 0x6b, 0x72,
-	0xab, 0x7b, 0x1b, 0xce, 0xce, 0x00, 0xb0, 0x08, 0x75, 0x7d, 0x51, 0x9e, 0xa6, 0xd1, 0xcd, 0x45,
-	0x1e, 0x66, 0x0b, 0x9d, 0xb1, 0x6d, 0xfc, 0xb7, 0xa9, 0x90, 0x07, 0xbc, 0xb2, 0x6e, 0x96, 0x31,
-	0x4c, 0x8b, 0x70, 0xbc, 0xc4, 0xc3, 0x73, 0xc6, 0x14, 0x34, 0x49, 0x0b, 0xeb, 0x0d, 0xe9, 0x88,
-	0xb8, 0x61, 0xe4, 0x91, 0xac, 0x70, 0xb3, 0x62, 0x6c, 0x4f, 0x66, 0x7f, 0xa3, 0x44, 0x1d, 0xfd,
-	0x55, 0x34, 0xac, 0xbf, 0xce, 0x25, 0xbb, 0xec, 0x75, 0xd3, 0x03, 0x70, 0x62, 0x7d, 0xcb, 0x59,
-	0x2d, 0x9b, 0x0c, 0x40, 0x0e, 0xa7, 0x8a, 0xc9, 0xb3, 0x2a, 0x9c, 0xf4, 0x15, 0xc7, 0x4d, 0xa8,
-	0xa9, 0xee, 0x1a, 0xb2, 0xe1, 0x93, 0xbd, 0xe3, 0xd7, 0x55, 0xda, 0xda, 0x7e, 0x08, 0x6d, 0xe2,
-	0x0d, 0x03, 0x7a, 0x40, 0xf1, 0x4e, 0x7b, 0x2f, 0x8c, 0xbc, 0x7d, 0x93, 0x33, 0x59, 0x3f, 0x09,
-	0xc4, 0x86, 0x35, 0xf3, 0x0e, 0xce, 0xec, 0x7e, 0x1a, 0x6a, 0x29, 0x59, 0x31, 0x4b, 0x6d, 0x25,
-	0x36, 0x00, 0x1b, 0xb2, 0x64, 0x4a, 0xab, 0xbb, 0x01, 0xed, 0x49, 0x18, 0x52, 0x3b, 0x6d, 0x9c,
-	0xec, 0x0c, 0xec, 0x98, 0xc9, 0x21, 0x78, 0x25, 0x8d, 0xd5, 0x02, 0x0d, 0xe7, 0xfb, 0x65, 0x3b,
-	0x0f, 0xba, 0x2b, 0xa2, 0x84, 0x7e, 0x7c, 0x34, 0xfe, 0x0a, 0x9c, 0x53, 0x06, 0x50, 0x6b, 0x2b,
-	0x3a, 0x12, 0x44, 0x5a, 0x3c, 0x9d, 0x88, 0xb9, 0xdd, 0x3b, 0x69, 0x6d, 0x6d, 0x15, 0xef, 0x29,
-	0x00, 0xef, 0xa5, 0x00, 0x94, 0xd4, 0xc8, 0xae, 0x68, 0x2c, 0x54, 0x92, 0x5d, 0xe8, 0xca, 0xa6,
-	0xee, 0x36, 0x9c, 0x9b, 0x35, 0x6b, 0x82, 0xac, 0x17, 0x60, 0x15, 0xaf, 0x8b, 0x04, 0xf5, 0xdd,
-	0x22, 0x7d, 0x9d, 0x7f, 0xce, 0xa5, 0x56, 0xf2, 0x08, 0xae, 0x4f, 0x52, 0x05, 0x8f, 0x3c, 0x21,
-	0xa2, 0x62, 0x91, 0x8d, 0xe9, 0xa0, 0x34, 0xeb, 0xa8, 0x4c, 0xea, 0x4a, 0xd5, 0x38, 0x70, 0xf4,
-	0x69, 0x1c, 0x06, 0x5e, 0x20, 0xd0, 0x98, 0x0b, 0x5d, 0xae, 0xf5, 0x9a, 0x91, 0x4f, 0x25, 0x5c,
-	0x57, 0x67, 0x52, 0x4e, 0x5d, 0x5d, 0x3c, 0xa3, 0x28, 0x39, 0x7f, 0x59, 0xca, 0xd5, 0x49, 0xca,
-	0x89, 0x4f, 0x30, 0xd7, 0xef, 0x9f, 0xa6, 0x16, 0x7a, 0x0a, 0xef, 0xdf, 0x82, 0x96, 0xba, 0x2c,
-	0xf0, 0xd3, 0xed, 0x15, 0xf5, 0xca, 0x5e, 0xa5, 0xa7, 0xff, 0x77, 0x15, 0xf2, 0x37, 0xa1, 0x95,
-	0x6b, 0x38, 0xdd, 0x26, 0x7e, 0x9e, 0xbb, 0x90, 0xc8, 0x93, 0x65, 0x92, 0x5d, 0x93, 0x94, 0x56,
-	0x37, 0x23, 0x5f, 0x90, 0x2e, 0xb4, 0xb9, 0xbb, 0x12, 0xea, 0x56, 0xb4, 0x98, 0x35, 0xcc, 0xc3,
-	0xd6, 0x42, 0xfa, 0x38, 0x72, 0xb1, 0xbd, 0xfb, 0x3a, 0x2c, 0xe6, 0x5b, 0x4e, 0x87, 0xfe, 0x45,
-	0xfb, 0xe0, 0xd8, 0xa6, 0x42, 0x7d, 0xa8, 0x6b, 0x27, 0xee, 0x7c, 0x1e, 0x5e, 0xb0, 0x2f, 0xcf,
-	0x64, 0x40, 0xf8, 0xce, 0x01, 0x4d, 0x42, 0x72, 0xb4, 0x45, 0x45, 0x34, 0x4e, 0xee, 0x29, 0xe7,
-	0x4c, 0x0a, 0x9b, 0xf6, 0xd3, 0xb4, 0x83, 0xad, 0xee, 0x06, 0xe7, 0x9c, 0x5f, 0x94, 0xed, 0xa4,
-	0x40, 0x11, 0x7e, 0xaa, 0xec, 0xe7, 0x60, 0xc9, 0xd4, 0x04, 0xe5, 0x0b, 0xec, 0xa7, 0x95, 0xde,
-	0x37, 0xb1, 0x07, 0xa0, 0x1c, 0x71, 0x9d, 0xdb, 0x39, 0x03, 0x0b, 0x23, 0x69, 0x7e, 0x18, 0xb5,
-	0x6e, 0x2d, 0xb0, 0xfe, 0x30, 0x76, 0x55, 0x9a, 0x59, 0x05, 0x70, 0x92, 0x02, 0xb2, 0x29, 0x09,
-	0x0e, 0x8c, 0xe6, 0x62, 0x95, 0xaa, 0xf2, 0xc3, 0xb2, 0x53, 0x51, 0xb9, 0x2d, 0x9f, 0x87, 0x96,
-	0xaa, 0xb8, 0x34, 0xbe, 0x64, 0x7d, 0x82, 0x25, 0xb3, 0x36, 0x84, 0xf5, 0x97, 0xdd, 0x4d, 0xa8,
-	0x62, 0xac, 0x92, 0x3e, 0x98, 0x48, 0xd9, 0x60, 0x15, 0x3c, 0xaa, 0x1d, 0x74, 0x60, 0x19, 0x6f,
-	0xee, 0xf4, 0x52, 0xe9, 0x13, 0x8a, 0x96, 0xf3, 0x9d, 0xd2, 0x54, 0x0e, 0x6d, 0xc4, 0x31, 0x26,
-	0xe2, 0x5b, 0x50, 0x1b, 0x51, 0x3f, 0x20, 0xfa, 0x9a, 0x18, 0x0b, 0x2c, 0xa3, 0xd0, 0x5c, 0xb8,
-	0xb5, 0xa0, 0x86, 0x5b, 0xd0, 0x91, 0xdf, 0x59, 0x58, 0x8c, 0x58, 0x78, 0xa4, 0x1e, 0x27, 0x84,
-	0x21, 0x35, 0x95, 0x1e, 0x6b, 0xd0, 0xc2, 0x76, 0x3c, 0x7f, 0x8d, 0xd7, 0xdc, 0x94, 0xc7, 0x95,
-	0x17, 0x8d, 0x02, 0x4f, 0xa5, 0x02, 0x9b, 0xce, 0xff, 0xad, 0x4e, 0x65, 0xa6, 0x46, 0x25, 0x65,
-	0xe6, 0xeb, 0x50, 0x25, 0x71, 0x6c, 0x6e, 0x87, 0x5f, 0xea, 0x9d, 0x3c, 0xa5, 0xb7, 0x11, 0xc7,
-	0xd3, 0xf8, 0x80, 0x3e, 0x75, 0xf7, 0xfb, 0x15, 0xa8, 0xc8, 0x01, 0x05, 0x32, 0x2e, 0x43, 0xd3,
-	0x23, 0x82, 0x0e, 0xa2, 0xe4, 0x28, 0x4b, 0xf1, 0xe1, 0x73, 0x19, 0x19, 0x66, 0x81, 0x69, 0xe9,
-	0x93, 0x83, 0x28, 0x09, 0xf4, 0x8b, 0x89, 0x26, 0x0a, 0x45, 0x61, 0xf7, 0xab, 0x30, 0x4f, 0xc6,
-	0x22, 0x32, 0xf7, 0x8c, 0x35, 0x53, 0xfc, 0xa2, 0xb0, 0xf1, 0xa3, 0x43, 0x16, 0x46, 0xc4, 0xa7,
-	0xbe, 0x76, 0x70, 0xcf, 0xc0, 0x82, 0xea, 0x61, 0x94, 0xca, 0x56, 0x25, 0x2c, 0x17, 0x60, 0x35,
-	0x3f, 0x1e, 0xaf, 0x3f, 0xb5, 0xac, 0x9e, 0x83, 0xa5, 0xb4, 0x39, 0x26, 0x58, 0x9a, 0x36, 0x6f,
-	0x42, 0x71, 0x36, 0x1e, 0xa5, 0x73, 0x24, 0xe9, 0x17, 0x8c, 0x8c, 0xc8, 0x0e, 0x3d, 0xb8, 0x95,
-	0x6e, 0xd8, 0x30, 0x68, 0x11, 0xa7, 0x5f, 0x82, 0xb5, 0x94, 0x58, 0x6e, 0xc4, 0xdc, 0x38, 0x24,
-	0xa2, 0x1f, 0x25, 0x23, 0x74, 0x59, 0x9b, 0xed, 0xdb, 0x50, 0xf5, 0x43, 0xcf, 0x64, 0x63, 0x5f,
-	0x39, 0x25, 0x23, 0x7a, 0x5b, 0x0f, 0x36, 0xbb, 0x2f, 0x41, 0x65, 0xeb, 0xc1, 0x66, 0x91, 0xe4,
-	0x39, 0xe2, 0x29, 0x27, 0xed, 0x95, 0x5c, 0x49, 0x83, 0xea, 0x4c, 0x41, 0x17, 0xe6, 0x3b, 0x37,
-	0x6d, 0xf9, 0x29, 0x0e, 0xb6, 0xd3, 0x0b, 0x76, 0xc1, 0xbd, 0xf3, 0x6a, 0xee, 0x9d, 0x12, 0x0b,
-	0x4e, 0x58, 0xe4, 0x0d, 0xdb, 0x66, 0x4d, 0x0e, 0x9f, 0xb9, 0xcc, 0x1d, 0xfb, 0x92, 0x60, 0xd7,
-	0x22, 0x90, 0x3a, 0x14, 0xa4, 0x71, 0x9d, 0x50, 0xe5, 0x45, 0xa8, 0x6b, 0xa9, 0x51, 0xd4, 0xf8,
-	0x1c, 0x7c, 0xea, 0x44, 0x18, 0x33, 0x11, 0xf8, 0x76, 0xce, 0xf1, 0x7c, 0x72, 0x6f, 0xf7, 0x09,
-	0x56, 0xd4, 0xdd, 0x0b, 0x42, 0x6a, 0x1e, 0x59, 0x14, 0x33, 0x2f, 0x2b, 0x30, 0x87, 0x25, 0xbb,
-	0x3c, 0xf8, 0x86, 0x36, 0xe8, 0x52, 0x97, 0x13, 0x72, 0xe8, 0x66, 0xcd, 0x15, 0x23, 0x3c, 0x7c,
-	0x48, 0xb0, 0x59, 0x3b, 0x9f, 0x58, 0x32, 0x3a, 0xc2, 0x2a, 0xa5, 0x51, 0xac, 0x23, 0x3a, 0x03,
-	0xcf, 0x4a, 0x3c, 0xbc, 0x00, 0x17, 0x8d, 0x58, 0xa9, 0xd3, 0xe9, 0x88, 0x79, 0xae, 0x4f, 0xe3,
-	0x84, 0x7a, 0x58, 0xaa, 0xa9, 0x8a, 0x27, 0x3f, 0x09, 0x2b, 0x13, 0xa3, 0x94, 0xf0, 0xbf, 0x09,
-	0x37, 0xd7, 0x6f, 0xdf, 0xbc, 0xfd, 0xc6, 0xad, 0xf5, 0xdb, 0xaf, 0xdb, 0xf7, 0x80, 0x73, 0xc6,
-	0x3f, 0xf4, 0x08, 0x73, 0xf5, 0x7b, 0x37, 0xd4, 0xda, 0xa6, 0xf3, 0x67, 0xb9, 0x54, 0x67, 0x81,
-	0x10, 0xc7, 0x94, 0x38, 0xd9, 0x7b, 0x54, 0x4f, 0x50, 0x96, 0xa1, 0x39, 0xe6, 0xd4, 0x1d, 0x0a,
-	0x11, 0x67, 0xfa, 0x2f, 0xff, 0x72, 0x87, 0x11, 0x17, 0xfa, 0x50, 0x58, 0x86, 0x26, 0x36, 0x8d,
-	0x93, 0x50, 0x1f, 0x09, 0x6d, 0x80, 0xfd, 0x03, 0x77, 0x88, 0xe5, 0x52, 0xfa, 0x21, 0x8f, 0x9c,
-	0x68, 0x40, 0xa9, 0x04, 0x41, 0x13, 0x8b, 0x8b, 0x15, 0xe2, 0x6a, 0xcd, 0x26, 0x62, 0xff, 0xc7,
-	0x39, 0x07, 0x2e, 0xc5, 0x7e, 0x33, 0x1a, 0x8d, 0x02, 0xd1, 0xee, 0x41, 0x4d, 0x8e, 0x35, 0xd6,
-	0xf1, 0x4a, 0x6f, 0xe6, 0xd0, 0x9e, 0xdc, 0x6f, 0x97, 0x40, 0x55, 0xfe, 0x3f, 0x75, 0xbf, 0xc5,
-	0x67, 0x28, 0xf6, 0xfe, 0x2b, 0x66, 0xff, 0xde, 0x78, 0x2f, 0xe3, 0x7a, 0x2b, 0xcf, 0x61, 0x55,
-	0xcd, 0xf7, 0xbd, 0x5c, 0x4d, 0x59, 0x01, 0x8b, 0x94, 0xe0, 0x6f, 0xe4, 0x11, 0x7f, 0xa9, 0x77,
-	0xe2, 0x14, 0xb5, 0x81, 0xb7, 0x3e, 0xca, 0x06, 0x9c, 0x07, 0xb6, 0x87, 0xf8, 0xe4, 0xde, 0xae,
-	0x04, 0xb5, 0x39, 0x1c, 0xb3, 0xfd, 0xdc, 0xd8, 0x92, 0x11, 0x68, 0x25, 0xf5, 0x58, 0x76, 0xa7,
-	0x20, 0x2e, 0x40, 0xd5, 0xba, 0xf1, 0xb9, 0x5a, 0x50, 0xb0, 0xc7, 0x09, 0x61, 0xbc, 0x4f, 0x93,
-	0xb7, 0x29, 0x49, 0xc4, 0x1e, 0x25, 0xc2, 0xd9, 0x9e, 0x29, 0x79, 0xf7, 0x02, 0x16, 0xf0, 0x21,
-	0xf5, 0x4f, 0x27, 0x79, 0x8e, 0x5b, 0x58, 0x6a, 0x8b, 0x86, 0x54, 0xd0, 0xd3, 0xe8, 0xb2, 0x75,
-	0x67, 0xd5, 0x85, 0x76, 0xc0, 0xdd, 0xd4, 0x61, 0xf4, 0x11, 0x86, 0x12, 0x64, 0xe7, 0xed, 0x02,
-	0xa6, 0xf6, 0x02, 0xc7, 0xe8, 0xc8, 0xe4, 0x2a, 0xce, 0x6e, 0x01, 0xd5, 0x6d, 0x2a, 0x24, 0x18,
-	0x79, 0x2e, 0xdc, 0x8b, 0x12, 0x69, 0x61, 0xd5, 0x13, 0x22, 0x54, 0x6c, 0x7c, 0xcb, 0xa3, 0x0b,
-	0xcc, 0xf1, 0xe5, 0x27, 0xc3, 0x84, 0xe7, 0xd0, 0x8d, 0x13, 0xda, 0x0f, 0x9e, 0xea, 0xb8, 0xbf,
-	0xe9, 0xfc, 0x45, 0x19, 0x5e, 0x3c, 0x1e, 0x6a, 0x8a, 0xe6, 0xe7, 0xf2, 0x92, 0xf5, 0xe9, 0xde,
-	0xe9, 0xe6, 0xa1, 0x78, 0x49, 0xd4, 0x8a, 0xcb, 0x57, 0xae, 0xcd, 0x75, 0x7f, 0x56, 0xd2, 0x62,
-	0x77, 0x0a, 0x2a, 0x4f, 0xaa, 0x4d, 0xde, 0x34, 0x56, 0x4d, 0x5a, 0x28, 0x6f, 0x57, 0x6b, 0xa6,
-	0xdc, 0x69, 0x0a, 0x8b, 0xd0, 0x5f, 0x92, 0xe1, 0xe2, 0xa4, 0x51, 0x6c, 0x98, 0x5a, 0x6d, 0x0b,
-	0x6d, 0x37, 0x60, 0x3e, 0x7d, 0xaa, 0xed, 0x65, 0xf3, 0x5b, 0x1f, 0x76, 0x9a, 0xdf, 0xf9, 0xb0,
-	0xb3, 0xec, 0x7c, 0x25, 0x77, 0xf0, 0xdd, 0xdb, 0xdd, 0xd2, 0x6e, 0xc2, 0x33, 0x48, 0xd0, 0x39,
-	0x58, 0x92, 0xf6, 0x75, 0x48, 0x98, 0x1f, 0xda, 0x76, 0xd0, 0xf9, 0x41, 0xd9, 0xbe, 0xfd, 0xcc,
-	0x01, 0x3f, 0x46, 0x7a, 0x8a, 0x0a, 0x9b, 0x3b, 0x7f, 0x2a, 0xd3, 0xcf, 0x9f, 0xea, 0x84, 0x6a,
-	0xd7, 0xa6, 0x10, 0x59, 0xf9, 0x56, 0xd3, 0xa9, 0xa9, 0xac, 0xad, 0x6d, 0xcb, 0x9b, 0x93, 0xb6,
-	0x7c, 0x6e, 0xc2, 0x96, 0xc3, 0x14, 0x5b, 0x3e, 0x3f, 0x69, 0xcb, 0x17, 0x0c, 0xac, 0xf4, 0xd1,
-	0x35, 0xfa, 0x5b, 0x4d, 0xe7, 0xfd, 0x82, 0x1d, 0x7f, 0x10, 0x0d, 0x02, 0x66, 0x68, 0x3f, 0xfb,
-	0x4d, 0x70, 0x07, 0x96, 0xc9, 0x28, 0x7d, 0x8e, 0xa9, 0x9e, 0x3b, 0xa9, 0xe4, 0xf0, 0x82, 0x76,
-	0x8c, 0x65, 0x68, 0xd7, 0x72, 0xae, 0xdb, 0x9e, 0x53, 0x06, 0xfe, 0x98, 0x02, 0xf1, 0x6d, 0xfb,
-	0x7a, 0x46, 0x23, 0x72, 0xd7, 0x20, 0xbd, 0x11, 0xcf, 0x78, 0xec, 0xa8, 0x09, 0x97, 0x64, 0x2f,
-	0x33, 0x9d, 0xff, 0x59, 0x82, 0x57, 0x4e, 0x01, 0xe9, 0x34, 0x05, 0x2f, 0x69, 0x2a, 0xe6, 0x06,
-	0x9c, 0x99, 0xf6, 0x6a, 0x5d, 0xe7, 0xa0, 0x57, 0x7b, 0x93, 0xe0, 0x9d, 0x3f, 0xcc, 0x85, 0x36,
-	0x5f, 0x96, 0x6e, 0xa5, 0xb8, 0xcf, 0xfa, 0x91, 0x72, 0x96, 0x24, 0xe7, 0x86, 0x84, 0xbb, 0x87,
-	0xd8, 0xae, 0xe3, 0x9b, 0x25, 0x68, 0xec, 0x91, 0x10, 0x2b, 0x53, 0xca, 0xa6, 0xd8, 0xc3, 0x1b,
-	0x27, 0x09, 0x26, 0x4a, 0x2b, 0xe6, 0x12, 0x40, 0x0f, 0x91, 0xf2, 0x83, 0x55, 0xc0, 0xe6, 0x76,
-	0x60, 0x4e, 0x77, 0xbc, 0x71, 0x13, 0x65, 0xb0, 0x72, 0xa7, 0xfa, 0x83, 0x9f, 0x76, 0x4a, 0xed,
-	0x2b, 0xb0, 0x92, 0x76, 0xa4, 0x73, 0xea, 0xd9, 0x00, 0x67, 0xc7, 0xae, 0xd6, 0xda, 0x88, 0x63,
-	0x0b, 0xc9, 0xf3, 0xb0, 0x82, 0xb5, 0xbe, 0x2a, 0x75, 0xa9, 0x1f, 0x7b, 0xa4, 0x39, 0x7a, 0xae,
-	0x2f, 0x76, 0xd8, 0x80, 0x86, 0x01, 0xd7, 0xc1, 0xbe, 0xe3, 0xdb, 0x19, 0x03, 0x0d, 0x6e, 0x53,
-	0x95, 0x37, 0x48, 0x97, 0x5e, 0xed, 0xc7, 0x80, 0x74, 0x73, 0x30, 0xcf, 0xc3, 0x4a, 0x3f, 0x4a,
-	0x3c, 0xea, 0xf6, 0xc7, 0x61, 0xe8, 0xda, 0xbe, 0xa7, 0x66, 0xd2, 0xfd, 0x2d, 0x23, 0x5f, 0x3f,
-	0x2e, 0x4d, 0x59, 0xc6, 0x88, 0xef, 0x2b, 0xb9, 0x18, 0xed, 0x52, 0x6f, 0xd6, 0x40, 0x8c, 0xcc,
-	0xae, 0xc0, 0x32, 0x1f, 0xc7, 0xf8, 0x74, 0xdb, 0xdd, 0x23, 0xc2, 0x1b, 0x1a, 0x2b, 0xff, 0x66,
-	0xad, 0x4f, 0x42, 0x4e, 0xbb, 0x1b, 0x2a, 0x40, 0x2b, 0x8a, 0x09, 0xbe, 0xfe, 0x57, 0x6f, 0x8f,
-	0xed, 0xa7, 0xa6, 0x58, 0xdf, 0xab, 0x9a, 0x37, 0xdf, 0xdd, 0xd4, 0xd8, 0xfe, 0xff, 0xb2, 0xad,
-	0x6d, 0x29, 0x12, 0x5a, 0x00, 0x3f, 0x9d, 0x43, 0xf7, 0x72, 0x6f, 0xe6, 0x48, 0xc4, 0xf7, 0x0c,
-	0x2c, 0xe0, 0x71, 0xa5, 0x2f, 0x00, 0xf4, 0xeb, 0x27, 0xd3, 0x1a, 0x53, 0xe6, 0x9b, 0x2b, 0xc0,
-	0x56, 0xf7, 0x7b, 0xa5, 0x99, 0xb8, 0xe7, 0xe9, 0xaf, 0x70, 0xff, 0x2c, 0x34, 0x35, 0xee, 0xa6,
-	0x4a, 0xfe, 0xc5, 0xe3, 0x91, 0xe9, 0xed, 0xaa, 0xe1, 0xdd, 0x1b, 0xd0, 0xd0, 0x9f, 0x98, 0x87,
-	0x49, 0xdf, 0x64, 0x5b, 0xb9, 0x19, 0xdd, 0xb6, 0x7f, 0xa0, 0xd4, 0x14, 0x4f, 0x82, 0xe7, 0xbe,
-	0xf3, 0x61, 0xe7, 0x39, 0xe7, 0x4b, 0xf6, 0x49, 0xf0, 0x48, 0x65, 0x4a, 0x6c, 0x76, 0xae, 0xc2,
-	0x7c, 0xf6, 0xa6, 0xca, 0xbc, 0xb8, 0x3f, 0x0b, 0x8b, 0x23, 0x2a, 0x88, 0x2a, 0xa2, 0x95, 0xf1,
-	0xbd, 0x16, 0xbf, 0x7f, 0xca, 0x3d, 0xc7, 0xc9, 0x41, 0xd3, 0xe4, 0xfe, 0x2c, 0x34, 0x35, 0x38,
-	0x43, 0x72, 0x7b, 0x97, 0x53, 0x66, 0xf4, 0x74, 0x1b, 0x9a, 0x45, 0x3d, 0xb3, 0x40, 0x7e, 0xbb,
-	0x27, 0xcf, 0x82, 0xff, 0x02, 0x0d, 0x33, 0x7d, 0xda, 0xdb, 0xb0, 0x19, 0x9c, 0x98, 0x87, 0x0a,
-	0x1f, 0x6a, 0xc7, 0x4e, 0x72, 0x6f, 0x6f, 0xdc, 0xef, 0xeb, 0x1c, 0xfe, 0x82, 0xf3, 0xcb, 0x9c,
-	0x4b, 0xfb, 0xe8, 0xfe, 0xe6, 0xae, 0xd6, 0xaf, 0xdd, 0x80, 0x79, 0xa9, 0x07, 0x76, 0x01, 0x56,
-	0xb9, 0xfc, 0x7b, 0xaa, 0xa6, 0x5d, 0x82, 0x35, 0xd4, 0x5e, 0x94, 0x0a, 0xd6, 0x8f, 0xd2, 0x02,
-	0x24, 0xa5, 0x6d, 0xcf, 0xc3, 0x79, 0xed, 0xfb, 0x68, 0x74, 0xed, 0x21, 0x15, 0x53, 0xed, 0x2c,
-	0x63, 0xf8, 0x0c, 0x00, 0xf1, 0x86, 0xd4, 0x14, 0x40, 0x5e, 0x81, 0x73, 0x2a, 0xc0, 0xb7, 0xa7,
-	0xab, 0x01, 0xe8, 0x58, 0x38, 0xbf, 0xa9, 0xd8, 0xc1, 0xf2, 0xe4, 0x16, 0x34, 0xab, 0x4e, 0xb0,
-	0x17, 0x33, 0xb6, 0x58, 0x9e, 0x6d, 0x4c, 0x14, 0xee, 0x5f, 0xcc, 0x12, 0x72, 0x66, 0x53, 0x2a,
-	0x97, 0x7a, 0xa3, 0x77, 0x32, 0x52, 0x46, 0x1a, 0x54, 0x5f, 0xfb, 0x0e, 0xcc, 0x4b, 0x1a, 0x18,
-	0x38, 0xea, 0xae, 0xe3, 0xd5, 0xd3, 0xc0, 0xd9, 0x88, 0x63, 0x0d, 0xe3, 0x12, 0xac, 0x59, 0xa8,
-	0x4a, 0x70, 0x1a, 0xdd, 0xba, 0xe1, 0x86, 0xd5, 0x6d, 0x30, 0xd7, 0x43, 0xd0, 0x7d, 0xe8, 0x3e,
-	0x84, 0x56, 0x1e, 0xad, 0x15, 0x98, 0xd3, 0x03, 0x4f, 0x12, 0xb5, 0x55, 0x98, 0x67, 0x94, 0xfa,
-	0xdc, 0xcd, 0x5e, 0x75, 0x37, 0xbb, 0xf7, 0x60, 0x2e, 0x43, 0xaf, 0x90, 0x16, 0x78, 0x06, 0x38,
-	0xce, 0xdf, 0xe4, 0x2e, 0x43, 0x24, 0x29, 0x1e, 0x25, 0x91, 0x3f, 0xf6, 0x84, 0xad, 0xdf, 0x9f,
-	0x9f, 0x50, 0xc8, 0x22, 0xfd, 0x26, 0x27, 0xf5, 0x2c, 0x3d, 0x6d, 0xdf, 0xd2, 0x06, 0x54, 0x3d,
-	0xd7, 0xfc, 0xd4, 0xc9, 0x93, 0xb5, 0x29, 0x9b, 0x62, 0x44, 0x2a, 0x76, 0xe6, 0x2a, 0x4e, 0xe8,
-	0x81, 0xb9, 0xd2, 0x45, 0xc1, 0xee, 0x6e, 0x42, 0xc3, 0xcc, 0x2d, 0x50, 0x45, 0x1a, 0x60, 0xbc,
-	0xe6, 0xcf, 0x39, 0x45, 0xab, 0x30, 0x8f, 0xb9, 0x47, 0x9d, 0xa7, 0x55, 0xc4, 0x7d, 0x03, 0xe6,
-	0x6d, 0xec, 0xa7, 0xb0, 0x6a, 0x2a, 0x30, 0xe7, 0xcf, 0xab, 0x45, 0xbd, 0xcf, 0x6d, 0x2d, 0x35,
-	0x6f, 0xf6, 0x69, 0xf2, 0x72, 0xef, 0xc4, 0x19, 0x36, 0x35, 0xcc, 0xad, 0x32, 0xee, 0xcc, 0xbc,
-	0xac, 0xfd, 0x82, 0xc5, 0x1f, 0x75, 0x2c, 0xf4, 0x4e, 0x01, 0xd5, 0xde, 0x62, 0x17, 0xda, 0x06,
-	0x72, 0xba, 0x55, 0xa5, 0x73, 0xd3, 0x0c, 0x79, 0x9a, 0xa3, 0x34, 0xb5, 0xf3, 0xa9, 0x49, 0xad,
-	0x9b, 0x84, 0x2e, 0xba, 0xc1, 0xa3, 0x80, 0x29, 0x27, 0xbc, 0x61, 0xdc, 0xf5, 0xcc, 0x61, 0xc6,
-	0x27, 0x09, 0xdd, 0x6f, 0x97, 0x66, 0xf2, 0x6b, 0x86, 0x14, 0xaf, 0x41, 0x6b, 0x14, 0x70, 0x1e,
-	0xb0, 0x81, 0x2d, 0xc7, 0xc6, 0x1e, 0x57, 0x0b, 0xf6, 0x38, 0x2d, 0x33, 0xb6, 0x99, 0xac, 0x90,
-	0x5c, 0x80, 0x6a, 0x86, 0x5b, 0xf7, 0xe8, 0x44, 0x96, 0x7f, 0x8c, 0xf8, 0x98, 0xa5, 0xeb, 0x69,
-	0xc4, 0xa5, 0xce, 0xd9, 0x7b, 0x45, 0x5d, 0xdc, 0x40, 0x19, 0xc3, 0x9f, 0xe3, 0x30, 0xba, 0x98,
-	0x9d, 0x51, 0xd9, 0x51, 0xab, 0xbc, 0x87, 0x54, 0x1e, 0x9c, 0x5f, 0x97, 0x8b, 0x72, 0x98, 0x03,
-	0xa4, 0xe5, 0xf0, 0x21, 0xac, 0x19, 0x53, 0x65, 0xcb, 0xb2, 0x11, 0xcc, 0xd7, 0x7a, 0x27, 0x82,
-	0x30, 0x22, 0xa4, 0x7e, 0x5c, 0xe4, 0x52, 0x06, 0xcf, 0xa7, 0x2c, 0xc0, 0xc7, 0x5d, 0xe9, 0xaf,
-	0x83, 0xb4, 0xda, 0xf7, 0x60, 0x45, 0x1a, 0xce, 0xfc, 0x52, 0x95, 0x89, 0xdc, 0xf0, 0xac, 0xa5,
-	0xa4, 0xdf, 0x8e, 0xcb, 0x9c, 0x57, 0x70, 0xf2, 0x4b, 0xa0, 0xa4, 0x76, 0x6f, 0xc1, 0x42, 0x0e,
-	0xa3, 0xd3, 0x2a, 0x6e, 0xf7, 0x35, 0x68, 0xa6, 0xf0, 0x4f, 0x63, 0x36, 0x9c, 0xad, 0x42, 0xf4,
-	0xb4, 0x8d, 0xef, 0x6b, 0xf5, 0x35, 0x4c, 0xfb, 0x45, 0x68, 0x0e, 0xbd, 0x88, 0x09, 0x53, 0xac,
-	0x53, 0x7f, 0xf3, 0xcc, 0x8d, 0xcf, 0xde, 0xbc, 0xf9, 0xc6, 0xad, 0x9b, 0x37, 0xaf, 0xdf, 0xfa,
-	0xcc, 0xad, 0xeb, 0xb7, 0x5f, 0x7f, 0xfd, 0xc6, 0x1b, 0x37, 0x5e, 0x77, 0x7e, 0x53, 0xb2, 0x0f,
-	0xd9, 0x22, 0x98, 0x63, 0x43, 0xe1, 0x79, 0xa8, 0xc8, 0x20, 0x53, 0x85, 0xd9, 0xc5, 0x1f, 0xe5,
-	0x59, 0x86, 0xa6, 0x8c, 0x74, 0xb3, 0xd2, 0xc1, 0xb4, 0x40, 0x2c, 0xf0, 0xd5, 0x23, 0xf7, 0x28,
-	0xc9, 0x6a, 0xbd, 0xb2, 0x58, 0xb9, 0x6e, 0x4a, 0x17, 0xbc, 0x68, 0x14, 0xe3, 0x8f, 0x21, 0xf9,
-	0x56, 0x24, 0xdd, 0x30, 0x61, 0x05, 0xbe, 0x24, 0xf5, 0x86, 0xd4, 0xdb, 0xb7, 0x54, 0x19, 0x8f,
-	0x73, 0x39, 0x96, 0x32, 0x2f, 0xf2, 0xa9, 0xef, 0xf2, 0x21, 0xb9, 0xa1, 0xc2, 0x62, 0x67, 0x73,
-	0x32, 0xc5, 0xb3, 0x1b, 0xb0, 0x41, 0x88, 0xf9, 0x22, 0xd4, 0xb7, 0x93, 0x73, 0x09, 0xce, 0xcf,
-	0x4a, 0x93, 0x29, 0x9d, 0x3c, 0x94, 0xdf, 0x2a, 0x77, 0x60, 0xdd, 0xd8, 0x9d, 0x2e, 0x49, 0x3d,
-	0x91, 0x61, 0xa8, 0x1f, 0x93, 0x89, 0x69, 0xe8, 0xbc, 0x7c, 0x3e, 0x8d, 0xb8, 0x3b, 0x24, 0x09,
-	0x3d, 0x65, 0x7e, 0xc8, 0xf9, 0x6f, 0x05, 0xe2, 0xa5, 0x93, 0x8f, 0xdd, 0xae, 0x2d, 0x82, 0xe5,
-	0x63, 0x44, 0xf0, 0x33, 0x76, 0xb9, 0xe7, 0xc6, 0x0e, 0xde, 0xcc, 0x10, 0xf6, 0x4e, 0xbf, 0x1f,
-	0x78, 0x34, 0xe1, 0x69, 0x41, 0xa3, 0x94, 0x9b, 0x90, 0x30, 0xfd, 0x33, 0x31, 0x7d, 0x3b, 0x13,
-	0x30, 0x31, 0xe9, 0x58, 0xbc, 0x8a, 0x00, 0xd3, 0x32, 0xd8, 0x48, 0xcd, 0xb6, 0xdf, 0x5c, 0x3b,
-	0xdf, 0xcd, 0xf9, 0xd1, 0xb8, 0xd0, 0x23, 0x55, 0x16, 0xfb, 0x90, 0x8c, 0xe8, 0xdb, 0x01, 0x17,
-	0x51, 0x82, 0xcf, 0x54, 0x24, 0xb4, 0xf4, 0xb5, 0x6a, 0xad, 0xfd, 0x26, 0x54, 0xee, 0xfb, 0xc6,
-	0xdb, 0xb0, 0x5d, 0x95, 0x19, 0x20, 0x7a, 0xf7, 0xfd, 0xfb, 0xfa, 0x07, 0xd3, 0xba, 0x97, 0x00,
-	0xb2, 0xbf, 0xd4, 0x25, 0x36, 0xa2, 0xab, 0xb7, 0xfe, 0xab, 0xb2, 0x7d, 0xc7, 0x32, 0x03, 0x5e,
-	0x4a, 0x81, 0x77, 0x60, 0xce, 0x1c, 0x91, 0x06, 0x9d, 0xb7, 0x7a, 0xa7, 0x9e, 0xde, 0x93, 0x6d,
-	0x8f, 0xc9, 0x9e, 0x94, 0x6e, 0x8d, 0xdd, 0x5f, 0x95, 0x60, 0x65, 0xa2, 0x75, 0x2a, 0xa1, 0x2d,
-	0xcc, 0x15, 0x8d, 0xff, 0x2b, 0xd4, 0x98, 0xbe, 0x8c, 0x95, 0x78, 0xdc, 0xff, 0x28, 0x78, 0x60,
-	0x4b, 0x8a, 0xd4, 0x75, 0x58, 0xb0, 0xff, 0xc6, 0xdb, 0x43, 0xac, 0xd6, 0x96, 0xde, 0x34, 0x62,
-	0xd4, 0x90, 0x47, 0x9e, 0x25, 0xd3, 0x77, 0x6d, 0x99, 0xde, 0xa2, 0x89, 0xfe, 0xe9, 0xbb, 0x2f,
-	0x07, 0x62, 0x98, 0xbd, 0xd6, 0xa5, 0xaa, 0x3e, 0xcb, 0x7a, 0xad, 0x5b, 0xd0, 0x61, 0xe7, 0xc7,
-	0x55, 0xfb, 0x57, 0x13, 0xa4, 0x0c, 0xaa, 0x6b, 0xb2, 0xa9, 0x52, 0xab, 0x7e, 0x1d, 0x8f, 0xb0,
-	0xf4, 0x09, 0xb2, 0x4a, 0x0a, 0x28, 0x8b, 0x79, 0x1d, 0xe6, 0x10, 0x65, 0xbc, 0x13, 0xaf, 0x62,
-	0xce, 0xc8, 0xce, 0x4a, 0xa4, 0xa0, 0xf5, 0xc6, 0xfb, 0x51, 0xfb, 0x26, 0xcc, 0x63, 0xf5, 0x34,
-	0xc2, 0xe2, 0x68, 0x1b, 0xf2, 0xf7, 0x29, 0xd9, 0x9c, 0x27, 0x9c, 0x26, 0x9b, 0x38, 0xac, 0xfd,
-	0x32, 0xd4, 0xe9, 0x01, 0x65, 0x69, 0x4d, 0x4b, 0x77, 0xea, 0x84, 0xbb, 0x72, 0x48, 0xfb, 0x06,
-	0xb4, 0x08, 0x63, 0xd1, 0x98, 0x79, 0x58, 0xd5, 0xc4, 0x3b, 0x8d, 0x13, 0xa7, 0x9c, 0x87, 0x95,
-	0xec, 0x79, 0xa3, 0xa9, 0x33, 0xc0, 0x6c, 0x65, 0xf7, 0x06, 0x34, 0x53, 0xdc, 0x57, 0x60, 0x0e,
-	0x29, 0x81, 0x1c, 0x29, 0x99, 0x3c, 0xa5, 0xb4, 0x7d, 0xe4, 0x80, 0x08, 0xa2, 0x5c, 0x9b, 0x85,
-	0xee, 0x3e, 0x80, 0x85, 0xfa, 0x52, 0xf6, 0xbe, 0x26, 0xe5, 0x46, 0xc4, 0xc2, 0x80, 0xd1, 0xec,
-	0xfa, 0x44, 0x2e, 0x2e, 0xd2, 0xd0, 0x5a, 0x4e, 0x09, 0x98, 0x3b, 0x30, 0xc7, 0x50, 0x2b, 0x8f,
-	0x9f, 0x81, 0x86, 0x01, 0x67, 0xf7, 0x6b, 0x50, 0x53, 0x7b, 0x98, 0x87, 0xca, 0xc0, 0xaa, 0xba,
-	0x02, 0xa4, 0x97, 0xa9, 0xdf, 0xd2, 0xeb, 0x0c, 0x29, 0xf1, 0x71, 0xe5, 0x4a, 0xb1, 0x3a, 0xb9,
-	0x6a, 0x1e, 0x22, 0x7d, 0x7d, 0xcc, 0x85, 0x1b, 0x47, 0xf8, 0x0a, 0x10, 0xfd, 0x55, 0xe7, 0x27,
-	0xf9, 0x7b, 0x3d, 0xc6, 0x83, 0x01, 0xa3, 0xbe, 0xbe, 0x07, 0xde, 0xf5, 0x92, 0x20, 0x3e, 0x55,
-	0x4e, 0x7b, 0x4a, 0xd2, 0xb9, 0x03, 0xcb, 0xe9, 0xaf, 0xc2, 0xb9, 0x7b, 0x09, 0xfa, 0x09, 0x55,
-	0x93, 0x35, 0x2e, 0x3c, 0x76, 0xc6, 0xe7, 0x50, 0x2c, 0xe8, 0x53, 0x2e, 0xcc, 0x8b, 0xe7, 0x6a,
-	0x7a, 0x77, 0x64, 0xfd, 0x20, 0xcc, 0xcb, 0xdf, 0x2d, 0xc1, 0x52, 0xa1, 0x2e, 0xbd, 0x7d, 0x11,
-	0x66, 0x16, 0xab, 0x2f, 0x3f, 0xd7, 0xbe, 0x00, 0xe7, 0x26, 0x7a, 0xef, 0x3e, 0x0d, 0xb8, 0xe0,
-	0xcb, 0xa5, 0xf6, 0xf3, 0x70, 0x69, 0xa2, 0x73, 0x2b, 0xa2, 0xfc, 0x61, 0x24, 0x70, 0xcc, 0x72,
-	0xb9, 0x7d, 0x05, 0x2e, 0x4c, 0x0c, 0x79, 0x18, 0x89, 0x0d, 0xf5, 0xd4, 0x69, 0xb9, 0x72, 0xa7,
-	0xf6, 0x76, 0xe9, 0x5b, 0xa5, 0xe7, 0xfe, 0x23, 0x00, 0x00, 0xff, 0xff, 0xcb, 0x4f, 0x00, 0xe7,
-	0x5c, 0x54, 0x00, 0x00,
+	// 9380 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe4, 0xbd, 0x6b, 0x8c, 0x1d, 0x49,
+	0x96, 0x10, 0x3c, 0xf7, 0xde, 0xaa, 0xfb, 0x88, 0xaa, 0x5b, 0x8f, 0xf4, 0xeb, 0xfa, 0xda, 0xdd,
+	0x76, 0x67, 0xbf, 0xdc, 0xaf, 0x3b, 0x76, 0x8d, 0xbb, 0x67, 0xec, 0x79, 0x74, 0x97, 0xab, 0x5c,
+	0x76, 0xf5, 0xb8, 0xec, 0xda, 0xbc, 0xe5, 0xee, 0xdd, 0xd9, 0xef, 0x23, 0x15, 0x95, 0x19, 0x55,
+	0x37, 0xb7, 0xf2, 0xd5, 0x99, 0x79, 0xcb, 0xae, 0xe6, 0xa1, 0x61, 0xc4, 0xc2, 0x0a, 0x86, 0xd5,
+	0x6a, 0x17, 0xa4, 0xe5, 0xcf, 0x32, 0x5a, 0x04, 0xcb, 0x2e, 0x0f, 0x09, 0x56, 0x83, 0x84, 0x40,
+	0x42, 0x8b, 0x10, 0x20, 0x7e, 0xf0, 0x83, 0x87, 0xf8, 0xb9, 0xe2, 0x21, 0xc1, 0x8f, 0x05, 0x09,
+	0x58, 0xc4, 0xf2, 0x03, 0x84, 0xe2, 0x9c, 0x13, 0x99, 0x91, 0xf7, 0x51, 0x55, 0xdd, 0x76, 0xf7,
+	0x82, 0xf8, 0x63, 0xdf, 0x3c, 0x71, 0xe2, 0xc4, 0x89, 0x13, 0x27, 0x4e, 0x9c, 0x38, 0x71, 0x22,
+	0x8a, 0x5d, 0x4d, 0x33, 0xc1, 0x83, 0x40, 0xa4, 0x29, 0xdf, 0x17, 0xa9, 0xed, 0xf8, 0x9e, 0x08,
+	0xb3, 0x54, 0x24, 0x87, 0x22, 0xe9, 0xc5, 0x49, 0x94, 0x45, 0xdd, 0x4e, 0x19, 0x63, 0x97, 0xa7,
+	0x82, 0x4a, 0xba, 0x22, 0x74, 0x92, 0xa3, 0x38, 0x13, 0xae, 0xcd, 0xe3, 0xd8, 0xce, 0x3c, 0xe7,
+	0x40, 0x64, 0x58, 0x66, 0xfe, 0xff, 0xec, 0xc5, 0xb5, 0xad, 0x74, 0x7f, 0x0d, 0xe8, 0x3d, 0x5e,
+	0xef, 0x6f, 0xaf, 0x6c, 0xf7, 0x45, 0x9a, 0x7a, 0x51, 0xd8, 0xcf, 0x78, 0x92, 0x09, 0xd7, 0x78,
+	0x95, 0x2d, 0x00, 0x65, 0xcf, 0xb5, 0x13, 0x11, 0x44, 0x99, 0xe8, 0x54, 0xae, 0x56, 0xae, 0xd5,
+	0xad, 0x36, 0x41, 0x2d, 0x00, 0x1a, 0x67, 0xd9, 0x2c, 0x8f, 0x63, 0xcf, 0xed, 0x54, 0xaf, 0x56,
+	0xae, 0xcd, 0x5a, 0xf8, 0x61, 0xfe, 0x89, 0x1a, 0xbb, 0x3c, 0x85, 0xfe, 0xdd, 0xd0, 0x7d, 0x46,
+	0xea, 0xc6, 0xdb, 0xcc, 0x48, 0x91, 0x98, 0xed, 0x8b, 0x70, 0x3f, 0x1b, 0xd8, 0xa9, 0x70, 0x3a,
+	0x35, 0x40, 0x59, 0xa2, 0x92, 0x07, 0x50, 0xd0, 0x17, 0x8e, 0xf1, 0x32, 0x6b, 0x2b, 0x6c, 0x91,
+	0x24, 0x51, 0xd2, 0x99, 0x01, 0xc4, 0x79, 0x02, 0xde, 0x95, 0x30, 0xa3, 0xc3, 0x1a, 0x21, 0xcf,
+	0xb2, 0xa3, 0x58, 0x74, 0x66, 0xa1, 0x58, 0x7d, 0x1a, 0x2f, 0x30, 0xb6, 0x7b, 0x94, 0x89, 0xd4,
+	0x4e, 0x84, 0x73, 0xd8, 0xa9, 0x43, 0x61, 0x0b, 0x20, 0x96, 0x70, 0x0e, 0x8b, 0xe2, 0x54, 0x84,
+	0x59, 0xa7, 0xa1, 0x15, 0xf7, 0x45, 0x98, 0x19, 0xd7, 0xd8, 0x52, 0x51, 0x6c, 0x27, 0xc2, 0xe7,
+	0x47, 0x9d, 0x26, 0x20, 0x2d, 0xe4, 0x48, 0x96, 0x84, 0x16, 0x98, 0xb2, 0x1d, 0xc2, 0x6c, 0x69,
+	0x98, 0xb2, 0x35, 0xc4, 0x7c, 0x8b, 0x19, 0x99, 0x17, 0x08, 0x3b, 0x8b, 0x6c, 0x27, 0x0a, 0x43,
+	0xe1, 0x64, 0x76, 0x90, 0x76, 0x18, 0xe0, 0x2e, 0xca, 0x92, 0x9d, 0x68, 0x0d, 0xe1, 0x5b, 0xa9,
+	0xf9, 0x67, 0x2b, 0xcc, 0x2c, 0x46, 0xc2, 0x12, 0xfb, 0x5e, 0x9a, 0x89, 0x64, 0x75, 0x98, 0x0d,
+	0x76, 0x40, 0x1f, 0x3e, 0xf6, 0xb2, 0xc1, 0xda, 0x96, 0xf1, 0x06, 0x5b, 0x02, 0xc5, 0x70, 0x22,
+	0xdf, 0x3e, 0x14, 0x89, 0x14, 0x0c, 0x8c, 0x48, 0xdb, 0x5a, 0x54, 0xf0, 0x8f, 0x10, 0x6c, 0x9c,
+	0x67, 0x75, 0x54, 0x25, 0x90, 0xf8, 0xbc, 0x45, 0x5f, 0x72, 0x54, 0x50, 0x3d, 0x6d, 0x2f, 0x4c,
+	0x33, 0x1e, 0x3a, 0xc2, 0xf6, 0x5c, 0x10, 0xf6, 0x8c, 0xb5, 0x84, 0x25, 0x9b, 0x54, 0xb0, 0xe9,
+	0x9a, 0x7f, 0xa7, 0xaa, 0x6b, 0x08, 0xf2, 0x22, 0xb9, 0x5a, 0x8b, 0x82, 0xd8, 0x17, 0x99, 0x30,
+	0x2e, 0xb2, 0x26, 0xe8, 0x82, 0x24, 0x82, 0xba, 0xd1, 0x80, 0xef, 0x4d, 0xd7, 0xb8, 0xc0, 0x1a,
+	0xfb, 0x3c, 0x00, 0xf2, 0x55, 0x28, 0xa9, 0xcb, 0xcf, 0x4d, 0x57, 0xb2, 0x26, 0xd2, 0x8c, 0x67,
+	0x02, 0x58, 0x6b, 0x5b, 0xf4, 0x65, 0xdc, 0x64, 0xe7, 0x05, 0x1f, 0x82, 0x9e, 0xa0, 0x22, 0x24,
+	0x22, 0x8d, 0xa3, 0x30, 0x15, 0xc0, 0x5e, 0xdb, 0x3a, 0x0b, 0xa5, 0xa4, 0xa0, 0x16, 0x95, 0x19,
+	0x6f, 0xb1, 0xe5, 0xf5, 0xbb, 0xdb, 0xd6, 0xdd, 0xb5, 0xd5, 0x9d, 0xbb, 0xeb, 0x34, 0x7d, 0x40,
+	0x3b, 0xe6, 0xad, 0xa5, 0xa2, 0x00, 0x59, 0x97, 0x7a, 0x80, 0x18, 0xb6, 0x93, 0x38, 0xa0, 0x26,
+	0x6d, 0xab, 0x85, 0x90, 0xb5, 0xc4, 0x31, 0x5e, 0x67, 0x8b, 0x54, 0x9c, 0x8a, 0x4f, 0x86, 0x22,
+	0x74, 0x04, 0xe8, 0x4a, 0xdb, 0x5a, 0x40, 0x70, 0x9f, 0xa0, 0xc6, 0x2b, 0x6c, 0x21, 0x7a, 0x12,
+	0x8a, 0xc4, 0xce, 0x3b, 0xdf, 0x84, 0x2e, 0xce, 0x03, 0xb4, 0x8f, 0x12, 0x30, 0xff, 0x51, 0x85,
+	0x2d, 0x15, 0xd2, 0x5b, 0xdb, 0x7a, 0xe0, 0xa5, 0x99, 0xf1, 0x12, 0x9b, 0x77, 0x02, 0x9b, 0xbb,
+	0x6e, 0x22, 0xd2, 0x54, 0xa4, 0x9d, 0xca, 0xd5, 0xda, 0xb5, 0xb6, 0x35, 0xe7, 0x04, 0xab, 0x0a,
+	0x24, 0x85, 0xea, 0x04, 0x76, 0x1c, 0x25, 0x59, 0xda, 0xa9, 0x42, 0x71, 0xc3, 0x09, 0xb6, 0xe5,
+	0xa7, 0x94, 0x91, 0x13, 0xd8, 0x4f, 0xc4, 0x6e, 0x1a, 0x01, 0x9f, 0x05, 0x9d, 0xda, 0xd5, 0xda,
+	0xb5, 0x96, 0x75, 0xd6, 0x09, 0x3e, 0x56, 0x85, 0x05, 0xc1, 0xf7, 0xd9, 0xe5, 0x58, 0x24, 0x8e,
+	0x1c, 0x75, 0x57, 0xec, 0xf1, 0xa1, 0x9f, 0x49, 0xb5, 0xcc, 0xa9, 0x90, 0x7c, 0x2f, 0x12, 0xce,
+	0x3a, 0xa2, 0xec, 0x44, 0x39, 0x25, 0xf3, 0xdf, 0x55, 0xd8, 0xa5, 0xa2, 0x27, 0xdb, 0x2b, 0xdb,
+	0xa4, 0xba, 0x5e, 0x14, 0x6e, 0x86, 0x7b, 0x91, 0x61, 0xb2, 0xb6, 0x92, 0x84, 0xed, 0x8a, 0x34,
+	0x23, 0x5d, 0x98, 0x23, 0x5d, 0x58, 0x17, 0x69, 0x66, 0x5c, 0x65, 0xf3, 0x39, 0x4e, 0x9a, 0x38,
+	0xa4, 0x14, 0x8c, 0x50, 0xfa, 0x89, 0x63, 0x9c, 0x63, 0x75, 0x69, 0x02, 0x3d, 0x97, 0x14, 0x43,
+	0x1a, 0x92, 0x4d, 0xd7, 0xb8, 0xcc, 0x5a, 0x0e, 0x0f, 0x5d, 0xcf, 0x95, 0x2a, 0x33, 0x03, 0x23,
+	0x5b, 0x00, 0x8c, 0x37, 0xd9, 0xb2, 0x93, 0x33, 0xa3, 0x68, 0xcf, 0x02, 0xed, 0xc5, 0xa2, 0x00,
+	0x1b, 0x78, 0x91, 0xb1, 0x44, 0x84, 0xae, 0xf8, 0xf4, 0x30, 0x1a, 0xa6, 0x30, 0xfc, 0xf3, 0x96,
+	0x06, 0x31, 0x7f, 0xb5, 0xca, 0xae, 0x4c, 0xe9, 0xe6, 0x06, 0xf7, 0xfc, 0x2f, 0xbe, 0xab, 0x6f,
+	0x33, 0x43, 0xc4, 0x2b, 0xb1, 0x3d, 0x6e, 0x0a, 0xdb, 0xd6, 0x92, 0x2c, 0xe9, 0xeb, 0xe6, 0x50,
+	0xce, 0xe5, 0x52, 0xd7, 0x81, 0x1f, 0xec, 0xfb, 0x92, 0xde, 0x77, 0x60, 0x4a, 0x2a, 0x9e, 0x1f,
+	0xa5, 0xc2, 0x4e, 0x04, 0x4f, 0xa3, 0x90, 0x34, 0x7b, 0x0e, 0x60, 0x16, 0x80, 0xa4, 0x11, 0x46,
+	0x14, 0x5a, 0xa8, 0x40, 0xab, 0x5b, 0x16, 0xd6, 0xdb, 0x42, 0x98, 0xd9, 0xd7, 0x65, 0xf4, 0x50,
+	0x64, 0x4f, 0xa2, 0xe4, 0xc0, 0x0b, 0xf7, 0xd7, 0x44, 0x92, 0x59, 0x72, 0x7e, 0xa4, 0x99, 0x54,
+	0xe0, 0x03, 0x71, 0x64, 0xbb, 0x3c, 0xe3, 0xd0, 0xf7, 0x79, 0xab, 0x71, 0x20, 0x8e, 0xd6, 0x79,
+	0xc6, 0xa7, 0x74, 0xdc, 0x4c, 0xd8, 0x0b, 0xd3, 0x89, 0xc6, 0xfe, 0x91, 0x61, 0xb0, 0x19, 0x47,
+	0x24, 0x19, 0x8d, 0x3f, 0xfc, 0x36, 0xba, 0x52, 0x31, 0x6c, 0xd9, 0x92, 0xe7, 0x52, 0xb7, 0x1b,
+	0x0e, 0xff, 0xae, 0x38, 0xda, 0x74, 0xa1, 0xb7, 0xdc, 0x4e, 0xbd, 0xfd, 0x90, 0x67, 0xc3, 0x44,
+	0xd0, 0x60, 0xcf, 0x39, 0xbc, 0xaf, 0x40, 0xe6, 0x77, 0xd8, 0xab, 0x93, 0xda, 0xdc, 0x8a, 0x76,
+	0x3d, 0x5f, 0xe8, 0xdd, 0x29, 0x78, 0xae, 0xe8, 0x3c, 0xdf, 0x67, 0x2f, 0x9f, 0x54, 0x5f, 0x72,
+	0xfe, 0x12, 0x9b, 0x17, 0xa1, 0x13, 0xb9, 0xc2, 0xb5, 0xa1, 0x07, 0x15, 0x90, 0xe9, 0x1c, 0xc1,
+	0x24, 0x9e, 0xf9, 0x0d, 0x5d, 0xa4, 0xf7, 0x44, 0xb6, 0x1a, 0xc7, 0x8f, 0xa4, 0x21, 0x49, 0x07,
+	0x5e, 0x4c, 0x96, 0x6b, 0x0a, 0x0f, 0x43, 0xf6, 0xfa, 0x09, 0x35, 0x73, 0x43, 0x79, 0x89, 0x35,
+	0x44, 0x22, 0xd2, 0xa1, 0x8f, 0x2c, 0xb4, 0x6f, 0x57, 0x56, 0x2c, 0x05, 0xd1, 0xc8, 0x57, 0x75,
+	0x7d, 0x9c, 0xb2, 0x8a, 0x98, 0x3d, 0x76, 0xbe, 0x68, 0x96, 0x74, 0x72, 0x27, 0x3a, 0x10, 0xa1,
+	0xf4, 0x05, 0x32, 0xf9, 0x03, 0xda, 0x98, 0xb1, 0xf0, 0xc3, 0xdc, 0xd3, 0xcd, 0xc7, 0x3d, 0x1e,
+	0x08, 0x9a, 0x58, 0x50, 0x27, 0x35, 0xbe, 0xca, 0x8c, 0x80, 0x3f, 0xb5, 0x01, 0x37, 0x95, 0xa6,
+	0xe9, 0x40, 0x88, 0x98, 0xb8, 0xac, 0xde, 0xb8, 0x6e, 0x2d, 0x06, 0xfc, 0x29, 0xa2, 0xee, 0x44,
+	0xdf, 0x15, 0x22, 0x06, 0xbe, 0xe0, 0x1b, 0xec, 0xa3, 0xe4, 0x0b, 0xbe, 0xcc, 0x1f, 0x56, 0xd1,
+	0xe2, 0xde, 0xeb, 0xf7, 0xc1, 0xfb, 0xda, 0x91, 0xbe, 0x81, 0xc9, 0xda, 0xd8, 0x37, 0x1b, 0x5c,
+	0x32, 0x25, 0xc1, 0x39, 0xe8, 0x22, 0xe0, 0xb9, 0x92, 0xed, 0x3d, 0x9f, 0xef, 0xa7, 0xaa, 0xfb,
+	0xf0, 0x61, 0x7c, 0x93, 0x75, 0x5d, 0x11, 0x27, 0xc2, 0xe1, 0xd2, 0x3d, 0xc3, 0xd5, 0x2c, 0x56,
+	0x36, 0x97, 0x14, 0xf8, 0x42, 0x81, 0x21, 0x3b, 0xb6, 0x19, 0x93, 0xd9, 0x35, 0x2e, 0xb1, 0x16,
+	0xd4, 0x90, 0x76, 0x9c, 0xa6, 0x70, 0x53, 0x02, 0xa4, 0x21, 0x97, 0x33, 0x04, 0x0a, 0x5d, 0x2f,
+	0x01, 0xcd, 0x6d, 0x59, 0xb0, 0x58, 0xae, 0x7b, 0x89, 0xd4, 0x17, 0x28, 0x52, 0x0b, 0x7c, 0x1d,
+	0xf5, 0x45, 0xc2, 0xd4, 0xe2, 0xfe, 0x1a, 0x5b, 0x04, 0x94, 0x4f, 0x86, 0x22, 0x39, 0xc2, 0x06,
+	0x70, 0x36, 0xb7, 0x25, 0xf8, 0x27, 0x24, 0x54, 0xb6, 0x62, 0x5e, 0x67, 0xcb, 0x24, 0x8d, 0x8c,
+	0x67, 0xc3, 0x14, 0xf5, 0xf1, 0x12, 0x6b, 0x79, 0xd2, 0xd3, 0x71, 0xe4, 0xb4, 0x90, 0xa2, 0x68,
+	0x5a, 0x4d, 0x2f, 0xed, 0xc3, 0xb7, 0xf9, 0xaf, 0x2b, 0x4a, 0x80, 0xdb, 0x3e, 0x3f, 0x12, 0x09,
+	0x2c, 0x59, 0x2b, 0xac, 0x11, 0xc3, 0x17, 0xae, 0x56, 0x73, 0x2b, 0x9d, 0xde, 0x28, 0x4e, 0x0f,
+	0x7f, 0x5a, 0x0a, 0xb1, 0xfb, 0xcb, 0x15, 0x56, 0x47, 0xd8, 0x98, 0x8f, 0x30, 0x53, 0xf8, 0x08,
+	0xd7, 0xd9, 0x59, 0x4d, 0xc0, 0xf1, 0x70, 0xd7, 0xf7, 0x1c, 0xdb, 0x8b, 0x69, 0x14, 0x8c, 0xa2,
+	0x6c, 0x1b, 0x8a, 0x36, 0xe3, 0x42, 0xbf, 0x50, 0x21, 0xf1, 0xc3, 0x78, 0x8b, 0xb5, 0x8a, 0xca,
+	0x52, 0xd6, 0x73, 0x2b, 0x0b, 0xc0, 0xe3, 0xe6, 0x36, 0x0d, 0x87, 0xd5, 0x8c, 0x89, 0x84, 0xf9,
+	0x17, 0x2a, 0x4a, 0x2c, 0x8f, 0x53, 0x91, 0x48, 0x26, 0xbd, 0x70, 0xff, 0x38, 0x4f, 0xe6, 0xf7,
+	0x85, 0xcb, 0xaf, 0xe1, 0x14, 0xbb, 0xd7, 0x5f, 0xf7, 0x52, 0xb2, 0xe5, 0x0f, 0xa3, 0xcc, 0x73,
+	0x8e, 0xf3, 0xb9, 0xcc, 0xff, 0xd1, 0x62, 0xe7, 0xca, 0x13, 0x2d, 0x85, 0x41, 0x70, 0x8d, 0x75,
+	0xd4, 0xaa, 0xd4, 0x86, 0x01, 0x72, 0x69, 0x20, 0x5f, 0xea, 0x4d, 0xc4, 0xee, 0xc9, 0xdf, 0xf8,
+	0x13, 0x15, 0x4f, 0x51, 0x79, 0x85, 0x2d, 0x90, 0xf7, 0x18, 0xa5, 0x36, 0xf8, 0xe1, 0x28, 0x83,
+	0x79, 0x84, 0x3e, 0x4a, 0x61, 0xc2, 0xad, 0xb0, 0x73, 0x8e, 0x1f, 0x0d, 0x61, 0xc6, 0x78, 0xe1,
+	0xbe, 0x6c, 0x32, 0xdb, 0x8b, 0x92, 0x80, 0x66, 0xcc, 0x19, 0x28, 0xbc, 0x07, 0x65, 0xdb, 0x54,
+	0xd4, 0xfd, 0x7b, 0x4d, 0xc6, 0x8a, 0x56, 0x8d, 0x17, 0xd9, 0x5c, 0xbe, 0x82, 0xee, 0xa7, 0xa4,
+	0x36, 0x2d, 0xea, 0xe6, 0xbd, 0x74, 0xba, 0x73, 0xf9, 0xc5, 0x4d, 0xd9, 0xd2, 0xbc, 0x99, 0x2d,
+	0xcf, 0x9b, 0x62, 0xc0, 0xeb, 0xfa, 0x80, 0xab, 0x79, 0x2a, 0x9e, 0x66, 0x09, 0xb7, 0xbd, 0x70,
+	0x2f, 0x82, 0x79, 0xda, 0xc2, 0x79, 0x7a, 0x57, 0x42, 0xc1, 0xa7, 0x78, 0x85, 0x2d, 0xa0, 0x35,
+	0xe0, 0x19, 0xb7, 0x77, 0xfd, 0x68, 0x17, 0x16, 0xde, 0x79, 0x0b, 0x86, 0x4c, 0x2e, 0x9b, 0x77,
+	0xfc, 0x68, 0x57, 0x3a, 0xaf, 0x71, 0x12, 0x39, 0x22, 0x4d, 0x65, 0xb7, 0x5b, 0xe8, 0xbc, 0x12,
+	0x64, 0xd3, 0x95, 0x52, 0x4f, 0xb3, 0x44, 0x90, 0xc8, 0x93, 0xe8, 0xd0, 0x73, 0x45, 0x22, 0x31,
+	0x19, 0x4a, 0x3d, 0x2f, 0xdc, 0xa6, 0xb2, 0x4d, 0x57, 0x92, 0x84, 0x86, 0xd1, 0xf6, 0xcd, 0x21,
+	0x49, 0x09, 0xd9, 0x00, 0xfb, 0x77, 0x91, 0x35, 0xd1, 0xcd, 0xf5, 0xdc, 0xce, 0x3c, 0x14, 0x36,
+	0xe0, 0x7b, 0xd3, 0x95, 0x46, 0xf5, 0x30, 0xb1, 0x07, 0x81, 0x6b, 0x1f, 0x8a, 0xd0, 0x8d, 0x92,
+	0x4e, 0x1b, 0xcd, 0xd4, 0x61, 0x72, 0x3f, 0x70, 0x3f, 0x02, 0x90, 0x74, 0x83, 0x08, 0x27, 0x88,
+	0x5c, 0xe1, 0x77, 0x16, 0x00, 0x85, 0x01, 0xca, 0x96, 0x84, 0x48, 0xc3, 0xef, 0xf3, 0x61, 0xe8,
+	0x0c, 0xec, 0x28, 0x06, 0x27, 0x06, 0x74, 0x6a, 0x11, 0x97, 0xa7, 0xeb, 0xd6, 0x12, 0x16, 0x3e,
+	0x82, 0x32, 0x50, 0xad, 0xdb, 0xec, 0x42, 0x9c, 0x78, 0x01, 0x4f, 0x8e, 0xe4, 0xae, 0x2a, 0x4b,
+	0x22, 0xdf, 0x17, 0x09, 0xd6, 0x5a, 0x92, 0x5b, 0xab, 0xdb, 0xd5, 0x77, 0x6e, 0x58, 0xe7, 0x08,
+	0x65, 0x2d, 0xc7, 0x80, 0xba, 0x77, 0xd9, 0x15, 0x55, 0x17, 0x75, 0x4b, 0xa3, 0x90, 0x8a, 0xc4,
+	0xe3, 0x7e, 0x67, 0x19, 0x38, 0xbc, 0x4c, 0x68, 0xe0, 0xc7, 0x17, 0x44, 0xfa, 0x80, 0x63, 0xdc,
+	0x61, 0x97, 0xb3, 0x28, 0xe3, 0xfe, 0x38, 0x11, 0x27, 0x1a, 0x86, 0x59, 0xc7, 0x50, 0xdc, 0x5f,
+	0x04, 0xb4, 0x11, 0x22, 0x6b, 0x12, 0xc7, 0xd8, 0x64, 0x57, 0x91, 0x46, 0x18, 0x85, 0xd3, 0xe8,
+	0x9c, 0x51, 0x74, 0xb0, 0xb9, 0x87, 0x72, 0xd3, 0x3f, 0x81, 0xd4, 0x07, 0xec, 0x92, 0x56, 0x55,
+	0xfa, 0x20, 0xe9, 0x20, 0x8a, 0xed, 0x3d, 0xcf, 0x87, 0xd9, 0x71, 0x56, 0xce, 0x1c, 0x49, 0xa5,
+	0x53, 0x60, 0x7d, 0x4c, 0x48, 0x1b, 0x9e, 0x2f, 0xa7, 0xcc, 0x6b, 0xac, 0x4d, 0x83, 0x90, 0x46,
+	0xc3, 0xc4, 0x11, 0x9d, 0x73, 0xaa, 0xe5, 0x79, 0x84, 0xf7, 0x01, 0x2c, 0xb5, 0x94, 0x86, 0x33,
+	0x19, 0x86, 0x72, 0x07, 0xdb, 0x39, 0x8f, 0x93, 0x1f, 0x06, 0xd4, 0x42, 0x98, 0xf1, 0x1e, 0xe9,
+	0xbc, 0x36, 0xeb, 0x2e, 0x4c, 0x34, 0x75, 0x30, 0x07, 0x8a, 0xb9, 0xf7, 0x3e, 0xeb, 0x96, 0x44,
+	0x90, 0xfb, 0xb5, 0x30, 0xb8, 0x1d, 0xc5, 0x92, 0xd6, 0x8d, 0xc2, 0x39, 0x97, 0xc3, 0x6b, 0x6e,
+	0xb3, 0x36, 0x1a, 0xcc, 0xd5, 0x58, 0x6a, 0xff, 0xb1, 0x7b, 0xd3, 0xf1, 0xfd, 0x5b, 0x75, 0xc2,
+	0xfe, 0xed, 0x80, 0x31, 0x32, 0xc1, 0x22, 0x3c, 0x3a, 0x8e, 0x9c, 0x74, 0xf1, 0x5c, 0x11, 0x1e,
+	0x29, 0xd7, 0x1a, 0xe3, 0x20, 0x73, 0x00, 0x23, 0xd7, 0xfa, 0x0a, 0x9b, 0x03, 0x8c, 0x34, 0x4b,
+	0xbc, 0x70, 0x1f, 0x0c, 0x51, 0xcb, 0x62, 0x12, 0xd4, 0x07, 0x88, 0xf9, 0xa1, 0x6a, 0xec, 0xbb,
+	0x9e, 0x73, 0xf0, 0x6c, 0x8d, 0x99, 0x3f, 0x5f, 0x65, 0x46, 0x61, 0xd8, 0xe5, 0x86, 0x1d, 0xd6,
+	0xf1, 0x2b, 0x6c, 0x8e, 0x5c, 0x2c, 0x5f, 0xec, 0x91, 0x17, 0x68, 0x31, 0x04, 0x3d, 0x10, 0x7b,
+	0x10, 0x07, 0xf1, 0x79, 0x9a, 0xd9, 0x09, 0x3a, 0xbe, 0x72, 0x17, 0x4c, 0x06, 0x7e, 0x41, 0xc2,
+	0xc9, 0x1f, 0xee, 0x8b, 0x4f, 0x8c, 0xef, 0xb0, 0xcb, 0xa3, 0x98, 0xf6, 0x5e, 0x12, 0x05, 0xe8,
+	0x62, 0x25, 0x64, 0x68, 0x3b, 0xe5, 0x5a, 0x1b, 0x49, 0x14, 0xa0, 0x5f, 0x66, 0xbc, 0xc1, 0x1a,
+	0xe8, 0x4a, 0xa6, 0x9d, 0x19, 0x58, 0x89, 0x16, 0x41, 0x3b, 0x8a, 0x88, 0x87, 0xa5, 0xca, 0xa5,
+	0xa9, 0x47, 0xf7, 0x2d, 0xed, 0xcc, 0xc2, 0x66, 0xb8, 0x0e, 0x8e, 0x5b, 0x6a, 0xbc, 0xc1, 0x96,
+	0x68, 0x9f, 0x52, 0x6c, 0xd7, 0x71, 0x4b, 0xbf, 0x48, 0x70, 0xb5, 0x5f, 0x37, 0x3f, 0xd5, 0x97,
+	0x45, 0x25, 0x8f, 0x55, 0xe7, 0x60, 0x24, 0x20, 0x80, 0x7b, 0x71, 0x2d, 0x20, 0xa0, 0xb5, 0x5d,
+	0x3d, 0xb1, 0xed, 0xda, 0xe4, 0xb6, 0x7f, 0x54, 0xd7, 0x1b, 0x7f, 0xe0, 0x39, 0x22, 0x4c, 0x05,
+	0x8c, 0xc7, 0x88, 0x47, 0x3e, 0x5b, 0xf2, 0xc8, 0x6f, 0xb3, 0xa6, 0x8f, 0xb8, 0xd8, 0xf6, 0xdc,
+	0xca, 0x8b, 0xbd, 0x89, 0x64, 0x7a, 0xf4, 0xdb, 0xca, 0xf1, 0xbb, 0x7f, 0x6d, 0x96, 0x35, 0x08,
+	0x0a, 0xab, 0x06, 0x77, 0x0e, 0x24, 0xa7, 0xf9, 0xe6, 0xa1, 0x45, 0x10, 0xd4, 0x26, 0x08, 0x53,
+	0x39, 0x89, 0x90, 0xeb, 0x21, 0x0c, 0x77, 0xc3, 0x9a, 0x93, 0xb0, 0x35, 0x04, 0xc9, 0x1d, 0x36,
+	0xa0, 0x84, 0xe2, 0x69, 0x66, 0xd3, 0x7a, 0x03, 0x9d, 0x6d, 0x60, 0x20, 0xeb, 0xa1, 0x78, 0x9a,
+	0x6d, 0x23, 0x58, 0x92, 0x0b, 0xbc, 0x70, 0x98, 0x09, 0xdb, 0xf7, 0x02, 0x2f, 0xa3, 0x28, 0xde,
+	0x1c, 0xc2, 0x1e, 0x48, 0x50, 0x81, 0x92, 0xda, 0xc3, 0x54, 0xb8, 0x14, 0xc9, 0x23, 0x94, 0xf4,
+	0x71, 0x8a, 0x71, 0xc7, 0x98, 0x1f, 0x05, 0xd2, 0xcf, 0x08, 0x44, 0x36, 0x88, 0x5c, 0x1a, 0xd7,
+	0x36, 0x41, 0xb7, 0x00, 0x58, 0x38, 0xed, 0x0d, 0xdd, 0x69, 0x5f, 0x61, 0xe7, 0xe2, 0x61, 0xe2,
+	0x0c, 0x78, 0x2a, 0xd0, 0x92, 0xc2, 0x5a, 0xe1, 0xaa, 0xcd, 0xec, 0x19, 0x55, 0xb8, 0x86, 0x65,
+	0x6b, 0x91, 0x2b, 0x24, 0x4f, 0x24, 0x3c, 0x34, 0x37, 0xb8, 0xb8, 0xce, 0x11, 0x0c, 0x56, 0x8f,
+	0x57, 0xd9, 0x42, 0x26, 0x92, 0xc4, 0xcb, 0x22, 0x45, 0x0f, 0x63, 0x79, 0xed, 0x1c, 0x0a, 0x94,
+	0xe4, 0x16, 0x7a, 0xc0, 0xc3, 0x7d, 0x61, 0x87, 0xc3, 0x60, 0x57, 0x24, 0xb0, 0xa8, 0xce, 0x5a,
+	0xf3, 0x08, 0x7c, 0x08, 0xb0, 0xe3, 0xd6, 0xd5, 0x57, 0xd9, 0x82, 0x17, 0x7a, 0x99, 0xc7, 0x7d,
+	0x3b, 0x16, 0x89, 0x17, 0xb9, 0xb0, 0xb0, 0xb6, 0xad, 0x36, 0x41, 0xb7, 0x01, 0x28, 0xc7, 0x44,
+	0xa1, 0xc1, 0xd8, 0x0c, 0x43, 0x2f, 0x83, 0xf5, 0xb5, 0x6d, 0x2d, 0x52, 0xc1, 0x8e, 0x17, 0x88,
+	0xc7, 0xa1, 0x97, 0x49, 0x92, 0x89, 0x08, 0xc5, 0x93, 0x82, 0xe4, 0x22, 0x92, 0x24, 0x68, 0x41,
+	0x52, 0xa1, 0x15, 0x24, 0x97, 0x90, 0x24, 0x15, 0xe4, 0x24, 0x5f, 0x62, 0xf3, 0xdc, 0x01, 0x4f,
+	0x04, 0xbd, 0x9e, 0x65, 0xf0, 0xcf, 0xe6, 0x10, 0x86, 0x1b, 0xc1, 0x37, 0xd9, 0x72, 0xc0, 0xd3,
+	0x4c, 0x24, 0xb6, 0xa6, 0x7e, 0x06, 0x4d, 0x11, 0x28, 0xd8, 0x56, 0x4a, 0x68, 0xfe, 0xb8, 0x52,
+	0x9a, 0x22, 0x77, 0xfa, 0x7d, 0x91, 0xf5, 0x9d, 0x28, 0x11, 0x53, 0xb6, 0xbd, 0xb2, 0x4b, 0xbe,
+	0xe0, 0xae, 0x48, 0x76, 0x23, 0x9e, 0xb8, 0x76, 0x1e, 0x7a, 0x6e, 0x6b, 0xd0, 0x4d, 0x50, 0x90,
+	0x54, 0x92, 0xa1, 0xa8, 0x33, 0x7e, 0x18, 0x1d, 0xd6, 0x70, 0x45, 0xc6, 0x3d, 0x3f, 0xa5, 0x68,
+	0x82, 0xfa, 0x34, 0x7a, 0xec, 0xcc, 0x30, 0xf6, 0x23, 0xee, 0xda, 0x80, 0xa9, 0x94, 0x0f, 0x35,
+	0x74, 0x19, 0x8b, 0x80, 0x2f, 0x54, 0x40, 0xf3, 0xbf, 0x56, 0xf4, 0xb0, 0x85, 0xc6, 0xf7, 0xb4,
+	0x4d, 0x77, 0x79, 0x8a, 0xbf, 0xc7, 0x2e, 0xe8, 0xbd, 0x10, 0xa4, 0xaa, 0x72, 0xf1, 0xc7, 0xee,
+	0x9c, 0xd3, 0x8a, 0xef, 0xa2, 0xb2, 0xca, 0x25, 0xff, 0x65, 0xd6, 0x46, 0xfe, 0x50, 0xa9, 0x30,
+	0x94, 0xd2, 0xb4, 0xe6, 0x01, 0xb8, 0x86, 0x30, 0xb9, 0x69, 0xd9, 0xf7, 0xa3, 0x5d, 0xee, 0xdb,
+	0x09, 0x0f, 0x0f, 0xec, 0x38, 0x11, 0x87, 0x5e, 0x34, 0x4c, 0x69, 0x46, 0x1a, 0x58, 0x66, 0xf1,
+	0xf0, 0x60, 0x9b, 0x4a, 0xc0, 0x5b, 0xd5, 0x6a, 0x84, 0xe2, 0x09, 0xf5, 0xbc, 0x5d, 0x20, 0x3f,
+	0x14, 0x4f, 0xcc, 0x9f, 0x61, 0x67, 0x46, 0x3b, 0xfd, 0xf8, 0xde, 0xda, 0x33, 0x0e, 0xd5, 0x39,
+	0x56, 0x1f, 0xee, 0x3b, 0x2a, 0x2e, 0x54, 0xb7, 0x66, 0x87, 0xfb, 0xce, 0xa6, 0x6b, 0xde, 0xd6,
+	0x03, 0x07, 0x79, 0x5b, 0xa7, 0x12, 0xaf, 0xf9, 0xfd, 0xea, 0x48, 0xe5, 0x0d, 0x2f, 0x74, 0x1f,
+	0x25, 0x68, 0xd6, 0x1e, 0xdc, 0x99, 0xc6, 0xf0, 0xc8, 0xa8, 0xa4, 0x51, 0x92, 0x5b, 0xa1, 0xf1,
+	0x51, 0xe9, 0x47, 0x89, 0xb2, 0x46, 0xdf, 0x60, 0x1d, 0xbd, 0x9e, 0xeb, 0xa5, 0x72, 0xab, 0x85,
+	0xf6, 0x04, 0xf5, 0xef, 0xbc, 0x56, 0xbe, 0x8e, 0xc5, 0x60, 0x5a, 0xde, 0x61, 0x67, 0xd0, 0xfc,
+	0xda, 0xde, 0x9e, 0x1d, 0x46, 0x99, 0xbd, 0x17, 0x0d, 0x43, 0x0c, 0xca, 0x37, 0xad, 0x25, 0x2c,
+	0xda, 0xdc, 0x7b, 0x18, 0x65, 0x1b, 0x12, 0x2e, 0xd7, 0x1e, 0xbd, 0xa1, 0x90, 0x07, 0x82, 0x62,
+	0x08, 0x8b, 0x1a, 0xfc, 0x21, 0x0f, 0x84, 0xf9, 0x0f, 0xaa, 0x7a, 0x8c, 0x6a, 0x4c, 0x04, 0xa7,
+	0x53, 0xd3, 0x53, 0x8e, 0xe0, 0x31, 0xda, 0x5c, 0x3b, 0x4e, 0x9b, 0x6f, 0x4d, 0x97, 0xf7, 0x0c,
+	0xf2, 0x72, 0x7d, 0x9a, 0xc8, 0xbf, 0x79, 0x8c, 0xc8, 0x67, 0x55, 0xdd, 0x69, 0x52, 0x9f, 0x24,
+	0xc6, 0xfa, 0x64, 0x31, 0xfe, 0xc7, 0x0a, 0xbb, 0x58, 0x12, 0xe3, 0x3d, 0x91, 0x3d, 0xb8, 0x23,
+	0xfb, 0xe0, 0x89, 0x74, 0x44, 0x8f, 0x66, 0x3f, 0xa3, 0xe2, 0x5f, 0x61, 0x73, 0x09, 0xac, 0x17,
+	0x69, 0xc6, 0x13, 0x25, 0x2a, 0x06, 0x20, 0x38, 0xe4, 0x93, 0xfb, 0x4e, 0x44, 0x10, 0xa4, 0x13,
+	0xb3, 0x56, 0x13, 0x00, 0x77, 0xc3, 0x71, 0xa5, 0x93, 0x1b, 0x48, 0xf2, 0xc9, 0x68, 0xf2, 0x96,
+	0xba, 0xcf, 0x33, 0xae, 0x82, 0x9a, 0x5d, 0xf2, 0x30, 0xa5, 0x6f, 0x53, 0xbf, 0x5a, 0xbb, 0x56,
+	0xb7, 0xf2, 0x6f, 0xf3, 0x9f, 0x55, 0xd9, 0x4b, 0x53, 0xfb, 0xfb, 0xc5, 0xda, 0xb6, 0x3b, 0xac,
+	0x21, 0xb0, 0x1d, 0x38, 0xd1, 0x98, 0x5b, 0xb9, 0xd6, 0x3b, 0x91, 0x93, 0x1e, 0xd4, 0xb7, 0x54,
+	0xc5, 0xee, 0x2f, 0x55, 0xd8, 0x2c, 0x80, 0x4a, 0xc1, 0xfa, 0x61, 0x2a, 0x92, 0x91, 0x60, 0xfd,
+	0xe3, 0x54, 0x24, 0x72, 0x00, 0x34, 0xb3, 0x47, 0xdc, 0xb1, 0xc2, 0xe4, 0x7d, 0xe6, 0x55, 0xa4,
+	0x30, 0x65, 0xb3, 0xba, 0x29, 0xfb, 0x9d, 0x8a, 0x7e, 0x9a, 0xbb, 0x1a, 0xc7, 0x5b, 0xe8, 0xf1,
+	0x60, 0xc4, 0x03, 0x82, 0xe3, 0x3f, 0xcd, 0x16, 0x94, 0x6b, 0x54, 0x0a, 0xd3, 0xdc, 0xec, 0x1d,
+	0x5f, 0xb1, 0x37, 0x09, 0x68, 0xb5, 0x03, 0x1d, 0xd4, 0x0d, 0xd8, 0xd9, 0x89, 0x8d, 0x4e, 0x31,
+	0x83, 0x1d, 0xd6, 0xd8, 0x8b, 0x12, 0x21, 0x9d, 0x79, 0x14, 0x89, 0xfa, 0x94, 0x9b, 0x27, 0xf0,
+	0xfd, 0xb3, 0x27, 0x91, 0xfd, 0x44, 0x88, 0x83, 0x94, 0x04, 0x33, 0x2f, 0xa1, 0x3b, 0x4f, 0xa2,
+	0x8f, 0x25, 0xcc, 0xfc, 0x61, 0x95, 0x75, 0x0b, 0xae, 0x37, 0x53, 0x70, 0xfe, 0x84, 0xbb, 0xea,
+	0x80, 0x12, 0xc8, 0xa5, 0x76, 0xd7, 0x4b, 0xd1, 0x4b, 0x14, 0xae, 0xcd, 0x11, 0x4c, 0xf1, 0xc8,
+	0xe5, 0x5d, 0x6f, 0x14, 0xff, 0x3a, 0x3b, 0x2b, 0xf1, 0x9d, 0x28, 0x08, 0xa4, 0x63, 0x72, 0x64,
+	0xef, 0xf2, 0x30, 0x24, 0x7f, 0xb5, 0x69, 0x19, 0xbb, 0x5e, 0xba, 0xa6, 0x8a, 0xee, 0x40, 0x89,
+	0xf1, 0x36, 0x33, 0xa0, 0x85, 0xc8, 0x39, 0xd0, 0x1a, 0xc0, 0xa5, 0x72, 0x49, 0x36, 0x00, 0x05,
+	0x8a, 0xfe, 0x1f, 0x60, 0xef, 0x4c, 0xe0, 0xc7, 0xe6, 0xbe, 0x1f, 0x3d, 0x11, 0xae, 0x9d, 0x45,
+	0xb6, 0x17, 0x1e, 0x7a, 0x99, 0xb0, 0xf7, 0x12, 0x4f, 0x84, 0x6e, 0x4a, 0xd6, 0xf9, 0xf5, 0x31,
+	0x4e, 0x57, 0xb1, 0xc6, 0x4e, 0xb4, 0x09, 0xf8, 0x1b, 0x88, 0x6e, 0xfe, 0xcb, 0xd2, 0xe8, 0xd3,
+	0x24, 0x14, 0x2e, 0x45, 0xd0, 0x33, 0x9e, 0xa5, 0xc6, 0x23, 0xa9, 0xac, 0x3c, 0x83, 0x00, 0x78,
+	0x2a, 0x27, 0x3b, 0x0e, 0xfe, 0x5b, 0xbd, 0xe3, 0xeb, 0xf5, 0xe0, 0xdf, 0x9d, 0xa8, 0x2f, 0x42,
+	0x57, 0x6a, 0x76, 0xfe, 0xd1, 0xdd, 0x65, 0x73, 0x5a, 0x99, 0x54, 0x74, 0x0a, 0xde, 0x49, 0x24,
+	0xb5, 0xfd, 0x73, 0x72, 0x4a, 0x18, 0x41, 0xe2, 0x99, 0xcd, 0xf7, 0xf7, 0x13, 0xb1, 0x2f, 0xd7,
+	0x23, 0x6d, 0xdd, 0x83, 0x08, 0x12, 0xcf, 0x56, 0x55, 0x19, 0xb9, 0x40, 0x3f, 0x5b, 0x65, 0x8b,
+	0xda, 0x51, 0x40, 0xc6, 0xb3, 0x15, 0xe3, 0x5b, 0x0c, 0xd8, 0xb0, 0x71, 0x42, 0x50, 0x37, 0x2e,
+	0xf5, 0x46, 0xd0, 0x80, 0xef, 0x75, 0x40, 0xb1, 0x58, 0x9a, 0xff, 0xee, 0xfe, 0x66, 0x85, 0xb1,
+	0xa2, 0xe8, 0x64, 0xae, 0x2f, 0xb2, 0xa6, 0xef, 0xdb, 0x87, 0xdc, 0x1f, 0x62, 0x34, 0xb2, 0x66,
+	0x35, 0x7c, 0xff, 0x23, 0xf9, 0x69, 0xbc, 0xc8, 0x60, 0x23, 0x63, 0x47, 0x7b, 0xb6, 0xcb, 0x8f,
+	0x68, 0x83, 0xd6, 0x92, 0xa0, 0x47, 0x7b, 0xeb, 0xfc, 0x48, 0x6e, 0xef, 0x1c, 0xe1, 0xfb, 0xea,
+	0x04, 0xbc, 0x6d, 0xd5, 0xe5, 0xe7, 0xa6, 0x2b, 0x69, 0xba, 0x22, 0x8e, 0x32, 0x35, 0x89, 0xdb,
+	0x72, 0x76, 0xc7, 0x51, 0x86, 0x8e, 0x0a, 0x4d, 0x97, 0xba, 0x7e, 0x10, 0xf3, 0xdb, 0x15, 0xfd,
+	0x24, 0x66, 0x6b, 0x4b, 0x7a, 0x2a, 0x16, 0xcf, 0x04, 0x28, 0xd4, 0x76, 0xe4, 0x7b, 0xce, 0xd1,
+	0xa3, 0x10, 0x0b, 0xa7, 0xcd, 0xb8, 0xb7, 0x99, 0x21, 0x42, 0xbe, 0xeb, 0x0b, 0x3b, 0xe1, 0x6a,
+	0x03, 0x95, 0x92, 0x82, 0x2f, 0x61, 0x89, 0xa4, 0x08, 0xea, 0x06, 0xbe, 0x6a, 0x2a, 0x9c, 0x28,
+	0x74, 0x53, 0xe9, 0xd5, 0xe7, 0x27, 0x76, 0x38, 0x15, 0x97, 0xa9, 0x68, 0x5b, 0x24, 0x74, 0x6c,
+	0x67, 0xbc, 0xcf, 0x2e, 0x07, 0x9e, 0xef, 0x7b, 0x7a, 0x25, 0x58, 0x2e, 0x86, 0x71, 0x7e, 0xb0,
+	0x3a, 0x6b, 0x5d, 0xd4, 0x71, 0xb6, 0x45, 0x22, 0x2d, 0xc4, 0x63, 0x40, 0x30, 0xff, 0x45, 0x95,
+	0x75, 0x4a, 0x3d, 0x24, 0x2f, 0x22, 0xda, 0xdd, 0x3d, 0x9a, 0xd6, 0xa5, 0x2b, 0x6c, 0x2e, 0xe0,
+	0x4f, 0xed, 0x40, 0xc8, 0x6d, 0x4f, 0xaa, 0x6c, 0x6b, 0xc0, 0x9f, 0x6e, 0x21, 0x44, 0xee, 0x4e,
+	0x7d, 0x49, 0x40, 0x77, 0x93, 0x5a, 0x00, 0x81, 0x35, 0xfa, 0x0a, 0x9b, 0xc3, 0x62, 0xdc, 0xe7,
+	0x21, 0x8f, 0x58, 0x03, 0x23, 0x94, 0xda, 0x08, 0xce, 0x96, 0x46, 0x70, 0x5a, 0xcc, 0xbe, 0x3e,
+	0x35, 0x66, 0xdf, 0x65, 0xcd, 0x40, 0x64, 0x1c, 0x0e, 0x2d, 0x1b, 0x60, 0xd1, 0xf3, 0x6f, 0x39,
+	0x34, 0xb1, 0x48, 0xd2, 0x28, 0xe4, 0xe0, 0x27, 0xd8, 0xb0, 0x5b, 0xa3, 0x0d, 0xe5, 0x12, 0x95,
+	0x48, 0x4f, 0x01, 0xce, 0xde, 0xca, 0x71, 0xfe, 0xd6, 0x09, 0x71, 0xfe, 0x3f, 0xc4, 0xae, 0x4e,
+	0x93, 0x6a, 0xbe, 0xd2, 0x4e, 0x91, 0xee, 0x2b, 0x94, 0x9e, 0x23, 0x57, 0x37, 0x90, 0x89, 0x8a,
+	0x62, 0xd1, 0xf2, 0x86, 0x43, 0xa3, 0x2d, 0xd3, 0xb5, 0x31, 0x1f, 0xf9, 0xa9, 0x7e, 0x90, 0xb7,
+	0xb5, 0xd5, 0xff, 0x30, 0xf2, 0xc2, 0x63, 0x47, 0xf4, 0x74, 0x6d, 0xbe, 0xc4, 0xe6, 0x75, 0x79,
+	0x51, 0xb8, 0x6b, 0x4e, 0x93, 0x94, 0xf9, 0xdb, 0x35, 0xdd, 0x20, 0xea, 0x4d, 0x3f, 0x9f, 0x6e,
+	0x7f, 0x9d, 0x75, 0x9c, 0x01, 0xcf, 0xec, 0x24, 0x8a, 0x02, 0xe9, 0x7e, 0x88, 0xa4, 0xc8, 0x27,
+	0x21, 0x7f, 0x54, 0x96, 0x5b, 0x51, 0x14, 0xdc, 0x95, 0xa5, 0x79, 0xab, 0x23, 0x3a, 0x3b, 0x73,
+	0x82, 0xce, 0xce, 0x9e, 0xa0, 0xb3, 0xf5, 0x31, 0x9d, 0xd5, 0xf9, 0x47, 0x45, 0x6a, 0x94, 0xf8,
+	0x47, 0x25, 0xd2, 0xd5, 0xb1, 0x39, 0xa2, 0x8e, 0x1f, 0xb0, 0x86, 0x62, 0xaf, 0x05, 0xc6, 0xf5,
+	0xb5, 0xde, 0xf1, 0xa2, 0xec, 0x21, 0xef, 0x96, 0xaa, 0xd6, 0xdd, 0x65, 0x75, 0x04, 0x9d, 0x10,
+	0x69, 0x2c, 0x8d, 0x62, 0x75, 0x6c, 0x14, 0x4b, 0x5c, 0xd6, 0xca, 0x5c, 0x9a, 0x1f, 0xb1, 0x0b,
+	0x25, 0xae, 0x1e, 0x08, 0x7e, 0x28, 0x9e, 0x5d, 0xb9, 0xcc, 0x3f, 0xa8, 0x9f, 0x96, 0x97, 0xe8,
+	0x7e, 0x09, 0x13, 0xe6, 0x17, 0x6a, 0xfa, 0x56, 0x60, 0x6b, 0x0b, 0x1c, 0x52, 0x59, 0x0d, 0x22,
+	0x7a, 0x53, 0xda, 0x5d, 0x61, 0xe7, 0xc2, 0x61, 0x00, 0x4d, 0x7a, 0x90, 0x3b, 0x46, 0xab, 0x38,
+	0x29, 0xe2, 0x99, 0x70, 0x18, 0x3c, 0xc0, 0xb2, 0x7c, 0x81, 0x9f, 0xbe, 0x36, 0x4d, 0xb3, 0x6c,
+	0xb3, 0x53, 0x2d, 0xdb, 0x37, 0x59, 0x63, 0xcf, 0xf3, 0x33, 0xa9, 0x2e, 0xf5, 0xb1, 0x63, 0xbf,
+	0x91, 0x2e, 0xf4, 0x36, 0x00, 0xd3, 0x52, 0x35, 0xca, 0xc6, 0xac, 0x71, 0xbc, 0x31, 0xeb, 0xa6,
+	0xac, 0x8e, 0xf5, 0x8d, 0x25, 0x56, 0x3b, 0x10, 0x47, 0x94, 0xec, 0x20, 0x7f, 0x4a, 0x37, 0xba,
+	0x58, 0xa4, 0x5b, 0x16, 0x7e, 0x18, 0x57, 0xd9, 0x9c, 0x13, 0x05, 0x31, 0x4f, 0x3c, 0x38, 0xec,
+	0x46, 0x81, 0xe8, 0x20, 0x39, 0x9f, 0x90, 0x17, 0x9c, 0x6f, 0x34, 0x1f, 0x11, 0x04, 0x81, 0xff,
+	0x5f, 0xac, 0xe9, 0xbb, 0x95, 0x91, 0xfe, 0x9c, 0xa4, 0x12, 0xc7, 0x0d, 0xb6, 0xdc, 0x8c, 0xd0,
+	0x98, 0x51, 0x94, 0xfa, 0x5a, 0xef, 0xc4, 0x86, 0x7a, 0xa8, 0x89, 0xaa, 0x62, 0xf7, 0x77, 0x2b,
+	0x6c, 0x16, 0xf5, 0xea, 0x98, 0x99, 0xf6, 0x85, 0xaf, 0x93, 0xfa, 0x3c, 0x9d, 0x1d, 0xb1, 0x26,
+	0x57, 0xd8, 0x9c, 0xd4, 0x4e, 0xd5, 0x38, 0x19, 0xac, 0x70, 0x18, 0xa8, 0xc6, 0xbb, 0xac, 0xe9,
+	0x7a, 0x98, 0x13, 0x08, 0x1a, 0x50, 0xb5, 0xf2, 0x6f, 0xe3, 0x3c, 0xab, 0x3f, 0x11, 0xde, 0xfe,
+	0x20, 0x03, 0x23, 0x55, 0xb3, 0xe8, 0xcb, 0xfc, 0x9f, 0x95, 0x91, 0x79, 0xd2, 0x27, 0x59, 0x1d,
+	0xb7, 0xe7, 0x38, 0xdd, 0xfc, 0x7c, 0x8d, 0x2d, 0xe6, 0x58, 0xc8, 0x34, 0xc5, 0x8c, 0xda, 0x84,
+	0x46, 0x96, 0xed, 0x0b, 0x37, 0xe4, 0xc7, 0x78, 0x0c, 0xe6, 0x1f, 0x1e, 0xd1, 0x49, 0xbd, 0xfb,
+	0x5f, 0x82, 0x99, 0xfa, 0xc9, 0x29, 0x56, 0xea, 0x99, 0xa5, 0x6f, 0xfe, 0xb9, 0x99, 0x11, 0x97,
+	0xe1, 0x39, 0x8d, 0xea, 0x88, 0x16, 0xd6, 0xc6, 0xb4, 0xf0, 0xff, 0x82, 0x75, 0xf9, 0x1b, 0xa3,
+	0xeb, 0xf2, 0x8b, 0xbd, 0xc9, 0xa2, 0x1a, 0x5d, 0x8f, 0xe1, 0x00, 0x02, 0x98, 0x93, 0x46, 0x3e,
+	0x3f, 0xb3, 0x47, 0x86, 0xd7, 0x00, 0x64, 0x7c, 0x9b, 0x5d, 0xa2, 0x33, 0xcb, 0x41, 0x34, 0xf4,
+	0x61, 0x8b, 0x2a, 0xe2, 0x8c, 0x62, 0xc0, 0x78, 0x78, 0xdf, 0xb4, 0x3a, 0x78, 0x80, 0x09, 0x18,
+	0xab, 0x80, 0x80, 0xf1, 0xe0, 0x2f, 0x67, 0xc5, 0xff, 0xf5, 0x52, 0x3c, 0x1c, 0xb4, 0x3e, 0xc4,
+	0xe1, 0x5d, 0x1b, 0xf0, 0x6c, 0x2b, 0xdd, 0x7f, 0x7e, 0x13, 0x3f, 0xe3, 0xc9, 0x3e, 0xa5, 0xa5,
+	0x15, 0x13, 0x7f, 0x07, 0x80, 0xc6, 0xcb, 0xac, 0x8d, 0xc2, 0x54, 0x9b, 0x22, 0x0c, 0xd0, 0xa0,
+	0x84, 0x55, 0x1a, 0xe3, 0x5f, 0x1c, 0x35, 0x50, 0x5f, 0x0c, 0x9f, 0x72, 0x23, 0x3f, 0x66, 0xa0,
+	0xfa, 0x00, 0x3c, 0x1d, 0x9f, 0x7f, 0xbc, 0xa2, 0xc7, 0x51, 0x34, 0x4b, 0x82, 0xea, 0xf8, 0x4c,
+	0x8c, 0xbe, 0xc5, 0x8c, 0x1c, 0x2b, 0x14, 0x4f, 0x48, 0xeb, 0x91, 0xd7, 0x45, 0xc2, 0x7c, 0x28,
+	0x9e, 0x40, 0x4b, 0xe6, 0x1f, 0xd1, 0x53, 0xd4, 0x47, 0xf9, 0xf8, 0x12, 0x4c, 0xda, 0x0f, 0x4a,
+	0x39, 0xc8, 0x1a, 0x03, 0x0f, 0xbc, 0xf0, 0x40, 0xb8, 0xcf, 0x6f, 0xc8, 0x00, 0x6b, 0x65, 0x64,
+	0xc8, 0x00, 0x6d, 0xc5, 0xfc, 0x8d, 0xea, 0x88, 0xf3, 0xa9, 0x98, 0xb8, 0xc7, 0x03, 0x41, 0x67,
+	0xdb, 0xcf, 0xc4, 0xc8, 0x2d, 0x76, 0x71, 0x34, 0x7f, 0x09, 0x8f, 0xd4, 0xa5, 0xfb, 0x85, 0x01,
+	0x8c, 0xf3, 0xe5, 0xf4, 0x25, 0x6c, 0x75, 0x33, 0x36, 0xae, 0xb1, 0x25, 0x1d, 0x5f, 0x4b, 0x62,
+	0x82, 0xec, 0x22, 0xc4, 0x83, 0x54, 0xa6, 0xaf, 0xb2, 0xb3, 0x3a, 0x66, 0x6e, 0x0d, 0x30, 0x5e,
+	0xb9, 0x5c, 0x60, 0x53, 0x26, 0x84, 0x71, 0x93, 0x12, 0x94, 0x0a, 0x56, 0xea, 0x13, 0x3d, 0xc1,
+	0xf9, 0x7d, 0x8d, 0xa1, 0x71, 0x61, 0x8d, 0x48, 0xaa, 0x3f, 0x35, 0xaf, 0xf5, 0xff, 0x41, 0x61,
+	0xfd, 0x6a, 0x45, 0xbf, 0x6a, 0xb1, 0xb5, 0x05, 0xc9, 0x89, 0x72, 0x23, 0x27, 0xdc, 0xe7, 0xb0,
+	0x21, 0x1f, 0x0b, 0x84, 0xd7, 0xc6, 0x03, 0xe1, 0xa3, 0xc6, 0x7f, 0x66, 0x7c, 0xd3, 0xfe, 0xa3,
+	0x51, 0x63, 0x24, 0x2b, 0x3e, 0x10, 0x7b, 0xd9, 0xff, 0x39, 0x2c, 0xfe, 0x70, 0x94, 0x45, 0x8c,
+	0xc3, 0xee, 0x44, 0xcf, 0x81, 0xc5, 0x1b, 0xec, 0x5c, 0x89, 0x45, 0x8a, 0x09, 0xab, 0x33, 0x4b,
+	0x43, 0x63, 0x15, 0x5b, 0x75, 0xcd, 0xbf, 0x3e, 0x6a, 0xb5, 0x94, 0x27, 0x86, 0x29, 0xb9, 0xcf,
+	0xc6, 0xcf, 0x1b, 0x6c, 0xc9, 0xf1, 0xb9, 0x97, 0x7b, 0x4d, 0x03, 0x52, 0xfb, 0xa6, 0xb5, 0x08,
+	0xf0, 0xad, 0x1c, 0x6c, 0xbc, 0xce, 0x10, 0x84, 0x36, 0x1e, 0x30, 0x31, 0x82, 0xbd, 0x00, 0xe0,
+	0x3c, 0x69, 0xdc, 0xfc, 0x1b, 0x15, 0xfd, 0xc8, 0x70, 0x8c, 0xe1, 0xe7, 0x63, 0xe8, 0xb7, 0x94,
+	0xbb, 0x93, 0x02, 0x51, 0x60, 0x7a, 0x61, 0x65, 0xa9, 0x77, 0x57, 0x19, 0x09, 0x6c, 0xec, 0x76,
+	0xe7, 0xc0, 0x1e, 0x01, 0x6d, 0x86, 0x87, 0xdc, 0xf7, 0x5c, 0x72, 0x8d, 0x10, 0x66, 0xfe, 0xa5,
+	0x8a, 0xee, 0x93, 0xaa, 0x01, 0x97, 0xf3, 0xfd, 0x39, 0x5d, 0xd7, 0x78, 0x95, 0x2d, 0xa8, 0x4b,
+	0x5c, 0xa5, 0x04, 0xae, 0x36, 0x41, 0x31, 0x87, 0x0b, 0xce, 0xf2, 0xe0, 0x4a, 0x1c, 0x1c, 0xdf,
+	0x90, 0x76, 0x32, 0x04, 0x6d, 0xfb, 0xfc, 0xc8, 0xfc, 0xe5, 0x2a, 0x3b, 0xab, 0xdd, 0x08, 0x1a,
+	0x70, 0x62, 0x56, 0x9a, 0xa3, 0x9c, 0x05, 0xa5, 0x54, 0xc8, 0xe9, 0x02, 0xb1, 0x41, 0x0a, 0x55,
+	0xea, 0x90, 0x33, 0xe0, 0x19, 0x71, 0xab, 0x3a, 0x24, 0x69, 0x96, 0x56, 0xb3, 0x98, 0x67, 0x09,
+	0x6d, 0xac, 0x8b, 0xd5, 0x6c, 0x1b, 0x80, 0x94, 0xac, 0x92, 0x41, 0x88, 0x4c, 0xdb, 0x5c, 0xcf,
+	0x2b, 0x20, 0xf8, 0xcd, 0x5f, 0x65, 0x67, 0x73, 0x62, 0x78, 0xf8, 0x81, 0xed, 0x92, 0xfd, 0x23,
+	0x8a, 0x78, 0xce, 0x01, 0xad, 0x5f, 0x62, 0x2d, 0x88, 0xbc, 0x69, 0x27, 0xaa, 0x4d, 0x09, 0x00,
+	0xf7, 0x51, 0x4b, 0xdc, 0x6d, 0xe8, 0x89, 0xbb, 0xe6, 0x2f, 0xcd, 0xeb, 0xfe, 0x58, 0x91, 0xdb,
+	0x87, 0x67, 0x23, 0xf7, 0xf0, 0x48, 0x21, 0xb5, 0xfd, 0x68, 0x9f, 0x2e, 0xbd, 0x95, 0xa3, 0x5e,
+	0x23, 0x15, 0xf0, 0x50, 0xc4, 0x7e, 0x20, 0xb1, 0xf1, 0x74, 0x21, 0x85, 0xdf, 0x05, 0xa1, 0x43,
+	0x39, 0x74, 0x20, 0xbc, 0xd3, 0x10, 0xfa, 0x48, 0x82, 0x89, 0xd0, 0x47, 0xb2, 0x66, 0xf7, 0xb7,
+	0xaa, 0x74, 0xba, 0x82, 0x8d, 0xc0, 0x5c, 0x24, 0x15, 0xe1, 0x59, 0x26, 0x82, 0x38, 0x4b, 0xe9,
+	0x3c, 0x58, 0x5d, 0x43, 0x5a, 0x25, 0xb0, 0xf1, 0x56, 0x7e, 0x65, 0xc9, 0x4e, 0x87, 0x90, 0x32,
+	0x23, 0xd4, 0x9e, 0x5f, 0xd1, 0xe8, 0x2b, 0xb8, 0x4e, 0x77, 0x8f, 0x7b, 0xfe, 0x30, 0x11, 0x6a,
+	0x73, 0xa4, 0xe8, 0x6e, 0x10, 0xd8, 0xf8, 0x2a, 0x3b, 0x53, 0xe4, 0x4d, 0xa6, 0xb6, 0x9b, 0x44,
+	0x71, 0x2c, 0xd4, 0x99, 0xb1, 0x76, 0x55, 0x28, 0x5d, 0xc7, 0x12, 0x69, 0x14, 0xd4, 0x71, 0x40,
+	0x32, 0x0c, 0x43, 0xa9, 0xd7, 0x18, 0x45, 0x5a, 0x20, 0xb0, 0x85, 0x50, 0xe3, 0x06, 0x3b, 0x1b,
+	0xa4, 0xc2, 0xb1, 0xb3, 0x08, 0xe4, 0x9f, 0x0d, 0xbc, 0x14, 0x12, 0x40, 0x31, 0x9a, 0x7e, 0x46,
+	0x96, 0xed, 0x94, 0x8b, 0xa4, 0x9e, 0xe2, 0x11, 0xda, 0x2e, 0x77, 0x6d, 0x27, 0x48, 0xf3, 0xfb,
+	0x46, 0x12, 0x78, 0x87, 0xbb, 0x6b, 0x41, 0xda, 0xfd, 0x8d, 0x0a, 0x6b, 0xa1, 0x0c, 0x1f, 0xaf,
+	0x6f, 0x4b, 0xbd, 0x89, 0x0f, 0x32, 0xba, 0xa3, 0x89, 0x19, 0xdf, 0x4d, 0x09, 0x80, 0x2b, 0x9a,
+	0xe5, 0x1b, 0x9c, 0x55, 0xcc, 0x07, 0x2f, 0x6e, 0x70, 0xaa, 0xba, 0x70, 0xfd, 0xb3, 0x56, 0xd4,
+	0x85, 0xdb, 0x9f, 0xaf, 0xb2, 0x05, 0x28, 0xa4, 0xdc, 0x35, 0xa1, 0xee, 0x3b, 0xb6, 0x25, 0x74,
+	0x5b, 0x01, 0x47, 0xee, 0x90, 0xce, 0x6a, 0x4d, 0x48, 0x2a, 0xdd, 0xff, 0x52, 0x57, 0x03, 0x0e,
+	0xca, 0x00, 0x16, 0x55, 0x93, 0xf6, 0xd0, 0xa5, 0x1b, 0x2b, 0xd6, 0x82, 0x06, 0x7e, 0xec, 0xc6,
+	0xa3, 0x88, 0x99, 0xa3, 0x6e, 0x0e, 0xe8, 0x88, 0x3b, 0x4e, 0x6c, 0xac, 0xb2, 0x16, 0xea, 0xa6,
+	0xa4, 0x55, 0x03, 0xcd, 0x7c, 0xe5, 0x44, 0xcd, 0x7c, 0xbc, 0xbe, 0x6d, 0x35, 0xa1, 0x9a, 0x6c,
+	0x4b, 0x75, 0x95, 0xef, 0xf2, 0xd0, 0x8d, 0xc2, 0x72, 0x57, 0x57, 0x15, 0x50, 0x5d, 0x9a, 0xb3,
+	0x13, 0xf1, 0x89, 0xec, 0xad, 0xf0, 0x0e, 0x29, 0x11, 0x6f, 0x06, 0xb5, 0xca, 0x12, 0x9f, 0x58,
+	0x04, 0x96, 0x46, 0x8d, 0x44, 0x0b, 0xa2, 0xaf, 0x03, 0x16, 0x43, 0xe1, 0xa6, 0x24, 0xfb, 0x20,
+	0xdd, 0xd7, 0xee, 0xd6, 0xce, 0x58, 0x4d, 0x09, 0x50, 0x57, 0x6b, 0xf3, 0x42, 0x50, 0x60, 0x81,
+	0x77, 0x25, 0x67, 0xac, 0x05, 0x85, 0xb3, 0x01, 0xd0, 0x9c, 0x0c, 0x48, 0xbf, 0x55, 0x90, 0x51,
+	0x43, 0x28, 0x77, 0x98, 0xfb, 0x09, 0x0f, 0xa8, 0x21, 0x86, 0xfd, 0xca, 0xa1, 0xd0, 0x5a, 0x09,
+	0x0d, 0x08, 0xcd, 0x8d, 0xa0, 0x01, 0x35, 0x93, 0xb5, 0xa5, 0x56, 0x16, 0x1a, 0x33, 0x8f, 0xf9,
+	0x6b, 0xbb, 0xdc, 0xdd, 0x56, 0x4a, 0xf3, 0x35, 0x76, 0x7e, 0x18, 0x1e, 0x84, 0xd1, 0x93, 0x10,
+	0x92, 0x91, 0x35, 0xe4, 0x36, 0x20, 0x9f, 0xa1, 0x52, 0x39, 0x2a, 0x79, 0x25, 0xd9, 0x5b, 0x4f,
+	0x2a, 0x93, 0x86, 0xbe, 0x40, 0xbd, 0x05, 0x78, 0x8e, 0x69, 0xb2, 0xb6, 0x3b, 0x8c, 0x35, 0xb4,
+	0x45, 0x64, 0xc1, 0x1d, 0xc6, 0x39, 0xce, 0x6d, 0x76, 0x11, 0x25, 0x96, 0xdf, 0x20, 0x76, 0x06,
+	0xdc, 0xf7, 0x05, 0xec, 0xf7, 0x97, 0x00, 0xff, 0x02, 0x22, 0x90, 0x6a, 0xac, 0xe5, 0xc5, 0xd2,
+	0x55, 0x09, 0x3c, 0x27, 0x89, 0x6c, 0x39, 0x6d, 0xf9, 0xe1, 0xbe, 0xed, 0xf3, 0x4c, 0x84, 0xce,
+	0x11, 0xa4, 0xea, 0xb5, 0x2d, 0x03, 0x0a, 0xfb, 0xc2, 0x59, 0x3d, 0xdc, 0x7f, 0x80, 0x25, 0xe5,
+	0x2a, 0x81, 0x17, 0xe6, 0x55, 0x8c, 0x72, 0x95, 0x2d, 0x2f, 0x9c, 0x5c, 0x85, 0x3f, 0xcd, 0xab,
+	0x9c, 0x19, 0xa9, 0xc2, 0x9f, 0xaa, 0x2a, 0x6f, 0xb3, 0x33, 0x81, 0x08, 0xec, 0x38, 0x8a, 0x7c,
+	0x3b, 0x48, 0xf7, 0x6d, 0x2f, 0x94, 0xae, 0x14, 0xe4, 0xa9, 0x43, 0xf2, 0x6c, 0xb0, 0x1d, 0x45,
+	0xbe, 0xf4, 0x93, 0xc3, 0xc7, 0xa9, 0x30, 0xff, 0x4c, 0x29, 0x8b, 0x00, 0x9d, 0xe5, 0x74, 0xf5,
+	0x90, 0x7b, 0x3e, 0xdf, 0xf5, 0x85, 0x31, 0x60, 0xe7, 0xc9, 0xcb, 0x96, 0xcb, 0x57, 0x6a, 0x73,
+	0x55, 0x42, 0x87, 0xce, 0x2b, 0xbd, 0xe9, 0x95, 0x7b, 0x08, 0xb0, 0x77, 0xa0, 0x66, 0x0e, 0xb6,
+	0xce, 0xa6, 0xf9, 0xd5, 0x31, 0xad, 0xa5, 0x0f, 0xd8, 0x0b, 0x5a, 0x4b, 0xf6, 0x5e, 0x94, 0xd8,
+	0x74, 0x57, 0x39, 0x39, 0xf4, 0x1c, 0xa1, 0x2e, 0x8e, 0x5d, 0x2c, 0x2a, 0x6f, 0x44, 0x70, 0x81,
+	0xbb, 0x4f, 0x08, 0xdd, 0x0f, 0xd9, 0xf9, 0xc9, 0x2d, 0x1a, 0xe7, 0x59, 0x9d, 0xd2, 0xa6, 0xd1,
+	0x80, 0xd0, 0x97, 0xd1, 0x61, 0x0d, 0x95, 0xe1, 0x87, 0xa7, 0xc0, 0xea, 0xd3, 0xfc, 0x2b, 0x25,
+	0x87, 0xe7, 0x9e, 0xc8, 0xa4, 0xcb, 0x89, 0x2b, 0xa5, 0xb6, 0xc0, 0x56, 0x4a, 0x37, 0x63, 0xe4,
+	0xb2, 0x9c, 0x38, 0xe0, 0x71, 0x29, 0x6e, 0x9b, 0x4e, 0xe2, 0x60, 0xad, 0xeb, 0xec, 0x6c, 0xea,
+	0x0c, 0x44, 0xc0, 0x6d, 0x3f, 0x72, 0x78, 0x71, 0xbb, 0x1c, 0x57, 0x1a, 0x03, 0xcb, 0x1e, 0xc8,
+	0x22, 0x75, 0x07, 0xed, 0x0d, 0xb6, 0x5c, 0xb8, 0x05, 0x51, 0x82, 0x2e, 0xfb, 0x4c, 0xc9, 0x65,
+	0xd9, 0x88, 0x12, 0xc9, 0x97, 0xf9, 0x4f, 0x4a, 0x47, 0x7d, 0x3a, 0xb7, 0xb9, 0x37, 0x79, 0x0c,
+	0xd7, 0x79, 0x48, 0xa0, 0x3a, 0x16, 0x9f, 0x2f, 0x75, 0xa9, 0x36, 0xd2, 0x25, 0x29, 0x55, 0x60,
+	0x9b, 0xc2, 0x2a, 0xf4, 0x65, 0x7c, 0x93, 0xcd, 0x62, 0x85, 0x59, 0x50, 0x91, 0x57, 0x7b, 0xc7,
+	0xb3, 0x86, 0x66, 0xd6, 0xc2, 0x3a, 0x06, 0x67, 0x06, 0x77, 0x06, 0x9e, 0x38, 0x14, 0x90, 0x9d,
+	0xbc, 0xeb, 0x47, 0xce, 0x81, 0x3a, 0x55, 0x59, 0x39, 0x89, 0xd2, 0xaa, 0x56, 0xf3, 0x0e, 0xd4,
+	0xb4, 0x96, 0x35, 0x6a, 0x08, 0xea, 0xbe, 0xcf, 0x66, 0xf3, 0x91, 0x84, 0x34, 0x8a, 0xdc, 0xc5,
+	0xae, 0xcb, 0x4f, 0xbc, 0xb5, 0x03, 0x05, 0xc5, 0x71, 0x4a, 0xdb, 0x82, 0x95, 0x03, 0xb2, 0x1e,
+	0xba, 0xff, 0x1f, 0x33, 0xc6, 0x5b, 0x92, 0xa6, 0x51, 0xe7, 0x3c, 0x27, 0xda, 0xd6, 0xa0, 0x78,
+	0x12, 0x31, 0x0c, 0x65, 0x0d, 0x48, 0x02, 0x86, 0xcc, 0xf3, 0x86, 0xc5, 0x10, 0xb4, 0xe3, 0x05,
+	0xc2, 0xfc, 0xef, 0x55, 0xfd, 0xc0, 0xba, 0x9f, 0x45, 0x89, 0xf8, 0x52, 0x86, 0xf3, 0x13, 0x76,
+	0x01, 0x17, 0x47, 0x32, 0x89, 0xb0, 0x0d, 0xe0, 0x72, 0x35, 0xa4, 0xb3, 0x99, 0x5b, 0xbd, 0x93,
+	0xd8, 0xa2, 0x15, 0x13, 0xd7, 0x1b, 0xfb, 0xa3, 0x9c, 0x80, 0x05, 0x69, 0x2f, 0x29, 0xc2, 0x0b,
+	0x30, 0xaa, 0xb8, 0xac, 0x11, 0x0d, 0x33, 0xcc, 0x21, 0xc9, 0xd4, 0xcd, 0xaf, 0x05, 0x28, 0x78,
+	0x34, 0xcc, 0x1e, 0xed, 0xad, 0xf3, 0x4c, 0x74, 0x77, 0xd9, 0x85, 0x29, 0xc4, 0xa7, 0x0f, 0x63,
+	0x8f, 0x9d, 0x81, 0x84, 0xaa, 0x4c, 0xb8, 0xf6, 0xd8, 0x78, 0x2e, 0xab, 0xa2, 0xbe, 0x1a, 0x57,
+	0xf3, 0xb7, 0xaa, 0xba, 0x87, 0x5c, 0xee, 0xe2, 0xca, 0x74, 0x91, 0xcb, 0xcd, 0x80, 0xc8, 0xb2,
+	0x68, 0xec, 0xb2, 0x4b, 0x1b, 0xc1, 0x2a, 0x6c, 0x41, 0x78, 0x42, 0x14, 0x78, 0xb5, 0x02, 0x4f,
+	0x08, 0x85, 0x57, 0x1a, 0xa5, 0x99, 0x91, 0x51, 0x7a, 0x95, 0x2d, 0x88, 0xa7, 0xb1, 0xef, 0x39,
+	0x5e, 0x06, 0x0e, 0x43, 0x46, 0xf2, 0x6a, 0x2b, 0xa8, 0xf4, 0x19, 0x32, 0xe3, 0x3d, 0x35, 0x07,
+	0x71, 0xe6, 0x5c, 0x9d, 0x3a, 0x74, 0x2b, 0xa5, 0xe9, 0xf7, 0xcc, 0x73, 0xc3, 0xfc, 0x5f, 0x25,
+	0xc3, 0x09, 0xb4, 0x30, 0xbd, 0xc5, 0xfd, 0x5c, 0x4f, 0x59, 0x1c, 0xab, 0xb1, 0x1f, 0xb2, 0x36,
+	0xe6, 0xd6, 0xb8, 0xb9, 0xb0, 0x46, 0x0d, 0x8e, 0xce, 0x40, 0x8f, 0xfe, 0xb7, 0xb1, 0xc7, 0xf3,
+	0x54, 0x17, 0xbe, 0xba, 0xf7, 0x58, 0xbb, 0x54, 0xfc, 0xb9, 0x05, 0xf0, 0xbb, 0x15, 0x3d, 0x8b,
+	0xa7, 0x2c, 0xec, 0xe9, 0x3a, 0x34, 0x3e, 0xac, 0xd5, 0x49, 0xc3, 0xfa, 0x90, 0x2d, 0x14, 0x19,
+	0x6c, 0x19, 0xa6, 0x4c, 0x8e, 0x1e, 0x9b, 0x96, 0x9b, 0xa4, 0x29, 0xb9, 0x13, 0xd9, 0x00, 0xb7,
+	0xe6, 0x55, 0xfe, 0x9a, 0xfc, 0xea, 0xde, 0x67, 0x0b, 0xe5, 0xf2, 0xcf, 0xdd, 0xed, 0xcb, 0xba,
+	0x1b, 0x71, 0x4f, 0x64, 0xf8, 0x03, 0x53, 0xcc, 0x52, 0xf3, 0x11, 0x7b, 0x45, 0xcf, 0xb1, 0x8b,
+	0xa3, 0x24, 0x7b, 0x74, 0x28, 0x12, 0x9f, 0x1f, 0xad, 0x8b, 0x2c, 0x1a, 0x26, 0xb4, 0xc3, 0x92,
+	0x9e, 0x3c, 0xed, 0xc1, 0x28, 0x0c, 0x80, 0x17, 0xa2, 0x5b, 0xd6, 0x02, 0x81, 0x31, 0x0e, 0x90,
+	0x9a, 0xff, 0xb0, 0xa6, 0x07, 0xcb, 0x47, 0xdb, 0xcb, 0xcd, 0xe4, 0xeb, 0x6c, 0x51, 0x5d, 0x8e,
+	0x28, 0x3f, 0xe7, 0xb2, 0x40, 0xe0, 0x62, 0xb1, 0x1d, 0x7f, 0xf8, 0xa5, 0x39, 0xf9, 0xe1, 0x97,
+	0x05, 0x56, 0x8d, 0x52, 0x3a, 0xb8, 0xa9, 0x46, 0x78, 0x23, 0x47, 0x9a, 0xf8, 0x50, 0x94, 0x52,
+	0x71, 0x08, 0x06, 0x7b, 0xf2, 0x4b, 0xac, 0xe5, 0xc5, 0x94, 0x49, 0x40, 0x41, 0x8b, 0xa6, 0x17,
+	0x63, 0xfa, 0x80, 0x14, 0xac, 0x2c, 0x4c, 0xbc, 0x43, 0x65, 0xfd, 0x5a, 0x56, 0xcb, 0x8b, 0xb7,
+	0x11, 0x20, 0xbb, 0x80, 0x9b, 0xa6, 0xc2, 0xf5, 0xc2, 0x2d, 0x00, 0xbe, 0x87, 0x53, 0x38, 0x39,
+	0x5b, 0xac, 0x8d, 0x17, 0x90, 0xd5, 0x4e, 0xb3, 0x3e, 0xa6, 0x1a, 0xd3, 0xe4, 0x04, 0xd7, 0x91,
+	0x31, 0x5c, 0xaa, 0x76, 0xa4, 0x5d, 0xc1, 0x66, 0x20, 0xbe, 0x93, 0xbf, 0x3d, 0x54, 0x44, 0xa1,
+	0x3c, 0xd0, 0x06, 0xed, 0xce, 0x2d, 0x0a, 0xa3, 0x25, 0xf2, 0xfb, 0xb6, 0xd7, 0xd8, 0x12, 0xe4,
+	0x05, 0x12, 0x2b, 0xf9, 0xc3, 0x44, 0xf0, 0xd0, 0x4b, 0x20, 0xa8, 0x8d, 0xbe, 0x70, 0xcc, 0xbf,
+	0x5f, 0x99, 0xa8, 0x38, 0xab, 0x71, 0x0c, 0xf9, 0x1e, 0x67, 0xd9, 0x6c, 0x20, 0x5c, 0x8f, 0x53,
+	0xde, 0x2a, 0x7e, 0xe0, 0x65, 0xe0, 0xc8, 0x57, 0xb9, 0x7b, 0xf8, 0x21, 0xa1, 0xd0, 0x03, 0x8a,
+	0xd0, 0xe1, 0x87, 0x9c, 0x59, 0x51, 0xe8, 0x1f, 0xe1, 0x6b, 0x3c, 0xbe, 0x2f, 0x54, 0xda, 0x7f,
+	0x5b, 0x42, 0x37, 0x15, 0xd0, 0x78, 0x99, 0x01, 0x00, 0x4f, 0xfb, 0xd4, 0x3e, 0xbd, 0x69, 0xcd,
+	0x4b, 0xe0, 0x1a, 0xc1, 0xa4, 0xc7, 0xe3, 0x44, 0x81, 0xe7, 0xe0, 0xe1, 0x66, 0xd3, 0xa2, 0x2f,
+	0xf3, 0xbf, 0xcd, 0x4e, 0xd4, 0x46, 0xea, 0x44, 0xae, 0x8d, 0xdf, 0x64, 0x33, 0x3c, 0x8e, 0xd5,
+	0x1d, 0xff, 0xd7, 0x7b, 0x27, 0x57, 0xe9, 0xad, 0xc6, 0xb1, 0x05, 0x95, 0x26, 0xe9, 0x41, 0x75,
+	0x92, 0x1e, 0x74, 0xff, 0xc3, 0x0c, 0xab, 0xad, 0xc6, 0xf1, 0x94, 0x81, 0xeb, 0xb2, 0xa6, 0xc3,
+	0x33, 0xb1, 0x1f, 0x25, 0x47, 0x34, 0x6c, 0xf9, 0xb7, 0x34, 0xd0, 0xf0, 0x42, 0xd6, 0x51, 0x8c,
+	0x77, 0xaf, 0x5a, 0x56, 0x83, 0xc7, 0x31, 0xc4, 0xa8, 0xba, 0xac, 0xb9, 0xc7, 0x0f, 0xa3, 0xc4,
+	0xa3, 0x47, 0x85, 0x9a, 0x56, 0xfe, 0x6d, 0x5c, 0x66, 0xad, 0x51, 0xe1, 0x16, 0x00, 0xe9, 0xef,
+	0xf0, 0x61, 0x16, 0xa9, 0x2c, 0x48, 0x14, 0x2b, 0x93, 0x20, 0xb4, 0xb7, 0x72, 0xea, 0x61, 0xc7,
+	0xdc, 0xe8, 0x49, 0xe8, 0x47, 0xdc, 0x15, 0x2e, 0xed, 0x81, 0xb1, 0xc3, 0xeb, 0x39, 0x58, 0x4e,
+	0x35, 0x44, 0x0d, 0x85, 0x90, 0x68, 0x0d, 0xda, 0x55, 0x4a, 0xd8, 0x43, 0x00, 0x41, 0xda, 0x73,
+	0x89, 0x1a, 0xe4, 0x7a, 0xd2, 0x5c, 0x5e, 0x2e, 0x11, 0xb4, 0x68, 0x7a, 0xe5, 0x98, 0x31, 0x87,
+	0xfb, 0x72, 0x78, 0xd0, 0xbb, 0xa0, 0xc0, 0xdb, 0x00, 0x95, 0x88, 0xe1, 0x30, 0xc8, 0xc9, 0x4a,
+	0x15, 0xc1, 0x9b, 0x65, 0x0b, 0xe1, 0x30, 0x58, 0x2f, 0xa0, 0x72, 0x6a, 0x48, 0x44, 0x22, 0x86,
+	0x97, 0xcb, 0x5a, 0xe1, 0x30, 0x20, 0x3a, 0x72, 0x00, 0x94, 0x8e, 0x2d, 0xa0, 0x24, 0xd5, 0xb7,
+	0xb1, 0xc2, 0xce, 0xe5, 0xa3, 0x6b, 0x47, 0x61, 0x71, 0xaf, 0x7f, 0x11, 0x10, 0xcf, 0xe4, 0x85,
+	0x8f, 0x42, 0x75, 0xaf, 0xdf, 0x78, 0x9f, 0xcd, 0xb8, 0xbe, 0xa3, 0xce, 0xc3, 0xdf, 0x3a, 0xa5,
+	0x52, 0xf5, 0xd6, 0x1f, 0xac, 0x59, 0x50, 0xb1, 0x7b, 0x8b, 0xd5, 0xd6, 0x1f, 0xac, 0x4d, 0x51,
+	0x97, 0xd2, 0xd8, 0x56, 0x47, 0xc6, 0xd6, 0x5c, 0x29, 0x65, 0xa0, 0x23, 0x38, 0x6f, 0x72, 0x32,
+	0x45, 0xf3, 0x5b, 0xfa, 0x54, 0x19, 0xad, 0x93, 0x4f, 0x95, 0xf3, 0xac, 0xae, 0x3f, 0xa5, 0x62,
+	0xd1, 0x97, 0x79, 0xb3, 0xf4, 0xa0, 0x5a, 0xe8, 0x9d, 0xae, 0xcd, 0xef, 0xe8, 0xcb, 0xcf, 0x78,
+	0xad, 0x13, 0x5b, 0xfd, 0x09, 0x3d, 0xd7, 0xa4, 0xaf, 0x89, 0x15, 0x55, 0xb8, 0x0f, 0xaf, 0x6b,
+	0x4d, 0x16, 0xe0, 0x79, 0x56, 0x27, 0xcd, 0x47, 0xe9, 0xd1, 0x97, 0xb9, 0xc6, 0xde, 0x38, 0x91,
+	0xe4, 0x89, 0x7c, 0xfd, 0xa0, 0xb4, 0xef, 0x7b, 0xbc, 0xd1, 0x7f, 0x0c, 0x37, 0xe8, 0x36, 0x3c,
+	0x5f, 0x1c, 0xff, 0xb4, 0x8e, 0x5c, 0x91, 0xe0, 0x02, 0x7b, 0xea, 0x7d, 0xaa, 0x16, 0xf3, 0xa6,
+	0x04, 0xf4, 0xbd, 0x4f, 0x21, 0xb2, 0x98, 0xf0, 0x27, 0x76, 0x81, 0x80, 0xa6, 0x7b, 0x2e, 0xe1,
+	0x4f, 0x36, 0x14, 0x8e, 0x74, 0xe6, 0x06, 0x1c, 0x70, 0xd4, 0xf5, 0x8c, 0x74, 0xc0, 0x65, 0x31,
+	0x5e, 0xf9, 0x0d, 0xe0, 0xbe, 0x4d, 0x10, 0xab, 0x30, 0x9f, 0x84, 0xf4, 0x25, 0x20, 0x6f, 0x5a,
+	0x8f, 0x5e, 0x4b, 0x00, 0xac, 0x94, 0xef, 0xb3, 0xcb, 0x4a, 0xe9, 0xd1, 0xc9, 0x39, 0x0a, 0x1d,
+	0xbb, 0x38, 0x61, 0xa4, 0x18, 0xe7, 0xc5, 0x1c, 0x67, 0x27, 0xea, 0x1f, 0x85, 0xce, 0x7a, 0x8e,
+	0x60, 0xbc, 0xc7, 0x96, 0xc7, 0x08, 0xe0, 0xec, 0xbf, 0xcd, 0x6e, 0xae, 0xdc, 0xba, 0x79, 0xeb,
+	0xbd, 0xaf, 0xaf, 0xdc, 0x7a, 0xd7, 0x5a, 0x1c, 0xa1, 0xa0, 0x67, 0x03, 0xb6, 0x4a, 0xd9, 0x80,
+	0x57, 0xd8, 0x9c, 0xc3, 0x43, 0x9b, 0x1e, 0x11, 0x04, 0xbb, 0xd8, 0xb4, 0x98, 0xc3, 0xc3, 0xbb,
+	0x08, 0x31, 0xff, 0x54, 0xe9, 0x10, 0x76, 0x64, 0x10, 0x4e, 0x73, 0x93, 0x47, 0x17, 0x65, 0xb5,
+	0x2c, 0xca, 0x8b, 0xac, 0x39, 0x4c, 0x85, 0x3d, 0xc8, 0x32, 0x75, 0xee, 0xd4, 0x18, 0xa6, 0xe2,
+	0x7e, 0x96, 0x81, 0x18, 0x25, 0xd8, 0x1e, 0x44, 0x69, 0xa6, 0x7c, 0x0a, 0x09, 0xb8, 0x1f, 0xe1,
+	0xfb, 0x50, 0x50, 0x38, 0x4c, 0x7c, 0xf5, 0xfa, 0x8d, 0xfc, 0x7e, 0x9c, 0xf8, 0x72, 0x74, 0x0e,
+	0x0e, 0xed, 0x01, 0xdc, 0x0d, 0x52, 0x4f, 0x74, 0xb5, 0x0e, 0x0e, 0xef, 0x23, 0x40, 0x92, 0x55,
+	0x2d, 0x62, 0x44, 0xb9, 0x69, 0x35, 0xa9, 0xc9, 0x94, 0x5e, 0x5a, 0x92, 0xbd, 0x46, 0x6e, 0x9b,
+	0x50, 0x3e, 0x47, 0x30, 0xc9, 0xb1, 0xf9, 0x6f, 0x4a, 0x59, 0x1f, 0xb9, 0x34, 0xd6, 0xa2, 0x20,
+	0xf0, 0x32, 0xe3, 0x5d, 0x36, 0x2b, 0x2b, 0xaa, 0x25, 0xf0, 0x4a, 0x6f, 0x2a, 0x6a, 0x0f, 0xe4,
+	0x87, 0xd8, 0xdd, 0x3f, 0x5d, 0x61, 0x33, 0x20, 0x8f, 0x63, 0xe5, 0x38, 0xe5, 0x89, 0x25, 0x5d,
+	0xbc, 0xb5, 0x31, 0xf1, 0x3a, 0xc3, 0xdd, 0x42, 0x89, 0xdb, 0x56, 0xc3, 0x19, 0xee, 0x52, 0x4b,
+	0x9a, 0x96, 0xce, 0x96, 0xb5, 0xd4, 0xfc, 0xdb, 0x15, 0xdd, 0x20, 0x8c, 0x70, 0x9e, 0x0f, 0xfa,
+	0xb7, 0xcb, 0x9d, 0x7d, 0xbd, 0x77, 0x62, 0x95, 0x52, 0xa7, 0x1f, 0x7f, 0x21, 0x7d, 0x36, 0xf7,
+	0xf4, 0xfd, 0xd9, 0xe3, 0x8d, 0xbe, 0x04, 0xae, 0x0d, 0x86, 0xe1, 0x41, 0xa9, 0x52, 0x65, 0x6c,
+	0x4a, 0xa3, 0x35, 0x80, 0x2b, 0x74, 0xe4, 0xfc, 0x83, 0xbd, 0x80, 0x1b, 0x74, 0x06, 0x9b, 0xd1,
+	0xd2, 0x95, 0xe0, 0xb7, 0x79, 0x75, 0xc4, 0x34, 0xed, 0x24, 0x3c, 0x4c, 0xf7, 0x44, 0x72, 0x5f,
+	0xf0, 0x24, 0xdb, 0x15, 0x3c, 0x33, 0x7f, 0x6a, 0xea, 0xbc, 0xd9, 0xf0, 0x42, 0x2f, 0x1d, 0x08,
+	0xf7, 0xf3, 0xce, 0x1b, 0xf3, 0x07, 0x95, 0x91, 0xd6, 0xd7, 0x85, 0x2f, 0x32, 0xf1, 0x19, 0x0c,
+	0xa3, 0x96, 0x9d, 0x55, 0x58, 0xa7, 0xb7, 0x99, 0xe1, 0xa5, 0x76, 0xbe, 0x51, 0x73, 0x81, 0xa8,
+	0xba, 0xf1, 0xe4, 0xa5, 0x77, 0xa9, 0x00, 0x1b, 0x33, 0x7f, 0x7a, 0xa4, 0x7f, 0x3a, 0x0f, 0xa7,
+	0xb1, 0x0b, 0xc7, 0xb1, 0x62, 0x26, 0x23, 0x1d, 0xbc, 0x27, 0x60, 0xfe, 0xc9, 0x75, 0x7e, 0x23,
+	0x4a, 0xe4, 0x52, 0x88, 0xaf, 0x72, 0x81, 0x11, 0x84, 0x67, 0xac, 0xd4, 0x43, 0x88, 0x12, 0xb8,
+	0x13, 0xc1, 0x1b, 0x56, 0xf8, 0x84, 0x68, 0x08, 0x67, 0x98, 0x03, 0x3b, 0x4e, 0xc4, 0x9e, 0xf7,
+	0x54, 0xe4, 0x37, 0x62, 0x64, 0xc9, 0x36, 0xcf, 0x06, 0xdb, 0x04, 0x37, 0xff, 0x6e, 0x8d, 0xbd,
+	0x76, 0x7c, 0xa3, 0x79, 0xc7, 0xee, 0x94, 0x75, 0xff, 0xed, 0xde, 0xe9, 0xea, 0xe9, 0x13, 0x40,
+	0xba, 0xe4, 0xa3, 0x7c, 0xc9, 0xad, 0xe0, 0x7c, 0xac, 0xf1, 0xd4, 0xfd, 0x95, 0x2a, 0x4d, 0x93,
+	0xcf, 0x33, 0x9e, 0xc7, 0x98, 0x86, 0xf2, 0x22, 0x36, 0x33, 0xba, 0x88, 0x8d, 0x2d, 0x91, 0xb3,
+	0xe3, 0x4b, 0xe4, 0x64, 0x6d, 0xa9, 0x4f, 0xd6, 0x16, 0xe3, 0xcd, 0x49, 0x0b, 0x57, 0x83, 0xb6,
+	0xa0, 0x23, 0x8b, 0x95, 0xc4, 0x2d, 0x24, 0x63, 0x7b, 0xa1, 0x2b, 0x9e, 0xe6, 0xdb, 0xd5, 0x5c,
+	0x3a, 0x9b, 0x12, 0x7c, 0xbb, 0xf9, 0xfd, 0x1f, 0x77, 0x9a, 0x3f, 0xf7, 0xe3, 0xce, 0x92, 0xf9,
+	0x69, 0xc9, 0x77, 0xda, 0xe8, 0xe7, 0x7e, 0xf0, 0x33, 0xcc, 0x88, 0xd7, 0xd8, 0xa2, 0x5c, 0x1d,
+	0x07, 0x3c, 0x74, 0xfd, 0xd2, 0x3a, 0xd5, 0x76, 0x78, 0x78, 0x1f, 0xa0, 0x72, 0xe9, 0x30, 0x7f,
+	0xbd, 0xa6, 0x27, 0x2e, 0x96, 0x1a, 0x3f, 0xcd, 0x54, 0x98, 0x62, 0xe6, 0x4a, 0x5e, 0x4c, 0xed,
+	0x24, 0x2f, 0x66, 0xe6, 0x78, 0x2f, 0x66, 0xf6, 0x38, 0x05, 0xa8, 0x8f, 0x2a, 0xc0, 0xe4, 0xc1,
+	0x6d, 0x4c, 0x19, 0x5c, 0x7d, 0x1d, 0x6f, 0x1e, 0xb3, 0x8e, 0xb7, 0x8e, 0x59, 0xc7, 0xd9, 0x71,
+	0xeb, 0xf8, 0xdc, 0xb1, 0xeb, 0xf8, 0xfc, 0xc8, 0x3a, 0x7e, 0x99, 0xb5, 0xf2, 0x47, 0x91, 0x61,
+	0x87, 0xd2, 0xb4, 0x0a, 0x80, 0xf9, 0xc7, 0x46, 0x97, 0xf0, 0x07, 0xd1, 0xbe, 0x17, 0x2a, 0x2d,
+	0xf9, 0x0c, 0x4f, 0xe4, 0x5e, 0x63, 0x4b, 0x3c, 0xc8, 0x9f, 0xda, 0xc4, 0x87, 0x2c, 0x68, 0xcf,
+	0xca, 0x83, 0xd2, 0xa3, 0x86, 0x06, 0xed, 0x8c, 0x6b, 0x60, 0xa2, 0xe0, 0xb7, 0x79, 0x4b, 0xdf,
+	0x5c, 0x14, 0x5c, 0x9c, 0xe6, 0x61, 0x82, 0x9f, 0xd4, 0x33, 0x6c, 0x88, 0xf1, 0xbb, 0xaa, 0x7f,
+	0xab, 0xf1, 0xf1, 0x4f, 0x3e, 0xca, 0x1d, 0xda, 0x30, 0x15, 0x89, 0xf6, 0xb8, 0x66, 0xfe, 0x6d,
+	0xfe, 0xe5, 0x0a, 0x7b, 0xeb, 0x14, 0xa4, 0x3f, 0xc3, 0xa5, 0x88, 0xf1, 0x28, 0xfd, 0x5d, 0x76,
+	0x76, 0xd2, 0x93, 0xd5, 0x74, 0x60, 0x7d, 0xa6, 0x37, 0xa1, 0x39, 0x43, 0x8c, 0xc1, 0xcc, 0xff,
+	0x5c, 0x8a, 0xac, 0x7c, 0x2c, 0x77, 0x6c, 0xd9, 0x66, 0xb8, 0xa7, 0xb6, 0xdd, 0x2f, 0x30, 0x36,
+	0xe0, 0xa9, 0xfd, 0x04, 0xe0, 0x14, 0x5e, 0x69, 0x0d, 0x78, 0x8a, 0x88, 0x46, 0x87, 0x35, 0x76,
+	0xb9, 0x0f, 0x37, 0x12, 0xe8, 0x76, 0x32, 0x7d, 0xc2, 0x06, 0x76, 0x98, 0x24, 0x70, 0x0a, 0x89,
+	0xa7, 0x57, 0xf9, 0x37, 0x04, 0x29, 0x10, 0x4d, 0xce, 0x08, 0xb8, 0x60, 0x3d, 0x43, 0x8f, 0x37,
+	0x23, 0x78, 0x1d, 0xa1, 0x86, 0xc9, 0x5a, 0x04, 0x79, 0xef, 0x26, 0xcc, 0xbc, 0xda, 0x9d, 0x99,
+	0x1f, 0xfd, 0xad, 0x4e, 0xc5, 0x2a, 0xc0, 0xc6, 0x0d, 0xb6, 0x9c, 0x7f, 0xe4, 0xe4, 0xea, 0x1a,
+	0xee, 0x52, 0x5e, 0x4c, 0x64, 0xcd, 0x48, 0xbf, 0x11, 0xb5, 0x1a, 0xc7, 0x5a, 0x7f, 0xdf, 0x62,
+	0xcb, 0x70, 0xa9, 0x1a, 0x4f, 0xf8, 0xe8, 0xed, 0x18, 0x1c, 0x14, 0x78, 0x93, 0x69, 0x4d, 0x83,
+	0x63, 0xde, 0x06, 0xe6, 0xe1, 0x84, 0xfb, 0xc2, 0xf7, 0x52, 0x15, 0x8f, 0x5d, 0x48, 0x31, 0x09,
+	0x87, 0xa0, 0xe6, 0x2f, 0x96, 0xa2, 0xbd, 0xd4, 0x22, 0x65, 0x84, 0xc3, 0x33, 0x7d, 0x20, 0x19,
+	0xd5, 0xaa, 0x5d, 0x6a, 0xf6, 0x0c, 0x15, 0xae, 0xe9, 0x2f, 0xd7, 0xbc, 0xc9, 0x96, 0xf7, 0xa2,
+	0xc4, 0x11, 0xf6, 0xde, 0xd0, 0xf7, 0xed, 0xd2, 0xd6, 0x71, 0x11, 0x0a, 0x36, 0x86, 0xbe, 0x4f,
+	0x5d, 0x3a, 0x0f, 0xca, 0xb5, 0xb9, 0xae, 0xe6, 0x0d, 0x7d, 0x99, 0xff, 0x76, 0x12, 0x53, 0x6a,
+	0xfe, 0xde, 0x28, 0x05, 0xa1, 0x5e, 0xe8, 0x4d, 0x43, 0xd4, 0x42, 0x4f, 0xd7, 0xd9, 0x52, 0x3a,
+	0x8c, 0xe1, 0xb9, 0x64, 0x7b, 0x97, 0x67, 0xce, 0x40, 0xf9, 0x08, 0xb7, 0x67, 0xf7, 0xb8, 0x9f,
+	0x0a, 0x6b, 0x51, 0x15, 0xdf, 0xc1, 0xd2, 0xee, 0x2e, 0x86, 0xa0, 0xa6, 0x68, 0x3f, 0x3c, 0x45,
+	0x8e, 0x6f, 0x8f, 0xe9, 0x6f, 0x82, 0xce, 0x13, 0x10, 0x2f, 0x0b, 0x5c, 0x61, 0x73, 0x0a, 0x69,
+	0xcd, 0x5a, 0xa3, 0x1e, 0x32, 0x02, 0xad, 0x59, 0x6b, 0xe6, 0xef, 0x94, 0x4e, 0x6b, 0x72, 0xe6,
+	0x69, 0xe2, 0xad, 0x94, 0xba, 0xf9, 0x62, 0x6f, 0x2a, 0xa6, 0xd6, 0xcf, 0x97, 0xd8, 0x3c, 0x78,
+	0x4c, 0x94, 0x78, 0x40, 0x2f, 0x52, 0x81, 0xc3, 0xf4, 0x18, 0x41, 0x39, 0x4a, 0x2c, 0x42, 0x57,
+	0x65, 0xa9, 0x11, 0xca, 0x36, 0x82, 0xba, 0xff, 0xb4, 0x72, 0x52, 0xe7, 0xcb, 0xca, 0xa0, 0x1e,
+	0x78, 0xd4, 0xb5, 0xe0, 0x0e, 0x6b, 0x52, 0x4f, 0xd5, 0x2b, 0x0d, 0xaf, 0x1d, 0xdf, 0x83, 0x5e,
+	0x1f, 0xd1, 0xad, 0xbc, 0x5e, 0xf7, 0x1e, 0x6b, 0x10, 0x10, 0x62, 0xf7, 0xf9, 0x23, 0xc6, 0xea,
+	0x89, 0xaa, 0x54, 0x3d, 0x5e, 0xac, 0x17, 0x1f, 0x1c, 0x92, 0xc9, 0x53, 0xc5, 0xdf, 0x3d, 0xbc,
+	0x3d, 0xf3, 0x73, 0x3f, 0xee, 0x7c, 0xc5, 0x14, 0xba, 0xf7, 0xa0, 0x5e, 0x16, 0xd2, 0xf4, 0xea,
+	0x0a, 0x9b, 0x2b, 0xde, 0x21, 0x52, 0xaf, 0x6e, 0xb3, 0xfc, 0x1d, 0x2c, 0xb8, 0xfd, 0x11, 0x88,
+	0x8c, 0xe3, 0x9d, 0xe8, 0x28, 0xf4, 0x8f, 0x48, 0xad, 0xe7, 0x25, 0x74, 0x9d, 0x67, 0xfc, 0x51,
+	0xe8, 0x1f, 0x99, 0x7f, 0xb3, 0xaa, 0x3b, 0x0a, 0xa5, 0x76, 0x72, 0xd7, 0xb2, 0x49, 0x54, 0xd5,
+	0xe8, 0xea, 0xb2, 0x99, 0x50, 0xa3, 0x47, 0x30, 0x2b, 0xaf, 0x07, 0x8b, 0x18, 0xfd, 0x1e, 0x19,
+	0x6d, 0x75, 0x5e, 0x90, 0x8f, 0xb8, 0x8e, 0x5a, 0x1e, 0xf5, 0x1c, 0x55, 0x8d, 0xfc, 0x13, 0xd6,
+	0xa0, 0xa6, 0x4e, 0x7a, 0x14, 0xec, 0x54, 0x4a, 0xb0, 0xc4, 0x6a, 0xe9, 0x40, 0x6d, 0xaa, 0xe4,
+	0x4f, 0x39, 0xe1, 0x77, 0x87, 0x7b, 0x7b, 0x94, 0x07, 0x30, 0x6f, 0xd1, 0x97, 0xf9, 0x6b, 0xa5,
+	0xe7, 0x44, 0xb6, 0x37, 0xd7, 0xfa, 0x64, 0x82, 0xfa, 0x5e, 0xe8, 0xe4, 0x3b, 0x9e, 0x1e, 0x3b,
+	0x93, 0xca, 0xef, 0x89, 0xc6, 0x68, 0x19, 0x8a, 0x4a, 0xa6, 0xe8, 0x06, 0x3b, 0x07, 0x46, 0x10,
+	0xb4, 0x38, 0xdc, 0x8b, 0xf2, 0x9b, 0x30, 0xf4, 0x24, 0x84, 0x2c, 0x1c, 0xb1, 0x78, 0xb7, 0xd8,
+	0x45, 0xda, 0x4f, 0x50, 0xdf, 0xf5, 0x6a, 0xe8, 0x18, 0x9e, 0xc7, 0x6d, 0x45, 0x3e, 0x4a, 0xaa,
+	0xea, 0x3b, 0xec, 0x4c, 0x38, 0x0c, 0xb4, 0xc6, 0xb8, 0x33, 0x10, 0xea, 0x6a, 0xe6, 0x52, 0x38,
+	0x0c, 0x54, 0x53, 0x00, 0x37, 0xde, 0x65, 0x17, 0x30, 0xca, 0xaa, 0x37, 0x84, 0x55, 0xd0, 0x15,
+	0x3f, 0x0b, 0x21, 0xd7, 0xa2, 0x19, 0x28, 0x33, 0xff, 0x6a, 0x29, 0x52, 0x3f, 0x2e, 0xa9, 0xdc,
+	0x7a, 0x7c, 0x76, 0xcb, 0x3d, 0x45, 0xbc, 0xd5, 0x69, 0xe2, 0x9d, 0x68, 0xe9, 0x6b, 0x93, 0x2d,
+	0xfd, 0xf7, 0x8a, 0x73, 0x2c, 0x25, 0x4d, 0x3c, 0xeb, 0xbc, 0xd1, 0x3b, 0xb9, 0x37, 0x4a, 0xff,
+	0xb1, 0x2c, 0x3f, 0xfa, 0x52, 0x82, 0x7f, 0xc8, 0xa4, 0xf9, 0xca, 0xe9, 0x62, 0xd2, 0xc6, 0x3b,
+	0xa7, 0xa1, 0xbb, 0x1a, 0xc7, 0x44, 0x93, 0x71, 0xf5, 0x13, 0x12, 0xa3, 0xb4, 0x7e, 0x49, 0xd2,
+	0xd4, 0x37, 0xdc, 0xf9, 0x18, 0x79, 0xdf, 0xf2, 0x60, 0xa7, 0x54, 0x1b, 0xad, 0x8a, 0xea, 0x29,
+	0x55, 0x43, 0x9f, 0xfa, 0x7c, 0x5e, 0x8d, 0x7a, 0x83, 0x55, 0xbb, 0x29, 0x6b, 0x97, 0xba, 0x27,
+	0x7d, 0x5b, 0x22, 0x30, 0x36, 0xf1, 0xbc, 0x53, 0x4e, 0xbc, 0x2b, 0x6c, 0x2e, 0x14, 0xc2, 0x55,
+	0x6f, 0xaf, 0xe1, 0x98, 0x30, 0x00, 0x81, 0xbb, 0xda, 0xdd, 0x67, 0xad, 0xbc, 0xef, 0x53, 0xe2,
+	0xbe, 0xcf, 0xa5, 0x21, 0xf3, 0xdf, 0xd7, 0xf4, 0x5c, 0x10, 0x39, 0x10, 0xdb, 0x49, 0xe4, 0x0e,
+	0x9d, 0x4c, 0xb7, 0xbc, 0x9b, 0x63, 0x06, 0x71, 0x74, 0xf4, 0xc6, 0x2b, 0xf5, 0x74, 0x3b, 0x59,
+	0xd8, 0xc5, 0x6f, 0xd3, 0xaa, 0x89, 0xef, 0x21, 0xbe, 0x71, 0x32, 0x19, 0xb5, 0x14, 0xe1, 0x02,
+	0x3a, 0x6e, 0xe2, 0x6b, 0xe3, 0x26, 0x5e, 0xee, 0x19, 0x61, 0xea, 0x26, 0xe2, 0x50, 0x25, 0x2c,
+	0xe2, 0x2c, 0x6f, 0xcb, 0x29, 0x9b, 0x88, 0x43, 0xca, 0x57, 0x7c, 0x8f, 0x5d, 0xc8, 0xdd, 0x0e,
+	0xa5, 0x13, 0xf4, 0x28, 0x39, 0x4e, 0xf1, 0x73, 0xaa, 0x98, 0x3a, 0x83, 0x2f, 0x98, 0x77, 0x1d,
+	0xd6, 0x20, 0xb6, 0xa6, 0x8c, 0xcd, 0xe8, 0xe3, 0x7a, 0xd5, 0xf1, 0xc7, 0xf5, 0xae, 0xb0, 0x39,
+	0x38, 0x0e, 0xa4, 0x33, 0x5b, 0x1a, 0x19, 0x09, 0xc2, 0x53, 0xdb, 0xee, 0x43, 0x36, 0xa7, 0x89,
+	0xf0, 0x04, 0xad, 0x3b, 0xb9, 0x41, 0xf3, 0x57, 0xea, 0xa3, 0x26, 0xbc, 0x24, 0x6d, 0xb2, 0x4b,
+	0xdf, 0x29, 0x79, 0x35, 0x6f, 0xf6, 0x4e, 0xac, 0x31, 0x32, 0x40, 0xaf, 0xb2, 0x05, 0x95, 0x73,
+	0x09, 0xa2, 0x50, 0xaf, 0x6e, 0xb6, 0x09, 0xba, 0x0a, 0x40, 0xe3, 0x43, 0x4d, 0xa3, 0xd0, 0xfd,
+	0xe8, 0x9d, 0xa2, 0xa9, 0xc9, 0x2a, 0xf5, 0x0e, 0x33, 0x54, 0x93, 0xb9, 0x40, 0xd0, 0x7a, 0xb5,
+	0xad, 0x65, 0x2a, 0xd9, 0xce, 0x0b, 0x26, 0xa8, 0xd0, 0xec, 0x04, 0x15, 0x7a, 0x83, 0x2d, 0xa9,
+	0xb7, 0x26, 0xf2, 0x45, 0x19, 0xcd, 0xcb, 0xa2, 0x82, 0xd3, 0xa2, 0x6c, 0x98, 0xac, 0x0d, 0x5b,
+	0xe8, 0xc0, 0x0b, 0x31, 0x0c, 0x40, 0x69, 0xd2, 0x12, 0xb8, 0xe5, 0x85, 0x10, 0x06, 0x28, 0xed,
+	0xc1, 0x9b, 0xe5, 0x3d, 0x78, 0xf7, 0x1f, 0x57, 0x4e, 0xd2, 0xa7, 0x53, 0xcd, 0xf5, 0x97, 0x59,
+	0x3b, 0xf0, 0xd2, 0xd4, 0x0b, 0xf7, 0x4b, 0xb3, 0x7d, 0x9e, 0x80, 0xa8, 0x76, 0xb4, 0xe4, 0xcf,
+	0x4c, 0x5a, 0xf2, 0x67, 0xf5, 0x25, 0x7f, 0x54, 0x41, 0xeb, 0xa3, 0x0a, 0x2a, 0xb7, 0xd4, 0x5a,
+	0x77, 0xe1, 0x77, 0xf7, 0x37, 0x2b, 0x9f, 0x45, 0x6b, 0x7f, 0x3f, 0xba, 0xa5, 0xb8, 0xae, 0x17,
+	0x5c, 0x93, 0xff, 0xf9, 0xbd, 0x51, 0x4b, 0xb8, 0x5a, 0xcc, 0x1e, 0x65, 0x09, 0x5f, 0xcc, 0xbd,
+	0xae, 0x71, 0x17, 0x54, 0x2a, 0x17, 0x6e, 0x98, 0xca, 0x8f, 0xcd, 0x7a, 0x6e, 0x6a, 0xfe, 0xab,
+	0xda, 0xe8, 0xe4, 0x2b, 0x11, 0xa7, 0xc9, 0xe7, 0xb0, 0x73, 0xca, 0x0c, 0xe9, 0xb3, 0x59, 0xcd,
+	0xc6, 0xaf, 0xf6, 0x4e, 0x24, 0xd1, 0xd3, 0x0d, 0x95, 0x75, 0x86, 0xa8, 0x69, 0x88, 0xf8, 0xb8,
+	0x2a, 0x35, 0xe2, 0x8a, 0xd0, 0x83, 0x97, 0xb1, 0xf2, 0xbf, 0xc3, 0xd0, 0xce, 0xeb, 0xac, 0x43,
+	0x19, 0xd5, 0xf9, 0x98, 0x2d, 0xcb, 0x65, 0xb6, 0xcc, 0x54, 0x6d, 0xec, 0x3c, 0x78, 0x1a, 0x53,
+	0xab, 0x71, 0x8c, 0x80, 0x45, 0x1e, 0xc7, 0x25, 0x66, 0xde, 0x44, 0xc2, 0x65, 0x46, 0x70, 0xea,
+	0x4a, 0x5c, 0x9d, 0x89, 0xee, 0x23, 0x36, 0xaf, 0xf7, 0xee, 0x99, 0x2d, 0x62, 0x77, 0x8d, 0x35,
+	0x15, 0x67, 0x9f, 0xdb, 0x8e, 0x9b, 0x0f, 0x47, 0x82, 0x48, 0xf7, 0xe0, 0x79, 0x4b, 0x4a, 0x7f,
+	0x31, 0xae, 0xb3, 0xe6, 0xc0, 0x89, 0xc2, 0x4c, 0xdd, 0x87, 0xa8, 0xdf, 0x3e, 0x7b, 0xe3, 0x1b,
+	0x37, 0x6f, 0xbe, 0xf7, 0xf5, 0x9b, 0x37, 0xaf, 0x7f, 0xfd, 0x6b, 0x5f, 0xbf, 0x7e, 0xeb, 0xdd,
+	0x77, 0x6f, 0xbc, 0x77, 0xe3, 0x5d, 0x2b, 0xc7, 0x32, 0xff, 0x79, 0x55, 0xf7, 0x1f, 0x47, 0x09,
+	0x9e, 0x2e, 0x98, 0xb9, 0xc4, 0x6a, 0xc3, 0xc4, 0xa7, 0x50, 0xaa, 0xfc, 0x39, 0xed, 0x8f, 0xd5,
+	0x74, 0x19, 0x44, 0x33, 0xb5, 0x8b, 0x78, 0xf9, 0x37, 0x44, 0x28, 0xe8, 0x2f, 0x87, 0xc1, 0xfb,
+	0x95, 0x51, 0x42, 0xf7, 0x85, 0xd4, 0x1f, 0x14, 0x5b, 0x43, 0x68, 0x39, 0x46, 0x5a, 0x1f, 0x89,
+	0x91, 0x5e, 0x67, 0x67, 0x9d, 0x28, 0x88, 0xe1, 0xaf, 0x18, 0xb9, 0x5a, 0xa8, 0x14, 0x8d, 0x86,
+	0x51, 0x94, 0xe5, 0x11, 0xd3, 0xd7, 0xd9, 0x22, 0xbc, 0x8d, 0xe8, 0x0c, 0x84, 0x73, 0xa0, 0x1b,
+	0xcc, 0x85, 0x02, 0x0c, 0xa1, 0x4b, 0xe9, 0xde, 0x4a, 0x7a, 0xea, 0x4f, 0xb3, 0xa4, 0x03, 0x7e,
+	0x83, 0xe2, 0x9b, 0x8b, 0xb2, 0xe0, 0x2e, 0xc2, 0xfb, 0x03, 0x7e, 0xc3, 0xdc, 0x19, 0x3f, 0xcc,
+	0xe8, 0x7b, 0xe1, 0xbe, 0x0f, 0x87, 0x25, 0x60, 0xa9, 0x3e, 0x47, 0x6c, 0xda, 0xfc, 0xd9, 0xea,
+	0xf8, 0x71, 0x45, 0x99, 0xec, 0x73, 0x09, 0x3e, 0x6b, 0x49, 0x5f, 0x93, 0x4f, 0x16, 0x3e, 0xdb,
+	0xf1, 0xf8, 0x58, 0xd8, 0xba, 0x7e, 0xda, 0x93, 0x85, 0x29, 0xc1, 0x67, 0xf3, 0xc1, 0xc8, 0x89,
+	0x5f, 0x7f, 0xc0, 0x13, 0xf1, 0x79, 0xcf, 0x4c, 0xcc, 0x68, 0x64, 0xac, 0x72, 0x6a, 0xa7, 0x13,
+	0xa6, 0x3e, 0xe5, 0xaa, 0xa7, 0x9a, 0x72, 0x1f, 0xe8, 0xf7, 0x3b, 0x57, 0xb7, 0x20, 0xab, 0x85,
+	0x87, 0x8f, 0xf6, 0xf6, 0x3c, 0x87, 0x1e, 0x76, 0xc8, 0x27, 0x82, 0xcf, 0xc3, 0xd2, 0xf5, 0x43,
+	0xcf, 0x95, 0xa8, 0xe6, 0x9f, 0x2c, 0xdd, 0xb8, 0x1c, 0x23, 0x71, 0x3a, 0xc6, 0x47, 0xdb, 0xa9,
+	0x8e, 0xb5, 0x03, 0x39, 0x64, 0x48, 0xb3, 0xf4, 0x2c, 0xeb, 0x3c, 0x01, 0xe1, 0xfd, 0x4d, 0xf3,
+	0xd7, 0x4a, 0x67, 0xc7, 0xc0, 0xcc, 0x76, 0x71, 0xbb, 0xf6, 0xbe, 0x97, 0x66, 0x94, 0x8a, 0x25,
+	0x1b, 0xca, 0x9f, 0x6c, 0x9c, 0xb5, 0x1a, 0x9e, 0x8b, 0x0f, 0x78, 0xbe, 0xcf, 0x6a, 0x9b, 0xae,
+	0x72, 0xd1, 0x75, 0x4f, 0x7f, 0x0a, 0xad, 0xde, 0xa6, 0xab, 0xfe, 0xe0, 0x9c, 0x25, 0x6b, 0x76,
+	0x5f, 0x63, 0xac, 0x00, 0x19, 0x1d, 0xd6, 0xa0, 0x3e, 0x94, 0x92, 0x72, 0x3d, 0xd7, 0xfc, 0xbd,
+	0xaa, 0x9e, 0xa3, 0x32, 0x85, 0x7a, 0x2e, 0xbc, 0xef, 0xb1, 0x96, 0x72, 0xbd, 0x14, 0x73, 0xdf,
+	0xea, 0x9d, 0xba, 0x7a, 0x4f, 0xc2, 0x76, 0xf8, 0xae, 0x9c, 0x97, 0xc4, 0x6b, 0x41, 0xae, 0xfb,
+	0x9f, 0x2a, 0x6c, 0x79, 0x0c, 0xe1, 0xf8, 0xe1, 0xd2, 0xba, 0x55, 0x2d, 0x75, 0xcb, 0xb0, 0xd9,
+	0x6c, 0x48, 0x69, 0x82, 0x92, 0xc9, 0xcd, 0x67, 0x61, 0x12, 0x20, 0x39, 0xc7, 0x48, 0xb7, 0xbb,
+	0xca, 0xe6, 0x75, 0x30, 0x24, 0x84, 0xc1, 0x75, 0x75, 0xb9, 0x79, 0x06, 0x56, 0x1b, 0x56, 0x4b,
+	0x42, 0x60, 0x37, 0x2d, 0x5d, 0x1e, 0x6d, 0xa2, 0xc1, 0x6f, 0xf3, 0xa7, 0xf4, 0x49, 0xb6, 0x2e,
+	0x12, 0xfa, 0x7b, 0x85, 0x1f, 0x7b, 0x78, 0xdd, 0x45, 0x24, 0xc6, 0x55, 0x36, 0x27, 0xf0, 0x16,
+	0x0b, 0xa4, 0xeb, 0xd1, 0x5f, 0x5c, 0xd2, 0x40, 0x53, 0xcc, 0x96, 0xf9, 0x47, 0xeb, 0xfa, 0xeb,
+	0xd2, 0x52, 0x6f, 0x31, 0x7d, 0xe9, 0xe4, 0x79, 0x84, 0x7f, 0xda, 0x90, 0x87, 0xf9, 0xdb, 0x9d,
+	0x18, 0xbc, 0xc5, 0x25, 0x6b, 0x49, 0x96, 0xd0, 0x0b, 0x9d, 0x18, 0xc0, 0xbd, 0xcd, 0xa0, 0x93,
+	0x98, 0x21, 0x8a, 0x7f, 0x8c, 0x47, 0x8f, 0x36, 0xe7, 0x2d, 0x93, 0x0c, 0xe5, 0xa6, 0x21, 0xa4,
+	0x5f, 0xc6, 0x07, 0x6c, 0x0e, 0xae, 0x7f, 0x03, 0x39, 0xdc, 0xee, 0x95, 0xb3, 0x45, 0x8a, 0xda,
+	0x8f, 0x53, 0x9a, 0x59, 0xa9, 0xc5, 0x86, 0xf9, 0x6f, 0x63, 0x85, 0xd5, 0xc5, 0xa1, 0x08, 0xf3,
+	0x0c, 0xf8, 0xee, 0xc4, 0xca, 0x77, 0x25, 0x8a, 0x45, 0x98, 0xc6, 0x07, 0xac, 0xcd, 0xc3, 0x30,
+	0x1a, 0x86, 0x0e, 0x5c, 0xd6, 0x48, 0x3b, 0x8d, 0x13, 0xab, 0x96, 0x2b, 0xc0, 0xb5, 0xbf, 0xfc,
+	0x4d, 0x3c, 0x95, 0xd2, 0xdb, 0xa4, 0x0b, 0xe3, 0xf4, 0x18, 0x1e, 0x25, 0xf6, 0x76, 0x37, 0x58,
+	0x53, 0xf5, 0x1c, 0xd2, 0xdc, 0xa5, 0x64, 0x41, 0x11, 0x2a, 0x94, 0x96, 0xe9, 0xf3, 0x10, 0xd6,
+	0x92, 0x17, 0x18, 0x93, 0x6b, 0x09, 0x3f, 0xe4, 0x19, 0x4f, 0xf2, 0xf0, 0xec, 0x80, 0xaf, 0x02,
+	0xa0, 0xfb, 0xe7, 0x2b, 0x8c, 0x15, 0x42, 0x90, 0x8a, 0xaf, 0x9e, 0xc8, 0x41, 0xa5, 0xc8, 0x9f,
+	0xc0, 0x39, 0xcf, 0xea, 0x51, 0xe8, 0x7b, 0xa1, 0x4a, 0xf8, 0xa2, 0x2f, 0xca, 0x48, 0xcc, 0xb2,
+	0x22, 0xb2, 0x99, 0x7f, 0x1b, 0x17, 0x58, 0xc3, 0x0b, 0xe1, 0xe1, 0x07, 0xf5, 0x48, 0x9a, 0x17,
+	0x42, 0x5a, 0x70, 0xa9, 0xa7, 0xaa, 0x41, 0xdc, 0x96, 0xe7, 0x3d, 0xa5, 0xdb, 0xf1, 0xdd, 0x9f,
+	0xaf, 0xb0, 0x59, 0x10, 0x97, 0x74, 0x7d, 0xf6, 0x73, 0x43, 0x23, 0x7f, 0x42, 0x22, 0xb1, 0x2c,
+	0x52, 0xb7, 0x61, 0xc0, 0x4f, 0x04, 0xc8, 0x8e, 0x87, 0x8f, 0xe1, 0x0c, 0x04, 0x77, 0x81, 0x6b,
+	0x5a, 0x63, 0xd5, 0xb7, 0x9e, 0x4c, 0x3f, 0x53, 0x4a, 0xa6, 0xbf, 0xc2, 0xe6, 0x7e, 0x66, 0x98,
+	0x66, 0x76, 0x1c, 0xc1, 0x1b, 0x70, 0x94, 0x72, 0x2a, 0x41, 0xdb, 0x00, 0x31, 0x7f, 0xaf, 0x52,
+	0x4a, 0xcd, 0x08, 0x53, 0x6f, 0x3f, 0x14, 0x2e, 0x25, 0x23, 0xf6, 0x9d, 0xc4, 0x8b, 0x3f, 0xdf,
+	0x69, 0xf8, 0xb1, 0xe7, 0xd1, 0x6f, 0xb0, 0xa5, 0xfc, 0xaf, 0xe5, 0xd9, 0xbb, 0x09, 0x78, 0xac,
+	0x98, 0x2d, 0xbb, 0x98, 0xc3, 0xef, 0x00, 0xf8, 0xb8, 0xd7, 0x51, 0xe1, 0x91, 0xa6, 0xd0, 0xdb,
+	0x13, 0x69, 0xa6, 0x9e, 0x48, 0x9d, 0xb1, 0x98, 0x02, 0x61, 0x30, 0x1f, 0x78, 0xd0, 0xff, 0x70,
+	0x03, 0x70, 0x05, 0xb3, 0xf2, 0xcd, 0x5f, 0xa8, 0xb0, 0xc5, 0x91, 0x1b, 0xff, 0xc6, 0x65, 0x36,
+	0xf5, 0x19, 0x80, 0xa5, 0xaf, 0x18, 0x97, 0xd8, 0x85, 0xb1, 0xd2, 0xbb, 0x4f, 0xbd, 0x34, 0x4b,
+	0x97, 0x2a, 0xc6, 0x4b, 0xec, 0x85, 0xb1, 0xc2, 0xf5, 0x48, 0xa4, 0x0f, 0xa3, 0x0c, 0x70, 0x96,
+	0xaa, 0xc6, 0x15, 0x76, 0x69, 0x0c, 0xe5, 0x61, 0x94, 0xad, 0xa2, 0x76, 0x2c, 0xd5, 0xee, 0xcc,
+	0xde, 0xaf, 0x7c, 0xbf, 0xf2, 0x95, 0xff, 0x1d, 0x00, 0x00, 0xff, 0xff, 0x8e, 0x91, 0x25, 0x72,
+	0xe4, 0x77, 0x00, 0x00,
 }

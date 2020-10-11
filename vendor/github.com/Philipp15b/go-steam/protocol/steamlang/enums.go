@@ -400,6 +400,7 @@ const (
 	EMsg_FBSBootstrapperGetPackageChunkResponse                   EMsg = 1131
 	EMsg_FBSBootstrapperPackageTransferProgress                   EMsg = 1132
 	EMsg_FBSRestartBootstrapper                                   EMsg = 1133
+	EMsg_FBSPauseFrozenDumps                                      EMsg = 1134
 	EMsg_BaseFileXfer                                             EMsg = 1200
 	EMsg_FileXferRequest                                          EMsg = 1200
 	EMsg_FileXferResponse                                         EMsg = 1201
@@ -416,6 +417,8 @@ const (
 	EMsg_BaseBS                                                   EMsg = 1400
 	EMsg_BSPurchaseStart                                          EMsg = 1401
 	EMsg_BSPurchaseResponse                                       EMsg = 1402
+	EMsg_BSAuthenticateCCTrans                                    EMsg = 1403
+	EMsg_BSAuthenticateCCTransResponse                            EMsg = 1404
 	EMsg_BSSettleComplete                                         EMsg = 1406
 	EMsg_BSInitPayPalTxn                                          EMsg = 1408
 	EMsg_BSInitPayPalTxnResponse                                  EMsg = 1409
@@ -979,6 +982,8 @@ const (
 	EMsg_AMFundedPayment                                          EMsg = 4418
 	EMsg_AMFundedPaymentResponse                                  EMsg = 4419
 	EMsg_AMRequestPersonaUpdateForChatServer                      EMsg = 4420
+	EMsg_AMPerfectWorldPayment                                    EMsg = 4421
+	EMsg_AMPerfectWorldPaymentResponse                            EMsg = 4422
 	EMsg_BasePSRange                                              EMsg = 5000
 	EMsg_PSCreateShoppingCart                                     EMsg = 5001
 	EMsg_PSCreateShoppingCartResponse                             EMsg = 5002
@@ -1238,6 +1243,9 @@ const (
 	EMsg_ClientNetworkingCertRequestResponse                      EMsg = 5622
 	EMsg_ClientChallengeRequest                                   EMsg = 5623
 	EMsg_ClientChallengeResponse                                  EMsg = 5624
+	EMsg_BadgeCraftedNotification                                 EMsg = 5625
+	EMsg_ClientNetworkingMobileCertRequest                        EMsg = 5626
+	EMsg_ClientNetworkingMobileCertRequestResponse                EMsg = 5627
 	EMsg_BaseMDS                                                  EMsg = 5800
 	EMsg_AMToMDSGetDepotDecryptionKey                             EMsg = 5812
 	EMsg_MDSToAMGetDepotDecryptionKeyResponse                     EMsg = 5813
@@ -1303,6 +1311,8 @@ const (
 	EMsg_ClientMMSSetRatelimitPolicyOnClient                      EMsg = 6625
 	EMsg_ClientMMSGetLobbyStatus                                  EMsg = 6626
 	EMsg_ClientMMSGetLobbyStatusResponse                          EMsg = 6627
+	EMsg_MMSGetLobbyList                                          EMsg = 6628
+	EMsg_MMSGetLobbyListResponse                                  EMsg = 6629
 	EMsg_NonStdMsgBase                                            EMsg = 6800
 	EMsg_NonStdMsgMemcached                                       EMsg = 6801
 	EMsg_NonStdMsgHTTPServer                                      EMsg = 6802
@@ -1318,6 +1328,7 @@ const (
 	EMsg_NonStdMsgSteam2Emulator                                  EMsg = 6812
 	EMsg_NonStdMsgRTMPServer                                      EMsg = 6813
 	EMsg_NonStdMsgWebSocket                                       EMsg = 6814
+	EMsg_NonStdMsgRedis                                           EMsg = 6815
 	EMsg_UDSBase                                                  EMsg = 7000
 	EMsg_ClientUDSP2PSessionStarted                               EMsg = 7001
 	EMsg_ClientUDSP2PSessionEnded                                 EMsg = 7002
@@ -2072,6 +2083,7 @@ var EMsg_name = map[EMsg]string{
 	1131:  "EMsg_FBSBootstrapperGetPackageChunkResponse",
 	1132:  "EMsg_FBSBootstrapperPackageTransferProgress",
 	1133:  "EMsg_FBSRestartBootstrapper",
+	1134:  "EMsg_FBSPauseFrozenDumps",
 	1200:  "EMsg_BaseFileXfer",
 	1201:  "EMsg_FileXferResponse",
 	1202:  "EMsg_FileXferData",
@@ -2086,7 +2098,8 @@ var EMsg_name = map[EMsg]string{
 	1400:  "EMsg_BaseBS",
 	1401:  "EMsg_BSPurchaseStart",
 	1402:  "EMsg_BSPurchaseResponse",
-	1404:  "EMsg_BSSettleNOVA",
+	1403:  "EMsg_BSAuthenticateCCTrans",
+	1404:  "EMsg_BSAuthenticateCCTransResponse",
 	1406:  "EMsg_BSSettleComplete",
 	1407:  "EMsg_BSBannedRequest",
 	1408:  "EMsg_BSInitPayPalTxn",
@@ -2772,6 +2785,8 @@ var EMsg_name = map[EMsg]string{
 	4418:  "EMsg_AMFundedPayment",
 	4419:  "EMsg_AMFundedPaymentResponse",
 	4420:  "EMsg_AMRequestPersonaUpdateForChatServer",
+	4421:  "EMsg_AMPerfectWorldPayment",
+	4422:  "EMsg_AMPerfectWorldPaymentResponse",
 	5000:  "EMsg_BasePSRange",
 	5001:  "EMsg_PSCreateShoppingCart",
 	5002:  "EMsg_PSCreateShoppingCartResponse",
@@ -3041,6 +3056,9 @@ var EMsg_name = map[EMsg]string{
 	5622:  "EMsg_ClientNetworkingCertRequestResponse",
 	5623:  "EMsg_ClientChallengeRequest",
 	5624:  "EMsg_ClientChallengeResponse",
+	5625:  "EMsg_BadgeCraftedNotification",
+	5626:  "EMsg_ClientNetworkingMobileCertRequest",
+	5627:  "EMsg_ClientNetworkingMobileCertRequestResponse",
 	5800:  "EMsg_BaseMDS",
 	5801:  "EMsg_ClientMDSLoginRequest",
 	5802:  "EMsg_ClientMDSLoginResponse",
@@ -3136,6 +3154,8 @@ var EMsg_name = map[EMsg]string{
 	6625:  "EMsg_ClientMMSSetRatelimitPolicyOnClient",
 	6626:  "EMsg_ClientMMSGetLobbyStatus",
 	6627:  "EMsg_ClientMMSGetLobbyStatusResponse",
+	6628:  "EMsg_MMSGetLobbyList",
+	6629:  "EMsg_MMSGetLobbyListResponse",
 	6800:  "EMsg_NonStdMsgBase",
 	6801:  "EMsg_NonStdMsgMemcached",
 	6802:  "EMsg_NonStdMsgHTTPServer",
@@ -3151,6 +3171,7 @@ var EMsg_name = map[EMsg]string{
 	6812:  "EMsg_NonStdMsgSteam2Emulator",
 	6813:  "EMsg_NonStdMsgRTMPServer",
 	6814:  "EMsg_NonStdMsgWebSocket",
+	6815:  "EMsg_NonStdMsgRedis",
 	7000:  "EMsg_UDSBase",
 	7001:  "EMsg_ClientUDSP2PSessionStarted",
 	7002:  "EMsg_ClientUDSP2PSessionEnded",
@@ -3487,119 +3508,122 @@ func (e EMsg) String() string {
 type EResult int32
 
 const (
-	EResult_Invalid                                 EResult = 0
-	EResult_OK                                      EResult = 1
-	EResult_Fail                                    EResult = 2
-	EResult_NoConnection                            EResult = 3
-	EResult_InvalidPassword                         EResult = 5
-	EResult_LoggedInElsewhere                       EResult = 6
-	EResult_InvalidProtocolVer                      EResult = 7
-	EResult_InvalidParam                            EResult = 8
-	EResult_FileNotFound                            EResult = 9
-	EResult_Busy                                    EResult = 10
-	EResult_InvalidState                            EResult = 11
-	EResult_InvalidName                             EResult = 12
-	EResult_InvalidEmail                            EResult = 13
-	EResult_DuplicateName                           EResult = 14
-	EResult_AccessDenied                            EResult = 15
-	EResult_Timeout                                 EResult = 16
-	EResult_Banned                                  EResult = 17
-	EResult_AccountNotFound                         EResult = 18
-	EResult_InvalidSteamID                          EResult = 19
-	EResult_ServiceUnavailable                      EResult = 20
-	EResult_NotLoggedOn                             EResult = 21
-	EResult_Pending                                 EResult = 22
-	EResult_EncryptionFailure                       EResult = 23
-	EResult_InsufficientPrivilege                   EResult = 24
-	EResult_LimitExceeded                           EResult = 25
-	EResult_Revoked                                 EResult = 26
-	EResult_Expired                                 EResult = 27
-	EResult_AlreadyRedeemed                         EResult = 28
-	EResult_DuplicateRequest                        EResult = 29
-	EResult_AlreadyOwned                            EResult = 30
-	EResult_IPNotFound                              EResult = 31
-	EResult_PersistFailed                           EResult = 32
-	EResult_LockingFailed                           EResult = 33
-	EResult_LogonSessionReplaced                    EResult = 34
-	EResult_ConnectFailed                           EResult = 35
-	EResult_HandshakeFailed                         EResult = 36
-	EResult_IOFailure                               EResult = 37
-	EResult_RemoteDisconnect                        EResult = 38
-	EResult_ShoppingCartNotFound                    EResult = 39
-	EResult_Blocked                                 EResult = 40
-	EResult_Ignored                                 EResult = 41
-	EResult_NoMatch                                 EResult = 42
-	EResult_AccountDisabled                         EResult = 43
-	EResult_ServiceReadOnly                         EResult = 44
-	EResult_AccountNotFeatured                      EResult = 45
-	EResult_AdministratorOK                         EResult = 46
-	EResult_ContentVersion                          EResult = 47
-	EResult_TryAnotherCM                            EResult = 48
-	EResult_PasswordRequiredToKickSession           EResult = 49
-	EResult_AlreadyLoggedInElsewhere                EResult = 50
-	EResult_Suspended                               EResult = 51
-	EResult_Cancelled                               EResult = 52
-	EResult_DataCorruption                          EResult = 53
-	EResult_DiskFull                                EResult = 54
-	EResult_RemoteCallFailed                        EResult = 55
-	EResult_PasswordUnset                           EResult = 56
-	EResult_ExternalAccountUnlinked                 EResult = 57
-	EResult_PSNTicketInvalid                        EResult = 58
-	EResult_ExternalAccountAlreadyLinked            EResult = 59
-	EResult_RemoteFileConflict                      EResult = 60
-	EResult_IllegalPassword                         EResult = 61
-	EResult_SameAsPreviousValue                     EResult = 62
-	EResult_AccountLogonDenied                      EResult = 63
-	EResult_CannotUseOldPassword                    EResult = 64
-	EResult_InvalidLoginAuthCode                    EResult = 65
-	EResult_AccountLogonDeniedNoMail                EResult = 66
-	EResult_HardwareNotCapableOfIPT                 EResult = 67
-	EResult_IPTInitError                            EResult = 68
-	EResult_ParentalControlRestricted               EResult = 69
-	EResult_FacebookQueryError                      EResult = 70
-	EResult_ExpiredLoginAuthCode                    EResult = 71
-	EResult_IPLoginRestrictionFailed                EResult = 72
-	EResult_AccountLockedDown                       EResult = 73
-	EResult_AccountLogonDeniedVerifiedEmailRequired EResult = 74
-	EResult_NoMatchingURL                           EResult = 75
-	EResult_BadResponse                             EResult = 76
-	EResult_RequirePasswordReEntry                  EResult = 77
-	EResult_ValueOutOfRange                         EResult = 78
-	EResult_UnexpectedError                         EResult = 79
-	EResult_Disabled                                EResult = 80
-	EResult_InvalidCEGSubmission                    EResult = 81
-	EResult_RestrictedDevice                        EResult = 82
-	EResult_RegionLocked                            EResult = 83
-	EResult_RateLimitExceeded                       EResult = 84
-	EResult_AccountLoginDeniedNeedTwoFactor         EResult = 85
-	EResult_ItemDeleted                             EResult = 86
-	EResult_AccountLoginDeniedThrottle              EResult = 87
-	EResult_TwoFactorCodeMismatch                   EResult = 88
-	EResult_TwoFactorActivationCodeMismatch         EResult = 89
-	EResult_AccountAssociatedToMultiplePartners     EResult = 90
-	EResult_NotModified                             EResult = 91
-	EResult_NoMobileDevice                          EResult = 92
-	EResult_TimeNotSynced                           EResult = 93
-	EResult_SMSCodeFailed                           EResult = 94
-	EResult_AccountLimitExceeded                    EResult = 95
-	EResult_AccountActivityLimitExceeded            EResult = 96
-	EResult_PhoneActivityLimitExceeded              EResult = 97
-	EResult_RefundToWallet                          EResult = 98
-	EResult_EmailSendFailure                        EResult = 99
-	EResult_NotSettled                              EResult = 100
-	EResult_NeedCaptcha                             EResult = 101
-	EResult_GSLTDenied                              EResult = 102
-	EResult_GSOwnerDenied                           EResult = 103
-	EResult_InvalidItemType                         EResult = 104
-	EResult_IPBanned                                EResult = 105
-	EResult_GSLTExpired                             EResult = 106
-	EResult_InsufficientFunds                       EResult = 107
-	EResult_TooManyPending                          EResult = 108
-	EResult_NoSiteLicensesFound                     EResult = 109
-	EResult_WGNetworkSendExceeded                   EResult = 110
-	EResult_AccountNotFriends                       EResult = 111
-	EResult_LimitedUserAccount                      EResult = 112
-	EResult_CantRemoveItem                          EResult = 113
+	EResult_Invalid                                  EResult = 0
+	EResult_OK                                       EResult = 1
+	EResult_Fail                                     EResult = 2
+	EResult_NoConnection                             EResult = 3
+	EResult_InvalidPassword                          EResult = 5
+	EResult_LoggedInElsewhere                        EResult = 6
+	EResult_InvalidProtocolVer                       EResult = 7
+	EResult_InvalidParam                             EResult = 8
+	EResult_FileNotFound                             EResult = 9
+	EResult_Busy                                     EResult = 10
+	EResult_InvalidState                             EResult = 11
+	EResult_InvalidName                              EResult = 12
+	EResult_InvalidEmail                             EResult = 13
+	EResult_DuplicateName                            EResult = 14
+	EResult_AccessDenied                             EResult = 15
+	EResult_Timeout                                  EResult = 16
+	EResult_Banned                                   EResult = 17
+	EResult_AccountNotFound                          EResult = 18
+	EResult_InvalidSteamID                           EResult = 19
+	EResult_ServiceUnavailable                       EResult = 20
+	EResult_NotLoggedOn                              EResult = 21
+	EResult_Pending                                  EResult = 22
+	EResult_EncryptionFailure                        EResult = 23
+	EResult_InsufficientPrivilege                    EResult = 24
+	EResult_LimitExceeded                            EResult = 25
+	EResult_Revoked                                  EResult = 26
+	EResult_Expired                                  EResult = 27
+	EResult_AlreadyRedeemed                          EResult = 28
+	EResult_DuplicateRequest                         EResult = 29
+	EResult_AlreadyOwned                             EResult = 30
+	EResult_IPNotFound                               EResult = 31
+	EResult_PersistFailed                            EResult = 32
+	EResult_LockingFailed                            EResult = 33
+	EResult_LogonSessionReplaced                     EResult = 34
+	EResult_ConnectFailed                            EResult = 35
+	EResult_HandshakeFailed                          EResult = 36
+	EResult_IOFailure                                EResult = 37
+	EResult_RemoteDisconnect                         EResult = 38
+	EResult_ShoppingCartNotFound                     EResult = 39
+	EResult_Blocked                                  EResult = 40
+	EResult_Ignored                                  EResult = 41
+	EResult_NoMatch                                  EResult = 42
+	EResult_AccountDisabled                          EResult = 43
+	EResult_ServiceReadOnly                          EResult = 44
+	EResult_AccountNotFeatured                       EResult = 45
+	EResult_AdministratorOK                          EResult = 46
+	EResult_ContentVersion                           EResult = 47
+	EResult_TryAnotherCM                             EResult = 48
+	EResult_PasswordRequiredToKickSession            EResult = 49
+	EResult_AlreadyLoggedInElsewhere                 EResult = 50
+	EResult_Suspended                                EResult = 51
+	EResult_Cancelled                                EResult = 52
+	EResult_DataCorruption                           EResult = 53
+	EResult_DiskFull                                 EResult = 54
+	EResult_RemoteCallFailed                         EResult = 55
+	EResult_PasswordUnset                            EResult = 56
+	EResult_ExternalAccountUnlinked                  EResult = 57
+	EResult_PSNTicketInvalid                         EResult = 58
+	EResult_ExternalAccountAlreadyLinked             EResult = 59
+	EResult_RemoteFileConflict                       EResult = 60
+	EResult_IllegalPassword                          EResult = 61
+	EResult_SameAsPreviousValue                      EResult = 62
+	EResult_AccountLogonDenied                       EResult = 63
+	EResult_CannotUseOldPassword                     EResult = 64
+	EResult_InvalidLoginAuthCode                     EResult = 65
+	EResult_AccountLogonDeniedNoMail                 EResult = 66
+	EResult_HardwareNotCapableOfIPT                  EResult = 67
+	EResult_IPTInitError                             EResult = 68
+	EResult_ParentalControlRestricted                EResult = 69
+	EResult_FacebookQueryError                       EResult = 70
+	EResult_ExpiredLoginAuthCode                     EResult = 71
+	EResult_IPLoginRestrictionFailed                 EResult = 72
+	EResult_AccountLockedDown                        EResult = 73
+	EResult_AccountLogonDeniedVerifiedEmailRequired  EResult = 74
+	EResult_NoMatchingURL                            EResult = 75
+	EResult_BadResponse                              EResult = 76
+	EResult_RequirePasswordReEntry                   EResult = 77
+	EResult_ValueOutOfRange                          EResult = 78
+	EResult_UnexpectedError                          EResult = 79
+	EResult_Disabled                                 EResult = 80
+	EResult_InvalidCEGSubmission                     EResult = 81
+	EResult_RestrictedDevice                         EResult = 82
+	EResult_RegionLocked                             EResult = 83
+	EResult_RateLimitExceeded                        EResult = 84
+	EResult_AccountLoginDeniedNeedTwoFactor          EResult = 85
+	EResult_ItemDeleted                              EResult = 86
+	EResult_AccountLoginDeniedThrottle               EResult = 87
+	EResult_TwoFactorCodeMismatch                    EResult = 88
+	EResult_TwoFactorActivationCodeMismatch          EResult = 89
+	EResult_AccountAssociatedToMultiplePartners      EResult = 90
+	EResult_NotModified                              EResult = 91
+	EResult_NoMobileDevice                           EResult = 92
+	EResult_TimeNotSynced                            EResult = 93
+	EResult_SMSCodeFailed                            EResult = 94
+	EResult_AccountLimitExceeded                     EResult = 95
+	EResult_AccountActivityLimitExceeded             EResult = 96
+	EResult_PhoneActivityLimitExceeded               EResult = 97
+	EResult_RefundToWallet                           EResult = 98
+	EResult_EmailSendFailure                         EResult = 99
+	EResult_NotSettled                               EResult = 100
+	EResult_NeedCaptcha                              EResult = 101
+	EResult_GSLTDenied                               EResult = 102
+	EResult_GSOwnerDenied                            EResult = 103
+	EResult_InvalidItemType                          EResult = 104
+	EResult_IPBanned                                 EResult = 105
+	EResult_GSLTExpired                              EResult = 106
+	EResult_InsufficientFunds                        EResult = 107
+	EResult_TooManyPending                           EResult = 108
+	EResult_NoSiteLicensesFound                      EResult = 109
+	EResult_WGNetworkSendExceeded                    EResult = 110
+	EResult_AccountNotFriends                        EResult = 111
+	EResult_LimitedUserAccount                       EResult = 112
+	EResult_CantRemoveItem                           EResult = 113
+	EResult_AccountHasBeenDeleted                    EResult = 114
+	EResult_AccountHasAnExistingUserCancelledLicense EResult = 115
+	EResult_DeniedDueToCommunityCooldown             EResult = 116
 )
 
 var EResult_name = map[EResult]string{
@@ -3716,6 +3740,9 @@ var EResult_name = map[EResult]string{
 	111: "EResult_AccountNotFriends",
 	112: "EResult_LimitedUserAccount",
 	113: "EResult_CantRemoveItem",
+	114: "EResult_AccountHasBeenDeleted",
+	115: "EResult_AccountHasAnExistingUserCancelledLicense",
+	116: "EResult_DeniedDueToCommunityCooldown",
 }
 
 func (e EResult) String() string {
@@ -3743,7 +3770,6 @@ const (
 	EUniverse_Beta     EUniverse = 2
 	EUniverse_Internal EUniverse = 3
 	EUniverse_Dev      EUniverse = 4
-	EUniverse_Max      EUniverse = 5
 )
 
 var EUniverse_name = map[EUniverse]string{
@@ -3752,7 +3778,6 @@ var EUniverse_name = map[EUniverse]string{
 	2: "EUniverse_Beta",
 	3: "EUniverse_Internal",
 	4: "EUniverse_Dev",
-	5: "EUniverse_Max",
 }
 
 func (e EUniverse) String() string {
@@ -3836,7 +3861,6 @@ const (
 	EPersonaState_LookingToTrade EPersonaState = 5
 	EPersonaState_LookingToPlay  EPersonaState = 6
 	EPersonaState_Invisible      EPersonaState = 7
-	EPersonaState_Max            EPersonaState = 8
 )
 
 var EPersonaState_name = map[EPersonaState]string{
@@ -3848,7 +3872,6 @@ var EPersonaState_name = map[EPersonaState]string{
 	5: "EPersonaState_LookingToTrade",
 	6: "EPersonaState_LookingToPlay",
 	7: "EPersonaState_Invisible",
-	8: "EPersonaState_Max",
 }
 
 func (e EPersonaState) String() string {
@@ -3882,7 +3905,6 @@ const (
 	EAccountType_Chat           EAccountType = 8
 	EAccountType_ConsoleUser    EAccountType = 9
 	EAccountType_AnonUser       EAccountType = 10
-	EAccountType_Max            EAccountType = 11
 )
 
 var EAccountType_name = map[EAccountType]string{
@@ -3897,7 +3919,6 @@ var EAccountType_name = map[EAccountType]string{
 	8:  "EAccountType_Chat",
 	9:  "EAccountType_ConsoleUser",
 	10: "EAccountType_AnonUser",
-	11: "EAccountType_Max",
 }
 
 func (e EAccountType) String() string {
@@ -3927,7 +3948,6 @@ const (
 	EFriendRelationship_RequestInitiator EFriendRelationship = 4
 	EFriendRelationship_Ignored          EFriendRelationship = 5
 	EFriendRelationship_IgnoredFriend    EFriendRelationship = 6
-	EFriendRelationship_Max              EFriendRelationship = 8
 )
 
 var EFriendRelationship_name = map[EFriendRelationship]string{
@@ -3939,7 +3959,6 @@ var EFriendRelationship_name = map[EFriendRelationship]string{
 	5: "EFriendRelationship_Ignored",
 	6: "EFriendRelationship_IgnoredFriend",
 	7: "EFriendRelationship_SuggestedFriend",
-	8: "EFriendRelationship_Max",
 }
 
 func (e EFriendRelationship) String() string {
@@ -4212,6 +4231,7 @@ const (
 	EPersonaStateFlag_HasRichPresence      EPersonaStateFlag = 1
 	EPersonaStateFlag_InJoinableGame       EPersonaStateFlag = 2
 	EPersonaStateFlag_Golden               EPersonaStateFlag = 4
+	EPersonaStateFlag_RemotePlayTogether   EPersonaStateFlag = 8
 	EPersonaStateFlag_ClientTypeWeb        EPersonaStateFlag = 256
 	EPersonaStateFlag_ClientTypeMobile     EPersonaStateFlag = 512
 	EPersonaStateFlag_ClientTypeTenfoot    EPersonaStateFlag = 1024
@@ -4224,6 +4244,7 @@ var EPersonaStateFlag_name = map[EPersonaStateFlag]string{
 	1:    "EPersonaStateFlag_HasRichPresence",
 	2:    "EPersonaStateFlag_InJoinableGame",
 	4:    "EPersonaStateFlag_Golden",
+	8:    "EPersonaStateFlag_RemotePlayTogether",
 	256:  "EPersonaStateFlag_OnlineUsingWeb",
 	512:  "EPersonaStateFlag_OnlineUsingMobile",
 	1024: "EPersonaStateFlag_OnlineUsingBigPicture",
@@ -4524,6 +4545,7 @@ const (
 	EPaymentMethod_Valve                  EPaymentMethod = 129
 	EPaymentMethod_MasterComp             EPaymentMethod = 130
 	EPaymentMethod_Promotional            EPaymentMethod = 131
+	EPaymentMethod_MasterSubscription     EPaymentMethod = 134
 	EPaymentMethod_OEMTicket              EPaymentMethod = 256
 	EPaymentMethod_Split                  EPaymentMethod = 512
 	EPaymentMethod_Complimentary          EPaymentMethod = 1024
@@ -4613,6 +4635,7 @@ var EPaymentMethod_name = map[EPaymentMethod]string{
 	129:  "EPaymentMethod_Valve",
 	130:  "EPaymentMethod_SteamPressMaster",
 	131:  "EPaymentMethod_StorePromotion",
+	134:  "EPaymentMethod_MasterSubscription",
 	256:  "EPaymentMethod_OEMTicket",
 	512:  "EPaymentMethod_Split",
 	1024: "EPaymentMethod_Complimentary",
@@ -4706,6 +4729,22 @@ const (
 	EPurchaseResultDetail_PurchaseCannotBeReplayed                EPurchaseResultDetail = 65
 	EPurchaseResultDetail_DelayedCompletion                       EPurchaseResultDetail = 66
 	EPurchaseResultDetail_BundleTypeCannotBeGifted                EPurchaseResultDetail = 67
+	EPurchaseResultDetail_BlockedByUSGov                          EPurchaseResultDetail = 68
+	EPurchaseResultDetail_ItemsReservedForCommercialUse           EPurchaseResultDetail = 69
+	EPurchaseResultDetail_GiftAlreadyOwned                        EPurchaseResultDetail = 70
+	EPurchaseResultDetail_GiftInvalidForRecipientRegion           EPurchaseResultDetail = 71
+	EPurchaseResultDetail_GiftPricingImbalance                    EPurchaseResultDetail = 72
+	EPurchaseResultDetail_GiftRecipientNotSpecified               EPurchaseResultDetail = 73
+	EPurchaseResultDetail_ItemsNotAllowedForCommercialUse         EPurchaseResultDetail = 74
+	EPurchaseResultDetail_BusinessStoreCountryCodeMismatch        EPurchaseResultDetail = 75
+	EPurchaseResultDetail_UserAssociatedWithManyCafes             EPurchaseResultDetail = 76
+	EPurchaseResultDetail_UserNotAssociatedWithCafe               EPurchaseResultDetail = 77
+	EPurchaseResultDetail_AddressInvalid                          EPurchaseResultDetail = 78
+	EPurchaseResultDetail_CreditCardNumberInvalid                 EPurchaseResultDetail = 79
+	EPurchaseResultDetail_CannotShipToMilitaryPostOffice          EPurchaseResultDetail = 80
+	EPurchaseResultDetail_BillingNameInvalidResemblesCreditCard   EPurchaseResultDetail = 81
+	EPurchaseResultDetail_PaymentMethodTemporarilyUnavailable     EPurchaseResultDetail = 82
+	EPurchaseResultDetail_PaymentMethodNotSupportedForProduct     EPurchaseResultDetail = 83
 )
 
 var EPurchaseResultDetail_name = map[EPurchaseResultDetail]string{
@@ -4777,6 +4816,22 @@ var EPurchaseResultDetail_name = map[EPurchaseResultDetail]string{
 	65: "EPurchaseResultDetail_PurchaseCannotBeReplayed",
 	66: "EPurchaseResultDetail_DelayedCompletion",
 	67: "EPurchaseResultDetail_BundleTypeCannotBeGifted",
+	68: "EPurchaseResultDetail_BlockedByUSGov",
+	69: "EPurchaseResultDetail_ItemsReservedForCommercialUse",
+	70: "EPurchaseResultDetail_GiftAlreadyOwned",
+	71: "EPurchaseResultDetail_GiftInvalidForRecipientRegion",
+	72: "EPurchaseResultDetail_GiftPricingImbalance",
+	73: "EPurchaseResultDetail_GiftRecipientNotSpecified",
+	74: "EPurchaseResultDetail_ItemsNotAllowedForCommercialUse",
+	75: "EPurchaseResultDetail_BusinessStoreCountryCodeMismatch",
+	76: "EPurchaseResultDetail_UserAssociatedWithManyCafes",
+	77: "EPurchaseResultDetail_UserNotAssociatedWithCafe",
+	78: "EPurchaseResultDetail_AddressInvalid",
+	79: "EPurchaseResultDetail_CreditCardNumberInvalid",
+	80: "EPurchaseResultDetail_CannotShipToMilitaryPostOffice",
+	81: "EPurchaseResultDetail_BillingNameInvalidResemblesCreditCard",
+	82: "EPurchaseResultDetail_PaymentMethodTemporarilyUnavailable",
+	83: "EPurchaseResultDetail_PaymentMethodNotSupportedForProduct",
 }
 
 func (e EPurchaseResultDetail) String() string {
@@ -5275,7 +5330,8 @@ const (
 	EAppInfoSection_Store             EAppInfoSection = 16
 	EAppInfoSection_Localization      EAppInfoSection = 17
 	EAppInfoSection_Broadcastgamedata EAppInfoSection = 18
-	EAppInfoSection_Max               EAppInfoSection = 19
+	EAppInfoSection_Computed          EAppInfoSection = 19
+	EAppInfoSection_Albummetadata     EAppInfoSection = 20
 )
 
 var EAppInfoSection_name = map[EAppInfoSection]string{
@@ -5298,7 +5354,8 @@ var EAppInfoSection_name = map[EAppInfoSection]string{
 	16: "EAppInfoSection_Store",
 	17: "EAppInfoSection_Localization",
 	18: "EAppInfoSection_Broadcastgamedata",
-	19: "EAppInfoSection_Max",
+	19: "EAppInfoSection_Computed",
+	20: "EAppInfoSection_Albummetadata",
 }
 
 func (e EAppInfoSection) String() string {
@@ -5330,7 +5387,7 @@ const (
 	EContentDownloadSourceType_SLS        EContentDownloadSourceType = 6
 	EContentDownloadSourceType_SteamCache EContentDownloadSourceType = 7
 	EContentDownloadSourceType_OpenCache  EContentDownloadSourceType = 8
-	EContentDownloadSourceType_Max        EContentDownloadSourceType = 9
+	EContentDownloadSourceType_LANCache   EContentDownloadSourceType = 9
 )
 
 var EContentDownloadSourceType_name = map[EContentDownloadSourceType]string{
@@ -5343,7 +5400,7 @@ var EContentDownloadSourceType_name = map[EContentDownloadSourceType]string{
 	6: "EContentDownloadSourceType_SLS",
 	7: "EContentDownloadSourceType_SteamCache",
 	8: "EContentDownloadSourceType_OpenCache",
-	9: "EContentDownloadSourceType_Max",
+	9: "EContentDownloadSourceType_LANCache",
 }
 
 func (e EContentDownloadSourceType) String() string {
@@ -5373,7 +5430,6 @@ const (
 	EPlatformType_OSX     EPlatformType = 4
 	EPlatformType_PS3     EPlatformType = 5
 	EPlatformType_Linux32 EPlatformType = 6
-	EPlatformType_Max     EPlatformType = 7
 )
 
 var EPlatformType_name = map[EPlatformType]string{
@@ -5384,7 +5440,6 @@ var EPlatformType_name = map[EPlatformType]string{
 	4: "EPlatformType_OSX",
 	5: "EPlatformType_PS3",
 	6: "EPlatformType_Linux32",
-	7: "EPlatformType_Max",
 }
 
 func (e EPlatformType) String() string {
@@ -5462,6 +5517,7 @@ const (
 	EOSType_MacOS1012      EOSType = -85
 	EOSType_Macos1013      EOSType = -84
 	EOSType_Macos1014      EOSType = -83
+	EOSType_Macos1015      EOSType = -82
 	EOSType_MacOSMax       EOSType = -1
 	EOSType_LinuxUnknown   EOSType = -203
 	EOSType_Linux22        EOSType = -202
@@ -5501,7 +5557,6 @@ const (
 	EOSType_Windows10      EOSType = 16
 	EOSType_Win2016        EOSType = 17
 	EOSType_WinMAX         EOSType = 18
-	EOSType_Max            EOSType = 26
 )
 
 var EOSType_name = map[EOSType]string{
@@ -5560,6 +5615,7 @@ var EOSType_name = map[EOSType]string{
 	-85:  "EOSType_MacOS1012",
 	-84:  "EOSType_Macos1013",
 	-83:  "EOSType_Macos1014",
+	-82:  "EOSType_Macos1015",
 	-203: "EOSType_LinuxUnknown",
 	-202: "EOSType_Linux22",
 	-201: "EOSType_Linux24",
@@ -5597,7 +5653,6 @@ var EOSType_name = map[EOSType]string{
 	16:   "EOSType_Win10",
 	17:   "EOSType_Win2016",
 	18:   "EOSType_WinMAX",
-	26:   "EOSType_Max",
 }
 
 func (e EOSType) String() string {
@@ -5734,7 +5789,19 @@ const (
 	EServerType_TimeMachine         EServerType = 111
 	EServerType_VACDBMaster         EServerType = 112
 	EServerType_ContentServerConfig EServerType = 113
-	EServerType_Max                 EServerType = 114
+	EServerType_Minigame            EServerType = 114
+	EServerType_MLTrain             EServerType = 115
+	EServerType_VACTest             EServerType = 116
+	EServerType_TaxService          EServerType = 117
+	EServerType_MLInference         EServerType = 118
+	EServerType_UGSAggregate        EServerType = 119
+	EServerType_TURN                EServerType = 120
+	EServerType_RemoteClient        EServerType = 121
+	EServerType_BroadcastOrigin     EServerType = 122
+	EServerType_BroadcastChannel    EServerType = 123
+	EServerType_SteamAR             EServerType = 124
+	EServerType_China               EServerType = 125
+	EServerType_CrashDump           EServerType = 126
 )
 
 var EServerType_name = map[EServerType]string{
@@ -5856,7 +5923,19 @@ var EServerType_name = map[EServerType]string{
 	111: "EServerType_TimeMachine",
 	112: "EServerType_VACDBMaster",
 	113: "EServerType_ContentServerConfig",
-	114: "EServerType_Max",
+	114: "EServerType_Minigame",
+	115: "EServerType_MLTrain",
+	116: "EServerType_VACTest",
+	117: "EServerType_TaxService",
+	118: "EServerType_MLInference",
+	119: "EServerType_UGSAggregate",
+	120: "EServerType_TURN",
+	121: "EServerType_RemoteClient",
+	122: "EServerType_BroadcastOrigin",
+	123: "EServerType_BroadcastChannel",
+	124: "EServerType_SteamAR",
+	125: "EServerType_China",
+	126: "EServerType_CrashDump",
 }
 
 func (e EServerType) String() string {
@@ -6102,7 +6181,6 @@ const (
 	ECurrencyCode_QAR     ECurrencyCode = 39
 	ECurrencyCode_CRC     ECurrencyCode = 40
 	ECurrencyCode_UYU     ECurrencyCode = 41
-	ECurrencyCode_Max     ECurrencyCode = 42
 )
 
 var ECurrencyCode_name = map[ECurrencyCode]string{
@@ -6147,7 +6225,6 @@ var ECurrencyCode_name = map[ECurrencyCode]string{
 	39: "ECurrencyCode_QAR",
 	40: "ECurrencyCode_CRC",
 	41: "ECurrencyCode_UYU",
-	42: "ECurrencyCode_Max",
 }
 
 func (e ECurrencyCode) String() string {
@@ -6302,7 +6379,6 @@ const (
 	EWorkshopFileType_SteamworksAccessInvite EWorkshopFileType = 13
 	EWorkshopFileType_SteamVideo             EWorkshopFileType = 14
 	EWorkshopFileType_GameManagedItem        EWorkshopFileType = 15
-	EWorkshopFileType_Max                    EWorkshopFileType = 16
 )
 
 var EWorkshopFileType_name = map[EWorkshopFileType]string{
@@ -6322,7 +6398,6 @@ var EWorkshopFileType_name = map[EWorkshopFileType]string{
 	13: "EWorkshopFileType_SteamworksAccessInvite",
 	14: "EWorkshopFileType_SteamVideo",
 	15: "EWorkshopFileType_GameManagedItem",
-	16: "EWorkshopFileType_Max",
 }
 
 func (e EWorkshopFileType) String() string {
@@ -6548,21 +6623,19 @@ const (
 	ESystemIMType_GiftRevoked              ESystemIMType = 7
 	ESystemIMType_SupportMessage           ESystemIMType = 8
 	ESystemIMType_SupportMessageClearAlert ESystemIMType = 9
-	ESystemIMType_Max                      ESystemIMType = 10
 )
 
 var ESystemIMType_name = map[ESystemIMType]string{
-	0:  "ESystemIMType_RawText",
-	1:  "ESystemIMType_InvalidCard",
-	2:  "ESystemIMType_RecurringPurchaseFailed",
-	3:  "ESystemIMType_CardWillExpire",
-	4:  "ESystemIMType_SubscriptionExpired",
-	5:  "ESystemIMType_GuestPassReceived",
-	6:  "ESystemIMType_GuestPassGranted",
-	7:  "ESystemIMType_GiftRevoked",
-	8:  "ESystemIMType_SupportMessage",
-	9:  "ESystemIMType_SupportMessageClearAlert",
-	10: "ESystemIMType_Max",
+	0: "ESystemIMType_RawText",
+	1: "ESystemIMType_InvalidCard",
+	2: "ESystemIMType_RecurringPurchaseFailed",
+	3: "ESystemIMType_CardWillExpire",
+	4: "ESystemIMType_SubscriptionExpired",
+	5: "ESystemIMType_GuestPassReceived",
+	6: "ESystemIMType_GuestPassGranted",
+	7: "ESystemIMType_GiftRevoked",
+	8: "ESystemIMType_SupportMessage",
+	9: "ESystemIMType_SupportMessageClearAlert",
 }
 
 func (e ESystemIMType) String() string {
@@ -6618,15 +6691,15 @@ func (e EChatFlags) String() string {
 type ERemoteStoragePlatform int32
 
 const (
-	ERemoteStoragePlatform_None      ERemoteStoragePlatform = 0
-	ERemoteStoragePlatform_Windows   ERemoteStoragePlatform = 1
-	ERemoteStoragePlatform_OSX       ERemoteStoragePlatform = 2
-	ERemoteStoragePlatform_PS3       ERemoteStoragePlatform = 4
-	ERemoteStoragePlatform_Linux     ERemoteStoragePlatform = 8
-	ERemoteStoragePlatform_Reserved2 ERemoteStoragePlatform = 16
-	ERemoteStoragePlatform_Android   ERemoteStoragePlatform = 32
-	ERemoteStoragePlatform_IPhoneOS  ERemoteStoragePlatform = 64
-	ERemoteStoragePlatform_All       ERemoteStoragePlatform = -1
+	ERemoteStoragePlatform_None     ERemoteStoragePlatform = 0
+	ERemoteStoragePlatform_Windows  ERemoteStoragePlatform = 1
+	ERemoteStoragePlatform_OSX      ERemoteStoragePlatform = 2
+	ERemoteStoragePlatform_PS3      ERemoteStoragePlatform = 4
+	ERemoteStoragePlatform_Linux    ERemoteStoragePlatform = 8
+	ERemoteStoragePlatform_Switch   ERemoteStoragePlatform = 16
+	ERemoteStoragePlatform_Android  ERemoteStoragePlatform = 32
+	ERemoteStoragePlatform_IPhoneOS ERemoteStoragePlatform = 64
+	ERemoteStoragePlatform_All      ERemoteStoragePlatform = -1
 )
 
 var ERemoteStoragePlatform_name = map[ERemoteStoragePlatform]string{
@@ -6635,7 +6708,7 @@ var ERemoteStoragePlatform_name = map[ERemoteStoragePlatform]string{
 	2:  "ERemoteStoragePlatform_OSX",
 	4:  "ERemoteStoragePlatform_PS3",
 	8:  "ERemoteStoragePlatform_Linux",
-	16: "ERemoteStoragePlatform_Reserved2",
+	16: "ERemoteStoragePlatform_Switch",
 	32: "ERemoteStoragePlatform_Android",
 	64: "ERemoteStoragePlatform_IPhoneOS",
 	-1: "ERemoteStoragePlatform_All",
@@ -6780,7 +6853,6 @@ const (
 	EClientStat_P2PGameConnections  EClientStat = 2
 	EClientStat_P2PVoiceConnections EClientStat = 3
 	EClientStat_BytesDownloaded     EClientStat = 4
-	EClientStat_Max                 EClientStat = 5
 )
 
 var EClientStat_name = map[EClientStat]string{
@@ -6789,7 +6861,6 @@ var EClientStat_name = map[EClientStat]string{
 	2: "EClientStat_P2PGameConnections",
 	3: "EClientStat_P2PVoiceConnections",
 	4: "EClientStat_BytesDownloaded",
-	5: "EClientStat_Max",
 }
 
 func (e EClientStat) String() string {
@@ -7106,6 +7177,7 @@ type EPublishedFileInappropriateResult int32
 const (
 	EPublishedFileInappropriateResult_NotScanned   EPublishedFileInappropriateResult = 0
 	EPublishedFileInappropriateResult_VeryUnlikely EPublishedFileInappropriateResult = 1
+	EPublishedFileInappropriateResult_Unlikely     EPublishedFileInappropriateResult = 30
 	EPublishedFileInappropriateResult_Possible     EPublishedFileInappropriateResult = 50
 	EPublishedFileInappropriateResult_Likely       EPublishedFileInappropriateResult = 75
 	EPublishedFileInappropriateResult_VeryLikely   EPublishedFileInappropriateResult = 100
@@ -7114,6 +7186,7 @@ const (
 var EPublishedFileInappropriateResult_name = map[EPublishedFileInappropriateResult]string{
 	0:   "EPublishedFileInappropriateResult_NotScanned",
 	1:   "EPublishedFileInappropriateResult_VeryUnlikely",
+	30:  "EPublishedFileInappropriateResult_Unlikely",
 	50:  "EPublishedFileInappropriateResult_Possible",
 	75:  "EPublishedFileInappropriateResult_Likely",
 	100: "EPublishedFileInappropriateResult_VeryLikely",
@@ -7712,6 +7785,282 @@ func (e ETradeOfferConfirmationMethod) String() string {
 	}
 	var flags []string
 	for k, v := range ETradeOfferConfirmationMethod_name {
+		if e&k != 0 {
+			flags = append(flags, v)
+		}
+	}
+	if len(flags) == 0 {
+		return fmt.Sprintf("%d", e)
+	}
+	sort.Strings(flags)
+	return strings.Join(flags, " | ")
+}
+
+type ELobbyType int32
+
+const (
+	ELobbyType_Private       ELobbyType = 0
+	ELobbyType_FriendsOnly   ELobbyType = 1
+	ELobbyType_Public        ELobbyType = 2
+	ELobbyType_Invisible     ELobbyType = 3
+	ELobbyType_PrivateUnique ELobbyType = 4
+)
+
+var ELobbyType_name = map[ELobbyType]string{
+	0: "ELobbyType_Private",
+	1: "ELobbyType_FriendsOnly",
+	2: "ELobbyType_Public",
+	3: "ELobbyType_Invisible",
+	4: "ELobbyType_PrivateUnique",
+}
+
+func (e ELobbyType) String() string {
+	if s, ok := ELobbyType_name[e]; ok {
+		return s
+	}
+	var flags []string
+	for k, v := range ELobbyType_name {
+		if e&k != 0 {
+			flags = append(flags, v)
+		}
+	}
+	if len(flags) == 0 {
+		return fmt.Sprintf("%d", e)
+	}
+	sort.Strings(flags)
+	return strings.Join(flags, " | ")
+}
+
+type ELobbyFilterType int32
+
+const (
+	ELobbyFilterType_String         ELobbyFilterType = 0
+	ELobbyFilterType_Numerical      ELobbyFilterType = 1
+	ELobbyFilterType_SlotsAvailable ELobbyFilterType = 2
+	ELobbyFilterType_NearValue      ELobbyFilterType = 3
+	ELobbyFilterType_Distance       ELobbyFilterType = 4
+)
+
+var ELobbyFilterType_name = map[ELobbyFilterType]string{
+	0: "ELobbyFilterType_String",
+	1: "ELobbyFilterType_Numerical",
+	2: "ELobbyFilterType_SlotsAvailable",
+	3: "ELobbyFilterType_NearValue",
+	4: "ELobbyFilterType_Distance",
+}
+
+func (e ELobbyFilterType) String() string {
+	if s, ok := ELobbyFilterType_name[e]; ok {
+		return s
+	}
+	var flags []string
+	for k, v := range ELobbyFilterType_name {
+		if e&k != 0 {
+			flags = append(flags, v)
+		}
+	}
+	if len(flags) == 0 {
+		return fmt.Sprintf("%d", e)
+	}
+	sort.Strings(flags)
+	return strings.Join(flags, " | ")
+}
+
+type ELobbyComparison int32
+
+const (
+	ELobbyComparison_EqualToOrLessThan    ELobbyComparison = -2
+	ELobbyComparison_LessThan             ELobbyComparison = -1
+	ELobbyComparison_Equal                ELobbyComparison = 0
+	ELobbyComparison_GreaterThan          ELobbyComparison = 1
+	ELobbyComparison_EqualToOrGreaterThan ELobbyComparison = 2
+	ELobbyComparison_NotEqual             ELobbyComparison = 3
+)
+
+var ELobbyComparison_name = map[ELobbyComparison]string{
+	-2: "ELobbyComparison_EqualToOrLessThan",
+	-1: "ELobbyComparison_LessThan",
+	0:  "ELobbyComparison_Equal",
+	1:  "ELobbyComparison_GreaterThan",
+	2:  "ELobbyComparison_EqualToOrGreaterThan",
+	3:  "ELobbyComparison_NotEqual",
+}
+
+func (e ELobbyComparison) String() string {
+	if s, ok := ELobbyComparison_name[e]; ok {
+		return s
+	}
+	var flags []string
+	for k, v := range ELobbyComparison_name {
+		if e&k != 0 {
+			flags = append(flags, v)
+		}
+	}
+	if len(flags) == 0 {
+		return fmt.Sprintf("%d", e)
+	}
+	sort.Strings(flags)
+	return strings.Join(flags, " | ")
+}
+
+type ELobbyDistanceFilter int32
+
+const (
+	ELobbyDistanceFilter_Close     ELobbyDistanceFilter = 0
+	ELobbyDistanceFilter_Default   ELobbyDistanceFilter = 1
+	ELobbyDistanceFilter_Far       ELobbyDistanceFilter = 2
+	ELobbyDistanceFilter_Worldwide ELobbyDistanceFilter = 3
+)
+
+var ELobbyDistanceFilter_name = map[ELobbyDistanceFilter]string{
+	0: "ELobbyDistanceFilter_Close",
+	1: "ELobbyDistanceFilter_Default",
+	2: "ELobbyDistanceFilter_Far",
+	3: "ELobbyDistanceFilter_Worldwide",
+}
+
+func (e ELobbyDistanceFilter) String() string {
+	if s, ok := ELobbyDistanceFilter_name[e]; ok {
+		return s
+	}
+	var flags []string
+	for k, v := range ELobbyDistanceFilter_name {
+		if e&k != 0 {
+			flags = append(flags, v)
+		}
+	}
+	if len(flags) == 0 {
+		return fmt.Sprintf("%d", e)
+	}
+	sort.Strings(flags)
+	return strings.Join(flags, " | ")
+}
+
+type ESteamIPv6ConnectivityProtocol int32
+
+const (
+	ESteamIPv6ConnectivityProtocol_Invalid ESteamIPv6ConnectivityProtocol = 0
+	ESteamIPv6ConnectivityProtocol_Http    ESteamIPv6ConnectivityProtocol = 1
+	ESteamIPv6ConnectivityProtocol_Udp     ESteamIPv6ConnectivityProtocol = 2
+)
+
+var ESteamIPv6ConnectivityProtocol_name = map[ESteamIPv6ConnectivityProtocol]string{
+	0: "ESteamIPv6ConnectivityProtocol_Invalid",
+	1: "ESteamIPv6ConnectivityProtocol_Http",
+	2: "ESteamIPv6ConnectivityProtocol_Udp",
+}
+
+func (e ESteamIPv6ConnectivityProtocol) String() string {
+	if s, ok := ESteamIPv6ConnectivityProtocol_name[e]; ok {
+		return s
+	}
+	var flags []string
+	for k, v := range ESteamIPv6ConnectivityProtocol_name {
+		if e&k != 0 {
+			flags = append(flags, v)
+		}
+	}
+	if len(flags) == 0 {
+		return fmt.Sprintf("%d", e)
+	}
+	sort.Strings(flags)
+	return strings.Join(flags, " | ")
+}
+
+type ESteamIPv6ConnectivityState int32
+
+const (
+	ESteamIPv6ConnectivityState_Unknown ESteamIPv6ConnectivityState = 0
+	ESteamIPv6ConnectivityState_Good    ESteamIPv6ConnectivityState = 1
+	ESteamIPv6ConnectivityState_Bad     ESteamIPv6ConnectivityState = 2
+)
+
+var ESteamIPv6ConnectivityState_name = map[ESteamIPv6ConnectivityState]string{
+	0: "ESteamIPv6ConnectivityState_Unknown",
+	1: "ESteamIPv6ConnectivityState_Good",
+	2: "ESteamIPv6ConnectivityState_Bad",
+}
+
+func (e ESteamIPv6ConnectivityState) String() string {
+	if s, ok := ESteamIPv6ConnectivityState_name[e]; ok {
+		return s
+	}
+	var flags []string
+	for k, v := range ESteamIPv6ConnectivityState_name {
+		if e&k != 0 {
+			flags = append(flags, v)
+		}
+	}
+	if len(flags) == 0 {
+		return fmt.Sprintf("%d", e)
+	}
+	sort.Strings(flags)
+	return strings.Join(flags, " | ")
+}
+
+type ESteamRealm int32
+
+const (
+	ESteamRealm_Unknown     ESteamRealm = 0
+	ESteamRealm_SteamGlobal ESteamRealm = 1
+	ESteamRealm_SteamChina  ESteamRealm = 2
+)
+
+var ESteamRealm_name = map[ESteamRealm]string{
+	0: "ESteamRealm_Unknown",
+	1: "ESteamRealm_SteamGlobal",
+	2: "ESteamRealm_SteamChina",
+}
+
+func (e ESteamRealm) String() string {
+	if s, ok := ESteamRealm_name[e]; ok {
+		return s
+	}
+	var flags []string
+	for k, v := range ESteamRealm_name {
+		if e&k != 0 {
+			flags = append(flags, v)
+		}
+	}
+	if len(flags) == 0 {
+		return fmt.Sprintf("%d", e)
+	}
+	sort.Strings(flags)
+	return strings.Join(flags, " | ")
+}
+
+type ELauncherType int32
+
+const (
+	ELauncherType_Default      ELauncherType = 0
+	ELauncherType_PerfectWorld ELauncherType = 1
+	ELauncherType_Nexon        ELauncherType = 2
+	ELauncherType_CmdLine      ELauncherType = 3
+	ELauncherType_CSGO         ELauncherType = 4
+	ELauncherType_ClientUI     ELauncherType = 5
+	ELauncherType_Headless     ELauncherType = 6
+	ELauncherType_SteamChina   ELauncherType = 7
+	ELauncherType_SingleApp    ELauncherType = 8
+)
+
+var ELauncherType_name = map[ELauncherType]string{
+	0: "ELauncherType_Default",
+	1: "ELauncherType_PerfectWorld",
+	2: "ELauncherType_Nexon",
+	3: "ELauncherType_CmdLine",
+	4: "ELauncherType_CSGO",
+	5: "ELauncherType_ClientUI",
+	6: "ELauncherType_Headless",
+	7: "ELauncherType_SteamChina",
+	8: "ELauncherType_SingleApp",
+}
+
+func (e ELauncherType) String() string {
+	if s, ok := ELauncherType_name[e]; ok {
+		return s
+	}
+	var flags []string
+	for k, v := range ELauncherType_name {
 		if e&k != 0 {
 			flags = append(flags, v)
 		}

@@ -571,9 +571,9 @@ func MsgOptionBroadcast() MsgOption {
 
 // MsgOptionCompose combines multiple options into a single option.
 func MsgOptionCompose(options ...MsgOption) MsgOption {
-	return func(c *sendConfig) error {
+	return func(config *sendConfig) error {
 		for _, opt := range options {
-			if err := opt(c); err != nil {
+			if err := opt(config); err != nil {
 				return err
 			}
 		}
@@ -583,30 +583,30 @@ func MsgOptionCompose(options ...MsgOption) MsgOption {
 
 // MsgOptionParse set parse option.
 func MsgOptionParse(b bool) MsgOption {
-	return func(c *sendConfig) error {
+	return func(config *sendConfig) error {
 		var v string
 		if b {
 			v = "full"
 		} else {
 			v = "none"
 		}
-		c.values.Set("parse", v)
+		config.values.Set("parse", v)
 		return nil
 	}
 }
 
 // MsgOptionIconURL sets an icon URL
 func MsgOptionIconURL(iconURL string) MsgOption {
-	return func(c *sendConfig) error {
-		c.values.Set("icon_url", iconURL)
+	return func(config *sendConfig) error {
+		config.values.Set("icon_url", iconURL)
 		return nil
 	}
 }
 
 // MsgOptionIconEmoji sets an icon emoji
 func MsgOptionIconEmoji(iconEmoji string) MsgOption {
-	return func(c *sendConfig) error {
-		c.values.Set("icon_emoji", iconEmoji)
+	return func(config *sendConfig) error {
+		config.values.Set("icon_emoji", iconEmoji)
 		return nil
 	}
 }
@@ -722,12 +722,12 @@ type GetScheduledMessagesParameters struct {
 }
 
 // GetScheduledMessages returns the list of scheduled messages based on params
-func (api *Client) GetScheduledMessages(params *GetScheduledMessagesParameters) (channels []Message, nextCursor string, err error) {
+func (api *Client) GetScheduledMessages(params *GetScheduledMessagesParameters) (channels []ScheduledMessage, nextCursor string, err error) {
 	return api.GetScheduledMessagesContext(context.Background(), params)
 }
 
 // GetScheduledMessagesContext returns the list of scheduled messages in a Slack team with a custom context
-func (api *Client) GetScheduledMessagesContext(ctx context.Context, params *GetScheduledMessagesParameters) (channels []Message, nextCursor string, err error) {
+func (api *Client) GetScheduledMessagesContext(ctx context.Context, params *GetScheduledMessagesParameters) (channels []ScheduledMessage, nextCursor string, err error) {
 	values := url.Values{
 		"token": {api.token},
 	}
@@ -747,8 +747,8 @@ func (api *Client) GetScheduledMessagesContext(ctx context.Context, params *GetS
 		values.Add("oldest", params.Oldest)
 	}
 	response := struct {
-		Messages         []Message        `json:"scheduled_messages"`
-		ResponseMetaData responseMetaData `json:"response_metadata"`
+		Messages         []ScheduledMessage `json:"scheduled_messages"`
+		ResponseMetaData responseMetaData   `json:"response_metadata"`
 		SlackResponse
 	}{}
 

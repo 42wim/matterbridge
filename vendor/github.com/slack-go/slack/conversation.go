@@ -468,8 +468,7 @@ func (api *Client) GetConversations(params *GetConversationsParameters) (channel
 // GetConversationsContext returns the list of channels in a Slack team with a custom context
 func (api *Client) GetConversationsContext(ctx context.Context, params *GetConversationsParameters) (channels []Channel, nextCursor string, err error) {
 	values := url.Values{
-		"token":            {api.token},
-		"exclude_archived": {params.ExcludeArchived},
+		"token": {api.token},
 	}
 	if params.Cursor != "" {
 		values.Add("cursor", params.Cursor)
@@ -480,6 +479,10 @@ func (api *Client) GetConversationsContext(ctx context.Context, params *GetConve
 	if params.Types != nil {
 		values.Add("types", strings.Join(params.Types, ","))
 	}
+	if params.ExcludeArchived == "true" {
+		values.Add("exclude_archived", "true")
+	}
+
 	response := struct {
 		Channels         []Channel        `json:"channels"`
 		ResponseMetaData responseMetaData `json:"response_metadata"`

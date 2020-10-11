@@ -23,7 +23,9 @@ type httpClient interface {
 
 // ResponseMetadata holds pagination metadata
 type ResponseMetadata struct {
-	Cursor string `json:"next_cursor"`
+	Cursor   string   `json:"next_cursor"`
+	Messages []string `json:"messages"`
+	Warnings []string `json:"warnings"`
 }
 
 func (t *ResponseMetadata) initialize() *ResponseMetadata {
@@ -43,6 +45,7 @@ type AuthTestResponse struct {
 	UserID string `json:"user_id"`
 	// EnterpriseID is only returned when an enterprise id present
 	EnterpriseID string `json:"enterprise_id,omitempty"`
+	BotID        string `json:"bot_id"`
 }
 
 type authTestResponseFull struct {

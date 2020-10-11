@@ -48,7 +48,6 @@ type PersonaStateEvent struct {
 	ClanRank               uint32
 	ClanTag                string
 	OnlineSessionInstances uint32
-	PublishedSessionId     uint32
 	PersonaSetByUser       bool
 }
 
