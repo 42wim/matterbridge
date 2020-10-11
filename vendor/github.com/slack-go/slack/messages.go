@@ -46,9 +46,10 @@ type Msg struct {
 	EventTimestamp   string `json:"event_ts,omitempty"`
 
 	// bot_message (https://api.slack.com/events/message/bot_message)
-	BotID    string `json:"bot_id,omitempty"`
-	Username string `json:"username,omitempty"`
-	Icons    *Icon  `json:"icons,omitempty"`
+	BotID      string      `json:"bot_id,omitempty"`
+	Username   string      `json:"username,omitempty"`
+	Icons      *Icon       `json:"icons,omitempty"`
+	BotProfile *BotProfile `json:"bot_profile,omitempty"`
 
 	// channel_join, group_join
 	Inviter string `json:"inviter,omitempty"`
@@ -106,10 +107,30 @@ const (
 	ResponseTypeEphemeral = "ephemeral"
 )
 
+// ScheduledMessage contains information about a slack scheduled message
+type ScheduledMessage struct {
+	ID          string `json:"id"`
+	Channel     string `json:"channel_id"`
+	PostAt      int    `json:"post_at"`
+	DateCreated int    `json:"date_created"`
+	Text        string `json:"text"`
+}
+
 // Icon is used for bot messages
 type Icon struct {
 	IconURL   string `json:"icon_url,omitempty"`
 	IconEmoji string `json:"icon_emoji,omitempty"`
+}
+
+// BotProfile contains information about a bot
+type BotProfile struct {
+	AppID   string `json:"app_id,omitempty"`
+	Deleted bool   `json:"deleted,omitempty"`
+	Icons   *Icons `json:"icons,omitempty"`
+	ID      string `json:"id,omitempty"`
+	Name    string `json:"name,omitempty"`
+	TeamID  string `json:"team_id,omitempty"`
+	Updated int64  `json:"updated,omitempty"`
 }
 
 // Edited indicates that a message has been edited.

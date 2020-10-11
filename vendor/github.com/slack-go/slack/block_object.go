@@ -147,7 +147,7 @@ func NewTextBlockObject(elementType, text string, emoji, verbatim bool) *TextBlo
 
 // BlockType returns the type of the block
 func (t TextBlockObject) BlockType() MessageBlockType {
-	if t.Type == "mrkdown" {
+	if t.Type == "mrkdwn" {
 		return MarkdownType
 	}
 	return PlainTextType
@@ -190,16 +190,18 @@ func NewConfirmationBlockObject(title, text, confirm, deny *TextBlockObject) *Co
 //
 // More Information: https://api.slack.com/reference/messaging/composition-objects#option
 type OptionBlockObject struct {
-	Text  *TextBlockObject `json:"text"`
-	Value string           `json:"value"`
-	URL   string           `json:"url,omitempty"`
+	Text        *TextBlockObject `json:"text"`
+	Value       string           `json:"value"`
+	Description *TextBlockObject `json:"description,omitempty"`
+	URL         string           `json:"url,omitempty"`
 }
 
 // NewOptionBlockObject returns an instance of a new Option Block Element
-func NewOptionBlockObject(value string, text *TextBlockObject) *OptionBlockObject {
+func NewOptionBlockObject(value string, text, description *TextBlockObject) *OptionBlockObject {
 	return &OptionBlockObject{
-		Text:  text,
-		Value: value,
+		Text:        text,
+		Value:       value,
+		Description: description,
 	}
 }
 

@@ -116,7 +116,7 @@ func (s *Script) Compile() (*Compiled, error) {
 	// global symbol names to indexes
 	globalIndexes := make(map[string]int, len(globals))
 	for _, name := range symbolTable.Names() {
-		symbol, _, _ := symbolTable.Resolve(name)
+		symbol, _, _ := symbolTable.Resolve(name, false)
 		if symbol.Scope == ScopeGlobal {
 			globalIndexes[name] = symbol.Index
 		}

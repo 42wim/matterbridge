@@ -44,6 +44,17 @@ func (t *SymbolTable) Define(name string) *Symbol {
 
 	if t.Parent(true) == nil {
 		symbol.Scope = ScopeGlobal
+
+		// if symbol is defined in a block of global scope, symbol index must
+		// be tracked at the root-level table instead.
+		if p := t.parent; p != nil {
+			for p.parent != nil {
+				p = p.parent
+			}
+			t.numDefinition--
+			p.numDefinition++
+		}
+
 	} else {
 		symbol.Scope = ScopeLocal
 	}
@@ -71,25 +82,36 @@ func (t *SymbolTable) DefineBuiltin(index int, name string) *Symbol {
 // Resolve resolves a symbol with a given name.
 func (t *SymbolTable) Resolve(
 	name string,
-) (symbol *Symbol, depth int, ok bool) {
-	symbol, ok = t.store[name]
-	if !ok && t.parent != nil {
-		symbol, depth, ok = t.parent.Resolve(name)
-		if !ok {
-			return
+	recur bool,
+) (*Symbol, int, bool) {
+	symbol, ok := t.store[name]
+	if ok {
+		// symbol can be used if
+		if symbol.Scope != ScopeLocal || // it's not of local scope, OR,
+			symbol.LocalAssigned || // it's assigned at least once, OR,
+			recur { // it's defined in higher level
+			return symbol, 0, true
 		}
-		depth++
-
-		// if symbol is defined in parent table and if it's not global/builtin
-		// then it's free variable.
-		if !t.block && depth > 0 &&
-			symbol.Scope != ScopeGlobal &&
-			symbol.Scope != ScopeBuiltin {
-			return t.defineFree(symbol), depth, true
-		}
-		return
 	}
-	return
+
+	if t.parent == nil {
+		return nil, 0, false
+	}
+
+	symbol, depth, ok := t.parent.Resolve(name, true)
+	if !ok {
+		return nil, 0, false
+	}
+	depth++
+
+	// if symbol is defined in parent table and if it's not global/builtin
+	// then it's free variable.
+	if !t.block && depth > 0 &&
+		symbol.Scope != ScopeGlobal &&
+		symbol.Scope != ScopeBuiltin {
+		return t.defineFree(symbol), depth, true
+	}
+	return symbol, depth, true
 }
 
 // Fork creates a new symbol table for a new scope.

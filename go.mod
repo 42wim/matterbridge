@@ -4,9 +4,9 @@ require (
 	github.com/42wim/go-gitter v0.0.0-20170828205020-017310c2d557
 	github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f
 	github.com/Jeffail/gabs v1.1.1 // indirect
-	github.com/Philipp15b/go-steam v1.0.1-0.20190816133340-b04c5a83c1c0
-	github.com/Rhymen/go-whatsapp v0.1.1-0.20200818115958-f07a700b9819
-	github.com/d5/tengo/v2 v2.6.0
+	github.com/Philipp15b/go-steam v1.0.1-0.20200727090957-6ae9b3c0a560
+	github.com/Rhymen/go-whatsapp v0.1.1-0.20201007125822-005103751b7a
+	github.com/d5/tengo/v2 v2.6.2
 	github.com/davecgh/go-spew v1.1.1
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-telegram-bot-api/telegram-bot-api v1.0.1-0.20200524105306-7434b0456e81
@@ -40,7 +40,7 @@ require (
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca
 	github.com/shazow/ssh-chat v1.8.3-0.20200308224626-80ddf1f43a98
 	github.com/sirupsen/logrus v1.6.0
-	github.com/slack-go/slack v0.6.6
+	github.com/slack-go/slack v0.7.0
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.6.1
 	github.com/vincent-petithory/dataurl v0.0.0-20191104211930-d1553a71de50

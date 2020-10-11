@@ -1,3 +1,47 @@
+### v0.7.0 - October 2, 2020
+full differences can be viewed using `git log --oneline --decorate --color v0.6.6..v0.7.0`
+Thank you for many contributions!
+
+#### Breaking Changes
+- Add ScheduledMessage type ([#753])
+- Add description field to option block object ([#783])
+- Fix wrong conditional branch ([#782])
+  - The behavior of the user's application may change.(The current behavior is incorrect)
+
+#### Highlights
+- example: fix to start up a server ([#773])
+- example: Add explanation how the message could be sent in a proper way ([#787])
+- example: fix typo in error log ([#779])
+- refactor: Make GetConversationsParameters.ExcludeArchived optional ([#791])
+- refactor: Unify variables to "config" ([#800])
+- refactor: Rename wrong file name ([#810])
+- feature: Add SetUserRealName for change user's realName([#755])
+- feature: Add response metadata to slack response ([#772])
+- feature: Add response metadata to slack response ([#778])
+- feature: Add select block element conversations filter field ([#790])
+- feature: Add Root field to MessageEvent to support thread_broadcast subtype ([#793])
+- feature: Add bot_profile to messages ([#794])
+- doc: Add logo to README ([#813])
+- doc: Update current project status and Add changelog for v0.7.0 ([#814])
+
+[#753]: https://github.com/slack-go/slack/pull/753
+[#755]: https://github.com/slack-go/slack/pull/755
+[#772]: https://github.com/slack-go/slack/pull/772
+[#773]: https://github.com/slack-go/slack/pull/773
+[#778]: https://github.com/slack-go/slack/pull/778
+[#779]: https://github.com/slack-go/slack/pull/779
+[#782]: https://github.com/slack-go/slack/pull/782
+[#783]: https://github.com/slack-go/slack/pull/783
+[#787]: https://github.com/slack-go/slack/pull/787
+[#790]: https://github.com/slack-go/slack/pull/790
+[#791]: https://github.com/slack-go/slack/pull/791
+[#793]: https://github.com/slack-go/slack/pull/793
+[#794]: https://github.com/slack-go/slack/pull/794
+[#800]: https://github.com/slack-go/slack/pull/800
+[#810]: https://github.com/slack-go/slack/pull/810
+[#813]: https://github.com/slack-go/slack/pull/813
+[#814]: https://github.com/slack-go/slack/pull/814
+
 ### v0.6.0 - August 31, 2019
 full differences can be viewed using `git log --oneline --decorate --color v0.5.0..v0.6.0`
 thanks to everyone who has contributed since January!

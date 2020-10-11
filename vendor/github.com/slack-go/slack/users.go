@@ -509,6 +509,41 @@ func (api *Client) DeleteUserPhotoContext(ctx context.Context) (err error) {
 	return response.Err()
 }
 
+// SetUserRealName changes the currently authenticated user's realName
+//
+// For more information see SetUserRealNameContextWithUser
+func (api *Client) SetUserRealName(realName string) error {
+	return api.SetUserRealNameContextWithUser(context.Background(), realName, realName)
+}
+
+// SetUserRealNameContextWithUser will set a real name for the provided user with a custom context
+func (api *Client) SetUserRealNameContextWithUser(ctx context.Context, user, realName string) error {
+	profile, err := json.Marshal(
+		&struct {
+			RealName string `json:"real_name"`
+		}{
+			RealName: realName,
+		},
+	)
+
+	if err != nil {
+		return err
+	}
+
+	values := url.Values{
+		"user":    {user},
+		"token":   {api.token},
+		"profile": {string(profile)},
+	}
+
+	response := &userResponseFull{}
+	if err = api.postMethod(ctx, "users.profile.set", values, response); err != nil {
+		return err
+	}
+
+	return response.Err()
+}
+
 // SetUserCustomStatus will set a custom status and emoji for the currently
 // authenticated user. If statusEmoji is "" and statusText is not, the Slack API
 // will automatically set it to ":speech_balloon:". Otherwise, if both are ""
