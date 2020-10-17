@@ -454,6 +454,11 @@ func (gw *Gateway) SendMessage(
 		gw.Router.MattermostPlugin <- msg
 	}
 
+	// Skip empty messages.
+	if len(strings.TrimSpace(msg.Text)) < 1 {
+		return "", nil
+	}
+
 	mID, err := dest.Send(msg)
 	if err != nil {
 		return mID, err
