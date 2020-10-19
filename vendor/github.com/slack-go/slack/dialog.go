@@ -54,7 +54,9 @@ type DialogCallback InteractionCallback
 
 // DialogSubmissionCallback is sent from Slack when a user submits a form from within a dialog
 type DialogSubmissionCallback struct {
-	State      string            `json:"state,omitempty"`
+	// NOTE: State is only used with the dialog_submission type.
+	// You should use InteractionCallback.BlockActionsState for block_actions type.
+	State      string            `json:"-"`
 	Submission map[string]string `json:"submission"`
 }
 
