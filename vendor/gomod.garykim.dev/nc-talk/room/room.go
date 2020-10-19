@@ -62,7 +62,7 @@ func NewTalkRoom(tuser *user.TalkUser, token string) (*TalkRoom, error) {
 
 // SendMessage sends a message in the Talk room
 func (t *TalkRoom) SendMessage(msg string) (*ocs.TalkRoomMessageData, error) {
-	url := t.User.NextcloudURL + constants.BaseEndpoint + "/chat/" + t.Token
+	url := t.User.NextcloudURL + constants.BaseEndpoint + "chat/" + t.Token
 	requestParams := map[string]string{
 		"message": msg,
 	}
@@ -93,7 +93,7 @@ func (t *TalkRoom) ReceiveMessages(ctx context.Context) (chan ocs.TalkRoomMessag
 	if err != nil {
 		return nil, err
 	}
-	url := t.User.NextcloudURL + constants.BaseEndpoint + "/chat/" + t.Token
+	url := t.User.NextcloudURL + constants.BaseEndpoint + "chat/" + t.Token
 	requestParam := map[string]string{
 		"lookIntoFuture":   "1",
 		"includeLastKnown": "0",
@@ -154,7 +154,7 @@ func (t *TalkRoom) TestConnection() error {
 	if t.Token == "" {
 		return ErrEmptyToken
 	}
-	url := t.User.NextcloudURL + constants.BaseEndpoint + "/chat/" + t.Token
+	url := t.User.NextcloudURL + constants.BaseEndpoint + "chat/" + t.Token
 	requestParam := map[string]string{
 		"lookIntoFuture":   "0",
 		"includeLastKnown": "0",

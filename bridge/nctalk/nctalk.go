@@ -9,7 +9,6 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 
-	talk "gomod.garykim.dev/nc-talk"
 	"gomod.garykim.dev/nc-talk/ocs"
 	"gomod.garykim.dev/nc-talk/room"
 	"gomod.garykim.dev/nc-talk/user"
@@ -61,8 +60,12 @@ func (b *Btalk) Disconnect() error {
 }
 
 func (b *Btalk) JoinChannel(channel config.ChannelInfo) error {
+	tr, err := room.NewTalkRoom(b.user, channel.Name)
+	if err != nil {
+		return err
+	}
 	newRoom := Broom{
-		room: talk.NewRoom(b.user, channel.Name),
+		room: tr,
 	}
 	newRoom.ctx, newRoom.ctxCancel = context.WithCancel(context.Background())
 	c, err := newRoom.room.ReceiveMessages(newRoom.ctx)
@@ -79,6 +82,7 @@ func (b *Btalk) JoinChannel(channel config.ChannelInfo) error {
 
 	go func() {
 		for msg := range c {
+			msg := msg
 			// ignore messages that are one of the following
 			// * not a message from a user
 			// * from ourselves
@@ -97,6 +101,15 @@ func (b *Btalk) JoinChannel(channel config.ChannelInfo) error {
 			if msg.ID != 0 {
 				remoteMessage.ID = strconv.Itoa(msg.ID)
 			}
+
+			// Handle Files
+			err = b.handleFiles(&remoteMessage, &msg)
+			if err != nil {
+				b.Log.Errorf("Error handling file: %#v", msg)
+
+				continue
+			}
+
 			b.Log.Debugf("<= Message is %#v", remoteMessage)
 			b.Remote <- remoteMessage
 		}
@@ -132,6 +145,31 @@ func (b *Btalk) getRoom(token string) *Broom {
 	return nil
 }
 
+func (b *Btalk) handleFiles(mmsg *config.Message, message *ocs.TalkRoomMessageData) error {
+	for _, parameter := range message.MessageParameters {
+		if parameter.Type == ocs.ROSTypeFile {
+			// Get the file
+			file, err := b.user.DownloadFile(parameter.Path)
+			if err != nil {
+				return err
+			}
+
+			if mmsg.Extra == nil {
+				mmsg.Extra = make(map[string][]interface{})
+			}
+
+			mmsg.Extra["file"] = append(mmsg.Extra["file"], config.FileInfo{
+				Name:   parameter.Name,
+				Data:   file,
+				Size:   int64(len(*file)),
+				Avatar: false,
+			})
+		}
+	}
+
+	return nil
+}
+
 // Spec: https://github.com/nextcloud/server/issues/1706#issue-182308785
 func formatRichObjectString(message string, parameters map[string]ocs.RichObjectString) string {
 	for id, parameter := range parameters {
@@ -142,7 +180,7 @@ func formatRichObjectString(message string, parameters map[string]ocs.RichObject
 			text = "@" + text
 		case ocs.ROSTypeFile:
 			if parameter.Link != "" {
-				text = parameter.Link
+				text = parameter.Name
 			}
 		}
 
