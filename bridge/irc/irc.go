@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"hash/crc32"
+	"io/ioutil"
 	"net"
 	"sort"
 	"strconv"
@@ -240,6 +241,11 @@ func (b *Birc) getClient() (*girc.Client, error) {
 		user = user[1:]
 	}
 
+	debug := ioutil.Discard
+	if b.GetInt("DebugLevel") == 2 {
+		debug = b.Log.Writer()
+	}
+
 	i := girc.New(girc.Config{
 		Server:     server,
 		ServerPass: b.GetString("Password"),
@@ -252,6 +258,7 @@ func (b *Birc) getClient() (*girc.Client, error) {
 		PingDelay:  time.Minute,
 		// skip gIRC internal rate limiting, since we have our own throttling
 		AllowFlood: true,
+		Debug:      debug,
 	})
 	return i, nil
 }
