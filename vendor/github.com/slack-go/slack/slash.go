@@ -19,6 +19,7 @@ type SlashCommand struct {
 	Text           string `json:"text"`
 	ResponseURL    string `json:"response_url"`
 	TriggerID      string `json:"trigger_id"`
+	APIAppID       string `json:"api_app_id"`
 }
 
 // SlashCommandParse will parse the request of the slash command
@@ -39,6 +40,7 @@ func SlashCommandParse(r *http.Request) (s SlashCommand, err error) {
 	s.Text = r.PostForm.Get("text")
 	s.ResponseURL = r.PostForm.Get("response_url")
 	s.TriggerID = r.PostForm.Get("trigger_id")
+	s.APIAppID = r.PostForm.Get("api_app_id")
 	return s, nil
 }
 

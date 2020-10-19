@@ -41,7 +41,7 @@ github.com/dyatlov/go-opengraph/opengraph
 github.com/francoispqt/gojay
 # github.com/fsnotify/fsnotify v1.4.9
 github.com/fsnotify/fsnotify
-# github.com/go-asn1-ber/asn1-ber v1.4.1
+# github.com/go-asn1-ber/asn1-ber v1.5.1
 github.com/go-asn1-ber/asn1-ber
 # github.com/go-telegram-bot-api/telegram-bot-api v1.0.1-0.20200524105306-7434b0456e81
 github.com/go-telegram-bot-api/telegram-bot-api
@@ -65,6 +65,10 @@ github.com/gopackage/ddp
 github.com/gorilla/schema
 # github.com/gorilla/websocket v1.4.2
 github.com/gorilla/websocket
+# github.com/hashicorp/errwrap v1.0.0
+github.com/hashicorp/errwrap
+# github.com/hashicorp/go-multierror v1.1.0
+github.com/hashicorp/go-multierror
 # github.com/hashicorp/golang-lru v0.5.4
 github.com/hashicorp/golang-lru
 github.com/hashicorp/golang-lru/simplelru
@@ -87,8 +91,6 @@ github.com/keybase/go-keybase-chat-bot/kbchat/types/chat1
 github.com/keybase/go-keybase-chat-bot/kbchat/types/gregor1
 github.com/keybase/go-keybase-chat-bot/kbchat/types/keybase1
 github.com/keybase/go-keybase-chat-bot/kbchat/types/stellar1
-# github.com/konsorten/go-windows-terminal-sequences v1.0.3
-github.com/konsorten/go-windows-terminal-sequences
 # github.com/labstack/echo/v4 v4.1.17
 github.com/labstack/echo/v4
 github.com/labstack/echo/v4/middleware
@@ -124,7 +126,11 @@ github.com/mattermost/go-i18n/i18n/language
 github.com/mattermost/go-i18n/i18n/translation
 # github.com/mattermost/ldap v0.0.0-20191128190019-9f62ba4b8d4d
 github.com/mattermost/ldap
-# github.com/mattermost/mattermost-server/v5 v5.25.2
+# github.com/mattermost/logr v1.0.13
+github.com/mattermost/logr
+github.com/mattermost/logr/format
+github.com/mattermost/logr/target
+# github.com/mattermost/mattermost-server/v5 v5.28.1
 github.com/mattermost/mattermost-server/v5/mlog
 github.com/mattermost/mattermost-server/v5/model
 github.com/mattermost/mattermost-server/v5/services/timezones
@@ -142,7 +148,7 @@ github.com/mattn/godown
 github.com/mgutz/ansi
 # github.com/missdeer/golib v1.0.3
 github.com/missdeer/golib/ic
-# github.com/mitchellh/mapstructure v1.2.3
+# github.com/mitchellh/mapstructure v1.3.3
 github.com/mitchellh/mapstructure
 # github.com/monaco-io/request v1.0.4
 github.com/monaco-io/request
@@ -155,10 +161,12 @@ github.com/nelsonken/gomf
 # github.com/paulrosania/go-charset v0.0.0-20190326053356-55c9d7a5834c
 github.com/paulrosania/go-charset/charset
 github.com/paulrosania/go-charset/data
-# github.com/pborman/uuid v1.2.0
+# github.com/pborman/uuid v1.2.1
 github.com/pborman/uuid
-# github.com/pelletier/go-toml v1.7.0
+# github.com/pelletier/go-toml v1.8.0
 github.com/pelletier/go-toml
+# github.com/philhofer/fwd v1.0.0
+github.com/philhofer/fwd
 # github.com/pkg/errors v0.9.1
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
@@ -179,18 +187,18 @@ github.com/shazow/rateio
 github.com/shazow/ssh-chat/internal/sanitize
 github.com/shazow/ssh-chat/sshd
 github.com/shazow/ssh-chat/sshd/terminal
-# github.com/sirupsen/logrus v1.6.0
+# github.com/sirupsen/logrus v1.7.0
 github.com/sirupsen/logrus
 # github.com/skip2/go-qrcode v0.0.0-20190110000554-dc11ecdae0a9
 github.com/skip2/go-qrcode
 github.com/skip2/go-qrcode/bitset
 github.com/skip2/go-qrcode/reedsolomon
-# github.com/slack-go/slack v0.7.0
+# github.com/slack-go/slack v0.7.2
 github.com/slack-go/slack
 github.com/slack-go/slack/internal/errorsx
 github.com/slack-go/slack/internal/timex
 github.com/slack-go/slack/slackutilsx
-# github.com/spf13/afero v1.2.2
+# github.com/spf13/afero v1.3.4
 github.com/spf13/afero
 github.com/spf13/afero/mem
 # github.com/spf13/cast v1.3.1
@@ -209,12 +217,22 @@ github.com/stretchr/testify/suite
 github.com/subosito/gotenv
 # github.com/technoweenie/multipartstreamer v1.0.1
 github.com/technoweenie/multipartstreamer
+# github.com/tinylib/msgp v1.1.2
+github.com/tinylib/msgp/msgp
 # github.com/valyala/bytebufferpool v1.0.0
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.2.1
 github.com/valyala/fasttemplate
 # github.com/vincent-petithory/dataurl v0.0.0-20191104211930-d1553a71de50
 github.com/vincent-petithory/dataurl
+# github.com/wiggin77/cfg v1.0.2
+github.com/wiggin77/cfg
+github.com/wiggin77/cfg/ini
+github.com/wiggin77/cfg/timeconv
+# github.com/wiggin77/merror v1.0.2
+github.com/wiggin77/merror
+# github.com/wiggin77/srslog v1.0.1
+github.com/wiggin77/srslog
 # github.com/writeas/go-strip-markdown v2.0.1+incompatible
 github.com/writeas/go-strip-markdown
 # github.com/yaegashi/msgraph.go v0.1.4
@@ -251,7 +269,7 @@ golang.org/x/crypto/salsa20/salsa
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/image v0.0.0-20200801110659-972c09e46d76
+# golang.org/x/image v0.0.0-20200927104501-e162460cd6b5
 golang.org/x/image/riff
 golang.org/x/image/vp8
 golang.org/x/image/vp8l
@@ -334,15 +352,15 @@ google.golang.org/protobuf/reflect/protoregistry
 google.golang.org/protobuf/runtime/protoiface
 google.golang.org/protobuf/runtime/protoimpl
 google.golang.org/protobuf/types/descriptorpb
-# gopkg.in/ini.v1 v1.55.0
+# gopkg.in/ini.v1 v1.60.0
 gopkg.in/ini.v1
 # gopkg.in/natefinch/lumberjack.v2 v2.0.0
 gopkg.in/natefinch/lumberjack.v2
 # gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 gopkg.in/olahol/melody.v1
-# gopkg.in/yaml.v2 v2.2.8
+# gopkg.in/yaml.v2 v2.3.0
 gopkg.in/yaml.v2
-# gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+# gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 gopkg.in/yaml.v3
 # layeh.com/gumble v0.0.0-20200818122324-146f9205029b
 layeh.com/gumble/gumble

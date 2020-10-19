@@ -57,11 +57,12 @@ type authTestResponseFull struct {
 type ParamOption func(*url.Values)
 
 type Client struct {
-	token      string
-	endpoint   string
-	debug      bool
-	log        ilogger
-	httpclient httpClient
+	token         string
+	appLevelToken string
+	endpoint      string
+	debug         bool
+	log           ilogger
+	httpclient    httpClient
 }
 
 // Option defines an option for a Client
@@ -91,6 +92,11 @@ func OptionLog(l logger) func(*Client) {
 // OptionAPIURL set the url for the client. only useful for testing.
 func OptionAPIURL(u string) func(*Client) {
 	return func(c *Client) { c.endpoint = u }
+}
+
+// OptionAppLevelToken sets an app-level token for the client.
+func OptionAppLevelToken(token string) func(*Client) {
+	return func(c *Client) { c.appLevelToken = token }
 }
 
 // New builds a slack client from the provided token and options.
