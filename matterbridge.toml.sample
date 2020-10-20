@@ -103,6 +103,12 @@ ColorNicks=false
 #OPTIONAL (default empty)
 RunCommands=["PRIVMSG user hello","PRIVMSG chanserv something"]
 
+#PingDelay specifies how long to wait to send a ping to the irc server.
+#You can use s for second, m for minute
+#String
+#OPTIONAL (default 1m)
+PingDelay="1m"
+
 #StripMarkdown strips markdown from messages
 #OPTIONAL (default false)
 StripMarkdown=false
