@@ -246,6 +246,13 @@ func (b *Birc) getClient() (*girc.Client, error) {
 		debug = b.Log.Writer()
 	}
 
+	pingDelay, err := time.ParseDuration(b.GetString("pingdelay"))
+	if err != nil || pingDelay == 0 {
+		pingDelay = time.Minute
+	}
+
+	b.Log.Debugf("setting pingdelay to %s", pingDelay)
+
 	i := girc.New(girc.Config{
 		Server:     server,
 		ServerPass: b.GetString("Password"),
@@ -255,7 +262,7 @@ func (b *Birc) getClient() (*girc.Client, error) {
 		Name:       b.GetString("Nick"),
 		SSL:        b.GetBool("UseTLS"),
 		TLSConfig:  &tls.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"), ServerName: server}, //nolint:gosec
-		PingDelay:  time.Minute,
+		PingDelay:  pingDelay,
 		// skip gIRC internal rate limiting, since we have our own throttling
 		AllowFlood: true,
 		Debug:      debug,
