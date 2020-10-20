@@ -1,3 +1,22 @@
+# v1.19.0
+
+## New features
+
+- mumble: new protocol added: Add Mumble support (#1245)
+- nctalk: Add support for downloading files (nctalk) (#1249)
+- nctalk: Append a suffix if user is a guest user (nctalk) (#1250)
+
+## Enhancements
+
+- irc: Add even more debug for irc (#1266)
+- matrix: Add username formatting for all events (matrix) (#1233)
+- matrix: Permit uploading files of other mimetypes (#1237)
+- whatsapp: Use vendored whatsapp version (#1258)
+- whatsapp: Add username for images from WhatsApp (#1232)
+
+This release couldn't exist without the following contributors:
+@Dellle, @42wim, @gary-kim, @s3lph, @BenWiederhake
+
 # v1.18.3
 
 ## Enhancements

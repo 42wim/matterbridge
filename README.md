@@ -153,7 +153,7 @@ See <https://github.com/42wim/matterbridge/wiki>
 
 ### Binaries
 
-- Latest stable release [v1.18.3](https://github.com/42wim/matterbridge/releases/latest)
+- Latest stable release [v1.19.0](https://github.com/42wim/matterbridge/releases/latest)
 - Development releases (follows master) can be downloaded [here](https://github.com/42wim/matterbridge/actions) selecting the latest green build and then artifacts.
 
 To install or upgrade just download the latest [binary](https://github.com/42wim/matterbridge/releases/latest) and follow the instructions on the [howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config) for a step by step walkthrough for creating your configuration.
@@ -331,6 +331,7 @@ Matterbridge wouldn't exist without these libraries:
 - matrix - <https://github.com/matrix-org/gomatrix>
 - mattermost - <https://github.com/mattermost/mattermost-server>
 - msgraph.go - <https://github.com/yaegashi/msgraph.go>
+- mumble - <https://github.com/layeh/gumble>
 - nctalk - <https://github.com/gary-kim/go-nc-talk>
 - slack - <https://github.com/nlopes/slack>
 - sshchat - <https://github.com/shazow/ssh-chat>
