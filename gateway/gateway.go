@@ -455,7 +455,7 @@ func (gw *Gateway) SendMessage(
 	}
 
 	// Skip empty messages.
-	if len(strings.TrimSpace(msg.Text)) < 1 {
+	if msg.Protocol != apiProtocol && len(strings.TrimSpace(msg.Text)) < 1 && len(strings.TrimSpace(msg.Username)) < 1 {
 		return "", nil
 	}
 
