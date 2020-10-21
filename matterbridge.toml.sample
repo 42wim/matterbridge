@@ -1726,7 +1726,9 @@ InMessage="example.tengo"
 #outAccount, outProtocol, outChannel, outGateway, outEvent
 #
 #read-write:
-#msgText, msgUsername
+#msgText, msgUsername, msgDrop
+#
+#msgDrop is a bool which is default false, when set true this message will be dropped
 #
 #The script is reloaded on every message, so you can modify the script on the fly.
 #
