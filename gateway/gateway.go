@@ -363,10 +363,23 @@ func (gw *Gateway) modifyAvatar(msg *config.Message, dest *bridge.Bridge) string
 }
 
 func (gw *Gateway) modifyMessage(msg *config.Message) {
-	if err := modifyMessageTengo(gw.BridgeValues().General.TengoModifyMessage, msg); err != nil {
+	if gw.BridgeValues().General.TengoModifyMessage != "" {
+		gw.logger.Warnf("General TengoModifyMessage=%s is deprecated and will be removed in v1.20.0, please move to Tengo InMessage=%s", gw.BridgeValues().General.TengoModifyMessage, gw.BridgeValues().General.TengoModifyMessage)
+	}
+
+	if err := modifyInMessageTengo(gw.BridgeValues().General.TengoModifyMessage, msg); err != nil {
 		gw.logger.Errorf("TengoModifyMessage failed: %s", err)
 	}
-	if err := modifyMessageTengo(gw.BridgeValues().Tengo.Message, msg); err != nil {
+
+	inMessage := gw.BridgeValues().Tengo.InMessage
+	if inMessage == "" {
+		inMessage = gw.BridgeValues().Tengo.Message
+		if inMessage != "" {
+			gw.logger.Warnf("Tengo Message=%s is deprecated and will be removed in v1.20.0, please move to Tengo InMessage=%s", inMessage, inMessage)
+		}
+	}
+
+	if err := modifyInMessageTengo(inMessage, msg); err != nil {
 		gw.logger.Errorf("Tengo.Message failed: %s", err)
 	}
 
@@ -443,7 +456,7 @@ func (gw *Gateway) SendMessage(
 		msg.ParentID = "msg-parent-not-found"
 	}
 
-	err := gw.modifySendMessageTengo(rmsg, &msg, dest)
+	err := gw.modifyOutMessageTengo(rmsg, &msg, dest)
 	if err != nil {
 		gw.logger.Errorf("modifySendMessageTengo: %s", err)
 	}
@@ -505,7 +518,7 @@ func getProtocol(msg *config.Message) string {
 	return p[0]
 }
 
-func modifyMessageTengo(filename string, msg *config.Message) error {
+func modifyInMessageTengo(filename string, msg *config.Message) error {
 	if filename == "" {
 		return nil
 	}
@@ -564,7 +577,7 @@ func (gw *Gateway) modifyUsernameTengo(msg *config.Message, br *bridge.Bridge) (
 	return c.Get("result").String(), nil
 }
 
-func (gw *Gateway) modifySendMessageTengo(origmsg *config.Message, msg *config.Message, br *bridge.Bridge) error {
+func (gw *Gateway) modifyOutMessageTengo(origmsg *config.Message, msg *config.Message, br *bridge.Bridge) error {
 	filename := gw.BridgeValues().Tengo.OutMessage
 	var res []byte
 	var err error

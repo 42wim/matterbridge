@@ -533,7 +533,7 @@ func (s *ignoreTestSuite) TestIgnoreNicks() {
 func BenchmarkTengo(b *testing.B) {
 	msg := &config.Message{Username: "user", Text: "blah testing", Account: "protocol.account", Channel: "mychannel"}
 	for n := 0; n < b.N; n++ {
-		err := modifyMessageTengo("bench.tengo", msg)
+		err := modifyInMessageTengo("bench.tengo", msg)
 		if err != nil {
 			return
 		}
