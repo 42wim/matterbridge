@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"regexp"
@@ -430,8 +431,9 @@ func (gw *Gateway) SendMessage(
 	}
 
 	// Too noisy to log like other events
+	debugSendMessage := ""
 	if msg.Event != config.EventUserTyping {
-		gw.logger.Debugf("=> Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, rmsg.Channel, dest.Account, channel.Name)
+		debugSendMessage = fmt.Sprintf("=> Sending %#v from %s (%s) to %s (%s)", msg, msg.Account, rmsg.Channel, dest.Account, channel.Name)
 	}
 
 	msg.Channel = channel.Name
@@ -456,11 +458,19 @@ func (gw *Gateway) SendMessage(
 		msg.ParentID = "msg-parent-not-found"
 	}
 
-	err := gw.modifyOutMessageTengo(rmsg, &msg, dest)
+	drop, err := gw.modifyOutMessageTengo(rmsg, &msg, dest)
 	if err != nil {
 		gw.logger.Errorf("modifySendMessageTengo: %s", err)
 	}
 
+	if drop {
+		gw.logger.Debugf("=> Tengo dropping %#v from %s (%s) to %s (%s)", msg, msg.Account, rmsg.Channel, dest.Account, channel.Name)
+		return "", nil
+	}
+
+	if debugSendMessage != "" {
+		gw.logger.Debug(debugSendMessage)
+	}
 	// if we are using mattermost plugin account, send messages to MattermostPlugin channel
 	// that can be picked up by the mattermost matterbridge plugin
 	if dest.Account == "mattermost.plugin" {
@@ -577,22 +587,28 @@ func (gw *Gateway) modifyUsernameTengo(msg *config.Message, br *bridge.Bridge) (
 	return c.Get("result").String(), nil
 }
 
-func (gw *Gateway) modifyOutMessageTengo(origmsg *config.Message, msg *config.Message, br *bridge.Bridge) error {
+func (gw *Gateway) modifyOutMessageTengo(origmsg *config.Message, msg *config.Message, br *bridge.Bridge) (bool, error) {
 	filename := gw.BridgeValues().Tengo.OutMessage
-	var res []byte
-	var err error
+	var (
+		res  []byte
+		err  error
+		drop bool
+	)
+
 	if filename == "" {
 		res, err = internal.Asset("tengo/outmessage.tengo")
 		if err != nil {
-			return err
+			return drop, err
 		}
 	} else {
 		res, err = ioutil.ReadFile(filename)
 		if err != nil {
-			return err
+			return drop, err
 		}
 	}
+
 	s := tengo.NewScript(res)
+
 	s.SetImports(stdlib.GetModuleMap(stdlib.AllModuleNames()...))
 	_ = s.Add("inAccount", origmsg.Account)
 	_ = s.Add("inProtocol", origmsg.Protocol)
@@ -606,14 +622,19 @@ func (gw *Gateway) modifyOutMessageTengo(origmsg *config.Message, msg *config.Me
 	_ = s.Add("outEvent", msg.Event)
 	_ = s.Add("msgText", msg.Text)
 	_ = s.Add("msgUsername", msg.Username)
+	_ = s.Add("msgDrop", drop)
 	c, err := s.Compile()
 	if err != nil {
-		return err
+		return drop, err
 	}
+
 	if err := c.Run(); err != nil {
-		return err
+		return drop, err
 	}
+
+	drop = c.Get("msgDrop").Bool()
 	msg.Text = c.Get("msgText").String()
 	msg.Username = c.Get("msgUsername").String()
-	return nil
+
+	return drop, nil
 }
