@@ -9,6 +9,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"log"
 	"net"
 	"sync"
 	"time"
@@ -144,10 +145,18 @@ type ErrParseEvent struct {
 func (e ErrParseEvent) Error() string { return "unable to parse event: " + e.Line }
 
 func (c *ircConn) decode() (event *Event, err error) {
+	log.Println("EXTRADEBUG: entering decode()")
+
 	line, err := c.io.ReadString(delim)
 	if err != nil {
 		return nil, err
 	}
+
+	defer func(t time.Time) {
+		log.Printf("EXTRADEBUG: decode() took %s", time.Since(t))
+	}(time.Now())
+
+	log.Printf("EXTRADEBUG: decode(): %s", line)
 
 	if event = ParseEvent(line); event == nil {
 		return nil, ErrParseEvent{line}
@@ -408,7 +417,10 @@ func (c *Client) readLoop(ctx context.Context, errs chan error, wg *sync.WaitGro
 			wg.Done()
 			return
 		default:
-			_ = c.conn.sock.SetReadDeadline(time.Now().Add(300 * time.Second))
+			err = c.conn.sock.SetReadDeadline(time.Now().Add(300 * time.Second))
+			if err != nil {
+				c.debug.Printf("SetReadDeadline error: %s", err)
+			}
 			event, err = c.conn.decode()
 			if err != nil {
 				errs <- err
