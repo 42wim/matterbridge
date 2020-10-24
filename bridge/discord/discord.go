@@ -173,6 +173,9 @@ func (b *Bdiscord) Connect() error {
 			b.nickMemberMap[member.Nick] = member
 		}
 	}
+
+	b.c.Debug = true
+
 	return nil
 }
 
