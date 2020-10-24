@@ -352,7 +352,7 @@ Matterbridge wouldn't exist without these libraries:
 [mb-mattermost]: https://framateam.org/signup_user_complete/?id=tfqm33ggop8x3qgu4boeieta6e
 [mb-msteams]: https://teams.microsoft.com/join/hj92x75gd3y7
 [mb-rocketchat]: https://open.rocket.chat/channel/matterbridge
-[mb-slack]: https://join.slack.com/matterbridgechat/shared_invite/MjEwODMxNjU1NDMwLTE0OTk2MTU3NTMtMzZkZmRiNDZhOA
+[mb-slack]: https://join.slack.com/t/matterbridgechat/shared_invite/zt-2ourq2h2-7YvyYBq2WFGC~~zEzA68_Q
 [mb-telegram]: https://t.me/Matterbridge
 [mb-twitch]: https://www.twitch.tv/matterbridge
 [mb-whatsapp]: https://www.whatsapp.com/
