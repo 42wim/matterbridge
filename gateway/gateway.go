@@ -477,6 +477,10 @@ func (gw *Gateway) SendMessage(
 		gw.Router.MattermostPlugin <- msg
 	}
 
+	defer func(t time.Time) {
+		gw.logger.Debugf("=> Send from %s (%s) to %s (%s) took %s", msg.Account, rmsg.Channel, dest.Account, channel.Name, time.Since(t))
+	}(time.Now())
+
 	mID, err := dest.Send(msg)
 	if err != nil {
 		return mID, err
