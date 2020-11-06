@@ -34,8 +34,6 @@ type Bdiscord struct {
 	membersMutex  sync.RWMutex
 	userMemberMap map[string]*discordgo.Member
 	nickMemberMap map[string]*discordgo.Member
-	webhookCache  map[string]string
-	webhookMutex  sync.RWMutex
 }
 
 func New(cfg *bridge.Config) bridge.Bridger {
@@ -43,7 +41,6 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	b.userMemberMap = make(map[string]*discordgo.Member)
 	b.nickMemberMap = make(map[string]*discordgo.Member)
 	b.channelInfoMap = make(map[string]*config.ChannelInfo)
-	b.webhookCache = make(map[string]string)
 	if b.GetString("WebhookURL") != "" {
 		b.Log.Debug("Configuring Discord Incoming Webhook")
 		b.webhookID, b.webhookToken = b.splitURL(b.GetString("WebhookURL"))
@@ -191,8 +188,6 @@ func (b *Bdiscord) JoinChannel(channel config.ChannelInfo) error {
 func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
 
-	origMsgID := msg.ID
-
 	channelID := b.getChannelID(msg.Channel)
 	if channelID == "" {
 		return "", fmt.Errorf("Could not find channelID for %v", msg.Channel)
@@ -233,18 +228,6 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 			return "", nil
 		}
 
-		// If we are editing a message, delete the old message
-		if msg.ID != "" {
-			msg.ID = b.getCacheID(msg.ID)
-			b.Log.Debugf("Deleting edited webhook message")
-			err := b.c.ChannelMessageDelete(channelID, msg.ID)
-			if err != nil {
-				b.Log.Errorf("Could not delete edited webhook message: %s", err)
-			}
-		}
-
-		b.Log.Debugf("Broadcasting using Webhook")
-
 		// skip empty messages
 		if msg.Text == "" && (msg.Extra == nil || len(msg.Extra["file"]) == 0) {
 			b.Log.Debugf("Skipping empty message %#v", msg)
@@ -257,11 +240,25 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 		if len(msg.Username) > 32 {
 			msg.Username = msg.Username[0:32]
 		}
+
+		if msg.ID != "" {
+			b.Log.Debugf("Editing webhook message")
+			uri := discordgo.EndpointWebhookToken(wID, wToken) + "/messages/" + msg.ID
+			_, err := b.c.RequestWithBucketID("PATCH", uri, discordgo.WebhookParams{
+				Content:  msg.Text,
+				Username: msg.Username,
+			}, discordgo.EndpointWebhookToken("", ""))
+			if err == nil {
+				return msg.ID, nil
+			}
+			b.Log.Errorf("Could not edit webhook message: %s", err)
+		}
+
+		b.Log.Debugf("Broadcasting using Webhook")
+
 		// if we have a global webhook for this Discord account, and permission
 		// to modify webhooks (previously verified), then set its channel to
-		// the message channel before using it
-		// TODO: this isn't necessary if the last message from this webhook was
-		// sent to the current channel
+		// the message channel before using it.
 		if isGlobalWebhook && b.canEditWebhooks {
 			b.Log.Debugf("Setting webhook channel to \"%s\"", msg.Channel)
 			_, err := b.c.WebhookEdit(wID, "", "", channelID)
@@ -280,7 +277,6 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 			return "", nil
 		}
 
-		b.updateCacheID(origMsgID, msg.ID)
 		return msg.ID, nil
 	}
 
@@ -291,7 +287,6 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 		if msg.ID == "" {
 			return "", nil
 		}
-		msg.ID = b.getCacheID(msg.ID)
 		err := b.c.ChannelMessageDelete(channelID, msg.ID)
 		return "", err
 	}
