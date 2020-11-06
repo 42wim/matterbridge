@@ -1629,6 +1629,9 @@ RemoteNickFormat="{NICK}"
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
 #The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
+#The string "{SHORTPROTOCOL}" (case sensitive) will be replaced by the first letter of the name
+#of the protocol used by the bridge. Beware that conflicts between protocols can happen (e.g. both
+#'slack' and 'steam' start with an 's')
 #The string "{GATEWAY}" (case sensitive) will be replaced by the origin gateway name that is replicating the message.
 #The string "{CHANNEL}" (case sensitive) will be replaced by the origin channel name used by the bridge
 #The string "{TENGO}" (case sensitive) will be replaced by the output of the RemoteNickFormat script under [tengo]

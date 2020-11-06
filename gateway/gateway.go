@@ -340,12 +340,13 @@ func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) stri
 		nick = strings.Replace(nick, "{NOPINGNICK}", msg.Username[:i]+"​"+msg.Username[i:], -1)
 	}
 
-	nick = strings.Replace(nick, "{BRIDGE}", br.Name, -1)
-	nick = strings.Replace(nick, "{PROTOCOL}", br.Protocol, -1)
-	nick = strings.Replace(nick, "{GATEWAY}", gw.Name, -1)
-	nick = strings.Replace(nick, "{LABEL}", br.GetString("Label"), -1)
-	nick = strings.Replace(nick, "{NICK}", msg.Username, -1)
-	nick = strings.Replace(nick, "{CHANNEL}", msg.Channel, -1)
+	nick = strings.ReplaceAll(nick, "{BRIDGE}", br.Name)
+	nick = strings.ReplaceAll(nick, "{PROTOCOL}", br.Protocol)
+	nick = strings.ReplaceAll(nick, "{SHORTPROTOCOL}", br.Protocol[:1])
+	nick = strings.ReplaceAll(nick, "{GATEWAY}", gw.Name)
+	nick = strings.ReplaceAll(nick, "{LABEL}", br.GetString("Label"))
+	nick = strings.ReplaceAll(nick, "{NICK}", msg.Username)
+	nick = strings.ReplaceAll(nick, "{CHANNEL}", msg.Channel)
 	tengoNick, err := gw.modifyUsernameTengo(msg, br)
 	if err != nil {
 		gw.logger.Errorf("modifyUsernameTengo error: %s", err)
