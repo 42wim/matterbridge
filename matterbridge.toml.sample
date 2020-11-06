@@ -1231,6 +1231,9 @@ HTMLDisable=false
 ## RELOADABLE SETTINGS
 ## Settings below can be reloaded by editing the file
 
+# UseUserName shows the username instead of the server nickname
+UseUserName=false
+
 #Whether to prefix messages from other bridges to matrix with the sender's nick.
 #Useful if username overrides for incoming webhooks isn't enabled on the
 #matrix server. If you set PrefixMessagesWithNick to true, each message

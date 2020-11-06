@@ -154,7 +154,7 @@ type Protocol struct {
 	UseTLS                 bool       // IRC
 	UseDiscriminator       bool       // discord
 	UseFirstName           bool       // telegram
-	UseUserName            bool       // discord
+	UseUserName            bool       // discord, matrix
 	UseInsecureURL         bool       // telegram
 	VerboseJoinPart        bool       // IRC
 	WebhookBindAddress     string     // mattermost, slack

@@ -22,10 +22,16 @@ var (
 	htmlReplacementTag = regexp.MustCompile("<[^>]*>")
 )
 
+type NicknameCacheEntry struct {
+	nickname    string
+	lastUpdated time.Time
+}
+
 type Bmatrix struct {
-	mc      *matrix.Client
-	UserID  string
-	RoomMap map[string]string
+	mc          *matrix.Client
+	UserID      string
+	NicknameMap map[string]NicknameCacheEntry
+	RoomMap     map[string]string
 	sync.RWMutex
 	*bridge.Config
 }
@@ -60,6 +66,7 @@ func newMatrixUsername(username string) *matrixUsername {
 func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Bmatrix{Config: cfg}
 	b.RoomMap = make(map[string]string)
+	b.NicknameMap = make(map[string]NicknameCacheEntry)
 	return b
 }
 
@@ -296,6 +303,43 @@ func (b *Bmatrix) handleEdit(ev *matrix.Event, rmsg config.Message) bool {
 	return true
 }
 
+func (b *Bmatrix) getUserName(mxid string) string {
+	if b.GetBool("UseUserName") {
+		return mxid[1:]
+	}
+
+	b.RLock()
+	if val, present := b.NicknameMap[mxid]; present {
+		if time.Since(val.lastUpdated) < 10*time.Minute {
+			b.RUnlock()
+			return val.nickname
+		}
+	}
+	b.RUnlock()
+
+	nickname, err := b.mc.GetDisplayName(mxid)
+	if err != nil && err.(matrix.HTTPError).Code != 404 {
+		b.Log.Warnf("Couldn't retrieve the display name for %s", mxid)
+	}
+
+	b.Lock()
+	defer b.Unlock()
+
+	if err != nil {
+		b.NicknameMap[mxid] = NicknameCacheEntry{
+			nickname:    mxid[1:],
+			lastUpdated: time.Now(),
+		}
+	} else {
+		b.NicknameMap[mxid] = NicknameCacheEntry{
+			nickname:    nickname.DisplayName,
+			lastUpdated: time.Now(),
+		}
+	}
+
+	return b.NicknameMap[mxid].nickname
+}
+
 func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 	b.Log.Debugf("== Receiving event: %#v", ev)
 	if ev.Sender != b.UserID {
@@ -309,7 +353,7 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 
 		// Create our message
 		rmsg := config.Message{
-			Username: ev.Sender[1:],
+			Username: b.getUserName(ev.Sender),
 			Channel:  channel,
 			Account:  b.Account,
 			UserID:   ev.Sender,
