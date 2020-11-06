@@ -3,6 +3,7 @@ package bmatrix
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html"
 	"mime"
@@ -23,7 +24,7 @@ var (
 )
 
 type NicknameCacheEntry struct {
-	nickname    string
+	displayName string
 	lastUpdated time.Time
 }
 
@@ -255,6 +256,7 @@ func (b *Bmatrix) handlematrix() {
 	syncer := b.mc.Syncer.(*matrix.DefaultSyncer)
 	syncer.OnEventType("m.room.redaction", b.handleEvent)
 	syncer.OnEventType("m.room.message", b.handleEvent)
+	syncer.OnEventType("m.room.member", b.handleMemberChange)
 	go func() {
 		for {
 			if err := b.mc.Sync(); err != nil {
@@ -303,41 +305,65 @@ func (b *Bmatrix) handleEdit(ev *matrix.Event, rmsg config.Message) bool {
 	return true
 }
 
-func (b *Bmatrix) getUserName(mxid string) string {
+func (b *Bmatrix) cacheDisplayName(mxid string, displayName string) string {
+	now := time.Now()
+
+	// scan to delete old entries, to stop memory usage from becoming too high with old entries
+	toDelete := []string{}
+	b.RLock()
+	for k, v := range b.NicknameMap {
+		if now.Sub(v.lastUpdated) > 10*time.Minute {
+			toDelete = append(toDelete, k)
+		}
+	}
+	b.RUnlock()
+
+	b.Lock()
+	for _, v := range toDelete {
+		delete(b.NicknameMap, v)
+	}
+	b.NicknameMap[mxid] = NicknameCacheEntry{
+		displayName: displayName,
+		lastUpdated: now,
+	}
+	b.Unlock()
+
+	return displayName
+}
+
+func (b *Bmatrix) getDisplayName(mxid string) string {
 	if b.GetBool("UseUserName") {
 		return mxid[1:]
 	}
 
 	b.RLock()
 	if val, present := b.NicknameMap[mxid]; present {
-		if time.Since(val.lastUpdated) < 10*time.Minute {
-			b.RUnlock()
-			return val.nickname
-		}
+		b.RUnlock()
+
+		return val.displayName
 	}
 	b.RUnlock()
 
-	nickname, err := b.mc.GetDisplayName(mxid)
-	if err != nil && err.(matrix.HTTPError).Code != 404 {
+	displayName, err := b.mc.GetDisplayName(mxid)
+	var httpError *matrix.HTTPError
+	if errors.As(err, &httpError) {
 		b.Log.Warnf("Couldn't retrieve the display name for %s", mxid)
 	}
 
-	b.Lock()
-	defer b.Unlock()
-
 	if err != nil {
-		b.NicknameMap[mxid] = NicknameCacheEntry{
-			nickname:    mxid[1:],
-			lastUpdated: time.Now(),
-		}
-	} else {
-		b.NicknameMap[mxid] = NicknameCacheEntry{
-			nickname:    nickname.DisplayName,
-			lastUpdated: time.Now(),
-		}
+		return b.cacheDisplayName(mxid, mxid[1:])
 	}
 
-	return b.NicknameMap[mxid].nickname
+	return b.cacheDisplayName(mxid, displayName.DisplayName)
+}
+
+func (b *Bmatrix) handleMemberChange(ev *matrix.Event) {
+	// Update the displayname on join messages, according to https://matrix.org/docs/spec/client_server/r0.6.1#events-on-change-of-profile-information
+	if ev.Content["membership"] == "join" {
+		if dn, ok := ev.Content["displayname"].(string); ok {
+			b.cacheDisplayName(ev.Sender, dn)
+		}
+	}
 }
 
 func (b *Bmatrix) handleEvent(ev *matrix.Event) {
@@ -353,7 +379,7 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 
 		// Create our message
 		rmsg := config.Message{
-			Username: b.getUserName(ev.Sender),
+			Username: b.getDisplayName(ev.Sender),
 			Channel:  channel,
 			Account:  b.Account,
 			UserID:   ev.Sender,
