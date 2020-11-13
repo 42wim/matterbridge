@@ -138,14 +138,14 @@ func (b *Bxmpp) createXMPP() error {
 		User:                         b.GetString("Jid"),
 		Password:                     b.GetString("Password"),
 		NoTLS:                        true,
-		StartTLS:                     true,
+		StartTLS:                     !b.GetBool("NoTLS"),
 		TLSConfig:                    tc,
 		Debug:                        b.GetBool("debug"),
 		Session:                      true,
 		Status:                       "",
 		StatusMessage:                "",
 		Resource:                     "",
-		InsecureAllowUnencryptedAuth: false,
+		InsecureAllowUnencryptedAuth: b.GetBool("NoTLS"),
 	}
 	var err error
 	b.xc, err = options.NewClient()

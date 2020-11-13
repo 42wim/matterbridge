@@ -227,6 +227,10 @@ Nick="xmppbot"
 #OPTIONAL (default false)
 SkipTLSVerify=true
 
+#Enable to use plaintext connection to your XMPP server.
+#OPTIONAL (default false)
+NoTLS=true
+
 ## RELOADABLE SETTINGS
 ## Settings below can be reloaded by editing the file
 
