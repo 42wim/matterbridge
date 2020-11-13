@@ -112,6 +112,22 @@ retry:
 	return nil
 }
 
+type SubTextMessage struct {
+	MsgType string `json:"msgtype"`
+	Body    string `json:"body"`
+}
+
+type MessageRelation struct {
+	EventID string `json:"event_id"`
+	Type    string `json:"rel_type"`
+}
+
+type EditedMessage struct {
+	NewContent SubTextMessage  `json:"m.new_content"`
+	RelatedTo  MessageRelation `json:"m.relates_to"`
+	matrix.TextMessage
+}
+
 func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
 
@@ -160,7 +176,32 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	}
 
 	// Edit message if we have an ID
-	// matrix has no editing support
+	if msg.ID != "" {
+		rmsg := EditedMessage{TextMessage: matrix.TextMessage{
+			Body:    username.plain + msg.Text,
+			MsgType: "m.text",
+		}}
+		if b.GetBool("HTMLDisable") {
+			rmsg.TextMessage.FormattedBody = username.formatted + "* " + msg.Text
+		} else {
+			rmsg.Format = "org.matrix.custom.html"
+			rmsg.TextMessage.FormattedBody = username.formatted + "* " + helper.ParseMarkdown(msg.Text)
+		}
+		rmsg.NewContent = SubTextMessage{
+			Body:    rmsg.TextMessage.Body,
+			MsgType: "m.text",
+		}
+		rmsg.RelatedTo = MessageRelation{
+			EventID: msg.ID,
+			Type:    "m.replace",
+		}
+		_, err := b.mc.SendMessageEvent(channel, "m.room.message", rmsg)
+		if err != nil {
+			return "", err
+		}
+
+		return msg.ID, nil
+	}
 
 	// Use notices to send join/leave events
 	if msg.Event == config.EventJoinLeave {
@@ -216,6 +257,45 @@ func (b *Bmatrix) handlematrix() {
 	}()
 }
 
+func interface2Struct(in interface{}, out interface{}) error {
+	jsonObj, err := json.Marshal(in)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(jsonObj, out)
+}
+
+func (b *Bmatrix) handleEdit(ev *matrix.Event, rmsg config.Message) bool {
+	relationInterface, present := ev.Content["m.relates_to"]
+	newContentInterface, present2 := ev.Content["m.new_content"]
+	if !(present && present2) {
+		return false
+	}
+
+	var relation MessageRelation
+	if err := interface2Struct(relationInterface, &relation); err != nil {
+		b.Log.Warnf("Couldn't parse 'm.relates_to' object with value %#v", relationInterface)
+		return false
+	}
+
+	var newContent SubTextMessage
+	if err := interface2Struct(newContentInterface, &newContent); err != nil {
+		b.Log.Warnf("Couldn't parse 'm.new_content' object with value %#v", newContentInterface)
+		return false
+	}
+
+	if relation.Type != "m.replace" {
+		return false
+	}
+
+	rmsg.ID = relation.EventID
+	rmsg.Text = newContent.Body
+	b.Remote <- rmsg
+
+	return true
+}
+
 func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 	b.Log.Debugf("== Receiving event: %#v", ev)
 	if ev.Sender != b.UserID {
@@ -262,6 +342,11 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 		// Do we have a /me action
 		if ev.Content["msgtype"].(string) == "m.emote" {
 			rmsg.Event = config.EventUserAction
+		}
+
+		// Is it an edit?
+		if b.handleEdit(ev, rmsg) {
+			return
 		}
 
 		// Do we have attachments
