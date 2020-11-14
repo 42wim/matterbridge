@@ -2,10 +2,7 @@ package bmatrix
 
 import (
 	"bytes"
-	"encoding/json"
-	"errors"
 	"fmt"
-	"html"
 	"mime"
 	"regexp"
 	"strings"
@@ -48,20 +45,23 @@ type matrixUsername struct {
 	formatted string
 }
 
-func newMatrixUsername(username string) *matrixUsername {
-	mUsername := new(matrixUsername)
+// SubTextMessage represents the new content of the message in edit messages.
+type SubTextMessage struct {
+	MsgType string `json:"msgtype"`
+	Body    string `json:"body"`
+}
 
-	// check if we have a </tag>. if we have, we don't escape HTML. #696
-	if htmlTag.MatchString(username) {
-		mUsername.formatted = username
-		// remove the HTML formatting for beautiful push messages #1188
-		mUsername.plain = htmlReplacementTag.ReplaceAllString(username, "")
-	} else {
-		mUsername.formatted = html.EscapeString(username)
-		mUsername.plain = username
-	}
+// MessageRelation explains how the current message relates to a previous message.
+// Notably used for message edits.
+type MessageRelation struct {
+	EventID string `json:"event_id"`
+	Type    string `json:"rel_type"`
+}
 
-	return mUsername
+type EditedMessage struct {
+	NewContent SubTextMessage  `json:"m.new_content"`
+	RelatedTo  MessageRelation `json:"m.relates_to"`
+	matrix.TextMessage
 }
 
 func New(cfg *bridge.Config) bridge.Bridger {
@@ -118,22 +118,6 @@ retry:
 	b.Unlock()
 
 	return nil
-}
-
-type SubTextMessage struct {
-	MsgType string `json:"msgtype"`
-	Body    string `json:"body"`
-}
-
-type MessageRelation struct {
-	EventID string `json:"event_id"`
-	Type    string `json:"rel_type"`
-}
-
-type EditedMessage struct {
-	NewContent SubTextMessage  `json:"m.new_content"`
-	RelatedTo  MessageRelation `json:"m.relates_to"`
-	matrix.TextMessage
 }
 
 func (b *Bmatrix) Send(msg config.Message) (string, error) {
@@ -241,17 +225,6 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	return resp.EventID, err
 }
 
-func (b *Bmatrix) getRoomID(channel string) string {
-	b.RLock()
-	defer b.RUnlock()
-	for ID, name := range b.RoomMap {
-		if name == channel {
-			return ID
-		}
-	}
-	return ""
-}
-
 func (b *Bmatrix) handlematrix() {
 	syncer := b.mc.Syncer.(*matrix.DefaultSyncer)
 	syncer.OnEventType("m.room.redaction", b.handleEvent)
@@ -264,15 +237,6 @@ func (b *Bmatrix) handlematrix() {
 			}
 		}
 	}()
-}
-
-func interface2Struct(in interface{}, out interface{}) error {
-	jsonObj, err := json.Marshal(in)
-	if err != nil {
-		return err
-	}
-
-	return json.Unmarshal(jsonObj, out)
 }
 
 func (b *Bmatrix) handleEdit(ev *matrix.Event, rmsg config.Message) bool {
@@ -303,58 +267,6 @@ func (b *Bmatrix) handleEdit(ev *matrix.Event, rmsg config.Message) bool {
 	b.Remote <- rmsg
 
 	return true
-}
-
-func (b *Bmatrix) cacheDisplayName(mxid string, displayName string) string {
-	now := time.Now()
-
-	// scan to delete old entries, to stop memory usage from becoming too high with old entries
-	toDelete := []string{}
-	b.RLock()
-	for k, v := range b.NicknameMap {
-		if now.Sub(v.lastUpdated) > 10*time.Minute {
-			toDelete = append(toDelete, k)
-		}
-	}
-	b.RUnlock()
-
-	b.Lock()
-	for _, v := range toDelete {
-		delete(b.NicknameMap, v)
-	}
-	b.NicknameMap[mxid] = NicknameCacheEntry{
-		displayName: displayName,
-		lastUpdated: now,
-	}
-	b.Unlock()
-
-	return displayName
-}
-
-func (b *Bmatrix) getDisplayName(mxid string) string {
-	if b.GetBool("UseUserName") {
-		return mxid[1:]
-	}
-
-	b.RLock()
-	if val, present := b.NicknameMap[mxid]; present {
-		b.RUnlock()
-
-		return val.displayName
-	}
-	b.RUnlock()
-
-	displayName, err := b.mc.GetDisplayName(mxid)
-	var httpError *matrix.HTTPError
-	if errors.As(err, &httpError) {
-		b.Log.Warnf("Couldn't retrieve the display name for %s", mxid)
-	}
-
-	if err != nil {
-		return b.cacheDisplayName(mxid, mxid[1:])
-	}
-
-	return b.cacheDisplayName(mxid, displayName.DisplayName)
 }
 
 func (b *Bmatrix) handleMemberChange(ev *matrix.Event) {
@@ -563,59 +475,4 @@ func (b *Bmatrix) handleUploadFile(msg *config.Message, channel string, fi *conf
 		}
 	}
 	b.Log.Debugf("result: %#v", res)
-}
-
-// skipMessages returns true if this message should not be handled
-func (b *Bmatrix) containsAttachment(content map[string]interface{}) bool {
-	// Skip empty messages
-	if content["msgtype"] == nil {
-		return false
-	}
-
-	// Only allow image,video or file msgtypes
-	if !(content["msgtype"].(string) == "m.image" ||
-		content["msgtype"].(string) == "m.video" ||
-		content["msgtype"].(string) == "m.file") {
-		return false
-	}
-	return true
-}
-
-// getAvatarURL returns the avatar URL of the specified sender
-func (b *Bmatrix) getAvatarURL(sender string) string {
-	urlPath := b.mc.BuildURL("profile", sender, "avatar_url")
-
-	s := struct {
-		AvatarURL string `json:"avatar_url"`
-	}{}
-
-	err := b.mc.MakeRequest("GET", urlPath, nil, &s)
-	if err != nil {
-		b.Log.Errorf("getAvatarURL failed: %s", err)
-		return ""
-	}
-	url := strings.ReplaceAll(s.AvatarURL, "mxc://", b.GetString("Server")+"/_matrix/media/r0/thumbnail/")
-	if url != "" {
-		url += "?width=37&height=37&method=crop"
-	}
-	return url
-}
-
-func handleError(err error) *httpError {
-	mErr, ok := err.(matrix.HTTPError)
-	if !ok {
-		return &httpError{
-			Err: "not a HTTPError",
-		}
-	}
-
-	var httpErr httpError
-
-	if err := json.Unmarshal(mErr.Contents, &httpErr); err != nil {
-		return &httpError{
-			Err: "unmarshal failed",
-		}
-	}
-
-	return &httpErr
 }
