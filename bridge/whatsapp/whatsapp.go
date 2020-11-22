@@ -113,6 +113,12 @@ func (b *Bwhatsapp) Connect() error {
 		return fmt.Errorf("error on update of contacts: %v", err)
 	}
 
+	// see https://github.com/Rhymen/go-whatsapp/issues/137#issuecomment-480316013
+	for len(b.conn.Store.Contacts) == 0 {
+		b.conn.Contacts() // nolint:errcheck
+		<-time.After(1 * time.Second)
+	}
+
 	// map all the users
 	for id, contact := range b.conn.Store.Contacts {
 		if !isGroupJid(id) && id != "status@broadcast" {
@@ -191,6 +197,12 @@ func isGroupJid(identifier string) bool {
 // https://github.com/42wim/matterbridge/blob/2cfd880cdb0df29771bf8f31df8d990ab897889d/bridge/bridge.go#L11-L16
 func (b *Bwhatsapp) JoinChannel(channel config.ChannelInfo) error {
 	byJid := isGroupJid(channel.Name)
+
+	// see https://github.com/Rhymen/go-whatsapp/issues/137#issuecomment-480316013
+	for len(b.conn.Store.Contacts) == 0 {
+		b.conn.Contacts() // nolint:errcheck
+		<-time.After(1 * time.Second)
+	}
 
 	// verify if we are member of the given group
 	if byJid {
