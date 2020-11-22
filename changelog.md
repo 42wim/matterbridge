@@ -1,3 +1,28 @@
+# v1.20.0
+
+## Breaking
+
+- matrix: Send the display name instead of the user name (matrix) (#1282)  
+  Matrix now sends the displayname if set instead of the username. If you want to keep the username, add  `UseUsername=true` to your matrix config. <https://github.com/42wim/matterbridge/wiki/Settings#useusername-1>
+- discord: Disable webhook editing (discord) (#1296)  
+  Because of issues with ratelimiting of webhook editing, this feature is now disabled. If you have multiple discord channels you bridge, you'll need to add a `webhookURL` to the `[gateway.inout.options]`. See <https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.sample#L1864-L1870> for an example.
+
+## New features
+
+- general: Allow tengo to drop messages using msgDrop (#1272)
+- general: Update libraries (whatsapp,markdown,mattermost,ssh-chat)
+- irc: Add PingDelay option (irc) (#1269)
+- matrix: Allow message edits on matrix (#1286)
+- xmpp: add NoTLS option to allow plaintext XMPP connections (#1288)
+
+## Enhancements
+
+- discord: Edit messages via webhook (1287)
+- general: Add extra debug to log time spent sending a message per bridge (#1299)
+
+This release couldn't exist without the following contributors:
+@nightmared, @zhoreeq
+
 # v1.19.0
 
 ## New features
