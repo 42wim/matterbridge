@@ -337,21 +337,21 @@ func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) stri
 			}
 			i++
 		}
-		nick = strings.Replace(nick, "{NOPINGNICK}", msg.Username[:i]+"​"+msg.Username[i:], -1)
+		nick = strings.ReplaceAll(nick, "{NOPINGNICK}", msg.Username[:i]+"​"+msg.Username[i:])
 	}
 
-	nick = strings.Replace(nick, "{BRIDGE}", br.Name, -1)
-	nick = strings.Replace(nick, "{PROTOCOL}", br.Protocol, -1)
-	nick = strings.Replace(nick, "{GATEWAY}", gw.Name, -1)
-	nick = strings.Replace(nick, "{LABEL}", br.GetString("Label"), -1)
-	nick = strings.Replace(nick, "{NICK}", msg.Username, -1)
-	nick = strings.Replace(nick, "{USERID}", msg.UserID, -1)
-	nick = strings.Replace(nick, "{CHANNEL}", msg.Channel, -1)
+	nick = strings.ReplaceAll(nick, "{BRIDGE}", br.Name)
+	nick = strings.ReplaceAll(nick, "{PROTOCOL}", br.Protocol)
+	nick = strings.ReplaceAll(nick, "{GATEWAY}", gw.Name)
+	nick = strings.ReplaceAll(nick, "{LABEL}", br.GetString("Label"))
+	nick = strings.ReplaceAll(nick, "{NICK}", msg.Username)
+	nick = strings.ReplaceAll(nick, "{USERID}", msg.UserID)
+	nick = strings.ReplaceAll(nick, "{CHANNEL}", msg.Channel)
 	tengoNick, err := gw.modifyUsernameTengo(msg, br)
 	if err != nil {
 		gw.logger.Errorf("modifyUsernameTengo error: %s", err)
 	}
-	nick = strings.Replace(nick, "{TENGO}", tengoNick, -1) //nolint:gocritic
+	nick = strings.ReplaceAll(nick, "{TENGO}", tengoNick)
 	return nick
 }
 
