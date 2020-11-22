@@ -7,7 +7,7 @@ import (
 
 const minInt = -int(^uint(0)>>1) - 1
 
-// The error returned when the read rate exceeds our specification.
+// ErrRateExceeded is the error returned when the read rate exceeds our specification.
 var ErrRateExceeded = errors.New("Read rate exceeded.")
 
 // Limiter is an interface for a rate limiter.
@@ -27,7 +27,7 @@ type simpleLimiter struct {
 }
 
 // NewSimpleLimiter creates a Limiter that restricts a given number of bytes per frequency.
-func NewSimpleLimiter(amount int, frequency time.Duration) Limiter {
+func NewSimpleLimiter(amount int, frequency time.Duration) *simpleLimiter {
 	return &simpleLimiter{
 		Amount:    amount,
 		Frequency: frequency,
@@ -38,7 +38,7 @@ func NewSimpleLimiter(amount int, frequency time.Duration) Limiter {
 // SimpleLimiter but adds a grace period at the start of the rate
 // limiting where it allows unlimited bytes to be read during that
 // period.
-func NewGracefulLimiter(amount int, frequency time.Duration, grace time.Duration) Limiter {
+func NewGracefulLimiter(amount int, frequency time.Duration, grace time.Duration) *simpleLimiter {
 	return &simpleLimiter{
 		Amount:    amount,
 		Frequency: frequency,
@@ -59,4 +59,13 @@ func (limit *simpleLimiter) Count(n int) error {
 		return ErrRateExceeded
 	}
 	return nil
+}
+
+// Delay returns a channel that can be used to block until next window
+func (limit *simpleLimiter) Delay() <-chan time.Time {
+	waitTill := time.Now()
+	if limit.numRead >= limit.Amount {
+		waitTill = waitTill.Add(limit.Frequency)
+	}
+	return time.NewTimer(time.Until(waitTill)).C
 }

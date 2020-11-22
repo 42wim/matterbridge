@@ -55,6 +55,29 @@ func (c sshConn) Name() string {
 	return c.User()
 }
 
+// EnvVar is an environment variable key-value pair
+type EnvVar struct {
+	Key   string
+	Value string
+}
+
+func (v EnvVar) String() string {
+	return v.Key + "=" + v.Value
+}
+
+// Env is a wrapper type around []EnvVar with some helper methods
+type Env []EnvVar
+
+// Get returns the latest value for a given key, or empty string if not found
+func (e Env) Get(key string) string {
+	for i := len(e) - 1; i >= 0; i-- {
+		if e[i].Key == key {
+			return e[i].Value
+		}
+	}
+	return ""
+}
+
 // Terminal extends ssh/terminal to include a close method
 type Terminal struct {
 	terminal.Terminal
@@ -63,9 +86,14 @@ type Terminal struct {
 
 	done      chan struct{}
 	closeOnce sync.Once
+
+	mu   sync.Mutex
+	env  []EnvVar
+	term string
 }
 
 // Make new terminal from a session channel
+// TODO: For v2, make a separate `Serve(ctx context.Context) error` method to activate the Terminal
 func NewTerminal(conn *ssh.ServerConn, ch ssh.NewChannel) (*Terminal, error) {
 	if ch.ChannelType() != "session" {
 		return nil, ErrNotSessionChannel
@@ -75,14 +103,15 @@ func NewTerminal(conn *ssh.ServerConn, ch ssh.NewChannel) (*Terminal, error) {
 		return nil, err
 	}
 	term := Terminal{
-		Terminal: *terminal.NewTerminal(channel, "Connecting..."),
+		Terminal: *terminal.NewTerminal(channel, ""),
 		Conn:     sshConn{conn},
 		Channel:  channel,
 
 		done: make(chan struct{}),
 	}
 
-	go term.listen(requests)
+	ready := make(chan struct{})
+	go term.listen(requests, ready)
 
 	go func() {
 		// Keep-Alive Ticker
@@ -103,7 +132,18 @@ func NewTerminal(conn *ssh.ServerConn, ch ssh.NewChannel) (*Terminal, error) {
 		}
 	}()
 
-	return &term, nil
+	// We need to wait for term.ready to acquire a shell before we return, this
+	// gives the SSH session a chance to populate the env vars and other state.
+	// TODO: Make the timeout configurable
+	// TODO: Use context.Context for abort/timeout in the future, will need to change the API.
+	select {
+	case <-ready: // shell acquired
+		return &term, nil
+	case <-term.done:
+		return nil, errors.New("terminal aborted")
+	case <-time.NewTimer(time.Minute).C:
+		return nil, errors.New("timed out starting terminal")
+	}
 }
 
 // NewSession Finds a session channel and make a Terminal from it
@@ -133,8 +173,9 @@ func (t *Terminal) Close() error {
 	return err
 }
 
-// Negotiate terminal type and settings
-func (t *Terminal) listen(requests <-chan *ssh.Request) {
+// listen negotiates the terminal type and state
+// ready is closed when the terminal is ready.
+func (t *Terminal) listen(requests <-chan *ssh.Request, ready chan<- struct{}) {
 	hasShell := false
 
 	for req := range requests {
@@ -146,13 +187,19 @@ func (t *Terminal) listen(requests <-chan *ssh.Request) {
 			if !hasShell {
 				ok = true
 				hasShell = true
+				close(ready)
 			}
 		case "pty-req":
-			width, height, ok = parsePtyRequest(req.Payload)
+			var term string
+			term, width, height, ok = parsePtyRequest(req.Payload)
 			if ok {
 				// TODO: Hardcode width to 100000?
 				err := t.SetSize(width, height)
 				ok = err == nil
+				// Save the term:
+				t.mu.Lock()
+				t.term = term
+				t.mu.Unlock()
 			}
 		case "window-change":
 			width, height, ok = parseWinchRequest(req.Payload)
@@ -161,10 +208,39 @@ func (t *Terminal) listen(requests <-chan *ssh.Request) {
 				err := t.SetSize(width, height)
 				ok = err == nil
 			}
+		case "env":
+			var v EnvVar
+			if err := ssh.Unmarshal(req.Payload, &v); err == nil {
+				t.mu.Lock()
+				t.env = append(t.env, v)
+				t.mu.Unlock()
+				ok = true
+			}
 		}
 
 		if req.WantReply {
 			req.Reply(ok, nil)
 		}
 	}
+}
+
+// Env returns a list of environment key-values that have been set. They are
+// returned in the order that they have been set, there is no deduplication or
+// other pre-processing applied.
+func (t *Terminal) Env() Env {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	return Env(t.env)
+}
+
+// Term returns the terminal string value as set by the pty.
+// If there was no pty request, it falls back to the TERM value passed in as an
+// Env variable.
+func (t *Terminal) Term() string {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	if t.term != "" {
+		return t.term
+	}
+	return Env(t.env).Get("TERM")
 }
