@@ -159,16 +159,12 @@ func (b *Bdiscord) Connect() error {
 		}
 
 		b.canEditWebhooks = len(channelsDenied) == 0
-		b.canEditWebhooks = false
-		b.Log.Info("Webhook editing is disabled because of ratelimit issues")
-		/*
-			if b.canEditWebhooks {
-				b.Log.Info("Can manage webhooks; will edit channel for global webhook on send")
-			} else {
-				b.Log.Warn("Can't manage webhooks; won't edit channel for global webhook on send")
-				b.Log.Warn("Can't manage webhooks in channels: ", strings.Join(channelsDenied, ", "))
-			}
-		*/
+		if b.canEditWebhooks {
+			b.Log.Info("Can manage webhooks; will edit channel for global webhook on send")
+		} else {
+			b.Log.Warn("Can't manage webhooks; won't edit channel for global webhook on send")
+			b.Log.Warn("Can't manage webhooks in channels: ", strings.Join(channelsDenied, ", "))
+		}
 	}
 	b.channelsMutex.RUnlock()
 
