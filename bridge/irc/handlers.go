@@ -67,6 +67,20 @@ func (b *Birc) handleFiles(msg *config.Message) bool {
 	return true
 }
 
+func (b *Birc) handleInvite(client *girc.Client, event girc.Event) {
+	if len(event.Params) != 2 {
+		return
+	}
+
+	channel := event.Params[1]
+
+	b.Log.Debugf("got invite for %s", channel)
+
+	if _, ok := b.channels[channel]; ok {
+		b.i.Cmd.Join(channel)
+	}
+}
+
 func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 	if len(event.Params) == 0 {
 		b.Log.Debugf("handleJoinPart: empty Params? %#v", event)
@@ -117,6 +131,7 @@ func (b *Birc) handleNewConnection(client *girc.Client, event girc.Event) {
 	i.Handlers.Add("PART", b.handleJoinPart)
 	i.Handlers.Add("QUIT", b.handleJoinPart)
 	i.Handlers.Add("KICK", b.handleJoinPart)
+	i.Handlers.Add("INVITE", b.handleInvite)
 }
 
 func (b *Birc) handleNickServ() {
