@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"sync"
 	"unicode/utf8"
+
+	"golang.org/x/text/width"
 )
 
 // EscapeCodes contains escape sequences that can be written to the terminal in
@@ -262,7 +264,7 @@ func (t *Terminal) moveCursorToPos(pos int) {
 		return
 	}
 
-	x := visualLength(t.prompt) + pos
+	x := visualLength(t.prompt) + visualLength(t.line[:pos])
 	y := x / t.termWidth
 	x = x % t.termWidth
 
@@ -351,6 +353,7 @@ func (t *Terminal) setLine(newLine []rune, newPos int) {
 		for i := len(newLine); i < len(t.line); i++ {
 			t.writeLine(space)
 		}
+		t.line = newLine
 		t.moveCursorToPos(newPos)
 	}
 	t.line = newLine
@@ -462,6 +465,10 @@ func visualLength(runes []rune) int {
 			inEscapeSeq = true
 		default:
 			length++
+			kind := width.LookupRune(r).Kind()
+			if kind == width.EastAsianFullwidth || kind == width.EastAsianWide {
+				length++
+			}
 		}
 	}
 

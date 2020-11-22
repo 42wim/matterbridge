@@ -19,6 +19,7 @@ type Auth interface {
 }
 
 // MakeAuth makes an ssh.ServerConfig which performs authentication against an Auth implementation.
+// TODO: Switch to using ssh.AuthMethod instead?
 func MakeAuth(auth Auth) *ssh.ServerConfig {
 	config := ssh.ServerConfig{
 		NoClientAuth: false,

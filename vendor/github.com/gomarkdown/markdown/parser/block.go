@@ -1074,9 +1074,13 @@ func isBackslashEscaped(data []byte, i int) bool {
 func (p *Parser) tableHeader(data []byte) (size int, columns []ast.CellAlignFlags, table ast.Node) {
 	i := 0
 	colCount := 1
+	headerIsUnderline := true
 	for i = 0; i < len(data) && data[i] != '\n'; i++ {
 		if data[i] == '|' && !isBackslashEscaped(data, i) {
 			colCount++
+		}
+		if data[i] != '-' && data[i] != ' ' && data[i] != ':' && data[i] != '|' {
+			headerIsUnderline = false
 		}
 	}
 
@@ -1097,10 +1101,18 @@ func (p *Parser) tableHeader(data []byte) (size int, columns []ast.CellAlignFlag
 		colCount--
 	}
 
+	// if the header looks like a underline, then we omit the header
+	// and parse the first line again as underline
+	if headerIsUnderline {
+		header = nil
+		i = 0
+	} else {
+		i++ // move past newline
+	}
+
 	columns = make([]ast.CellAlignFlags, colCount)
 
 	// move on to the header underline
-	i++
 	if i >= len(data) {
 		return
 	}
@@ -1175,8 +1187,10 @@ func (p *Parser) tableHeader(data []byte) (size int, columns []ast.CellAlignFlag
 
 	table = &ast.Table{}
 	p.addBlock(table)
-	p.addBlock(&ast.TableHeader{})
-	p.tableRow(header, columns, true)
+	if header != nil {
+		p.addBlock(&ast.TableHeader{})
+		p.tableRow(header, columns, true)
+	}
 	size = skipCharN(data, i, '\n', 1)
 	return
 }

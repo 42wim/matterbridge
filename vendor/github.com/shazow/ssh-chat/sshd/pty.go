@@ -6,8 +6,8 @@ import "encoding/binary"
 
 // parsePtyRequest parses the payload of the pty-req message and extracts the
 // dimensions of the terminal. See RFC 4254, section 6.2.
-func parsePtyRequest(s []byte) (width, height int, ok bool) {
-	_, s, ok = parseString(s)
+func parsePtyRequest(s []byte) (term string, width, height int, ok bool) {
+	term, s, ok = parseString(s)
 	if !ok {
 		return
 	}
