@@ -16,7 +16,11 @@ import (
 
 	"golang.org/x/image/webp"
 
+	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/internal"
+	"github.com/d5/tengo/v2"
+	"github.com/d5/tengo/v2/stdlib"
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
@@ -112,6 +116,62 @@ func GetAvatar(av map[string]string, userid string, general *config.Protocol) st
 		return general.MediaServerDownload + "/" + sha + "/" + userid + ".png"
 	}
 	return ""
+}
+
+func handleDownloadTengo(br *bridge.Bridge, msg *config.Message, name string, size int64, general *config.Protocol) (bool, error) {
+	var (
+		res  []byte
+		err  error
+		drop bool
+	)
+
+	filename := br.GetString("tengo.download")
+
+	if filename == "" {
+		res, err = internal.Asset("tengo/download.tengo")
+		if err != nil {
+			return drop, err
+		}
+	} else {
+		res, err = ioutil.ReadFile(filename)
+		if err != nil {
+			return drop, err
+		}
+	}
+
+	s := tengo.NewScript(res)
+
+	s.SetImports(stdlib.GetModuleMap(stdlib.AllModuleNames()...))
+
+	_ = s.Add("inAccount", msg.Account)
+	_ = s.Add("inProtocol", msg.Protocol)
+	_ = s.Add("inChannel", msg.Channel)
+	_ = s.Add("inGateway", msg.Gateway)
+	_ = s.Add("inEvent", msg.Event)
+	_ = s.Add("outAccount", br.Account)
+	_ = s.Add("outProtocol", br.Protocol)
+	_ = s.Add("outChannel", msg.Channel)
+	_ = s.Add("outEvent", msg.Event)
+	_ = s.Add("msgText", msg.Text)
+	_ = s.Add("msgUsername", msg.Username)
+	_ = s.Add("msgDrop", drop)
+	_ = s.Add("downloadName", name)
+	_ = s.Add("downloadSize", size)
+
+	c, err := s.Compile()
+	if err != nil {
+		return drop, err
+	}
+
+	if err := c.Run(); err != nil {
+		return drop, err
+	}
+
+	drop = c.Get("msgDrop").Bool()
+	msg.Text = c.Get("msgText").String()
+	msg.Username = c.Get("msgUsername").String()
+
+	return drop, nil
 }
 
 // HandleDownloadSize checks a specified filename against the configured download blacklist
