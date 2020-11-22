@@ -316,6 +316,12 @@ type ChannelEdit struct {
 	RateLimitPerUser     int                    `json:"rate_limit_per_user,omitempty"`
 }
 
+// A ChannelFollow holds data returned after following a news channel
+type ChannelFollow struct {
+	ChannelID string `json:"channel_id"`
+	WebhookID string `json:"webhook_id"`
+}
+
 // A PermissionOverwrite holds permission overwrite data for a Channel
 type PermissionOverwrite struct {
 	ID    string `json:"id"`
@@ -614,6 +620,7 @@ type GuildParams struct {
 	Icon                        string             `json:"icon,omitempty"`
 	OwnerID                     string             `json:"owner_id,omitempty"`
 	Splash                      string             `json:"splash,omitempty"`
+	Banner                      string             `json:"banner,omitempty"`
 }
 
 // A Role stores information about Discord guild member roles.
@@ -1057,6 +1064,9 @@ type Webhook struct {
 	Name      string      `json:"name"`
 	Avatar    string      `json:"avatar"`
 	Token     string      `json:"token"`
+
+	// ApplicationID is the bot/OAuth2 application that created this webhook
+	ApplicationID string `json:"application_id,omitempty"`
 }
 
 // WebhookType is the type of Webhook (see WebhookType* consts) in the Webhook struct
