@@ -30,6 +30,7 @@ type Birc struct {
 	Local                                     chan config.Message // local queue for flood control
 	FirstConnection, authDone                 bool
 	MessageDelay, MessageQueue, MessageLength int
+	channels                                  map[string]bool
 
 	*bridge.Config
 }
@@ -40,6 +41,8 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	b.Nick = b.GetString("Nick")
 	b.names = make(map[string][]string)
 	b.connected = make(chan error)
+	b.channels = make(map[string]bool)
+
 	if b.GetInt("MessageDelay") == 0 {
 		b.MessageDelay = 1300
 	} else {
@@ -112,6 +115,7 @@ func (b *Birc) Disconnect() error {
 }
 
 func (b *Birc) JoinChannel(channel config.ChannelInfo) error {
+	b.channels[channel.Name] = true
 	// need to check if we have nickserv auth done before joining channels
 	for {
 		if b.authDone {
