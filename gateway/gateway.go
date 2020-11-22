@@ -430,6 +430,11 @@ func (gw *Gateway) SendMessage(
 		}
 	}
 
+	// Only send irc notices to irc
+	if msg.Event == config.EventNoticeIRC && dest.Protocol != "irc" {
+		return "", nil
+	}
+
 	// Too noisy to log like other events
 	debugSendMessage := ""
 	if msg.Event != config.EventUserTyping {

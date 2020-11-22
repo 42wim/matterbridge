@@ -212,9 +212,14 @@ func (b *Birc) doSend() {
 			colorCode := checksum%14 + 2 // quick fix - prevent white or black color codes
 			username = fmt.Sprintf("\x03%02d%s\x0F", colorCode, msg.Username)
 		}
-		if msg.Event == config.EventUserAction {
+
+		switch msg.Event {
+		case config.EventUserAction:
 			b.i.Cmd.Action(msg.Channel, username+msg.Text)
-		} else {
+		case config.EventNoticeIRC:
+			b.Log.Debugf("Sending notice to channel %s", msg.Channel)
+			b.i.Cmd.Notice(msg.Channel, username+msg.Text)
+		default:
 			b.Log.Debugf("Sending to channel %s", msg.Channel)
 			b.i.Cmd.Message(msg.Channel, username+msg.Text)
 		}
@@ -291,7 +296,7 @@ func (b *Birc) skipPrivMsg(event girc.Event) bool {
 	b.Nick = b.i.GetNick()
 
 	// freenode doesn't send 001 as first reply
-	if event.Command == "NOTICE" {
+	if event.Command == "NOTICE" && len(event.Params) != 2 {
 		return true
 	}
 	// don't forward queries to the bot
