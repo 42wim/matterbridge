@@ -337,7 +337,7 @@ func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) stri
 			}
 			i++
 		}
-		nick = strings.ReplaceAll(nick, "{NOPINGNICK}", msg.Username[:i]+"​"+msg.Username[i:])
+		nick = strings.ReplaceAll(nick, "{NOPINGNICK}", msg.Username[:i]+"\u200b"+msg.Username[i:])
 	}
 
 	nick = strings.ReplaceAll(nick, "{BRIDGE}", br.Name)
