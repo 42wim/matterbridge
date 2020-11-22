@@ -345,6 +345,7 @@ func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) stri
 	nick = strings.Replace(nick, "{GATEWAY}", gw.Name, -1)
 	nick = strings.Replace(nick, "{LABEL}", br.GetString("Label"), -1)
 	nick = strings.Replace(nick, "{NICK}", msg.Username, -1)
+	nick = strings.Replace(nick, "{USERID}", msg.UserID, -1)
 	nick = strings.Replace(nick, "{CHANNEL}", msg.Channel, -1)
 	tengoNick, err := gw.modifyUsernameTengo(msg, br)
 	if err != nil {
@@ -544,6 +545,7 @@ func modifyInMessageTengo(filename string, msg *config.Message) error {
 	s.SetImports(stdlib.GetModuleMap(stdlib.AllModuleNames()...))
 	_ = s.Add("msgText", msg.Text)
 	_ = s.Add("msgUsername", msg.Username)
+	_ = s.Add("msgUserID", msg.UserID)
 	_ = s.Add("msgAccount", msg.Account)
 	_ = s.Add("msgChannel", msg.Channel)
 	c, err := s.Compile()
@@ -572,6 +574,7 @@ func (gw *Gateway) modifyUsernameTengo(msg *config.Message, br *bridge.Bridge) (
 	_ = s.Add("result", "")
 	_ = s.Add("msgText", msg.Text)
 	_ = s.Add("msgUsername", msg.Username)
+	_ = s.Add("msgUserID", msg.UserID)
 	_ = s.Add("nick", msg.Username)
 	_ = s.Add("msgAccount", msg.Account)
 	_ = s.Add("msgChannel", msg.Channel)
@@ -626,6 +629,7 @@ func (gw *Gateway) modifyOutMessageTengo(origmsg *config.Message, msg *config.Me
 	_ = s.Add("outEvent", msg.Event)
 	_ = s.Add("msgText", msg.Text)
 	_ = s.Add("msgUsername", msg.Username)
+	_ = s.Add("msgUserID", msg.UserID)
 	_ = s.Add("msgDrop", drop)
 	c, err := s.Compile()
 	if err != nil {
