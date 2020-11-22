@@ -2,9 +2,7 @@ package bmatrix
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
-	"html"
 	"mime"
 	"regexp"
 	"strings"
@@ -22,10 +20,16 @@ var (
 	htmlReplacementTag = regexp.MustCompile("<[^>]*>")
 )
 
+type NicknameCacheEntry struct {
+	displayName string
+	lastUpdated time.Time
+}
+
 type Bmatrix struct {
-	mc      *matrix.Client
-	UserID  string
-	RoomMap map[string]string
+	mc          *matrix.Client
+	UserID      string
+	NicknameMap map[string]NicknameCacheEntry
+	RoomMap     map[string]string
 	sync.RWMutex
 	*bridge.Config
 }
@@ -41,25 +45,29 @@ type matrixUsername struct {
 	formatted string
 }
 
-func newMatrixUsername(username string) *matrixUsername {
-	mUsername := new(matrixUsername)
+// SubTextMessage represents the new content of the message in edit messages.
+type SubTextMessage struct {
+	MsgType string `json:"msgtype"`
+	Body    string `json:"body"`
+}
 
-	// check if we have a </tag>. if we have, we don't escape HTML. #696
-	if htmlTag.MatchString(username) {
-		mUsername.formatted = username
-		// remove the HTML formatting for beautiful push messages #1188
-		mUsername.plain = htmlReplacementTag.ReplaceAllString(username, "")
-	} else {
-		mUsername.formatted = html.EscapeString(username)
-		mUsername.plain = username
-	}
+// MessageRelation explains how the current message relates to a previous message.
+// Notably used for message edits.
+type MessageRelation struct {
+	EventID string `json:"event_id"`
+	Type    string `json:"rel_type"`
+}
 
-	return mUsername
+type EditedMessage struct {
+	NewContent SubTextMessage  `json:"m.new_content"`
+	RelatedTo  MessageRelation `json:"m.relates_to"`
+	matrix.TextMessage
 }
 
 func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Bmatrix{Config: cfg}
 	b.RoomMap = make(map[string]string)
+	b.NicknameMap = make(map[string]NicknameCacheEntry)
 	return b
 }
 
@@ -110,22 +118,6 @@ retry:
 	b.Unlock()
 
 	return nil
-}
-
-type SubTextMessage struct {
-	MsgType string `json:"msgtype"`
-	Body    string `json:"body"`
-}
-
-type MessageRelation struct {
-	EventID string `json:"event_id"`
-	Type    string `json:"rel_type"`
-}
-
-type EditedMessage struct {
-	NewContent SubTextMessage  `json:"m.new_content"`
-	RelatedTo  MessageRelation `json:"m.relates_to"`
-	matrix.TextMessage
 }
 
 func (b *Bmatrix) Send(msg config.Message) (string, error) {
@@ -233,21 +225,11 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	return resp.EventID, err
 }
 
-func (b *Bmatrix) getRoomID(channel string) string {
-	b.RLock()
-	defer b.RUnlock()
-	for ID, name := range b.RoomMap {
-		if name == channel {
-			return ID
-		}
-	}
-	return ""
-}
-
 func (b *Bmatrix) handlematrix() {
 	syncer := b.mc.Syncer.(*matrix.DefaultSyncer)
 	syncer.OnEventType("m.room.redaction", b.handleEvent)
 	syncer.OnEventType("m.room.message", b.handleEvent)
+	syncer.OnEventType("m.room.member", b.handleMemberChange)
 	go func() {
 		for {
 			if err := b.mc.Sync(); err != nil {
@@ -255,15 +237,6 @@ func (b *Bmatrix) handlematrix() {
 			}
 		}
 	}()
-}
-
-func interface2Struct(in interface{}, out interface{}) error {
-	jsonObj, err := json.Marshal(in)
-	if err != nil {
-		return err
-	}
-
-	return json.Unmarshal(jsonObj, out)
 }
 
 func (b *Bmatrix) handleEdit(ev *matrix.Event, rmsg config.Message) bool {
@@ -296,6 +269,15 @@ func (b *Bmatrix) handleEdit(ev *matrix.Event, rmsg config.Message) bool {
 	return true
 }
 
+func (b *Bmatrix) handleMemberChange(ev *matrix.Event) {
+	// Update the displayname on join messages, according to https://matrix.org/docs/spec/client_server/r0.6.1#events-on-change-of-profile-information
+	if ev.Content["membership"] == "join" {
+		if dn, ok := ev.Content["displayname"].(string); ok {
+			b.cacheDisplayName(ev.Sender, dn)
+		}
+	}
+}
+
 func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 	b.Log.Debugf("== Receiving event: %#v", ev)
 	if ev.Sender != b.UserID {
@@ -309,7 +291,7 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 
 		// Create our message
 		rmsg := config.Message{
-			Username: ev.Sender[1:],
+			Username: b.getDisplayName(ev.Sender),
 			Channel:  channel,
 			Account:  b.Account,
 			UserID:   ev.Sender,
@@ -493,59 +475,4 @@ func (b *Bmatrix) handleUploadFile(msg *config.Message, channel string, fi *conf
 		}
 	}
 	b.Log.Debugf("result: %#v", res)
-}
-
-// skipMessages returns true if this message should not be handled
-func (b *Bmatrix) containsAttachment(content map[string]interface{}) bool {
-	// Skip empty messages
-	if content["msgtype"] == nil {
-		return false
-	}
-
-	// Only allow image,video or file msgtypes
-	if !(content["msgtype"].(string) == "m.image" ||
-		content["msgtype"].(string) == "m.video" ||
-		content["msgtype"].(string) == "m.file") {
-		return false
-	}
-	return true
-}
-
-// getAvatarURL returns the avatar URL of the specified sender
-func (b *Bmatrix) getAvatarURL(sender string) string {
-	urlPath := b.mc.BuildURL("profile", sender, "avatar_url")
-
-	s := struct {
-		AvatarURL string `json:"avatar_url"`
-	}{}
-
-	err := b.mc.MakeRequest("GET", urlPath, nil, &s)
-	if err != nil {
-		b.Log.Errorf("getAvatarURL failed: %s", err)
-		return ""
-	}
-	url := strings.ReplaceAll(s.AvatarURL, "mxc://", b.GetString("Server")+"/_matrix/media/r0/thumbnail/")
-	if url != "" {
-		url += "?width=37&height=37&method=crop"
-	}
-	return url
-}
-
-func handleError(err error) *httpError {
-	mErr, ok := err.(matrix.HTTPError)
-	if !ok {
-		return &httpError{
-			Err: "not a HTTPError",
-		}
-	}
-
-	var httpErr httpError
-
-	if err := json.Unmarshal(mErr.Contents, &httpErr); err != nil {
-		return &httpError{
-			Err: "unmarshal failed",
-		}
-	}
-
-	return &httpErr
 }
