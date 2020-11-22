@@ -26,6 +26,7 @@ const (
 	EventAPIConnected      = "api_connected"
 	EventUserTyping        = "user_typing"
 	EventGetChannelMembers = "get_channel_members"
+	EventNoticeIRC         = "notice_irc"
 )
 
 type Message struct {

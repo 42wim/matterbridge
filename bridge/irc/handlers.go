@@ -170,12 +170,24 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 	if b.skipPrivMsg(event) {
 		return
 	}
-	rmsg := config.Message{Username: event.Source.Name, Channel: strings.ToLower(event.Params[0]), Account: b.Account, UserID: event.Source.Ident + "@" + event.Source.Host}
+
+	rmsg := config.Message{
+		Username: event.Source.Name,
+		Channel:  strings.ToLower(event.Params[0]),
+		Account:  b.Account,
+		UserID:   event.Source.Ident + "@" + event.Source.Host,
+	}
+
 	b.Log.Debugf("== Receiving PRIVMSG: %s %s %#v", event.Source.Name, event.Last(), event)
 
 	// set action event
 	if event.IsAction() {
 		rmsg.Event = config.EventUserAction
+	}
+
+	// set NOTICE event
+	if event.Command == "NOTICE" {
+		rmsg.Event = config.EventNoticeIRC
 	}
 
 	// strip action, we made an event if it was an action
