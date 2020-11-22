@@ -130,7 +130,7 @@ github.com/matrix-org/gomatrix
 github.com/matterbridge/Rocket.Chat.Go.SDK/models
 github.com/matterbridge/Rocket.Chat.Go.SDK/realtime
 github.com/matterbridge/Rocket.Chat.Go.SDK/rest
-# github.com/matterbridge/discordgo v0.22.0
+# github.com/matterbridge/discordgo v0.22.1
 ## explicit
 github.com/matterbridge/discordgo
 # github.com/matterbridge/emoji v2.1.1-0.20191117213217-af507f6b02db+incompatible
