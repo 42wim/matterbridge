@@ -3,6 +3,7 @@ package bmatrix
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"html"
 	"strings"
 	"time"
@@ -82,20 +83,36 @@ func (b *Bmatrix) getDisplayName(mxid string) string {
 func (b *Bmatrix) cacheDisplayName(mxid string, displayName string) string {
 	now := time.Now()
 
-	// scan to delete old entries, to stop memory usage from becoming too high with old entries
+	// scan to delete old entries, to stop memory usage from becoming too high with old entries.
+	// In addition, we also detect if another user have the same username, and if so, we append their mxids to their usernames to differentiate them.
 	toDelete := []string{}
-	b.RLock()
-	for k, v := range b.NicknameMap {
-		if now.Sub(v.lastUpdated) > 10*time.Minute {
-			toDelete = append(toDelete, k)
-		}
-	}
-	b.RUnlock()
+	conflict := false
 
 	b.Lock()
+	for mxid, v := range b.NicknameMap {
+		// to prevent username reuse across matrix servers - or even on the same server, append
+		// the mxid to the username when there is a conflict
+		if v.displayName == displayName {
+			conflict = true
+			// TODO: it would be nice to be able to rename previous messages from this user.
+			// The current behavior is that only users with clashing usernames and *that have spoken since the bridge last started* will get their mxids shown, and I don't know if that's the expected behavior.
+			v.displayName = fmt.Sprintf("%s (%s)", displayName, mxid)
+			b.NicknameMap[mxid] = v
+		}
+
+		if now.Sub(v.lastUpdated) > 10*time.Minute {
+			toDelete = append(toDelete, mxid)
+		}
+	}
+
+	if conflict {
+		displayName = fmt.Sprintf("%s (%s)", displayName, mxid)
+	}
+
 	for _, v := range toDelete {
 		delete(b.NicknameMap, v)
 	}
+
 	b.NicknameMap[mxid] = NicknameCacheEntry{
 		displayName: displayName,
 		lastUpdated: now,
