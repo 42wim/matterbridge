@@ -1632,7 +1632,8 @@ RemoteNickFormat="{NICK}"
 ## Settings below can be reloaded by editing the file
 
 #RemoteNickFormat defines how remote users appear on this bridge
-#The string "{NICK}" (case sensitive) will be replaced by the actual nick / username.
+#The string "{NICK}" (case sensitive) will be replaced by the actual nick.
+#The string "{USERID}" (case sensitive) will be replaced by the user ID.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
 #The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
 #The string "{PROTOCOL}" (case sensitive) will be replaced by the protocol used by the bridge
@@ -1707,7 +1708,7 @@ LogFile="/var/log/matterbridge.log"
 #This script will receive every incoming message and can be used to modify the Username and the Text of that message.
 #The script will have the following global variables:
 #to modify: msgUsername and msgText
-#to read: msgChannel and msgAccount
+#to read: msgUserID, msgChannel, msgAccount
 #
 #The script is reloaded on every message, so you can modify the script on the fly.
 #
@@ -1731,6 +1732,7 @@ InMessage="example.tengo"
 #read-only:
 #inAccount, inProtocol, inChannel, inGateway, inEvent
 #outAccount, outProtocol, outChannel, outGateway, outEvent
+#msgUserID
 #
 #read-write:
 #msgText, msgUsername, msgDrop
@@ -1748,7 +1750,7 @@ OutMessage="example.tengo"
 #RemoteNickFormat allows you to specify the location of a tengo (https://github.com/d5/tengo/) script.
 #The script will have the following global variables:
 #to modify: result
-#to read: channel, bridge, gateway, protocol, nick
+#to read: channel, bridge, gateway, protocol, nick, msgUserID
 #
 #The result will be set in {TENGO} in the RemoteNickFormat key of every bridge where {TENGO} is specified
 #
