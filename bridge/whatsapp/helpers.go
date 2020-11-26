@@ -6,22 +6,24 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	qrcodeTerminal "github.com/Baozisoftware/qrcode-terminal-go"
 	"github.com/Rhymen/go-whatsapp"
 )
 
 type ProfilePicInfo struct {
-	URL string `json:"eurl"`
-	Tag string `json:"tag"`
-
-	Status int16 `json:"status"`
+	URL    string `json:"eurl"`
+	Tag    string `json:"tag"`
+	Status int16  `json:"status"`
 }
 
 func qrFromTerminal(invert bool) chan string {
 	qr := make(chan string)
+
 	go func() {
 		terminal := qrcodeTerminal.New()
+
 		if invert {
 			terminal = qrcodeTerminal.New2(qrcodeTerminal.ConsoleColors.BrightWhite, qrcodeTerminal.ConsoleColors.BrightBlack, qrcodeTerminal.QRCodeRecoveryLevels.Medium)
 		}
@@ -44,13 +46,12 @@ func (b *Bwhatsapp) readSession() (whatsapp.Session, error) {
 	if err != nil {
 		return session, err
 	}
+
 	defer file.Close()
+
 	decoder := gob.NewDecoder(file)
-	err = decoder.Decode(&session)
-	if err != nil {
-		return session, err
-	}
-	return session, nil
+
+	return session, decoder.Decode(&session)
 }
 
 func (b *Bwhatsapp) writeSession(session whatsapp.Session) error {
@@ -65,11 +66,31 @@ func (b *Bwhatsapp) writeSession(session whatsapp.Session) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
-	encoder := gob.NewEncoder(file)
-	err = encoder.Encode(session)
 
-	return err
+	defer file.Close()
+
+	encoder := gob.NewEncoder(file)
+
+	return encoder.Encode(session)
+}
+
+func (b *Bwhatsapp) restoreSession() (*whatsapp.Session, error) {
+	session, err := b.readSession()
+	if err != nil {
+		b.Log.Warn(err.Error())
+	}
+
+	b.Log.Debugln("Restoring WhatsApp session..")
+
+	session, err = b.conn.RestoreWithSession(session)
+	if err != nil {
+		// restore session connection timed out (I couldn't get over it without logging in again)
+		return nil, errors.New("failed to restore session: " + err.Error())
+	}
+
+	b.Log.Debugln("Session restored successfully!")
+
+	return &session, nil
 }
 
 func (b *Bwhatsapp) getSenderName(senderJid string) string {
@@ -114,6 +135,7 @@ func (b *Bwhatsapp) getSenderNotify(senderJid string) string {
 	if sender, exists := b.users[senderJid]; exists {
 		return sender.Notify
 	}
+
 	return ""
 }
 
@@ -122,11 +144,20 @@ func (b *Bwhatsapp) GetProfilePicThumb(jid string) (*ProfilePicInfo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get avatar: %v", err)
 	}
+
 	content := <-data
 	info := &ProfilePicInfo{}
+
 	err = json.Unmarshal([]byte(content), info)
 	if err != nil {
 		return info, fmt.Errorf("failed to unmarshal avatar info: %v", err)
 	}
+
 	return info, nil
+}
+
+func isGroupJid(identifier string) bool {
+	return strings.HasSuffix(identifier, "@g.us") ||
+		strings.HasSuffix(identifier, "@temp") ||
+		strings.HasSuffix(identifier, "@broadcast")
 }
