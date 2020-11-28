@@ -281,14 +281,12 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 		if msg.ID == "" {
 			// No message ID in case action is executed on a message sent before the bridge was started
 			// and then the bridge cache doesn't have this message ID mapped
-
-			// TODO 42wim Doesn't the app get clogged with a ton of IDs after some time of running?
-			// WhatsApp allows to set any ID so in that case we could use external IDs and don't do mapping
-			// but external IDs are not set
 			return "", nil
 		}
-		// TODO delete message on WhatsApp https://github.com/Rhymen/go-whatsapp/issues/100
-		return "", nil
+
+		_, err := b.conn.RevokeMessage(msg.Channel, msg.ID, true)
+
+		return "", err
 	}
 
 	// Edit message
