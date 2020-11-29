@@ -139,72 +139,57 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 
 // HandleImageMessage sent from WhatsApp, relay it to the brige
 func (b *Bwhatsapp) HandleImageMessage(message whatsapp.ImageMessage) {
-	if message.Info.FromMe { // || !strings.Contains(strings.ToLower(message.Text), "@echo") {
+	if message.Info.FromMe || message.Info.Timestamp < b.startedAt {
 		return
 	}
-
-	// whatsapp sends last messages to show context , cut them
-	if message.Info.Timestamp < b.startedAt {
-		return
-	}
-
-	messageTime := time.Unix(int64(message.Info.Timestamp), 0) // TODO check how behaves between timezones
-	groupJID := message.Info.RemoteJid
 
 	senderJID := message.Info.SenderJid
-	if len(senderJID) == 0 {
-		// TODO workaround till https://github.com/Rhymen/go-whatsapp/issues/86 resolved
-		if message.Info.Source != nil && message.Info.Source.Participant != nil {
-			senderJID = *message.Info.Source.Participant
-		}
+	if len(message.Info.SenderJid) == 0 && message.Info.Source != nil && message.Info.Source.Participant != nil {
+		senderJID = *message.Info.Source.Participant
 	}
 
-	// translate sender's Jid to the nicest username we can get
-	senderName := b.getSenderName(senderJID)
+	senderName := b.getSenderName(message.Info.SenderJid)
 	if senderName == "" {
 		senderName = "Someone" // don't expose telephone number
 	}
 
-	b.Log.Debugf("<= Sending message from %s on %s to gateway", senderJID, b.Account)
-
 	rmsg := config.Message{
-		UserID:    senderJID,
-		Username:  senderName,
-		Timestamp: messageTime,
-		Channel:   groupJID,
-		Account:   b.Account,
-		Protocol:  b.Protocol,
-		Extra:     make(map[string][]interface{}),
-		//  ParentID: TODO,      // TODO handle thread replies  // map from Info.QuotedMessageID string
-		ID: message.Info.Id,
+		UserID:   senderJID,
+		Username: senderName,
+		Channel:  message.Info.RemoteJid,
+		Account:  b.Account,
+		Protocol: b.Protocol,
+		Extra:    make(map[string][]interface{}),
+		ID:       message.Info.Id,
 	}
 
 	if avatarURL, exists := b.userAvatars[senderJID]; exists {
 		rmsg.Avatar = avatarURL
 	}
 
-	// Download and unencrypt content
-	data, err := message.Download()
-	if err != nil {
-		b.Log.Errorf("%v", err)
-		return
-	}
-
-	// Get file extension by mimetype
 	fileExt, err := mime.ExtensionsByType(message.Type)
 	if err != nil {
-		b.Log.Errorf("%v", err)
+		b.Log.Errorf("Mimetype detection error: %s", err)
+
 		return
 	}
 
 	filename := fmt.Sprintf("%v%v", message.Info.Id, fileExt[0])
 
-	b.Log.Debugf("<= Image downloaded and unencrypted")
+	b.Log.Debugf("Trying to download %s with type %s", filename, message.Type)
+
+	data, err := message.Download()
+	if err != nil {
+		b.Log.Errorf("Download image failed: %s", err)
+
+		return
+	}
 
 	// Move file to bridge storage
 	helper.HandleDownloadData(b.Log, &rmsg, filename, message.Caption, "", &data, b.General)
 
-	b.Log.Debugf("<= Image Message is %#v", rmsg)
+	b.Log.Debugf("<= Sending message from %s on %s to gateway", senderJID, b.Account)
+	b.Log.Debugf("<= Message is %#v", rmsg)
 
 	b.Remote <- rmsg
 }
@@ -322,10 +307,3 @@ func (b *Bwhatsapp) HandleAudioMessage(message whatsapp.AudioMessage) {
 
 	b.Remote <- rmsg
 }
-
-//
-//func (b *Bwhatsapp) HandleJsonMessage(message string) {
-//	fmt.Println(message) // TODO implement
-//}
-// TODO HandleRawMessage
-// TODO HandleAudioMessage
