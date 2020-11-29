@@ -170,6 +170,11 @@ func (b *Bwhatsapp) HandleImageMessage(message whatsapp.ImageMessage) {
 		return
 	}
 
+	// rename .jfif to .jpg https://github.com/42wim/matterbridge/issues/1292
+	if fileExt[0] == ".jfif" {
+		fileExt[0] = ".jpg"
+	}
+
 	filename := fmt.Sprintf("%v%v", message.Info.Id, fileExt[0])
 
 	b.Log.Debugf("Trying to download %s with type %s", filename, message.Type)
