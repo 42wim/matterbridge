@@ -79,12 +79,10 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 		return
 	}
 
-	messageTime := time.Unix(int64(message.Info.Timestamp), 0) // TODO check how behaves between timezones
 	groupJID := message.Info.RemoteJid
-
 	senderJID := message.Info.SenderJid
+
 	if len(senderJID) == 0 {
-		// TODO workaround till https://github.com/Rhymen/go-whatsapp/issues/86 resolved
 		if message.Info.Source != nil && message.Info.Source.Participant != nil {
 			senderJID = *message.Info.Source.Participant
 		}
@@ -113,17 +111,14 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 		}
 	}
 
-	b.Log.Debugf("<= Sending message from %s on %s to gateway", senderJID, b.Account)
-
 	rmsg := config.Message{
-		UserID:    senderJID,
-		Username:  senderName,
-		Text:      message.Text,
-		Timestamp: messageTime,
-		Channel:   groupJID,
-		Account:   b.Account,
-		Protocol:  b.Protocol,
-		Extra:     make(map[string][]interface{}),
+		UserID:   senderJID,
+		Username: senderName,
+		Text:     message.Text,
+		Channel:  groupJID,
+		Account:  b.Account,
+		Protocol: b.Protocol,
+		Extra:    make(map[string][]interface{}),
 		//	ParentID: TODO, // TODO handle thread replies  // map from Info.QuotedMessageID string
 		ID: message.Info.Id,
 	}
@@ -132,6 +127,7 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 		rmsg.Avatar = avatarURL
 	}
 
+	b.Log.Debugf("<= Sending message from %s on %s to gateway", senderJID, b.Account)
 	b.Log.Debugf("<= Message is %#v", rmsg)
 
 	b.Remote <- rmsg
