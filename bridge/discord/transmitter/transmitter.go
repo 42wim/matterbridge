@@ -111,7 +111,7 @@ func (t *Transmitter) HasWebhook(id string) bool {
 }
 
 // AddWebhook allows you to register a channel's webhook with the transmitter.
-func (t *Transmitter) AddWebhook(channelID string, webhook *discordgo.Webhook) (replaced bool) {
+func (t *Transmitter) AddWebhook(channelID string, webhook *discordgo.Webhook) bool {
 	t.Log.Debugf("Manually added webhook %#v to channel %#v", webhook.ID, channelID)
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
