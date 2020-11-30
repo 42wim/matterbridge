@@ -196,7 +196,7 @@ func (b *Bdiscord) replaceAction(text string) (string, bool) {
 }
 
 // splitURL splits a webhookURL and returns the ID and token.
-func (b *Bdiscord) splitURL(url string) (string, string) {
+func (b *Bdiscord) splitURL(url string) (string, string, bool) {
 	const (
 		expectedWebhookSplitCount = 7
 		webhookIdxID              = 5
@@ -204,9 +204,9 @@ func (b *Bdiscord) splitURL(url string) (string, string) {
 	)
 	webhookURLSplit := strings.Split(url, "/")
 	if len(webhookURLSplit) != expectedWebhookSplitCount {
-		b.Log.Fatalf("%s is no correct discord WebhookURL", url)
+		return "", "", false
 	}
-	return webhookURLSplit[webhookIdxID], webhookURLSplit[webhookIdxToken]
+	return webhookURLSplit[webhookIdxID], webhookURLSplit[webhookIdxToken], true
 }
 
 func enumerateUsernames(s string) []string {
