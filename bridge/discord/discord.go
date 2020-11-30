@@ -43,14 +43,7 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	b.nickMemberMap = make(map[string]*discordgo.Member)
 	b.channelInfoMap = make(map[string]*config.ChannelInfo)
 
-	// If WebhookURL is set to anything, we assume preference for autoWebhooks
-	//
-	// Legacy note: WebhookURL used to have an actual webhook URL that we would edit,
-	// but we stopped doing that due to Discord making rate limits more aggressive.
-	//
-	// We're keeping the same setting for now, and we will late deprecate this setting
-	// in favour of a new setting, something like "AutoWebhooks=true"
-	b.useAutoWebhooks = b.GetString("WebhookURL") != ""
+	b.useAutoWebhooks = b.GetBool("AutoWebhooks")
 	if b.useAutoWebhooks {
 		b.Log.Debug("Using automatic webhooks")
 	}
@@ -145,6 +138,19 @@ func (b *Bdiscord) Connect() error {
 		}
 
 		return err
+	}
+
+	// Legacy note: WebhookURL used to have an actual webhook URL that we would edit,
+	// but we stopped doing that due to Discord making rate limits more aggressive.
+	//
+	// Even older: the same WebhookURL used to be used by every channel, which is usually unexpected.
+	// This is no longer possible.
+	if b.GetString("WebhookURL") != "" {
+		message := "The global WebhookURL setting has been removed. "
+		message += "You can get similar \"webhook editing\" behaviour by replacing this line with `AutoWebhooks=true`. "
+		message += "If you rely on the old-OLD (non-editing) behaviour, can move the WebhookURL to specific channel sections."
+		b.Log.Errorln(message)
+		return fmt.Errorf("use of removed WebhookURL setting")
 	}
 
 	// Initialise webhook management
