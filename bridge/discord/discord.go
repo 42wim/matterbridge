@@ -2,7 +2,6 @@ package bdiscord
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -50,7 +49,6 @@ func New(cfg *bridge.Config) bridge.Bridger {
 
 func (b *Bdiscord) Connect() error {
 	var err error
-	var guildFound bool
 	token := b.GetString("Token")
 	b.Log.Info("Connecting")
 	if b.GetString("WebhookURL") == "" {
@@ -94,29 +92,48 @@ func (b *Bdiscord) Connect() error {
 	serverName := strings.Replace(b.GetString("Server"), "ID:", "", -1)
 	b.nick = userinfo.Username
 	b.userID = userinfo.ID
+
+	// Try and find this account's guild, and populate channels
 	b.channelsMutex.Lock()
 	for _, guild := range guilds {
-		if guild.Name == serverName || guild.ID == serverName {
-			b.channels, err = b.c.GuildChannels(guild.ID)
-			if err != nil {
-				break
-			}
-			b.guildID = guild.ID
-			guildFound = true
+		// Skip, if the server name does not match the visible name or the ID
+		if guild.Name != serverName && guild.ID != serverName {
+			continue
 		}
+
+		// Complain about an ambiguous Server setting. Two Discord servers could have the same title!
+		// For IDs, practically this will never happen. It would only trigger if some server's name is also an ID.
+		if b.guildID != "" {
+			return fmt.Errorf("found multiple Discord servers with the same name %#v, expected to see only one", serverName)
+		}
+
+		// Getting this guild's channel could result in a permission error
+		b.channels, err = b.c.GuildChannels(guild.ID)
+		if err != nil {
+			return fmt.Errorf("could not get %#v's channels: %w", b.GetString("Server"), err)
+		}
+
+		b.guildID = guild.ID
 	}
 	b.channelsMutex.Unlock()
-	if !guildFound {
-		msg := fmt.Sprintf("Server \"%s\" not found", b.GetString("Server"))
-		err = errors.New(msg)
-		b.Log.Error(msg)
-		b.Log.Info("Possible values:")
+
+	// If we couldn't find a guild, we print extra debug information and return a nice error
+	if b.guildID == "" {
+		err = fmt.Errorf("could not find Discord server %#v", b.GetString("Server"))
+		b.Log.Error(err.Error())
+
+		// Print all of the possible server values
+		b.Log.Info("Possible server values:")
 		for _, guild := range guilds {
-			b.Log.Infof("Server=\"%s\" # Server name", guild.Name)
-			b.Log.Infof("Server=\"%s\" # Server ID", guild.ID)
+			b.Log.Infof("\t- Server=%#v # by name", guild.Name)
+			b.Log.Infof("\t- Server=%#v # by ID", guild.ID)
 		}
-	}
-	if err != nil {
+
+		// If there are no results, we should say that
+		if len(guilds) == 0 {
+			b.Log.Info("\t- (none found)")
+		}
+
 		return err
 	}
 
