@@ -19,6 +19,12 @@ func (b *Bmumble) handleTextMessage(event *gumble.TextMessageEvent) {
 	if event.TextMessage.Sender != nil {
 		sender = event.TextMessage.Sender.Name
 	}
+	// If the text message is received before receiving a ServerSync
+	// and UserState, Client.Self or Self.Channel are nil
+	if event.Client.Self == nil || event.Client.Self.Channel == nil {
+		b.Log.Warn("Connection bootstrap not finished, discarding text message")
+		return
+	}
 	// Convert Mumble HTML messages to markdown
 	parts, err := b.convertHTMLtoMarkdown(event.TextMessage.Message)
 	if err != nil {
