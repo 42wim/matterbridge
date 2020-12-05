@@ -123,14 +123,14 @@ func (b *Birc) handleNewConnection(client *girc.Client, event girc.Event) {
 	i := b.i
 	b.Nick = event.Params[0]
 
-	i.Handlers.Add("PRIVMSG", b.handlePrivMsg)
-	i.Handlers.Add("CTCP_ACTION", b.handlePrivMsg)
+	i.Handlers.AddBg("PRIVMSG", b.handlePrivMsg)
+	i.Handlers.AddBg("CTCP_ACTION", b.handlePrivMsg)
 	i.Handlers.Add(girc.RPL_TOPICWHOTIME, b.handleTopicWhoTime)
-	i.Handlers.Add(girc.NOTICE, b.handleNotice)
-	i.Handlers.Add("JOIN", b.handleJoinPart)
-	i.Handlers.Add("PART", b.handleJoinPart)
-	i.Handlers.Add("QUIT", b.handleJoinPart)
-	i.Handlers.Add("KICK", b.handleJoinPart)
+	i.Handlers.AddBg(girc.NOTICE, b.handleNotice)
+	i.Handlers.AddBg("JOIN", b.handleJoinPart)
+	i.Handlers.AddBg("PART", b.handleJoinPart)
+	i.Handlers.AddBg("QUIT", b.handleJoinPart)
+	i.Handlers.AddBg("KICK", b.handleJoinPart)
 	i.Handlers.Add("INVITE", b.handleInvite)
 }
 
