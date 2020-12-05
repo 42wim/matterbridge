@@ -181,3 +181,35 @@ func (b *Bmatrix) getAvatarURL(sender string) string {
 
 	return url
 }
+
+// handleRatelimit handles the ratelimit errors and return if we're ratelimited and the amount of time to sleep
+func (b *Bmatrix) handleRatelimit(err error) (time.Duration, bool) {
+	httpErr := handleError(err)
+	if httpErr.Errcode != "M_LIMIT_EXCEEDED" {
+		return 0, false
+	}
+
+	b.Log.Debugf("ratelimited: %s", httpErr.Err)
+	b.Log.Infof("getting ratelimited by matrix, sleeping approx %d seconds before retrying", httpErr.RetryAfterMs/1000)
+
+	return time.Duration(httpErr.RetryAfterMs) * time.Millisecond, true
+}
+
+// retry function will check if we're ratelimited and retries again when backoff time expired
+// returns original error if not 429 ratelimit
+func (b *Bmatrix) retry(f func() error) error {
+	b.rateMutex.Lock()
+	defer b.rateMutex.Unlock()
+
+	for {
+		if err := f(); err != nil {
+			if backoff, ok := b.handleRatelimit(err); ok {
+				time.Sleep(backoff)
+			} else {
+				return err
+			}
+		} else {
+			return nil
+		}
+	}
+}
