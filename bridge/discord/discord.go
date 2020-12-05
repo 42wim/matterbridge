@@ -382,17 +382,9 @@ func (b *Bdiscord) webhookSend(msg *config.Message, channelID string) (*discordg
 		err error
 	)
 
-	// If avatar is unset, check if UseLocalAvatar contains the message's
-	// account or protocol, and if so, try to find a local avatar
+	// If avatar is unset, mutate the message to include the local avatar (but only if settings say we should do this)
 	if msg.Avatar == "" {
-		for _, val := range b.GetStringSlice("UseLocalAvatar") {
-			if msg.Protocol == val || msg.Account == val {
-				if avatar := b.findAvatar(msg); avatar != "" {
-					msg.Avatar = avatar
-				}
-				break
-			}
-		}
+		msg.Avatar = b.maybeGetLocalAvatar(msg)
 	}
 
 	// WebhookParams can have either `Content` or `File`.
@@ -441,10 +433,20 @@ func (b *Bdiscord) webhookSend(msg *config.Message, channelID string) (*discordg
 	return res, err
 }
 
-func (b *Bdiscord) findAvatar(m *config.Message) string {
-	member, err := b.getGuildMemberByNick(m.Username)
-	if err != nil {
-		return ""
+// maybeGetLocalAvatar checks if UseLocalAvatar contains the message's
+// account or protocol, and if so, returns the Discord avatar (if exists)
+func (b *Bdiscord) maybeGetLocalAvatar(msg *config.Message) string {
+	for _, val := range b.GetStringSlice("UseLocalAvatar") {
+		if msg.Protocol != val && msg.Account != val {
+			continue
+		}
+
+		member, err := b.getGuildMemberByNick(msg.Username)
+		if err != nil {
+			return ""
+		}
+
+		return member.User.AvatarURL("")
 	}
-	return member.User.AvatarURL("")
+	return ""
 }
