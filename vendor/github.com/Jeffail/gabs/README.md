@@ -7,21 +7,17 @@ It does nothing spectacular except for being fabulous.
 
 https://godoc.org/github.com/Jeffail/gabs
 
-## How to install:
+## Install
 
 ``` bash
 go get github.com/Jeffail/gabs
 ```
 
-## How to use
+## Use
 
 ### Parsing and searching JSON
 
 ``` go
-...
-
-import "github.com/Jeffail/gabs"
-
 jsonParsed, err := gabs.ParseJSON([]byte(`{
 	"outter":{
 		"inner":{
@@ -29,7 +25,10 @@ jsonParsed, err := gabs.ParseJSON([]byte(`{
 			"value2":22
 		},
 		"alsoInner":{
-			"value1":20
+			"value1":20,
+			"array1":[
+				30, 40
+			]
 		}
 	}
 }`))
@@ -43,26 +42,26 @@ value, ok = jsonParsed.Path("outter.inner.value1").Data().(float64)
 value, ok = jsonParsed.Search("outter", "inner", "value1").Data().(float64)
 // value == 10.0, ok == true
 
+gObj, err := jsonParsed.JSONPointer("/outter/alsoInner/array1/1")
+if err != nil {
+	panic(err)
+}
+value, ok = gObj.Data().(float64)
+// value == 40.0, ok == true
+
 value, ok = jsonParsed.Path("does.not.exist").Data().(float64)
 // value == 0.0, ok == false
 
 exists := jsonParsed.Exists("outter", "inner", "value1")
 // exists == true
 
-exists := jsonParsed.Exists("does", "not", "exist")
-// exists == false
-
 exists := jsonParsed.ExistsP("does.not.exist")
 // exists == false
-
-...
 ```
 
 ### Iterating objects
 
 ``` go
-...
-
 jsonParsed, _ := gabs.ParseJSON([]byte(`{"object":{ "first": 1, "second": 2, "third": 3 }}`))
 
 // S is shorthand for Search
@@ -70,24 +69,25 @@ children, _ := jsonParsed.S("object").ChildrenMap()
 for key, child := range children {
 	fmt.Printf("key: %v, value: %v\n", key, child.Data().(string))
 }
-
-...
 ```
 
 ### Iterating arrays
 
 ``` go
-...
-
-jsonParsed, _ := gabs.ParseJSON([]byte(`{"array":[ "first", "second", "third" ]}`))
+jsonParsed, err := gabs.ParseJSON([]byte(`{"array":[ "first", "second", "third" ]}`))
+if err != nil {
+	panic(err)
+}
 
 // S is shorthand for Search
-children, _ := jsonParsed.S("array").Children()
+children, err := jsonParsed.S("array").Children()
+if err != nil {
+	panic(err)
+}
+
 for _, child := range children {
 	fmt.Println(child.Data().(string))
 }
-
-...
 ```
 
 Will print:
@@ -108,12 +108,11 @@ objects within the array, this returns a JSON array containing the results for
 each element.
 
 ``` go
-...
-
-jsonParsed, _ := gabs.ParseJSON([]byte(`{"array":[ {"value":1}, {"value":2}, {"value":3} ]}`))
+jsonParsed, err := gabs.ParseJSON([]byte(`{"array":[ {"value":1}, {"value":2}, {"value":3} ]}`))
+if err != nil {
+	panic(err)
+}
 fmt.Println(jsonParsed.Path("array.value").String())
-
-...
 ```
 
 Will print:
@@ -125,8 +124,6 @@ Will print:
 ### Generating JSON
 
 ``` go
-...
-
 jsonObj := gabs.New()
 // or gabs.Consume(jsonObject) to work on an existing map[string]interface{}
 
@@ -135,8 +132,6 @@ jsonObj.SetP(20, "outter.inner.value2")
 jsonObj.Set(30, "outter", "inner2", "value3")
 
 fmt.Println(jsonObj.String())
-
-...
 ```
 
 Will print:
@@ -148,11 +143,7 @@ Will print:
 To pretty-print:
 
 ``` go
-...
-
 fmt.Println(jsonObj.StringIndent("", "  "))
-
-...
 ```
 
 Will print:
@@ -174,8 +165,6 @@ Will print:
 ### Generating Arrays
 
 ``` go
-...
-
 jsonObj := gabs.New()
 
 jsonObj.Array("foo", "array")
@@ -186,8 +175,6 @@ jsonObj.ArrayAppend(20, "foo", "array")
 jsonObj.ArrayAppend(30, "foo", "array")
 
 fmt.Println(jsonObj.String())
-
-...
 ```
 
 Will print:
@@ -199,8 +186,6 @@ Will print:
 Working with arrays by index:
 
 ``` go
-...
-
 jsonObj := gabs.New()
 
 // Create an array with the length of 3
@@ -217,8 +202,6 @@ jsonObj.S("foo").Index(2).SetIndex(2, 1)
 jsonObj.S("foo").Index(2).SetIndex(3, 2)
 
 fmt.Println(jsonObj.String())
-
-...
 ```
 
 Will print:
@@ -232,8 +215,6 @@ Will print:
 This is the easiest part:
 
 ``` go
-...
-
 jsonParsedObj, _ := gabs.ParseJSON([]byte(`{
 	"outter":{
 		"values":{
@@ -246,15 +227,11 @@ jsonParsedObj, _ := gabs.ParseJSON([]byte(`{
 
 jsonOutput := jsonParsedObj.String()
 // Becomes `{"outter":{"values":{"first":10,"second":11}},"outter2":"hello world"}`
-
-...
 ```
 
 And to serialize a specific segment is as simple as:
 
 ``` go
-...
-
 jsonParsedObj := gabs.ParseJSON([]byte(`{
 	"outter":{
 		"values":{
@@ -267,8 +244,6 @@ jsonParsedObj := gabs.ParseJSON([]byte(`{
 
 jsonOutput := jsonParsedObj.Search("outter").String()
 // Becomes `{"values":{"first":10,"second":11}}`
-
-...
 ```
 
 ### Merge two containers

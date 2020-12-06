@@ -14,6 +14,7 @@ type CreateUserRequest struct {
 	Email        string            `json:"email"`
 	Password     string            `json:"password"`
 	Username     string            `json:"username"`
+	Roles        []string          `json:"roles,omitempty"`
 	CustomFields map[string]string `json:"customFields,omitempty"`
 }
 

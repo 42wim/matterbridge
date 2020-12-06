@@ -66,6 +66,9 @@ type Attachment struct {
 	AudioURL string `json:"audio_url,omitempty"`
 	VideoURL string `json:"video_url,omitempty"`
 
+	Actions                []AttachmentAction               `json:"actions,omitempty"`
+	ActionButtonsAlignment AttachmentActionButtonsAlignment `json:"button_alignment,omitempty"`
+
 	Fields []AttachmentField `json:"fields,omitempty"`
 }
 
@@ -77,3 +80,37 @@ type AttachmentField struct {
 	Title string `json:"title"`
 	Value string `json:"value"`
 }
+
+type AttachmentActionType string
+
+const (
+	AttachmentActionTypeButton AttachmentActionType = "button"
+)
+
+// AttachmentAction are action buttons on message attachments
+type AttachmentAction struct {
+	Type               AttachmentActionType  `json:"type"`
+	Text               string                `json:"text"`
+	Url                string                `json:"url"`
+	ImageURL           string                `json:"image_url"`
+	IsWebView          bool                  `json:"is_webview"`
+	WebviewHeightRatio string                `json:"webview_height_ratio"`
+	Msg                string                `json:"msg"`
+	MsgInChatWindow    bool                  `json:"msg_in_chat_window"`
+	MsgProcessingType  MessageProcessingType `json:"msg_processing_type"`
+}
+
+// AttachmentActionButtonAlignment configures how the actions buttons will be aligned
+type AttachmentActionButtonsAlignment string
+
+const (
+	ActionButtonAlignVertical   AttachmentActionButtonsAlignment = "vertical"
+	ActionButtonAlignHorizontal AttachmentActionButtonsAlignment = "horizontal"
+)
+
+type MessageProcessingType string
+
+const (
+	ProcessingTypeSendMessage        MessageProcessingType = "sendMessage"
+	ProcessingTypeRespondWithMessage MessageProcessingType = "respondWithMessage"
+)
