@@ -250,49 +250,14 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	// Use webhook to send the message
 	useWebhooks := b.shouldMessageUseWebhooks(&msg)
 	if useWebhooks && msg.Event != config.EventMsgDelete {
-		// skip events
-		if msg.Event != "" && msg.Event != config.EventUserAction && msg.Event != config.EventJoinLeave && msg.Event != config.EventTopicChange {
-			return "", nil
-		}
-
-		// skip empty messages
-		if msg.Text == "" && (msg.Extra == nil || len(msg.Extra["file"]) == 0) {
-			b.Log.Debugf("Skipping empty message %#v", msg)
-			return "", nil
-		}
-
-		msg.Text = helper.ClipMessage(msg.Text, MessageLength)
-		msg.Text = b.replaceUserMentions(msg.Text)
-		// discord username must be [0..32] max
-		if len(msg.Username) > 32 {
-			msg.Username = msg.Username[0:32]
-		}
-
-		if msg.ID != "" {
-			b.Log.Debugf("Editing webhook message")
-			err := b.transmitter.Edit(channelID, msg.ID, &discordgo.WebhookParams{
-				Content:  msg.Text,
-				Username: msg.Username,
-			})
-			if err == nil {
-				return msg.ID, nil
-			}
-			b.Log.Errorf("Could not edit webhook message: %s", err)
-		}
-
-		b.Log.Debugf("Processing webhook sending for message %#v", msg)
-		msg, err := b.webhookSend(&msg, channelID)
-		if err != nil {
-			b.Log.Errorf("Could not broadcast via webook for message %#v: %s", msg, err)
-			return "", err
-		}
-		if msg == nil {
-			return "", nil
-		}
-
-		return msg.ID, nil
+		return b.handleEventWebhook(&msg, channelID)
 	}
 
+	return b.handleEventBotUser(&msg, channelID)
+}
+
+// handleEventDirect handles events via the bot user
+func (b *Bdiscord) handleEventBotUser(msg *config.Message, channelID string) (string, error) {
 	b.Log.Debugf("Broadcasting using token (API)")
 
 	// Delete message
@@ -306,7 +271,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 
 	// Upload a file if it exists
 	if msg.Extra != nil {
-		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
+		for _, rmsg := range helper.HandleExtra(msg, b.General) {
 			rmsg.Text = helper.ClipMessage(rmsg.Text, MessageLength)
 			if _, err := b.c.ChannelMessageSend(channelID, rmsg.Username+rmsg.Text); err != nil {
 				b.Log.Errorf("Could not send message %#v: %s", rmsg, err)
@@ -314,7 +279,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 		}
 		// check if we have files to upload (from slack, telegram or mattermost)
 		if len(msg.Extra["file"]) > 0 {
-			return b.handleUploadFile(&msg, channelID)
+			return b.handleUploadFile(msg, channelID)
 		}
 	}
 
