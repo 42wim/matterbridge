@@ -183,7 +183,7 @@ func ClipMessage(text string, length int) string {
 
 // ParseMarkdown takes in an input string as markdown and parses it to html
 func ParseMarkdown(input string) string {
-	extensions := parser.HardLineBreak | parser.NoIntraEmphasis
+	extensions := parser.HardLineBreak | parser.NoIntraEmphasis | parser.FencedCode
 	markdownParser := parser.NewWithExtensions(extensions)
 	renderer := html.NewRenderer(html.RendererOptions{
 		Flags: 0,
