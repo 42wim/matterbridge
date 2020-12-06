@@ -497,6 +497,8 @@ github.com/matrix-org/gomatrix v0.0.0-20200827122206-7dd5e2a05bcd h1:xVrqJK3xHRE
 github.com/matrix-org/gomatrix v0.0.0-20200827122206-7dd5e2a05bcd/go.mod h1:/gBX06Kw0exX1HrwmoBibFA98yBk/jxKpGVeyQbff+s=
 github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20200411204219-d5c18ce75048 h1:B9HaistmV+MD8/33BXmZe1zPIn+RImAFVXNNSOrwU2E=
 github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20200411204219-d5c18ce75048/go.mod h1:c6MxwqHD+0HvtAJjsHMIdPCiAwGiQwPRPTp69ACMg8A=
+github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20201206161339-a8e64af17cde h1:7txV2EiAMLRUWabaSkLNd11TGclMHSOUGYSRMuE+sOI=
+github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20201206161339-a8e64af17cde/go.mod h1:c6MxwqHD+0HvtAJjsHMIdPCiAwGiQwPRPTp69ACMg8A=
 github.com/matterbridge/discordgo v0.22.1 h1:Wh2NXfvF4egJDxX7jEvtgxJgT/ZOqD/5tfcIsNnHJ9o=
 github.com/matterbridge/discordgo v0.22.1/go.mod h1:411nZYv0UMMrtppR5glXop1foboJiFAowy+42U+Ahvw=
 github.com/matterbridge/emoji v2.1.1-0.20191117213217-af507f6b02db+incompatible h1:oaOqwbg5HxHRxvAbd84ks0Okwoc1ISyUZ87EiVJFhGI=

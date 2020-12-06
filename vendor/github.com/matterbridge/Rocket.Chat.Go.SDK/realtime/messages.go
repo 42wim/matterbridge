@@ -41,6 +41,10 @@ func (c *Client) SendMessage(m *models.Message) (*models.Message, error) {
 		return nil, err
 	}
 
+	if rawResponse == nil {
+		return nil, fmt.Errorf("rawResponse is %#v", rawResponse)
+	}
+
 	return getMessageFromData(rawResponse.(map[string]interface{})), nil
 }
 
@@ -95,7 +99,6 @@ func (c *Client) StarMessage(message *models.Message) error {
 		"rid":     message.RoomID,
 		"starred": true,
 	})
-
 	if err != nil {
 		return err
 	}
@@ -113,7 +116,6 @@ func (c *Client) UnStarMessage(message *models.Message) error {
 		"rid":     message.RoomID,
 		"starred": false,
 	})
-
 	if err != nil {
 		return err
 	}
@@ -127,7 +129,6 @@ func (c *Client) UnStarMessage(message *models.Message) error {
 // https://rocket.chat/docs/developer-guides/realtime-api/method-calls/pin-message
 func (c *Client) PinMessage(message *models.Message) error {
 	_, err := c.ddp.Call("pinMessage", message)
-
 	if err != nil {
 		return err
 	}
@@ -141,7 +142,6 @@ func (c *Client) PinMessage(message *models.Message) error {
 // https://rocket.chat/docs/developer-guides/realtime-api/method-calls/unpin-messages
 func (c *Client) UnPinMessage(message *models.Message) error {
 	_, err := c.ddp.Call("unpinMessage", message)
-
 	if err != nil {
 		return err
 	}
@@ -154,12 +154,11 @@ func (c *Client) UnPinMessage(message *models.Message) error {
 //
 // https://rocket.chat/docs/developer-guides/realtime-api/subscriptions/stream-room-messages/
 func (c *Client) SubscribeToMessageStream(channel *models.Channel, msgChannel chan models.Message) error {
-
 	if err := c.ddp.Sub("stream-room-messages", channel.ID, send_added_event); err != nil {
 		return err
 	}
 
-	//msgChannel := make(chan models.Message, default_buffer_size)
+	// msgChannel := make(chan models.Message, default_buffer_size)
 	c.ddp.CollectionByName("stream-room-messages").AddUpdateListener(messageExtractor{msgChannel, "update"})
 
 	return nil
@@ -168,7 +167,6 @@ func (c *Client) SubscribeToMessageStream(channel *models.Channel, msgChannel ch
 func getMessagesFromUpdateEvent(update ddp.Update) []models.Message {
 	document, _ := gabs.Consume(update["args"])
 	args, err := document.Children()
-
 	if err != nil {
 		//	log.Printf("Event arguments are in an unexpected format: %v", err)
 		return make([]models.Message, 0)
@@ -206,7 +204,7 @@ func getMessageFromDocument(arg *gabs.Container) *models.Message {
 				TitleLinkDownload: stringOrZero(attachment.Path("title_link_download").Data()),
 				ImageURL:          stringOrZero(attachment.Path("image_url").Data()),
 
-				AuthorName:        stringOrZero(arg.Path("u.name").Data()),
+				AuthorName: stringOrZero(arg.Path("u.name").Data()),
 			}
 		}
 	}

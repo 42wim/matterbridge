@@ -125,7 +125,7 @@ github.com/magiconair/properties
 # github.com/matrix-org/gomatrix v0.0.0-20200827122206-7dd5e2a05bcd
 ## explicit
 github.com/matrix-org/gomatrix
-# github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20200411204219-d5c18ce75048
+# github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20201206161339-a8e64af17cde
 ## explicit
 github.com/matterbridge/Rocket.Chat.Go.SDK/models
 github.com/matterbridge/Rocket.Chat.Go.SDK/realtime
