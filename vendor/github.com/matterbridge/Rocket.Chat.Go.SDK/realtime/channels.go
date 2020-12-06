@@ -72,6 +72,7 @@ func (c *Client) GetChannelSubscriptions() ([]models.ChannelSubscription, error)
 			DisplayName: stringOrZero(sub.Path("fname").Data()),
 			Open:        sub.Path("open").Data().(bool),
 			Type:        stringOrZero(sub.Path("t").Data()),
+			RoomId:      stringOrZero(sub.Path("rid").Data()),
 			User: models.User{
 				ID:       stringOrZero(sub.Path("u._id").Data()),
 				UserName: stringOrZero(sub.Path("u.username").Data()),

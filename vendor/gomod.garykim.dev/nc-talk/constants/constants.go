@@ -21,5 +21,5 @@ const (
 
 // RemoteDavEndpoint returns the endpoint for the Dav API for Nextcloud
 func RemoteDavEndpoint(username string, davType string) string {
-	return "/remote.php/dav/" + davType + "/" + username + "/"
+	return "/remote.php/dav/" + username + "/" + davType + "/"
 }

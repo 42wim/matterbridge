@@ -56,9 +56,17 @@ func (c *Client) LeaveChannel(channel *models.Channel) error {
 // https://rocket.chat/docs/developer-guides/rest-api/channels/info
 func (c *Client) GetChannelInfo(channel *models.Channel) (*models.Channel, error) {
 	response := new(ChannelResponse)
-	if err := c.Get("channels.info", url.Values{"roomId": []string{channel.ID}}, response); err != nil {
-		return nil, err
+	switch {
+	case channel.Name != "" && channel.ID == "":
+		if err := c.Get("channels.info", url.Values{"roomName": []string{channel.Name}}, response); err != nil {
+			return nil, err
+		}
+	default:
+		if err := c.Get("channels.info", url.Values{"roomId": []string{channel.ID}}, response); err != nil {
+			return nil, err
+		}
 	}
 
 	return &response.Channel, nil
 }
+
