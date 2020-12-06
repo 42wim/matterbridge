@@ -21,7 +21,7 @@ require (
 	github.com/labstack/echo/v4 v4.1.17
 	github.com/lrstanley/girc v0.0.0-20190801035559-4fc93959e1a7
 	github.com/matrix-org/gomatrix v0.0.0-20200827122206-7dd5e2a05bcd
-	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20200411204219-d5c18ce75048
+	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20201206161339-a8e64af17cde
 	github.com/matterbridge/discordgo v0.22.1
 	github.com/matterbridge/emoji v2.1.1-0.20191117213217-af507f6b02db+incompatible
 	github.com/matterbridge/go-xmpp v0.0.0-20200418225040-c8a3a57b4050

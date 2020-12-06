@@ -92,5 +92,5 @@ func (c *Client) Close() {
 
 // Some of the rocketchat objects need unique IDs specified by the client
 func (c *Client) newRandomId() string {
-	return fmt.Sprintf("%f", rand.Float64())
+	return fmt.Sprintf("%x%x", rand.Uint64(), time.Now().UTC().UnixNano())
 }
