@@ -399,6 +399,11 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 
 		b.Log.Debugf("<= Sending message from %s on %s to gateway", ev.Sender, b.Account)
 		b.Remote <- rmsg
+
+		// not crucial, so no ratelimit check here
+		if err := b.mc.MarkRead(ev.RoomID, ev.ID); err != nil {
+			b.Log.Errorf("couldn't mark message as read %s", err.Error())
+		}
 	}
 }
 
