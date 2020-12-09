@@ -39,12 +39,12 @@ type Client struct {
 	ContentType ContentType
 	Cookies     []*http.Cookie
 	TLSConfig   *tls.Config
+	Transport   *http.Transport
 
 	// private
 	client     *http.Client
 	requestURL requestURL
 	req        *http.Request
-	transport  *http.Transport
 }
 
 // BasicAuth Add Username:Password as Basic Auth

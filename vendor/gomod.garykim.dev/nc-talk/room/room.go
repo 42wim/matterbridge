@@ -33,10 +33,14 @@ var (
 	ErrEmptyToken = errors.New("given an empty token")
 	// ErrRoomNotFound is returned when a room with the given token could not be found
 	ErrRoomNotFound = errors.New("room could not be found")
+	// ErrUnauthorized is returned when the room could not be accessed due to being unauthorized
+	ErrUnauthorized = errors.New("unauthorized error when accessing room")
 	// ErrNotModeratorInLobby is returned when the room is in lobby mode but the user is not a moderator
 	ErrNotModeratorInLobby = errors.New("room is in lobby mode but user is not a moderator")
 	// ErrUnexpectedReturnCode is returned when the server did not respond with an expected return code
 	ErrUnexpectedReturnCode = errors.New("unexpected return code")
+	// ErrTooManyRequests is returned if the server returns a 429
+	ErrTooManyRequests = errors.New("too many requests")
 )
 
 // TalkRoom represents a room in Nextcloud Talk
@@ -62,7 +66,7 @@ func NewTalkRoom(tuser *user.TalkUser, token string) (*TalkRoom, error) {
 
 // SendMessage sends a message in the Talk room
 func (t *TalkRoom) SendMessage(msg string) (*ocs.TalkRoomMessageData, error) {
-	url := t.User.NextcloudURL + constants.BaseEndpoint + "/chat/" + t.Token
+	url := t.User.NextcloudURL + constants.BaseEndpoint + "chat/" + t.Token
 	requestParams := map[string]string{
 		"message": msg,
 	}
@@ -93,7 +97,7 @@ func (t *TalkRoom) ReceiveMessages(ctx context.Context) (chan ocs.TalkRoomMessag
 	if err != nil {
 		return nil, err
 	}
-	url := t.User.NextcloudURL + constants.BaseEndpoint + "/chat/" + t.Token
+	url := t.User.NextcloudURL + constants.BaseEndpoint + "chat/" + t.Token
 	requestParam := map[string]string{
 		"lookIntoFuture":   "1",
 		"includeLastKnown": "0",
@@ -127,6 +131,24 @@ func (t *TalkRoom) ReceiveMessages(ctx context.Context) (chan ocs.TalkRoomMessag
 			if err != nil {
 				continue
 			}
+
+			// If it seems that we no longer have access to the chat for one reason or another, stop the goroutine and set error in the next return.
+			if res.StatusCode == 404 {
+				_ = res.Body.Close()
+				c <- ocs.TalkRoomMessageData{Error: ErrRoomNotFound}
+				return
+			}
+			if res.StatusCode == 401 {
+				_ = res.Body.Close()
+				c <- ocs.TalkRoomMessageData{Error: ErrUnauthorized}
+				return
+			}
+			if res.StatusCode == 429 {
+				_ = res.Body.Close()
+				c <- ocs.TalkRoomMessageData{Error: ErrTooManyRequests}
+				return
+			}
+
 			if res.StatusCode == 200 {
 				lastKnown = res.Header.Get("X-Chat-Last-Given")
 				data, err := ioutil.ReadAll(res.Body)
@@ -154,7 +176,7 @@ func (t *TalkRoom) TestConnection() error {
 	if t.Token == "" {
 		return ErrEmptyToken
 	}
-	url := t.User.NextcloudURL + constants.BaseEndpoint + "/chat/" + t.Token
+	url := t.User.NextcloudURL + constants.BaseEndpoint + "chat/" + t.Token
 	requestParam := map[string]string{
 		"lookIntoFuture":   "0",
 		"includeLastKnown": "0",

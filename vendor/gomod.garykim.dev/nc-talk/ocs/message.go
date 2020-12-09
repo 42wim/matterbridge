@@ -43,7 +43,10 @@ const (
 )
 
 // TalkRoomMessageData describes the data part of a ocs response for a Talk room message
+//
+// Error will be set if a message request ran into an error.
 type TalkRoomMessageData struct {
+	Error             error                       `json:"-"`
 	Message           string                      `json:"message"`
 	ID                int                         `json:"id"`
 	ActorType         ActorType                   `json:"actorType"`

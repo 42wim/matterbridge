@@ -180,7 +180,7 @@ github.com/mgutz/ansi
 github.com/missdeer/golib/ic
 # github.com/mitchellh/mapstructure v1.3.3
 github.com/mitchellh/mapstructure
-# github.com/monaco-io/request v1.0.4
+# github.com/monaco-io/request v1.0.5
 github.com/monaco-io/request
 # github.com/mreiferson/go-httpclient v0.0.0-20160630210159-31f0106b4474
 ## explicit
@@ -362,7 +362,7 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# gomod.garykim.dev/nc-talk v0.1.6
+# gomod.garykim.dev/nc-talk v0.1.7
 ## explicit
 gomod.garykim.dev/nc-talk/constants
 gomod.garykim.dev/nc-talk/ocs
