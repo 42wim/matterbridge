@@ -846,10 +846,11 @@ UseUserName=false
 # UseDiscriminator appends the `#xxxx` discriminator when used with UseUserName
 UseDiscriminator=false
 
-# WebhookURL sends messages in the style of puppets.
-# This only works if you have one discord channel, if you have multiple discord channels you'll have to specify it in the gateway config
-# Example: "https://discordapp.com/api/webhooks/1234/abcd_xyzw"
-WebhookURL=""
+# AutoWebhooks automatically configures message sending in the style of puppets.
+# This is an easier alternative to manually configuring "WebhookURL" for each gateway,
+# as turning this on will automatically load or create webhooks for each channel.
+# This feature requires the "Manage Webhooks" permission (either globally or as per-channel).
+AutoWebhooks=false
 
 # EditDisable disables sending of edits to other bridges
 EditDisable=false
@@ -1435,7 +1436,7 @@ Server = "mumble.yourdomain.me:64738"
 # Nickname to log in as
 Nick = "matterbridge"
 
-# Some servers require a password 
+# Some servers require a password
 # OPTIONAL (default empty)
 Password = "serverpasswordhere"
 
@@ -1863,13 +1864,16 @@ enable=true
         #OPTIONAL - your irc / xmpp channel key
         key="yourkey"
 
+    # Discord specific gateway options
     [[gateway.inout]]
     account="discord.game"
     channel="mygreatgame"
 
-        #OPTIONAL - webhookurl only works for discord (it needs a different URL for each cahnnel)
         [gateway.inout.options]
-        webhookurl="https://discordapp.com/api/webhooks/123456789123456789/C9WPqExYWONPDZabcdef-def1434FGFjstasJX9pYht73y"
+        # WebhookURL sends messages in the style of "puppets". You must configure a webhook URL for each channel you want to bridge.
+        # If you have more than one channel and don't wnat to configure each channel manually, see the "AutoWebhooks" option in the gateway config.
+        # Example: "https://discord.com/api/webhooks/1234/abcd_xyzw"
+        WebhookURL=""
 
     [[gateway.inout]]
     account="zulip.streamchat"
