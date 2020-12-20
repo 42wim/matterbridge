@@ -343,6 +343,11 @@ func (b *Birc) skipPrivMsg(event girc.Event) bool {
 		return true
 	}
 	// don't forward messages we sent via RELAYMSG
+	if relayedNick, ok := event.Tags.Get("draft/relaymsg"); ok && relayedNick == b.Nick {
+		return true
+	}
+	// This is the old name of the cap sent in spoofed messages; I've kept this in
+	// for compatibility reasons
 	if relayedNick, ok := event.Tags.Get("relaymsg"); ok && relayedNick == b.Nick {
 		return true
 	}
