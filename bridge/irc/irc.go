@@ -205,27 +205,57 @@ func (b *Birc) doConnect() {
 	}
 }
 
+// Sanitize nicks for RELAYMSG: replace IRC characters with special meanings with "-"
+func sanitizeNick(nick string) string {
+	sanitize := func(r rune) rune {
+		if strings.ContainsRune("!+%@&#$:'\"?*,. ", r) {
+			return '-';
+		}
+		return r
+	}
+	return strings.Map(sanitize, nick)
+}
+
 func (b *Birc) doSend() {
 	rate := time.Millisecond * time.Duration(b.MessageDelay)
 	throttle := time.NewTicker(rate)
 	for msg := range b.Local {
 		<-throttle.C
 		username := msg.Username
-		if b.GetBool("Colornicks") && len(username) > 1 {
-			checksum := crc32.ChecksumIEEE([]byte(msg.Username))
-			colorCode := checksum%14 + 2 // quick fix - prevent white or black color codes
-			username = fmt.Sprintf("\x03%02d%s\x0F", colorCode, msg.Username)
-		}
+		// Optional support for the proposed RELAYMSG extension, described at
+		// https://github.com/jlu5/ircv3-specifications/blob/master/extensions/relaymsg.md
+		if (b.i.HasCapability("overdrivenetworks.com/relaymsg") || b.i.HasCapability("draft/relaymsg")) &&
+				b.GetBool("UseRelayMsg") {
+			username = sanitizeNick(username)
+			text := msg.Text
 
-		switch msg.Event {
-		case config.EventUserAction:
-			b.i.Cmd.Action(msg.Channel, username+msg.Text)
-		case config.EventNoticeIRC:
-			b.Log.Debugf("Sending notice to channel %s", msg.Channel)
-			b.i.Cmd.Notice(msg.Channel, username+msg.Text)
-		default:
-			b.Log.Debugf("Sending to channel %s", msg.Channel)
-			b.i.Cmd.Message(msg.Channel, username+msg.Text)
+			// Work around girc chomping leading commas on single word messages?
+			if strings.HasPrefix(text, ":") && !strings.ContainsRune(text, ' ') {
+				text = ":" + text
+			}
+
+			if msg.Event == config.EventUserAction {
+				b.i.Cmd.SendRawf("RELAYMSG %s %s :\x01ACTION %s\x01", msg.Channel, username, text)
+			} else {
+				b.Log.Debugf("Sending RELAYMSG to channel %s: nick=%s", msg.Channel, username)
+				b.i.Cmd.SendRawf("RELAYMSG %s %s :%s", msg.Channel, username, text)
+			}
+		} else {
+			if b.GetBool("Colornicks") {
+				checksum := crc32.ChecksumIEEE([]byte(msg.Username))
+				colorCode := checksum%14 + 2 // quick fix - prevent white or black color codes
+				username = fmt.Sprintf("\x03%02d%s\x0F", colorCode, msg.Username)
+			}
+			switch msg.Event {
+			case config.EventUserAction:
+				b.i.Cmd.Action(msg.Channel, username+msg.Text)
+			case config.EventNoticeIRC:
+				b.Log.Debugf("Sending notice to channel %s", msg.Channel)
+				b.i.Cmd.Notice(msg.Channel, username+msg.Text)
+			default:
+				b.Log.Debugf("Sending to channel %s", msg.Channel)
+				b.i.Cmd.Message(msg.Channel, username+msg.Text)
+			}
 		}
 	}
 }
@@ -263,18 +293,19 @@ func (b *Birc) getClient() (*girc.Client, error) {
 	b.Log.Debugf("setting pingdelay to %s", pingDelay)
 
 	i := girc.New(girc.Config{
-		Server:     server,
-		ServerPass: b.GetString("Password"),
-		Port:       port,
-		Nick:       b.GetString("Nick"),
-		User:       user,
-		Name:       b.GetString("Nick"),
-		SSL:        b.GetBool("UseTLS"),
-		TLSConfig:  &tls.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"), ServerName: server}, //nolint:gosec
-		PingDelay:  pingDelay,
+		Server:        server,
+		ServerPass:    b.GetString("Password"),
+		Port:          port,
+		Nick:          b.GetString("Nick"),
+		User:          user,
+		Name:          b.GetString("Nick"),
+		SSL:           b.GetBool("UseTLS"),
+		TLSConfig:     &tls.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"), ServerName: server}, //nolint:gosec
+		PingDelay:     pingDelay,
 		// skip gIRC internal rate limiting, since we have our own throttling
-		AllowFlood: true,
-		Debug:      debug,
+		AllowFlood:    true,
+		Debug:         debug,
+		SupportedCaps: map[string][]string{ "overdrivenetworks.com/relaymsg": nil, "draft/relaymsg": nil },
 	})
 	return i, nil
 }
@@ -309,6 +340,10 @@ func (b *Birc) skipPrivMsg(event girc.Event) bool {
 	}
 	// don't forward message from ourself
 	if event.Source.Name == b.Nick {
+		return true
+	}
+	// don't forward messages we sent via RELAYMSG
+	if relayedNick, ok := event.Tags.Get("relaymsg"); ok && relayedNick == b.Nick {
 		return true
 	}
 	return false
