@@ -104,6 +104,8 @@ func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 			rmsg.Username += "#" + m.Author.Discriminator
 		}
 	}
+	rmsg.Extra = make(map[string][]interface{})
+	rmsg.Extra["workaround"] = []interface{}{rmsg.Username}
 
 	// if we have embedded content add it to text
 	if b.GetBool("ShowEmbeds") && m.Message.Embeds != nil {

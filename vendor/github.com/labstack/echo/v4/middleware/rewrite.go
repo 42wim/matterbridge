@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"regexp"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -23,7 +22,12 @@ type (
 		// Required.
 		Rules map[string]string `yaml:"rules"`
 
-		rulesRegex map[*regexp.Regexp]string
+		// RegexRules defines the URL path rewrite rules using regexp.Rexexp with captures
+		// Every capture group in the values can be retrieved by index e.g. $1, $2 and so on.
+		// Example:
+		// "^/old/[0.9]+/":     "/new",
+		// "^/api/.+?/(.*)":     "/v2/$1",
+		RegexRules map[*regexp.Regexp]string `yaml:"regex_rules"`
 	}
 )
 
@@ -47,20 +51,19 @@ func Rewrite(rules map[string]string) echo.MiddlewareFunc {
 // See: `Rewrite()`.
 func RewriteWithConfig(config RewriteConfig) echo.MiddlewareFunc {
 	// Defaults
-	if config.Rules == nil {
-		panic("echo: rewrite middleware requires url path rewrite rules")
+	if config.Rules == nil && config.RegexRules == nil {
+		panic("echo: rewrite middleware requires url path rewrite rules or regex rules")
 	}
+
 	if config.Skipper == nil {
 		config.Skipper = DefaultBodyDumpConfig.Skipper
 	}
-	config.rulesRegex = map[*regexp.Regexp]string{}
 
-	// Initialize
-	for k, v := range config.Rules {
-		k = regexp.QuoteMeta(k)
-		k = strings.Replace(k, `\*`, "(.*)", -1)
-		k = k + "$"
-		config.rulesRegex[regexp.MustCompile(k)] = v
+	if config.RegexRules == nil {
+		config.RegexRules = make(map[*regexp.Regexp]string)
+	}
+	for k, v := range rewriteRulesRegex(config.Rules) {
+		config.RegexRules[k] = v
 	}
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
@@ -70,15 +73,8 @@ func RewriteWithConfig(config RewriteConfig) echo.MiddlewareFunc {
 			}
 
 			req := c.Request()
-
-			// Rewrite
-			for k, v := range config.rulesRegex {
-				replacer := captureTokens(k, req.URL.Path)
-				if replacer != nil {
-					req.URL.Path = replacer.Replace(v)
-					break
-				}
-			}
+			// Set rewrite path and raw path
+			rewritePath(config.RegexRules, req)
 			return next(c)
 		}
 	}
