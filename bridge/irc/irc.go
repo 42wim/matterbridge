@@ -209,7 +209,7 @@ func (b *Birc) doConnect() {
 func sanitizeNick(nick string) string {
 	sanitize := func(r rune) rune {
 		if strings.ContainsRune("!+%@&#$:'\"?*,. ", r) {
-			return '-';
+			return '-'
 		}
 		return r
 	}
@@ -226,7 +226,7 @@ func (b *Birc) doSend() {
 		// https://github.com/jlu5/ircv3-specifications/blob/master/extensions/relaymsg.md
 		// nolint:nestif
 		if (b.i.HasCapability("overdrivenetworks.com/relaymsg") || b.i.HasCapability("draft/relaymsg")) &&
-				b.GetBool("UseRelayMsg") {
+			b.GetBool("UseRelayMsg") {
 			username = sanitizeNick(username)
 			text := msg.Text
 
@@ -294,19 +294,19 @@ func (b *Birc) getClient() (*girc.Client, error) {
 	b.Log.Debugf("setting pingdelay to %s", pingDelay)
 
 	i := girc.New(girc.Config{
-		Server:        server,
-		ServerPass:    b.GetString("Password"),
-		Port:          port,
-		Nick:          b.GetString("Nick"),
-		User:          user,
-		Name:          b.GetString("Nick"),
-		SSL:           b.GetBool("UseTLS"),
-		TLSConfig:     &tls.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"), ServerName: server}, //nolint:gosec
-		PingDelay:     pingDelay,
+		Server:     server,
+		ServerPass: b.GetString("Password"),
+		Port:       port,
+		Nick:       b.GetString("Nick"),
+		User:       user,
+		Name:       b.GetString("Nick"),
+		SSL:        b.GetBool("UseTLS"),
+		TLSConfig:  &tls.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"), ServerName: server}, //nolint:gosec
+		PingDelay:  pingDelay,
 		// skip gIRC internal rate limiting, since we have our own throttling
 		AllowFlood:    true,
 		Debug:         debug,
-		SupportedCaps: map[string][]string{ "overdrivenetworks.com/relaymsg": nil, "draft/relaymsg": nil },
+		SupportedCaps: map[string][]string{"overdrivenetworks.com/relaymsg": nil, "draft/relaymsg": nil},
 	})
 	return i, nil
 }
