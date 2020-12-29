@@ -224,6 +224,7 @@ func (b *Birc) doSend() {
 		username := msg.Username
 		// Optional support for the proposed RELAYMSG extension, described at
 		// https://github.com/jlu5/ircv3-specifications/blob/master/extensions/relaymsg.md
+		// nolint:nestif
 		if (b.i.HasCapability("overdrivenetworks.com/relaymsg") || b.i.HasCapability("draft/relaymsg")) &&
 				b.GetBool("UseRelayMsg") {
 			username = sanitizeNick(username)
@@ -235,10 +236,10 @@ func (b *Birc) doSend() {
 			}
 
 			if msg.Event == config.EventUserAction {
-				b.i.Cmd.SendRawf("RELAYMSG %s %s :\x01ACTION %s\x01", msg.Channel, username, text)
+				b.i.Cmd.SendRawf("RELAYMSG %s %s :\x01ACTION %s\x01", msg.Channel, username, text) //nolint:errcheck
 			} else {
 				b.Log.Debugf("Sending RELAYMSG to channel %s: nick=%s", msg.Channel, username)
-				b.i.Cmd.SendRawf("RELAYMSG %s %s :%s", msg.Channel, username, text)
+				b.i.Cmd.SendRawf("RELAYMSG %s %s :%s", msg.Channel, username, text) //nolint:errcheck
 			}
 		} else {
 			if b.GetBool("Colornicks") {
