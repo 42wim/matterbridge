@@ -193,6 +193,19 @@ ShowTopicChange=false
 #OPTIONAL (default 0)
 JoinDelay=0
 
+#Use the optional RELAYMSG extension for username spoofing on IRC.
+#This requires an IRCd that supports the draft/relaymsg specification: currently this includes
+#Oragono 2.4.0+ and InspIRCd 3 with the m_relaymsg contrib module.
+#See https://github.com/42wim/matterbridge/issues/667#issuecomment-634214165 for more details.
+#Spoofed nicks will use the configured RemoteNickFormat, replacing reserved IRC characters
+#(!+%@&#$:'"?*,.) with a hyphen (-).
+#On most configurations, the RemoteNickFormat must include a separator character such as "/".
+#You should make sure that the settings here match your IRCd.
+#This option overrides ColorNicks.
+#OPTIONAL (default false)
+UseRelayMsg=false
+#RemoteNickFormat="{NICK}/{PROTOCOL}"
+
 ###################################################################
 #XMPP section
 ###################################################################
