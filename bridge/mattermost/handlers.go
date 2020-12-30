@@ -108,7 +108,7 @@ func (b *Bmattermost) handleMatterClient(messages chan *config.Message) {
 			Channel:  message.Channel,
 			Text:     message.Text,
 			ID:       message.Post.Id,
-			ParentID: message.Post.ParentId,
+			ParentID: message.Post.RootId, // ParentID is obsolete with mattermost
 			Extra:    make(map[string][]interface{}),
 		}
 

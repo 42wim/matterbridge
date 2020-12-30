@@ -127,6 +127,11 @@ func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	// Replace emotes
 	rmsg.Text = replaceEmotes(rmsg.Text)
 
+	// Add our parent id if it exists
+	if m.MessageReference != nil {
+		rmsg.ParentID = m.MessageReference.MessageID
+	}
+
 	b.Log.Debugf("<= Sending message from %s on %s to gateway", m.Author.Username, b.Account)
 	b.Log.Debugf("<= Message is %#v", rmsg)
 	b.Remote <- rmsg
