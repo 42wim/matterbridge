@@ -1,3 +1,49 @@
+# v1.21.0
+
+## Breaking Changes
+
+- discord: Remove WebhookURL support (discord) (#1323)
+
+`WebhookURL` global setting for discord is removed and will quit matterbridge.
+New `AutoWebhooks=true` setting, which will automatically use (and create, if they do not exist) webhooks inside specific channels. This only works if the bot has Manage Webhooks permission in bridged channels (global permission or as a channel permission override). Backwards compatibility with channel-specific webhooks. More info [here](https://github.com/42wim/matterbridge/blob/master/matterbridge.toml.sample#L862). 
+
+## New features
+
+- discord: Create webhooks automatically (#1323)
+- discord: Add threading support with token (discord) (#1342)
+- irc: Join on invite (irc). Fixes #1231 (#1306)
+- irc: Add support for stateless bridging via draft/relaymsg (irc) (#1339)
+- whatsapp: Add support for deleting messages (whatsapp) (#1316)
+- whatsapp: Handle video downloads (whatsapp) (#1316)
+- whatsapp: Handle audio downloads (whatsapp) (#1316)
+
+## Enhancements
+
+- general: Parse fencedcode in ParseMarkdown. Fixes #1127 (#1329)
+- discord: Refactor guild finding code (discord) (#1319)
+- discord: Add a prefix handler for unthreaded messages (discord) (#1346)
+- irc: Add support for irc to irc notice (irc). Fixes #754 (#1305)
+- irc: Make handlers run async (irc) (#1325)
+- matrix: Show mxids in case of clashing usernames (matrix) (#1309)
+- matrix: Implement ratelimiting (matrix). Fixes #1238 (#1326)
+- matrix: Mark messages as read (matrix). Fixes #1317 (#1328)
+- nctalk: Update go-nc-talk (nctalk) (#1333)
+- rocketchat: Update rocketchat vendor (#1327)
+- tengo: Add UserID to RemoteNickFormat and Tengo (#1308)
+- whatsapp: Retry until we have contacts (whatsapp). Fixes #1122 (#1304)
+- whatsapp: Refactor/cleanup code (whatsapp)
+- whatsapp: Refactor handleTextMessage (whatsapp)
+- whatsapp: Refactor image downloads (whatsapp)
+- whatsapp: Rename jfif to jpg (whatsapp). Fixes #1292
+
+## Bugfix
+
+- discord: Reject cross-channel message references (discord) (#1345)
+- mumble: Add nil checks to text message handling (mumble) (#1321)
+
+This release couldn't exist without the following contributors:
+@nightmared, @qaisjp, @jlu5, @wschwab, @gary-kim, @s3lph, @JeremyRand
+
 # v1.20.0
 
 ## Breaking

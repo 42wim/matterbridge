@@ -165,8 +165,6 @@ github.com/mattermost/mattermost-server/v5/model
 github.com/mattermost/mattermost-server/v5/services/timezones
 github.com/mattermost/mattermost-server/v5/utils/jsonutils
 github.com/mattermost/mattermost-server/v5/utils/markdown
-# github.com/mattermost/viper v1.0.4
-## explicit
 # github.com/mattn/go-colorable v0.1.8
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.12
