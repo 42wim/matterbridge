@@ -11,13 +11,14 @@ import (
 
 const (
 	// Add here the defaults in the siten
-	DEFAULT_FILES_USER    = ""
-	DEFAULT_FILES_CHANNEL = ""
-	DEFAULT_FILES_TS_FROM = 0
-	DEFAULT_FILES_TS_TO   = -1
-	DEFAULT_FILES_TYPES   = "all"
-	DEFAULT_FILES_COUNT   = 100
-	DEFAULT_FILES_PAGE    = 1
+	DEFAULT_FILES_USER        = ""
+	DEFAULT_FILES_CHANNEL     = ""
+	DEFAULT_FILES_TS_FROM     = 0
+	DEFAULT_FILES_TS_TO       = -1
+	DEFAULT_FILES_TYPES       = "all"
+	DEFAULT_FILES_COUNT       = 100
+	DEFAULT_FILES_PAGE        = 1
+	DEFAULT_FILES_SHOW_HIDDEN = false
 )
 
 // File contains all the information for a file
@@ -132,6 +133,7 @@ type GetFilesParameters struct {
 	Types         string
 	Count         int
 	Page          int
+	ShowHidden    bool
 }
 
 // ListFilesParameters contains all the parameters necessary (including the optional ones) for a ListFiles() request
@@ -163,6 +165,7 @@ func NewGetFilesParameters() GetFilesParameters {
 		Types:         DEFAULT_FILES_TYPES,
 		Count:         DEFAULT_FILES_COUNT,
 		Page:          DEFAULT_FILES_PAGE,
+		ShowHidden:    DEFAULT_FILES_SHOW_HIDDEN,
 	}
 }
 
@@ -266,6 +269,9 @@ func (api *Client) GetFilesContext(ctx context.Context, params GetFilesParameter
 	}
 	if params.Page != DEFAULT_FILES_PAGE {
 		values.Add("page", strconv.Itoa(params.Page))
+	}
+	if params.ShowHidden != DEFAULT_FILES_SHOW_HIDDEN {
+		values.Add("show_files_hidden_by_limit", strconv.FormatBool(params.ShowHidden))
 	}
 
 	response, err := api.fileRequest(ctx, "files.list", values)

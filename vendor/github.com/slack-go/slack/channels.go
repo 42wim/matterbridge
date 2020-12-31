@@ -19,6 +19,12 @@ type channelResponseFull struct {
 }
 
 // Channel contains information about the channel
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 type Channel struct {
 	GroupConversation
 	IsChannel bool   `json:"is_channel"`
@@ -38,9 +44,21 @@ func (api *Client) channelRequest(ctx context.Context, path string, values url.V
 }
 
 // GetChannelsOption option provided when getting channels.
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 type GetChannelsOption func(*ChannelPagination) error
 
 // GetChannelsOptionExcludeMembers excludes the members collection from each channel.
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func GetChannelsOptionExcludeMembers() GetChannelsOption {
 	return func(p *ChannelPagination) error {
 		p.excludeMembers = true
@@ -49,6 +67,12 @@ func GetChannelsOptionExcludeMembers() GetChannelsOption {
 }
 
 // GetChannelsOptionExcludeArchived excludes archived channels from results.
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func GetChannelsOptionExcludeArchived() GetChannelsOption {
 	return func(p *ChannelPagination) error {
 		p.excludeArchived = true
@@ -58,12 +82,24 @@ func GetChannelsOptionExcludeArchived() GetChannelsOption {
 
 // ArchiveChannel archives the given channel
 // see https://api.slack.com/methods/channels.archive
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) ArchiveChannel(channelID string) error {
 	return api.ArchiveChannelContext(context.Background(), channelID)
 }
 
 // ArchiveChannelContext archives the given channel with a custom context
 // see https://api.slack.com/methods/channels.archive
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) ArchiveChannelContext(ctx context.Context, channelID string) (err error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -76,12 +112,24 @@ func (api *Client) ArchiveChannelContext(ctx context.Context, channelID string) 
 
 // UnarchiveChannel unarchives the given channel
 // see https://api.slack.com/methods/channels.unarchive
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) UnarchiveChannel(channelID string) error {
 	return api.UnarchiveChannelContext(context.Background(), channelID)
 }
 
 // UnarchiveChannelContext unarchives the given channel with a custom context
 // see https://api.slack.com/methods/channels.unarchive
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) UnarchiveChannelContext(ctx context.Context, channelID string) (err error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -94,12 +142,24 @@ func (api *Client) UnarchiveChannelContext(ctx context.Context, channelID string
 
 // CreateChannel creates a channel with the given name and returns a *Channel
 // see https://api.slack.com/methods/channels.create
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) CreateChannel(channelName string) (*Channel, error) {
 	return api.CreateChannelContext(context.Background(), channelName)
 }
 
 // CreateChannelContext creates a channel with the given name and returns a *Channel with a custom context
 // see https://api.slack.com/methods/channels.create
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) CreateChannelContext(ctx context.Context, channelName string) (*Channel, error) {
 	values := url.Values{
 		"token": {api.token},
@@ -115,12 +175,24 @@ func (api *Client) CreateChannelContext(ctx context.Context, channelName string)
 
 // GetChannelHistory retrieves the channel history
 // see https://api.slack.com/methods/channels.history
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetChannelHistory(channelID string, params HistoryParameters) (*History, error) {
 	return api.GetChannelHistoryContext(context.Background(), channelID, params)
 }
 
 // GetChannelHistoryContext retrieves the channel history with a custom context
 // see https://api.slack.com/methods/channels.history
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetChannelHistoryContext(ctx context.Context, channelID string, params HistoryParameters) (*History, error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -160,12 +232,24 @@ func (api *Client) GetChannelHistoryContext(ctx context.Context, channelID strin
 
 // GetChannelInfo retrieves the given channel
 // see https://api.slack.com/methods/channels.info
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetChannelInfo(channelID string) (*Channel, error) {
 	return api.GetChannelInfoContext(context.Background(), channelID)
 }
 
 // GetChannelInfoContext retrieves the given channel with a custom context
 // see https://api.slack.com/methods/channels.info
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetChannelInfoContext(ctx context.Context, channelID string) (*Channel, error) {
 	values := url.Values{
 		"token":          {api.token},
@@ -182,12 +266,24 @@ func (api *Client) GetChannelInfoContext(ctx context.Context, channelID string) 
 
 // InviteUserToChannel invites a user to a given channel and returns a *Channel
 // see https://api.slack.com/methods/channels.invite
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) InviteUserToChannel(channelID, user string) (*Channel, error) {
 	return api.InviteUserToChannelContext(context.Background(), channelID, user)
 }
 
 // InviteUserToChannelContext invites a user to a given channel and returns a *Channel with a custom context
 // see https://api.slack.com/methods/channels.invite
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) InviteUserToChannelContext(ctx context.Context, channelID, user string) (*Channel, error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -204,12 +300,24 @@ func (api *Client) InviteUserToChannelContext(ctx context.Context, channelID, us
 
 // JoinChannel joins the currently authenticated user to a channel
 // see https://api.slack.com/methods/channels.join
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) JoinChannel(channelName string) (*Channel, error) {
 	return api.JoinChannelContext(context.Background(), channelName)
 }
 
 // JoinChannelContext joins the currently authenticated user to a channel with a custom context
 // see https://api.slack.com/methods/channels.join
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) JoinChannelContext(ctx context.Context, channelName string) (*Channel, error) {
 	values := url.Values{
 		"token": {api.token},
@@ -225,12 +333,24 @@ func (api *Client) JoinChannelContext(ctx context.Context, channelName string) (
 
 // LeaveChannel makes the authenticated user leave the given channel
 // see https://api.slack.com/methods/channels.leave
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) LeaveChannel(channelID string) (bool, error) {
 	return api.LeaveChannelContext(context.Background(), channelID)
 }
 
 // LeaveChannelContext makes the authenticated user leave the given channel with a custom context
 // see https://api.slack.com/methods/channels.leave
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) LeaveChannelContext(ctx context.Context, channelID string) (bool, error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -247,12 +367,24 @@ func (api *Client) LeaveChannelContext(ctx context.Context, channelID string) (b
 
 // KickUserFromChannel kicks a user from a given channel
 // see https://api.slack.com/methods/channels.kick
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) KickUserFromChannel(channelID, user string) error {
 	return api.KickUserFromChannelContext(context.Background(), channelID, user)
 }
 
 // KickUserFromChannelContext kicks a user from a given channel with a custom context
 // see https://api.slack.com/methods/channels.kick
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) KickUserFromChannelContext(ctx context.Context, channelID, user string) (err error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -278,6 +410,12 @@ func newChannelPagination(c *Client, options ...GetChannelsOption) (cp ChannelPa
 }
 
 // ChannelPagination allows for paginating over the channels
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 type ChannelPagination struct {
 	Channels        []Channel
 	limit           int
@@ -288,11 +426,23 @@ type ChannelPagination struct {
 }
 
 // Done checks if the pagination has completed
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (ChannelPagination) Done(err error) bool {
 	return err == errPaginationComplete
 }
 
 // Failure checks if pagination failed.
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (t ChannelPagination) Failure(err error) error {
 	if t.Done(err) {
 		return nil
@@ -301,6 +451,11 @@ func (t ChannelPagination) Failure(err error) error {
 	return err
 }
 
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (t ChannelPagination) Next(ctx context.Context) (_ ChannelPagination, err error) {
 	var (
 		resp *channelResponseFull
@@ -332,18 +487,36 @@ func (t ChannelPagination) Next(ctx context.Context) (_ ChannelPagination, err e
 }
 
 // GetChannelsPaginated fetches channels in a paginated fashion, see GetChannelsContext for usage.
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetChannelsPaginated(options ...GetChannelsOption) ChannelPagination {
 	return newChannelPagination(api, options...)
 }
 
 // GetChannels retrieves all the channels
 // see https://api.slack.com/methods/channels.list
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetChannels(excludeArchived bool, options ...GetChannelsOption) ([]Channel, error) {
 	return api.GetChannelsContext(context.Background(), excludeArchived, options...)
 }
 
 // GetChannelsContext retrieves all the channels with a custom context
 // see https://api.slack.com/methods/channels.list
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetChannelsContext(ctx context.Context, excludeArchived bool, options ...GetChannelsOption) (results []Channel, err error) {
 	if excludeArchived {
 		options = append(options, GetChannelsOptionExcludeArchived())
@@ -373,6 +546,12 @@ func (api *Client) GetChannelsContext(ctx context.Context, excludeArchived bool,
 // (just one per channel). This is useful for when reading scroll-back history, or following a busy live channel. A
 // timeout of 5 seconds is a good starting point. Be sure to flush these calls on shutdown/logout.
 // see https://api.slack.com/methods/channels.mark
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) SetChannelReadMark(channelID, ts string) error {
 	return api.SetChannelReadMarkContext(context.Background(), channelID, ts)
 }
@@ -380,6 +559,12 @@ func (api *Client) SetChannelReadMark(channelID, ts string) error {
 // SetChannelReadMarkContext sets the read mark of a given channel to a specific point with a custom context
 // For more details see SetChannelReadMark documentation
 // see https://api.slack.com/methods/channels.mark
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) SetChannelReadMarkContext(ctx context.Context, channelID, ts string) (err error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -393,12 +578,24 @@ func (api *Client) SetChannelReadMarkContext(ctx context.Context, channelID, ts 
 
 // RenameChannel renames a given channel
 // see https://api.slack.com/methods/channels.rename
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) RenameChannel(channelID, name string) (*Channel, error) {
 	return api.RenameChannelContext(context.Background(), channelID, name)
 }
 
 // RenameChannelContext renames a given channel with a custom context
 // see https://api.slack.com/methods/channels.rename
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) RenameChannelContext(ctx context.Context, channelID, name string) (*Channel, error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -417,12 +614,24 @@ func (api *Client) RenameChannelContext(ctx context.Context, channelID, name str
 
 // SetChannelPurpose sets the channel purpose and returns the purpose that was successfully set
 // see https://api.slack.com/methods/channels.setPurpose
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) SetChannelPurpose(channelID, purpose string) (string, error) {
 	return api.SetChannelPurposeContext(context.Background(), channelID, purpose)
 }
 
 // SetChannelPurposeContext sets the channel purpose and returns the purpose that was successfully set with a custom context
 // see https://api.slack.com/methods/channels.setPurpose
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) SetChannelPurposeContext(ctx context.Context, channelID, purpose string) (string, error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -439,12 +648,24 @@ func (api *Client) SetChannelPurposeContext(ctx context.Context, channelID, purp
 
 // SetChannelTopic sets the channel topic and returns the topic that was successfully set
 // see https://api.slack.com/methods/channels.setTopic
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) SetChannelTopic(channelID, topic string) (string, error) {
 	return api.SetChannelTopicContext(context.Background(), channelID, topic)
 }
 
 // SetChannelTopicContext sets the channel topic and returns the topic that was successfully set with a custom context
 // see https://api.slack.com/methods/channels.setTopic
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) SetChannelTopicContext(ctx context.Context, channelID, topic string) (string, error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -461,12 +682,24 @@ func (api *Client) SetChannelTopicContext(ctx context.Context, channelID, topic 
 
 // GetChannelReplies gets an entire thread (a message plus all the messages in reply to it).
 // see https://api.slack.com/methods/channels.replies
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetChannelReplies(channelID, thread_ts string) ([]Message, error) {
 	return api.GetChannelRepliesContext(context.Background(), channelID, thread_ts)
 }
 
 // GetChannelRepliesContext gets an entire thread (a message plus all the messages in reply to it) with a custom context
 // see https://api.slack.com/methods/channels.replies
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetChannelRepliesContext(ctx context.Context, channelID, thread_ts string) ([]Message, error) {
 	values := url.Values{
 		"token":     {api.token},

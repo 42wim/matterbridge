@@ -621,3 +621,25 @@ func (api *Client) GetConversationHistoryContext(ctx context.Context, params *Ge
 
 	return &response, response.Err()
 }
+
+// MarkConversation sets the read mark of a conversation to a specific point
+func (api *Client) MarkConversation(channel, ts string) (err error) {
+	return api.MarkConversationContext(context.Background(), channel, ts)
+}
+
+// MarkConversationContext sets the read mark of a conversation to a specific point with a custom context
+func (api *Client) MarkConversationContext(ctx context.Context, channel, ts string) error {
+	values := url.Values{
+		"token":   {api.token},
+		"channel": {channel},
+		"ts":      {ts},
+	}
+
+	response := &SlackResponse{}
+
+	err := api.postMethod(ctx, "conversations.mark", values, response)
+	if err != nil {
+		return err
+	}
+	return response.Err()
+}

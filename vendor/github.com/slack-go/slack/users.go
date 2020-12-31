@@ -513,7 +513,7 @@ func (api *Client) DeleteUserPhotoContext(ctx context.Context) (err error) {
 //
 // For more information see SetUserRealNameContextWithUser
 func (api *Client) SetUserRealName(realName string) error {
-	return api.SetUserRealNameContextWithUser(context.Background(), realName, realName)
+	return api.SetUserRealNameContextWithUser(context.Background(), "", realName)
 }
 
 // SetUserRealNameContextWithUser will set a real name for the provided user with a custom context
@@ -531,9 +531,13 @@ func (api *Client) SetUserRealNameContextWithUser(ctx context.Context, user, rea
 	}
 
 	values := url.Values{
-		"user":    {user},
 		"token":   {api.token},
 		"profile": {string(profile)},
+	}
+
+	// optional field. It should not be set if empty
+	if user != "" {
+		values["user"] = []string{user}
 	}
 
 	response := &userResponseFull{}
@@ -557,7 +561,7 @@ func (api *Client) SetUserCustomStatus(statusText, statusEmoji string, statusExp
 //
 // For more information see SetUserCustomStatus
 func (api *Client) SetUserCustomStatusContext(ctx context.Context, statusText, statusEmoji string, statusExpiration int64) error {
-	return api.SetUserCustomStatusContextWithUser(context.Background(), "", statusText, statusEmoji, statusExpiration)
+	return api.SetUserCustomStatusContextWithUser(ctx, "", statusText, statusEmoji, statusExpiration)
 }
 
 // SetUserCustomStatusWithUser will set a custom status and emoji for the provided user.
@@ -598,9 +602,13 @@ func (api *Client) SetUserCustomStatusContextWithUser(ctx context.Context, user,
 	}
 
 	values := url.Values{
-		"user":    {user},
 		"token":   {api.token},
 		"profile": {string(profile)},
+	}
+
+	// optional field. It should not be set if empty
+	if user != "" {
+		values["user"] = []string{user}
 	}
 
 	response := &userResponseFull{}
