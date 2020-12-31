@@ -127,9 +127,9 @@ func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 	// Replace emotes
 	rmsg.Text = replaceEmotes(rmsg.Text)
 
-	// Add our parent id if it exists
-	if m.MessageReference != nil {
-		rmsg.ParentID = m.MessageReference.MessageID
+	// Add our parent id if it exists, and if it's not referring to a message in another channel
+	if ref := m.MessageReference; ref != nil && ref.ChannelID == m.ChannelID {
+		rmsg.ParentID = ref.MessageID
 	}
 
 	b.Log.Debugf("<= Sending message from %s on %s to gateway", m.Author.Username, b.Account)
