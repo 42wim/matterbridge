@@ -136,7 +136,7 @@ func (b *Bdiscord) handleEventWebhook(msg *config.Message, channelID string) (st
 	b.Log.Debugf("Processing webhook sending for message %#v", msg)
 	discordMsg, err := b.webhookSend(msg, channelID)
 	if err != nil {
-		b.Log.Errorf("Could not broadcast via webook for message %#v: %s", msg, err)
+		b.Log.Errorf("Could not broadcast via webhook for message %#v: %s", msg, err)
 		return "", err
 	}
 	if discordMsg == nil {
