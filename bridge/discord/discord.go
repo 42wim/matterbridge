@@ -244,7 +244,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 
 	// Use webhook to send the message
 	useWebhooks := b.shouldMessageUseWebhooks(&msg)
-	if useWebhooks && msg.Event != config.EventMsgDelete {
+	if useWebhooks && msg.Event != config.EventMsgDelete && msg.ParentID == "" {
 		return b.handleEventWebhook(&msg, channelID)
 	}
 
@@ -287,11 +287,24 @@ func (b *Bdiscord) handleEventBotUser(msg *config.Message, channelID string) (st
 		return msg.ID, err
 	}
 
+	m := discordgo.MessageSend{
+		Content: msg.Username + msg.Text,
+	}
+
+	if msg.ParentID != "" && msg.ParentID != "msg-parent-not-found" {
+		m.Reference = &discordgo.MessageReference{
+			MessageID: msg.ParentID,
+			ChannelID: channelID,
+			GuildID:   b.guildID,
+		}
+	}
+
 	// Post normal message
-	res, err := b.c.ChannelMessageSend(channelID, msg.Username+msg.Text)
+	res, err := b.c.ChannelMessageSendComplex(channelID, &m)
 	if err != nil {
 		return "", err
 	}
+
 	return res.ID, nil
 }
 
