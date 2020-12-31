@@ -12,12 +12,14 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/mattermost/ldap"
+	"github.com/mattermost/mattermost-server/v5/mlog"
 )
 
 const (
@@ -107,7 +109,7 @@ const (
 	TEAM_SETTINGS_DEFAULT_CUSTOM_DESCRIPTION_TEXT  = ""
 	TEAM_SETTINGS_DEFAULT_USER_STATUS_AWAY_TIMEOUT = 300
 
-	SQL_SETTINGS_DEFAULT_DATA_SOURCE = "mmuser:mostest@tcp(localhost:3306)/mattermost_test?charset=utf8mb4,utf8&readTimeout=30s&writeTimeout=30s"
+	SQL_SETTINGS_DEFAULT_DATA_SOURCE = "postgres://mmuser:mostest@localhost/mattermost_test?sslmode=disable&connect_timeout=10"
 
 	FILE_SETTINGS_DEFAULT_DIRECTORY = "./data/"
 
@@ -220,6 +222,8 @@ const (
 	OFFICE365_SETTINGS_DEFAULT_TOKEN_ENDPOINT    = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
 	OFFICE365_SETTINGS_DEFAULT_USER_API_ENDPOINT = "https://graph.microsoft.com/v1.0/me"
 
+	CLOUD_SETTINGS_DEFAULT_CWS_URL = "https://customers.mattermost.com"
+
 	LOCAL_MODE_SOCKET_PATH = "/var/tmp/mattermost_local.socket"
 )
 
@@ -250,26 +254,26 @@ var ServerTLSSupportedCiphers = map[string]uint16{
 
 type ServiceSettings struct {
 	SiteURL                                           *string  `access:"environment,authentication,write_restrictable"`
-	WebsocketURL                                      *string  `access:"write_restrictable"`
-	LicenseFileLocation                               *string  `access:"write_restrictable"`
-	ListenAddress                                     *string  `access:"environment,write_restrictable"`
-	ConnectionSecurity                                *string  `access:"environment,write_restrictable"`
-	TLSCertFile                                       *string  `access:"environment,write_restrictable"`
-	TLSKeyFile                                        *string  `access:"environment,write_restrictable"`
-	TLSMinVer                                         *string  `access:"write_restrictable"`
-	TLSStrictTransport                                *bool    `access:"write_restrictable"`
-	TLSStrictTransportMaxAge                          *int64   `access:"write_restrictable"`
-	TLSOverwriteCiphers                               []string `access:"write_restrictable"`
-	UseLetsEncrypt                                    *bool    `access:"environment,write_restrictable"`
-	LetsEncryptCertificateCacheFile                   *string  `access:"environment,write_restrictable"`
-	Forward80To443                                    *bool    `access:"environment,write_restrictable"`
-	TrustedProxyIPHeader                              []string `access:"write_restrictable"`
-	ReadTimeout                                       *int     `access:"environment,write_restrictable"`
-	WriteTimeout                                      *int     `access:"environment,write_restrictable"`
-	IdleTimeout                                       *int     `access:"write_restrictable"`
-	MaximumLoginAttempts                              *int     `access:"authentication,write_restrictable"`
-	GoroutineHealthThreshold                          *int     `access:"write_restrictable"`
-	GoogleDeveloperKey                                *string  `access:"site,write_restrictable"`
+	WebsocketURL                                      *string  `access:"write_restrictable,cloud_restrictable"`
+	LicenseFileLocation                               *string  `access:"write_restrictable,cloud_restrictable"`
+	ListenAddress                                     *string  `access:"environment,write_restrictable,cloud_restrictable"`
+	ConnectionSecurity                                *string  `access:"environment,write_restrictable,cloud_restrictable"`
+	TLSCertFile                                       *string  `access:"environment,write_restrictable,cloud_restrictable"`
+	TLSKeyFile                                        *string  `access:"environment,write_restrictable,cloud_restrictable"`
+	TLSMinVer                                         *string  `access:"write_restrictable,cloud_restrictable"`
+	TLSStrictTransport                                *bool    `access:"write_restrictable,cloud_restrictable"`
+	TLSStrictTransportMaxAge                          *int64   `access:"write_restrictable,cloud_restrictable"`
+	TLSOverwriteCiphers                               []string `access:"write_restrictable,cloud_restrictable"`
+	UseLetsEncrypt                                    *bool    `access:"environment,write_restrictable,cloud_restrictable"`
+	LetsEncryptCertificateCacheFile                   *string  `access:"environment,write_restrictable,cloud_restrictable"`
+	Forward80To443                                    *bool    `access:"environment,write_restrictable,cloud_restrictable"`
+	TrustedProxyIPHeader                              []string `access:"write_restrictable,cloud_restrictable"`
+	ReadTimeout                                       *int     `access:"environment,write_restrictable,cloud_restrictable"`
+	WriteTimeout                                      *int     `access:"environment,write_restrictable,cloud_restrictable"`
+	IdleTimeout                                       *int     `access:"write_restrictable,cloud_restrictable"`
+	MaximumLoginAttempts                              *int     `access:"authentication,write_restrictable,cloud_restrictable"`
+	GoroutineHealthThreshold                          *int     `access:"write_restrictable,cloud_restrictable"`
+	GoogleDeveloperKey                                *string  `access:"site,write_restrictable,cloud_restrictable"`
 	EnableOAuthServiceProvider                        *bool    `access:"integrations"`
 	EnableIncomingWebhooks                            *bool    `access:"integrations"`
 	EnableOutgoingWebhooks                            *bool    `access:"integrations"`
@@ -278,29 +282,29 @@ type ServiceSettings struct {
 	EnablePostUsernameOverride                        *bool    `access:"integrations"`
 	EnablePostIconOverride                            *bool    `access:"integrations"`
 	EnableLinkPreviews                                *bool    `access:"site"`
-	EnableTesting                                     *bool    `access:"environment,write_restrictable"`
-	EnableDeveloper                                   *bool    `access:"environment,write_restrictable"`
-	EnableOpenTracing                                 *bool    `access:"write_restrictable"`
-	EnableSecurityFixAlert                            *bool    `access:"environment,write_restrictable"`
-	EnableInsecureOutgoingConnections                 *bool    `access:"environment,write_restrictable"`
-	AllowedUntrustedInternalConnections               *string  `access:"environment,write_restrictable"`
+	EnableTesting                                     *bool    `access:"environment,write_restrictable,cloud_restrictable"`
+	EnableDeveloper                                   *bool    `access:"environment,write_restrictable,cloud_restrictable"`
+	EnableOpenTracing                                 *bool    `access:"write_restrictable,cloud_restrictable"`
+	EnableSecurityFixAlert                            *bool    `access:"environment,write_restrictable,cloud_restrictable"`
+	EnableInsecureOutgoingConnections                 *bool    `access:"environment,write_restrictable,cloud_restrictable"`
+	AllowedUntrustedInternalConnections               *string  `access:"environment,write_restrictable,cloud_restrictable"`
 	EnableMultifactorAuthentication                   *bool    `access:"authentication"`
 	EnforceMultifactorAuthentication                  *bool    `access:"authentication"`
 	EnableUserAccessTokens                            *bool    `access:"integrations"`
-	AllowCorsFrom                                     *string  `access:"integrations,write_restrictable"`
-	CorsExposedHeaders                                *string  `access:"integrations,write_restrictable"`
-	CorsAllowCredentials                              *bool    `access:"integrations,write_restrictable"`
-	CorsDebug                                         *bool    `access:"integrations,write_restrictable"`
-	AllowCookiesForSubdomains                         *bool    `access:"write_restrictable"`
-	ExtendSessionLengthWithActivity                   *bool    `access:"environment,write_restrictable"`
-	SessionLengthWebInDays                            *int     `access:"environment,write_restrictable"`
-	SessionLengthMobileInDays                         *int     `access:"environment,write_restrictable"`
-	SessionLengthSSOInDays                            *int     `access:"environment,write_restrictable"`
-	SessionCacheInMinutes                             *int     `access:"environment,write_restrictable"`
-	SessionIdleTimeoutInMinutes                       *int     `access:"environment,write_restrictable"`
-	WebsocketSecurePort                               *int     `access:"write_restrictable"`
-	WebsocketPort                                     *int     `access:"write_restrictable"`
-	WebserverMode                                     *string  `access:"environment,write_restrictable"`
+	AllowCorsFrom                                     *string  `access:"integrations,write_restrictable,cloud_restrictable"`
+	CorsExposedHeaders                                *string  `access:"integrations,write_restrictable,cloud_restrictable"`
+	CorsAllowCredentials                              *bool    `access:"integrations,write_restrictable,cloud_restrictable"`
+	CorsDebug                                         *bool    `access:"integrations,write_restrictable,cloud_restrictable"`
+	AllowCookiesForSubdomains                         *bool    `access:"write_restrictable,cloud_restrictable"`
+	ExtendSessionLengthWithActivity                   *bool    `access:"environment,write_restrictable,cloud_restrictable"`
+	SessionLengthWebInDays                            *int     `access:"environment,write_restrictable,cloud_restrictable"`
+	SessionLengthMobileInDays                         *int     `access:"environment,write_restrictable,cloud_restrictable"`
+	SessionLengthSSOInDays                            *int     `access:"environment,write_restrictable,cloud_restrictable"`
+	SessionCacheInMinutes                             *int     `access:"environment,write_restrictable,cloud_restrictable"`
+	SessionIdleTimeoutInMinutes                       *int     `access:"environment,write_restrictable,cloud_restrictable"`
+	WebsocketSecurePort                               *int     `access:"write_restrictable,cloud_restrictable"`
+	WebsocketPort                                     *int     `access:"write_restrictable,cloud_restrictable"`
+	WebserverMode                                     *string  `access:"environment,write_restrictable,cloud_restrictable"`
 	EnableCustomEmoji                                 *bool    `access:"site"`
 	EnableEmojiPicker                                 *bool    `access:"site"`
 	EnableGifPicker                                   *bool    `access:"integrations"`
@@ -310,14 +314,14 @@ type ServiceSettings struct {
 	DEPRECATED_DO_NOT_USE_RestrictPostDelete          *string  `json:"RestrictPostDelete" mapstructure:"RestrictPostDelete"`                   // This field is deprecated and must not be used.
 	DEPRECATED_DO_NOT_USE_AllowEditPost               *string  `json:"AllowEditPost" mapstructure:"AllowEditPost"`                             // This field is deprecated and must not be used.
 	PostEditTimeLimit                                 *int     `access:"user_management_permissions"`
-	TimeBetweenUserTypingUpdatesMilliseconds          *int64   `access:"experimental,write_restrictable"`
-	EnablePostSearch                                  *bool    `access:"write_restrictable"`
-	MinimumHashtagLength                              *int     `access:"environment,write_restrictable"`
-	EnableUserTypingMessages                          *bool    `access:"experimental,write_restrictable"`
-	EnableChannelViewedMessages                       *bool    `access:"experimental,write_restrictable"`
-	EnableUserStatuses                                *bool    `access:"write_restrictable"`
-	ExperimentalEnableAuthenticationTransfer          *bool    `access:"experimental,write_restrictable"`
-	ClusterLogTimeoutMilliseconds                     *int     `access:"write_restrictable"`
+	TimeBetweenUserTypingUpdatesMilliseconds          *int64   `access:"experimental,write_restrictable,cloud_restrictable"`
+	EnablePostSearch                                  *bool    `access:"write_restrictable,cloud_restrictable"`
+	MinimumHashtagLength                              *int     `access:"environment,write_restrictable,cloud_restrictable"`
+	EnableUserTypingMessages                          *bool    `access:"experimental,write_restrictable,cloud_restrictable"`
+	EnableChannelViewedMessages                       *bool    `access:"experimental,write_restrictable,cloud_restrictable"`
+	EnableUserStatuses                                *bool    `access:"write_restrictable,cloud_restrictable"`
+	ExperimentalEnableAuthenticationTransfer          *bool    `access:"experimental,write_restrictable,cloud_restrictable"`
+	ClusterLogTimeoutMilliseconds                     *int     `access:"write_restrictable,cloud_restrictable"`
 	CloseUnusedDirectMessages                         *bool    `access:"experimental"`
 	EnablePreviewFeatures                             *bool    `access:"experimental"`
 	EnableTutorial                                    *bool    `access:"experimental"`
@@ -332,10 +336,10 @@ type ServiceSettings struct {
 	EnableAPITeamDeletion                             *bool
 	EnableAPIUserDeletion                             *bool
 	ExperimentalEnableHardenedMode                    *bool `access:"experimental"`
-	DisableLegacyMFA                                  *bool `access:"write_restrictable"`
-	ExperimentalStrictCSRFEnforcement                 *bool `access:"experimental,write_restrictable"`
+	DisableLegacyMFA                                  *bool `access:"write_restrictable,cloud_restrictable"`
+	ExperimentalStrictCSRFEnforcement                 *bool `access:"experimental,write_restrictable,cloud_restrictable"`
 	EnableEmailInvitations                            *bool `access:"authentication"`
-	DisableBotsWhenOwnerIsDeactivated                 *bool `access:"integrations,write_restrictable"`
+	DisableBotsWhenOwnerIsDeactivated                 *bool `access:"integrations,write_restrictable,cloud_restrictable"`
 	EnableBotAccountCreation                          *bool `access:"integrations"`
 	EnableSVGs                                        *bool `access:"site"`
 	EnableLatex                                       *bool `access:"site"`
@@ -343,6 +347,9 @@ type ServiceSettings struct {
 	EnableLocalMode                                   *bool
 	LocalModeSocketLocation                           *string
 	EnableAWSMetering                                 *bool
+	SplitKey                                          *string `access:"environment,write_restrictable"`
+	FeatureFlagSyncIntervalSeconds                    *int    `access:"environment,write_restrictable"`
+	DebugSplit                                        *bool   `access:"environment,write_restrictable"`
 	ThreadAutoFollow                                  *bool   `access:"experimental"`
 	ManagedResourcePaths                              *string `access:"environment,write_restrictable,cloud_restrictable"`
 }
@@ -763,6 +770,18 @@ func (s *ServiceSettings) SetDefaults(isUpdate bool) {
 		s.EnableAWSMetering = NewBool(false)
 	}
 
+	if s.SplitKey == nil {
+		s.SplitKey = NewString("")
+	}
+
+	if s.FeatureFlagSyncIntervalSeconds == nil {
+		s.FeatureFlagSyncIntervalSeconds = NewInt(30)
+	}
+
+	if s.DebugSplit == nil {
+		s.DebugSplit = NewBool(false)
+	}
+
 	if s.ThreadAutoFollow == nil {
 		s.ThreadAutoFollow = NewBool(true)
 	}
@@ -774,20 +793,20 @@ func (s *ServiceSettings) SetDefaults(isUpdate bool) {
 
 type ClusterSettings struct {
 	Enable                             *bool   `access:"environment,write_restrictable"`
-	ClusterName                        *string `access:"environment,write_restrictable"`
-	OverrideHostname                   *string `access:"environment,write_restrictable"`
-	NetworkInterface                   *string `access:"environment,write_restrictable"`
-	BindAddress                        *string `access:"environment,write_restrictable"`
-	AdvertiseAddress                   *string `access:"environment,write_restrictable"`
-	UseIpAddress                       *bool   `access:"environment,write_restrictable"`
-	UseExperimentalGossip              *bool   `access:"environment,write_restrictable"`
-	EnableExperimentalGossipEncryption *bool   `access:"environment,write_restrictable"`
-	ReadOnlyConfig                     *bool   `access:"environment,write_restrictable"`
-	GossipPort                         *int    `access:"environment,write_restrictable"`
-	StreamingPort                      *int    `access:"environment,write_restrictable"`
-	MaxIdleConns                       *int    `access:"environment,write_restrictable"`
-	MaxIdleConnsPerHost                *int    `access:"environment,write_restrictable"`
-	IdleConnTimeoutMilliseconds        *int    `access:"environment,write_restrictable"`
+	ClusterName                        *string `access:"environment,write_restrictable,cloud_restrictable"`
+	OverrideHostname                   *string `access:"environment,write_restrictable,cloud_restrictable"`
+	NetworkInterface                   *string `access:"environment,write_restrictable,cloud_restrictable"`
+	BindAddress                        *string `access:"environment,write_restrictable,cloud_restrictable"`
+	AdvertiseAddress                   *string `access:"environment,write_restrictable,cloud_restrictable"`
+	UseIpAddress                       *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	UseExperimentalGossip              *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	EnableExperimentalGossipEncryption *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	ReadOnlyConfig                     *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	GossipPort                         *int    `access:"environment,write_restrictable,cloud_restrictable"`
+	StreamingPort                      *int    `access:"environment,write_restrictable,cloud_restrictable"`
+	MaxIdleConns                       *int    `access:"environment,write_restrictable,cloud_restrictable"`
+	MaxIdleConnsPerHost                *int    `access:"environment,write_restrictable,cloud_restrictable"`
+	IdleConnTimeoutMilliseconds        *int    `access:"environment,write_restrictable,cloud_restrictable"`
 }
 
 func (s *ClusterSettings) SetDefaults() {
@@ -853,9 +872,9 @@ func (s *ClusterSettings) SetDefaults() {
 }
 
 type MetricsSettings struct {
-	Enable           *bool   `access:"environment,write_restrictable"`
-	BlockProfileRate *int    `access:"environment,write_restrictable"`
-	ListenAddress    *string `access:"environment,write_restrictable"`
+	Enable           *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	BlockProfileRate *int    `access:"environment,write_restrictable,cloud_restrictable"`
+	ListenAddress    *string `access:"environment,write_restrictable,cloud_restrictable"`
 }
 
 func (s *MetricsSettings) SetDefaults() {
@@ -873,14 +892,15 @@ func (s *MetricsSettings) SetDefaults() {
 }
 
 type ExperimentalSettings struct {
-	ClientSideCertEnable            *bool   `access:"experimental"`
-	ClientSideCertCheck             *string `access:"experimental"`
-	EnableClickToReply              *bool   `access:"experimental,write_restrictable"`
-	LinkMetadataTimeoutMilliseconds *int64  `access:"experimental,write_restrictable"`
+	ClientSideCertEnable            *bool   `access:"experimental,cloud_restrictable"`
+	ClientSideCertCheck             *string `access:"experimental,cloud_restrictable"`
+	EnableClickToReply              *bool   `access:"experimental,write_restrictable,cloud_restrictable"`
+	LinkMetadataTimeoutMilliseconds *int64  `access:"experimental,write_restrictable,cloud_restrictable"`
 	RestrictSystemAdmin             *bool   `access:"experimental,write_restrictable"`
-	UseNewSAMLLibrary               *bool   `access:"experimental"`
+	UseNewSAMLLibrary               *bool   `access:"experimental,cloud_restrictable"`
 	CloudUserLimit                  *int64  `access:"experimental,write_restrictable"`
 	CloudBilling                    *bool   `access:"experimental,write_restrictable"`
+	EnableSharedChannels            *bool   `access:"experimental"`
 }
 
 func (s *ExperimentalSettings) SetDefaults() {
@@ -916,10 +936,14 @@ func (s *ExperimentalSettings) SetDefaults() {
 	if s.UseNewSAMLLibrary == nil {
 		s.UseNewSAMLLibrary = NewBool(false)
 	}
+
+	if s.EnableSharedChannels == nil {
+		s.EnableSharedChannels = NewBool(false)
+	}
 }
 
 type AnalyticsSettings struct {
-	MaxUsersForStatistics *int `access:"write_restrictable"`
+	MaxUsersForStatistics *int `access:"write_restrictable,cloud_restrictable"`
 }
 
 func (s *AnalyticsSettings) SetDefaults() {
@@ -1026,22 +1050,22 @@ func (s *Office365Settings) SSOSettings() *SSOSettings {
 }
 
 type SqlSettings struct {
-	DriverName                  *string  `access:"environment,write_restrictable"`
-	DataSource                  *string  `access:"environment,write_restrictable"`
-	DataSourceReplicas          []string `access:"environment,write_restrictable"`
-	DataSourceSearchReplicas    []string `access:"environment,write_restrictable"`
-	MaxIdleConns                *int     `access:"environment,write_restrictable"`
-	ConnMaxLifetimeMilliseconds *int     `access:"environment,write_restrictable"`
-	MaxOpenConns                *int     `access:"environment,write_restrictable"`
-	Trace                       *bool    `access:"environment,write_restrictable"`
-	AtRestEncryptKey            *string  `access:"environment,write_restrictable"`
-	QueryTimeout                *int     `access:"environment,write_restrictable"`
-	DisableDatabaseSearch       *bool    `access:"environment,write_restrictable"`
+	DriverName                  *string  `access:"environment,write_restrictable,cloud_restrictable"`
+	DataSource                  *string  `access:"environment,write_restrictable,cloud_restrictable"`
+	DataSourceReplicas          []string `access:"environment,write_restrictable,cloud_restrictable"`
+	DataSourceSearchReplicas    []string `access:"environment,write_restrictable,cloud_restrictable"`
+	MaxIdleConns                *int     `access:"environment,write_restrictable,cloud_restrictable"`
+	ConnMaxLifetimeMilliseconds *int     `access:"environment,write_restrictable,cloud_restrictable"`
+	MaxOpenConns                *int     `access:"environment,write_restrictable,cloud_restrictable"`
+	Trace                       *bool    `access:"environment,write_restrictable,cloud_restrictable"`
+	AtRestEncryptKey            *string  `access:"environment,write_restrictable,cloud_restrictable"`
+	QueryTimeout                *int     `access:"environment,write_restrictable,cloud_restrictable"`
+	DisableDatabaseSearch       *bool    `access:"environment,write_restrictable,cloud_restrictable"`
 }
 
 func (s *SqlSettings) SetDefaults(isUpdate bool) {
 	if s.DriverName == nil {
-		s.DriverName = NewString(DATABASE_DRIVER_MYSQL)
+		s.DriverName = NewString(DATABASE_DRIVER_POSTGRES)
 	}
 
 	if s.DataSource == nil {
@@ -1092,17 +1116,17 @@ func (s *SqlSettings) SetDefaults(isUpdate bool) {
 }
 
 type LogSettings struct {
-	EnableConsole          *bool   `access:"environment,write_restrictable"`
-	ConsoleLevel           *string `access:"environment,write_restrictable"`
-	ConsoleJson            *bool   `access:"environment,write_restrictable"`
-	EnableFile             *bool   `access:"environment,write_restrictable"`
-	FileLevel              *string `access:"environment,write_restrictable"`
-	FileJson               *bool   `access:"environment,write_restrictable"`
-	FileLocation           *string `access:"environment,write_restrictable"`
-	EnableWebhookDebugging *bool   `access:"environment,write_restrictable"`
-	EnableDiagnostics      *bool   `access:"environment,write_restrictable"`
-	EnableSentry           *bool   `access:"environment,write_restrictable"`
-	AdvancedLoggingConfig  *string `access:"environment,write_restrictable"`
+	EnableConsole          *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	ConsoleLevel           *string `access:"environment,write_restrictable,cloud_restrictable"`
+	ConsoleJson            *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	EnableFile             *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	FileLevel              *string `access:"environment,write_restrictable,cloud_restrictable"`
+	FileJson               *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	FileLocation           *string `access:"environment,write_restrictable,cloud_restrictable"`
+	EnableWebhookDebugging *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	EnableDiagnostics      *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	EnableSentry           *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	AdvancedLoggingConfig  *string `access:"environment,write_restrictable,cloud_restrictable"`
 }
 
 func (s *LogSettings) SetDefaults() {
@@ -1152,14 +1176,14 @@ func (s *LogSettings) SetDefaults() {
 }
 
 type ExperimentalAuditSettings struct {
-	FileEnabled           *bool   `access:"experimental,write_restrictable"`
-	FileName              *string `access:"experimental,write_restrictable"`
-	FileMaxSizeMB         *int    `access:"experimental,write_restrictable"`
-	FileMaxAgeDays        *int    `access:"experimental,write_restrictable"`
-	FileMaxBackups        *int    `access:"experimental,write_restrictable"`
-	FileCompress          *bool   `access:"experimental,write_restrictable"`
-	FileMaxQueueSize      *int    `access:"experimental,write_restrictable"`
-	AdvancedLoggingConfig *string `access:"experimental,write_restrictable"`
+	FileEnabled           *bool   `access:"experimental,write_restrictable,cloud_restrictable"`
+	FileName              *string `access:"experimental,write_restrictable,cloud_restrictable"`
+	FileMaxSizeMB         *int    `access:"experimental,write_restrictable,cloud_restrictable"`
+	FileMaxAgeDays        *int    `access:"experimental,write_restrictable,cloud_restrictable"`
+	FileMaxBackups        *int    `access:"experimental,write_restrictable,cloud_restrictable"`
+	FileCompress          *bool   `access:"experimental,write_restrictable,cloud_restrictable"`
+	FileMaxQueueSize      *int    `access:"experimental,write_restrictable,cloud_restrictable"`
+	AdvancedLoggingConfig *string `access:"experimental,write_restrictable,cloud_restrictable"`
 }
 
 func (s *ExperimentalAuditSettings) SetDefaults() {
@@ -1197,14 +1221,14 @@ func (s *ExperimentalAuditSettings) SetDefaults() {
 }
 
 type NotificationLogSettings struct {
-	EnableConsole         *bool   `access:"write_restrictable"`
-	ConsoleLevel          *string `access:"write_restrictable"`
-	ConsoleJson           *bool   `access:"write_restrictable"`
-	EnableFile            *bool   `access:"write_restrictable"`
-	FileLevel             *string `access:"write_restrictable"`
-	FileJson              *bool   `access:"write_restrictable"`
-	FileLocation          *string `access:"write_restrictable"`
-	AdvancedLoggingConfig *string `access:"write_restrictable"`
+	EnableConsole         *bool   `access:"write_restrictable,cloud_restrictable"`
+	ConsoleLevel          *string `access:"write_restrictable,cloud_restrictable"`
+	ConsoleJson           *bool   `access:"write_restrictable,cloud_restrictable"`
+	EnableFile            *bool   `access:"write_restrictable,cloud_restrictable"`
+	FileLevel             *string `access:"write_restrictable,cloud_restrictable"`
+	FileJson              *bool   `access:"write_restrictable,cloud_restrictable"`
+	FileLocation          *string `access:"write_restrictable,cloud_restrictable"`
+	AdvancedLoggingConfig *string `access:"write_restrictable,cloud_restrictable"`
 }
 
 func (s *NotificationLogSettings) SetDefaults() {
@@ -1272,25 +1296,25 @@ func (s *PasswordSettings) SetDefaults() {
 }
 
 type FileSettings struct {
-	EnableFileAttachments   *bool   `access:"site"`
-	EnableMobileUpload      *bool   `access:"site"`
-	EnableMobileDownload    *bool   `access:"site"`
-	MaxFileSize             *int64  `access:"environment"`
-	DriverName              *string `access:"environment,write_restrictable"`
-	Directory               *string `access:"environment,write_restrictable"`
-	EnablePublicLink        *bool   `access:"site"`
-	PublicLinkSalt          *string `access:"site"`
-	InitialFont             *string `access:"environment"`
-	AmazonS3AccessKeyId     *string `access:"environment,write_restrictable"`
-	AmazonS3SecretAccessKey *string `access:"environment,write_restrictable"`
-	AmazonS3Bucket          *string `access:"environment,write_restrictable"`
-	AmazonS3PathPrefix      *string `access:"environment,write_restrictable"`
-	AmazonS3Region          *string `access:"environment,write_restrictable"`
-	AmazonS3Endpoint        *string `access:"environment,write_restrictable"`
-	AmazonS3SSL             *bool   `access:"environment,write_restrictable"`
-	AmazonS3SignV2          *bool   `access:"environment,write_restrictable"`
-	AmazonS3SSE             *bool   `access:"environment,write_restrictable"`
-	AmazonS3Trace           *bool   `access:"environment,write_restrictable"`
+	EnableFileAttachments   *bool   `access:"site,cloud_restrictable"`
+	EnableMobileUpload      *bool   `access:"site,cloud_restrictable"`
+	EnableMobileDownload    *bool   `access:"site,cloud_restrictable"`
+	MaxFileSize             *int64  `access:"environment,cloud_restrictable"`
+	DriverName              *string `access:"environment,write_restrictable,cloud_restrictable"`
+	Directory               *string `access:"environment,write_restrictable,cloud_restrictable"`
+	EnablePublicLink        *bool   `access:"site,cloud_restrictable"`
+	PublicLinkSalt          *string `access:"site,cloud_restrictable"`
+	InitialFont             *string `access:"environment,cloud_restrictable"`
+	AmazonS3AccessKeyId     *string `access:"environment,write_restrictable,cloud_restrictable"`
+	AmazonS3SecretAccessKey *string `access:"environment,write_restrictable,cloud_restrictable"`
+	AmazonS3Bucket          *string `access:"environment,write_restrictable,cloud_restrictable"`
+	AmazonS3PathPrefix      *string `access:"environment,write_restrictable,cloud_restrictable"`
+	AmazonS3Region          *string `access:"environment,write_restrictable,cloud_restrictable"`
+	AmazonS3Endpoint        *string `access:"environment,write_restrictable,cloud_restrictable"`
+	AmazonS3SSL             *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	AmazonS3SignV2          *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	AmazonS3SSE             *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	AmazonS3Trace           *bool   `access:"environment,write_restrictable,cloud_restrictable"`
 }
 
 func (s *FileSettings) SetDefaults(isUpdate bool) {
@@ -1388,16 +1412,16 @@ type EmailSettings struct {
 	UseChannelInEmailNotifications    *bool   `access:"experimental"`
 	RequireEmailVerification          *bool   `access:"authentication"`
 	FeedbackName                      *string `access:"site"`
-	FeedbackEmail                     *string `access:"site"`
-	ReplyToAddress                    *string `access:"site"`
+	FeedbackEmail                     *string `access:"site,cloud_restrictable"`
+	ReplyToAddress                    *string `access:"site,cloud_restrictable"`
 	FeedbackOrganization              *string `access:"site"`
-	EnableSMTPAuth                    *bool   `access:"environment,write_restrictable"`
-	SMTPUsername                      *string `access:"environment,write_restrictable"`
-	SMTPPassword                      *string `access:"environment,write_restrictable"`
-	SMTPServer                        *string `access:"environment,write_restrictable"`
-	SMTPPort                          *string `access:"environment,write_restrictable"`
-	SMTPServerTimeout                 *int
-	ConnectionSecurity                *string `access:"environment,write_restrictable"`
+	EnableSMTPAuth                    *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	SMTPUsername                      *string `access:"environment,write_restrictable,cloud_restrictable"`
+	SMTPPassword                      *string `access:"environment,write_restrictable,cloud_restrictable"`
+	SMTPServer                        *string `access:"environment,write_restrictable,cloud_restrictable"`
+	SMTPPort                          *string `access:"environment,write_restrictable,cloud_restrictable"`
+	SMTPServerTimeout                 *int    `access:"cloud_restrictable"`
+	ConnectionSecurity                *string `access:"environment,write_restrictable,cloud_restrictable"`
 	SendPushNotifications             *bool   `access:"environment"`
 	PushNotificationServer            *string `access:"environment"`
 	PushNotificationContents          *string `access:"site"`
@@ -1406,7 +1430,7 @@ type EmailSettings struct {
 	EmailBatchingBufferSize           *int    `access:"experimental"`
 	EmailBatchingInterval             *int    `access:"experimental"`
 	EnablePreviewModeBanner           *bool   `access:"site"`
-	SkipServerCertificateVerification *bool   `access:"environment,write_restrictable"`
+	SkipServerCertificateVerification *bool   `access:"environment,write_restrictable,cloud_restrictable"`
 	EmailNotificationContentsType     *string `access:"site"`
 	LoginButtonColor                  *string `access:"experimental"`
 	LoginButtonBorderColor            *string `access:"experimental"`
@@ -1556,13 +1580,13 @@ func (s *EmailSettings) SetDefaults(isUpdate bool) {
 }
 
 type RateLimitSettings struct {
-	Enable           *bool  `access:"environment,write_restrictable"`
-	PerSec           *int   `access:"environment,write_restrictable"`
-	MaxBurst         *int   `access:"environment,write_restrictable"`
-	MemoryStoreSize  *int   `access:"environment,write_restrictable"`
-	VaryByRemoteAddr *bool  `access:"environment,write_restrictable"`
-	VaryByUser       *bool  `access:"environment,write_restrictable"`
-	VaryByHeader     string `access:"environment,write_restrictable"`
+	Enable           *bool  `access:"environment,write_restrictable,cloud_restrictable"`
+	PerSec           *int   `access:"environment,write_restrictable,cloud_restrictable"`
+	MaxBurst         *int   `access:"environment,write_restrictable,cloud_restrictable"`
+	MemoryStoreSize  *int   `access:"environment,write_restrictable,cloud_restrictable"`
+	VaryByRemoteAddr *bool  `access:"environment,write_restrictable,cloud_restrictable"`
+	VaryByUser       *bool  `access:"environment,write_restrictable,cloud_restrictable"`
+	VaryByHeader     string `access:"environment,write_restrictable,cloud_restrictable"`
 }
 
 func (s *RateLimitSettings) SetDefaults() {
@@ -1607,11 +1631,11 @@ func (s *PrivacySettings) setDefaults() {
 }
 
 type SupportSettings struct {
-	TermsOfServiceLink                     *string `access:"site,write_restrictable"`
-	PrivacyPolicyLink                      *string `access:"site,write_restrictable"`
-	AboutLink                              *string `access:"site,write_restrictable"`
-	HelpLink                               *string `access:"site,write_restrictable"`
-	ReportAProblemLink                     *string `access:"site,write_restrictable"`
+	TermsOfServiceLink                     *string `access:"site,write_restrictable,cloud_restrictable"`
+	PrivacyPolicyLink                      *string `access:"site,write_restrictable,cloud_restrictable"`
+	AboutLink                              *string `access:"site,write_restrictable,cloud_restrictable"`
+	HelpLink                               *string `access:"site,write_restrictable,cloud_restrictable"`
+	ReportAProblemLink                     *string `access:"site,write_restrictable,cloud_restrictable"`
 	SupportEmail                           *string `access:"site"`
 	CustomTermsOfServiceEnabled            *bool   `access:"compliance"`
 	CustomTermsOfServiceReAcceptancePeriod *int    `access:"compliance"`
@@ -1938,12 +1962,12 @@ func (s *TeamSettings) SetDefaults() {
 }
 
 type ClientRequirements struct {
-	AndroidLatestVersion string `access:"write_restrictable"`
-	AndroidMinVersion    string `access:"write_restrictable"`
-	DesktopLatestVersion string `access:"write_restrictable"`
-	DesktopMinVersion    string `access:"write_restrictable"`
-	IosLatestVersion     string `access:"write_restrictable"`
-	IosMinVersion        string `access:"write_restrictable"`
+	AndroidLatestVersion string `access:"write_restrictable,cloud_restrictable"`
+	AndroidMinVersion    string `access:"write_restrictable,cloud_restrictable"`
+	DesktopLatestVersion string `access:"write_restrictable,cloud_restrictable"`
+	DesktopMinVersion    string `access:"write_restrictable,cloud_restrictable"`
+	IosLatestVersion     string `access:"write_restrictable,cloud_restrictable"`
+	IosMinVersion        string `access:"write_restrictable,cloud_restrictable"`
 }
 
 type LdapSettings struct {
@@ -2189,6 +2213,7 @@ type SamlSettings struct {
 	Enable                        *bool `access:"authentication"`
 	EnableSyncWithLdap            *bool `access:"authentication"`
 	EnableSyncWithLdapIncludeAuth *bool `access:"authentication"`
+	IgnoreGuestsLdapSync          *bool `access:"authentication"`
 
 	Verify      *bool `access:"authentication"`
 	Encrypt     *bool `access:"authentication"`
@@ -2241,6 +2266,10 @@ func (s *SamlSettings) SetDefaults() {
 
 	if s.EnableSyncWithLdapIncludeAuth == nil {
 		s.EnableSyncWithLdapIncludeAuth = NewBool(false)
+	}
+
+	if s.IgnoreGuestsLdapSync == nil {
+		s.IgnoreGuestsLdapSync = NewBool(false)
 	}
 
 	if s.EnableAdminAttribute == nil {
@@ -2367,9 +2396,9 @@ func (s *SamlSettings) SetDefaults() {
 }
 
 type NativeAppSettings struct {
-	AppDownloadLink        *string `access:"site,write_restrictable"`
-	AndroidAppDownloadLink *string `access:"site,write_restrictable"`
-	IosAppDownloadLink     *string `access:"site,write_restrictable"`
+	AppDownloadLink        *string `access:"site,write_restrictable,cloud_restrictable"`
+	AndroidAppDownloadLink *string `access:"site,write_restrictable,cloud_restrictable"`
+	IosAppDownloadLink     *string `access:"site,write_restrictable,cloud_restrictable"`
 }
 
 func (s *NativeAppSettings) SetDefaults() {
@@ -2387,27 +2416,27 @@ func (s *NativeAppSettings) SetDefaults() {
 }
 
 type ElasticsearchSettings struct {
-	ConnectionUrl                 *string `access:"environment,write_restrictable"`
-	Username                      *string `access:"environment,write_restrictable"`
-	Password                      *string `access:"environment,write_restrictable"`
-	EnableIndexing                *bool   `access:"environment,write_restrictable"`
-	EnableSearching               *bool   `access:"environment,write_restrictable"`
-	EnableAutocomplete            *bool   `access:"environment,write_restrictable"`
-	Sniff                         *bool   `access:"environment,write_restrictable"`
-	PostIndexReplicas             *int    `access:"environment,write_restrictable"`
-	PostIndexShards               *int    `access:"environment,write_restrictable"`
-	ChannelIndexReplicas          *int    `access:"environment,write_restrictable"`
-	ChannelIndexShards            *int    `access:"environment,write_restrictable"`
-	UserIndexReplicas             *int    `access:"environment,write_restrictable"`
-	UserIndexShards               *int    `access:"environment,write_restrictable"`
-	AggregatePostsAfterDays       *int    `access:"environment,write_restrictable"`
-	PostsAggregatorJobStartTime   *string `access:"environment,write_restrictable"`
-	IndexPrefix                   *string `access:"environment,write_restrictable"`
-	LiveIndexingBatchSize         *int    `access:"environment,write_restrictable"`
-	BulkIndexingTimeWindowSeconds *int    `access:"environment,write_restrictable"`
-	RequestTimeoutSeconds         *int    `access:"environment,write_restrictable"`
-	SkipTLSVerification           *bool   `access:"environment,write_restrictable"`
-	Trace                         *string `access:"environment,write_restrictable"`
+	ConnectionUrl                 *string `access:"environment,write_restrictable,cloud_restrictable"`
+	Username                      *string `access:"environment,write_restrictable,cloud_restrictable"`
+	Password                      *string `access:"environment,write_restrictable,cloud_restrictable"`
+	EnableIndexing                *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	EnableSearching               *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	EnableAutocomplete            *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	Sniff                         *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	PostIndexReplicas             *int    `access:"environment,write_restrictable,cloud_restrictable"`
+	PostIndexShards               *int    `access:"environment,write_restrictable,cloud_restrictable"`
+	ChannelIndexReplicas          *int    `access:"environment,write_restrictable,cloud_restrictable"`
+	ChannelIndexShards            *int    `access:"environment,write_restrictable,cloud_restrictable"`
+	UserIndexReplicas             *int    `access:"environment,write_restrictable,cloud_restrictable"`
+	UserIndexShards               *int    `access:"environment,write_restrictable,cloud_restrictable"`
+	AggregatePostsAfterDays       *int    `access:"environment,write_restrictable,cloud_restrictable"`
+	PostsAggregatorJobStartTime   *string `access:"environment,write_restrictable,cloud_restrictable"`
+	IndexPrefix                   *string `access:"environment,write_restrictable,cloud_restrictable"`
+	LiveIndexingBatchSize         *int    `access:"environment,write_restrictable,cloud_restrictable"`
+	BulkIndexingTimeWindowSeconds *int    `access:"environment,write_restrictable,cloud_restrictable"`
+	RequestTimeoutSeconds         *int    `access:"environment,write_restrictable,cloud_restrictable"`
+	SkipTLSVerification           *bool   `access:"environment,write_restrictable,cloud_restrictable"`
+	Trace                         *string `access:"environment,write_restrictable,cloud_restrictable"`
 }
 
 func (s *ElasticsearchSettings) SetDefaults() {
@@ -2557,8 +2586,8 @@ func (s *DataRetentionSettings) SetDefaults() {
 }
 
 type JobSettings struct {
-	RunJobs      *bool `access:"write_restrictable"`
-	RunScheduler *bool `access:"write_restrictable"`
+	RunJobs      *bool `access:"write_restrictable,cloud_restrictable"`
+	RunScheduler *bool `access:"write_restrictable,cloud_restrictable"`
 }
 
 func (s *JobSettings) SetDefaults() {
@@ -2571,25 +2600,35 @@ func (s *JobSettings) SetDefaults() {
 	}
 }
 
+type CloudSettings struct {
+	CWSUrl *string `access:"environment,write_restrictable"`
+}
+
+func (s *CloudSettings) SetDefaults() {
+	if s.CWSUrl == nil {
+		s.CWSUrl = NewString(CLOUD_SETTINGS_DEFAULT_CWS_URL)
+	}
+}
+
 type PluginState struct {
 	Enable bool
 }
 
 type PluginSettings struct {
-	Enable                      *bool                             `access:"plugins"`
-	EnableUploads               *bool                             `access:"plugins,write_restrictable"`
-	AllowInsecureDownloadUrl    *bool                             `access:"plugins,write_restrictable"`
-	EnableHealthCheck           *bool                             `access:"plugins,write_restrictable"`
-	Directory                   *string                           `access:"plugins,write_restrictable"`
-	ClientDirectory             *string                           `access:"plugins,write_restrictable"`
+	Enable                      *bool                             `access:"plugins,write_restrictable"`
+	EnableUploads               *bool                             `access:"plugins,write_restrictable,cloud_restrictable"`
+	AllowInsecureDownloadUrl    *bool                             `access:"plugins,write_restrictable,cloud_restrictable"`
+	EnableHealthCheck           *bool                             `access:"plugins,write_restrictable,cloud_restrictable"`
+	Directory                   *string                           `access:"plugins,write_restrictable,cloud_restrictable"`
+	ClientDirectory             *string                           `access:"plugins,write_restrictable,cloud_restrictable"`
 	Plugins                     map[string]map[string]interface{} `access:"plugins"`
 	PluginStates                map[string]*PluginState           `access:"plugins"`
-	EnableMarketplace           *bool                             `access:"plugins"`
-	EnableRemoteMarketplace     *bool                             `access:"plugins"`
-	AutomaticPrepackagedPlugins *bool                             `access:"plugins"`
-	RequirePluginSignature      *bool                             `access:"plugins"`
-	MarketplaceUrl              *string                           `access:"plugins"`
-	SignaturePublicKeyFiles     []string                          `access:"plugins"`
+	EnableMarketplace           *bool                             `access:"plugins,write_restrictable,cloud_restrictable"`
+	EnableRemoteMarketplace     *bool                             `access:"plugins,write_restrictable,cloud_restrictable"`
+	AutomaticPrepackagedPlugins *bool                             `access:"plugins,write_restrictable,cloud_restrictable"`
+	RequirePluginSignature      *bool                             `access:"plugins,write_restrictable,cloud_restrictable"`
+	MarketplaceUrl              *string                           `access:"plugins,write_restrictable,cloud_restrictable"`
+	SignaturePublicKeyFiles     []string                          `access:"plugins,write_restrictable,cloud_restrictable"`
 }
 
 func (s *PluginSettings) SetDefaults(ls LogSettings) {
@@ -2628,6 +2667,16 @@ func (s *PluginSettings) SetDefaults(ls LogSettings) {
 	if s.PluginStates["com.mattermost.nps"] == nil {
 		// Enable the NPS plugin by default if diagnostics are enabled
 		s.PluginStates["com.mattermost.nps"] = &PluginState{Enable: ls.EnableDiagnostics == nil || *ls.EnableDiagnostics}
+	}
+
+	if s.PluginStates["com.mattermost.plugin-incident-management"] == nil && BuildEnterpriseReady == "true" {
+		// Enable the incident management plugin by default
+		s.PluginStates["com.mattermost.plugin-incident-management"] = &PluginState{Enable: true}
+	}
+
+	if s.PluginStates["com.mattermost.plugin-channel-export"] == nil && BuildEnterpriseReady == "true" {
+		// Enable the channel export plugin by default
+		s.PluginStates["com.mattermost.plugin-channel-export"] = &PluginState{Enable: true}
 	}
 
 	if s.EnableMarketplace == nil {
@@ -2808,7 +2857,9 @@ func (s *ImageProxySettings) SetDefaults(ss ServiceSettings) {
 
 type ConfigFunc func() *Config
 
+const ConfigAccessTagType = "access"
 const ConfigAccessTagWriteRestrictable = "write_restrictable"
+const ConfigAccessTagCloudRestrictable = "cloud_restrictable"
 
 // Config fields support the 'access' tag with the following values corresponding to the suffix of the associated
 // PERMISSION_SYSCONSOLE_*_* permission Id: 'about', 'reporting', 'user_management_users',
@@ -2821,6 +2872,9 @@ const ConfigAccessTagWriteRestrictable = "write_restrictable"
 // and the access tag contains the value 'write_restrictable', then even PERMISSION_MANAGE_SYSTEM does not grant write access.
 //
 // PERMISSION_MANAGE_SYSTEM always grants read access.
+//
+// Config values with the access tag 'cloud_restrictable' mean that are marked to be filtered when it's used in a cloud licensed
+// environment with ExperimentalSettings.RestrictedSystemAdmin set to true.
 //
 // Example:
 //  type HairSettings struct {
@@ -2874,6 +2928,8 @@ type Config struct {
 	DisplaySettings           DisplaySettings
 	GuestAccountsSettings     GuestAccountsSettings
 	ImageProxySettings        ImageProxySettings
+	CloudSettings             CloudSettings
+	FeatureFlags              *FeatureFlags `json:",omitempty"`
 }
 
 func (o *Config) Clone() *Config {
@@ -2886,6 +2942,18 @@ func (o *Config) Clone() *Config {
 
 func (o *Config) ToJson() string {
 	b, _ := json.Marshal(o)
+	return string(b)
+}
+
+func (o *Config) ToJsonFiltered(tagType, tagValue string) string {
+	filteredConfigMap := structToMapFilteredByTag(*o, tagType, tagValue)
+	for key, value := range filteredConfigMap {
+		v, ok := value.(map[string]interface{})
+		if ok && len(v) == 0 {
+			delete(filteredConfigMap, key)
+		}
+	}
+	b, _ := json.Marshal(filteredConfigMap)
 	return string(b)
 }
 
@@ -2960,6 +3028,11 @@ func (o *Config) SetDefaults() {
 	o.DisplaySettings.SetDefaults()
 	o.GuestAccountsSettings.SetDefaults()
 	o.ImageProxySettings.SetDefaults(o.ServiceSettings)
+	o.CloudSettings.SetDefaults()
+	if o.FeatureFlags == nil {
+		o.FeatureFlags = &FeatureFlags{}
+		o.FeatureFlags.SetDefaults()
+	}
 }
 
 func (o *Config) IsValid() *AppError {
@@ -3588,4 +3661,66 @@ func (o *Config) Sanitize() {
 	if o.ServiceSettings.GfycatApiSecret != nil && len(*o.ServiceSettings.GfycatApiSecret) > 0 {
 		*o.ServiceSettings.GfycatApiSecret = FAKE_SETTING
 	}
+
+	*o.ServiceSettings.SplitKey = FAKE_SETTING
+}
+
+// structToMapFilteredByTag converts a struct into a map removing those fields that has the tag passed
+// as argument
+func structToMapFilteredByTag(t interface{}, typeOfTag, filterTag string) map[string]interface{} {
+	defer func() {
+		if r := recover(); r != nil {
+			mlog.Error("Panicked in structToMapFilteredByTag. This should never happen.", mlog.Any("recover", r))
+		}
+	}()
+
+	val := reflect.ValueOf(t)
+	elemField := reflect.TypeOf(t)
+
+	if val.Kind() != reflect.Struct {
+		return nil
+	}
+
+	out := map[string]interface{}{}
+
+	for i := 0; i < val.NumField(); i++ {
+		field := val.Field(i)
+
+		structField := elemField.Field(i)
+		tagPermissions := strings.Split(structField.Tag.Get(typeOfTag), ",")
+		if isTagPresent(filterTag, tagPermissions) {
+			continue
+		}
+
+		var value interface{}
+
+		switch field.Kind() {
+		case reflect.Struct:
+			value = structToMapFilteredByTag(field.Interface(), typeOfTag, filterTag)
+		case reflect.Ptr:
+			indirectType := field.Elem()
+			if indirectType.Kind() == reflect.Struct {
+				value = structToMapFilteredByTag(indirectType.Interface(), typeOfTag, filterTag)
+			} else if indirectType.Kind() != reflect.Invalid {
+				value = indirectType.Interface()
+			}
+		default:
+			value = field.Interface()
+		}
+
+		out[val.Type().Field(i).Name] = value
+	}
+
+	return out
+}
+
+func isTagPresent(tag string, tags []string) bool {
+	for _, val := range tags {
+		tagValue := strings.TrimSpace(val)
+		if tagValue != "" && tagValue == tag {
+			return true
+		}
+	}
+
+	return false
 }

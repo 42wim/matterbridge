@@ -18,7 +18,7 @@ type ilogger interface {
 	Println(...interface{})
 }
 
-type debug interface {
+type Debug interface {
 	Debug() bool
 
 	// Debugf print a formatted debug line.

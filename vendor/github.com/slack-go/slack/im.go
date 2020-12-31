@@ -21,6 +21,12 @@ type imResponseFull struct {
 }
 
 // IM contains information related to the Direct Message channel
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 type IM struct {
 	Conversation
 	IsUserDeleted bool `json:"is_user_deleted"`
@@ -37,11 +43,23 @@ func (api *Client) imRequest(ctx context.Context, path string, values url.Values
 }
 
 // CloseIMChannel closes the direct message channel
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) CloseIMChannel(channel string) (bool, bool, error) {
 	return api.CloseIMChannelContext(context.Background(), channel)
 }
 
 // CloseIMChannelContext closes the direct message channel with a custom context
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) CloseIMChannelContext(ctx context.Context, channel string) (bool, bool, error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -57,12 +75,24 @@ func (api *Client) CloseIMChannelContext(ctx context.Context, channel string) (b
 
 // OpenIMChannel opens a direct message channel to the user provided as argument
 // Returns some status and the channel ID
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) OpenIMChannel(user string) (bool, bool, string, error) {
 	return api.OpenIMChannelContext(context.Background(), user)
 }
 
 // OpenIMChannelContext opens a direct message channel to the user provided as argument with a custom context
 // Returns some status and the channel ID
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) OpenIMChannelContext(ctx context.Context, user string) (bool, bool, string, error) {
 	values := url.Values{
 		"token": {api.token},
@@ -77,11 +107,23 @@ func (api *Client) OpenIMChannelContext(ctx context.Context, user string) (bool,
 }
 
 // MarkIMChannel sets the read mark of a direct message channel to a specific point
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) MarkIMChannel(channel, ts string) (err error) {
 	return api.MarkIMChannelContext(context.Background(), channel, ts)
 }
 
 // MarkIMChannelContext sets the read mark of a direct message channel to a specific point with a custom context
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) MarkIMChannelContext(ctx context.Context, channel, ts string) error {
 	values := url.Values{
 		"token":   {api.token},
@@ -94,11 +136,23 @@ func (api *Client) MarkIMChannelContext(ctx context.Context, channel, ts string)
 }
 
 // GetIMHistory retrieves the direct message channel history
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetIMHistory(channel string, params HistoryParameters) (*History, error) {
 	return api.GetIMHistoryContext(context.Background(), channel, params)
 }
 
 // GetIMHistoryContext retrieves the direct message channel history with a custom context
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetIMHistoryContext(ctx context.Context, channel string, params HistoryParameters) (*History, error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -136,11 +190,23 @@ func (api *Client) GetIMHistoryContext(ctx context.Context, channel string, para
 }
 
 // GetIMChannels returns the list of direct message channels
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetIMChannels() ([]IM, error) {
 	return api.GetIMChannelsContext(context.Background())
 }
 
 // GetIMChannelsContext returns the list of direct message channels with a custom context
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetIMChannelsContext(ctx context.Context) ([]IM, error) {
 	values := url.Values{
 		"token": {api.token},

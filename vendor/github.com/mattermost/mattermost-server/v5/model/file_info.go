@@ -4,14 +4,19 @@
 package model
 
 import (
+	"bytes"
 	"encoding/json"
 	"image"
 	"image/gif"
+	"image/jpeg"
 	"io"
 	"mime"
 	"net/http"
 	"path/filepath"
 	"strings"
+
+	"github.com/disintegration/imaging"
+	"github.com/mattermost/mattermost-server/v5/mlog"
 )
 
 const (
@@ -53,6 +58,7 @@ type FileInfo struct {
 	Height          int     `json:"height,omitempty"`
 	HasPreviewImage bool    `json:"has_preview_image,omitempty"`
 	MiniPreview     *[]byte `json:"mini_preview"` // declared as *[]byte to avoid postgres/mysql differences in deserialization
+	Content         string  `json:"-"`
 }
 
 func (fi *FileInfo) ToJson() string {
@@ -149,6 +155,19 @@ func NewInfo(name string) *FileInfo {
 	}
 
 	return info
+}
+
+func GenerateMiniPreviewImage(img image.Image) *[]byte {
+	preview := imaging.Resize(img, 16, 16, imaging.Lanczos)
+
+	buf := new(bytes.Buffer)
+
+	if err := jpeg.Encode(buf, preview, &jpeg.Options{Quality: 90}); err != nil {
+		mlog.Error("Unable to encode image as mini preview jpg", mlog.Err(err))
+		return nil
+	}
+	data := buf.Bytes()
+	return &data
 }
 
 func GetInfoForBytes(name string, data io.ReadSeeker, size int) (*FileInfo, *AppError) {

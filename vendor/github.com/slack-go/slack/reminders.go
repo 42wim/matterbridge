@@ -3,17 +3,16 @@ package slack
 import (
 	"context"
 	"net/url"
-	"time"
 )
 
 type Reminder struct {
-	ID         string    `json:"id"`
-	Creator    string    `json:"creator"`
-	User       string    `json:"user"`
-	Text       string    `json:"text"`
-	Recurring  bool      `json:"recurring"`
-	Time       time.Time `json:"time"`
-	CompleteTS int       `json:"complete_ts"`
+	ID         string `json:"id"`
+	Creator    string `json:"creator"`
+	User       string `json:"user"`
+	Text       string `json:"text"`
+	Recurring  bool   `json:"recurring"`
+	Time       int    `json:"time"`
+	CompleteTS int    `json:"complete_ts"`
 }
 
 type reminderResp struct {

@@ -303,10 +303,10 @@ func walk(node *html.Node, w io.Writer, nest int, option *Option) {
 				walk(c, &buf, 1, option)
 				if lines := strings.Split(strings.TrimSpace(buf.String()), "\n"); len(lines) > 0 {
 					for i, l := range lines {
-						if i > 0 || nest > 0 {
+						if i > 0 {
 							fmt.Fprint(w, "\n")
 						}
-						fmt.Fprint(w, strings.Repeat("    ", nest)+strings.TrimSpace(l))
+						fmt.Fprint(w, strings.Repeat("    ", nest)+l)
 					}
 					fmt.Fprint(w, "\n")
 				}

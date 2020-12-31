@@ -7,6 +7,12 @@ import (
 )
 
 // Group contains all the information for a group
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 type Group struct {
 	GroupConversation
 	IsGroup bool `json:"is_group"`
@@ -38,11 +44,23 @@ func (api *Client) groupRequest(ctx context.Context, path string, values url.Val
 }
 
 // ArchiveGroup archives a private group
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) ArchiveGroup(group string) error {
 	return api.ArchiveGroupContext(context.Background(), group)
 }
 
 // ArchiveGroupContext archives a private group
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) ArchiveGroupContext(ctx context.Context, group string) error {
 	values := url.Values{
 		"token":   {api.token},
@@ -54,11 +72,23 @@ func (api *Client) ArchiveGroupContext(ctx context.Context, group string) error 
 }
 
 // UnarchiveGroup unarchives a private group
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) UnarchiveGroup(group string) error {
 	return api.UnarchiveGroupContext(context.Background(), group)
 }
 
 // UnarchiveGroupContext unarchives a private group
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) UnarchiveGroupContext(ctx context.Context, group string) error {
 	values := url.Values{
 		"token":   {api.token},
@@ -70,11 +100,23 @@ func (api *Client) UnarchiveGroupContext(ctx context.Context, group string) erro
 }
 
 // CreateGroup creates a private group
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) CreateGroup(group string) (*Group, error) {
 	return api.CreateGroupContext(context.Background(), group)
 }
 
 // CreateGroupContext creates a private group
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) CreateGroupContext(ctx context.Context, group string) (*Group, error) {
 	values := url.Values{
 		"token": {api.token},
@@ -94,12 +136,24 @@ func (api *Client) CreateGroupContext(ctx context.Context, group string) (*Group
 //   2. Archives the existing group.
 //   3. Creates a new group with the name of the existing group.
 //   4. Adds all members of the existing group to the new group.
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) CreateChildGroup(group string) (*Group, error) {
 	return api.CreateChildGroupContext(context.Background(), group)
 }
 
 // CreateChildGroupContext creates a new private group archiving the old one with a custom context
 // For more information see CreateChildGroup
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) CreateChildGroupContext(ctx context.Context, group string) (*Group, error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -114,11 +168,23 @@ func (api *Client) CreateChildGroupContext(ctx context.Context, group string) (*
 }
 
 // GetGroupHistory fetches all the history for a private group
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetGroupHistory(group string, params HistoryParameters) (*History, error) {
 	return api.GetGroupHistoryContext(context.Background(), group, params)
 }
 
 // GetGroupHistoryContext fetches all the history for a private group with a custom context
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetGroupHistoryContext(ctx context.Context, group string, params HistoryParameters) (*History, error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -156,11 +222,23 @@ func (api *Client) GetGroupHistoryContext(ctx context.Context, group string, par
 }
 
 // InviteUserToGroup invites a specific user to a private group
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) InviteUserToGroup(group, user string) (*Group, bool, error) {
 	return api.InviteUserToGroupContext(context.Background(), group, user)
 }
 
 // InviteUserToGroupContext invites a specific user to a private group with a custom context
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) InviteUserToGroupContext(ctx context.Context, group, user string) (*Group, bool, error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -176,11 +254,23 @@ func (api *Client) InviteUserToGroupContext(ctx context.Context, group, user str
 }
 
 // LeaveGroup makes authenticated user leave the group
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) LeaveGroup(group string) error {
 	return api.LeaveGroupContext(context.Background(), group)
 }
 
 // LeaveGroupContext makes authenticated user leave the group with a custom context
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) LeaveGroupContext(ctx context.Context, group string) (err error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -192,11 +282,23 @@ func (api *Client) LeaveGroupContext(ctx context.Context, group string) (err err
 }
 
 // KickUserFromGroup kicks a user from a group
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) KickUserFromGroup(group, user string) error {
 	return api.KickUserFromGroupContext(context.Background(), group, user)
 }
 
 // KickUserFromGroupContext kicks a user from a group with a custom context
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) KickUserFromGroupContext(ctx context.Context, group, user string) (err error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -209,11 +311,23 @@ func (api *Client) KickUserFromGroupContext(ctx context.Context, group, user str
 }
 
 // GetGroups retrieves all groups
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetGroups(excludeArchived bool) ([]Group, error) {
 	return api.GetGroupsContext(context.Background(), excludeArchived)
 }
 
 // GetGroupsContext retrieves all groups with a custom context
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetGroupsContext(ctx context.Context, excludeArchived bool) ([]Group, error) {
 	values := url.Values{
 		"token": {api.token},
@@ -230,11 +344,23 @@ func (api *Client) GetGroupsContext(ctx context.Context, excludeArchived bool) (
 }
 
 // GetGroupInfo retrieves the given group
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetGroupInfo(group string) (*Group, error) {
 	return api.GetGroupInfoContext(context.Background(), group)
 }
 
 // GetGroupInfoContext retrieves the given group with a custom context
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetGroupInfoContext(ctx context.Context, group string) (*Group, error) {
 	values := url.Values{
 		"token":          {api.token},
@@ -254,12 +380,24 @@ func (api *Client) GetGroupInfoContext(ctx context.Context, group string) (*Grou
 // timer before making the call. In this way, any further updates needed during the timeout will not generate extra
 // calls (just one per channel). This is useful for when reading scroll-back history, or following a busy live
 // channel. A timeout of 5 seconds is a good starting point. Be sure to flush these calls on shutdown/logout.
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) SetGroupReadMark(group, ts string) error {
 	return api.SetGroupReadMarkContext(context.Background(), group, ts)
 }
 
 // SetGroupReadMarkContext sets the read mark on a private group with a custom context
 // For more details see SetGroupReadMark
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) SetGroupReadMarkContext(ctx context.Context, group, ts string) (err error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -272,11 +410,23 @@ func (api *Client) SetGroupReadMarkContext(ctx context.Context, group, ts string
 }
 
 // OpenGroup opens a private group
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) OpenGroup(group string) (bool, bool, error) {
 	return api.OpenGroupContext(context.Background(), group)
 }
 
 // OpenGroupContext opens a private group with a custom context
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) OpenGroupContext(ctx context.Context, group string) (bool, bool, error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -293,11 +443,23 @@ func (api *Client) OpenGroupContext(ctx context.Context, group string) (bool, bo
 // RenameGroup renames a group
 // XXX: They return a channel, not a group. What is this crap? :(
 // Inconsistent api it seems.
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) RenameGroup(group, name string) (*Channel, error) {
 	return api.RenameGroupContext(context.Background(), group, name)
 }
 
 // RenameGroupContext renames a group with a custom context
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) RenameGroupContext(ctx context.Context, group, name string) (*Channel, error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -315,11 +477,23 @@ func (api *Client) RenameGroupContext(ctx context.Context, group, name string) (
 }
 
 // SetGroupPurpose sets the group purpose
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) SetGroupPurpose(group, purpose string) (string, error) {
 	return api.SetGroupPurposeContext(context.Background(), group, purpose)
 }
 
 // SetGroupPurposeContext sets the group purpose with a custom context
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) SetGroupPurposeContext(ctx context.Context, group, purpose string) (string, error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -335,11 +509,23 @@ func (api *Client) SetGroupPurposeContext(ctx context.Context, group, purpose st
 }
 
 // SetGroupTopic sets the group topic
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) SetGroupTopic(group, topic string) (string, error) {
 	return api.SetGroupTopicContext(context.Background(), group, topic)
 }
 
 // SetGroupTopicContext sets the group topic with a custom context
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) SetGroupTopicContext(ctx context.Context, group, topic string) (string, error) {
 	values := url.Values{
 		"token":   {api.token},
@@ -356,12 +542,24 @@ func (api *Client) SetGroupTopicContext(ctx context.Context, group, topic string
 
 // GetGroupReplies gets an entire thread (a message plus all the messages in reply to it).
 // see https://api.slack.com/methods/groups.replies
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetGroupReplies(channelID, thread_ts string) ([]Message, error) {
 	return api.GetGroupRepliesContext(context.Background(), channelID, thread_ts)
 }
 
 // GetGroupRepliesContext gets an entire thread (a message plus all the messages in reply to it) with a custom context
 // see https://api.slack.com/methods/groups.replies
+//
+// Deprecated: channels.*, groups.* im.* and mpim.* methods will be deprecated in the next version.
+// In Slack, these API are no longer available for  newly Apps created after June 10th, 2020.
+// Also, existing applications will not be able to use these APIs after February 24th, 2021.
+//
+// See also: https://api.slack.com/changelog/2020-01-deprecating-antecedents-to-the-conversations-api
 func (api *Client) GetGroupRepliesContext(ctx context.Context, channelID, thread_ts string) ([]Message, error) {
 	values := url.Values{
 		"token":     {api.token},

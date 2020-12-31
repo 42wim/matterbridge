@@ -8,6 +8,7 @@ package agent
 
 import (
 	"bufio"
+	"context"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -55,6 +56,13 @@ type Options struct {
 	// can call Close before shutting down.
 	// Optional.
 	ShutdownCleanup bool
+
+	// ReuseSocketAddrAndPort determines whether the SO_REUSEADDR and
+	// SO_REUSEADDR socket options should be set on the listening socket of
+	// the agent. This option is only effective on unix-like OSes and if
+	// Addr is set to a fixed host:port.
+	// Optional.
+	ReuseSocketAddrAndPort bool
 }
 
 // Listen starts the gops agent on a host process. Once agent started, users
@@ -96,11 +104,14 @@ func Listen(opts Options) error {
 	if addr == "" {
 		addr = defaultAddr
 	}
-	ln, err := net.Listen("tcp", addr)
+	var lc net.ListenConfig
+	if opts.ReuseSocketAddrAndPort {
+		lc.Control = setsockoptReuseAddrAndPort
+	}
+	listener, err = lc.Listen(context.Background(), "tcp", addr)
 	if err != nil {
 		return err
 	}
-	listener = ln
 	port := listener.Addr().(*net.TCPAddr).Port
 	portfile = fmt.Sprintf("%s/%d", gopsdir, os.Getpid())
 	err = ioutil.WriteFile(portfile, []byte(strconv.Itoa(port)), os.ModePerm)
