@@ -459,9 +459,9 @@ func (gw *Gateway) SendMessage(
 	}
 
 	// if the parentID is still empty and we have a parentID set in the original message
-	// this means that we didn't find it in the cache so set it "msg-parent-not-found"
+	// this means that we didn't find it in the cache so set it to a "msg-parent-not-found" constant
 	if msg.ParentID == "" && rmsg.ParentID != "" {
-		msg.ParentID = "msg-parent-not-found"
+		msg.ParentID = config.ParentIDNotFound
 	}
 
 	drop, err := gw.modifyOutMessageTengo(rmsg, &msg, dest)
