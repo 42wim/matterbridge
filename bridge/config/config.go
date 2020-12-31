@@ -29,6 +29,8 @@ const (
 	EventNoticeIRC         = "notice_irc"
 )
 
+const ParentIDNotFound = "msg-parent-not-found"
+
 type Message struct {
 	Text      string    `json:"text"`
 	Channel   string    `json:"channel"`
@@ -43,6 +45,14 @@ type Message struct {
 	Timestamp time.Time `json:"timestamp"`
 	ID        string    `json:"id"`
 	Extra     map[string][]interface{}
+}
+
+func (m Message) ParentNotFound() bool {
+	return m.ParentID == ParentIDNotFound
+}
+
+func (m Message) ParentValid() bool {
+	return m.ParentID != "" && !m.ParentNotFound()
 }
 
 type FileInfo struct {

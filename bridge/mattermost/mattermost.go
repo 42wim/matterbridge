@@ -122,7 +122,7 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 	}
 
 	// Handle prefix hint for unthreaded messages.
-	if msg.ParentID == "msg-parent-not-found" {
+	if msg.ParentNotFound() {
 		msg.ParentID = ""
 		msg.Text = fmt.Sprintf("[thread]: %s", msg.Text)
 	}

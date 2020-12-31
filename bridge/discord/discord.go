@@ -243,7 +243,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	}
 
 	// Handle prefix hint for unthreaded messages.
-	if msg.ParentID == "msg-parent-not-found" {
+	if msg.ParentNotFound() {
 		msg.ParentID = ""
 		msg.Text = fmt.Sprintf("[thread]: %s", msg.Text)
 	}
@@ -297,7 +297,7 @@ func (b *Bdiscord) handleEventBotUser(msg *config.Message, channelID string) (st
 		Content: msg.Username + msg.Text,
 	}
 
-	if msg.ParentID != "" && msg.ParentID != "msg-parent-not-found" {
+	if msg.ParentValid() {
 		m.Reference = &discordgo.MessageReference{
 			MessageID: msg.ParentID,
 			ChannelID: channelID,

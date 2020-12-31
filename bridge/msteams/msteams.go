@@ -86,13 +86,16 @@ func (b *Bmsteams) JoinChannel(channel config.ChannelInfo) error {
 
 func (b *Bmsteams) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
-	if msg.ParentID != "" && msg.ParentID != "msg-parent-not-found" {
+	if msg.ParentValid() {
 		return b.sendReply(msg)
 	}
-	if msg.ParentID == "msg-parent-not-found" {
+
+	// Handle prefix hint for unthreaded messages.
+	if msg.ParentNotFound() {
 		msg.ParentID = ""
 		msg.Text = fmt.Sprintf("[thread]: %s", msg.Text)
 	}
+
 	ct := b.gc.Teams().ID(b.GetString("TeamID")).Channels().ID(msg.Channel).Messages().Request()
 	text := msg.Username + msg.Text
 	content := &msgraph.ItemBody{Content: &text}
