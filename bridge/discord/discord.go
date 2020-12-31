@@ -242,6 +242,12 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 		msg.Text = "_" + msg.Text + "_"
 	}
 
+	// Handle prefix hint for unthreaded messages.
+	if msg.ParentID == "msg-parent-not-found" {
+		msg.ParentID = ""
+		msg.Text = fmt.Sprintf("[thread]: %s", msg.Text)
+	}
+
 	// Use webhook to send the message
 	useWebhooks := b.shouldMessageUseWebhooks(&msg)
 	if useWebhooks && msg.Event != config.EventMsgDelete && msg.ParentID == "" {
