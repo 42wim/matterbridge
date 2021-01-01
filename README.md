@@ -91,14 +91,15 @@ And more...
 - [IRC](http://www.mirc.com/servers.html)
 - [Keybase](https://keybase.io)
 - [Matrix](https://matrix.org)
-- [Mattermost](https://github.com/mattermost/mattermost-server/) 4.x, 5.x
+- [Mattermost](https://github.com/mattermost/mattermost-server/)
 - [Microsoft Teams](https://teams.microsoft.com)
 - [Mumble](https://www.mumble.info/)
 - [Nextcloud Talk](https://nextcloud.com/talk/)
 - [Rocket.chat](https://rocket.chat)
 - [Slack](https://slack.com)
 - [Ssh-chat](https://github.com/shazow/ssh-chat)
-- [Steam](https://store.steampowered.com/)
+- ~~[Steam](https://store.steampowered.com/)~~
+  - Not supported anymore, see [here](https://github.com/Philipp15b/go-steam/issues/94) for more info.
 - [Telegram](https://telegram.org)
 - [Twitch](https://twitch.tv)
 - [WhatsApp](https://www.whatsapp.com/)
@@ -168,7 +169,7 @@ To install or upgrade just download the latest [binary](https://github.com/42wim
 Most people just want to use binaries, you can find those [here](https://github.com/42wim/matterbridge/releases/latest)
 
 If you really want to build from source, follow these instructions:
-Go 1.12+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed.
+Go 1.13+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed.
 
 ```bash
 go get github.com/42wim/matterbridge
@@ -296,6 +297,7 @@ See [FAQ](https://github.com/42wim/matterbridge/wiki/FAQ)
 - [fbridge](https://github.com/VictorNine/fbridge) (Facebook messenger support)
 - [isla](https://github.com/alphachung/isla) (Bot for Discord-Telegram groups used alongside matterbridge)
 - [matterbabble](https://github.com/DeclanHoare/matterbabble) (Connect Discourse threads to Matterbridge)
+- [nextcloud talk](https://github.com/nextcloud/talk_matterbridge) (Integrates matterbridge in Nextcloud Talk)
 
 ## Articles
 
@@ -308,6 +310,7 @@ See [FAQ](https://github.com/42wim/matterbridge/wiki/FAQ)
 - <https://www.stitcher.com/s/?eid=52382713>
 - <https://daniele.tech/2019/02/how-to-use-matterbridge-to-connect-2-different-slack-workspaces/>
 - <https://userlinux.net/mattermost-and-matterbridge.html>
+- <https://nextcloud.com/blog/bridging-chat-services-in-talk/>
 
 ## Thanks
 
