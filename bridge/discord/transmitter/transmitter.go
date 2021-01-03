@@ -2,6 +2,7 @@
 // arbitrary webhook messages to Discord.
 //
 // The package provides the following functionality:
+//
 // - Creating new webhooks, whenever necessary
 // - Loading webhooks that we have previously created
 // - Sending new messages
@@ -43,9 +44,8 @@ var ErrWebhookNotFound = errors.New("webhook for this channel and message does n
 
 // ErrPermissionDenied is returned if the bot does not have permission to manage webhooks.
 //
-// It's important to note that:
-// - a bot can have both a guild-wide permission and a channel-specific permission to manage webhooks
-// - even if a bot has permission to manage the guild's webhooks, there could be channel specific overrides
+// Bots can be granted a guild-wide permission and channel-specific permissions to manage webhooks.
+// Despite potentially having guild-wide permission, channel specific overrides could deny a bot's permission to manage webhooks.
 var ErrPermissionDenied = errors.New("missing 'Manage Webhooks' permission")
 
 // New returns a new Transmitter given a Discord session, guild ID, and title.
@@ -62,9 +62,7 @@ func New(session *discordgo.Session, guild string, title string, autoCreate bool
 	}
 }
 
-// Send transmits a message to the given channel with the provided webhook data.
-//
-// Note that this function will wait until Discord responds with an answer.
+// Send transmits a message to the given channel with the provided webhook data, and waits until Discord responds with message data.
 func (t *Transmitter) Send(channelID string, params *discordgo.WebhookParams) (*discordgo.Message, error) {
 	wh, err := t.getOrCreateWebhook(channelID)
 	if err != nil {
@@ -124,16 +122,19 @@ func (t *Transmitter) AddWebhook(channelID string, webhook *discordgo.Webhook) b
 // RefreshGuildWebhooks loads "relevant" webhooks into the transmitter, with careful permission handling.
 //
 // Notes:
+//
 // - A webhook is "relevant" if it was created by this bot -- the ApplicationID should match the bot's ID.
 // - The term "having permission" means having the "Manage Webhooks" permission. See ErrPermissionDenied for more information.
 // - This function is additive and will not unload previously loaded webhooks.
 // - A nil channelIDs slice is treated the same as an empty one.
 //
 // If the bot has guild-wide permission:
+//
 // 1. it will load any "relevant" webhooks from the entire guild
 // 2. the given slice is ignored
 //
 // If the bot does not have guild-wide permission:
+//
 // 1. it will load any "relevant" webhooks in each channel
 // 2. a single error will be returned if any error occurs (incl. if there is no permission for any of these channels)
 //
