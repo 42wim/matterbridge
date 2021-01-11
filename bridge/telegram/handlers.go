@@ -5,7 +5,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"text/template/parse"
 	"unicode/utf16"
 
 	"github.com/42wim/matterbridge/bridge/config"
