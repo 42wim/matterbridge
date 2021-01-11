@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"text/template/parse"
 	"unicode/utf16"
 
 	"github.com/42wim/matterbridge/bridge/config"
@@ -383,26 +384,43 @@ func (b *Btelegram) handleEdit(msg *config.Message, chatid int64) (string, error
 // handleUploadFile handles native upload of files
 func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64) string {
 	var c tgbotapi.Chattable
+	var captiontext string
+	var parsemode string
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo)
 		file := tgbotapi.FileBytes{
 			Name:  fi.Name,
 			Bytes: *fi.Data,
 		}
+		captiontext = msg.Username + fi.Comment
+		if b.GetString("MessageFormat") == HTMLFormat {
+			b.Log.Debug("Using mode HTML")
+			parsemode = tgbotapi.ModeHTML
+		}
+		if b.GetString("MessageFormat") == "Markdown" {
+			b.Log.Debug("Using mode markdown")
+			parsemode = tgbotapi.ModeMarkdown
+		}
+		if strings.ToLower(b.GetString("MessageFormat")) == HTMLNick {
+			b.Log.Debug("Using mode HTML - nick only")
+			captiontext = msg.Username + html.EscapeString(fi.Comment)
+			parsemode = tgbotapi.ModeHTML
+		}
 		re := regexp.MustCompile(".(jpg|png)$")
 		if re.MatchString(fi.Name) {
-			c = tgbotapi.NewPhotoUpload(chatid, file)
+			pc := tgbotapi.NewPhotoUpload(chatid, file)
+			pc.Caption = captiontext
+			pc.ParseMode = parsemode
+			c = pc
 		} else {
-			c = tgbotapi.NewDocumentUpload(chatid, file)
+			dc := tgbotapi.NewDocumentUpload(chatid, file)
+			dc.Caption = captiontext
+			dc.ParseMode = parsemode
+			c = dc
 		}
 		_, err := b.c.Send(c)
 		if err != nil {
 			b.Log.Errorf("file upload failed: %#v", err)
-		}
-		if fi.Comment != "" {
-			if _, err := b.sendMessage(chatid, msg.Username, fi.Comment); err != nil {
-				b.Log.Errorf("posting file comment %s failed: %s", fi.Comment, err)
-			}
 		}
 	}
 	return ""
