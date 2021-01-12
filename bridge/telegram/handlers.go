@@ -389,7 +389,7 @@ func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64) string {
 			Name:  fi.Name,
 			Bytes: *fi.Data,
 		}
-		re := regexp.MustCompile(".(jpg|png)$")
+		re := regexp.MustCompile(".(jpg|jpe|png)$")
 		if re.MatchString(fi.Name) {
 			c = tgbotapi.NewPhotoUpload(chatid, file)
 		} else {
