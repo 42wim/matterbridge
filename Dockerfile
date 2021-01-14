@@ -1,7 +1,7 @@
 FROM alpine AS builder
 
 COPY . /go/src/github.com/42wim/matterbridge
-RUN apk update && apk add go git gcc musl-dev \
+RUN apk --no-cache add go git gcc musl-dev \
         && cd /go/src/github.com/42wim/matterbridge \
         && export GOPATH=/go \
         && go get \
