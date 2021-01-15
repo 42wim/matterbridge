@@ -70,7 +70,7 @@ And more...
   - [Changelog](#changelog)
   - [FAQ](#faq)
   - [Related projects](#related-projects)
-  - [Articles](#articles)
+  - [Articles / Tutorials](#articles--tutorials)
   - [Thanks](#thanks)
 
 ## Features
@@ -111,9 +111,11 @@ And more...
 - [Discourse](https://github.com/DeclanHoare/matterbabble)
 - [Facebook messenger](https://github.com/VictorNine/fbridge)
 - [Minecraft](https://github.com/elytra/MatterLink)
+- [Minecraft](https://github.com/raws/mattercraft)
 - [Reddit](https://github.com/bonehurtingjuice/mattereddit)
 - [Counter-Strike, half-life and more](https://forums.alliedmods.net/showthread.php?t=319430)
 - [MatterAMXX](https://github.com/GabeIggy/MatterAMXX)
+- [Vintage Story](https://github.com/NikkyAI/vs-matterbridge)
 
 ### API
 
@@ -123,11 +125,13 @@ More info and examples on the [wiki](https://github.com/42wim/matterbridge/wiki/
 Used by the projects below. Feel free to make a PR to add your project to this list.
 
 - [MatterLink](https://github.com/elytra/MatterLink) (Matterbridge link for Minecraft Server chat)
+- [Minecraft](https://github.com/raws/mattercraft) (Matterbridge link for Minecraft Server chat)
 - [pyCord](https://github.com/NikkyAI/pyCord) (crossplatform chatbot)
 - [Mattereddit](https://github.com/bonehurtingjuice/mattereddit) (Reddit chat support)
 - [fbridge](https://github.com/VictorNine/fbridge) (Facebook messenger support)
 - [matterbabble](https://github.com/DeclanHoare/matterbabble) (Discourse support)
 - [MatterAMXX](https://forums.alliedmods.net/showthread.php?t=319430) (Counter-Strike, half-life and more via AMXX mod)
+- [Vintage Story](https://github.com/NikkyAI/vs-matterbridge)
 
 ## Chat with us
 
@@ -298,8 +302,10 @@ See [FAQ](https://github.com/42wim/matterbridge/wiki/FAQ)
 - [isla](https://github.com/alphachung/isla) (Bot for Discord-Telegram groups used alongside matterbridge)
 - [matterbabble](https://github.com/DeclanHoare/matterbabble) (Connect Discourse threads to Matterbridge)
 - [nextcloud talk](https://github.com/nextcloud/talk_matterbridge) (Integrates matterbridge in Nextcloud Talk)
+- [mattercraft](https://github.com/raws/mattercraft) (Minecraft bridge)
+- [vs-matterbridge](https://github.com/NikkyAI/vs-matterbridge) (Vintage Story bridge)
 
-## Articles
+## Articles / Tutorials
 
 - [matterbridge on kubernetes](https://medium.freecodecamp.org/using-kubernetes-to-deploy-a-chat-gateway-or-when-technology-works-like-its-supposed-to-a169a8cd69a3)
 - <https://mattermost.com/blog/connect-irc-to-mattermost/>
@@ -311,6 +317,7 @@ See [FAQ](https://github.com/42wim/matterbridge/wiki/FAQ)
 - <https://daniele.tech/2019/02/how-to-use-matterbridge-to-connect-2-different-slack-workspaces/>
 - <https://userlinux.net/mattermost-and-matterbridge.html>
 - <https://nextcloud.com/blog/bridging-chat-services-in-talk/>
+- Youtube: [whatsapp - telegram bridging](https://www.youtube.com/watch?v=W-VXISoKtNc)
 
 ## Thanks
 
