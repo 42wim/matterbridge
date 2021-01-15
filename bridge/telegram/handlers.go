@@ -405,7 +405,7 @@ func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64) string {
 			captiontext = msg.Username + html.EscapeString(fi.Comment)
 			parsemode = tgbotapi.ModeHTML
 		}
-		re := regexp.MustCompile(".(jpg|png)$")
+		re := regexp.MustCompile(".(jpg|jpe|png)$")
 		if re.MatchString(fi.Name) {
 			pc := tgbotapi.NewPhotoUpload(chatid, file)
 			pc.Caption = captiontext
