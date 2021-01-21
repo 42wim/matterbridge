@@ -120,7 +120,7 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 			return "", err
 		}
 
-		return msg.ID, nil
+		return "", nil
 	}
 
 	// Post normal message.
