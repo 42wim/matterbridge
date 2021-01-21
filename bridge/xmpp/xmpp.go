@@ -27,8 +27,6 @@ type Bxmpp struct {
 	connected bool
 	sync.RWMutex
 
-	webhookURL string
-
 	avatarAvailability map[string]bool
 	avatarMap          map[string]string
 }
@@ -36,7 +34,6 @@ type Bxmpp struct {
 func New(cfg *bridge.Config) bridge.Bridger {
 	return &Bxmpp{
 		Config:             cfg,
-		webhookURL:         cfg.GetString("WebhookUrl"),
 		xmppMap:            make(map[string]string),
 		avatarAvailability: make(map[string]bool),
 		avatarMap:          make(map[string]string),
@@ -96,7 +93,7 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
 			b.Log.Debugf("=> Sending attachement message %#v", rmsg)
-			if b.webhookURL != "" {
+			if b.GetString("WebhookURL") != "" {
 				err = b.postSlackCompatibleWebhook(msg)
 			} else {
 				_, err = b.xc.Send(xmpp.Chat{
@@ -115,7 +112,7 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 		}
 	}
 
-	if b.webhookURL != "" {
+	if b.GetString("WebhookURL") != "" {
 		b.Log.Debugf("Sending message using Webhook")
 		err := b.postSlackCompatibleWebhook(msg)
 		if err != nil {
@@ -160,7 +157,7 @@ func (b *Bxmpp) postSlackCompatibleWebhook(msg config.Message) error {
 		return err
 	}
 
-	resp, err := http.Post(b.webhookURL+"/"+msg.Channel, "application/json", bytes.NewReader(webhookBody))
+	resp, err := http.Post(b.GetString("WebhookURL")+"/"+msg.Channel, "application/json", bytes.NewReader(webhookBody))
 	resp.Body.Close()
 	return err
 }
@@ -422,7 +419,7 @@ func (b *Bxmpp) skipMessage(message xmpp.Chat) bool {
 	}
 
 	// Ignore messages posted by our webhook
-	if b.webhookURL != "" && strings.Contains(message.ID, "webhookbot") {
+	if b.GetString("WebhookURL") != "" && strings.Contains(message.ID, "webhookbot") {
 		return true
 	}
 
