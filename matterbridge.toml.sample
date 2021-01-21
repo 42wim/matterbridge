@@ -310,6 +310,11 @@ StripNick=false
 #OPTIONAL (default false)
 ShowTopicChange=false
 
+#Enable sending messages using a webhook instead of regular MUC messages.
+#Only works with a prosody server using mod_slack_webhook. Does not support editing.
+#OPTIONAL (default "")
+WebhookURL="https://yourdomain/prosody/msg/someid"
+
 ###################################################################
 #mattermost section
 ###################################################################
