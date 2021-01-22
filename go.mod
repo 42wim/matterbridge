@@ -6,6 +6,7 @@ require (
 	github.com/Philipp15b/go-steam v1.0.1-0.20200727090957-6ae9b3c0a560
 	github.com/Rhymen/go-whatsapp v0.1.2-0.20201226125722-8029c28f5c5a
 	github.com/RocketChat/Rocket.Chat.Go.SDK v0.0.0-20200922220614-e4a51dfb52e4 // indirect
+	github.com/SevereCloud/vksdk/v2 v2.9.0
 	github.com/d5/tengo/v2 v2.6.2
 	github.com/davecgh/go-spew v1.1.1
 	github.com/fsnotify/fsnotify v1.4.9
