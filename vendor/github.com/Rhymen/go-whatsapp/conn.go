@@ -2,6 +2,7 @@
 package whatsapp
 
 import (
+	"fmt"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -9,7 +10,6 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/pkg/errors"
 )
 
 type metric byte
@@ -195,7 +195,7 @@ func (wac *Conn) connect() (err error) {
 	headers := http.Header{"Origin": []string{"https://web.whatsapp.com"}}
 	wsConn, _, err := dialer.Dial("wss://web.whatsapp.com/ws", headers)
 	if err != nil {
-		return errors.Wrap(err, "couldn't dial whatsapp web websocket")
+		return fmt.Errorf("couldn't dial whatsapp web websocket: %w", err)
 	}
 
 	wsConn.SetCloseHandler(func(code int, text string) error {
@@ -221,7 +221,7 @@ func (wac *Conn) connect() (err error) {
 	wac.wg = &sync.WaitGroup{}
 	wac.wg.Add(2)
 	go wac.readPump()
-	go wac.keepAlive(20000, 60000)
+	go wac.keepAlive(20000, 55000)
 
 	wac.loggedIn = false
 	return nil
@@ -237,7 +237,10 @@ func (wac *Conn) Disconnect() (Session, error) {
 	close(wac.ws.close) //signal close
 	wac.wg.Wait()       //wait for close
 
-	err := wac.ws.conn.Close()
+	var err error
+	if wac.ws != nil && wac.ws.conn != nil {
+		err = wac.ws.conn.Close()
+	}
 	wac.ws = nil
 
 	if wac.session == nil {
@@ -246,17 +249,20 @@ func (wac *Conn) Disconnect() (Session, error) {
 	return *wac.session, err
 }
 
-func (wac *Conn) AdminTest() (bool, error) {
+func (wac *Conn) IsLoginInProgress() bool {
+	return wac.sessionLock == 1
+}
+
+func (wac *Conn) AdminTest() error {
 	if !wac.connected {
-		return false, ErrNotConnected
+		return ErrNotConnected
 	}
 
 	if !wac.loggedIn {
-		return false, ErrInvalidSession
+		return ErrInvalidSession
 	}
 
-	result, err := wac.sendAdminTest()
-	return result, err
+	return wac.sendAdminTest()
 }
 
 func (wac *Conn) keepAlive(minIntervalMs int, maxIntervalMs int) {
@@ -265,7 +271,7 @@ func (wac *Conn) keepAlive(minIntervalMs int, maxIntervalMs int) {
 	for {
 		err := wac.sendKeepAlive()
 		if err != nil {
-			wac.handle(errors.Wrap(err, "keepAlive failed"))
+			wac.handle(fmt.Errorf("keepAlive failed: %w", err))
 			//TODO: Consequences?
 		}
 		interval := rand.Intn(maxIntervalMs-minIntervalMs) + minIntervalMs

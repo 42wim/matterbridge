@@ -12,6 +12,7 @@ import (
 
 	"github.com/Rhymen/go-whatsapp/binary"
 	"github.com/Rhymen/go-whatsapp/binary/proto"
+	"github.com/davecgh/go-spew/spew"
 )
 
 type MediaType string
@@ -22,6 +23,23 @@ const (
 	MediaAudio    MediaType = "WhatsApp Audio Keys"
 	MediaDocument MediaType = "WhatsApp Document Keys"
 )
+
+func (wac *Conn) SendRaw(msg *proto.WebMessageInfo, output chan<- error) {
+	ch, err := wac.sendProto(msg)
+	if err != nil {
+		output <- fmt.Errorf("could not send proto: %w", err)
+		return
+	}
+	response := <-ch
+	resp := StatusResponse{RequestType: "message sending"}
+	if err = json.Unmarshal([]byte(response), &resp); err != nil {
+		output <- fmt.Errorf("error decoding sending response: %w", err)
+	} else if resp.Status != 200 {
+		output <- resp
+	} else {
+		output <- nil
+	}
+}
 
 func (wac *Conn) Send(msg interface{}) (string, error) {
 	var msgProto *proto.WebMessageInfo
@@ -76,21 +94,16 @@ func (wac *Conn) Send(msg interface{}) (string, error) {
 
 	select {
 	case response := <-ch:
-		var resp map[string]interface{}
+		resp := StatusResponse{RequestType: "message sending"}
 		if err = json.Unmarshal([]byte(response), &resp); err != nil {
 			return "ERROR", fmt.Errorf("error decoding sending response: %v\n", err)
+		} else if resp.Status != 200 {
+			return "ERROR", resp
 		}
-		if int(resp["status"].(float64)) != 200 {
-			return "ERROR", fmt.Errorf("message sending responded with %v", resp["status"])
-		}
-		if int(resp["status"].(float64)) == 200 {
-			return getMessageInfo(msgProto).Id, nil
-		}
+		return getMessageInfo(msgProto).Id, nil
 	case <-time.After(wac.msgTimeout):
 		return "ERROR", fmt.Errorf("sending message timed out")
 	}
-
-	return "ERROR", nil
 }
 
 func (wac *Conn) sendProto(p *proto.WebMessageInfo) (<-chan string, error) {
@@ -151,21 +164,16 @@ func (wac *Conn) DeleteMessage(remotejid, msgid string, fromMe bool) error {
 
 	select {
 	case response := <-ch:
-		var resp map[string]interface{}
+		resp := StatusResponse{RequestType: "message deletion"}
 		if err = json.Unmarshal([]byte(response), &resp); err != nil {
 			return fmt.Errorf("error decoding deletion response: %v", err)
+		} else if resp.Status != 200 {
+			return resp
 		}
-		if int(resp["status"].(float64)) != 200 {
-			return fmt.Errorf("message deletion responded with %v", resp["status"])
-		}
-		if int(resp["status"].(float64)) == 200 {
-			return nil
-		}
+		return nil
 	case <-time.After(wac.msgTimeout):
 		return fmt.Errorf("deleting message timed out")
 	}
-
-	return nil
 }
 
 func (wac *Conn) deleteChatProto(remotejid, msgid string, fromMe bool) (<-chan string, error) {
@@ -258,7 +266,7 @@ func getInfoProto(info *MessageInfo) *proto.WebMessageInfo {
 	}
 	info.FromMe = true
 
-	status := proto.WebMessageInfo_WEB_MESSAGE_INFO_STATUS(info.Status)
+	status := proto.WebMessageInfo_WebMessageInfoStatus(info.Status)
 
 	return &proto.WebMessageInfo{
 		Key: &proto.MessageKey{
@@ -275,19 +283,20 @@ func getInfoProto(info *MessageInfo) *proto.WebMessageInfo {
 ContextInfo represents contextinfo of every message
 */
 type ContextInfo struct {
-	QuotedMessageID string //StanzaId
+	QuotedMessageID string // StanzaId
 	QuotedMessage   *proto.Message
 	Participant     string
 	IsForwarded     bool
+	MentionedJID    []string
 }
 
 func getMessageContext(msg *proto.ContextInfo) ContextInfo {
-
 	return ContextInfo{
-		QuotedMessageID: msg.GetStanzaId(), //StanzaId
+		QuotedMessageID: msg.GetStanzaId(), // StanzaId
 		QuotedMessage:   msg.GetQuotedMessage(),
 		Participant:     msg.GetParticipant(),
 		IsForwarded:     msg.GetIsForwarded(),
+		MentionedJID:    msg.GetMentionedJid(),
 	}
 }
 
@@ -325,7 +334,6 @@ func getTextMessage(msg *proto.WebMessageInfo) TextMessage {
 		text.ContextInfo = getMessageContext(m.GetContextInfo())
 	} else {
 		text.Text = msg.GetMessage().GetConversation()
-
 	}
 
 	return text
@@ -803,7 +811,6 @@ func getContactMessageProto(msg ContactMessage) *proto.WebMessageInfo {
 }
 
 func ParseProtoMessage(msg *proto.WebMessageInfo) interface{} {
-
 	switch {
 
 	case msg.GetMessage().GetAudioMessage() != nil:
@@ -837,7 +844,8 @@ func ParseProtoMessage(msg *proto.WebMessageInfo) interface{} {
 		return getContactMessage(msg)
 
 	default:
-		//cannot match message
+		// cannot match message
+		spew.Dump(msg)
 		return ErrMessageTypeNotImplemented
 	}
 }
@@ -873,15 +881,50 @@ func getNewContact(msg map[string]string) Contact {
 	return contact
 }
 
+// ReadMessage represents a chat that the user read on the WhatsApp mobile app.
+type ReadMessage struct {
+	Jid string
+}
+
+func getReadMessage(msg map[string]string) ReadMessage {
+	return ReadMessage{
+		Jid: msg["jid"],
+	}
+}
+
+// ReceivedMessage probably represents a message that the user read on the WhatsApp mobile app.
+type ReceivedMessage struct {
+	Index       string
+	Jid         string
+	Owner       bool
+	Participant string
+	Type        string
+}
+
+func getReceivedMessage(msg map[string]string) ReceivedMessage {
+	owner, _ := strconv.ParseBool(msg["owner"])
+	// This field might not exist
+	participant, _ := msg["participant"]
+	return ReceivedMessage{
+		Index:       msg["index"],
+		Jid:         msg["jid"],
+		Owner:       owner,
+		Participant: participant,
+		Type:        msg["type"],
+	}
+}
+
 func ParseNodeMessage(msg binary.Node) interface{} {
 	switch msg.Description {
 	case "battery":
 		return getBatteryMessage(msg.Attributes)
 	case "user":
 		return getNewContact(msg.Attributes)
+	case "read":
+		return getReadMessage(msg.Attributes)
+	case "received":
+		return getReceivedMessage(msg.Attributes)
 	default:
-		//cannot match message
+		return &msg
 	}
-
-	return nil
 }

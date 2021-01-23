@@ -117,6 +117,12 @@ type RawMessageHandler interface {
 	HandleRawMessage(message *proto.WebMessageInfo)
 }
 
+// The UnknownBinaryHandler interface needs to be implemented to receive unhandled binary messages.
+type UnknownBinaryHandler interface {
+	Handler
+	HandleUnknownBinaryNode(message *binary.Node)
+}
+
 /**
 The ContactListHandler interface needs to be implemented to applky custom actions to contact lists dispatched by the dispatcher.
 */
@@ -139,6 +145,16 @@ The BatteryMessageHandler interface needs to be implemented to receive percentag
 type BatteryMessageHandler interface {
 	Handler
 	HandleBatteryMessage(battery BatteryMessage)
+}
+
+type ReadMessageHandler interface {
+	Handler
+	HandleReadMessage(read ReadMessage)
+}
+
+type ReceivedMessageHandler interface {
+	Handler
+	HandleReceivedMessage(received ReceivedMessage)
 }
 
 /**
@@ -186,6 +202,19 @@ func (wac *Conn) shouldCallSynchronously(handler Handler) bool {
 }
 
 func (wac *Conn) handle(message interface{}) {
+	defer func() {
+		if errIfc := recover(); errIfc != nil {
+			if err, ok := errIfc.(error); ok {
+				wac.unsafeHandle(fmt.Errorf("panic in WhatsApp handler: %w", err))
+			} else {
+				wac.unsafeHandle(fmt.Errorf("panic in WhatsApp handler: %v", errIfc))
+			}
+		}
+	}()
+	wac.unsafeHandle(message)
+}
+
+func (wac *Conn) unsafeHandle(message interface{}) {
 	wac.handleWithCustomHandlers(message, wac.handler)
 }
 
@@ -324,6 +353,28 @@ func (wac *Conn) handleWithCustomHandlers(message interface{}, handlers []Handle
 			}
 		}
 
+	case ReadMessage:
+		for _, h := range handlers {
+			if x, ok := h.(ReadMessageHandler); ok {
+				if wac.shouldCallSynchronously(h) {
+					x.HandleReadMessage(m)
+				} else {
+					go x.HandleReadMessage(m)
+				}
+			}
+		}
+
+	case ReceivedMessage:
+		for _, h := range handlers {
+			if x, ok := h.(ReceivedMessageHandler); ok {
+				if wac.shouldCallSynchronously(h) {
+					x.HandleReceivedMessage(m)
+				} else {
+					go x.HandleReceivedMessage(m)
+				}
+			}
+		}
+
 	case *proto.WebMessageInfo:
 		for _, h := range handlers {
 			if x, ok := h.(RawMessageHandler); ok {
@@ -331,6 +382,17 @@ func (wac *Conn) handleWithCustomHandlers(message interface{}, handlers []Handle
 					x.HandleRawMessage(m)
 				} else {
 					go x.HandleRawMessage(m)
+				}
+			}
+		}
+
+	case *binary.Node:
+		for _, h := range handlers {
+			if x, ok := h.(UnknownBinaryHandler); ok {
+				if wac.shouldCallSynchronously(h) {
+					x.HandleUnknownBinaryNode(m)
+				} else {
+					go x.HandleUnknownBinaryNode(m)
 				}
 			}
 		}
@@ -425,6 +487,8 @@ func (wac *Conn) dispatch(msg interface{}) {
 				for a := range con {
 					wac.handle(ParseNodeMessage(con[a]))
 				}
+			} else {
+				wac.handle(message)
 			}
 		} else if message.Description == "response" && message.Attributes["type"] == "contacts" {
 			wac.updateContacts(message.Content)
@@ -432,6 +496,8 @@ func (wac *Conn) dispatch(msg interface{}) {
 		} else if message.Description == "response" && message.Attributes["type"] == "chat" {
 			wac.updateChats(message.Content)
 			wac.handleChats(message.Content)
+		} else {
+			wac.handle(message)
 		}
 	case error:
 		wac.handle(message)

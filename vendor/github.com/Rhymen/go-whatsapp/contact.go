@@ -39,20 +39,20 @@ func (wac *Conn) Search(search string, count, page int) (*binary.Node, error) {
 	return wac.query("search", "", "", "", "", search, count, page)
 }
 
-func (wac *Conn) LoadMessages(jid, messageId string, count int) (*binary.Node, error) {
+func (wac *Conn) LoadMessages(jid string, count int) (*binary.Node, error) {
 	return wac.query("message", jid, "", "before", "true", "", count, 0)
 }
 
-func (wac *Conn) LoadMessagesBefore(jid, messageId string, count int) (*binary.Node, error) {
-	return wac.query("message", jid, messageId, "before", "true", "", count, 0)
+func (wac *Conn) LoadMessagesBefore(jid, messageId string, fromMe bool, count int) (*binary.Node, error) {
+	return wac.query("message", jid, messageId, "before", strconv.FormatBool(fromMe), "", count, 0)
 }
 
-func (wac *Conn) LoadMessagesAfter(jid, messageId string, count int) (*binary.Node, error) {
-	return wac.query("message", jid, messageId, "after", "true", "", count, 0)
+func (wac *Conn) LoadMessagesAfter(jid, messageId string, fromMe bool, count int) (*binary.Node, error) {
+	return wac.query("message", jid, messageId, "after", strconv.FormatBool(fromMe), "", count, 0)
 }
 
-func (wac *Conn) LoadMediaInfo(jid, messageId, owner string) (*binary.Node, error) {
-	return wac.query("media", jid, messageId, "", owner, "", 0, 0)
+func (wac *Conn) LoadMediaInfo(jid, messageId string, fromMe bool) (*binary.Node, error) {
+	return wac.query("media", jid, messageId, "", strconv.FormatBool(fromMe), "", 0, 0)
 }
 
 func (wac *Conn) Presence(jid string, presence Presence) (<-chan string, error) {
@@ -96,11 +96,19 @@ func (wac *Conn) Emoji() (*binary.Node, error) {
 }
 
 func (wac *Conn) Contacts() (*binary.Node, error) {
-	return wac.query("contacts", "", "", "", "", "", 0, 0)
+	node, err := wac.query("contacts", "", "", "", "", "", 0, 0)
+	if node != nil && node.Description == "response" && node.Attributes["type"] == "contacts" {
+		wac.updateContacts(node.Content)
+	}
+	return node, err
 }
 
 func (wac *Conn) Chats() (*binary.Node, error) {
-	return wac.query("chat", "", "", "", "", "", 0, 0)
+	node, err := wac.query("chat", "", "", "", "", "", 0, 0)
+	if node != nil && node.Description == "response" && node.Attributes["type"] == "chat" {
+		wac.updateChats(node.Content)
+	}
+	return node, err
 }
 
 func (wac *Conn) Read(jid, id string) (<-chan string, error) {
@@ -177,13 +185,18 @@ func (wac *Conn) query(t, jid, messageId, kind, owner, search string, count, pag
 		return nil, err
 	}
 
-	msg, err := wac.decryptBinaryMessage([]byte(<-ch))
-	if err != nil {
-		return nil, err
-	}
+	select {
+	case response := <-ch:
+		msg, err := wac.decryptBinaryMessage([]byte(response))
+		if err != nil {
+			return nil, err
+		}
 
-	//TODO: use parseProtoMessage
-	return msg, nil
+		//TODO: use parseProtoMessage
+		return msg, nil
+	case <-time.After(3 * time.Minute):
+		return nil, ErrQueryTimeout
+	}
 }
 
 func (wac *Conn) setGroup(t, jid, subject string, participants []string) (<-chan string, error) {

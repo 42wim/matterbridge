@@ -6,13 +6,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-
 	"time"
+
+	"github.com/gorilla/websocket"
 
 	"github.com/Rhymen/go-whatsapp/binary"
 	"github.com/Rhymen/go-whatsapp/crypto/cbc"
-	"github.com/gorilla/websocket"
-	"github.com/pkg/errors"
 )
 
 //writeJson enqueues a json message into the writeChan
@@ -54,7 +53,7 @@ func (wac *Conn) writeBinary(node binary.Node, metric metric, flag flag, message
 
 	data, err := wac.encryptBinaryMessage(node)
 	if err != nil {
-		return nil, errors.Wrap(err, "encryptBinaryMessage(node) failed")
+		return nil, fmt.Errorf("encryptBinaryMessage(node) failed: %w", err)
 	}
 
 	bytes := []byte(messageTag + ",")
@@ -63,7 +62,7 @@ func (wac *Conn) writeBinary(node binary.Node, metric metric, flag flag, message
 
 	ch, err := wac.write(websocket.BinaryMessage, messageTag, bytes)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to write message")
+		return nil, fmt.Errorf("failed to write message: %w", err)
 	}
 
 	wac.msgCount++
@@ -74,14 +73,14 @@ func (wac *Conn) sendKeepAlive() error {
 	bytes := []byte("?,,")
 	respChan, err := wac.write(websocket.TextMessage, "!", bytes)
 	if err != nil {
-		return errors.Wrap(err, "error sending keepAlive")
+		return fmt.Errorf("error sending keepAlive: %w", err)
 	}
 
 	select {
 	case resp := <-respChan:
 		msecs, err := strconv.ParseInt(resp, 10, 64)
 		if err != nil {
-			return errors.Wrap(err, "Error converting time string to uint")
+			return fmt.Errorf("Error converting time string to uint: %w", err)
 		}
 		wac.ServerLastSeen = time.Unix(msecs/1000, (msecs%1000)*int64(time.Millisecond))
 
@@ -96,29 +95,30 @@ func (wac *Conn) sendKeepAlive() error {
 	When phone is unreachable, WhatsAppWeb sends ["admin","test"] time after time to try a successful contact.
 	Tested with Airplane mode and no connection at all.
 */
-func (wac *Conn) sendAdminTest() (bool, error) {
+func (wac *Conn) sendAdminTest() error {
 	data := []interface{}{"admin", "test"}
 
 	r, err := wac.writeJson(data)
 	if err != nil {
-		return false, errors.Wrap(err, "error sending admin test")
+		return fmt.Errorf("error sending admin test: %w", err)
 	}
 
 	var response []interface{}
+	var resp string
 
 	select {
-	case resp := <-r:
+	case resp = <-r:
 		if err := json.Unmarshal([]byte(resp), &response); err != nil {
-			return false, fmt.Errorf("error decoding response message: %v\n", err)
+			return fmt.Errorf("error decoding response message: %v\n", err)
 		}
 	case <-time.After(wac.msgTimeout):
-		return false, ErrConnectionTimeout
+		return ErrConnectionTimeout
 	}
 
 	if len(response) == 2 && response[0].(string) == "Pong" && response[1].(bool) == true {
-		return true, nil
+		return nil
 	} else {
-		return false, nil
+		return fmt.Errorf("unexpected ping response: %s", resp)
 	}
 }
 
@@ -145,7 +145,7 @@ func (wac *Conn) write(messageType int, answerMessageTag string, data []byte) (<
 			delete(wac.listener.m, answerMessageTag)
 			wac.listener.Unlock()
 		}
-		return nil, errors.Wrap(err, "error writing to websocket")
+		return nil, fmt.Errorf("error writing to websocket: %w", err)
 	}
 	return ch, nil
 }
@@ -153,12 +153,12 @@ func (wac *Conn) write(messageType int, answerMessageTag string, data []byte) (<
 func (wac *Conn) encryptBinaryMessage(node binary.Node) (data []byte, err error) {
 	b, err := binary.Marshal(node)
 	if err != nil {
-		return nil, errors.Wrap(err, "binary node marshal failed")
+		return nil, fmt.Errorf("binary node marshal failed: %w", err)
 	}
 
 	cipher, err := cbc.Encrypt(wac.session.EncKey, nil, b)
 	if err != nil {
-		return nil, errors.Wrap(err, "encrypt failed")
+		return nil, fmt.Errorf("encrypt failed: %w", err)
 	}
 
 	h := hmac.New(sha256.New, wac.session.MacKey)

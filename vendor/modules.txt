@@ -18,7 +18,7 @@ github.com/Philipp15b/go-steam/protocol/steamlang
 github.com/Philipp15b/go-steam/rwu
 github.com/Philipp15b/go-steam/socialcache
 github.com/Philipp15b/go-steam/steamid
-# github.com/Rhymen/go-whatsapp v0.1.2-0.20201226125722-8029c28f5c5a
+# github.com/Rhymen/go-whatsapp v0.1.2-0.20201226125722-8029c28f5c5a => github.com/tulir/go-whatsapp v0.3.16
 ## explicit
 github.com/Rhymen/go-whatsapp
 github.com/Rhymen/go-whatsapp/binary
@@ -231,7 +231,8 @@ github.com/shazow/ssh-chat/sshd/terminal
 # github.com/sirupsen/logrus v1.7.0
 ## explicit
 github.com/sirupsen/logrus
-# github.com/skip2/go-qrcode v0.0.0-20190110000554-dc11ecdae0a9
+# github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
+## explicit
 github.com/skip2/go-qrcode
 github.com/skip2/go-qrcode/bitset
 github.com/skip2/go-qrcode/reedsolomon
@@ -431,3 +432,4 @@ layeh.com/gumble/gumble
 layeh.com/gumble/gumble/MumbleProto
 layeh.com/gumble/gumble/varint
 layeh.com/gumble/gumbleutil
+# github.com/Rhymen/go-whatsapp => github.com/tulir/go-whatsapp v0.3.16
