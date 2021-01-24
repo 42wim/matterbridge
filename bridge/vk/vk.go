@@ -75,9 +75,7 @@ func (b *Bvk) Send(msg config.Message) (string, error) {
 	}
 
 	params := api.Params{
-		"peer_id":   peerID,
-		"message":   text,
-		"random_id": time.Now().Unix(),
+		"message": text,
 	}
 
 	if msg.Extra != nil {
@@ -127,13 +125,28 @@ func (b *Bvk) Send(msg config.Message) (string, error) {
 		}
 	}
 
-	res, err := b.c.MessagesSend(params)
+	if msg.ID == "" {
+		params["random_id"] = time.Now().Unix()
+		params["peer_ids"] = msg.Channel
 
-	if err != nil {
-		return "", err
+		res, err := b.c.MessagesSendPeerIDs(params)
+		if err != nil {
+			return "", err
+		}
+
+		return strconv.Itoa(res[0].ConversationMessageID), nil
+	} else {
+		messageID, err := strconv.ParseInt(msg.ID, 10, 64)
+		params["peer_id"] = peerID
+		params["conversation_message_id"] = messageID
+
+		_, err = b.c.MessagesEdit(params)
+		if err != nil {
+			return "", err
+		}
+
+		return msg.ID, nil
 	}
-
-	return string(res), nil
 }
 
 func (b *Bvk) getUser(id int) user {
