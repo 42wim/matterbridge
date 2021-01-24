@@ -154,14 +154,23 @@ func (b *Bvk) getUser(id int) user {
 	if !found {
 		b.Log.Debug("Fetching username for ", id)
 
-		result, _ := b.c.UsersGet(api.Params{
-			"user_ids": id,
-			"fields":   "photo_200",
-		})
+		if id >= 0 {
+			result, _ := b.c.UsersGet(api.Params{
+				"user_ids": id,
+				"fields":   "photo_200",
+			})
 
-		resUser := result[0]
-		u = user{lastname: resUser.LastName, firstname: resUser.FirstName, avatar: resUser.Photo200}
-		b.usernamesMap[id] = u
+			resUser := result[0]
+			u = user{lastname: resUser.LastName, firstname: resUser.FirstName, avatar: resUser.Photo200}
+			b.usernamesMap[id] = u
+		} else {
+			result, _ := b.c.GroupsGetByID(api.Params{
+				"group_id": id * -1,
+			})
+
+			resGroup := result[0]
+			u = user{lastname: resGroup.Name, avatar: resGroup.Photo200}
+		}
 	}
 
 	return u
