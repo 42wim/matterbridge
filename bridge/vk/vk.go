@@ -24,7 +24,7 @@ type user struct {
 
 type Bvk struct {
 	c            *api.VK
-	usernamesMap map[int]user
+	usernamesMap map[int]user // cache of user names and avatar URLs
 	*bridge.Config
 }
 
@@ -37,13 +37,15 @@ func (b *Bvk) Connect() error {
 	b.c = api.NewVK(b.GetString("Token"))
 	lp, err := longpoll.NewLongPoll(b.c, b.GetInt("GroupID"))
 	if err != nil {
-		b.Log.Error(err)
+		b.Log.Debugf("%#v", err)
 		return err
 	}
 
 	lp.MessageNew(func(ctx context.Context, obj events.MessageNewObject) {
 		b.handleMessage(obj.Message, false)
 	})
+
+	b.Log.Info("Connection succeeded")
 
 	go lp.Run()
 
@@ -59,9 +61,9 @@ func (b *Bvk) JoinChannel(channel config.ChannelInfo) error {
 }
 
 func (b *Bvk) Send(msg config.Message) (string, error) {
-	b.Log.Debug(msg.Text)
+	b.Log.Debugf("=> Receiving %#v", msg)
 
-	peerId, err := strconv.ParseInt(msg.Channel, 10, 64)
+	peerID, err := strconv.ParseInt(msg.Channel, 10, 64)
 	if err != nil {
 		return "", err
 	}
@@ -73,13 +75,14 @@ func (b *Bvk) Send(msg config.Message) (string, error) {
 	}
 
 	params := api.Params{
-		"peer_id":   peerId,
+		"peer_id":   peerID,
 		"message":   text,
 		"random_id": time.Now().Unix(),
 	}
 
 	if msg.Extra != nil {
 		if len(msg.Extra["file"]) > 0 {
+			// generate attachments string
 			var attachments []string
 
 			for _, f := range msg.Extra["file"] {
@@ -87,7 +90,7 @@ func (b *Bvk) Send(msg config.Message) (string, error) {
 				photoRE := regexp.MustCompile(".(jpg|jpe|png)$")
 				if photoRE.MatchString(fi.Name) {
 					r := bytes.NewReader(*fi.Data)
-					photo, err := b.c.UploadMessagesPhoto(int(peerId), r)
+					photo, err := b.c.UploadMessagesPhoto(int(peerID), r)
 					if err != nil {
 						b.Log.Error("Failad uploading photo")
 						b.Log.Error(err)
@@ -107,7 +110,7 @@ func (b *Bvk) Send(msg config.Message) (string, error) {
 						doctype = "doc"
 					}
 
-					doc, err := b.c.UploadMessagesDoc(int(peerId), doctype, fi.Name, "", r)
+					doc, err := b.c.UploadMessagesDoc(int(peerID), doctype, fi.Name, "", r)
 					if err != nil {
 						b.Log.Error("Failad uploading file")
 						b.Log.Error(err)
@@ -153,6 +156,7 @@ func (b *Bvk) getUser(id int) user {
 
 func (b *Bvk) handleMessage(msg object.MessagesMessage, isFwd bool) {
 	b.Log.Debug("ChatID: ", msg.PeerID)
+	// fetch user info
 	u := b.getUser(msg.FromID)
 
 	rmsg := config.Message{
@@ -178,6 +182,7 @@ func (b *Bvk) handleMessage(msg object.MessagesMessage, isFwd bool) {
 	if len(msg.Attachments) > 0 {
 		var urls []string
 
+		// get URLs for attachments
 		for _, a := range msg.Attachments {
 			if a.Type == "photo" {
 				var resolution float64 = 0
@@ -220,8 +225,10 @@ func (b *Bvk) handleMessage(msg object.MessagesMessage, isFwd bool) {
 		}
 
 		if b.GetBool("UseFileURL") {
+			// add url to message text
 			rmsg.Text += "\n" + strings.Join(urls, "\n")
 		} else {
+			// download
 			for _, url := range urls {
 				data, err := helper.DownloadFile(url)
 				if err == nil {
@@ -240,6 +247,7 @@ func (b *Bvk) handleMessage(msg object.MessagesMessage, isFwd bool) {
 	b.Remote <- rmsg
 
 	if len(msg.FwdMessages) > 0 {
+		// recursive processing of forwarded messages
 		for _, m := range msg.FwdMessages {
 			m.PeerID = msg.PeerID
 			b.handleMessage(m, true)
