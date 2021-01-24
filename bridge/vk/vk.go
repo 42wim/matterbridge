@@ -15,6 +15,7 @@ import (
 	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/SevereCloud/vksdk/v2/events"
 	longpoll "github.com/SevereCloud/vksdk/v2/longpoll-bot"
+	"github.com/SevereCloud/vksdk/v2/object"
 )
 
 type user struct {
@@ -40,7 +41,9 @@ func (b *Bvk) Connect() error {
 		return err
 	}
 
-	lp.MessageNew(b.handleMessage)
+	lp.MessageNew(func(ctx context.Context, obj events.MessageNewObject) {
+		b.handleMessage(obj.Message, false)
+	})
 
 	go lp.Run()
 
@@ -148,8 +151,7 @@ func (b *Bvk) getUser(id int) user {
 	return u
 }
 
-func (b *Bvk) handleMessage(ctx context.Context, obj events.MessageNewObject) {
-	msg := obj.Message
+func (b *Bvk) handleMessage(msg object.MessagesMessage, isFwd bool) {
 	b.Log.Debug("ChatID: ", msg.PeerID)
 	u := b.getUser(msg.FromID)
 
@@ -167,6 +169,10 @@ func (b *Bvk) handleMessage(ctx context.Context, obj events.MessageNewObject) {
 	if msg.ReplyMessage != nil {
 		ur := b.getUser(msg.ReplyMessage.FromID)
 		rmsg.Text = "Re: " + ur.firstname + " " + ur.lastname + "\n" + rmsg.Text
+	}
+
+	if isFwd {
+		rmsg.Username = "Fwd: " + rmsg.Username
 	}
 
 	if len(msg.Attachments) > 0 {
@@ -188,7 +194,6 @@ func (b *Bvk) handleMessage(ctx context.Context, obj events.MessageNewObject) {
 			} else if a.Type == "doc" {
 				urls = append(urls, a.Doc.URL)
 			} else if a.Type == "graffiti" {
-				// Untested
 				urls = append(urls, a.Graffiti.URL)
 			} else if a.Type == "audio_message" {
 				urls = append(urls, a.AudioMessage.DocsDocPreviewAudioMessage.LinkOgg)
@@ -228,5 +233,16 @@ func (b *Bvk) handleMessage(ctx context.Context, obj events.MessageNewObject) {
 		}
 	}
 
+	if len(msg.FwdMessages) > 0 {
+		rmsg.Text += strconv.Itoa(len(msg.FwdMessages)) + " forwarded messages"
+	}
+
 	b.Remote <- rmsg
+
+	if len(msg.FwdMessages) > 0 {
+		for _, m := range msg.FwdMessages {
+			m.PeerID = msg.PeerID
+			b.handleMessage(m, true)
+		}
+	}
 }
