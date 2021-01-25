@@ -104,8 +104,8 @@ func (b *Bvk) Send(msg config.Message) (string, error) {
 		params["random_id"] = time.Now().Unix()
 		params["peer_ids"] = msg.Channel
 
-		res, err := b.c.MessagesSendPeerIDs(params)
-		if err != nil {
+		res, e := b.c.MessagesSendPeerIDs(params)
+		if e != nil {
 			return "", err
 		}
 
