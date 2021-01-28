@@ -187,13 +187,8 @@ func (b *Bvk) handleMessage(msg object.MessagesMessage, isFwd bool) {
 			rmsg.Text += "\n" + text
 		}
 
-		if b.GetBool("UseFileURL") {
-			// add url to message text
-			rmsg.Text += "\n" + strings.Join(urls, "\n")
-		} else {
-			// download
-			b.downloadFiles(&rmsg, urls)
-		}
+		// download
+		b.downloadFiles(&rmsg, urls)
 	}
 
 	if len(msg.FwdMessages) > 0 {
