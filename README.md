@@ -102,6 +102,7 @@ And more...
   - Not supported anymore, see [here](https://github.com/Philipp15b/go-steam/issues/94) for more info.
 - [Telegram](https://telegram.org)
 - [Twitch](https://twitch.tv)
+- [VK](https://vk.com/)
 - [WhatsApp](https://www.whatsapp.com/)
 - [XMPP](https://xmpp.org)
 - [Zulip](https://zulipchat.com)
@@ -348,6 +349,7 @@ Matterbridge wouldn't exist without these libraries:
 - steam - <https://github.com/Philipp15b/go-steam>
 - telegram - <https://github.com/go-telegram-bot-api/telegram-bot-api>
 - tengo - <https://github.com/d5/tengo>
+- vk - <https://github.com/SevereCloud/vksdk>
 - whatsapp - <https://github.com/Rhymen/go-whatsapp>
 - xmpp - <https://github.com/mattn/go-xmpp>
 - zulip - <https://github.com/ifo/gozulipbot>

@@ -1,0 +1,84 @@
+---
+linters:
+  disable-all: true
+  enable:
+    - bodyclose
+    - deadcode
+    - errcheck
+    - gochecknoglobals
+    - goconst
+    - gocritic
+    - gofmt
+    - goimports
+    - golint
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - interfacer
+    - maligned
+    - misspell
+    - nakedret
+    - prealloc
+    - staticcheck
+    - structcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - varcheck
+    - whitespace
+    - wsl
+    - godot
+    - asciicheck
+    - nolintlint
+    - gofumpt
+    - goerr113
+    - tparallel
+    - errorlint
+    - paralleltest
+
+# - wrapcheck # TODO: v3 Fix
+# - testpackage # TODO: Fix testpackage
+# - nestif # TODO: Fix nestif
+
+# don't enable:
+# - depguard
+# - dogsled
+# - dupl
+# - funlen
+# - gochecknoinits
+# - gocognit
+# - gocyclo
+# - godox
+# - gomnd
+# - lll
+# - rowserrcheck
+# - scopelint
+# - gomodguard
+# - exhaustive
+# - nlreturn
+# - gci
+# - exhaustivestruct
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+
+    - linters:
+        - errcheck
+      source: ".((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|
+        .*printf?|os\\.(Un)?Setenv)."
+
+    - linters:
+        - stylecheck
+      text: "ST1003:.*(Ts|ts).*TS"
+
+  exclude-use-default: false
