@@ -253,6 +253,5 @@ func (t *Transmitter) assignHooksByAppID(hooks []*discordgo.Webhook, appID strin
 			"name":    wh.Name,
 			"channel": wh.ChannelID,
 		}).Println(logLine)
-		break
 	}
 }
