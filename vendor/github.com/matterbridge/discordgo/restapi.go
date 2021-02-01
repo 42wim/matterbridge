@@ -155,7 +155,7 @@ func (s *Session) RequestWithLockedBucket(method, urlStr, contentType string, b 
 			return
 		}
 		s.log(LogInformational, "Rate Limiting %s, retry in %d", urlStr, rl.RetryAfter)
-		s.handleEvent(rateLimitEventType, RateLimit{TooManyRequests: &rl, URL: urlStr})
+		s.handleEvent(rateLimitEventType, &RateLimit{TooManyRequests: &rl, URL: urlStr})
 
 		time.Sleep(rl.RetryAfter * time.Millisecond)
 		// we can make the above smarter
@@ -465,7 +465,7 @@ func (s *Session) UserGuildSettingsEdit(guildID string, settings *UserGuildSetti
 //
 // NOTE: This function is now deprecated and will be removed in the future.
 // Please see the same function inside state.go
-func (s *Session) UserChannelPermissions(userID, channelID string) (apermissions int, err error) {
+func (s *Session) UserChannelPermissions(userID, channelID string) (apermissions int64, err error) {
 	// Try to just get permissions from state.
 	apermissions, err = s.State.UserChannelPermissions(userID, channelID)
 	if err == nil {
@@ -507,7 +507,7 @@ func (s *Session) UserChannelPermissions(userID, channelID string) (apermissions
 
 // Calculates the permissions for a member.
 // https://support.discord.com/hc/en-us/articles/206141927-How-is-the-permission-hierarchy-structured-
-func memberPermissions(guild *Guild, channel *Channel, userID string, roles []string) (apermissions int) {
+func memberPermissions(guild *Guild, channel *Channel, userID string, roles []string) (apermissions int64) {
 	if userID == guild.OwnerID {
 		apermissions = PermissionAll
 		return
@@ -542,13 +542,11 @@ func memberPermissions(guild *Guild, channel *Channel, userID string, roles []st
 		}
 	}
 
-	denies := 0
-	allows := 0
-
+	var denies, allows int64
 	// Member overwrites can override role overrides, so do two passes
 	for _, overwrite := range channel.PermissionOverwrites {
 		for _, roleID := range roles {
-			if overwrite.Type == "role" && roleID == overwrite.ID {
+			if overwrite.Type == PermissionOverwriteTypeRole && roleID == overwrite.ID {
 				denies |= overwrite.Deny
 				allows |= overwrite.Allow
 				break
@@ -560,7 +558,7 @@ func memberPermissions(guild *Guild, channel *Channel, userID string, roles []st
 	apermissions |= allows
 
 	for _, overwrite := range channel.PermissionOverwrites {
-		if overwrite.Type == "member" && overwrite.ID == userID {
+		if overwrite.Type == PermissionOverwriteTypeMember && overwrite.ID == userID {
 			apermissions &= ^overwrite.Deny
 			apermissions |= overwrite.Allow
 			break
@@ -693,6 +691,19 @@ func (s *Session) GuildBanCreate(guildID, userID string, days int) (err error) {
 	return s.GuildBanCreateWithReason(guildID, userID, "", days)
 }
 
+// GuildBan finds ban by given guild and user id and returns GuildBan structure
+func (s *Session) GuildBan(guildID, userID string) (st *GuildBan, err error) {
+
+	body, err := s.RequestWithBucketID("GET", EndpointGuildBan(guildID, userID), nil, EndpointGuildBan(guildID, userID))
+	if err != nil {
+		return
+	}
+
+	err = unmarshal(body, &st)
+
+	return
+}
+
 // GuildBanCreateWithReason bans the given user from the given guild also providing a reaso.
 // guildID   : The ID of a Guild.
 // userID    : The ID of a User
@@ -704,7 +715,7 @@ func (s *Session) GuildBanCreateWithReason(guildID, userID, reason string, days 
 
 	queryParams := url.Values{}
 	if days > 0 {
-		queryParams.Set("delete-message-days", strconv.Itoa(days))
+		queryParams.Set("delete_message_days", strconv.Itoa(days))
 	}
 	if reason != "" {
 		queryParams.Set("reason", reason)
@@ -1796,13 +1807,13 @@ func (s *Session) ChannelInviteCreate(channelID string, i Invite) (st *Invite, e
 // ChannelPermissionSet creates a Permission Override for the given channel.
 // NOTE: This func name may changed.  Using Set instead of Create because
 // you can both create a new override or update an override with this function.
-func (s *Session) ChannelPermissionSet(channelID, targetID, targetType string, allow, deny int) (err error) {
+func (s *Session) ChannelPermissionSet(channelID, targetID string, targetType PermissionOverwriteType, allow, deny int) (err error) {
 
 	data := struct {
-		ID    string `json:"id"`
-		Type  string `json:"type"`
-		Allow int    `json:"allow"`
-		Deny  int    `json:"deny"`
+		ID    string                  `json:"id"`
+		Type  PermissionOverwriteType `json:"type"`
+		Allow int                     `json:"allow"`
+		Deny  int                     `json:"deny"`
 	}{targetID, targetType, allow, deny}
 
 	_, err = s.RequestWithBucketID("PUT", EndpointChannelPermission(channelID, targetID), data, EndpointChannelPermission(channelID, ""))

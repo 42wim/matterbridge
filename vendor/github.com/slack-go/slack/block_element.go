@@ -8,6 +8,7 @@ const (
 	METButton         MessageElementType = "button"
 	METOverflow       MessageElementType = "overflow"
 	METDatepicker     MessageElementType = "datepicker"
+	METTimepicker     MessageElementType = "timepicker"
 	METPlainTextInput MessageElementType = "plain_text_input"
 	METRadioButtons   MessageElementType = "radio_buttons"
 
@@ -44,6 +45,7 @@ type Accessory struct {
 	ButtonElement              *ButtonBlockElement
 	OverflowElement            *OverflowBlockElement
 	DatePickerElement          *DatePickerBlockElement
+	TimePickerElement          *TimePickerBlockElement
 	PlainTextInputElement      *PlainTextInputBlockElement
 	RadioButtonsElement        *RadioButtonsBlockElement
 	SelectElement              *SelectBlockElement
@@ -63,6 +65,8 @@ func NewAccessory(element BlockElement) *Accessory {
 		return &Accessory{OverflowElement: element.(*OverflowBlockElement)}
 	case *DatePickerBlockElement:
 		return &Accessory{DatePickerElement: element.(*DatePickerBlockElement)}
+	case *TimePickerBlockElement:
+		return &Accessory{TimePickerElement: element.(*TimePickerBlockElement)}
 	case *PlainTextInputBlockElement:
 		return &Accessory{PlainTextInputElement: element.(*PlainTextInputBlockElement)}
 	case *RadioButtonsBlockElement:
@@ -127,10 +131,12 @@ func NewImageBlockElement(imageURL, altText string) *ImageBlockElement {
 	}
 }
 
+// Style is a style of Button element
+// https://api.slack.com/reference/block-kit/block-elements#button__fields
 type Style string
 
 const (
-	StyleDefault Style = "default"
+	StyleDefault Style = ""
 	StylePrimary Style = "primary"
 	StyleDanger  Style = "danger"
 )
@@ -155,7 +161,7 @@ func (s ButtonBlockElement) ElementType() MessageElementType {
 	return s.Type
 }
 
-// WithStyling adds styling to the button object and returns the modified ButtonBlockElement
+// WithStyle adds styling to the button object and returns the modified ButtonBlockElement
 func (s *ButtonBlockElement) WithStyle(style Style) *ButtonBlockElement {
 	s.Style = style
 	return s
@@ -346,6 +352,32 @@ func (s DatePickerBlockElement) ElementType() MessageElementType {
 func NewDatePickerBlockElement(actionID string) *DatePickerBlockElement {
 	return &DatePickerBlockElement{
 		Type:     METDatepicker,
+		ActionID: actionID,
+	}
+}
+
+// TimePickerBlockElement defines an element which lets users easily select a
+// time from nice UI. Time picker elements can be used inside of
+// section and actions blocks.
+//
+// More Information: https://api.slack.com/reference/messaging/block-elements#timepicker
+type TimePickerBlockElement struct {
+	Type        MessageElementType       `json:"type"`
+	ActionID    string                   `json:"action_id,omitempty"`
+	Placeholder *TextBlockObject         `json:"placeholder,omitempty"`
+	InitialTime string                   `json:"initial_time,omitempty"`
+	Confirm     *ConfirmationBlockObject `json:"confirm,omitempty"`
+}
+
+// ElementType returns the type of the Element
+func (s TimePickerBlockElement) ElementType() MessageElementType {
+	return s.Type
+}
+
+// NewTimePickerBlockElement returns an instance of a date picker element
+func NewTimePickerBlockElement(actionID string) *TimePickerBlockElement {
+	return &TimePickerBlockElement{
+		Type:     METTimepicker,
 		ActionID: actionID,
 	}
 }

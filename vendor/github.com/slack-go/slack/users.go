@@ -31,6 +31,7 @@ type UserProfile struct {
 	Image48               string                  `json:"image_48"`
 	Image72               string                  `json:"image_72"`
 	Image192              string                  `json:"image_192"`
+	Image512              string                  `json:"image_512"`
 	ImageOriginal         string                  `json:"image_original"`
 	Title                 string                  `json:"title"`
 	BotID                 string                  `json:"bot_id,omitempty"`
