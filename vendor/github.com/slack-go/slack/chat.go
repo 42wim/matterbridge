@@ -191,6 +191,22 @@ func (api *Client) UnfurlMessage(channelID, timestamp string, unfurls map[string
 	return api.SendMessageContext(context.Background(), channelID, MsgOptionUnfurl(timestamp, unfurls), MsgOptionCompose(options...))
 }
 
+// UnfurlMessageWithAuthURL sends an unfurl request containing an
+// authentication URL.
+// For more details see:
+// https://api.slack.com/reference/messaging/link-unfurling#authenticated_unfurls
+func (api *Client) UnfurlMessageWithAuthURL(channelID, timestamp string, userAuthURL string, options ...MsgOption) (string, string, string, error) {
+	return api.UnfurlMessageWithAuthURLContext(context.Background(), channelID, timestamp, userAuthURL, options...)
+}
+
+// UnfurlMessageWithAuthURLContext sends an unfurl request containing an
+// authentication URL.
+// For more details see:
+// https://api.slack.com/reference/messaging/link-unfurling#authenticated_unfurls
+func (api *Client) UnfurlMessageWithAuthURLContext(ctx context.Context, channelID, timestamp string, userAuthURL string, options ...MsgOption) (string, string, string, error) {
+	return api.SendMessageContext(ctx, channelID, MsgOptionUnfurlAuthURL(timestamp, userAuthURL), MsgOptionCompose(options...))
+}
+
 // SendMessage more flexible method for configuring messages.
 func (api *Client) SendMessage(channel string, options ...MsgOption) (string, string, string, error) {
 	return api.SendMessageContext(context.Background(), channel, options...)
@@ -410,6 +426,38 @@ func MsgOptionUnfurl(timestamp string, unfurls map[string]Attachment) MsgOption 
 			config.values.Add("unfurls", string(unfurlsStr))
 		}
 		return err
+	}
+}
+
+// MsgOptionUnfurlAuthURL unfurls a message using an auth url based on the timestamp.
+func MsgOptionUnfurlAuthURL(timestamp string, userAuthURL string) MsgOption {
+	return func(config *sendConfig) error {
+		config.endpoint = config.apiurl + string(chatUnfurl)
+		config.values.Add("ts", timestamp)
+		config.values.Add("user_auth_url", userAuthURL)
+		return nil
+	}
+}
+
+// MsgOptionUnfurlAuthRequired requests that the user installs the
+// Slack app for unfurling.
+func MsgOptionUnfurlAuthRequired(timestamp string) MsgOption {
+	return func(config *sendConfig) error {
+		config.endpoint = config.apiurl + string(chatUnfurl)
+		config.values.Add("ts", timestamp)
+		config.values.Add("user_auth_required", "true")
+		return nil
+	}
+}
+
+// MsgOptionUnfurlAuthMessage attaches a message inviting the user to
+// authenticate.
+func MsgOptionUnfurlAuthMessage(timestamp string, msg string) MsgOption {
+	return func(config *sendConfig) error {
+		config.endpoint = config.apiurl + string(chatUnfurl)
+		config.values.Add("ts", timestamp)
+		config.values.Add("user_auth_message", msg)
+		return nil
 	}
 }
 

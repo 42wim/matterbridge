@@ -1,4 +1,4 @@
-package slack
+package backoff
 
 import (
 	"math/rand"
@@ -11,7 +11,7 @@ import (
 // call to Duration() it is multiplied by Factor.  It is capped at
 // Max. It returns to Min on every call to Reset().  Used in
 // conjunction with the time package.
-type backoff struct {
+type Backoff struct {
 	attempts int
 	// Initial value to scale out
 	Initial time.Duration
@@ -23,7 +23,7 @@ type backoff struct {
 
 // Returns the current value of the counter and then multiplies it
 // Factor
-func (b *backoff) Duration() (dur time.Duration) {
+func (b *Backoff) Duration() (dur time.Duration) {
 	// Zero-values are nonsensical, so we use
 	// them to apply defaults
 	if b.Max == 0 {
@@ -52,6 +52,11 @@ func (b *backoff) Duration() (dur time.Duration) {
 }
 
 //Resets the current value of the counter back to Min
-func (b *backoff) Reset() {
+func (b *Backoff) Reset() {
 	b.attempts = 0
+}
+
+// Attempts returns the number of attempts that we had done so far
+func (b *Backoff) Attempts() int {
+	return b.attempts
 }

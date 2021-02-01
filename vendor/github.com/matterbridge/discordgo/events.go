@@ -196,8 +196,7 @@ type PresencesReplace []*Presence
 // PresenceUpdate is the data for a PresenceUpdate event.
 type PresenceUpdate struct {
 	Presence
-	GuildID string   `json:"guild_id"`
-	Roles   []string `json:"roles"`
+	GuildID string `json:"guild_id"`
 }
 
 // Resumed is the data for a Resumed event.

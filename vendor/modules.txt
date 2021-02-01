@@ -18,7 +18,7 @@ github.com/Philipp15b/go-steam/protocol/steamlang
 github.com/Philipp15b/go-steam/rwu
 github.com/Philipp15b/go-steam/socialcache
 github.com/Philipp15b/go-steam/steamid
-# github.com/Rhymen/go-whatsapp v0.1.2-0.20201226125722-8029c28f5c5a
+# github.com/Rhymen/go-whatsapp v0.1.2-0.20210126174449-3c094ebae0ce
 ## explicit
 github.com/Rhymen/go-whatsapp
 github.com/Rhymen/go-whatsapp/binary
@@ -140,7 +140,7 @@ github.com/matrix-org/gomatrix
 github.com/matterbridge/Rocket.Chat.Go.SDK/models
 github.com/matterbridge/Rocket.Chat.Go.SDK/realtime
 github.com/matterbridge/Rocket.Chat.Go.SDK/rest
-# github.com/matterbridge/discordgo v0.22.1
+# github.com/matterbridge/discordgo v0.21.2-0.20210201201054-fb39a175b4f7
 ## explicit
 github.com/matterbridge/discordgo
 # github.com/matterbridge/emoji v2.1.1-0.20191117213217-af507f6b02db+incompatible
@@ -243,10 +243,12 @@ github.com/sirupsen/logrus
 github.com/skip2/go-qrcode
 github.com/skip2/go-qrcode/bitset
 github.com/skip2/go-qrcode/reedsolomon
-# github.com/slack-go/slack v0.7.4
+# github.com/slack-go/slack v0.8.0
 ## explicit
 github.com/slack-go/slack
+github.com/slack-go/slack/internal/backoff
 github.com/slack-go/slack/internal/errorsx
+github.com/slack-go/slack/internal/misc
 github.com/slack-go/slack/internal/timex
 github.com/slack-go/slack/slackutilsx
 # github.com/spf13/afero v1.3.4
@@ -264,7 +266,7 @@ github.com/spf13/pflag
 # github.com/spf13/viper v1.7.1
 ## explicit
 github.com/spf13/viper
-# github.com/stretchr/testify v1.6.1
+# github.com/stretchr/testify v1.7.0
 ## explicit
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
@@ -352,7 +354,7 @@ golang.org/x/net/http2/h2c
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/websocket
-# golang.org/x/oauth2 v0.0.0-20201208152858-08078c50e5b5
+# golang.org/x/oauth2 v0.0.0-20210201163806-010130855d6c
 ## explicit
 golang.org/x/oauth2
 golang.org/x/oauth2/clientcredentials

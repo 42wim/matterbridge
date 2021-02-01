@@ -200,13 +200,9 @@ func (s *State) PresenceAdd(guildID string, presence *Presence) error {
 			//guild.Presences[i] = presence
 
 			//Update status
-			guild.Presences[i].Game = presence.Game
-			guild.Presences[i].Roles = presence.Roles
+			guild.Presences[i].Activities = presence.Activities
 			if presence.Status != "" {
 				guild.Presences[i].Status = presence.Status
-			}
-			if presence.Nick != "" {
-				guild.Presences[i].Nick = presence.Nick
 			}
 
 			//Update the optionally sent user information
@@ -966,24 +962,12 @@ func (s *State) OnInterface(se *Session, i interface{}) (err error) {
 				// Member not found; this is a user coming online
 				m = &Member{
 					GuildID: t.GuildID,
-					Nick:    t.Nick,
 					User:    t.User,
-					Roles:   t.Roles,
 				}
-
 			} else {
-
-				if t.Nick != "" {
-					m.Nick = t.Nick
-				}
-
 				if t.User.Username != "" {
 					m.User.Username = t.User.Username
 				}
-
-				// PresenceUpdates always contain a list of roles, so there's no need to check for an empty list here
-				m.Roles = t.Roles
-
 			}
 
 			err = s.MemberAdd(m)
@@ -997,7 +981,7 @@ func (s *State) OnInterface(se *Session, i interface{}) (err error) {
 // UserChannelPermissions returns the permission of a user in a channel.
 // userID    : The ID of the user to calculate permissions for.
 // channelID : The ID of the channel to calculate permission for.
-func (s *State) UserChannelPermissions(userID, channelID string) (apermissions int, err error) {
+func (s *State) UserChannelPermissions(userID, channelID string) (apermissions int64, err error) {
 	if s == nil {
 		return 0, ErrNilState
 	}
@@ -1022,7 +1006,7 @@ func (s *State) UserChannelPermissions(userID, channelID string) (apermissions i
 
 // MessagePermissions returns the permissions of the author of the message
 // in the channel in which it was sent.
-func (s *State) MessagePermissions(message *Message) (apermissions int, err error) {
+func (s *State) MessagePermissions(message *Message) (apermissions int64, err error) {
 	if s == nil {
 		return 0, ErrNilState
 	}
