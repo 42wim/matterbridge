@@ -1,3 +1,26 @@
+# v1.22.0
+
+Discord users using autowebhooks are encouraged to upgrade to this release.
+
+## New features
+
+- vk: new protocol added: Add vk support (#1245)
+- xmpp: Allow the XMPP bridge to use slack compatible webhooks (xmpp) (#1364)
+
+## Enhancements
+
+- telegram: Rename .oga audio files to .ogg (telegram) (#1349)
+- telegram: Add jpe as valid image filename extension (telegram) (#1360)
+- discord: Add an even more debug option (discord) (#1368)
+- general: Update vendor (#1384)
+
+## Bugfixes
+
+- discord: Pick up all the webhooks (discord) (#1383). Fixes #1353
+
+This release couldn't exist without the following contributors:
+@ivanik7, @Polynomdivision, @PeterDaveHello, @Humorhenker, @qaisjp
+
 # v1.21.0
 
 ## Breaking Changes
