@@ -168,6 +168,7 @@ To install or upgrade just download the latest [binary](https://github.com/42wim
 
 - [Overview](https://repology.org/metapackage/matterbridge/versions)
 - [snap](https://snapcraft.io/matterbridge)
+- [scoop](https://github.com/42wim/scoop-bucket)
 
 ## Building
 
