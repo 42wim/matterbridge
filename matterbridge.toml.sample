@@ -124,6 +124,9 @@ IgnoreNicks="ircspammer1 ircspammer2"
 #See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
 IgnoreMessages="^~~ badword"
+#OPTIONAL
+#Ignore message not begin by >>
+IgnoreMessageNotContains="^>>"
 
 #messages you want to replace.
 #it replaces outgoing messages from the bridge.
@@ -258,6 +261,9 @@ IgnoreNicks="ircspammer1 ircspammer2"
 #See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
 IgnoreMessages="^~~ badword"
+#OPTIONAL
+#Ignore message not begin by >>
+IgnoreMessageNotContains="^>>"
 
 #Messages you want to replace.
 #It replaces outgoing messages from the bridge.
@@ -421,6 +427,9 @@ IgnoreNicks="ircspammer1 ircspammer2"
 #See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
 IgnoreMessages="^~~ badword"
+#OPTIONAL
+#Ignore message not begin by >>
+IgnoreMessageNotContains="^>>"
 
 #messages you want to replace.
 #it replaces outgoing messages from the bridge.
@@ -508,6 +517,9 @@ IgnoreNicks="ircspammer1 ircspammer2"
 #See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
 IgnoreMessages="^~~ badword"
+#OPTIONAL
+#Ignore message not begin by >>
+IgnoreMessageNotContains="^>>"
 
 #messages you want to replace.
 #it replaces outgoing messages from the bridge.
@@ -616,6 +628,9 @@ IgnoreNicks="ircspammer1 ircspammer2"
 #See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
 IgnoreMessages="^~~ badword"
+#OPTIONAL
+#Ignore message not begin by >>
+IgnoreMessageNotContains="^>>"
 
 #messages you want to replace.
 #it replaces outgoing messages from the bridge.
@@ -755,6 +770,9 @@ IgnoreNicks="ircspammer1 ircspammer2"
 #See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
 IgnoreMessages="^~~ badword"
+#OPTIONAL
+#Ignore message not begin by >>
+IgnoreMessageNotContains="^>>"
 
 #messages you want to replace.
 #it replaces outgoing messages from the bridge.
@@ -890,6 +908,7 @@ IgnoreNicks=""
 # Example that ignores messages starting with ~~ or messages containing badword:
 #   IgnoreMessages="^~~ badword"
 IgnoreMessages=""
+
 
 # ReplaceMessages replaces substrings of messages in outgoing messages.
 # Regular expressions are supported.
@@ -1031,6 +1050,10 @@ IgnoreNicks="spammer1 spammer2"
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
 IgnoreMessages="^~~ badword"
 
+#OPTIONAL
+#Ignore message not begin by >>
+IgnoreMessageNotContains="^>>"
+
 #messages you want to replace.
 #it replaces outgoing messages from the bridge.
 #so you need to place it by the sending bridge definition.
@@ -1165,6 +1188,9 @@ IgnoreNicks="ircspammer1 ircspammer2"
 #See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
 IgnoreMessages="^~~ badword"
+#OPTIONAL
+#Ignore message not begin by >>
+IgnoreMessageNotContains="^>>"
 
 #messages you want to replace.
 #it replaces outgoing messages from the bridge.
@@ -1271,6 +1297,9 @@ IgnoreNicks="spammer1 spammer2"
 #See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
 IgnoreMessages="^~~ badword"
+#OPTIONAL
+#Ignore message not begin by >>
+IgnoreMessageNotContains="^>>"
 
 #messages you want to replace.
 #it replaces outgoing messages from the bridge.
@@ -1363,6 +1392,9 @@ IgnoreNicks="spammer1 spammer2"
 #See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
 IgnoreMessages="^~~ badword"
+#OPTIONAL
+#Ignore message not begin by >>
+IgnoreMessageNotContains="^>>"
 
 #messages you want to replace.
 #it replaces outgoing messages from the bridge.
@@ -1567,6 +1599,9 @@ IgnoreNicks="spammer1 spammer2"
 #See https://regex-golang.appspot.com/assets/html/index.html for more regex info
 #OPTIONAL (example below ignores messages starting with ~~ or messages containing badword
 IgnoreMessages="^~~ badword"
+#OPTIONAL
+#Ignore message not begin by >>
+IgnoreMessageNotContains="^>>"
 
 #messages you want to replace.
 #it replaces outgoing messages from the bridge.
@@ -1855,7 +1890,7 @@ enable=true
     # -------------------------------------------------------------------------------------------------------------------------------------
     #  telegram  |      chatid        |          -123456789           | A large negative number. see https://www.linkedin.com/pulse/telegram-bots-beginners-marco-frau
     # -------------------------------------------------------------------------------------------------------------------------------------
-    #  vk        |      peerid        |          2000000002           | A number that starts form 2000000000. Use --debug and send any message in chat to get PeerID in the logs 
+    #  vk        |      peerid        |          2000000002           | A number that starts form 2000000000. Use --debug and send any message in chat to get PeerID in the logs
     # -------------------------------------------------------------------------------------------------------------------------------------
     #  whatsapp  |     group JID      | 48111222333-123455678999@g.us | A unique group JID. If you specify an empty string, bridge will list all the possibilities
     #            |    "Group Name"    |         "Family Chat"         | if you specify a group name, the bridge will find hint the JID to specify. Names can change over time and are not stable.

@@ -291,6 +291,17 @@ func (gw *Gateway) ignoreTextEmpty(msg *config.Message) bool {
 	return true
 }
 
+
+
+func (gw *Gateway) ignoreMessageNotContains(msg *config.Message) bool {
+	if msg.Text == "" {
+		return false
+	}
+	igMsgNotContains := strings.Fields(gw.Bridges[msg.Account].GetString("IgnoreMessageNotContains"))
+	return !gw.ignoreText(msg.Text, igMsgNotContains)
+}
+
+
 func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 	// if we don't have the bridge, ignore it
 	if _, ok := gw.Bridges[msg.Account]; !ok {
@@ -299,7 +310,7 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 
 	igNicks := strings.Fields(gw.Bridges[msg.Account].GetString("IgnoreNicks"))
 	igMessages := strings.Fields(gw.Bridges[msg.Account].GetString("IgnoreMessages"))
-	if gw.ignoreTextEmpty(msg) || gw.ignoreText(msg.Username, igNicks) || gw.ignoreText(msg.Text, igMessages) {
+	if gw.ignoreTextEmpty(msg) || gw.ignoreText(msg.Username, igNicks) || gw.ignoreText(msg.Text, igMessages) || gw.ignoreMessageNotContains(msg){
 		return true
 	}
 
