@@ -1847,7 +1847,7 @@ enable=true
     # rocketchat |      channel       |            #channel           | # is required for private channels too
     # -------------------------------------------------------------------------------------------------------------------------------------
     #   slack    |   channel name     |            general            | Do not include the # symbol
-    #            |    channel id      |           ID:C123456          | The underlying ID of a channel. This doesn't work with webhooks
+    #            |    channel id      |           ID:C123456          | The underlying ID of a channel. This doesn't work with webhooks.
     # -------------------------------------------------------------------------------------------------------------------------------------
     #   steam    |      chatid        |         example needed        | The number in the URL when you click "enter chat room" in the browser
     # -------------------------------------------------------------------------------------------------------------------------------------
