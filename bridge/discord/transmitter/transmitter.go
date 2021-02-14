@@ -58,7 +58,7 @@ func New(session *discordgo.Session, guild string, title string, autoCreate bool
 
 		channelWebhooks: make(map[string]*discordgo.Webhook),
 
-		Log: log.NewEntry(nil),
+		Log: log.NewEntry(logrus.StandardLogger()),
 	}
 }
 
