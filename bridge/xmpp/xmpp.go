@@ -158,8 +158,13 @@ func (b *Bxmpp) postSlackCompatibleWebhook(msg config.Message) error {
 	}
 
 	resp, err := http.Post(b.GetString("WebhookURL")+"/"+msg.Channel, "application/json", bytes.NewReader(webhookBody))
+	if err != nil {
+		b.Log.Errorf("Failed to POST webhook: %s", err)
+		return err
+	}
+
 	resp.Body.Close()
-	return err
+	return nil
 }
 
 func (b *Bxmpp) createXMPP() error {
