@@ -51,6 +51,30 @@ func DownloadFileAuth(url string, auth string) (*[]byte, error) {
 	return &data, nil
 }
 
+// DownloadFileAuthRocket downloads the given URL using the specified Rocket user ID and authentication token.
+func DownloadFileAuthRocket(url, token, userID string) (*[]byte, error) {
+	var buf bytes.Buffer
+	client := &http.Client{
+		Timeout: time.Second * 5,
+	}
+	req, err := http.NewRequest("GET", url, nil)
+
+	req.Header.Add("X-Auth-Token", token)
+	req.Header.Add("X-User-Id", userID)
+
+	if err != nil {
+		return nil, err
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	_, err = io.Copy(&buf, resp.Body)
+	data := buf.Bytes()
+	return &data, err
+}
+
 // GetSubLines splits messages in newline-delimited lines. If maxLineLength is
 // specified as non-zero GetSubLines will also clip long lines to the maximum
 // length and insert a warning marker that the line was clipped.
