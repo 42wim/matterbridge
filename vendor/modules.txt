@@ -18,7 +18,7 @@ github.com/Philipp15b/go-steam/protocol/steamlang
 github.com/Philipp15b/go-steam/rwu
 github.com/Philipp15b/go-steam/socialcache
 github.com/Philipp15b/go-steam/steamid
-# github.com/Rhymen/go-whatsapp v0.1.2-0.20201226125722-8029c28f5c5a
+# github.com/Rhymen/go-whatsapp v0.1.2-0.20210126174449-3c094ebae0ce
 ## explicit
 github.com/Rhymen/go-whatsapp
 github.com/Rhymen/go-whatsapp/binary
@@ -29,6 +29,14 @@ github.com/Rhymen/go-whatsapp/crypto/curve25519
 github.com/Rhymen/go-whatsapp/crypto/hkdf
 # github.com/RocketChat/Rocket.Chat.Go.SDK v0.0.0-20200922220614-e4a51dfb52e4
 ## explicit
+# github.com/SevereCloud/vksdk/v2 v2.9.0
+## explicit
+github.com/SevereCloud/vksdk/v2
+github.com/SevereCloud/vksdk/v2/api
+github.com/SevereCloud/vksdk/v2/events
+github.com/SevereCloud/vksdk/v2/internal
+github.com/SevereCloud/vksdk/v2/longpoll-bot
+github.com/SevereCloud/vksdk/v2/object
 # github.com/blang/semver v3.5.1+incompatible
 github.com/blang/semver
 # github.com/d5/tengo/v2 v2.6.2
@@ -132,7 +140,7 @@ github.com/matrix-org/gomatrix
 github.com/matterbridge/Rocket.Chat.Go.SDK/models
 github.com/matterbridge/Rocket.Chat.Go.SDK/realtime
 github.com/matterbridge/Rocket.Chat.Go.SDK/rest
-# github.com/matterbridge/discordgo v0.22.1
+# github.com/matterbridge/discordgo v0.21.2-0.20210201201054-fb39a175b4f7
 ## explicit
 github.com/matterbridge/discordgo
 # github.com/matterbridge/emoji v2.1.1-0.20191117213217-af507f6b02db+incompatible
@@ -235,10 +243,12 @@ github.com/sirupsen/logrus
 github.com/skip2/go-qrcode
 github.com/skip2/go-qrcode/bitset
 github.com/skip2/go-qrcode/reedsolomon
-# github.com/slack-go/slack v0.7.4
+# github.com/slack-go/slack v0.8.0
 ## explicit
 github.com/slack-go/slack
+github.com/slack-go/slack/internal/backoff
 github.com/slack-go/slack/internal/errorsx
+github.com/slack-go/slack/internal/misc
 github.com/slack-go/slack/internal/timex
 github.com/slack-go/slack/slackutilsx
 # github.com/spf13/afero v1.3.4
@@ -256,7 +266,7 @@ github.com/spf13/pflag
 # github.com/spf13/viper v1.7.1
 ## explicit
 github.com/spf13/viper
-# github.com/stretchr/testify v1.6.1
+# github.com/stretchr/testify v1.7.0
 ## explicit
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
@@ -344,7 +354,7 @@ golang.org/x/net/http2/h2c
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/websocket
-# golang.org/x/oauth2 v0.0.0-20201208152858-08078c50e5b5
+# golang.org/x/oauth2 v0.0.0-20210201163806-010130855d6c
 ## explicit
 golang.org/x/oauth2
 golang.org/x/oauth2/clientcredentials
@@ -357,6 +367,7 @@ golang.org/x/sys/unix
 golang.org/x/sys/windows
 # golang.org/x/text v0.3.4
 golang.org/x/text/encoding
+golang.org/x/text/encoding/charmap
 golang.org/x/text/encoding/internal
 golang.org/x/text/encoding/internal/identifier
 golang.org/x/text/encoding/japanese
@@ -367,6 +378,7 @@ golang.org/x/text/internal/language
 golang.org/x/text/internal/language/compact
 golang.org/x/text/internal/tag
 golang.org/x/text/language
+golang.org/x/text/runes
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi

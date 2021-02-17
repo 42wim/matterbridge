@@ -171,7 +171,7 @@ func (s ConfirmationBlockObject) validateType() MessageObjectType {
 	return motConfirmation
 }
 
-// add styling to confirmation object
+// WithStyle add styling to confirmation object
 func (s *ConfirmationBlockObject) WithStyle(style Style) {
 	s.Style = style
 }

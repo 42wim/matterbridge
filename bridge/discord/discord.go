@@ -148,6 +148,11 @@ func (b *Bdiscord) Connect() error {
 		return fmt.Errorf("use of removed WebhookURL setting")
 	}
 
+	if b.GetInt("debuglevel") > 0 {
+		b.Log.Debug("enabling even more discord debug")
+		b.c.Debug = true
+	}
+
 	// Initialise webhook management
 	b.transmitter = transmitter.New(b.c, b.guildID, "matterbridge", b.useAutoWebhooks)
 	b.transmitter.Log = b.Log

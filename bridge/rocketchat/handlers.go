@@ -1,7 +1,10 @@
 package brocketchat
 
 import (
+	"fmt"
+
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/matterbridge/Rocket.Chat.Go.SDK/models"
 )
 
@@ -58,6 +61,7 @@ func (b *Brocketchat) handleStatusEvent(ev models.Message, rmsg *config.Message)
 
 func (b *Brocketchat) handleRocketClient(messages chan *config.Message) {
 	for message := range b.messageChan {
+		message := message
 		// skip messages with same ID, apparently messages get duplicated for an unknown reason
 		if _, ok := b.cache.Get(message.ID); ok {
 			continue
@@ -76,7 +80,10 @@ func (b *Brocketchat) handleRocketClient(messages chan *config.Message) {
 			Account:  b.Account,
 			UserID:   message.User.ID,
 			ID:       message.ID,
+			Extra:    make(map[string][]interface{}),
 		}
+
+		b.handleAttachments(&message, rmsg)
 
 		// handleStatusEvent returns false if the message should be dropped
 		// in that case it is probably some modification to the channel we do not want to relay
@@ -84,6 +91,38 @@ func (b *Brocketchat) handleRocketClient(messages chan *config.Message) {
 			messages <- rmsg
 		}
 	}
+}
+
+func (b *Brocketchat) handleAttachments(message *models.Message, rmsg *config.Message) {
+	if rmsg.Text == "" {
+		for _, attachment := range message.Attachments {
+			if attachment.Title != "" {
+				rmsg.Text = attachment.Title + "\n"
+			}
+			if attachment.Title != "" && attachment.Text != "" {
+				rmsg.Text += "\n"
+			}
+			if attachment.Text != "" {
+				rmsg.Text += attachment.Text
+			}
+		}
+	}
+
+	for i := range message.Attachments {
+		if err := b.handleDownloadFile(rmsg, &message.Attachments[i]); err != nil {
+			b.Log.Errorf("Could not download incoming file: %#v", err)
+		}
+	}
+}
+
+func (b *Brocketchat) handleDownloadFile(rmsg *config.Message, file *models.Attachment) error {
+	downloadURL := b.GetString("server") + file.TitleLink
+	data, err := helper.DownloadFileAuthRocket(downloadURL, b.user.Token, b.user.ID)
+	if err != nil {
+		return fmt.Errorf("download %s failed %#v", downloadURL, err)
+	}
+	helper.HandleDownloadData(b.Log, rmsg, file.Title, rmsg.Text, downloadURL, data, b.General)
+	return nil
 }
 
 func (b *Brocketchat) handleUploadFile(msg *config.Message) error {

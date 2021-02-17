@@ -310,6 +310,11 @@ StripNick=false
 #OPTIONAL (default false)
 ShowTopicChange=false
 
+#Enable sending messages using a webhook instead of regular MUC messages.
+#Only works with a prosody server using mod_slack_webhook. Does not support editing.
+#OPTIONAL (default "")
+WebhookURL="https://yourdomain/prosody/msg/someid"
+
 ###################################################################
 #mattermost section
 ###################################################################
@@ -1482,6 +1487,18 @@ TLSCACertificate=mumble-ca.crt
 SkipTLSVerify=false
 
 ###################################################################
+#VK
+###################################################################
+[vk.myvk]
+#Group access token
+#See https://vk.com/dev/bots_docs
+Token="Yourtokenhere"
+
+#Group ID
+#For example in URL https://vk.com/public168963511 group ID is 168963511
+GroupID=123456789
+
+###################################################################
 #
 # WhatsApp
 #
@@ -1830,13 +1847,15 @@ enable=true
     # rocketchat |      channel       |            #channel           | # is required for private channels too
     # -------------------------------------------------------------------------------------------------------------------------------------
     #   slack    |   channel name     |            general            | Do not include the # symbol
-    #            |    channel id      |           ID:C123456          | The underlying ID of a channel. This doesn't work with
+    #            |    channel id      |           ID:C123456          | The underlying ID of a channel. This doesn't work with webhooks.
     # -------------------------------------------------------------------------------------------------------------------------------------
     #   steam    |      chatid        |         example needed        | The number in the URL when you click "enter chat room" in the browser
     # -------------------------------------------------------------------------------------------------------------------------------------
     #   nctalk   |      token         |           xs25tz5y            | The token in the URL when you are in a chat. It will be the last part of the URL.
     # -------------------------------------------------------------------------------------------------------------------------------------
     #  telegram  |      chatid        |          -123456789           | A large negative number. see https://www.linkedin.com/pulse/telegram-bots-beginners-marco-frau
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    #  vk        |      peerid        |          2000000002           | A number that starts form 2000000000. Use --debug and send any message in chat to get PeerID in the logs 
     # -------------------------------------------------------------------------------------------------------------------------------------
     #  whatsapp  |     group JID      | 48111222333-123455678999@g.us | A unique group JID. If you specify an empty string, bridge will list all the possibilities
     #            |    "Group Name"    |         "Family Chat"         | if you specify a group name, the bridge will find hint the JID to specify. Names can change over time and are not stable.

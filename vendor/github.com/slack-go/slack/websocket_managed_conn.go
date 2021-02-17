@@ -9,6 +9,9 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/slack-go/slack/internal/backoff"
+	"github.com/slack-go/slack/internal/misc"
+
 	"github.com/gorilla/websocket"
 	"github.com/slack-go/slack/internal/errorsx"
 	"github.com/slack-go/slack/internal/timex"
@@ -92,7 +95,7 @@ func (rtm *RTM) connect(connectionCount int, useRTMStart bool) (*Info, *websocke
 
 	// used to provide exponential backoff wait time with jitter before trying
 	// to connect to slack again
-	boff := &backoff{
+	boff := &backoff.Backoff{
 		Max: 5 * time.Minute,
 	}
 
@@ -103,7 +106,7 @@ func (rtm *RTM) connect(connectionCount int, useRTMStart bool) (*Info, *websocke
 
 		// send connecting event
 		rtm.IncomingEvents <- RTMEvent{"connecting", &ConnectingEvent{
-			Attempt:         boff.attempts + 1,
+			Attempt:         boff.Attempts() + 1,
 			ConnectionCount: connectionCount,
 		}}
 
@@ -123,7 +126,7 @@ func (rtm *RTM) connect(connectionCount int, useRTMStart bool) (*Info, *websocke
 		}
 
 		switch actual := err.(type) {
-		case statusCodeError:
+		case misc.StatusCodeError:
 			if actual.Code == http.StatusNotFound {
 				rtm.Debugf("invalid auth when connecting with RTM: %s", err)
 				rtm.IncomingEvents <- RTMEvent{"invalid_auth", &InvalidAuthEvent{}}
@@ -138,13 +141,13 @@ func (rtm *RTM) connect(connectionCount int, useRTMStart bool) (*Info, *websocke
 		// any other errors are treated as recoverable and we try again after
 		// sending the event along the IncomingEvents channel
 		rtm.IncomingEvents <- RTMEvent{"connection_error", &ConnectionErrorEvent{
-			Attempt:  boff.attempts,
+			Attempt:  boff.Attempts(),
 			Backoff:  backoff,
 			ErrorObj: err,
 		}}
 
 		// get time we should wait before attempting to connect again
-		rtm.Debugf("reconnection %d failed: %s reconnecting in %v\n", boff.attempts, err, backoff)
+		rtm.Debugf("reconnection %d failed: %s reconnecting in %v\n", boff.Attempts(), err, backoff)
 
 		// wait for one of the following to occur,
 		// backoff duration has elapsed, killChannel is signalled, or

@@ -1,0 +1,20 @@
+---
+language: go
+
+cache:
+  directories:
+    - $HOME/.cache/go-build
+    - $HOME/gopath/pkg/mod
+
+go:
+  - 1.x
+
+before_script:
+  - git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+  - git describe --tags $(git rev-list --tags --max-count=1) --always
+
+script:
+  - go test -v -race -coverprofile=coverage.txt -covermode=atomic -p=1 ./...
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

@@ -3,6 +3,7 @@ package slack
 import (
 	"context"
 	"encoding/json"
+	"net/url"
 )
 
 type listEventAuthorizationsResponse struct {
@@ -40,4 +41,21 @@ func (api *Client) ListEventAuthorizationsContext(ctx context.Context, eventCont
 	}
 
 	return resp.Authorizations, nil
+}
+
+func (api *Client) UninstallApp(clientID, clientSecret string) error {
+	values := url.Values{
+		"token":         {api.token},
+		"client_id":     {clientID},
+		"client_secret": {clientSecret},
+	}
+
+	response := SlackResponse{}
+
+	err := api.getMethod(context.Background(), "apps.uninstall", values, &response)
+	if err != nil {
+		return err
+	}
+
+	return response.Err()
 }

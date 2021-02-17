@@ -34,8 +34,10 @@ const (
 	MessageTypeUserPremiumGuildSubscriptionTierTwo
 	MessageTypeUserPremiumGuildSubscriptionTierThree
 	MessageTypeChannelFollowAdd
-	MessageTypeGuildDiscoveryDisqualified
+	MessageTypeGuildDiscoveryDisqualified = iota + 1
 	MessageTypeGuildDiscoveryRequalified
+	MessageTypeReply = iota + 4
+	MessageTypeApplicationCommand
 )
 
 // A Message stores all data related to a specific Discord message.
@@ -369,7 +371,7 @@ type MessageApplication struct {
 type MessageReference struct {
 	MessageID string `json:"message_id"`
 	ChannelID string `json:"channel_id"`
-	GuildID   string `json:"guild_id"`
+	GuildID   string `json:"guild_id,omitempty"`
 }
 
 // Reference returns MessageReference of given message

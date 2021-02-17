@@ -58,7 +58,7 @@ func New(session *discordgo.Session, guild string, title string, autoCreate bool
 
 		channelWebhooks: make(map[string]*discordgo.Webhook),
 
-		Log: log.NewEntry(nil),
+		Log: log.NewEntry(log.StandardLogger()),
 	}
 }
 
@@ -253,6 +253,5 @@ func (t *Transmitter) assignHooksByAppID(hooks []*discordgo.Webhook, appID strin
 			"name":    wh.Name,
 			"channel": wh.ChannelID,
 		}).Println(logLine)
-		break
 	}
 }
