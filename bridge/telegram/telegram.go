@@ -69,6 +69,28 @@ func (b *Btelegram) JoinChannel(channel config.ChannelInfo) error {
 	return nil
 }
 
+func TGGetParseMode(b *Btelegram, username string, text string) (TextOut string, ParseMode string) {
+	TextOut = username + text
+	if b.GetString("MessageFormat") == HTMLFormat {
+		b.Log.Debug("Using mode HTML")
+		ParseMode = tgbotapi.ModeHTML
+	}
+	if b.GetString("MessageFormat") == "Markdown" {
+		b.Log.Debug("Using mode markdown")
+		ParseMode = tgbotapi.ModeMarkdown
+	}
+	if b.GetString("MessageFormat") == MarkdownV2 {
+		b.Log.Debug("Using mode MarkdownV2")
+		ParseMode = MarkdownV2
+	}
+	if strings.ToLower(b.GetString("MessageFormat")) == HTMLNick {
+		b.Log.Debug("Using mode HTML - nick only")
+		TextOut = username + html.EscapeString(text)
+		ParseMode = tgbotapi.ModeHTML
+	}
+	return TextOut, ParseMode
+} 
+
 func (b *Btelegram) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
 
@@ -131,24 +153,7 @@ func (b *Btelegram) getFileDirectURL(id string) string {
 
 func (b *Btelegram) sendMessage(chatid int64, username, text string) (string, error) {
 	m := tgbotapi.NewMessage(chatid, "")
-	m.Text = username + text
-	if b.GetString("MessageFormat") == HTMLFormat {
-		b.Log.Debug("Using mode HTML")
-		m.ParseMode = tgbotapi.ModeHTML
-	}
-	if b.GetString("MessageFormat") == "Markdown" {
-		b.Log.Debug("Using mode markdown")
-		m.ParseMode = tgbotapi.ModeMarkdown
-	}
-	if b.GetString("MessageFormat") == MarkdownV2 {
-		b.Log.Debug("Using mode MarkdownV2")
-		m.ParseMode = MarkdownV2
-	}
-	if strings.ToLower(b.GetString("MessageFormat")) == HTMLNick {
-		b.Log.Debug("Using mode HTML - nick only")
-		m.Text = username + html.EscapeString(text)
-		m.ParseMode = tgbotapi.ModeHTML
-	}
+	m.Text, m.ParseMode = TGGetParseMode(b, username, text)
 
 	m.DisableWebPagePreview = b.GetBool("DisableWebPagePreview")
 

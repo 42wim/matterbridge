@@ -383,38 +383,35 @@ func (b *Btelegram) handleEdit(msg *config.Message, chatid int64) (string, error
 // handleUploadFile handles native upload of files
 func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64) string {
 	var c tgbotapi.Chattable
-	var captiontext string
-	var parsemode string
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo)
 		file := tgbotapi.FileBytes{
 			Name:  fi.Name,
 			Bytes: *fi.Data,
 		}
-		captiontext = msg.Username + fi.Comment
-		if b.GetString("MessageFormat") == HTMLFormat {
-			b.Log.Debug("Using mode HTML")
-			parsemode = tgbotapi.ModeHTML
-		}
-		if b.GetString("MessageFormat") == "Markdown" {
-			b.Log.Debug("Using mode markdown")
-			parsemode = tgbotapi.ModeMarkdown
-		}
-		if strings.ToLower(b.GetString("MessageFormat")) == HTMLNick {
-			b.Log.Debug("Using mode HTML - nick only")
-			captiontext = msg.Username + html.EscapeString(fi.Comment)
-			parsemode = tgbotapi.ModeHTML
-		}
-		re := regexp.MustCompile(".(jpg|jpe|png)$")
-		if re.MatchString(fi.Name) {
+		reimg := regexp.MustCompile(".(jpg|jpe|png)$")
+		revideo := regexp.MustCompile(".(mp4|m4v)$")
+		reaudio := regexp.MustCompile(".(mp3|oga)$")
+		revoice := regexp.MustCompile(".(ogg)$")
+		if reimg.MatchString(fi.Name) {
 			pc := tgbotapi.NewPhotoUpload(chatid, file)
-			pc.Caption = captiontext
-			pc.ParseMode = parsemode
+			pc.Caption, pc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
 			c = pc
+		} else if revideo.MatchString(fi.Name) {
+			vc := tgbotapi.NewVideoUpload(chatid, file)
+			vc.Caption, vc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
+			c = vc
+		} else if reaudio.MatchString(fi.Name) {
+			ac := tgbotapi.NewAudioUpload(chatid, file)
+			ac.Caption, ac.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
+			c = ac
+		} else if revoice.MatchString(fi.Name) {
+			voc := tgbotapi.NewVoiceUpload(chatid, file)
+			voc.Caption, voc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
+			c = voc
 		} else {
 			dc := tgbotapi.NewDocumentUpload(chatid, file)
-			dc.Caption = captiontext
-			dc.ParseMode = parsemode
+			dc.Caption, dc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
 			c = dc
 		}
 		_, err := b.c.Send(c)
