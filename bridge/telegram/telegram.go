@@ -69,8 +69,8 @@ func (b *Btelegram) JoinChannel(channel config.ChannelInfo) error {
 	return nil
 }
 
-func TGGetParseMode(b *Btelegram, username string, text string) (TextOut string, ParseMode string) {
-	TextOut = username + text
+func TGGetParseMode(b *Btelegram, username string, text string) (Textout string, ParseMode string) {
+	Textout = username + text
 	if b.GetString("MessageFormat") == HTMLFormat {
 		b.Log.Debug("Using mode HTML")
 		ParseMode = tgbotapi.ModeHTML
@@ -85,10 +85,10 @@ func TGGetParseMode(b *Btelegram, username string, text string) (TextOut string,
 	}
 	if strings.ToLower(b.GetString("MessageFormat")) == HTMLNick {
 		b.Log.Debug("Using mode HTML - nick only")
-		TextOut = username + html.EscapeString(text)
+		Textout = username + html.EscapeString(text)
 		ParseMode = tgbotapi.ModeHTML
 	}
-	return TextOut, ParseMode
+	return Textout, ParseMode
 } 
 
 func (b *Btelegram) Send(msg config.Message) (string, error) {

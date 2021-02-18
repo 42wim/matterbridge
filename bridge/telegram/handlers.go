@@ -2,10 +2,10 @@ package btelegram
 
 import (
 	"html"
-	"regexp"
 	"strconv"
 	"strings"
 	"unicode/utf16"
+	"path/filepath"
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
@@ -389,27 +389,24 @@ func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64) string {
 			Name:  fi.Name,
 			Bytes: *fi.Data,
 		}
-		reimg := regexp.MustCompile(".(jpg|jpe|png)$")
-		revideo := regexp.MustCompile(".(mp4|m4v)$")
-		reaudio := regexp.MustCompile(".(mp3|oga)$")
-		revoice := regexp.MustCompile(".(ogg)$")
-		if reimg.MatchString(fi.Name) {
+		switch filepath.Ext(fi.Name) {
+		case ".jpg", ".jpe", ".png":
 			pc := tgbotapi.NewPhotoUpload(chatid, file)
 			pc.Caption, pc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
 			c = pc
-		} else if revideo.MatchString(fi.Name) {
+		case ".mp4", ".m4v":
 			vc := tgbotapi.NewVideoUpload(chatid, file)
 			vc.Caption, vc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
 			c = vc
-		} else if reaudio.MatchString(fi.Name) {
+		case ".mp3", ".oga":
 			ac := tgbotapi.NewAudioUpload(chatid, file)
 			ac.Caption, ac.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
 			c = ac
-		} else if revoice.MatchString(fi.Name) {
+		case ".ogg":
 			voc := tgbotapi.NewVoiceUpload(chatid, file)
 			voc.Caption, voc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
 			c = voc
-		} else {
+		default:
 			dc := tgbotapi.NewDocumentUpload(chatid, file)
 			dc.Caption, dc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
 			c = dc
