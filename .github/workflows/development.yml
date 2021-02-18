@@ -16,7 +16,7 @@ jobs:
   test-build-upload:
     strategy:
       matrix:
-        go-version: [1.14.x, 1.15.x, 1.16.x]
+        go-version: [1.15.x, 1.16.x]
         platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     steps:
@@ -35,23 +35,23 @@ jobs:
       run: |
         mkdir -p output/{win,lin,arm,mac}
         VERSION=$(git describe --tags)
-        GOOS=linux GOARCH=amd64 go build -mod=vendor -ldflags "-s -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o output/lin/matterbridge-$VERSION-linux-amd64
-        GOOS=windows GOARCH=amd64 go build -mod=vendor -ldflags "-s -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o output/win/matterbridge-$VERSION-windows-amd64.exe
-        GOOS=darwin GOARCH=amd64 go build -mod=vendor -ldflags "-s -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o output/mac/matterbridge-$VERSION-darwin-amd64
+        GOOS=linux GOARCH=amd64 go build -ldflags "-s -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o output/lin/matterbridge-$VERSION-linux-amd64
+        GOOS=windows GOARCH=amd64 go build -ldflags "-s -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o output/win/matterbridge-$VERSION-windows-amd64.exe
+        GOOS=darwin GOARCH=amd64 go build -ldflags "-s -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o output/mac/matterbridge-$VERSION-darwin-amd64
     - name: Upload linux 64-bit
-      if: startsWith(matrix.go-version,'1.15')
+      if: startsWith(matrix.go-version,'1.16')
       uses: actions/upload-artifact@v2
       with:
         name: matterbridge-linux-64bit
         path: output/lin
     - name: Upload windows 64-bit
-      if: startsWith(matrix.go-version,'1.15')
+      if: startsWith(matrix.go-version,'1.16')
       uses: actions/upload-artifact@v2
       with:
         name: matterbridge-windows-64bit
         path: output/win
     - name: Upload darwin 64-bit
-      if: startsWith(matrix.go-version,'1.15')
+      if: startsWith(matrix.go-version,'1.16')
       uses: actions/upload-artifact@v2
       with:
         name: matterbridge-darwin-64bit

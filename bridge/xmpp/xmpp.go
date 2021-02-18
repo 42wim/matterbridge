@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -157,7 +158,7 @@ func (b *Bxmpp) postSlackCompatibleWebhook(msg config.Message) error {
 		return err
 	}
 
-	resp, err := http.Post(b.GetString("WebhookURL")+"/"+msg.Channel, "application/json", bytes.NewReader(webhookBody))
+	resp, err := http.Post(b.GetString("WebhookURL")+"/"+url.QueryEscape(msg.Channel), "application/json", bytes.NewReader(webhookBody))
 	if err != nil {
 		b.Log.Errorf("Failed to POST webhook: %s", err)
 		return err
