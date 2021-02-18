@@ -2,10 +2,10 @@ package btelegram
 
 import (
 	"html"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"unicode/utf16"
-	"path/filepath"
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"

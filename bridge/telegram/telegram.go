@@ -89,7 +89,7 @@ func TGGetParseMode(b *Btelegram, username string, text string) (textout string,
 		parsemode = tgbotapi.ModeHTML
 	}
 	return textout, parsemode
-} 
+}
 
 func (b *Btelegram) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
