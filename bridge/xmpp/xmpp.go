@@ -6,14 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/42wim/matterbridge/bridge"
-	"github.com/42wim/matterbridge/bridge/config"
-	"github.com/42wim/matterbridge/bridge/helper"
+	"github.com/allilengyi/matterbridge/bridge"
+	"github.com/allilengyi/matterbridge/bridge/config"
+	"github.com/allilengyi/matterbridge/bridge/helper"
 	"github.com/jpillora/backoff"
 	"github.com/matterbridge/go-xmpp"
 	"github.com/rs/xid"
@@ -158,14 +157,9 @@ func (b *Bxmpp) postSlackCompatibleWebhook(msg config.Message) error {
 		return err
 	}
 
-	resp, err := http.Post(b.GetString("WebhookURL")+"/"+url.QueryEscape(msg.Channel), "application/json", bytes.NewReader(webhookBody))
-	if err != nil {
-		b.Log.Errorf("Failed to POST webhook: %s", err)
-		return err
-	}
-
+	resp, err := http.Post(b.GetString("WebhookURL")+"/"+msg.Channel, "application/json", bytes.NewReader(webhookBody))
 	resp.Body.Close()
-	return nil
+	return err
 }
 
 func (b *Bxmpp) createXMPP() error {
@@ -352,24 +346,12 @@ func (b *Bxmpp) handleUploadFile(msg *config.Message) error {
 	for _, file := range msg.Extra["file"] {
 		fileInfo := file.(config.FileInfo)
 		if fileInfo.Comment != "" {
-			msg.Text += fileInfo.Comment + ": "
+			msg.Text += fileInfo.Comment
 		}
 		if fileInfo.URL != "" {
-			msg.Text = fileInfo.URL
 			if fileInfo.Comment != "" {
-				msg.Text = fileInfo.Comment + ": " + fileInfo.URL
 				urlDesc = fileInfo.Comment
 			}
-		}
-		if _, err := b.xc.Send(xmpp.Chat{
-			Type:   "groupchat",
-			Remote: msg.Channel + "@" + b.GetString("Muc"),
-			Text:   msg.Username + msg.Text,
-		}); err != nil {
-			return err
-		}
-
-		if fileInfo.URL != "" {
 			if _, err := b.xc.SendOOB(xmpp.Chat{
 				Type:    "groupchat",
 				Remote:  msg.Channel + "@" + b.GetString("Muc"),
@@ -378,6 +360,13 @@ func (b *Bxmpp) handleUploadFile(msg *config.Message) error {
 			}); err != nil {
 				b.Log.WithError(err).Warn("Failed to send share URL.")
 			}
+		}
+		if _, err := b.xc.Send(xmpp.Chat{
+			Type:   "groupchat",
+			Remote: msg.Channel + "@" + b.GetString("Muc"),
+			Text:   msg.Username + msg.Text,
+		}); err != nil {
+			return err
 		}
 	}
 	return nil
