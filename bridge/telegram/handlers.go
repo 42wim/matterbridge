@@ -181,13 +181,15 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 // sends a EVENT_AVATAR_DOWNLOAD message to the gateway if successful.
 // logs an error message if it fails
 func (b *Btelegram) handleDownloadAvatar(userid int, channel string) {
-	rmsg := config.Message{Username: "system",
-		Text:    "avatar",
-		Channel: channel,
-		Account: b.Account,
-		UserID:  strconv.Itoa(userid),
-		Event:   config.EventAvatarDownload,
-		Extra:   make(map[string][]interface{})}
+	rmsg := config.Message{
+		Username: "system",
+		Text:     "avatar",
+		Channel:  channel,
+		Account:  b.Account,
+		UserID:   strconv.Itoa(userid),
+		Event:    config.EventAvatarDownload,
+		Extra:    make(map[string][]interface{}),
+	}
 
 	if _, ok := b.avatarMap[strconv.Itoa(userid)]; !ok {
 		photos, err := b.c.GetUserProfilePhotos(tgbotapi.UserProfilePhotosConfig{UserID: userid, Limit: 1})
@@ -413,7 +415,7 @@ func (b *Btelegram) handleQuote(message, quoteNick, quoteMessage string) string 
 	if format == "" {
 		format = "{MESSAGE} (re @{QUOTENICK}: {QUOTEMESSAGE})"
 	}
-	quoteMessagelength := len(quoteMessage)
+	quoteMessagelength := len([]rune(quoteMessage))
 	if b.GetInt("QuoteLengthLimit") != 0 && quoteMessagelength >= b.GetInt("QuoteLengthLimit") {
 		runes := []rune(quoteMessage)
 		quoteMessage = string(runes[0:b.GetInt("QuoteLengthLimit")])
