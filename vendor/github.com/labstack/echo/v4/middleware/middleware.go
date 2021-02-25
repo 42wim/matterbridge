@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -30,6 +32,47 @@ func captureTokens(pattern *regexp.Regexp, input string) *strings.Replacer {
 		replace[j+1] = v
 	}
 	return strings.NewReplacer(replace...)
+}
+
+func rewriteRulesRegex(rewrite map[string]string) map[*regexp.Regexp]string {
+	// Initialize
+	rulesRegex := map[*regexp.Regexp]string{}
+	for k, v := range rewrite {
+		k = regexp.QuoteMeta(k)
+		k = strings.Replace(k, `\*`, "(.*?)", -1)
+		if strings.HasPrefix(k, `\^`) {
+			k = strings.Replace(k, `\^`, "^", -1)
+		}
+		k = k + "$"
+		rulesRegex[regexp.MustCompile(k)] = v
+	}
+	return rulesRegex
+}
+
+func rewritePath(rewriteRegex map[*regexp.Regexp]string, req *http.Request) {
+	for k, v := range rewriteRegex {
+		rawPath := req.URL.RawPath
+		if rawPath != "" {
+			// RawPath is only set when there has been escaping done. In that case Path must be deduced from rewritten RawPath
+			// because encoded Path could match rules that RawPath did not
+			if replacer := captureTokens(k, rawPath); replacer != nil {
+				rawPath = replacer.Replace(v)
+
+				req.URL.RawPath = rawPath
+				req.URL.Path, _ = url.PathUnescape(rawPath)
+
+				return // rewrite only once
+			}
+
+			continue
+		}
+
+		if replacer := captureTokens(k, req.URL.Path); replacer != nil {
+			req.URL.Path = replacer.Replace(v)
+
+			return // rewrite only once
+		}
+	}
 }
 
 // DefaultSkipper returns false which processes the middleware.

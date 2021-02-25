@@ -207,6 +207,18 @@ implements the following extensions:
   Total   | 50
   ```
 
+  A cell spanning multiple columns (colspan) is supported, just repeat the pipe symbol:
+
+  ```
+  Name    | Age
+  --------|------
+  Bob     ||
+  Alice   | 23
+  ========|======
+  Total   | 23
+  ```
+
+
 - **Fenced code blocks**. In addition to the normal 4-space
   indentation to mark code blocks, you can explicitly mark them
   and supply a language (to make syntax highlighting simple). Just

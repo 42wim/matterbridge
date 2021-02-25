@@ -952,6 +952,9 @@ func (r *Renderer) TableCell(w io.Writer, tableCell *ast.TableCell, entering boo
 	if align != "" {
 		attrs = append(attrs, fmt.Sprintf(`align="%s"`, align))
 	}
+	if colspan := tableCell.ColSpan; colspan > 0 {
+		attrs = append(attrs, fmt.Sprintf(`colspan="%d"`, colspan))
+	}
 	if ast.GetPrevNode(tableCell) == nil {
 		r.CR(w)
 	}

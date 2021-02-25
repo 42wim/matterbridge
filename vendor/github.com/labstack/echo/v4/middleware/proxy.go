@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -37,6 +36,13 @@ type (
 		// "/users/*/orders/*": "/user/$1/order/$2",
 		Rewrite map[string]string
 
+		// RegexRewrite defines rewrite rules using regexp.Rexexp with captures
+		// Every capture group in the values can be retrieved by index e.g. $1, $2 and so on.
+		// Example:
+		// "^/old/[0.9]+/":     "/new",
+		// "^/api/.+?/(.*)":    "/v2/$1",
+		RegexRewrite map[*regexp.Regexp]string
+
 		// Context key to store selected ProxyTarget into context.
 		// Optional. Default value "target".
 		ContextKey string
@@ -47,8 +53,6 @@ type (
 
 		// ModifyResponse defines function to modify response from ProxyTarget.
 		ModifyResponse func(*http.Response) error
-
-		rewriteRegex map[*regexp.Regexp]string
 	}
 
 	// ProxyTarget defines the upstream target.
@@ -206,12 +210,14 @@ func ProxyWithConfig(config ProxyConfig) echo.MiddlewareFunc {
 	if config.Balancer == nil {
 		panic("echo: proxy middleware requires balancer")
 	}
-	config.rewriteRegex = map[*regexp.Regexp]string{}
 
-	// Initialize
-	for k, v := range config.Rewrite {
-		k = strings.Replace(k, "*", "(\\S*)", -1)
-		config.rewriteRegex[regexp.MustCompile(k)] = v
+	if config.Rewrite != nil {
+		if config.RegexRewrite == nil {
+			config.RegexRewrite = make(map[*regexp.Regexp]string)
+		}
+		for k, v := range rewriteRulesRegex(config.Rewrite) {
+			config.RegexRewrite[k] = v
+		}
 	}
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
@@ -225,13 +231,8 @@ func ProxyWithConfig(config ProxyConfig) echo.MiddlewareFunc {
 			tgt := config.Balancer.Next(c)
 			c.Set(config.ContextKey, tgt)
 
-			// Rewrite
-			for k, v := range config.rewriteRegex {
-				replacer := captureTokens(k, echo.GetPath(req))
-				if replacer != nil {
-					req.URL.Path = replacer.Replace(v)
-				}
-			}
+			// Set rewrite path and raw path
+			rewritePath(config.RegexRewrite, req)
 
 			// Fix header
 			// Basically it's not good practice to unconditionally pass incoming x-real-ip header to upstream.

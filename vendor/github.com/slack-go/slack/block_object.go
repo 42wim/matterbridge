@@ -2,6 +2,7 @@ package slack
 
 import (
 	"encoding/json"
+	"errors"
 )
 
 // Block Objects are also known as Composition Objects
@@ -133,6 +134,20 @@ func (s TextBlockObject) validateType() MessageObjectType {
 // validateType enforces block objects for element and block parameters
 func (s TextBlockObject) MixedElementType() MixedElementType {
 	return MixedElementText
+}
+
+// Validate checks if TextBlockObject has valid values
+func (s TextBlockObject) Validate() error {
+	if s.Type != "plain_text" && s.Type != "mrkdwn" {
+		return errors.New("type must be either of plain_text or mrkdwn")
+	}
+
+	// https://github.com/slack-go/slack/issues/881
+	if s.Type == "mrkdwn" && s.Emoji {
+		return errors.New("emoji cannot be true in mrkdown")
+	}
+
+	return nil
 }
 
 // NewTextBlockObject returns an instance of a new Text Block Object

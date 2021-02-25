@@ -644,9 +644,12 @@ type getUserProfileResponse struct {
 
 // GetUserProfileContext retrieves a user's profile information with a context.
 func (api *Client) GetUserProfileContext(ctx context.Context, userID string, includeLabels bool) (*UserProfile, error) {
-	values := url.Values{"token": {api.token}, "user": {userID}}
+	values := url.Values{"token": {api.token}}
 	if includeLabels {
 		values.Add("include_labels", "true")
+	}
+	if userID != "" {
+		values.Add("user", userID)
 	}
 	resp := &getUserProfileResponse{}
 
