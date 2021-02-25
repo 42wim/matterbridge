@@ -60,21 +60,21 @@ github.com/francoispqt/gojay
 # github.com/fsnotify/fsnotify v1.4.9
 ## explicit
 github.com/fsnotify/fsnotify
-# github.com/go-asn1-ber/asn1-ber v1.5.1
+# github.com/go-asn1-ber/asn1-ber v1.5.3
 github.com/go-asn1-ber/asn1-ber
 # github.com/go-telegram-bot-api/telegram-bot-api v1.0.1-0.20200524105306-7434b0456e81
 ## explicit
 github.com/go-telegram-bot-api/telegram-bot-api
-# github.com/golang/protobuf v1.4.2
+# github.com/golang/protobuf v1.4.3
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go/descriptor
-# github.com/gomarkdown/markdown v0.0.0-20201113031856-722100d81a8e
+# github.com/gomarkdown/markdown v0.0.0-20210208175418-bda154fe17d8
 ## explicit
 github.com/gomarkdown/markdown
 github.com/gomarkdown/markdown/ast
 github.com/gomarkdown/markdown/html
 github.com/gomarkdown/markdown/parser
-# github.com/google/gops v0.3.14
+# github.com/google/gops v0.3.15
 ## explicit
 github.com/google/gops/agent
 github.com/google/gops/internal
@@ -118,7 +118,7 @@ github.com/keybase/go-keybase-chat-bot/kbchat/types/chat1
 github.com/keybase/go-keybase-chat-bot/kbchat/types/gregor1
 github.com/keybase/go-keybase-chat-bot/kbchat/types/keybase1
 github.com/keybase/go-keybase-chat-bot/kbchat/types/stellar1
-# github.com/labstack/echo/v4 v4.1.17
+# github.com/labstack/echo/v4 v4.2.0
 ## explicit
 github.com/labstack/echo/v4
 github.com/labstack/echo/v4/middleware
@@ -130,6 +130,9 @@ github.com/labstack/gommon/random
 # github.com/lrstanley/girc v0.0.0-20190801035559-4fc93959e1a7
 ## explicit
 github.com/lrstanley/girc
+# github.com/magefile/mage v1.10.0
+github.com/magefile/mage/mg
+github.com/magefile/mage/sh
 # github.com/magiconair/properties v1.8.1
 github.com/magiconair/properties
 # github.com/matrix-org/gomatrix v0.0.0-20200827122206-7dd5e2a05bcd
@@ -160,13 +163,13 @@ github.com/mattermost/go-i18n/i18n
 github.com/mattermost/go-i18n/i18n/bundle
 github.com/mattermost/go-i18n/i18n/language
 github.com/mattermost/go-i18n/i18n/translation
-# github.com/mattermost/ldap v0.0.0-20191128190019-9f62ba4b8d4d
+# github.com/mattermost/ldap v0.0.0-20201202150706-ee0e6284187d
 github.com/mattermost/ldap
 # github.com/mattermost/logr v1.0.13
 github.com/mattermost/logr
 github.com/mattermost/logr/format
 github.com/mattermost/logr/target
-# github.com/mattermost/mattermost-server/v5 v5.30.1
+# github.com/mattermost/mattermost-server/v5 v5.32.1
 ## explicit
 github.com/mattermost/mattermost-server/v5/mlog
 github.com/mattermost/mattermost-server/v5/model
@@ -210,7 +213,7 @@ github.com/paulrosania/go-charset/data
 github.com/pborman/uuid
 # github.com/pelletier/go-toml v1.8.1
 github.com/pelletier/go-toml
-# github.com/philhofer/fwd v1.0.0
+# github.com/philhofer/fwd v1.1.1
 github.com/philhofer/fwd
 # github.com/pkg/errors v0.9.1
 github.com/pkg/errors
@@ -236,14 +239,14 @@ github.com/shazow/rateio
 github.com/shazow/ssh-chat/internal/sanitize
 github.com/shazow/ssh-chat/sshd
 github.com/shazow/ssh-chat/sshd/terminal
-# github.com/sirupsen/logrus v1.7.0
+# github.com/sirupsen/logrus v1.8.0
 ## explicit
 github.com/sirupsen/logrus
 # github.com/skip2/go-qrcode v0.0.0-20190110000554-dc11ecdae0a9
 github.com/skip2/go-qrcode
 github.com/skip2/go-qrcode/bitset
 github.com/skip2/go-qrcode/reedsolomon
-# github.com/slack-go/slack v0.8.0
+# github.com/slack-go/slack v0.8.1
 ## explicit
 github.com/slack-go/slack
 github.com/slack-go/slack/internal/backoff
@@ -275,7 +278,7 @@ github.com/stretchr/testify/suite
 github.com/subosito/gotenv
 # github.com/technoweenie/multipartstreamer v1.0.1
 github.com/technoweenie/multipartstreamer
-# github.com/tinylib/msgp v1.1.2
+# github.com/tinylib/msgp v1.1.5
 github.com/tinylib/msgp/msgp
 # github.com/valyala/bytebufferpool v1.0.0
 github.com/valyala/bytebufferpool
@@ -288,7 +291,7 @@ github.com/vincent-petithory/dataurl
 github.com/wiggin77/cfg
 github.com/wiggin77/cfg/ini
 github.com/wiggin77/cfg/timeconv
-# github.com/wiggin77/merror v1.0.2
+# github.com/wiggin77/merror v1.0.3
 github.com/wiggin77/merror
 # github.com/wiggin77/srslog v1.0.1
 github.com/wiggin77/srslog
@@ -316,7 +319,7 @@ go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
-# golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
+# golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/bcrypt
@@ -333,7 +336,7 @@ golang.org/x/crypto/salsa20/salsa
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/image v0.0.0-20201208152932-35266b937fa6
+# golang.org/x/image v0.0.0-20210220032944-ac19c3e999fb
 ## explicit
 golang.org/x/image/bmp
 golang.org/x/image/ccitt
@@ -343,7 +346,7 @@ golang.org/x/image/tiff/lzw
 golang.org/x/image/vp8
 golang.org/x/image/vp8l
 golang.org/x/image/webp
-# golang.org/x/net v0.0.0-20201006153459-a7d1128ccaa0
+# golang.org/x/net v0.0.0-20201224014010-6772e930b67b
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/html
@@ -354,17 +357,20 @@ golang.org/x/net/http2/h2c
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/websocket
-# golang.org/x/oauth2 v0.0.0-20210201163806-010130855d6c
+# golang.org/x/oauth2 v0.0.0-20210220000619-9bb904979d93
 ## explicit
 golang.org/x/oauth2
 golang.org/x/oauth2/clientcredentials
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/microsoft
-# golang.org/x/sys v0.0.0-20201207223542-d4d67f95c62d
+# golang.org/x/sys v0.0.0-20201223074533-0d417f636930
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
+golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
+# golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
+golang.org/x/term
 # golang.org/x/text v0.3.4
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
@@ -384,6 +390,8 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
+# golang.org/x/time v0.0.0-20201208040808-7e3f01d25324
+golang.org/x/time/rate
 # gomod.garykim.dev/nc-talk v0.1.7
 ## explicit
 gomod.garykim.dev/nc-talk/constants
@@ -433,7 +441,7 @@ gopkg.in/natefinch/lumberjack.v2
 # gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 ## explicit
 gopkg.in/olahol/melody.v1
-# gopkg.in/yaml.v2 v2.3.0
+# gopkg.in/yaml.v2 v2.4.0
 gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 gopkg.in/yaml.v3

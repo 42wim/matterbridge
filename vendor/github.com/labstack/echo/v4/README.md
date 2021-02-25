@@ -1,12 +1,12 @@
 <a href="https://echo.labstack.com"><img height="80" src="https://cdn.labstack.com/images/echo-logo.svg"></a>
 
 [![Sourcegraph](https://sourcegraph.com/github.com/labstack/echo/-/badge.svg?style=flat-square)](https://sourcegraph.com/github.com/labstack/echo?badge)
-[![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](http://godoc.org/github.com/labstack/echo)
+[![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://pkg.go.dev/github.com/labstack/echo/v4)
 [![Go Report Card](https://goreportcard.com/badge/github.com/labstack/echo?style=flat-square)](https://goreportcard.com/report/github.com/labstack/echo)
 [![Build Status](http://img.shields.io/travis/labstack/echo.svg?style=flat-square)](https://travis-ci.org/labstack/echo)
 [![Codecov](https://img.shields.io/codecov/c/github/labstack/echo.svg?style=flat-square)](https://codecov.io/gh/labstack/echo)
 [![Join the chat at https://gitter.im/labstack/echo](https://img.shields.io/badge/gitter-join%20chat-brightgreen.svg?style=flat-square)](https://gitter.im/labstack/echo)
-[![Forum](https://img.shields.io/badge/community-forum-00afd1.svg?style=flat-square)](https://forum.labstack.com)
+[![Forum](https://img.shields.io/badge/community-forum-00afd1.svg?style=flat-square)](https://github.com/labstack/echo/discussions)
 [![Twitter](https://img.shields.io/badge/twitter-@labstack-55acee.svg?style=flat-square)](https://twitter.com/labstack)
 [![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/labstack/echo/master/LICENSE)
 
@@ -42,11 +42,14 @@ For older versions, please use the latest v3 tag.
 
 ## Benchmarks
 
-Date: 2018/03/15<br>
+Date: 2020/11/11<br>
 Source: https://github.com/vishr/web-framework-benchmark<br>
 Lower is better!
 
-<img src="https://i.imgur.com/I32VdMJ.png">
+<img src="https://i.imgur.com/qwPNQbl.png">
+<img src="https://i.imgur.com/s8yKQjx.png">
+
+The benchmarks above were run on an Intel(R) Core(TM) i7-6820HQ CPU @ 2.70GHz
 
 ## [Guide](https://echo.labstack.com/guide)
 
@@ -91,7 +94,7 @@ func hello(c echo.Context) error {
 
 ## Help
 
-- [Forum](https://forum.labstack.com)
+- [Forum](https://github.com/labstack/echo/discussions)
 - [Chat](https://gitter.im/labstack/echo)
 
 ## Contribute

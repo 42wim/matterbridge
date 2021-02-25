@@ -61,6 +61,13 @@ func init() {
 			PERMISSION_LIST_PUBLIC_TEAMS,
 			PERMISSION_VIEW_TEAM,
 		},
+		PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE.Id: {
+			PERMISSION_MANAGE_JOBS,
+		},
+		PERMISSION_SYSCONSOLE_READ_COMPLIANCE.Id: {
+			PERMISSION_READ_JOBS,
+			PERMISSION_DOWNLOAD_COMPLIANCE_EXPORT_RESULT,
+		},
 		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT.Id: {
 			PERMISSION_READ_JOBS,
 		},
@@ -278,7 +285,7 @@ func (r *Role) MergeChannelHigherScopedPermissions(higherScopedPermissions *Role
 
 		_, presentOnHigherScope := higherScopedPermissionsMap[cp.Id]
 
-		// For the channel admin role always look to the higher scope to determine if the role has ther permission.
+		// For the channel admin role always look to the higher scope to determine if the role has their permission.
 		// The channel admin is a special case because they're not part of the UI to be "channel moderated", only
 		// channel members and channel guests are.
 		if higherScopedPermissions.RoleID == CHANNEL_ADMIN_ROLE_ID && presentOnHigherScope {

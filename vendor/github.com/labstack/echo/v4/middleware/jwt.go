@@ -57,6 +57,7 @@ type (
 		// - "query:<name>"
 		// - "param:<name>"
 		// - "cookie:<name>"
+		// - "form:<name>"
 		TokenLookup string
 
 		// AuthScheme to be used in the Authorization header.
@@ -86,6 +87,7 @@ const (
 // Errors
 var (
 	ErrJWTMissing = echo.NewHTTPError(http.StatusBadRequest, "missing or malformed jwt")
+	ErrJWTInvalid = echo.NewHTTPError(http.StatusUnauthorized, "invalid or expired jwt")
 )
 
 var (
@@ -166,6 +168,8 @@ func JWTWithConfig(config JWTConfig) echo.MiddlewareFunc {
 		extractor = jwtFromParam(parts[1])
 	case "cookie":
 		extractor = jwtFromCookie(parts[1])
+	case "form":
+		extractor = jwtFromForm(parts[1])
 	}
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
@@ -213,8 +217,8 @@ func JWTWithConfig(config JWTConfig) echo.MiddlewareFunc {
 				return config.ErrorHandlerWithContext(err, c)
 			}
 			return &echo.HTTPError{
-				Code:     http.StatusUnauthorized,
-				Message:  "invalid or expired jwt",
+				Code:     ErrJWTInvalid.Code,
+				Message:  ErrJWTInvalid.Message,
 				Internal: err,
 			}
 		}
@@ -263,5 +267,16 @@ func jwtFromCookie(name string) jwtExtractor {
 			return "", ErrJWTMissing
 		}
 		return cookie.Value, nil
+	}
+}
+
+// jwtFromForm returns a `jwtExtractor` that extracts token from the form field.
+func jwtFromForm(name string) jwtExtractor {
+	return func(c echo.Context) (string, error) {
+		field := c.FormValue(name)
+		if field == "" {
+			return "", ErrJWTMissing
+		}
+		return field, nil
 	}
 }

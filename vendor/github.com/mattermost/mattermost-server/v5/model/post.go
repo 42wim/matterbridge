@@ -98,8 +98,10 @@ type Post struct {
 	HasReactions  bool            `json:"has_reactions,omitempty"`
 
 	// Transient data populated before sending a post to the client
-	ReplyCount int64         `json:"reply_count" db:"-"`
-	Metadata   *PostMetadata `json:"metadata,omitempty" db:"-"`
+	ReplyCount   int64         `json:"reply_count" db:"-"`
+	LastReplyAt  int64         `json:"last_reply_at" db:"-"`
+	Participants []*User       `json:"participants" db:"-"`
+	Metadata     *PostMetadata `json:"metadata,omitempty" db:"-"`
 }
 
 type PostEphemeral struct {
@@ -163,6 +165,12 @@ type PostForIndexing struct {
 	ParentCreateAt *int64 `json:"parent_create_at"`
 }
 
+type FileForIndexing struct {
+	FileInfo
+	ChannelId string `json:"channel_id"`
+	Content   string `json:"content"`
+}
+
 // ShallowCopy is an utility function to shallow copy a Post to the given
 // destination without touching the internal RWMutex.
 func (o *Post) ShallowCopy(dst *Post) error {
@@ -194,6 +202,8 @@ func (o *Post) ShallowCopy(dst *Post) error {
 	dst.PendingPostId = o.PendingPostId
 	dst.HasReactions = o.HasReactions
 	dst.ReplyCount = o.ReplyCount
+	dst.Participants = o.Participants
+	dst.LastReplyAt = o.LastReplyAt
 	dst.Metadata = o.Metadata
 	return nil
 }
@@ -218,17 +228,21 @@ func (o *Post) ToUnsanitizedJson() string {
 }
 
 type GetPostsSinceOptions struct {
-	ChannelId        string
-	Time             int64
-	SkipFetchThreads bool
+	ChannelId                string
+	Time                     int64
+	SkipFetchThreads         bool
+	CollapsedThreads         bool
+	CollapsedThreadsExtended bool
 }
 
 type GetPostsOptions struct {
-	ChannelId        string
-	PostId           string
-	Page             int
-	PerPage          int
-	SkipFetchThreads bool
+	ChannelId                string
+	PostId                   string
+	Page                     int
+	PerPage                  int
+	SkipFetchThreads         bool
+	CollapsedThreads         bool
+	CollapsedThreadsExtended bool
 }
 
 func PostFromJson(data io.Reader) *Post {
@@ -345,6 +359,9 @@ func (o *Post) SanitizeProps() {
 		if _, ok := o.GetProps()[member]; ok {
 			o.DelProp(member)
 		}
+	}
+	for _, p := range o.Participants {
+		p.Sanitize(map[string]bool{})
 	}
 }
 
@@ -552,6 +569,14 @@ func (o *Post) Attachments() []*SlackAttachment {
 			if enc, err := json.Marshal(attachment); err == nil {
 				var decoded SlackAttachment
 				if json.Unmarshal(enc, &decoded) == nil {
+					i := 0
+					for _, action := range decoded.Actions {
+						if action != nil {
+							decoded.Actions[i] = action
+							i++
+						}
+					}
+					decoded.Actions = decoded.Actions[:i]
 					ret = append(ret, &decoded)
 				}
 			}
