@@ -1,3 +1,0 @@
-[submodule "vendor/gitlab.com/signald/signald-go"]
-	path = vendor/gitlab.com/signald/signald-go
-	url = https://gitlab.com/signald/signald-go

@@ -6,9 +6,6 @@ import (
 	"encoding/json"
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
-	"gitlab.com/signald/signald-go/signald"
-	//"gitlab.com/signald/signald-go/signald/client-protocol/v0"
-	"gitlab.com/signald/signald-go/signald/client-protocol/v1"
 )
 
 type JSONCMD map[string]interface{}
@@ -19,10 +16,101 @@ const (
 	cfgGroupID = "GroupID"
 )
 
-type envelopeResponse struct {
-	ID   string                 `json:",omitempty"`
-	Data v1.JsonMessageEnvelope `json:",omitempty"`
-	Type string                 `json:",omitempty"`
+type signaldMessage struct {
+	ID    string
+	Type  string
+	Error json.RawMessage
+	Data  json.RawMessage
+}
+
+type signaldUnexpectedError struct {
+	Message string
+}
+
+type signaldMessageData struct {
+	ID   string       `json:",omitempty"`
+	Data signaldData  `json:",omitempty"`
+	Type string       `json:",omitempty"`
+}
+
+type signaldData struct {
+	CallMessage              json.RawMessage        `json:"callMessage,omitempty"`
+	DataMessage              *signaldDataMessage    `json:"dataMessage,omitempty"`
+	HasContent               bool                   `json:"hasContent,omitempty"`
+	HasLegacyMessage         bool                   `json:"hasLegacyMessage,omitempty"`
+	IsUnidentifiedSender     bool                   `json:"isUnidentifiedSender,omitempty"`
+	Receipt                  json.RawMessage        `json:"receipt,omitempty"`
+	Relay                    string                 `json:"relay,omitempty"`
+	ServerDeliveredTimestamp int64                  `json:"serverDeliveredTimestamp,omitempty"`
+	ServerTimestamp          int64                  `json:"serverTimestamp,omitempty"`
+	Source                   *signaldAccount         `json:"source,omitempty"`
+	SourceDevice             int32                  `json:"sourceDevice,omitempty"`
+	SyncMessage              json.RawMessage        `json:"syncMessage,omitempty"`
+	Timestamp                int64                  `json:"timestamp,omitempty"`
+	TimestampISO             string                 `json:"timestampISO,omitempty"`
+	Type                     string                 `json:"type,omitempty"`
+	Typing                   json.RawMessage        `json:"typing,omitempty"`
+	Username                 string                 `json:"username,omitempty"`
+	UUID                     string                 `json:"uuid,omitempty"`
+}
+
+type signaldAccount struct {
+	Number string `json:"number,omitempty"`
+	Relay  string `json:"relay,omitempty"`
+	UUID   string `json:"uuid,omitempty"`
+}
+
+type signaldDataMessage struct {
+	Attachments      json.RawMessage     `json:"attachments,omitempty"`
+	Body             string              `json:"body,omitempty"`
+	Contacts         json.RawMessage     `json:"contacts,omitempty"`
+	EndSession       bool                `json:"endSession,omitempty"`
+	ExpiresInSeconds int32               `json:"expiresInSeconds,omitempty"`
+	Group            *signaldGroupInfo   `json:"group,omitempty"`
+	GroupV2          *signaldGroupV2Info `json:"groupV2,omitempty"`
+	Mentions         json.RawMessage     `json:"mentions,omitempty"`
+	Previews         json.RawMessage     `json:"previews,omitempty"`
+	ProfileKeyUpdate bool                `json:"profileKeyUpdate,omitempty"`
+	Quote            json.RawMessage     `json:"quote,omitempty"`
+	Reaction         json.RawMessage     `json:"reaction,omitempty"`
+	RemoteDelete     json.RawMessage     `json:"remoteDelete,omitempty"`
+	Sticker          json.RawMessage     `json:"sticker,omitempty"`
+	Timestamp        int64               `json:"timestamp,omitempty"`
+	ViewOnce         bool                `json:"viewOnce,omitempty"`
+}
+
+type signaldGroupInfo struct {
+	AvatarId int64           `json:"avatarId,omitempty"`
+	GroupId  string          `json:"groupId,omitempty"`
+	Members  json.RawMessage `json:"members,omitempty"`
+	Name     string          `json:"name,omitempty"`
+	Type     string          `json:"type,omitempty"`
+}
+
+type signaldGroupV2Info struct {
+	AccessControl       json.RawMessage  `json:"accessControl,omitempty"`
+	Avatar              string           `json:"avatar,omitempty"`
+	ID                  string           `json:"id,omitempty"`
+	InviteLink          string           `json:"inviteLink,omitempty"`
+	MemberDetail        json.RawMessage  `json:"memberDetail,omitempty"`
+	Members             json.RawMessage  `json:"members,omitempty"`
+	PendingMemberDetail json.RawMessage  `json:"pendingMemberDetail,omitempty"`
+	PendingMembers      json.RawMessage  `json:"pendingMembers,omitempty"`
+	RequestingMembers   json.RawMessage  `json:"requestingMembers,omitempty"`
+	Revision            int32            `json:"revision,omitempty"`
+	Timer               int32            `json:"timer,omitempty"`
+	Title               string           `son:"title,omitempty"`
+}
+
+type signaldSendMessage struct {
+	Username         string          `json:"username,omitempty"`
+	//RecipientAddress signaldAccount  `json:"recipientAddress,omitempty"`
+	RecipientGroupId string          `json:"recipientGroupId,omitempty"`
+	MessageBody      string          `json:"messageBody,omitempty"`
+	//Attachments      json.RawMessage `json:"attachments,omitempty"`
+	//Quote            json.RawMessage `json:"quote,omitempty"`
+	//Timestamp        int64           `json:"timestamp,omitempty"`
+	//Mentions         json.RawMessage `json:"mentions,omitempty"`
 }
 
 type Bsignald struct {
@@ -83,43 +171,45 @@ func (b *Bsignald) Listen() {
 			}
 
 			raw := b.reader.Text()
-			b.Log.Debugln(raw);
 
-			var msg signald.BasicResponse
+			var msg signaldMessage
 			if err := json.Unmarshal([]byte(raw), &msg); err != nil {
 				b.Log.Errorln("Error unmarshaling raw response:", err.Error())
 				continue
 			}
 
 			if msg.Type == "unexpected_error" {
-				var errorResponse signald.UnexpectedError
+				var errorResponse signaldUnexpectedError
 				if err := json.Unmarshal(msg.Data, &errorResponse); err != nil {
-					b.Log.Errorln("signald-go: Error unmarshaling error response:", err.Error())
+					b.Log.Errorln("Error unmarshaling error response:", err.Error())
 					continue
 				}
-				b.Log.Errorln("signald-go: Unexpected error", errorResponse.Message)
+				b.Log.Errorln("Unexpected error", errorResponse.Message)
 				continue
 			}
 
 			if msg.Type != "message" {
-				b.Log.Debugln("not 'message' from signald: ", raw);
+				b.Log.Debugln("skipping: not 'message'");
 				continue
+			} else {
+				b.Log.Debugln("FOUND A MESSAGE!", raw);
+
 			}
 
-			response := envelopeResponse{ID: msg.ID, Type: msg.Type}
+			response := signaldMessageData{ID: msg.ID, Type: msg.Type}
 			if err := json.Unmarshal(msg.Data, &response.Data); err != nil {
-				b.Log.Errorln("signald-go receive error: ", err)
+				b.Log.Errorln("receive error: ", err)
 				continue
 			}
 
-			b.Log.Debugf("%#v", response);
+			//b.Log.Debugf("%#v", response);
 
 			if response.Data.DataMessage != nil {
 				if response.Data.DataMessage.GroupV2 != nil {
 					if b.groupid == response.Data.DataMessage.GroupV2.ID {
 						rmsg := config.Message{
-							UserID:   response.Data.Username,
-							Username: response.Data.Username,
+							UserID:   response.Data.Source.UUID,
+							Username: response.Data.Source.Number,
 							Text:     response.Data.DataMessage.Body,
 							Channel:  response.Data.DataMessage.GroupV2.ID,
 							Account:  b.Account,
@@ -174,22 +264,18 @@ func (b *Bsignald) Disconnect() error {
 }
 
 func (b *Bsignald) Send(msg config.Message) (string, error) {
+	b.Log.Debugf("message to forward into signal: %#v", msg)
 
-			//req := v1.SendRequest{
-				//Username:    account,
-				//MessageBody: strings.Join(args[1:], " "),
-			//}
+	msgJSON := JSONCMD{
+		"type": "send",
+		"username": b.GetString(cfgNumber),
+		"recipientGroupId": b.groupid,
+		"messageBody": msg.Text,
+	}
+	err := json.NewEncoder(b.socket).Encode(msgJSON)
+	if err != nil {
+		b.Log.Errorln(err.Error())
+	}
 
-			//if strings.HasPrefix(args[0], "+") {
-				//req.RecipientAddress = &v1.JsonAddress{Number: args[0]}
-			//} else {
-				//req.RecipientGroupID = args[0]
-			//}
-
-			//resp, err := req.Submit(common.Signald)
-			//if err != nil {
-				//log.Fatal("error sending request to signald: ", err)
-			//}
-
-    return "", nil
+    return "", err
 }
