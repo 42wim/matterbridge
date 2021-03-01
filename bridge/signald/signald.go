@@ -169,6 +169,96 @@ func (b *Bsignald) JoinChannel(channel config.ChannelInfo) error {
 	return nil
 }
 
+func (b *Bsignald) HandleUnexpectedErrorMessage(msg signaldMessage) {
+	var errorResponse signaldUnexpectedError
+	if err := json.Unmarshal(msg.Data, &errorResponse); err != nil {
+		b.Log.Errorln("Error unmarshaling error response:", err.Error())
+	}
+	b.Log.Errorln("Unexpected error from signald: ", errorResponse.Message)
+}
+
+func (b *Bsignald) HandleSubscribeMessage() {
+	b.Log.Debugln("subscribe successful", b.GetString(cfgNumber))
+	b.subscribed = true
+	go b.GetContacts()
+}
+
+func (b *Bsignald) HandleListenStoppedMessage() {
+	b.Log.Errorln("got listen stopped, trying to re-subscribe")
+	b.subscribed = false
+	go b.Login()
+}
+
+func (b *Bsignald) HandleContactList(msg signaldMessage) {
+	var contacts []signaldContact
+	if err := json.Unmarshal(msg.Data, &contacts); err != nil {
+		b.Log.Errorln("failed to parse contact_list: ", err)
+	} else {
+		for _, contact := range contacts {
+			b.contacts[contact.Account.UUID] = contact
+		}
+	}
+}
+
+func (b *Bsignald) GetUsername(uuid string) string {
+	username := ""
+	if v, found := b.contacts[uuid]; found {
+		if "" != v.ProfileName {
+			username = v.ProfileName
+		} else if "" != v.Name {
+			username = v.Name
+		}
+	}
+	return username
+}
+
+func (b *Bsignald) HandleMessage(msg signaldMessage) {
+	response := signaldMessageData{ID: msg.ID, Type: msg.Type}
+	if err := json.Unmarshal(msg.Data, &response.Data); err != nil {
+		b.Log.Errorln("receive error: ", err)
+		return
+	}
+
+	if nil == response.Data.DataMessage {
+		return
+	}
+
+	groupMatched := false
+	if response.Data.DataMessage.GroupV2 != nil {
+		if b.groupid == response.Data.DataMessage.GroupV2.ID {
+			groupMatched = true
+		}
+	} else if response.Data.DataMessage.Group != nil {
+		if b.groupid == response.Data.DataMessage.Group.ID {
+			groupMatched = true
+		}
+	}
+
+	if false == groupMatched {
+		b.Log.Debugln("skipping non-group message")
+		return
+	}
+
+	username := b.GetUsername(response.Data.Source.UUID)
+	if "" == username {
+		username = response.Data.Source.Number
+	}
+
+	rmsg := config.Message{
+		UserID:   response.Data.Source.UUID,
+		Username: username,
+		Text:     response.Data.DataMessage.Body,
+		Channel:  b.groupid,
+		Account:  b.Account,
+		Protocol: b.Protocol,
+	}
+
+	b.Log.Debugf("<= Sending message from %s on %s to gateway", rmsg.Username, b.Account)
+	b.Log.Debugf("<= Message is %#v", rmsg)
+	b.Remote <- rmsg
+
+}
+
 func (b *Bsignald) Listen() {
 	for {
 		for b.reader.Scan() {
@@ -186,94 +276,19 @@ func (b *Bsignald) Listen() {
 				continue
 			}
 
-			if msg.Type == "subscribed" {
-				b.Log.Debugln("subscribe successful", b.GetString(cfgNumber))
-				b.subscribed = true
-				go b.GetContacts()
-				continue
-			}
-
-			if msg.Type == "listen_stopped" {
-				b.Log.Errorln("got listen stopped, trying to re-subscribe")
-				b.subscribed = false
-				go b.Login()
-				continue
-			}
-
-			if msg.Type == "unexpected_error" {
-				var errorResponse signaldUnexpectedError
-				if err = json.Unmarshal(msg.Data, &errorResponse); err != nil {
-					b.Log.Errorln("Error unmarshaling error response:", err.Error())
-					continue
-				}
-				b.Log.Errorln("Unexpected error", errorResponse.Message)
-				continue
-			}
-
-			if msg.Type == "contact_list" {
-				var contacts []signaldContact
-				if err = json.Unmarshal(msg.Data, &contacts); err != nil {
-					b.Log.Errorln("failed to parse contact_list: ", err)
-				} else {
-					for _, contact := range contacts {
-						b.contacts[contact.Account.UUID] = contact
-					}
-					b.Log.Debugf("%#v", b.contacts)
-				}
-				continue
-			}
-
-			if msg.Type != "message" {
-				b.Log.Debugln("skipping: not 'message'");
-				continue
-			}
-
-			response := signaldMessageData{ID: msg.ID, Type: msg.Type}
-			if err = json.Unmarshal(msg.Data, &response.Data); err != nil {
-				b.Log.Errorln("receive error: ", err)
-				continue
-			}
-
-			if response.Data.DataMessage != nil {
-				groupMatched := false
-				if response.Data.DataMessage.GroupV2 != nil {
-					if b.groupid == response.Data.DataMessage.GroupV2.ID {
-						groupMatched = true
-					}
-				}
-				if response.Data.DataMessage.Group != nil {
-					if b.groupid == response.Data.DataMessage.Group.ID {
-						groupMatched = true
-					}
-				}
-
-				if false == groupMatched {
-					b.Log.Debugln("skipping non-group message")
-					continue
-				}
-
-				username := response.Data.Source.Number
-				if v, found := b.contacts[response.Data.Source.UUID]; found {
-					if "" != v.ProfileName {
-						username = v.ProfileName
-					} else if "" != v.Name {
-						username = v.Name
-					}
-				}
-				rmsg := config.Message{
-					UserID:   response.Data.Source.UUID,
-					Username: username,
-					Text:     response.Data.DataMessage.Body,
-					Channel:  b.groupid,
-					Account:  b.Account,
-					Protocol: b.Protocol,
-				}
-
-				b.Log.Debugf("<= Sending message from %s on %s to gateway", rmsg.Username, b.Account)
-				b.Log.Debugf("<= Message is %#v", rmsg)
-				b.Remote <- rmsg
-
-				// TODO: send read receipt
+			switch msg.Type {
+				case "unexpected_error":
+					b.HandleUnexpectedErrorMessage(msg)
+				case "subscribed":
+					b.HandleSubscribeMessage()
+				case "listen_stopped":
+					b.HandleListenStoppedMessage()
+				case "contact_list":
+					b.HandleContactList(msg)
+				case "message":
+					b.HandleMessage(msg)
+				default:
+					b.Log.Debugln("unsupported signald data received, skipping it");
 			}
 		}
 	}
