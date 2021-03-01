@@ -81,7 +81,7 @@ type signaldDataMessage struct {
 
 type signaldGroupInfo struct {
 	AvatarId int64           `json:"avatarId,omitempty"`
-	GroupId  string          `json:"groupId,omitempty"`
+	ID       string          `json:"groupId,omitempty"`
 	Members  json.RawMessage `json:"members,omitempty"`
 	Name     string          `json:"name,omitempty"`
 	Type     string          `json:"type,omitempty"`
@@ -103,14 +103,21 @@ type signaldGroupV2Info struct {
 }
 
 type signaldSendMessage struct {
-	Username         string          `json:"username,omitempty"`
-	//RecipientAddress signaldAccount  `json:"recipientAddress,omitempty"`
-	RecipientGroupId string          `json:"recipientGroupId,omitempty"`
-	MessageBody      string          `json:"messageBody,omitempty"`
-	//Attachments      json.RawMessage `json:"attachments,omitempty"`
-	//Quote            json.RawMessage `json:"quote,omitempty"`
-	//Timestamp        int64           `json:"timestamp,omitempty"`
-	//Mentions         json.RawMessage `json:"mentions,omitempty"`
+	Type             string `json:"type,omitempty"`
+	Username         string `json:"username,omitempty"`
+	RecipientGroupId string `json:"recipientGroupId,omitempty"`
+	MessageBody      string `json:"messageBody,omitempty"`
+}
+
+type signaldContact struct {
+	Name                  string          `json:"name,omitempty"`
+	ProfileName           string          `json:"profile_name,omitempty"`
+	Account               *signaldAccount `json:"address,omitempty"`
+	Avatar                string          `json:"avatar,omitempty"`
+	Color                 string          `json:"color,omitempty"`
+	ProfileKey            string          `json:"profileKey,omitempty"`
+	MessageExpirationTime int32           `json:"messageExpirationTime,omitempty"`
+	InboxPosition         int32           `json:"inboxPosition,omitempty"`
 }
 
 type Bsignald struct {
@@ -119,8 +126,8 @@ type Bsignald struct {
 	socket     net.Conn
 	subscribed bool
 	reader     *bufio.Scanner
-	//listeners  map[string]chan signald.BasicResponse
 	groupid   string
+	contacts  map[string]signaldContact
 }
 
 func New(cfg *bridge.Config) bridge.Bridger {
@@ -138,6 +145,7 @@ func New(cfg *bridge.Config) bridge.Bridger {
 		Config: cfg,
 		socketpath: socketpath,
 		subscribed: false,
+		contacts: make(map[string]signaldContact),
 	}
 }
 
@@ -148,7 +156,6 @@ func (b *Bsignald) Connect() error {
 	if err != nil {
 		b.Log.Fatalf(err.Error())
 	}
-	//defer s.Close()
 	b.socket = s
 	r := bufio.NewScanner(s)
 	b.reader = r
@@ -165,7 +172,8 @@ func (b *Bsignald) JoinChannel(channel config.ChannelInfo) error {
 func (b *Bsignald) Listen() {
 	for {
 		for b.reader.Scan() {
-			if err := b.reader.Err(); err != nil {
+			var err error
+			if err = b.reader.Err(); err != nil {
 				b.Log.Errorf(err.Error())
 				continue
 			}
@@ -173,14 +181,28 @@ func (b *Bsignald) Listen() {
 			raw := b.reader.Text()
 
 			var msg signaldMessage
-			if err := json.Unmarshal([]byte(raw), &msg); err != nil {
+			if err = json.Unmarshal([]byte(raw), &msg); err != nil {
 				b.Log.Errorln("Error unmarshaling raw response:", err.Error())
+				continue
+			}
+
+			if msg.Type == "subscribed" {
+				b.Log.Debugln("subscribe successful", b.GetString(cfgNumber))
+				b.subscribed = true
+				go b.GetContacts()
+				continue
+			}
+
+			if msg.Type == "listen_stopped" {
+				b.Log.Errorln("got listen stopped, trying to re-subscribe")
+				b.subscribed = false
+				go b.Login()
 				continue
 			}
 
 			if msg.Type == "unexpected_error" {
 				var errorResponse signaldUnexpectedError
-				if err := json.Unmarshal(msg.Data, &errorResponse); err != nil {
+				if err = json.Unmarshal(msg.Data, &errorResponse); err != nil {
 					b.Log.Errorln("Error unmarshaling error response:", err.Error())
 					continue
 				}
@@ -188,73 +210,101 @@ func (b *Bsignald) Listen() {
 				continue
 			}
 
+			if msg.Type == "contact_list" {
+				var contacts []signaldContact
+				if err = json.Unmarshal(msg.Data, &contacts); err != nil {
+					b.Log.Errorln("failed to parse contact_list: ", err)
+				} else {
+					for _, contact := range contacts {
+						b.contacts[contact.Account.UUID] = contact
+					}
+					b.Log.Debugf("%#v", b.contacts)
+				}
+				continue
+			}
+
 			if msg.Type != "message" {
 				b.Log.Debugln("skipping: not 'message'");
 				continue
-			} else {
-				b.Log.Debugln("FOUND A MESSAGE!", raw);
-
 			}
 
 			response := signaldMessageData{ID: msg.ID, Type: msg.Type}
-			if err := json.Unmarshal(msg.Data, &response.Data); err != nil {
+			if err = json.Unmarshal(msg.Data, &response.Data); err != nil {
 				b.Log.Errorln("receive error: ", err)
 				continue
 			}
 
-			//b.Log.Debugf("%#v", response);
-
 			if response.Data.DataMessage != nil {
+				groupMatched := false
 				if response.Data.DataMessage.GroupV2 != nil {
 					if b.groupid == response.Data.DataMessage.GroupV2.ID {
-						rmsg := config.Message{
-							UserID:   response.Data.Source.UUID,
-							Username: response.Data.Source.Number,
-							Text:     response.Data.DataMessage.Body,
-							Channel:  response.Data.DataMessage.GroupV2.ID,
-							Account:  b.Account,
-							Protocol: b.Protocol,
-						}
-						b.Log.Debugf("<= Sending message from %s on %s to gateway", rmsg.Username, b.Account)
-						b.Log.Debugf("<= Message is %#v", rmsg)
-						b.Remote <- rmsg
+						groupMatched = true
 					}
 				}
+				if response.Data.DataMessage.Group != nil {
+					if b.groupid == response.Data.DataMessage.Group.ID {
+						groupMatched = true
+					}
+				}
+
+				if false == groupMatched {
+					b.Log.Debugln("skipping non-group message")
+					continue
+				}
+
+				username := response.Data.Source.Number
+				if v, found := b.contacts[response.Data.Source.UUID]; found {
+					if "" != v.ProfileName {
+						username = v.ProfileName
+					} else if "" != v.Name {
+						username = v.Name
+					}
+				}
+				rmsg := config.Message{
+					UserID:   response.Data.Source.UUID,
+					Username: username,
+					Text:     response.Data.DataMessage.Body,
+					Channel:  b.groupid,
+					Account:  b.Account,
+					Protocol: b.Protocol,
+				}
+
+				b.Log.Debugf("<= Sending message from %s on %s to gateway", rmsg.Username, b.Account)
+				b.Log.Debugf("<= Message is %#v", rmsg)
+				b.Remote <- rmsg
+
+				// TODO: send read receipt
 			}
-
-			//if response.Data.SyncMessage != nil {
-				//if response.Data.SyncMessage.Sent != nil {
-					//if response.Data.SyncMessage.Sent.Message != nil {
-						//if response.Data.SyncMessage.Sent.Message != nil {
-							//if response.Data.SyncMessage.Sent.Message.GroupV2 != nil {
-								//if b.groupid == response.Data.SyncMessage.Sent.Message.GroupV2.id {
-
-								//}
-							//}
-						//}
-					//}
-				//}
-			//}
 		}
 	}
 }
 
+func (b *Bsignald) GetContacts() error {
+	cmd := JSONCMD{
+		"type": "list_contacts",
+		"username": b.GetString(cfgNumber),
+	}
+	return b.SendRawJSON(cmd)
+}
 
 func (b *Bsignald) Login() error {
+	var err error
 	if ! b.subscribed {
-		subscribe := JSONCMD{
+		cmd := JSONCMD{
 			"type": "subscribe",
 			"username": b.GetString(cfgNumber),
 		}
-		err := json.NewEncoder(b.socket).Encode(subscribe)
-		if err != nil {
-			b.Log.Fatalf(err.Error())
-		}
-		// TODO: this should be done from the listener after the response
-		// was checked
-		b.subscribed = true
+		err = b.SendRawJSON(cmd)
 	}
-	return nil
+	return err
+}
+
+func (b *Bsignald) SendRawJSON(cmd JSONCMD) (error) {
+	err := json.NewEncoder(b.socket).Encode(cmd)
+	if err != nil {
+		b.Log.Errorln(err.Error())
+	}
+	return err
 }
 
 func (b *Bsignald) Disconnect() error {
@@ -266,16 +316,16 @@ func (b *Bsignald) Disconnect() error {
 func (b *Bsignald) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("message to forward into signal: %#v", msg)
 
-	msgJSON := JSONCMD{
-		"type": "send",
-		"username": b.GetString(cfgNumber),
-		"recipientGroupId": b.groupid,
-		"messageBody": msg.Text,
+	msgJSON := signaldSendMessage {
+		Type: "send",
+		Username: b.GetString(cfgNumber),
+		RecipientGroupId: b.groupid,
+		MessageBody: msg.Username + msg.Text,
 	}
+
 	err := json.NewEncoder(b.socket).Encode(msgJSON)
 	if err != nil {
 		b.Log.Errorln(err.Error())
 	}
-
-    return "", err
+	return "", err
 }
