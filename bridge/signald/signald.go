@@ -2,10 +2,10 @@ package bsignald
 
 import (
 	"bufio"
-	"net"
 	"encoding/json"
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
+	"net"
 )
 
 type JSONCMD map[string]interface{}
@@ -13,7 +13,6 @@ type JSONCMD map[string]interface{}
 const (
 	cfgNumber = "Number"
 	cfgSocket = "UnixSocket"
-	cfgGroupID = "GroupID"
 )
 
 type signaldMessage struct {
@@ -28,30 +27,30 @@ type signaldUnexpectedError struct {
 }
 
 type signaldMessageData struct {
-	ID   string       `json:",omitempty"`
-	Data signaldData  `json:",omitempty"`
-	Type string       `json:",omitempty"`
+	ID   string      `json:",omitempty"`
+	Data signaldData `json:",omitempty"`
+	Type string      `json:",omitempty"`
 }
 
 type signaldData struct {
-	CallMessage              json.RawMessage        `json:"callMessage,omitempty"`
-	DataMessage              *signaldDataMessage    `json:"dataMessage,omitempty"`
-	HasContent               bool                   `json:"hasContent,omitempty"`
-	HasLegacyMessage         bool                   `json:"hasLegacyMessage,omitempty"`
-	IsUnidentifiedSender     bool                   `json:"isUnidentifiedSender,omitempty"`
-	Receipt                  json.RawMessage        `json:"receipt,omitempty"`
-	Relay                    string                 `json:"relay,omitempty"`
-	ServerDeliveredTimestamp int64                  `json:"serverDeliveredTimestamp,omitempty"`
-	ServerTimestamp          int64                  `json:"serverTimestamp,omitempty"`
-	Source                   *signaldAccount         `json:"source,omitempty"`
-	SourceDevice             int32                  `json:"sourceDevice,omitempty"`
-	SyncMessage              json.RawMessage        `json:"syncMessage,omitempty"`
-	Timestamp                int64                  `json:"timestamp,omitempty"`
-	TimestampISO             string                 `json:"timestampISO,omitempty"`
-	Type                     string                 `json:"type,omitempty"`
-	Typing                   json.RawMessage        `json:"typing,omitempty"`
-	Username                 string                 `json:"username,omitempty"`
-	UUID                     string                 `json:"uuid,omitempty"`
+	CallMessage              json.RawMessage     `json:"callMessage,omitempty"`
+	DataMessage              *signaldDataMessage `json:"dataMessage,omitempty"`
+	HasContent               bool                `json:"hasContent,omitempty"`
+	HasLegacyMessage         bool                `json:"hasLegacyMessage,omitempty"`
+	IsUnidentifiedSender     bool                `json:"isUnidentifiedSender,omitempty"`
+	Receipt                  json.RawMessage     `json:"receipt,omitempty"`
+	Relay                    string              `json:"relay,omitempty"`
+	ServerDeliveredTimestamp int64               `json:"serverDeliveredTimestamp,omitempty"`
+	ServerTimestamp          int64               `json:"serverTimestamp,omitempty"`
+	Source                   *signaldAccount     `json:"source,omitempty"`
+	SourceDevice             int32               `json:"sourceDevice,omitempty"`
+	SyncMessage              json.RawMessage     `json:"syncMessage,omitempty"`
+	Timestamp                int64               `json:"timestamp,omitempty"`
+	TimestampISO             string              `json:"timestampISO,omitempty"`
+	Type                     string              `json:"type,omitempty"`
+	Typing                   json.RawMessage     `json:"typing,omitempty"`
+	Username                 string              `json:"username,omitempty"`
+	UUID                     string              `json:"uuid,omitempty"`
 }
 
 type signaldAccount struct {
@@ -88,18 +87,18 @@ type signaldGroupInfo struct {
 }
 
 type signaldGroupV2Info struct {
-	AccessControl       json.RawMessage  `json:"accessControl,omitempty"`
-	Avatar              string           `json:"avatar,omitempty"`
-	ID                  string           `json:"id,omitempty"`
-	InviteLink          string           `json:"inviteLink,omitempty"`
-	MemberDetail        json.RawMessage  `json:"memberDetail,omitempty"`
-	Members             json.RawMessage  `json:"members,omitempty"`
-	PendingMemberDetail json.RawMessage  `json:"pendingMemberDetail,omitempty"`
-	PendingMembers      json.RawMessage  `json:"pendingMembers,omitempty"`
-	RequestingMembers   json.RawMessage  `json:"requestingMembers,omitempty"`
-	Revision            int32            `json:"revision,omitempty"`
-	Timer               int32            `json:"timer,omitempty"`
-	Title               string           `son:"title,omitempty"`
+	AccessControl       json.RawMessage `json:"accessControl,omitempty"`
+	Avatar              string          `json:"avatar,omitempty"`
+	ID                  string          `json:"id,omitempty"`
+	InviteLink          string          `json:"inviteLink,omitempty"`
+	MemberDetail        json.RawMessage `json:"memberDetail,omitempty"`
+	Members             json.RawMessage `json:"members,omitempty"`
+	PendingMemberDetail json.RawMessage `json:"pendingMemberDetail,omitempty"`
+	PendingMembers      json.RawMessage `json:"pendingMembers,omitempty"`
+	RequestingMembers   json.RawMessage `json:"requestingMembers,omitempty"`
+	Revision            int32           `json:"revision,omitempty"`
+	Timer               int32           `json:"timer,omitempty"`
+	Title               string          `son:"title,omitempty"`
 }
 
 type signaldSendMessage struct {
@@ -126,8 +125,8 @@ type Bsignald struct {
 	socket     net.Conn
 	subscribed bool
 	reader     *bufio.Scanner
-	groupid   string
-	contacts  map[string]signaldContact
+	groupid    string
+	contacts   map[string]signaldContact
 }
 
 func New(cfg *bridge.Config) bridge.Bridger {
@@ -142,10 +141,10 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	}
 
 	return &Bsignald{
-		Config: cfg,
+		Config:     cfg,
 		socketpath: socketpath,
 		subscribed: false,
-		contacts: make(map[string]signaldContact),
+		contacts:   make(map[string]signaldContact),
 	}
 }
 
@@ -180,13 +179,17 @@ func (b *Bsignald) HandleUnexpectedErrorMessage(msg signaldMessage) {
 func (b *Bsignald) HandleSubscribeMessage() {
 	b.Log.Debugln("subscribe successful", b.GetString(cfgNumber))
 	b.subscribed = true
-	go b.GetContacts()
+	if err := b.GetContacts(); err != nil {
+		b.Log.Errorln("Error getting contacts: ", err.Error())
+	}
 }
 
 func (b *Bsignald) HandleListenStoppedMessage() {
 	b.Log.Errorln("got listen stopped, trying to re-subscribe")
 	b.subscribed = false
-	go b.Login()
+	if err := b.Login(); err != nil {
+		b.Log.Errorln("Error logging in: ", err.Error())
+	}
 }
 
 func (b *Bsignald) HandleContactList(msg signaldMessage) {
@@ -203,12 +206,13 @@ func (b *Bsignald) HandleContactList(msg signaldMessage) {
 func (b *Bsignald) GetUsername(uuid string) string {
 	username := ""
 	if v, found := b.contacts[uuid]; found {
-		if "" != v.ProfileName {
+		if v.ProfileName != "" {
 			username = v.ProfileName
-		} else if "" != v.Name {
+		} else if v.Name != "" {
 			username = v.Name
 		}
 	}
+
 	return username
 }
 
@@ -219,7 +223,7 @@ func (b *Bsignald) HandleMessage(msg signaldMessage) {
 		return
 	}
 
-	if nil == response.Data.DataMessage {
+	if response.Data.DataMessage == nil {
 		return
 	}
 
@@ -234,13 +238,13 @@ func (b *Bsignald) HandleMessage(msg signaldMessage) {
 		}
 	}
 
-	if false == groupMatched {
+	if !groupMatched {
 		b.Log.Debugln("skipping non-group message")
 		return
 	}
 
 	username := b.GetUsername(response.Data.Source.UUID)
-	if "" == username {
+	if username == "" {
 		username = response.Data.Source.Number
 	}
 
@@ -256,7 +260,6 @@ func (b *Bsignald) HandleMessage(msg signaldMessage) {
 	b.Log.Debugf("<= Sending message from %s on %s to gateway", rmsg.Username, b.Account)
 	b.Log.Debugf("<= Message is %#v", rmsg)
 	b.Remote <- rmsg
-
 }
 
 func (b *Bsignald) Listen() {
@@ -277,18 +280,18 @@ func (b *Bsignald) Listen() {
 			}
 
 			switch msg.Type {
-				case "unexpected_error":
-					b.HandleUnexpectedErrorMessage(msg)
-				case "subscribed":
-					b.HandleSubscribeMessage()
-				case "listen_stopped":
-					b.HandleListenStoppedMessage()
-				case "contact_list":
-					b.HandleContactList(msg)
-				case "message":
-					b.HandleMessage(msg)
-				default:
-					b.Log.Debugln("unsupported signald data received, skipping it");
+			case "unexpected_error":
+				b.HandleUnexpectedErrorMessage(msg)
+			case "subscribed":
+				b.HandleSubscribeMessage()
+			case "listen_stopped":
+				b.HandleListenStoppedMessage()
+			case "contact_list":
+				b.HandleContactList(msg)
+			case "message":
+				b.HandleMessage(msg)
+			default:
+				b.Log.Debugln("unsupported signald data received, skipping it")
 			}
 		}
 	}
@@ -296,7 +299,7 @@ func (b *Bsignald) Listen() {
 
 func (b *Bsignald) GetContacts() error {
 	cmd := JSONCMD{
-		"type": "list_contacts",
+		"type":     "list_contacts",
 		"username": b.GetString(cfgNumber),
 	}
 	return b.SendRawJSON(cmd)
@@ -304,9 +307,9 @@ func (b *Bsignald) GetContacts() error {
 
 func (b *Bsignald) Login() error {
 	var err error
-	if ! b.subscribed {
+	if !b.subscribed {
 		cmd := JSONCMD{
-			"type": "subscribe",
+			"type":     "subscribe",
 			"username": b.GetString(cfgNumber),
 		}
 		err = b.SendRawJSON(cmd)
@@ -314,7 +317,7 @@ func (b *Bsignald) Login() error {
 	return err
 }
 
-func (b *Bsignald) SendRawJSON(cmd JSONCMD) (error) {
+func (b *Bsignald) SendRawJSON(cmd JSONCMD) error {
 	err := json.NewEncoder(b.socket).Encode(cmd)
 	if err != nil {
 		b.Log.Errorln(err.Error())
@@ -331,11 +334,11 @@ func (b *Bsignald) Disconnect() error {
 func (b *Bsignald) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("message to forward into signal: %#v", msg)
 
-	msgJSON := signaldSendMessage {
-		Type: "send",
-		Username: b.GetString(cfgNumber),
+	msgJSON := signaldSendMessage{
+		Type:             "send",
+		Username:         b.GetString(cfgNumber),
 		RecipientGroupId: b.groupid,
-		MessageBody: msg.Username + msg.Text,
+		MessageBody:      msg.Username + msg.Text,
 	}
 
 	err := json.NewEncoder(b.socket).Encode(msgJSON)
