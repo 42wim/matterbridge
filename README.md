@@ -110,6 +110,7 @@ And more...
 ### 3rd party via matterbridge api
 
 - [Discourse](https://github.com/DeclanHoare/matterbabble)
+- [Facebook messenger](https://github.com/powerjungle/fbridge-asyncio)
 - [Facebook messenger](https://github.com/VictorNine/fbridge)
 - [Minecraft](https://github.com/elytra/MatterLink)
 - [Minecraft](https://github.com/raws/mattercraft)
@@ -129,6 +130,7 @@ Used by the projects below. Feel free to make a PR to add your project to this l
 - [Minecraft](https://github.com/raws/mattercraft) (Matterbridge link for Minecraft Server chat)
 - [pyCord](https://github.com/NikkyAI/pyCord) (crossplatform chatbot)
 - [Mattereddit](https://github.com/bonehurtingjuice/mattereddit) (Reddit chat support)
+- [fbridge-asyncio](https://github.com/powerjungle/fbridge-asyncio) (Facebook messenger support)
 - [fbridge](https://github.com/VictorNine/fbridge) (Facebook messenger support)
 - [matterbabble](https://github.com/DeclanHoare/matterbabble) (Discourse support)
 - [MatterAMXX](https://forums.alliedmods.net/showthread.php?t=319430) (Counter-Strike, half-life and more via AMXX mod)
