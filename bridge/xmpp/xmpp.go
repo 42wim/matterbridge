@@ -352,24 +352,12 @@ func (b *Bxmpp) handleUploadFile(msg *config.Message) error {
 	for _, file := range msg.Extra["file"] {
 		fileInfo := file.(config.FileInfo)
 		if fileInfo.Comment != "" {
-			msg.Text += fileInfo.Comment + ": "
+			msg.Text += fileInfo.Comment
 		}
 		if fileInfo.URL != "" {
-			msg.Text = fileInfo.URL
 			if fileInfo.Comment != "" {
-				msg.Text = fileInfo.Comment + ": " + fileInfo.URL
 				urlDesc = fileInfo.Comment
 			}
-		}
-		if _, err := b.xc.Send(xmpp.Chat{
-			Type:   "groupchat",
-			Remote: msg.Channel + "@" + b.GetString("Muc"),
-			Text:   msg.Username + msg.Text,
-		}); err != nil {
-			return err
-		}
-
-		if fileInfo.URL != "" {
 			if _, err := b.xc.SendOOB(xmpp.Chat{
 				Type:    "groupchat",
 				Remote:  msg.Channel + "@" + b.GetString("Muc"),
@@ -378,6 +366,13 @@ func (b *Bxmpp) handleUploadFile(msg *config.Message) error {
 			}); err != nil {
 				b.Log.WithError(err).Warn("Failed to send share URL.")
 			}
+		}
+		if _, err := b.xc.Send(xmpp.Chat{
+			Type:   "groupchat",
+			Remote: msg.Channel + "@" + b.GetString("Muc"),
+			Text:   msg.Username + msg.Text,
+		}); err != nil {
+			return err
 		}
 	}
 	return nil
