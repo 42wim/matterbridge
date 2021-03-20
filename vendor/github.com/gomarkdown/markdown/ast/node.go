@@ -340,6 +340,7 @@ type TableCell struct {
 
 	IsHeader bool           // This tells if it's under the header row
 	Align    CellAlignFlags // This holds the value for align attribute
+	ColSpan  int            // How many columns to span
 }
 
 // TableHeader represents markdown table head node
