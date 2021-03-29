@@ -121,6 +121,10 @@ var builtinFuncs = []*BuiltinFunction{
 		Name:  "format",
 		Value: builtinFormat,
 	},
+	{
+		Name:  "range",
+		Value: builtinRange,
+	},
 }
 
 // GetAllBuiltinFunctions returns all builtin function objects.
@@ -321,6 +325,71 @@ func builtinLen(args ...Object) (Object, error) {
 			Found:    arg.TypeName(),
 		}
 	}
+}
+
+//range(start, stop[, step])
+func builtinRange(args ...Object) (Object, error) {
+	numArgs := len(args)
+	if numArgs < 2 || numArgs > 3 {
+		return nil, ErrWrongNumArguments
+	}
+	var start, stop, step *Int
+
+	for i, arg := range args {
+		v, ok := args[i].(*Int)
+		if !ok {
+			var name string
+			switch i {
+			case 0:
+				name = "start"
+			case 1:
+				name = "stop"
+			case 2:
+				name = "step"
+			}
+
+			return nil, ErrInvalidArgumentType{
+				Name:     name,
+				Expected: "int",
+				Found:    arg.TypeName(),
+			}
+		}
+		if i == 2 && v.Value <= 0 {
+			return nil, ErrInvalidRangeStep
+		}
+		switch i {
+		case 0:
+			start = v
+		case 1:
+			stop = v
+		case 2:
+			step = v
+		}
+	}
+
+	if step == nil {
+		step = &Int{Value: int64(1)}
+	}
+
+	return buildRange(start.Value, stop.Value, step.Value), nil
+}
+
+func buildRange(start, stop, step int64) *Array {
+	array := &Array{}
+	if start <= stop {
+		for i := start; i < stop; i += step {
+			array.Value = append(array.Value, &Int{
+				Value: i,
+			})
+		}
+	} else {
+		for i := start; i > stop; i -= step {
+			array.Value = append(array.Value, &Int{
+				Value: i,
+			})
+		}
+	}
+	return array
 }
 
 func builtinFormat(args ...Object) (Object, error) {

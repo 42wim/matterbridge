@@ -27,7 +27,7 @@ github.com/Rhymen/go-whatsapp/binary/token
 github.com/Rhymen/go-whatsapp/crypto/cbc
 github.com/Rhymen/go-whatsapp/crypto/curve25519
 github.com/Rhymen/go-whatsapp/crypto/hkdf
-# github.com/RocketChat/Rocket.Chat.Go.SDK v0.0.0-20200922220614-e4a51dfb52e4
+# github.com/RocketChat/Rocket.Chat.Go.SDK v0.0.0-20210112200207-10ab4d695d60
 ## explicit
 # github.com/SevereCloud/vksdk/v2 v2.9.0
 ## explicit
@@ -39,7 +39,7 @@ github.com/SevereCloud/vksdk/v2/longpoll-bot
 github.com/SevereCloud/vksdk/v2/object
 # github.com/blang/semver v3.5.1+incompatible
 github.com/blang/semver
-# github.com/d5/tengo/v2 v2.6.2
+# github.com/d5/tengo/v2 v2.7.0
 ## explicit
 github.com/d5/tengo/v2
 github.com/d5/tengo/v2/parser
@@ -68,13 +68,13 @@ github.com/go-telegram-bot-api/telegram-bot-api
 # github.com/golang/protobuf v1.4.2
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go/descriptor
-# github.com/gomarkdown/markdown v0.0.0-20201113031856-722100d81a8e
+# github.com/gomarkdown/markdown v0.0.0-20210208175418-bda154fe17d8
 ## explicit
 github.com/gomarkdown/markdown
 github.com/gomarkdown/markdown/ast
 github.com/gomarkdown/markdown/html
 github.com/gomarkdown/markdown/parser
-# github.com/google/gops v0.3.14
+# github.com/google/gops v0.3.17
 ## explicit
 github.com/google/gops/agent
 github.com/google/gops/internal
@@ -118,7 +118,7 @@ github.com/keybase/go-keybase-chat-bot/kbchat/types/chat1
 github.com/keybase/go-keybase-chat-bot/kbchat/types/gregor1
 github.com/keybase/go-keybase-chat-bot/kbchat/types/keybase1
 github.com/keybase/go-keybase-chat-bot/kbchat/types/stellar1
-# github.com/labstack/echo/v4 v4.1.17
+# github.com/labstack/echo/v4 v4.2.1
 ## explicit
 github.com/labstack/echo/v4
 github.com/labstack/echo/v4/middleware
@@ -130,6 +130,9 @@ github.com/labstack/gommon/random
 # github.com/lrstanley/girc v0.0.0-20190801035559-4fc93959e1a7
 ## explicit
 github.com/lrstanley/girc
+# github.com/magefile/mage v1.10.0
+github.com/magefile/mage/mg
+github.com/magefile/mage/sh
 # github.com/magiconair/properties v1.8.1
 github.com/magiconair/properties
 # github.com/matrix-org/gomatrix v0.0.0-20200827122206-7dd5e2a05bcd
@@ -182,18 +185,17 @@ github.com/mattn/go-runewidth
 # github.com/mattn/godown v0.0.1
 ## explicit
 github.com/mattn/godown
-# github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b
+# github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d
 ## explicit
 github.com/mgutz/ansi
 # github.com/missdeer/golib v1.0.4
 ## explicit
 github.com/missdeer/golib/ic
-# github.com/mitchellh/mapstructure v1.3.3
-## explicit
+# github.com/mitchellh/mapstructure v1.1.2
 github.com/mitchellh/mapstructure
 # github.com/monaco-io/request v1.0.5
 github.com/monaco-io/request
-# github.com/mreiferson/go-httpclient v0.0.0-20160630210159-31f0106b4474
+# github.com/mreiferson/go-httpclient v0.0.0-20201222173833-5e475fde3a4d
 ## explicit
 github.com/mreiferson/go-httpclient
 # github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff
@@ -236,14 +238,14 @@ github.com/shazow/rateio
 github.com/shazow/ssh-chat/internal/sanitize
 github.com/shazow/ssh-chat/sshd
 github.com/shazow/ssh-chat/sshd/terminal
-# github.com/sirupsen/logrus v1.7.0
+# github.com/sirupsen/logrus v1.8.0
 ## explicit
 github.com/sirupsen/logrus
 # github.com/skip2/go-qrcode v0.0.0-20190110000554-dc11ecdae0a9
 github.com/skip2/go-qrcode
 github.com/skip2/go-qrcode/bitset
 github.com/skip2/go-qrcode/reedsolomon
-# github.com/slack-go/slack v0.8.0
+# github.com/slack-go/slack v0.8.2
 ## explicit
 github.com/slack-go/slack
 github.com/slack-go/slack/internal/backoff
@@ -258,8 +260,7 @@ github.com/spf13/afero/mem
 # github.com/spf13/cast v1.3.1
 ## explicit
 github.com/spf13/cast
-# github.com/spf13/jwalterweatherman v1.1.0
-## explicit
+# github.com/spf13/jwalterweatherman v1.0.0
 github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
@@ -333,7 +334,7 @@ golang.org/x/crypto/salsa20/salsa
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/image v0.0.0-20201208152932-35266b937fa6
+# golang.org/x/image v0.0.0-20210220032944-ac19c3e999fb
 ## explicit
 golang.org/x/image/bmp
 golang.org/x/image/ccitt
@@ -354,13 +355,13 @@ golang.org/x/net/http2/h2c
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/websocket
-# golang.org/x/oauth2 v0.0.0-20210201163806-010130855d6c
+# golang.org/x/oauth2 v0.0.0-20210313182246-cd4f82c27b84
 ## explicit
 golang.org/x/oauth2
 golang.org/x/oauth2/clientcredentials
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/microsoft
-# golang.org/x/sys v0.0.0-20201207223542-d4d67f95c62d
+# golang.org/x/sys v0.0.0-20210217105451-b926d437f341
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
@@ -384,6 +385,8 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
+# golang.org/x/time v0.0.0-20201208040808-7e3f01d25324
+golang.org/x/time/rate
 # gomod.garykim.dev/nc-talk v0.1.7
 ## explicit
 gomod.garykim.dev/nc-talk/constants

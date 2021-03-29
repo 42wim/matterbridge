@@ -80,6 +80,11 @@ type Attachment struct {
 	ImageURL string `json:"image_url,omitempty"`
 	ThumbURL string `json:"thumb_url,omitempty"`
 
+	ServiceName string `json:"service_name,omitempty"`
+	ServiceIcon string `json:"service_icon,omitempty"`
+	FromURL     string `json:"from_url,omitempty"`
+	OriginalURL string `json:"original_url,omitempty"`
+
 	Fields     []AttachmentField  `json:"fields,omitempty"`
 	Actions    []AttachmentAction `json:"actions,omitempty"`
 	MarkdownIn []string           `json:"mrkdwn_in,omitempty"`

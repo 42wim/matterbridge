@@ -94,6 +94,7 @@ func (i *IncomingEventError) Error() string {
 // AckErrorEvent i
 type AckErrorEvent struct {
 	ErrorObj error
+	ReplyTo  int
 }
 
 func (a *AckErrorEvent) Error() string {

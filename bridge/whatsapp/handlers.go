@@ -289,6 +289,10 @@ func (b *Bwhatsapp) HandleAudioMessage(message whatsapp.AudioMessage) {
 		return
 	}
 
+	if len(fileExt) == 0 {
+		fileExt = append(fileExt, ".ogg")
+	}
+
 	filename := fmt.Sprintf("%v%v", message.Info.Id, fileExt[0])
 
 	b.Log.Debugf("Trying to download %s with size %#v and type %s", filename, message.Length, message.Type)
