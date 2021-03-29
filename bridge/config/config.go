@@ -119,7 +119,7 @@ type Protocol struct {
 	MessageQueue           int        // IRC, size of message queue for flood control
 	MessageSplit           bool       // IRC, split long messages with newlines on MessageLength instead of clipping
 	Muc                    string     // xmpp
-	MxId                   string     // matrix
+	MxID                   string     // matrix
 	Name                   string     // all protocols
 	Nick                   string     // all protocols
 	NickFormatter          string     // mattermost, slack

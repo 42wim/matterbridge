@@ -75,11 +75,11 @@ func New(cfg *bridge.Config) bridge.Bridger {
 func (b *Bmatrix) Connect() error {
 	var err error
 	b.Log.Infof("Connecting %s", b.GetString("Server"))
-	if b.GetString("MxId") != "" && b.GetString("Token") != "" {
+	if b.GetString("MxID") != "" && b.GetString("Token") != "" {
 		b.mc, err = matrix.NewClient(
-			b.GetString("Server"), b.GetString("MxId"), b.GetString("Token"),
+			b.GetString("Server"), b.GetString("MxID"), b.GetString("Token"),
 		)
-		b.UserID = b.GetString("MxId")
+		b.UserID = b.GetString("MxID")
 		b.Log.Info("Using existing Matrix credentials")
 	} else {
 		b.mc, err = matrix.NewClient(b.GetString("Server"), "", "")

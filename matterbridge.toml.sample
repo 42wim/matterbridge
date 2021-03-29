@@ -1238,7 +1238,7 @@ Server="https://matrix.org"
 Login="yourlogin"
 Password="yourpass"
 #OR
-MxId="@yourlogin:domain.tld"
+MxID="@yourlogin:domain.tld"
 Token="tokenforthebotuser"
 
 #Whether to send the homeserver suffix. eg ":matrix.org" in @username:matrix.org
