@@ -5,6 +5,7 @@ github.com/42wim/go-gitter
 ## explicit
 github.com/Baozisoftware/qrcode-terminal-go
 # github.com/Jeffail/gabs v1.4.0
+## explicit
 github.com/Jeffail/gabs
 # github.com/Philipp15b/go-steam v1.0.1-0.20200727090957-6ae9b3c0a560
 ## explicit
@@ -27,8 +28,6 @@ github.com/Rhymen/go-whatsapp/binary/token
 github.com/Rhymen/go-whatsapp/crypto/cbc
 github.com/Rhymen/go-whatsapp/crypto/curve25519
 github.com/Rhymen/go-whatsapp/crypto/hkdf
-# github.com/RocketChat/Rocket.Chat.Go.SDK v0.0.0-20210112200207-10ab4d695d60
-## explicit
 # github.com/SevereCloud/vksdk/v2 v2.9.0
 ## explicit
 github.com/SevereCloud/vksdk/v2
@@ -82,6 +81,7 @@ github.com/google/gops/signal
 # github.com/google/uuid v1.1.2
 github.com/google/uuid
 # github.com/gopackage/ddp v0.0.0-20170117053602-652027933df4
+## explicit
 github.com/gopackage/ddp
 # github.com/gorilla/schema v1.2.0
 ## explicit
@@ -130,15 +130,12 @@ github.com/labstack/gommon/random
 # github.com/lrstanley/girc v0.0.0-20190801035559-4fc93959e1a7
 ## explicit
 github.com/lrstanley/girc
-# github.com/magefile/mage v1.10.0
-github.com/magefile/mage/mg
-github.com/magefile/mage/sh
 # github.com/magiconair/properties v1.8.1
 github.com/magiconair/properties
-# github.com/matrix-org/gomatrix v0.0.0-20200827122206-7dd5e2a05bcd
+# github.com/matrix-org/gomatrix v0.0.0-20210324163249-be2af5ef2e16
 ## explicit
 github.com/matrix-org/gomatrix
-# github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20201206215757-c1d86d75b9f8
+# github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20210403163225-761e8622445d
 ## explicit
 github.com/matterbridge/Rocket.Chat.Go.SDK/models
 github.com/matterbridge/Rocket.Chat.Go.SDK/realtime
@@ -222,7 +219,7 @@ github.com/pmezard/go-difflib/difflib
 github.com/rickb777/date/period
 # github.com/rickb777/plural v1.2.0
 github.com/rickb777/plural
-# github.com/rs/xid v1.2.1
+# github.com/rs/xid v1.3.0
 ## explicit
 github.com/rs/xid
 # github.com/russross/blackfriday v1.6.0
@@ -238,7 +235,7 @@ github.com/shazow/rateio
 github.com/shazow/ssh-chat/internal/sanitize
 github.com/shazow/ssh-chat/sshd
 github.com/shazow/ssh-chat/sshd/terminal
-# github.com/sirupsen/logrus v1.8.0
+# github.com/sirupsen/logrus v1.8.1
 ## explicit
 github.com/sirupsen/logrus
 # github.com/skip2/go-qrcode v0.0.0-20190110000554-dc11ecdae0a9
@@ -303,7 +300,7 @@ github.com/writeas/go-strip-markdown
 github.com/yaegashi/msgraph.go/beta
 github.com/yaegashi/msgraph.go/jsonx
 github.com/yaegashi/msgraph.go/msauth
-# github.com/zfjagann/golang-ring v0.0.0-20190304061218-d34796e0a6c2
+# github.com/zfjagann/golang-ring v0.0.0-20210116075443-7c86fdb43134
 ## explicit
 github.com/zfjagann/golang-ring
 # go.uber.org/atomic v1.7.0
@@ -355,7 +352,7 @@ golang.org/x/net/http2/h2c
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/websocket
-# golang.org/x/oauth2 v0.0.0-20210313182246-cd4f82c27b84
+# golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602
 ## explicit
 golang.org/x/oauth2
 golang.org/x/oauth2/clientcredentials
