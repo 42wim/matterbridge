@@ -160,7 +160,11 @@ func (r *Ring) get(p int) interface{} {
 
 // returns the modified index of an unmodified index
 func (r *Ring) mod(p int) int {
-	return p % len(r.buff)
+	v := p % len(r.buff)
+	for v < 0 { // this bit fixes negative indices
+		v += len(r.buff)
+	}
+	return v
 }
 
 func (r *Ring) checkInit() {
@@ -178,12 +182,53 @@ func (r *Ring) checkInit() {
 func (r *Ring) extend(size int) {
 	if size == len(r.buff) {
 		return
-	} else if size < len(r.buff) {
-		r.buff = r.buff[0:size]
 	}
+
+	if size < len(r.buff) {
+		// shrink the buffer
+		if r.head == -1 {
+			// nothing in the buffer, so just shrink it directly
+			r.buff = r.buff[0:size]
+		} else {
+			newb := make([]interface{}, 0, size)
+			// buffer has stuff in it, so save the most recent stuff...
+			// start at HEAD-SIZE-1 and walk forwards
+			for i := size - 1; i >= 0; i-- {
+				idx := r.mod(r.head - i)
+				newb = append(newb, r.buff[idx])
+			}
+			// reset head and tail to proper values
+			r.head = len(newb) - 1
+			r.tail = 0
+			r.buff = newb
+		}
+		return
+	}
+
+	// grow the buffer
 	newb := make([]interface{}, size-len(r.buff))
 	for i := range newb {
 		newb[i] = nil
 	}
-	r.buff = append(r.buff, newb...)
+	if r.head == -1 {
+		// nothing in the buffer
+		r.buff = append(r.buff, newb...)
+	} else if r.head >= r.tail {
+		// growing at the end is safe
+		r.buff = append(r.buff, newb...)
+	} else {
+		// buffer has stuff that wraps around the end
+		// have to rearrange the buffer so the contents are still in order
+		part1 := make([]interface{}, len(r.buff[:r.head+1]))
+		copy(part1, r.buff[:r.head+1])
+		part2 := make([]interface{}, len(r.buff[r.tail:]))
+		copy(part2, r.buff[r.tail:])
+		r.buff = append(r.buff, newb...)
+		newTail := r.mod(r.tail + len(newb))
+		r.tail = newTail
+		copy(r.buff[:r.head+1], part1)
+		copy(r.buff[r.head+1:r.tail], newb)
+		copy(r.buff[r.tail:], part2)
+
+	}
 }

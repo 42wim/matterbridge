@@ -14,7 +14,7 @@ import (
 	"github.com/d5/tengo/v2"
 	"github.com/d5/tengo/v2/stdlib"
 	lru "github.com/hashicorp/golang-lru"
-	"github.com/matterbridge/emoji"
+	"github.com/kyokomi/emoji/v2"
 	"github.com/sirupsen/logrus"
 )
 
@@ -127,7 +127,7 @@ func (gw *Gateway) AddConfig(cfg *config.Gateway) error {
 		gw.logger.Errorf("mapChannels() failed: %s", err)
 	}
 	for _, br := range append(gw.MyConfig.In, append(gw.MyConfig.InOut, gw.MyConfig.Out...)...) {
-		br := br //scopelint
+		br := br // scopelint
 		err := gw.AddBridge(&br)
 		if err != nil {
 			return err
@@ -386,6 +386,7 @@ func (gw *Gateway) modifyMessage(msg *config.Message) {
 	}
 
 	// replace :emoji: to unicode
+	emoji.ReplacePadding = ""
 	msg.Text = emoji.Sprint(msg.Text)
 
 	br := gw.Bridges[msg.Account]
@@ -496,7 +497,7 @@ func (gw *Gateway) SendMessage(
 	if mID != "" {
 		gw.logger.Debugf("mID %s: %s", dest.Account, mID)
 		return mID, nil
-		//brMsgIDs = append(brMsgIDs, &BrMsgID{dest, dest.Protocol + " " + mID, channel.ID})
+		// brMsgIDs = append(brMsgIDs, &BrMsgID{dest, dest.Protocol + " " + mID, channel.ID})
 	}
 	return "", nil
 }

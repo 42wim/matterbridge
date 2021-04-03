@@ -3,19 +3,19 @@ Emoji is a simple golang package.
 
 [![wercker status](https://app.wercker.com/status/7bef60de2c6d3e0e6c13d56b2393c5d8/s/master "wercker status")](https://app.wercker.com/project/byKey/7bef60de2c6d3e0e6c13d56b2393c5d8)
 [![Coverage Status](https://coveralls.io/repos/kyokomi/emoji/badge.png?branch=master)](https://coveralls.io/r/kyokomi/emoji?branch=master)
-[![GoDoc](https://godoc.org/github.com/kyokomi/emoji?status.svg)](https://godoc.org/github.com/kyokomi/emoji)
+[![GoDoc](https://pkg.go.dev/badge/github.com/kyokomi/emoji.svg)](https://pkg.go.dev/github.com/kyokomi/emoji/v2)
 
 Get it:
 
 ```
-go get github.com/kyokomi/emoji
+go get github.com/kyokomi/emoji/v2
 ```
 
 Import it:
 
 ```
 import (
-	"github.com/kyokomi/emoji"
+	"github.com/kyokomi/emoji/v2"
 )
 ```
 
@@ -27,7 +27,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/kyokomi/emoji"
+	"github.com/kyokomi/emoji/v2"
 )
 
 func main() {
@@ -46,7 +46,7 @@ func main() {
 
 ## Reference
 
-- [GitHub EMOJI CHEAT SHEET](http://www.emoji-cheat-sheet.com/)
+- [unicode Emoji Charts](http://www.unicode.org/emoji/charts/emoji-list.html)
 
 ## License
 

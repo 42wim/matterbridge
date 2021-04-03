@@ -2,6 +2,7 @@
 *.o
 *.a
 *.so
+*.out
 
 # Folders
 _obj
@@ -22,3 +23,6 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
+# test editor files
+*.swp
