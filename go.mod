@@ -19,12 +19,12 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/jpillora/backoff v1.0.0
 	github.com/keybase/go-keybase-chat-bot v0.0.0-20200505163032-5cacf52379da
+	github.com/kyokomi/emoji/v2 v2.2.8
 	github.com/labstack/echo/v4 v4.2.1
 	github.com/lrstanley/girc v0.0.0-20190801035559-4fc93959e1a7
 	github.com/matrix-org/gomatrix v0.0.0-20210324163249-be2af5ef2e16
 	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20210403163225-761e8622445d
 	github.com/matterbridge/discordgo v0.21.2-0.20210201201054-fb39a175b4f7
-	github.com/matterbridge/emoji v2.1.1-0.20191117213217-af507f6b02db+incompatible
 	github.com/matterbridge/go-xmpp v0.0.0-20200418225040-c8a3a57b4050
 	github.com/matterbridge/gozulipbot v0.0.0-20200820220548-be5824faa913
 	github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba
