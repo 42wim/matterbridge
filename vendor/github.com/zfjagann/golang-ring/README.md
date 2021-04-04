@@ -1,9 +1,6 @@
 # ring
-
-[![GoDoc](https://godoc.org/github.com/zfjagann/golang-ring?status.svg)](https://godoc.org/github.com/zfjagann/golang-ring)
-
 --
-    import "github.com/zfjagann/golang-ring"
+    import "github.com/zealws/golang-ring"
 
 Package ring provides a simple implementation of a ring buffer.
 
@@ -20,18 +17,26 @@ Changing this value only affects ring buffers created after it is changed.
 
 ```go
 type Ring struct {
+	sync.Mutex
 }
 ```
 
 Type Ring implements a Circular Buffer. The default value of the Ring struct is
 a valid (empty) Ring buffer with capacity DefaultCapacify.
 
-#### func (Ring) Capacity
+#### func (*Ring) Capacity
 
 ```go
-func (r Ring) Capacity() int
+func (r *Ring) Capacity() int
 ```
 Capacity returns the current capacity of the ring buffer.
+
+#### func (*Ring) ContentSize
+
+```go
+func (r *Ring) ContentSize() int
+```
+ContentSize returns the current number of elements inside the ring buffer.
 
 #### func (*Ring) Dequeue
 
