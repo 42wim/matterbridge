@@ -79,6 +79,9 @@ func (b *Bmatrix) Connect() error {
 		b.mc, err = matrix.NewClient(
 			b.GetString("Server"), b.GetString("MxID"), b.GetString("Token"),
 		)
+		if err != nil {
+			return err
+		}
 		b.UserID = b.GetString("MxID")
 		b.Log.Info("Using existing Matrix credentials")
 	} else {
