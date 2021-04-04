@@ -114,6 +114,7 @@ And more...
 - [Facebook messenger](https://github.com/VictorNine/fbridge)
 - [Minecraft](https://github.com/elytra/MatterLink)
 - [Minecraft](https://github.com/raws/mattercraft)
+- [Minecraft](https://gitlab.com/Programie/MatterBukkit)
 - [Reddit](https://github.com/bonehurtingjuice/mattereddit)
 - [Counter-Strike, half-life and more](https://forums.alliedmods.net/showthread.php?t=319430)
 - [MatterAMXX](https://github.com/GabeIggy/MatterAMXX)
@@ -126,8 +127,9 @@ More info and examples on the [wiki](https://github.com/42wim/matterbridge/wiki/
 
 Used by the projects below. Feel free to make a PR to add your project to this list.
 
-- [MatterLink](https://github.com/elytra/MatterLink) (Matterbridge link for Minecraft Server chat)
-- [Minecraft](https://github.com/raws/mattercraft) (Matterbridge link for Minecraft Server chat)
+- [MatterLink](https://github.com/elytra/MatterLink) (Matterbridge link for Minecraft Forge server chat, archived)
+- [MatterCraft](https://github.com/raws/mattercraft) (Matterbridge link for Minecraft Forge server chat)
+- [MatterBukkit](https://gitlab.com/Programie/MatterBukkit) (Matterbridge link for Minecraft Bukkit/Spigot server chat)
 - [pyCord](https://github.com/NikkyAI/pyCord) (crossplatform chatbot)
 - [Mattereddit](https://github.com/bonehurtingjuice/mattereddit) (Reddit chat support)
 - [fbridge-asyncio](https://github.com/powerjungle/fbridge-asyncio) (Facebook messenger support)
@@ -161,7 +163,7 @@ See <https://github.com/42wim/matterbridge/wiki>
 
 ### Binaries
 
-- Latest stable release [v1.22.0](https://github.com/42wim/matterbridge/releases/latest)
+- Latest stable release [v1.22.1](https://github.com/42wim/matterbridge/releases/latest)
 - Development releases (follows master) can be downloaded [here](https://github.com/42wim/matterbridge/actions) selecting the latest green build and then artifacts.
 
 To install or upgrade just download the latest [binary](https://github.com/42wim/matterbridge/releases/latest). On \*nix platforms you may need to make the binary executable - you can do this by running `chmod a+x` on the binary (example: `chmod a+x matterbridge-1.20.0-linux-64bit`). After downloading (and making the binary executable, if necessary), follow the instructions on the [howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config) for a step by step walkthrough for creating your configuration.

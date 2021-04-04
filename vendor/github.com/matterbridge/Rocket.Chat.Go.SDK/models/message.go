@@ -77,8 +77,8 @@ type Attachment struct {
 // https://rocket.chat/docs/developer-guides/rest-api/chat/postmessage/
 type AttachmentField struct {
 	Short bool   `json:"short"`
-	Title string `json:"title"`
-	Value string `json:"value"`
+	Title string `json:"title,omitempty"`
+	Value string `json:"value,omitempty"`
 }
 
 type AttachmentActionType string
@@ -89,15 +89,15 @@ const (
 
 // AttachmentAction are action buttons on message attachments
 type AttachmentAction struct {
-	Type               AttachmentActionType  `json:"type"`
-	Text               string                `json:"text"`
-	Url                string                `json:"url"`
-	ImageURL           string                `json:"image_url"`
+	Type               AttachmentActionType  `json:"type,omitempty"`
+	Text               string                `json:"text,omitempty"`
+	Url                string                `json:"url,omitempty"`
+	ImageURL           string                `json:"image_url,omitempty"`
 	IsWebView          bool                  `json:"is_webview"`
-	WebviewHeightRatio string                `json:"webview_height_ratio"`
-	Msg                string                `json:"msg"`
+	WebviewHeightRatio string                `json:"webview_height_ratio,omitempty"`
+	Msg                string                `json:"msg,omitempty"`
 	MsgInChatWindow    bool                  `json:"msg_in_chat_window"`
-	MsgProcessingType  MessageProcessingType `json:"msg_processing_type"`
+	MsgProcessingType  MessageProcessingType `json:"msg_processing_type,omitempty"`
 }
 
 // AttachmentActionButtonAlignment configures how the actions buttons will be aligned
