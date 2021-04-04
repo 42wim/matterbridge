@@ -3,9 +3,10 @@ package bsignald
 import (
 	"bufio"
 	"encoding/json"
+	"net"
+
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
-	"net"
 )
 
 type JSONCMD map[string]interface{}
@@ -79,7 +80,7 @@ type signaldDataMessage struct {
 }
 
 type signaldGroupInfo struct {
-	AvatarId int64           `json:"avatarId,omitempty"`
+	AvatarID int64           `json:"avatarId,omitempty"`
 	ID       string          `json:"groupId,omitempty"`
 	Members  json.RawMessage `json:"members,omitempty"`
 	Name     string          `json:"name,omitempty"`
@@ -104,7 +105,7 @@ type signaldGroupV2Info struct {
 type signaldSendMessage struct {
 	Type             string `json:"type,omitempty"`
 	Username         string `json:"username,omitempty"`
-	RecipientGroupId string `json:"recipientGroupId,omitempty"`
+	RecipientGroupID string `json:"recipientGroupId,omitempty"`
 	MessageBody      string `json:"messageBody,omitempty"`
 }
 
@@ -159,7 +160,9 @@ func (b *Bsignald) Connect() error {
 	r := bufio.NewScanner(s)
 	b.reader = r
 	go b.Listen()
-	go b.Login()
+	if err := b.Login(); err != nil {
+		b.Log.Errorln("Error logging in: ", err.Error())
+	}
 	return nil
 }
 
@@ -337,7 +340,7 @@ func (b *Bsignald) Send(msg config.Message) (string, error) {
 	msgJSON := signaldSendMessage{
 		Type:             "send",
 		Username:         b.GetString(cfgNumber),
-		RecipientGroupId: b.groupid,
+		RecipientGroupID: b.groupid,
 		MessageBody:      msg.Username + msg.Text,
 	}
 
