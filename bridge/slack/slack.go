@@ -156,7 +156,7 @@ func (b *Bslack) JoinChannel(channel config.ChannelInfo) error {
 
 	// try to join a channel when in legacy
 	if b.legacy {
-		_, err := b.sc.JoinChannel(channel.Name)
+		_, _, _, err := b.sc.JoinConversation(channel.Name)
 		if err != nil {
 			switch err.Error() {
 			case "name_taken", "restricted_action":
