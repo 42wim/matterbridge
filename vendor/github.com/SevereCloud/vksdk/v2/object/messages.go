@@ -721,8 +721,7 @@ type MessagesPinnedMessage struct {
 }
 
 // MessagesUserXtrInvitedBy struct.
-type MessagesUserXtrInvitedBy struct {
-}
+type MessagesUserXtrInvitedBy struct{}
 
 // MessagesForward struct.
 type MessagesForward struct {

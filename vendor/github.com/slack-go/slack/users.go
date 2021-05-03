@@ -482,7 +482,7 @@ func (api *Client) SetUserPhotoContext(ctx context.Context, image string, params
 		values.Add("crop_w", strconv.Itoa(params.CropW))
 	}
 
-	err = postLocalWithMultipartResponse(ctx, api.httpclient, api.endpoint+"users.setPhoto", image, "image", values, response, api)
+	err = postLocalWithMultipartResponse(ctx, api.httpclient, api.endpoint+"users.setPhoto", image, "image", api.token, values, response, api)
 	if err != nil {
 		return err
 	}
@@ -632,9 +632,15 @@ func (api *Client) UnsetUserCustomStatusContext(ctx context.Context) error {
 	return api.SetUserCustomStatusContext(ctx, "", "", 0)
 }
 
+// GetUserProfileParameters are the parameters required to get user profile
+type GetUserProfileParameters struct {
+	UserID        string
+	IncludeLabels bool
+}
+
 // GetUserProfile retrieves a user's profile information.
-func (api *Client) GetUserProfile(userID string, includeLabels bool) (*UserProfile, error) {
-	return api.GetUserProfileContext(context.Background(), userID, includeLabels)
+func (api *Client) GetUserProfile(params *GetUserProfileParameters) (*UserProfile, error) {
+	return api.GetUserProfileContext(context.Background(), params)
 }
 
 type getUserProfileResponse struct {
@@ -643,13 +649,14 @@ type getUserProfileResponse struct {
 }
 
 // GetUserProfileContext retrieves a user's profile information with a context.
-func (api *Client) GetUserProfileContext(ctx context.Context, userID string, includeLabels bool) (*UserProfile, error) {
+func (api *Client) GetUserProfileContext(ctx context.Context, params *GetUserProfileParameters) (*UserProfile, error) {
 	values := url.Values{"token": {api.token}}
-	if includeLabels {
-		values.Add("include_labels", "true")
+
+	if params.UserID != "" {
+		values.Add("user", params.UserID)
 	}
-	if userID != "" {
-		values.Add("user", userID)
+	if params.IncludeLabels {
+		values.Add("include_labels", "true")
 	}
 	resp := &getUserProfileResponse{}
 

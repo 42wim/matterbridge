@@ -43,6 +43,7 @@ const (
 	SmartypantsAngledQuotes                   // Enable angled double quotes (with Smartypants) for double quotes rendering
 	SmartypantsQuotesNBSP                     // Enable « French guillemets » (with Smartypants)
 	TOC                                       // Generate a table of contents
+	LazyLoadImages                            // Include loading="lazy" with images
 
 	CommonFlags Flags = Smartypants | SmartypantsFractions | SmartypantsDashes | SmartypantsLatexDashes
 )
@@ -589,7 +590,11 @@ func (r *Renderer) imageEnter(w io.Writer, image *ast.Image) {
 		//if options.safe && potentiallyUnsafe(dest) {
 		//out(w, `<img src="" alt="`)
 		//} else {
-		r.Outs(w, `<img src="`)
+		if r.opts.Flags&LazyLoadImages != 0 {
+			r.Outs(w, `<img loading="lazy" src="`)
+		} else {
+			r.Outs(w, `<img src="`)
+		}
 		escLink(w, dest)
 		r.Outs(w, `" alt="`)
 		//}

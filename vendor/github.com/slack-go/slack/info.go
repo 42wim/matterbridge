@@ -321,10 +321,9 @@ type UserPrefs struct {
 }
 
 func (api *Client) GetUserPrefs() (*UserPrefsCarrier, error) {
-	values := url.Values{"token": {api.token}}
 	response := UserPrefsCarrier{}
 
-	err := api.getMethod(context.Background(), "users.prefs.get", values, &response)
+	err := api.getMethod(context.Background(), "users.prefs.get", api.token, url.Values{}, &response)
 	if err != nil {
 		return nil, err
 	}

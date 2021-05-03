@@ -17,7 +17,7 @@ type AttachmentAction struct {
 	Name            string                        `json:"name"`                       // Required.
 	Text            string                        `json:"text"`                       // Required.
 	Style           string                        `json:"style,omitempty"`            // Optional. Allowed values: "default", "primary", "danger".
-	Type            actionType                    `json:"type"`                       // Required. Must be set to "button" or "select".
+	Type            ActionType                    `json:"type"`                       // Required. Must be set to "button" or "select".
 	Value           string                        `json:"value,omitempty"`            // Optional.
 	DataSource      string                        `json:"data_source,omitempty"`      // Optional.
 	MinQueryLength  int                           `json:"min_query_length,omitempty"` // Optional. Default value is 1.
@@ -29,7 +29,7 @@ type AttachmentAction struct {
 }
 
 // actionType returns the type of the action
-func (a AttachmentAction) actionType() actionType {
+func (a AttachmentAction) actionType() ActionType {
 	return a.Type
 }
 

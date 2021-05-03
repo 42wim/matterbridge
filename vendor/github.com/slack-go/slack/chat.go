@@ -744,7 +744,6 @@ func (api *Client) GetPermalink(params *PermalinkParameters) (string, error) {
 // GetPermalinkContext returns the permalink for a message using a custom context.
 func (api *Client) GetPermalinkContext(ctx context.Context, params *PermalinkParameters) (string, error) {
 	values := url.Values{
-		"token":      {api.token},
 		"channel":    {params.Channel},
 		"message_ts": {params.Ts},
 	}
@@ -754,7 +753,7 @@ func (api *Client) GetPermalinkContext(ctx context.Context, params *PermalinkPar
 		Permalink string `json:"permalink"`
 		SlackResponse
 	}{}
-	err := api.getMethod(ctx, "chat.getPermalink", values, &response)
+	err := api.getMethod(ctx, "chat.getPermalink", api.token, values, &response)
 	if err != nil {
 		return "", err
 	}

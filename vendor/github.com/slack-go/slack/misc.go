@@ -135,7 +135,7 @@ func parseResponseBody(body io.ReadCloser, intf interface{}, d Debug) error {
 	return json.Unmarshal(response, intf)
 }
 
-func postLocalWithMultipartResponse(ctx context.Context, client httpClient, method, fpath, fieldname string, values url.Values, intf interface{}, d Debug) error {
+func postLocalWithMultipartResponse(ctx context.Context, client httpClient, method, fpath, fieldname, token string, values url.Values, intf interface{}, d Debug) error {
 	fullpath, err := filepath.Abs(fpath)
 	if err != nil {
 		return err
@@ -146,10 +146,10 @@ func postLocalWithMultipartResponse(ctx context.Context, client httpClient, meth
 	}
 	defer file.Close()
 
-	return postWithMultipartResponse(ctx, client, method, filepath.Base(fpath), fieldname, values, file, intf, d)
+	return postWithMultipartResponse(ctx, client, method, filepath.Base(fpath), fieldname, token, values, file, intf, d)
 }
 
-func postWithMultipartResponse(ctx context.Context, client httpClient, path, name, fieldname string, values url.Values, r io.Reader, intf interface{}, d Debug) error {
+func postWithMultipartResponse(ctx context.Context, client httpClient, path, name, fieldname, token string, values url.Values, r io.Reader, intf interface{}, d Debug) error {
 	pipeReader, pipeWriter := io.Pipe()
 	wr := multipart.NewWriter(pipeWriter)
 	errc := make(chan error)
@@ -175,6 +175,7 @@ func postWithMultipartResponse(ctx context.Context, client httpClient, path, nam
 		return err
 	}
 	req.Header.Add("Content-Type", wr.FormDataContentType())
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	req = req.WithContext(ctx)
 	resp, err := client.Do(req)
 
@@ -236,12 +237,14 @@ func postForm(ctx context.Context, client httpClient, endpoint string, values ur
 	return doPost(ctx, client, req, newJSONParser(intf), d)
 }
 
-func getResource(ctx context.Context, client httpClient, endpoint string, values url.Values, intf interface{}, d Debug) error {
+func getResource(ctx context.Context, client httpClient, endpoint, token string, values url.Values, intf interface{}, d Debug) error {
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
 	req.URL.RawQuery = values.Encode()
 
 	return doPost(ctx, client, req, newJSONParser(intf), d)
