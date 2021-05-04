@@ -47,13 +47,26 @@ func (b *Bdiscord) maybeGetLocalAvatar(msg *config.Message) string {
 // Returns messageID and error.
 func (b *Bdiscord) webhookSend(msg *config.Message, channelID string) (*discordgo.Message, error) {
 	var (
-		res *discordgo.Message
-		err error
+		res                 *discordgo.Message
+		err                 error
+		allowedMentionTypes []discordgo.AllowedMentionType
 	)
 
 	// If avatar is unset, mutate the message to include the local avatar (but only if settings say we should do this)
 	if msg.Avatar == "" {
 		msg.Avatar = b.maybeGetLocalAvatar(msg)
+	}
+
+	// Allow only the mention types that are not disabled by the config
+	allowedMentionTypes = make([]discordgo.AllowedMentionType, 0, 3)
+	if !b.GetBool("DisablePingEveryoneHere") {
+		allowedMentionTypes = append(allowedMentionTypes, discordgo.AllowedMentionTypeEveryone)
+	}
+	if !b.GetBool("DisablePingRoles") {
+		allowedMentionTypes = append(allowedMentionTypes, discordgo.AllowedMentionTypeRoles)
+	}
+	if !b.GetBool("DisablePingUsers") {
+		allowedMentionTypes = append(allowedMentionTypes, discordgo.AllowedMentionTypeUsers)
 	}
 
 	// WebhookParams can have either `Content` or `File`.
@@ -66,6 +79,9 @@ func (b *Bdiscord) webhookSend(msg *config.Message, channelID string) (*discordg
 				Content:   msg.Text,
 				Username:  msg.Username,
 				AvatarURL: msg.Avatar,
+				AllowedMentions: &discordgo.MessageAllowedMentions{
+					Parse: allowedMentionTypes,
+				},
 			},
 		)
 		if err != nil {
