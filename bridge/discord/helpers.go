@@ -9,6 +9,24 @@ import (
 	"github.com/matterbridge/discordgo"
 )
 
+func (b *Bdiscord) getAllowedMentions() *discordgo.MessageAllowedMentions {
+	// Allow only the mention types that are not disabled by the config (default is all allowed)
+	allowedMentionTypes := make([]discordgo.AllowedMentionType, 0, 3)
+	if !b.GetBool("DisablePingEveryoneHere") {
+		allowedMentionTypes = append(allowedMentionTypes, discordgo.AllowedMentionTypeEveryone)
+	}
+	if !b.GetBool("DisablePingRoles") {
+		allowedMentionTypes = append(allowedMentionTypes, discordgo.AllowedMentionTypeRoles)
+	}
+	if !b.GetBool("DisablePingUsers") {
+		allowedMentionTypes = append(allowedMentionTypes, discordgo.AllowedMentionTypeUsers)
+	}
+
+	return &discordgo.MessageAllowedMentions{
+		Parse: allowedMentionTypes,
+	}
+}
+
 func (b *Bdiscord) getNick(user *discordgo.User, guildID string) string {
 	b.membersMutex.RLock()
 	defer b.membersMutex.RUnlock()

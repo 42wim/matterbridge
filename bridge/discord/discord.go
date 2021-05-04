@@ -32,6 +32,8 @@ type Bdiscord struct {
 	userMemberMap map[string]*discordgo.Member
 	nickMemberMap map[string]*discordgo.Member
 
+	allowedMentions *discordgo.MessageAllowedMentions
+
 	// Webhook specific logic
 	useAutoWebhooks bool
 	transmitter     *transmitter.Transmitter
@@ -42,6 +44,8 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	b.userMemberMap = make(map[string]*discordgo.Member)
 	b.nickMemberMap = make(map[string]*discordgo.Member)
 	b.channelInfoMap = make(map[string]*config.ChannelInfo)
+
+	b.allowedMentions = b.getAllowedMentions()
 
 	b.useAutoWebhooks = b.GetBool("AutoWebhooks")
 	if b.useAutoWebhooks {
