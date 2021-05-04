@@ -66,7 +66,7 @@ func (b *Bdiscord) webhookSend(msg *config.Message, channelID string) (*discordg
 				Content:         msg.Text,
 				Username:        msg.Username,
 				AvatarURL:       msg.Avatar,
-				AllowedMentions: b.allowedMentions,
+				AllowedMentions: b.getAllowedMentions(),
 			},
 		)
 		if err != nil {
