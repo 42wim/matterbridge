@@ -12,13 +12,13 @@ import (
 func (b *Bdiscord) getAllowedMentions() *discordgo.MessageAllowedMentions {
 	// Allow only the mention types that are not disabled by the config (default is all allowed)
 	allowedMentionTypes := make([]discordgo.AllowedMentionType, 0, 3)
-	if !b.GetBool("DisablePingEveryoneHere") {
+	if b.GetBool("AllowPingEveryoneHere") || !b.IsKeySet("AllowPingEveryoneHere") {
 		allowedMentionTypes = append(allowedMentionTypes, discordgo.AllowedMentionTypeEveryone)
 	}
-	if !b.GetBool("DisablePingRoles") {
+	if b.GetBool("AllowPingRoles") || !b.IsKeySet("AllowPingRoles") {
 		allowedMentionTypes = append(allowedMentionTypes, discordgo.AllowedMentionTypeRoles)
 	}
-	if !b.GetBool("DisablePingUsers") {
+	if b.GetBool("AllowPingUsers") || !b.IsKeySet("AllowPingUsers") {
 		allowedMentionTypes = append(allowedMentionTypes, discordgo.AllowedMentionTypeUsers)
 	}
 
