@@ -85,7 +85,7 @@ type ChannelMember struct {
 type ChannelMembers []ChannelMember
 
 type Protocol struct {
-	AllowPingEveryoneHere  bool   // discord
+	AllowPingEveryone      bool   // discord
 	AllowPingRoles         bool   // discord
 	AllowPingUsers         bool   // discord
 	AuthCode               string // steam

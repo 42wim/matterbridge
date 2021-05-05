@@ -848,8 +848,8 @@ Server="yourservername"
 ## All settings below can be reloaded by editing the file.
 ## They are also all optional.
 
-# AllowPingEveryoneHere controls if @everyone and @here mentions should send a mention/ping to users. (default true)
-AllowPingEveryoneHere=true
+# AllowPingEveryone controls if @everyone and @here mentions should send a mention/ping to users. (default true)
+AllowPingEveryone=true
 
 # AllowPingRoles controls if @role mentions should send a mention/ping to users. (default true)
 AllowPingRoles=true
