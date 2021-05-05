@@ -10,16 +10,22 @@ import (
 )
 
 func (b *Bdiscord) getAllowedMentions() *discordgo.MessageAllowedMentions {
-	// Allow only the mention types that are not disabled by the config (default is all allowed)
+	// If AllowMention is not specified, then allow all mentions (defautl Discord behavior)
+	if !b.IsKeySet("AllowMention") {
+		return nil
+	}
+
+	// Otherwise, allow only the mentions that are specified
 	allowedMentionTypes := make([]discordgo.AllowedMentionType, 0, 3)
-	if b.GetBool("AllowPingEveryone") || !b.IsKeySet("AllowPingEveryone") {
-		allowedMentionTypes = append(allowedMentionTypes, discordgo.AllowedMentionTypeEveryone)
-	}
-	if b.GetBool("AllowPingRoles") || !b.IsKeySet("AllowPingRoles") {
-		allowedMentionTypes = append(allowedMentionTypes, discordgo.AllowedMentionTypeRoles)
-	}
-	if b.GetBool("AllowPingUsers") || !b.IsKeySet("AllowPingUsers") {
-		allowedMentionTypes = append(allowedMentionTypes, discordgo.AllowedMentionTypeUsers)
+	for _, m := range b.GetStringSlice("AllowMention") {
+		switch m {
+		case "everyone":
+			allowedMentionTypes = append(allowedMentionTypes, discordgo.AllowedMentionTypeEveryone)
+		case "roles":
+			allowedMentionTypes = append(allowedMentionTypes, discordgo.AllowedMentionTypeRoles)
+		case "users":
+			allowedMentionTypes = append(allowedMentionTypes, discordgo.AllowedMentionTypeUsers)
+		}
 	}
 
 	return &discordgo.MessageAllowedMentions{
