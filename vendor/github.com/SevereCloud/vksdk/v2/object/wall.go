@@ -142,7 +142,7 @@ type WallWallpost struct {
 	FriendsOnly    int                      `json:"friends_only"`
 	Comments       BaseCommentsInfo         `json:"comments"`
 	Likes          BaseLikesInfo            `json:"likes"`   // Count of likes
-	Reposts        BaseRepostsInfo          `json:"reposts"` // Count of views
+	Reposts        BaseRepostsInfo          `json:"reposts"` // Count of reposts
 	Views          WallViews                `json:"views"`   // Count of views
 	PostType       string                   `json:"post_type"`
 	PostSource     WallPostSource           `json:"post_source"`

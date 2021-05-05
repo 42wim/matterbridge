@@ -35,7 +35,7 @@ type Blocks struct {
 type BlockAction struct {
 	ActionID              string              `json:"action_id"`
 	BlockID               string              `json:"block_id"`
-	Type                  actionType          `json:"type"`
+	Type                  ActionType          `json:"type"`
 	Text                  TextBlockObject     `json:"text"`
 	Value                 string              `json:"value"`
 	ActionTs              string              `json:"action_ts"`
@@ -58,7 +58,7 @@ type BlockAction struct {
 }
 
 // actionType returns the type of the action
-func (b BlockAction) actionType() actionType {
+func (b BlockAction) actionType() ActionType {
 	return b.Type
 }
 

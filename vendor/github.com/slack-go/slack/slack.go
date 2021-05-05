@@ -157,6 +157,6 @@ func (api *Client) postMethod(ctx context.Context, path string, values url.Value
 }
 
 // get a slack web method.
-func (api *Client) getMethod(ctx context.Context, path string, values url.Values, intf interface{}) error {
-	return getResource(ctx, api.httpclient, api.endpoint+path, values, intf, api)
+func (api *Client) getMethod(ctx context.Context, path string, token string, values url.Values, intf interface{}) error {
+	return getResource(ctx, api.httpclient, api.endpoint+path, token, values, intf, api)
 }

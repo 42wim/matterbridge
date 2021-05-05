@@ -87,11 +87,11 @@ type NewsfeedItemStoriesBlock struct {
 }
 
 // NewsfeedItemTopic struct.
-type NewsfeedItemTopic struct {
-	// Comments BaseCommentsInfo `json:"comments"`
-	// Likes BaseLikesInfo `json:"likes"`
-	// Text  string        `json:"text"` // Post text
-}
+//
+// Comments BaseCommentsInfo `json:"comments"`
+// Likes BaseLikesInfo `json:"likes"`
+// Text  string        `json:"text"` // Post text.
+type NewsfeedItemTopic struct{}
 
 // NewsfeedItemVideo struct.
 type NewsfeedItemVideo struct {

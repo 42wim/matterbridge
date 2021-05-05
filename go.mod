@@ -6,13 +6,13 @@ require (
 	github.com/Jeffail/gabs v1.4.0 // indirect
 	github.com/Philipp15b/go-steam v1.0.1-0.20200727090957-6ae9b3c0a560
 	github.com/Rhymen/go-whatsapp v0.1.2-0.20210126174449-3c094ebae0ce
-	github.com/SevereCloud/vksdk/v2 v2.9.0
+	github.com/SevereCloud/vksdk/v2 v2.9.1
 	github.com/d5/tengo/v2 v2.7.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-telegram-bot-api/telegram-bot-api v1.0.1-0.20200524105306-7434b0456e81
-	github.com/gomarkdown/markdown v0.0.0-20210208175418-bda154fe17d8
-	github.com/google/gops v0.3.17
+	github.com/gomarkdown/markdown v0.0.0-20210408062403-ad838ccf8cdd
+	github.com/google/gops v0.3.18
 	github.com/gopackage/ddp v0.0.0-20170117053602-652027933df4 // indirect
 	github.com/gorilla/schema v1.2.0
 	github.com/gorilla/websocket v1.4.2
@@ -20,7 +20,7 @@ require (
 	github.com/jpillora/backoff v1.0.0
 	github.com/keybase/go-keybase-chat-bot v0.0.0-20200505163032-5cacf52379da
 	github.com/kyokomi/emoji/v2 v2.2.8
-	github.com/labstack/echo/v4 v4.2.1
+	github.com/labstack/echo/v4 v4.2.2
 	github.com/lrstanley/girc v0.0.0-20190801035559-4fc93959e1a7
 	github.com/matrix-org/gomatrix v0.0.0-20210324163249-be2af5ef2e16
 	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20210403163225-761e8622445d
@@ -41,7 +41,7 @@ require (
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca
 	github.com/shazow/ssh-chat v1.10.1
 	github.com/sirupsen/logrus v1.8.1
-	github.com/slack-go/slack v0.8.2
+	github.com/slack-go/slack v0.9.0
 	github.com/spf13/afero v1.3.4 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/viper v1.7.1
@@ -52,7 +52,7 @@ require (
 	github.com/yaegashi/msgraph.go v0.1.4
 	github.com/zfjagann/golang-ring v0.0.0-20210116075443-7c86fdb43134
 	golang.org/x/image v0.0.0-20210220032944-ac19c3e999fb
-	golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602
+	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
 	gomod.garykim.dev/nc-talk v0.1.7
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 	layeh.com/gumble v0.0.0-20200818122324-146f9205029b
