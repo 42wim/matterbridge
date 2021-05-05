@@ -283,7 +283,7 @@ func (b *channels) populateChannels(wait bool) {
 	// We only retrieve public and private channels, not IMs
 	// and MPIMs as those do not have a channel name.
 	queryParams := &slack.GetConversationsParameters{
-		ExcludeArchived: "true",
+		ExcludeArchived: true,
 		Types:           []string{"public_channel,private_channel"},
 	}
 	for {

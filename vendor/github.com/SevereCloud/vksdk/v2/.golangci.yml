@@ -39,6 +39,13 @@ linters:
     - tparallel
     - errorlint
     - paralleltest
+    - forbidigo
+    - makezero
+    - thelper
+    - predeclared
+    - ifshort
+    - revive
+    - durationcheck
 
 # - wrapcheck # TODO: v3 Fix
 # - testpackage # TODO: Fix testpackage
@@ -62,6 +69,7 @@ linters:
 # - nlreturn
 # - gci
 # - exhaustivestruct
+# - cyclop
 
 issues:
   exclude-rules:

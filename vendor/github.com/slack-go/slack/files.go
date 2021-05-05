@@ -295,9 +295,7 @@ func (api *Client) UploadFileContext(ctx context.Context, params FileUploadParam
 		return nil, err
 	}
 	response := &fileResponseFull{}
-	values := url.Values{
-		"token": {api.token},
-	}
+	values := url.Values{}
 	if params.Filetype != "" {
 		values.Add("filetype", params.Filetype)
 	}
@@ -320,12 +318,12 @@ func (api *Client) UploadFileContext(ctx context.Context, params FileUploadParam
 		values.Add("content", params.Content)
 		err = api.postMethod(ctx, "files.upload", values, response)
 	} else if params.File != "" {
-		err = postLocalWithMultipartResponse(ctx, api.httpclient, api.endpoint+"files.upload", params.File, "file", values, response, api)
+		err = postLocalWithMultipartResponse(ctx, api.httpclient, api.endpoint+"files.upload", params.File, "file", api.token, values, response, api)
 	} else if params.Reader != nil {
 		if params.Filename == "" {
 			return nil, fmt.Errorf("files.upload: FileUploadParameters.Filename is mandatory when using FileUploadParameters.Reader")
 		}
-		err = postWithMultipartResponse(ctx, api.httpclient, api.endpoint+"files.upload", params.Filename, "file", values, params.Reader, response, api)
+		err = postWithMultipartResponse(ctx, api.httpclient, api.endpoint+"files.upload", params.Filename, "file", api.token, values, params.Reader, response, api)
 	}
 
 	if err != nil {

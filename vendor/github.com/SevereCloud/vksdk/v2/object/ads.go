@@ -207,8 +207,7 @@ type AdsStatsSexAge struct {
 }
 
 // AdsTargSettings struct.
-type AdsTargSettings struct {
-}
+type AdsTargSettings struct{}
 
 // AdsTargStats struct.
 type AdsTargStats struct {

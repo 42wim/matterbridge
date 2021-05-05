@@ -9,7 +9,7 @@ A renderer can be configured with multiple options:
 
 	flags := html.CommonFlags | html.CompletePage | html.HrefTargetBlank
 	opts := html.RendererOptions{
-		TItle: "A custom title",
+		Title: "A custom title",
 		Flags: flags,
 	}
 	renderer := html.NewRenderer(opts)
