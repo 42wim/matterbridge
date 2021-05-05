@@ -848,14 +848,15 @@ Server="yourservername"
 ## All settings below can be reloaded by editing the file.
 ## They are also all optional.
 
-# DisablePingEveryoneHere prevents @everyone and @here mentions from sending a mention/ping. The mention will still be displayed nicely.
-DisablePingEveryoneHere=false
+# AllowPingEveryoneHere controls if @everyone and @here mentions should send a mention/ping to users. (default true)
+AllowPingEveryoneHere=true
 
-# DisablePingRoles prevents @role mentions from sending a mention/ping. The mention will still be displayed nicely.
-DisablePingRoles=false
+# AllowPingRoles controls if @role mentions should send a mention/ping to users. (default true)
+AllowPingRoles=true
 
-# DisablePingUsers prevents @user mentions from sending a mention/ping. The mention will still be displayed nicely and be clickable to show user's profile.
-DisablePingUsers=false
+# AllowPingUsers controls if @user mentions should send a mention/ping to users. (default true)
+# Even if set to false, the mention will still be nicely displayed and be clickable (but will not ping the user).
+AllowPingUsers=true
 
 # ShowEmbeds shows the title, description and URL of embedded messages (sent by other bots)
 ShowEmbeds=false
