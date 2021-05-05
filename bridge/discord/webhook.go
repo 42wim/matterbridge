@@ -89,10 +89,11 @@ func (b *Bdiscord) webhookSend(msg *config.Message, channelID string) (*discordg
 			_, e2 := b.transmitter.Send(
 				channelID,
 				&discordgo.WebhookParams{
-					Username:  msg.Username,
-					AvatarURL: msg.Avatar,
-					File:      &file,
-					Content:   content,
+					Username:        msg.Username,
+					AvatarURL:       msg.Avatar,
+					File:            &file,
+					Content:         content,
+					AllowedMentions: b.getAllowedMentions(),
 				},
 			)
 			if e2 != nil {
@@ -125,8 +126,9 @@ func (b *Bdiscord) handleEventWebhook(msg *config.Message, channelID string) (st
 	if msg.ID != "" {
 		b.Log.Debugf("Editing webhook message")
 		err := b.transmitter.Edit(channelID, msg.ID, &discordgo.WebhookParams{
-			Content:  msg.Text,
-			Username: msg.Username,
+			Content:         msg.Text,
+			Username:        msg.Username,
+			AllowedMentions: b.getAllowedMentions(),
 		})
 		if err == nil {
 			return msg.ID, nil
