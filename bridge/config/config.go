@@ -96,7 +96,7 @@ type Protocol struct {
 	ColorNicks             bool   // only irc for now
 	Debug                  bool   // general
 	DebugLevel             int    // only for irc now
-	WebPagePreview         bool   // telegram
+	DisableWebPagePreview  bool   // telegram
 	EditSuffix             string // mattermost, slack, discord, telegram, gitter
 	EditDisable            bool   // mattermost, slack, discord, telegram, gitter
 	HTMLDisable            bool   // matrix
