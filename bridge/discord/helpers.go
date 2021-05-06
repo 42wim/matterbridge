@@ -10,7 +10,7 @@ import (
 )
 
 func (b *Bdiscord) getAllowedMentions() *discordgo.MessageAllowedMentions {
-	// If AllowMention is not specified, then allow all mentions (defautl Discord behavior)
+	// If AllowMention is not specified, then allow all mentions (default Discord behavior)
 	if !b.IsKeySet("AllowMention") {
 		return nil
 	}
