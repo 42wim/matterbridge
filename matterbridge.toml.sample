@@ -848,6 +848,14 @@ Server="yourservername"
 ## All settings below can be reloaded by editing the file.
 ## They are also all optional.
 
+# AllowMention controls which mentions are allowed. If not specified, all mentions are allowed.
+# Note that even when a mention is not allowed, it will still be displayed nicely and be clickable. It just prevents the ping/notification.
+#
+# "everyone" allows @everyone and @here mentions
+# "roles" allows @role mentions
+# "users" allows @user mentions
+AllowMention=["everyone", "roles", "users"]
+
 # ShowEmbeds shows the title, description and URL of embedded messages (sent by other bots)
 ShowEmbeds=false
 
