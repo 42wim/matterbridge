@@ -1019,6 +1019,13 @@ QuoteFormat="{MESSAGE} (re @{QUOTENICK}: {QUOTEMESSAGE})"
 #OPTIONAL (default false)
 MediaConvertWebPToPNG=false
 
+#Convert Tgs (Telegram animated sticker) images to PNG before upload.
+#This is useful when your bridge also contains platforms that do not support animated WebP files, like Discord.
+#This requires the external dependency `lottie`, which can be installed like this:
+#`pip install lottie cairosvg`
+#https://github.com/42wim/matterbridge/issues/874
+#MediaConvertTgs="png"
+
 #Disable sending of edits to other bridges
 #OPTIONAL (default false)
 EditDisable=false
