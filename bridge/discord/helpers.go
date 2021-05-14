@@ -9,6 +9,30 @@ import (
 	"github.com/matterbridge/discordgo"
 )
 
+func (b *Bdiscord) getAllowedMentions() *discordgo.MessageAllowedMentions {
+	// If AllowMention is not specified, then allow all mentions (default Discord behavior)
+	if !b.IsKeySet("AllowMention") {
+		return nil
+	}
+
+	// Otherwise, allow only the mentions that are specified
+	allowedMentionTypes := make([]discordgo.AllowedMentionType, 0, 3)
+	for _, m := range b.GetStringSlice("AllowMention") {
+		switch m {
+		case "everyone":
+			allowedMentionTypes = append(allowedMentionTypes, discordgo.AllowedMentionTypeEveryone)
+		case "roles":
+			allowedMentionTypes = append(allowedMentionTypes, discordgo.AllowedMentionTypeRoles)
+		case "users":
+			allowedMentionTypes = append(allowedMentionTypes, discordgo.AllowedMentionTypeUsers)
+		}
+	}
+
+	return &discordgo.MessageAllowedMentions{
+		Parse: allowedMentionTypes,
+	}
+}
+
 func (b *Bdiscord) getNick(user *discordgo.User, guildID string) string {
 	b.membersMutex.RLock()
 	defer b.membersMutex.RUnlock()

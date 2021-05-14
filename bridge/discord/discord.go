@@ -304,7 +304,8 @@ func (b *Bdiscord) handleEventBotUser(msg *config.Message, channelID string) (st
 	}
 
 	m := discordgo.MessageSend{
-		Content: msg.Username + msg.Text,
+		Content:         msg.Username + msg.Text,
+		AllowedMentions: b.getAllowedMentions(),
 	}
 
 	if msg.ParentValid() {
@@ -335,8 +336,9 @@ func (b *Bdiscord) handleUploadFile(msg *config.Message, channelID string) (stri
 			Reader:      bytes.NewReader(*fi.Data),
 		}
 		m := discordgo.MessageSend{
-			Content: msg.Username + fi.Comment,
-			Files:   []*discordgo.File{&file},
+			Content:         msg.Username + fi.Comment,
+			Files:           []*discordgo.File{&file},
+			AllowedMentions: b.getAllowedMentions(),
 		}
 		_, err = b.c.ChannelMessageSendComplex(channelID, &m)
 		if err != nil {
