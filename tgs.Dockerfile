@@ -12,6 +12,7 @@ RUN apk --no-cache add \
     ca-certificates \
     cairo \
     libjpeg-turbo \
+    libwebp-dev \
     mailcap \
     py3-webencodings \
     python3 \
