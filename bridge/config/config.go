@@ -120,6 +120,7 @@ type Protocol struct {
 	MessageQueue           int        // IRC, size of message queue for flood control
 	MessageSplit           bool       // IRC, split long messages with newlines on MessageLength instead of clipping
 	Muc                    string     // xmpp
+	MxID                   string     // matrix
 	Name                   string     // all protocols
 	Nick                   string     // all protocols
 	NickFormatter          string     // mattermost, slack
@@ -142,7 +143,7 @@ type Protocol struct {
 	ReplaceNicks           [][]string // all protocols
 	RemoteNickFormat       string     // all protocols
 	RunCommands            []string   // IRC
-	Server                 string     // IRC,mattermost,XMPP,discord
+	Server                 string     // IRC,mattermost,XMPP,discord,matrix
 	SessionFile            string     // msteams,whatsapp
 	ShowJoinPart           bool       // all protocols
 	ShowTopicChange        bool       // slack
@@ -157,7 +158,7 @@ type Protocol struct {
 	Team                   string     // mattermost, keybase
 	TeamID                 string     // msteams
 	TenantID               string     // msteams
-	Token                  string     // gitter, slack, discord, api
+	Token                  string     // gitter, slack, discord, api, matrix
 	Topic                  string     // zulip
 	URL                    string     // mattermost, slack // DEPRECATED
 	UseAPI                 bool       // mattermost, slack

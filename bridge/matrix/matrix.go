@@ -75,22 +75,33 @@ func New(cfg *bridge.Config) bridge.Bridger {
 func (b *Bmatrix) Connect() error {
 	var err error
 	b.Log.Infof("Connecting %s", b.GetString("Server"))
-	b.mc, err = matrix.NewClient(b.GetString("Server"), "", "")
-	if err != nil {
-		return err
+	if b.GetString("MxID") != "" && b.GetString("Token") != "" {
+		b.mc, err = matrix.NewClient(
+			b.GetString("Server"), b.GetString("MxID"), b.GetString("Token"),
+		)
+		if err != nil {
+			return err
+		}
+		b.UserID = b.GetString("MxID")
+		b.Log.Info("Using existing Matrix credentials")
+	} else {
+		b.mc, err = matrix.NewClient(b.GetString("Server"), "", "")
+		if err != nil {
+			return err
+		}
+		resp, err := b.mc.Login(&matrix.ReqLogin{
+			Type:       "m.login.password",
+			User:       b.GetString("Login"),
+			Password:   b.GetString("Password"),
+			Identifier: matrix.NewUserIdentifier(b.GetString("Login")),
+		})
+		if err != nil {
+			return err
+		}
+		b.mc.SetCredentials(resp.UserID, resp.AccessToken)
+		b.UserID = resp.UserID
+		b.Log.Info("Connection succeeded")
 	}
-	resp, err := b.mc.Login(&matrix.ReqLogin{
-		Type:       "m.login.password",
-		User:       b.GetString("Login"),
-		Password:   b.GetString("Password"),
-		Identifier: matrix.NewUserIdentifier(b.GetString("Login")),
-	})
-	if err != nil {
-		return err
-	}
-	b.mc.SetCredentials(resp.UserID, resp.AccessToken)
-	b.UserID = resp.UserID
-	b.Log.Info("Connection succeeded")
 	go b.handlematrix()
 	return nil
 }
