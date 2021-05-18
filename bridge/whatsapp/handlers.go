@@ -356,7 +356,7 @@ func (b *Bwhatsapp) HandleDocumentMessage(message whatsapp.DocumentMessage) {
 
 	data, err := message.Download()
 	if err != nil {
-		b.Log.Errorf("Download audio failed: %s", err)
+		b.Log.Errorf("Download document message failed: %s", err)
 
 		return
 	}
