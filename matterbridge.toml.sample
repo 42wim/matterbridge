@@ -1245,12 +1245,16 @@ ShowTopicChange=false
 #REQUIRED
 Server="https://matrix.org"
 
-#login/pass of your bot.
+#Authentication for your bot.
+#You can use either login/password OR mxid/token. The latter will be preferred if found.
 #Use a dedicated user for this and not your own!
 #Messages sent from this user will not be relayed to avoid loops.
 #REQUIRED
 Login="yourlogin"
 Password="yourpass"
+#OR
+MxID="@yourlogin:domain.tld"
+Token="tokenforthebotuser"
 
 #Whether to send the homeserver suffix. eg ":matrix.org" in @username:matrix.org
 #to other bridges, or only send "username".(true only sends username)
