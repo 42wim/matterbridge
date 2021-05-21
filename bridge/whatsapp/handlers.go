@@ -312,3 +312,60 @@ func (b *Bwhatsapp) HandleAudioMessage(message whatsapp.AudioMessage) {
 
 	b.Remote <- rmsg
 }
+
+// HandleDocumentMessage downloads documents
+func (b *Bwhatsapp) HandleDocumentMessage(message whatsapp.DocumentMessage) {
+	if message.Info.FromMe || message.Info.Timestamp < b.startedAt {
+		return
+	}
+
+	senderJID := message.Info.SenderJid
+	if len(message.Info.SenderJid) == 0 && message.Info.Source != nil && message.Info.Source.Participant != nil {
+		senderJID = *message.Info.Source.Participant
+	}
+
+	senderName := b.getSenderName(message.Info.SenderJid)
+	if senderName == "" {
+		senderName = "Someone" // don't expose telephone number
+	}
+
+	rmsg := config.Message{
+		UserID:   senderJID,
+		Username: senderName,
+		Channel:  message.Info.RemoteJid,
+		Account:  b.Account,
+		Protocol: b.Protocol,
+		Extra:    make(map[string][]interface{}),
+		ID:       message.Info.Id,
+	}
+
+	if avatarURL, exists := b.userAvatars[senderJID]; exists {
+		rmsg.Avatar = avatarURL
+	}
+
+	fileExt, err := mime.ExtensionsByType(message.Type)
+	if err != nil {
+		b.Log.Errorf("Mimetype detection error: %s", err)
+
+		return
+	}
+
+	filename := fmt.Sprintf("%v%v", message.Info.Id, fileExt[0])
+
+	b.Log.Debugf("Trying to download %s with type %s", filename, message.Type)
+
+	data, err := message.Download()
+	if err != nil {
+		b.Log.Errorf("Download document message failed: %s", err)
+
+		return
+	}
+
+	// Move file to bridge storage
+	helper.HandleDownloadData(b.Log, &rmsg, filename, "document", "", &data, b.General)
+
+	b.Log.Debugf("<= Sending message from %s on %s to gateway", senderJID, b.Account)
+	b.Log.Debugf("<= Message is %#v", rmsg)
+
+	b.Remote <- rmsg
+}
