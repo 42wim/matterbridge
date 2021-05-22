@@ -233,8 +233,8 @@ func (b *Bwhatsapp) HandleVideoMessage(message whatsapp.VideoMessage) {
 	}
 
 	if len(fileExt) == 0 {
-                fileExt = append(fileExt, ".mp4")
-        }
+		fileExt = append(fileExt, ".mp4")
+    }
 
 	filename := fmt.Sprintf("%v%v", message.Info.Id, fileExt[0])
 
