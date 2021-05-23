@@ -175,6 +175,11 @@ func (b *Bwhatsapp) HandleImageMessage(message whatsapp.ImageMessage) {
 		fileExt[0] = ".jpg"
 	}
 
+	// rename .jpe to .jpg https://github.com/42wim/matterbridge/issues/1463
+	if fileExt[0] == ".jpe" {
+		fileExt[0] = ".jpg"
+	}
+
 	filename := fmt.Sprintf("%v%v", message.Info.Id, fileExt[0])
 
 	b.Log.Debugf("Trying to download %s with type %s", filename, message.Type)
