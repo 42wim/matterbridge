@@ -167,9 +167,9 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 	}
 
 	if b.GetBool("MessageSplit") {
-		msgLines = helper.GetSubLines(msg.Text, b.MessageLength)
+		msgLines = helper.GetSubLines(msg.Text, b.MessageLength, b.GetString("MessageClipped"))
 	} else {
-		msgLines = helper.GetSubLines(msg.Text, 0)
+		msgLines = helper.GetSubLines(msg.Text, 0, b.GetString("MessageClipped"))
 	}
 	for i := range msgLines {
 		if len(b.Local) >= b.MessageQueue {
@@ -316,12 +316,16 @@ func (b *Birc) endNames(client *girc.Client, event girc.Event) {
 	sort.Strings(b.names[channel])
 	maxNamesPerPost := (300 / b.nicksPerRow()) * b.nicksPerRow()
 	for len(b.names[channel]) > maxNamesPerPost {
-		b.Remote <- config.Message{Username: b.Nick, Text: b.formatnicks(b.names[channel][0:maxNamesPerPost]),
-			Channel: channel, Account: b.Account}
+		b.Remote <- config.Message{
+			Username: b.Nick, Text: b.formatnicks(b.names[channel][0:maxNamesPerPost]),
+			Channel: channel, Account: b.Account,
+		}
 		b.names[channel] = b.names[channel][maxNamesPerPost:]
 	}
-	b.Remote <- config.Message{Username: b.Nick, Text: b.formatnicks(b.names[channel]),
-		Channel: channel, Account: b.Account}
+	b.Remote <- config.Message{
+		Username: b.Nick, Text: b.formatnicks(b.names[channel]),
+		Channel: channel, Account: b.Account,
+	}
 	b.names[channel] = nil
 	b.i.Handlers.Clear(girc.RPL_NAMREPLY)
 	b.i.Handlers.Clear(girc.RPL_ENDOFNAMES)

@@ -76,19 +76,23 @@ MessageDelay=1300
 
 #Maximum amount of messages to hold in queue. If queue is full
 #messages will be dropped.
-#<message clipped> will be add to the message that fills the queue.
+#<clipped message> will be add to the message that fills the queue.
 #OPTIONAL (default 30)
 MessageQueue=30
 
 #Maximum length of message sent to irc server. If it exceeds
-#<message clipped> will be add to the message.
+#<clipped message> will be add to the message.
 #OPTIONAL (default 400)
 MessageLength=400
 
-#Split messages on MessageLength instead of showing the <message clipped>
+#Split messages on MessageLength instead of showing the <clipped message>
 #WARNING: this could lead to flooding
 #OPTIONAL (default false)
 MessageSplit=false
+
+#Message to show when a message is too big
+#Default "<clipped message>"
+MessageClipped="<clipped message>"
 
 #Delay in seconds to rejoin a channel when kicked
 #OPTIONAL (default 0)
@@ -826,6 +830,10 @@ PreserveThreading=false
 #OPTIONAL (default false)
 ShowUserTyping=false
 
+#Message to show when a message is too big
+#Default "<clipped message>"
+MessageClipped="<clipped message>"
+
 ###################################################################
 #discord section
 ###################################################################
@@ -960,6 +968,10 @@ ShowTopicChange=false
 # SyncTopic synchronises topic/purpose updates from other bridges
 # Supported from the following bridges: slack
 SyncTopic=false
+
+#Message to show when a message is too big
+#Default "<clipped message>"
+MessageClipped="<clipped message>"
 
 ###################################################################
 #telegram section
@@ -1435,9 +1447,7 @@ StripNick=false
 ShowTopicChange=false
 
 ###################################################################
-#
 # NCTalk (Nextcloud Talk)
-#
 ###################################################################
 
 [nctalk.bridge]
@@ -1460,9 +1470,7 @@ Password = "talkuserpass"
 GuestSuffix = " (Guest)"
 
 ###################################################################
-#
 # Mumble
-#
 ###################################################################
 
 [mumble.bridge]
@@ -1505,9 +1513,14 @@ TLSCACertificate=mumble-ca.crt
 # OPTIONAL (default false)
 SkipTLSVerify=false
 
+#Message to show when a message is too big
+#Default "<clipped message>"
+MessageClipped="<clipped message>"
+
 ###################################################################
 #VK
 ###################################################################
+#
 [vk.myvk]
 #Group access token
 #See https://vk.com/dev/bots_docs
@@ -1518,9 +1531,7 @@ Token="Yourtokenhere"
 GroupID=123456789
 
 ###################################################################
-#
 # WhatsApp
-#
 ###################################################################
 
 [whatsapp.bridge]
@@ -1547,9 +1558,7 @@ Label="Organization"
 
 
 ###################################################################
-#
 # zulip
-#
 ###################################################################
 
 [zulip]

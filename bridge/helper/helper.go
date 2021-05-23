@@ -82,8 +82,10 @@ func DownloadFileAuthRocket(url, token, userID string) (*[]byte, error) {
 // TODO: The current implementation has the inconvenient that it disregards
 // word boundaries when splitting but this is hard to solve without potentially
 // breaking formatting and other stylistic effects.
-func GetSubLines(message string, maxLineLength int) []string {
-	const clippingMessage = " <clipped message>"
+func GetSubLines(message string, maxLineLength int, clippingMessage string) []string {
+	if clippingMessage == "" {
+		clippingMessage = " <clipped message>"
+	}
 
 	var lines []string
 	for _, line := range strings.Split(strings.TrimSpace(message), "\n") {
@@ -193,8 +195,11 @@ func RemoveEmptyNewLines(msg string) string {
 
 // ClipMessage trims a message to the specified length if it exceeds it and adds a warning
 // to the message in case it does so.
-func ClipMessage(text string, length int) string {
-	const clippingMessage = " <clipped message>"
+func ClipMessage(text string, length int, clippingMessage string) string {
+	if clippingMessage == "" {
+		clippingMessage = " <clipped message>"
+	}
+
 	if len(text) > length {
 		text = text[:length-len(clippingMessage)]
 		if r, size := utf8.DecodeLastRuneInString(text); r == utf8.RuneError {

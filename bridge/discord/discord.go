@@ -283,7 +283,7 @@ func (b *Bdiscord) handleEventBotUser(msg *config.Message, channelID string) (st
 	// Upload a file if it exists
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(msg, b.General) {
-			rmsg.Text = helper.ClipMessage(rmsg.Text, MessageLength)
+			rmsg.Text = helper.ClipMessage(rmsg.Text, MessageLength, b.GetString("MessageClipped"))
 			if _, err := b.c.ChannelMessageSend(channelID, rmsg.Username+rmsg.Text); err != nil {
 				b.Log.Errorf("Could not send message %#v: %s", rmsg, err)
 			}
@@ -294,7 +294,7 @@ func (b *Bdiscord) handleEventBotUser(msg *config.Message, channelID string) (st
 		}
 	}
 
-	msg.Text = helper.ClipMessage(msg.Text, MessageLength)
+	msg.Text = helper.ClipMessage(msg.Text, MessageLength, b.GetString("MessageClipped"))
 	msg.Text = b.replaceUserMentions(msg.Text)
 
 	// Edit message
