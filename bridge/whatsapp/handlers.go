@@ -237,6 +237,10 @@ func (b *Bwhatsapp) HandleVideoMessage(message whatsapp.VideoMessage) {
 		return
 	}
 
+	if len(fileExt) == 0 {
+		fileExt = append(fileExt, ".mp4")
+	}
+
 	filename := fmt.Sprintf("%v%v", message.Info.Id, fileExt[0])
 
 	b.Log.Debugf("Trying to download %s with size %#v and type %s", filename, message.Length, message.Type)
