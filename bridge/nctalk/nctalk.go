@@ -135,9 +135,19 @@ func (b *Btalk) Send(msg config.Message) (string, error) {
 	if msg.Event != "" {
 		return "", nil
 	}
+
+	// Handle sending files if they are included
+	err := b.handleSendingFile(&msg, r)
+	if err != nil {
+		b.Log.Errorf("Could not send files in message to room %v from %v: %v", msg.Channel, msg.Username, err)
+
+		return "", nil
+	}
+
 	sentMessage, err := r.room.SendMessage(msg.Username + msg.Text)
 	if err != nil {
 		b.Log.Errorf("Could not send message to room %v from %v: %v", msg.Channel, msg.Username, err)
+
 		return "", nil
 	}
 	return strconv.Itoa(sentMessage.ID), nil
@@ -171,6 +181,25 @@ func (b *Btalk) handleFiles(mmsg *config.Message, message *ocs.TalkRoomMessageDa
 				Size:   int64(len(*file)),
 				Avatar: false,
 			})
+		}
+	}
+
+	return nil
+}
+
+func (b *Btalk) handleSendingFile(msg *config.Message, r *Broom) error {
+	for _, f := range msg.Extra["file"] {
+		fi := f.(config.FileInfo)
+		if fi.URL != "" {
+			message := msg.Username
+			if fi.Comment != "" {
+				message += fi.Comment + " "
+			}
+			message += fi.URL
+			_, err := r.room.SendMessage(message)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
