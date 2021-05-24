@@ -90,9 +90,26 @@ func (b *Btalk) JoinChannel(channel config.ChannelInfo) error {
 				return
 			}
 
+			// Handle deleting messages
+			if msg.MessageType == ocs.MessageSystem && msg.Parent != nil && msg.Parent.MessageType == ocs.MessageDelete {
+				remoteMessage := config.Message{
+					Event: config.EventMsgDelete,
+					Text: formatRichObjectString(msg.Message, msg.MessageParameters),
+					Channel:  newRoom.room.Token,
+					Username: DisplayName(msg, guestSuffix),
+					UserID:   msg.ActorID,
+					ID: strconv.Itoa(msg.Parent.ID),
+					Account:  b.Account,
+				}
+				b.Log.Debugf("<= Message being deleted is %#v", remoteMessage)
+				b.Remote <- remoteMessage
+				continue
+			}
+
 			// ignore messages that are one of the following
 			// * not a message from a user
 			// * from ourselves
+			// Other message types are handled before this point
 			if msg.MessageType != ocs.MessageComment || msg.ActorID == b.user.User {
 				continue
 			}
@@ -131,26 +148,40 @@ func (b *Btalk) Send(msg config.Message) (string, error) {
 		return "", nil
 	}
 
-	// Talk currently only supports sending normal messages
-	if msg.Event != "" {
-		return "", nil
+	// Standard Message Send
+	if msg.Event == "" {
+		// Handle sending files if they are included
+		err := b.handleSendingFile(&msg, r)
+		if err != nil {
+			b.Log.Errorf("Could not send files in message to room %v from %v: %v", msg.Channel, msg.Username, err)
+
+			return "", nil
+		}
+
+		sentMessage, err := r.room.SendMessage(msg.Username + msg.Text)
+		if err != nil {
+			b.Log.Errorf("Could not send message to room %v from %v: %v", msg.Channel, msg.Username, err)
+
+			return "", nil
+		}
+		return strconv.Itoa(sentMessage.ID), nil
 	}
 
-	// Handle sending files if they are included
-	err := b.handleSendingFile(&msg, r)
-	if err != nil {
-		b.Log.Errorf("Could not send files in message to room %v from %v: %v", msg.Channel, msg.Username, err)
-
-		return "", nil
+	// Message Deletion
+	if msg.Event == config.EventMsgDelete {
+		messageID, err := strconv.Atoi(msg.ID)
+		if err != nil {
+			return "", err
+		}
+		data, err := r.room.DeleteMessage(messageID)
+		if err != nil {
+			return "", err
+		}
+		return strconv.Itoa(data.ID), nil
 	}
 
-	sentMessage, err := r.room.SendMessage(msg.Username + msg.Text)
-	if err != nil {
-		b.Log.Errorf("Could not send message to room %v from %v: %v", msg.Channel, msg.Username, err)
-
-		return "", nil
-	}
-	return strconv.Itoa(sentMessage.ID), nil
+	// Message is not a type that is currently supported
+	return "", nil
 }
 
 func (b *Btalk) getRoom(token string) *Broom {
