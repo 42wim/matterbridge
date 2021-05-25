@@ -33,10 +33,14 @@ type SpreedCapabilities struct {
 			Folder  string `json:"folder"`
 		} `json:"attachments"`
 		Chat struct {
-			MaxLength int `json:"max-length"`
+			MaxLength   int `json:"max-length"`
+			ReadPrivacy int `json:"read-privacy"`
 		} `json:"chat"`
 		Conversations struct {
 			CanCreate bool `json:"can-create"`
 		} `json:"conversations"`
+		Previews struct {
+			MaxGifSize int `json:"max-gif-size"`
+		} `json:"previews"`
 	} `json:"config"`
 }

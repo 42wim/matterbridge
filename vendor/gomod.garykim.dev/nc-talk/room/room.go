@@ -41,6 +41,8 @@ var (
 	ErrUnexpectedReturnCode = errors.New("unexpected return code")
 	// ErrTooManyRequests is returned if the server returns a 429
 	ErrTooManyRequests = errors.New("too many requests")
+	// ErrLackingCapabilities is returned if the server lacks the required capability for the given function
+	ErrLackingCapabilities = errors.New("lacking required capabilities")
 )
 
 // TalkRoom represents a room in Nextcloud Talk
@@ -88,6 +90,36 @@ func (t *TalkRoom) SendMessage(msg string) (*ocs.TalkRoomMessageData, error) {
 		return nil, err
 	}
 	return &msgInfo.OCS.TalkRoomMessage, err
+}
+
+// DeleteMessage deletes the message with the given messageID on the server.
+//
+// Requires "delete-messages" capability on the Nextcloud Talk server
+func (t *TalkRoom) DeleteMessage(messageID int) (*ocs.TalkRoomMessageData, error) {
+	// Check for required capability
+	capable, err := t.User.Capabilities()
+	if err != nil {
+		return nil, err
+	}
+	if !capable.DeleteMessages {
+		return nil, ErrLackingCapabilities
+	}
+
+	url := t.User.NextcloudURL + constants.BaseEndpoint + "/chat/" + t.Token + "/" + strconv.Itoa(messageID)
+
+	client := t.User.RequestClient(request.Client{
+		URL:    url,
+		Method: "DELETE",
+	})
+	res, err := client.Do()
+	if err != nil {
+		return nil, err
+	}
+	msgInfo, err := ocs.TalkRoomMessageDataUnmarshal(&res.Data)
+	if err != nil {
+		return nil, err
+	}
+	return &msgInfo.OCS.TalkRoomMessage[0], nil
 }
 
 // ReceiveMessages starts watching for new messages
