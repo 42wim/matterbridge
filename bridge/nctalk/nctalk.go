@@ -74,12 +74,6 @@ func (b *Btalk) JoinChannel(channel config.ChannelInfo) error {
 	}
 	b.rooms = append(b.rooms, newRoom)
 
-	// Config
-	guestSuffix := " (Guest)"
-	if b.IsKeySet("GuestSuffix") {
-		guestSuffix = b.GetString("GuestSuffix")
-	}
-
 	go func() {
 		for msg := range c {
 			msg := msg
@@ -90,52 +84,23 @@ func (b *Btalk) JoinChannel(channel config.ChannelInfo) error {
 				return
 			}
 
+			// Ignore messages that are from the bot user
+			if msg.ActorID == b.user.User {
+				continue
+			}
+
 			// Handle deleting messages
 			if msg.MessageType == ocs.MessageSystem && msg.Parent != nil && msg.Parent.MessageType == ocs.MessageDelete {
-				remoteMessage := config.Message{
-					Event: config.EventMsgDelete,
-					Text: formatRichObjectString(msg.Message, msg.MessageParameters),
-					Channel:  newRoom.room.Token,
-					Username: DisplayName(msg, guestSuffix),
-					UserID:   msg.ActorID,
-					ID: strconv.Itoa(msg.Parent.ID),
-					Account:  b.Account,
-				}
-				b.Log.Debugf("<= Message being deleted is %#v", remoteMessage)
-				b.Remote <- remoteMessage
+				b.deleteMessage(&msg, &newRoom)
 				continue
 			}
 
-			// ignore messages that are one of the following
-			// * not a message from a user
-			// * from ourselves
-			// Other message types are handled before this point
-			if msg.MessageType != ocs.MessageComment || msg.ActorID == b.user.User {
-				continue
-			}
-			remoteMessage := config.Message{
-				Text:     formatRichObjectString(msg.Message, msg.MessageParameters),
-				Channel:  newRoom.room.Token,
-				Username: DisplayName(msg, guestSuffix),
-				UserID:   msg.ActorID,
-				Account:  b.Account,
-			}
-			// It is possible for the ID to not be set on older versions of Talk so we only set it if
-			// the ID is not blank
-			if msg.ID != 0 {
-				remoteMessage.ID = strconv.Itoa(msg.ID)
-			}
-
-			// Handle Files
-			err = b.handleFiles(&remoteMessage, &msg)
-			if err != nil {
-				b.Log.Errorf("Error handling file: %#v", msg)
-
+			// Handle sending messages
+			if msg.MessageType == ocs.MessageComment {
+				b.sendMessage(&msg, &newRoom)
 				continue
 			}
 
-			b.Log.Debugf("<= Message is %#v", remoteMessage)
-			b.Remote <- remoteMessage
 		}
 	}()
 	return nil
@@ -239,6 +204,55 @@ func (b *Btalk) handleSendingFile(msg *config.Message, r *Broom) error {
 	return nil
 }
 
+func (b *Btalk) sendMessage(msg *ocs.TalkRoomMessageData, r *Broom) {
+	remoteMessage := config.Message{
+		Text:     formatRichObjectString(msg.Message, msg.MessageParameters),
+		Channel:  r.room.Token,
+		Username: DisplayName(msg, b.guestSuffix()),
+		UserID:   msg.ActorID,
+		Account:  b.Account,
+	}
+	// It is possible for the ID to not be set on older versions of Talk so we only set it if
+	// the ID is not blank
+	if msg.ID != 0 {
+		remoteMessage.ID = strconv.Itoa(msg.ID)
+	}
+
+	// Handle Files
+	err := b.handleFiles(&remoteMessage, msg)
+	if err != nil {
+		b.Log.Errorf("Error handling file: %#v", msg)
+
+		return
+	}
+
+	b.Log.Debugf("<= Message is %#v", remoteMessage)
+	b.Remote <- remoteMessage
+}
+
+func (b *Btalk) deleteMessage(msg *ocs.TalkRoomMessageData, r *Broom) {
+	remoteMessage := config.Message{
+		Event:    config.EventMsgDelete,
+		Text:     formatRichObjectString(msg.Message, msg.MessageParameters),
+		Channel:  r.room.Token,
+		Username: DisplayName(msg, b.guestSuffix()),
+		UserID:   msg.ActorID,
+		ID:       strconv.Itoa(msg.Parent.ID),
+		Account:  b.Account,
+	}
+	b.Log.Debugf("<= Message being deleted is %#v", remoteMessage)
+	b.Remote <- remoteMessage
+}
+
+func (b *Btalk) guestSuffix() string {
+	guestSuffix := " (Guest)"
+	if b.IsKeySet("GuestSuffix") {
+		guestSuffix = b.GetString("GuestSuffix")
+	}
+
+	return guestSuffix
+}
+
 // Spec: https://github.com/nextcloud/server/issues/1706#issue-182308785
 func formatRichObjectString(message string, parameters map[string]ocs.RichObjectString) string {
 	for id, parameter := range parameters {
@@ -259,7 +273,7 @@ func formatRichObjectString(message string, parameters map[string]ocs.RichObject
 	return message
 }
 
-func DisplayName(msg ocs.TalkRoomMessageData, suffix string) string {
+func DisplayName(msg *ocs.TalkRoomMessageData, suffix string) string {
 	if msg.ActorType == ocs.ActorGuest {
 		if msg.ActorDisplayName == "" {
 			return "Guest"
