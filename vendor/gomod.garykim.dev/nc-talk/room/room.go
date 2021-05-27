@@ -123,14 +123,11 @@ func (t *TalkRoom) DeleteMessage(messageID int) (*ocs.TalkRoomMessageData, error
 	if res.StatusCode() != http.StatusOK && res.StatusCode() != http.StatusAccepted {
 		return nil, ErrUnexpectedReturnCode
 	}
-	msgInfo, err := ocs.TalkRoomMessageDataUnmarshal(&res.Data)
+	msgInfo, err := ocs.TalkRoomSentResponseUnmarshal(&res.Data)
 	if err != nil {
 		return nil, err
 	}
-	if len(msgInfo.OCS.TalkRoomMessage) == 0 {
-		return nil, ErrUnexpectedResponse
-	}
-	return &msgInfo.OCS.TalkRoomMessage[0], nil
+	return &msgInfo.OCS.TalkRoomMessage, nil
 }
 
 // ReceiveMessages starts watching for new messages
