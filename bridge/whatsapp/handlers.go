@@ -359,9 +359,9 @@ func (b *Bwhatsapp) HandleDocumentMessage(message whatsapp.DocumentMessage) {
 		return
 	}
 
-	filename := fmt.Sprintf("%v%v", message.Info.Id, fileExt[0])
+	filename := fmt.Sprintf("%v", message.FileName)
 
-	b.Log.Debugf("Trying to download %s with type %s", filename, message.Type)
+	b.Log.Debugf("Trying to download %s with extension %s and type %s", filename, fileExt, message.Type)
 
 	data, err := message.Download()
 	if err != nil {
