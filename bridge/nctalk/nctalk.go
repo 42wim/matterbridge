@@ -91,13 +91,13 @@ func (b *Btalk) JoinChannel(channel config.ChannelInfo) error {
 
 			// Handle deleting messages
 			if msg.MessageType == ocs.MessageSystem && msg.Parent != nil && msg.Parent.MessageType == ocs.MessageDelete {
-				b.deleteMessage(&msg, &newRoom)
+				b.handleDeletingMessage(&msg, &newRoom)
 				continue
 			}
 
 			// Handle sending messages
 			if msg.MessageType == ocs.MessageComment {
-				b.sendMessage(&msg, &newRoom)
+				b.handleSendingMessage(&msg, &newRoom)
 				continue
 			}
 
@@ -204,7 +204,7 @@ func (b *Btalk) handleSendingFile(msg *config.Message, r *Broom) error {
 	return nil
 }
 
-func (b *Btalk) sendMessage(msg *ocs.TalkRoomMessageData, r *Broom) {
+func (b *Btalk) handleSendingMessage(msg *ocs.TalkRoomMessageData, r *Broom) {
 	remoteMessage := config.Message{
 		Text:     formatRichObjectString(msg.Message, msg.MessageParameters),
 		Channel:  r.room.Token,
@@ -230,7 +230,7 @@ func (b *Btalk) sendMessage(msg *ocs.TalkRoomMessageData, r *Broom) {
 	b.Remote <- remoteMessage
 }
 
-func (b *Btalk) deleteMessage(msg *ocs.TalkRoomMessageData, r *Broom) {
+func (b *Btalk) handleDeletingMessage(msg *ocs.TalkRoomMessageData, r *Broom) {
 	remoteMessage := config.Message{
 		Event:    config.EventMsgDelete,
 		Text:     formatRichObjectString(msg.Message, msg.MessageParameters),
