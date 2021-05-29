@@ -212,8 +212,8 @@ All possible [settings](https://github.com/42wim/matterbridge/wiki/Settings) for
 
 ```toml
 [irc]
-    [irc.freenode]
-    Server="irc.freenode.net:6667"
+    [irc.libera]
+    Server="irc.libera.chat:6667"
     Nick="yourbotname"
 
 [mattermost]
@@ -229,7 +229,7 @@ All possible [settings](https://github.com/42wim/matterbridge/wiki/Settings) for
 name="mygateway"
 enable=true
     [[gateway.inout]]
-    account="irc.freenode"
+    account="irc.libera"
     channel="#testing"
 
     [[gateway.inout]]
@@ -363,7 +363,7 @@ Matterbridge wouldn't exist without these libraries:
 
 [mb-discord]: https://discord.gg/AkKPtrQ
 [mb-gitter]: https://gitter.im/42wim/matterbridge
-[mb-irc]: https://webchat.freenode.net/?channels=matterbridgechat
+[mb-irc]: https://web.libera.chat/#matterbridge
 [mb-keybase]: https://keybase.io/team/matterbridge
 [mb-matrix]: https://riot.im/app/#/room/#matterbridge:matrix.org
 [mb-mattermost]: https://framateam.org/signup_user_complete/?id=tfqm33ggop8x3qgu4boeieta6e
