@@ -19,7 +19,7 @@ github.com/Philipp15b/go-steam/protocol/steamlang
 github.com/Philipp15b/go-steam/rwu
 github.com/Philipp15b/go-steam/socialcache
 github.com/Philipp15b/go-steam/steamid
-# github.com/Rhymen/go-whatsapp v0.1.2-0.20210126174449-3c094ebae0ce
+# github.com/Rhymen/go-whatsapp v0.1.2-0.20210407153411-c58e164e05b8
 ## explicit
 github.com/Rhymen/go-whatsapp
 github.com/Rhymen/go-whatsapp/binary
@@ -28,7 +28,15 @@ github.com/Rhymen/go-whatsapp/binary/token
 github.com/Rhymen/go-whatsapp/crypto/cbc
 github.com/Rhymen/go-whatsapp/crypto/curve25519
 github.com/Rhymen/go-whatsapp/crypto/hkdf
-# github.com/SevereCloud/vksdk/v2 v2.9.1
+# github.com/Rhymen/go-whatsapp/examples/echo v0.0.0-20190325075644-cc2581bbf24d
+## explicit
+# github.com/Rhymen/go-whatsapp/examples/restoreSession v0.0.0-20190325075644-cc2581bbf24d
+## explicit
+# github.com/Rhymen/go-whatsapp/examples/sendImage v0.0.0-20190325075644-cc2581bbf24d
+## explicit
+# github.com/Rhymen/go-whatsapp/examples/sendTextMessages v0.0.0-20190325075644-cc2581bbf24d
+## explicit
+# github.com/SevereCloud/vksdk/v2 v2.9.2
 ## explicit
 github.com/SevereCloud/vksdk/v2
 github.com/SevereCloud/vksdk/v2/api
@@ -67,7 +75,7 @@ github.com/go-telegram-bot-api/telegram-bot-api
 # github.com/golang/protobuf v1.4.2
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go/descriptor
-# github.com/gomarkdown/markdown v0.0.0-20210408062403-ad838ccf8cdd
+# github.com/gomarkdown/markdown v0.0.0-20210514010506-3b9f47219fe7
 ## explicit
 github.com/gomarkdown/markdown
 github.com/gomarkdown/markdown/ast
@@ -121,7 +129,7 @@ github.com/keybase/go-keybase-chat-bot/kbchat/types/stellar1
 # github.com/kyokomi/emoji/v2 v2.2.8
 ## explicit
 github.com/kyokomi/emoji/v2
-# github.com/labstack/echo/v4 v4.2.2
+# github.com/labstack/echo/v4 v4.3.0
 ## explicit
 github.com/labstack/echo/v4
 github.com/labstack/echo/v4/middleware
@@ -242,7 +250,7 @@ github.com/sirupsen/logrus
 github.com/skip2/go-qrcode
 github.com/skip2/go-qrcode/bitset
 github.com/skip2/go-qrcode/reedsolomon
-# github.com/slack-go/slack v0.9.0
+# github.com/slack-go/slack v0.9.1
 ## explicit
 github.com/slack-go/slack
 github.com/slack-go/slack/internal/backoff
@@ -314,7 +322,7 @@ go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
-# golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
+# golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/bcrypt
@@ -331,7 +339,7 @@ golang.org/x/crypto/salsa20/salsa
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/image v0.0.0-20210220032944-ac19c3e999fb
+# golang.org/x/image v0.0.0-20210504121937-7319ad40d33e
 ## explicit
 golang.org/x/image/bmp
 golang.org/x/image/ccitt
@@ -341,7 +349,7 @@ golang.org/x/image/tiff/lzw
 golang.org/x/image/vp8
 golang.org/x/image/vp8l
 golang.org/x/image/webp
-# golang.org/x/net v0.0.0-20201006153459-a7d1128ccaa0
+# golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/html
@@ -352,18 +360,21 @@ golang.org/x/net/http2/h2c
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/websocket
-# golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
+# golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c
 ## explicit
 golang.org/x/oauth2
 golang.org/x/oauth2/clientcredentials
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/microsoft
-# golang.org/x/sys v0.0.0-20210217105451-b926d437f341
+# golang.org/x/sys v0.0.0-20210403161142-5e06dd20ab57
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
+golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/text v0.3.5
+# golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
+golang.org/x/term
+# golang.org/x/text v0.3.6
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
 golang.org/x/text/encoding/internal

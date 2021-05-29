@@ -1,6 +1,8 @@
 package object // import "github.com/SevereCloud/vksdk/v2/object"
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 )
 
@@ -231,6 +233,28 @@ type UsersPersonal struct {
 	Religion   string   `json:"religion"`    // User's religion
 	Smoking    int      `json:"smoking"`     // User's views on smoking
 	ReligionID int      `json:"religion_id"`
+}
+
+// UnmarshalJSON UsersPersonal.
+//
+// BUG(VK): UsersPersonal return [].
+func (personal *UsersPersonal) UnmarshalJSON(data []byte) error {
+	if bytes.Equal(data, []byte("[]")) {
+		return nil
+	}
+
+	type renamedUsersPersonal UsersPersonal
+
+	var r renamedUsersPersonal
+
+	err := json.Unmarshal(data, &r)
+	if err != nil {
+		return err
+	}
+
+	*personal = UsersPersonal(r)
+
+	return nil
 }
 
 // UsersRelative struct.

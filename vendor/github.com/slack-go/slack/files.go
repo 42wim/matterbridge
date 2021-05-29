@@ -316,6 +316,7 @@ func (api *Client) UploadFileContext(ctx context.Context, params FileUploadParam
 	}
 	if params.Content != "" {
 		values.Add("content", params.Content)
+		values.Add("token", api.token)
 		err = api.postMethod(ctx, "files.upload", values, response)
 	} else if params.File != "" {
 		err = postLocalWithMultipartResponse(ctx, api.httpclient, api.endpoint+"files.upload", params.File, "file", api.token, values, response, api)

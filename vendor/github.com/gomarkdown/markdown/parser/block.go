@@ -1221,7 +1221,7 @@ func (p *Parser) tableRow(data []byte, columns []ast.CellAlignFlags, header bool
 
 		// skip the end-of-cell marker, possibly taking us past end of buffer
 		// each _extra_ | means a colspan
-		for data[i] == '|' && !isBackslashEscaped(data, i) {
+		for i < len(data) && data[i] == '|' && !isBackslashEscaped(data, i) {
 			i++
 			colspan++
 		}

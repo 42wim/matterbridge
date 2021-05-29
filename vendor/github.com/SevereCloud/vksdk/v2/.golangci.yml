@@ -10,14 +10,11 @@ linters:
     - gocritic
     - gofmt
     - goimports
-    - golint
     - goprintffuncname
     - gosec
     - gosimple
     - govet
     - ineffassign
-    - interfacer
-    - maligned
     - misspell
     - nakedret
     - prealloc
@@ -46,10 +43,16 @@ linters:
     - ifshort
     - revive
     - durationcheck
+    - gomoddirectives
+    - importas
+    - nilerr
+    - revive
+    - wastedassign
 
 # - wrapcheck # TODO: v3 Fix
 # - testpackage # TODO: Fix testpackage
 # - nestif # TODO: Fix nestif
+# - noctx # TODO: Fix noctx
 
 # don't enable:
 # - depguard
@@ -70,6 +73,13 @@ linters:
 # - gci
 # - exhaustivestruct
 # - cyclop
+# - promlinter
+# - tagliatelle
+
+# depricated
+# - maligned
+# - interfacer
+# - golint
 
 issues:
   exclude-rules:
