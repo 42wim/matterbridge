@@ -368,13 +368,6 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 			Avatar:   b.getAvatarURL(ev.Sender),
 		}
 
-		// Text must be a string
-		if rmsg.Text, ok = ev.Content["body"].(string); !ok {
-			b.Log.Errorf("Content[body] is not a string: %T\n%#v",
-				ev.Content["body"], ev.Content)
-			return
-		}
-
 		// Remove homeserver suffix if configured
 		if b.GetBool("NoHomeServerSuffix") {
 			re := regexp.MustCompile("(.*?):.*")
@@ -387,6 +380,13 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 			rmsg.ID = ev.Redacts
 			rmsg.Text = config.EventMsgDelete
 			b.Remote <- rmsg
+			return
+		}
+
+		// Text must be a string
+		if rmsg.Text, ok = ev.Content["body"].(string); !ok {
+			b.Log.Errorf("Content[body] is not a string: %T\n%#v",
+				ev.Content["body"], ev.Content)
 			return
 		}
 
