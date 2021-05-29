@@ -35,7 +35,7 @@ type VideoVideo struct {
 	IsPrivate         BaseBoolInt       `json:"is_private"`
 	Added             BaseBoolInt       `json:"added"`
 	Repeat            BaseBoolInt       `json:"repeat"` // Information whether the video is repeated
-	ContentRestricted BaseBoolInt       `json:"content_restricted"`
+	ContentRestricted int               `json:"content_restricted"`
 	Live              BaseBoolInt       `json:"live"` // Returns if the video is a live stream
 	Upcoming          BaseBoolInt       `json:"upcoming"`
 	Comments          int               `json:"comments"`    // Number of comments

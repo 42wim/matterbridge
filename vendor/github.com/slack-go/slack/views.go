@@ -38,8 +38,16 @@ type View struct {
 	BotID           string           `json:"bot_id"`
 }
 
+type ViewSubmissionCallbackResponseURL struct {
+	BlockID     string `json:"block_id"`
+	ActionID    string `json:"action_id"`
+	ChannelID   string `json:"channel_id"`
+	ResponseURL string `json:"response_url"`
+}
+
 type ViewSubmissionCallback struct {
-	Hash string `json:"hash"`
+	Hash         string                              `json:"hash"`
+	ResponseURLs []ViewSubmissionCallbackResponseURL `json:"response_urls,omitempty"`
 }
 
 type ViewClosedCallback struct {

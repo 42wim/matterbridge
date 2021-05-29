@@ -98,6 +98,22 @@ type ContactMessageHandler interface {
 }
 
 /*
+The ProductMessageHandler interface needs to be implemented to receive product messages dispatched by the dispatcher.
+*/
+type ProductMessageHandler interface {
+	Handler
+	HandleProductMessage(message ProductMessage)
+}
+
+/*
+The OrderMessageHandler interface needs to be implemented to receive order messages dispatched by the dispatcher.
+*/
+type OrderMessageHandler interface {
+	Handler
+	HandleOrderMessage(message OrderMessage)
+}
+
+/*
 The JsonMessageHandler interface needs to be implemented to receive json messages dispatched by the dispatcher.
 These json messages contain status updates of every kind sent by WhatsAppWeb servers. WhatsAppWeb uses these messages
 to built a Store, which is used to save these "secondary" information. These messages may contain
@@ -301,7 +317,7 @@ func (wac *Conn) handleWithCustomHandlers(message interface{}, handlers []Handle
 				}
 			}
 		}
-	
+
 	case BatteryMessage:
 		for _, h := range handlers {
 			if x, ok := h.(BatteryMessageHandler); ok {
@@ -312,7 +328,7 @@ func (wac *Conn) handleWithCustomHandlers(message interface{}, handlers []Handle
 				}
 			}
 		}
-	
+
 	case Contact:
 		for _, h := range handlers {
 			if x, ok := h.(NewContactHandler); ok {
@@ -320,6 +336,28 @@ func (wac *Conn) handleWithCustomHandlers(message interface{}, handlers []Handle
 					x.HandleNewContact(m)
 				} else {
 					go x.HandleNewContact(m)
+				}
+			}
+		}
+
+	case ProductMessage:
+		for _, h := range handlers {
+			if x, ok := h.(ProductMessageHandler); ok {
+				if wac.shouldCallSynchronously(h) {
+					x.HandleProductMessage(m)
+				} else {
+					go x.HandleProductMessage(m)
+				}
+			}
+		}
+
+	case OrderMessage:
+		for _, h := range handlers {
+			if x, ok := h.(OrderMessageHandler); ok {
+				if wac.shouldCallSynchronously(h) {
+					x.HandleOrderMessage(m)
+				} else {
+					go x.HandleOrderMessage(m)
 				}
 			}
 		}

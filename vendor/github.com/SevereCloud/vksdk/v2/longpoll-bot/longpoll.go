@@ -173,8 +173,7 @@ func (lp *LongPoll) RunWithContext(ctx context.Context) error {
 func (lp *LongPoll) run(ctx context.Context) error {
 	ctx, lp.cancel = context.WithCancel(ctx)
 
-	err := lp.autoSetting(ctx)
-	if err != nil {
+	if err := lp.autoSetting(ctx); err != nil {
 		return err
 	}
 

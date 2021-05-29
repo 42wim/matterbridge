@@ -134,7 +134,7 @@ type PhotosOwnerUploadResponse struct {
 type PhotosPhotoAlbum struct {
 	Created     int         `json:"created"`     // Date when the album has been created in Unixtime
 	Description string      `json:"description"` // Photo album description
-	ID          string      `json:"id"`          // BUG(VK): Photo album ID
+	ID          int         `json:"id"`          // Photo album ID
 	OwnerID     int         `json:"owner_id"`    // Album owner's ID
 	Size        int         `json:"size"`        // Photos number
 	Thumb       PhotosPhoto `json:"thumb"`
@@ -144,7 +144,7 @@ type PhotosPhotoAlbum struct {
 
 // ToAttachment return attachment format.
 func (album PhotosPhotoAlbum) ToAttachment() string {
-	return fmt.Sprintf("album%d_%s", album.OwnerID, album.ID)
+	return fmt.Sprintf("album%d_%d", album.OwnerID, album.ID)
 }
 
 // PhotosPhotoAlbumFull struct.
