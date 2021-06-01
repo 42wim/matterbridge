@@ -1278,8 +1278,8 @@ golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898/go.mod h1:I/5z698sn9Ka8T
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 h1:go1bK/D/BFZV2I8cIQd1NKEZ+0owSTG1fDTci4IqFcE=
 golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
-gomod.garykim.dev/nc-talk v0.1.7 h1:G2qsiRcyaj5FEADQlulsBAFJHs27tPmH9VtKK+at9SM=
-gomod.garykim.dev/nc-talk v0.1.7/go.mod h1:DNucAJ6zeaumBEwV5NiYk+Eea8Ca+Q5f+plhz9F7d58=
+gomod.garykim.dev/nc-talk v0.2.2 h1:+U+daJFPPuwM7yRXYazeMHZgIBSGP6SeQURO0O5a32I=
+gomod.garykim.dev/nc-talk v0.2.2/go.mod h1:q/Adot/H7iqi+H4lANopV7/xcMf+sX3AZXUXqiITwok=
 google.golang.org/api v0.0.0-20180910000450-7ca32eb868bf/go.mod h1:4mhQ8q/RsB7i+udVvVy5NUi08OU8ZlA0gRVgrF7VFY0=
 google.golang.org/api v0.0.0-20181030000543-1d582fd0359e/go.mod h1:4mhQ8q/RsB7i+udVvVy5NUi08OU8ZlA0gRVgrF7VFY0=
 google.golang.org/api v0.0.0-20181220000619-583d854617af/go.mod h1:4mhQ8q/RsB7i+udVvVy5NUi08OU8ZlA0gRVgrF7VFY0=

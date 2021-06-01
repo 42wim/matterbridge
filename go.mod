@@ -57,7 +57,7 @@ require (
 	github.com/zfjagann/golang-ring v0.0.0-20210116075443-7c86fdb43134
 	golang.org/x/image v0.0.0-20210504121937-7319ad40d33e
 	golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c
-	gomod.garykim.dev/nc-talk v0.1.7
+	gomod.garykim.dev/nc-talk v0.2.2
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 	layeh.com/gumble v0.0.0-20200818122324-146f9205029b
 )
