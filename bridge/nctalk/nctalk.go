@@ -79,6 +79,7 @@ func (b *Btalk) JoinChannel(channel config.ChannelInfo) error {
 	if b.IsKeySet("GuestSuffix") {
 		guestSuffix = b.GetString("GuestSuffix")
 	}
+	userIDAsNick := b.GetBool("UserIdAsNick")
 
 	go func() {
 		for msg := range c {
@@ -99,7 +100,7 @@ func (b *Btalk) JoinChannel(channel config.ChannelInfo) error {
 			remoteMessage := config.Message{
 				Text:     formatRichObjectString(msg.Message, msg.MessageParameters),
 				Channel:  newRoom.room.Token,
-				Username: DisplayName(msg, guestSuffix),
+				Username: DisplayName(msg, guestSuffix, userIDAsNick),
 				UserID:   msg.ActorID,
 				Account:  b.Account,
 			}
@@ -228,7 +229,7 @@ func formatRichObjectString(message string, parameters map[string]ocs.RichObject
 	return message
 }
 
-func DisplayName(msg ocs.TalkRoomMessageData, suffix string) string {
+func DisplayName(msg ocs.TalkRoomMessageData, suffix string, userIDAsName bool) string {
 	if msg.ActorType == ocs.ActorGuest {
 		if msg.ActorDisplayName == "" {
 			return "Guest"
@@ -236,6 +237,9 @@ func DisplayName(msg ocs.TalkRoomMessageData, suffix string) string {
 
 		return msg.ActorDisplayName + suffix
 	}
-
+	// Use the user ID instead of the display name for non-guest users
+	if userIDAsName {
+		return msg.ActorID
+	}
 	return msg.ActorDisplayName
 }
