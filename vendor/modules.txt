@@ -28,14 +28,6 @@ github.com/Rhymen/go-whatsapp/binary/token
 github.com/Rhymen/go-whatsapp/crypto/cbc
 github.com/Rhymen/go-whatsapp/crypto/curve25519
 github.com/Rhymen/go-whatsapp/crypto/hkdf
-# github.com/Rhymen/go-whatsapp/examples/echo v0.0.0-20190325075644-cc2581bbf24d
-## explicit
-# github.com/Rhymen/go-whatsapp/examples/restoreSession v0.0.0-20190325075644-cc2581bbf24d
-## explicit
-# github.com/Rhymen/go-whatsapp/examples/sendImage v0.0.0-20190325075644-cc2581bbf24d
-## explicit
-# github.com/Rhymen/go-whatsapp/examples/sendTextMessages v0.0.0-20190325075644-cc2581bbf24d
-## explicit
 # github.com/SevereCloud/vksdk/v2 v2.9.2
 ## explicit
 github.com/SevereCloud/vksdk/v2
@@ -247,6 +239,7 @@ github.com/shazow/ssh-chat/sshd/terminal
 ## explicit
 github.com/sirupsen/logrus
 # github.com/skip2/go-qrcode v0.0.0-20190110000554-dc11ecdae0a9
+## explicit
 github.com/skip2/go-qrcode
 github.com/skip2/go-qrcode/bitset
 github.com/skip2/go-qrcode/reedsolomon

@@ -6,10 +6,6 @@ require (
 	github.com/Jeffail/gabs v1.4.0 // indirect
 	github.com/Philipp15b/go-steam v1.0.1-0.20200727090957-6ae9b3c0a560
 	github.com/Rhymen/go-whatsapp v0.1.2-0.20210407153411-c58e164e05b8
-	github.com/Rhymen/go-whatsapp/examples/echo v0.0.0-20190325075644-cc2581bbf24d // indirect
-	github.com/Rhymen/go-whatsapp/examples/restoreSession v0.0.0-20190325075644-cc2581bbf24d // indirect
-	github.com/Rhymen/go-whatsapp/examples/sendImage v0.0.0-20190325075644-cc2581bbf24d // indirect
-	github.com/Rhymen/go-whatsapp/examples/sendTextMessages v0.0.0-20190325075644-cc2581bbf24d // indirect
 	github.com/SevereCloud/vksdk/v2 v2.9.2
 	github.com/d5/tengo/v2 v2.7.0
 	github.com/davecgh/go-spew v1.1.1
@@ -45,6 +41,7 @@ require (
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca
 	github.com/shazow/ssh-chat v1.10.1
 	github.com/sirupsen/logrus v1.8.1
+	github.com/skip2/go-qrcode v0.0.0-20190110000554-dc11ecdae0a9 // indirect
 	github.com/slack-go/slack v0.9.1
 	github.com/spf13/afero v1.3.4 // indirect
 	github.com/spf13/cast v1.3.1 // indirect

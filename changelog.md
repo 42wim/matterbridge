@@ -1,3 +1,25 @@
+# v1.22.2
+
+## Enhancements
+
+- general: Add a MessageClipped option to set your own clipped message. Closes #1359 (#1487)
+- discord: Add AllowMention to restrict allowed mentions (#1462)
+- matrix: Add MxId/Token login option for Matrix (#1438)
+- nctalk: Support sending file URLs (nctalk) (#1489)
+- nctalk: Add support for message deletion (nctalk) (#1492)
+- whatsapp: Handle document messages (whatsapp) (#1475)
+
+## Bugfixes
+
+- general: Update vendored libs
+- matrix: Fix content body issue for redactions (matrix) (#1496)
+- telegram: Add libwebp-dev to tgs.Dockerfile fixes Telegram sticker to WebP rendering (#1476)
+- whatsapp: Rename .jpe files to .jpg Fixes #1463 (whatsapp) (#1485)
+- whatsapp: Fix crash on encountering VideoMessage (whatsapp) (#1483)
+
+This release couldn't exist without the following contributors:
+@AvinashReddy3108, @chrisbobbe, @jaywink, @Funatiker, @computeronix, @alexandregv, @gary-kim, @SuperSandro2000
+
 # v1.22.1
 
 ## Enhancements
