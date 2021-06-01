@@ -9,12 +9,12 @@
 [irc]
 
 #You can configure multiple servers "[irc.name]" or "[irc.name2]"
-#In this example we use [irc.freenode]
+#In this example we use [irc.libera]
 #REQUIRED
-[irc.freenode]
+[irc.libera]
 #irc server to connect to.
 #REQUIRED
-Server="irc.freenode.net:6667"
+Server="irc.libera.chat:6667"
 
 #Password for irc server (if necessary)
 #OPTIONAL (default "")
@@ -24,7 +24,7 @@ Password=""
 #OPTIONAL (default false)
 UseTLS=false
 
-#Enable SASL (PLAIN) authentication. (freenode requires this from eg AWS hosts)
+#Enable SASL (PLAIN) authentication. (libera requires this from eg AWS hosts)
 #It uses NickServNick and NickServPassword as login and password
 #OPTIONAL (default false)
 UseSASL=false
@@ -55,7 +55,7 @@ Charset=""
 #REQUIRED
 Nick="matterbot"
 
-#If you registered your bot with a service like Nickserv on freenode.
+#If you registered your bot with a service like Nickserv on libera.
 #Also being used when UseSASL=true
 #
 #Note: if you want do to quakenet auth, set NickServNick="Q@CServe.quakenet.org"
@@ -1847,7 +1847,7 @@ enable=true
 
     # account specified above
     # REQUIRED
-    account="irc.freenode"
+    account="irc.libera"
 
     # The channel key in each gateway is mapped to a similar group chat ID on the chat platform
     # To find the group chat ID for different platforms, refer to the table below
@@ -1905,7 +1905,7 @@ enable=true
 
     #[[gateway.out]] specifies the account and channels we will sent messages to.
     [[gateway.out]]
-    account="irc.freenode"
+    account="irc.libera"
     channel="#testing"
 
         #OPTIONAL - only used for IRC and XMPP protocols at the moment

@@ -1,5 +1,3 @@
-// +build go1.13
-
 package middleware
 
 import (
@@ -93,6 +91,15 @@ func (t echoHandlerFuncWrapper) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 	// `writes by h to its ResponseWriter will return ErrHandlerTimeout.`
 	originalWriter := t.ctx.Response().Writer
 	t.ctx.Response().Writer = rw
+
+	// in case of panic we restore original writer and call panic again
+	// so it could be handled with global middleware Recover()
+	defer func() {
+		if err := recover(); err != nil {
+			t.ctx.Response().Writer = originalWriter
+			panic(err)
+		}
+	}()
 
 	err := t.handler(t.ctx)
 	if ctxErr := r.Context().Err(); ctxErr == context.DeadlineExceeded {
