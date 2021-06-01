@@ -232,13 +232,11 @@ func (b *Btalk) handleSendingMessage(msg *ocs.TalkRoomMessageData, r *Broom) {
 
 func (b *Btalk) handleDeletingMessage(msg *ocs.TalkRoomMessageData, r *Broom) {
 	remoteMessage := config.Message{
-		Event:    config.EventMsgDelete,
-		Text:     formatRichObjectString(msg.Message, msg.MessageParameters),
-		Channel:  r.room.Token,
-		Username: DisplayName(msg, b.guestSuffix()),
-		UserID:   msg.ActorID,
-		ID:       strconv.Itoa(msg.Parent.ID),
-		Account:  b.Account,
+		Event:   config.EventMsgDelete,
+		Text:    config.EventMsgDelete,
+		Channel: r.room.Token,
+		ID:      strconv.Itoa(msg.Parent.ID),
+		Account: b.Account,
 	}
 	b.Log.Debugf("<= Message being deleted is %#v", remoteMessage)
 	b.Remote <- remoteMessage
