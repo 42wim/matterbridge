@@ -76,8 +76,8 @@ github.com/Philipp15b/go-steam v1.0.1-0.20200727090957-6ae9b3c0a560 h1:ItnC9PEEM
 github.com/Philipp15b/go-steam v1.0.1-0.20200727090957-6ae9b3c0a560/go.mod h1:o38AwUFFS4gzbjSoyIgrZ1h9UeDrKwcci1Pj6baifvI=
 github.com/PuerkitoBio/goquery v1.4.1/go.mod h1:T9ezsOHcCrDCgA8aF1Cqr3sSYbO/xgdy8/R/XiIMAhA=
 github.com/PuerkitoBio/goquery v1.5.1/go.mod h1:GsLWisAFVj4WgDibEWF4pvYnkVQBpKBKeU+7zCJoLcc=
-github.com/Rhymen/go-whatsapp v0.1.2-0.20210407153411-c58e164e05b8 h1:jqbWlca7CrvFdc3NygtKVCILnssbRkE7J9gRmY+Olc4=
-github.com/Rhymen/go-whatsapp v0.1.2-0.20210407153411-c58e164e05b8/go.mod h1:DNSFRLFDFIqm2+0aJzSOVfn25020vldM4SRqz6YtLgI=
+github.com/Rhymen/go-whatsapp v0.1.2-0.20210615184944-2b8a3e9b8aa2 h1:xEhWgQl3hCOtFph6nWpTjVgAdPmAk0zUTENPDb3HJ7Y=
+github.com/Rhymen/go-whatsapp v0.1.2-0.20210615184944-2b8a3e9b8aa2/go.mod h1:DNSFRLFDFIqm2+0aJzSOVfn25020vldM4SRqz6YtLgI=
 github.com/RoaringBitmap/roaring v0.4.23/go.mod h1:D0gp8kJQgE1A4LQ5wFLggQEyvDi06Mq5mKs52e1TwOo=
 github.com/RoaringBitmap/roaring v0.5.1/go.mod h1:D0gp8kJQgE1A4LQ5wFLggQEyvDi06Mq5mKs52e1TwOo=
 github.com/SevereCloud/vksdk/v2 v2.9.2 h1:+6s5w18VtWeGzsad8tRcraDGRPxgvuMtEPlRg7NrDM4=

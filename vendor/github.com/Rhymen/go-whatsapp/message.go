@@ -72,7 +72,8 @@ func (wac *Conn) Send(msg interface{}) (string, error) {
 	default:
 		return "ERROR", fmt.Errorf("cannot match type %T, use message types declared in the package", msg)
 	}
-
+	status := proto.WebMessageInfo_PENDING
+	msgProto.Status = &status
 	ch, err := wac.sendProto(msgProto)
 	if err != nil {
 		return "ERROR", fmt.Errorf("could not send proto: %v", err)
