@@ -27,6 +27,7 @@ const (
 	LongPollTsKey
 	CallbackRetryCounterKey
 	CallbackRetryAfterKey
+	CallbackRemove
 )
 
 // ContextClient return *http.Client.

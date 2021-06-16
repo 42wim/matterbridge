@@ -15,8 +15,9 @@ const (
 
 // MarketCurrency struct.
 type MarketCurrency struct {
-	ID   int    `json:"id"`   // Currency ID
-	Name string `json:"name"` // Currency sign
+	ID    int    `json:"id"`    // Currency ID
+	Name  string `json:"name"`  // Currency sign
+	Title string `json:"title"` // Currency Title
 }
 
 // MarketMarketAlbum struct.
@@ -72,6 +73,7 @@ type MarketMarketItem struct {
 	VariantsGroupingID int                        `json:"variants_grouping_id"`
 	PropertyValues     []MarketMarketItemProperty `json:"property_values"`
 	CartQuantity       int                        `json:"cart_quantity"`
+	SKU                string                     `json:"sku"`
 }
 
 // UnmarshalJSON MarketMarketItem.

@@ -1,6 +1,8 @@
 package api // import "github.com/SevereCloud/vksdk/v2/api"
 
-import "github.com/SevereCloud/vksdk/v2/object"
+import (
+	"github.com/SevereCloud/vksdk/v2/object"
+)
 
 // StoriesBanOwner allows to hide stories from chosen sources from current user's feed.
 //
@@ -240,6 +242,7 @@ func (vk *VK) StoriesHideReply(params Params) (response int, err error) {
 type StoriesSaveResponse struct {
 	Count int                   `json:"count"`
 	Items []object.StoriesStory `json:"items"`
+	object.ExtendedResponse
 }
 
 // StoriesSave method.

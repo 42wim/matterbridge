@@ -5,6 +5,7 @@
 package girc
 
 import (
+	"strconv"
 	"errors"
 	"fmt"
 )
@@ -356,7 +357,7 @@ func (cmd *Commands) List(channels ...string) {
 // Whowas sends a WHOWAS query to the server. amount is the amount of results
 // you want back.
 func (cmd *Commands) Whowas(user string, amount int) {
-	cmd.c.Send(&Event{Command: WHOWAS, Params: []string{user, string(amount)}})
+	cmd.c.Send(&Event{Command: WHOWAS, Params: []string{user, strconv.Itoa(amount)}})
 }
 
 // Monitor sends a MONITOR query to the server. The results of the query

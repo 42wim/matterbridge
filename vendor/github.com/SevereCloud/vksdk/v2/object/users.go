@@ -69,6 +69,7 @@ type UsersUser struct {
 	CanSeeAudio            BaseBoolInt           `json:"can_see_audio"`
 	CanWritePrivateMessage BaseBoolInt           `json:"can_write_private_message"`
 	CanSendFriendRequest   BaseBoolInt           `json:"can_send_friend_request"`
+	CanCallFromGroup       BaseBoolInt           `json:"can_call_from_group"`
 	Verified               BaseBoolInt           `json:"verified"`
 	Trending               BaseBoolInt           `json:"trending"`
 	Blacklisted            BaseBoolInt           `json:"blacklisted"`
