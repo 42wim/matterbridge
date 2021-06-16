@@ -172,12 +172,31 @@ func (d *dataEncoder) encode(data []byte) (*bitset.Bitset, error) {
 	}
 
 	// Classify data into unoptimised segments.
-	d.classifyDataModes()
+	highestRequiredMode := d.classifyDataModes()
 
 	// Optimise segments.
 	err := d.optimiseDataModes()
 	if err != nil {
 		return nil, err
+	}
+
+	// Check if a single byte encoded segment would be more efficient.
+	optimizedLength := 0
+	for _, s := range d.optimised {
+		length, err := d.encodedLength(s.dataMode, len(s.data))
+		if err != nil {
+			return nil, err
+		}
+		optimizedLength += length
+	}
+
+	singleByteSegmentLength, err := d.encodedLength(highestRequiredMode, len(d.data))
+	if err != nil {
+		return nil, err
+	}
+
+	if singleByteSegmentLength <= optimizedLength {
+		d.optimised = []segment{segment{dataMode: highestRequiredMode, data: d.data}}
 	}
 
 	// Encode data.
@@ -192,9 +211,15 @@ func (d *dataEncoder) encode(data []byte) (*bitset.Bitset, error) {
 // classifyDataModes classifies the raw data into unoptimised segments.
 // e.g. "123ZZ#!#!" =>
 // [numeric, 3, "123"] [alphanumeric, 2, "ZZ"] [byte, 4, "#!#!"].
-func (d *dataEncoder) classifyDataModes() {
+//
+// Returns the highest data mode needed to encode the data. e.g. for a mixed
+// numeric/alphanumeric input, the highest is alphanumeric.
+//
+// dataModeNone < dataModeNumeric < dataModeAlphanumeric < dataModeByte
+func (d *dataEncoder) classifyDataModes() dataMode {
 	var start int
 	mode := dataModeNone
+	highestRequiredMode := mode
 
 	for i, v := range d.data {
 		newMode := dataModeNone
@@ -217,9 +242,15 @@ func (d *dataEncoder) classifyDataModes() {
 
 			mode = newMode
 		}
+
+		if newMode > highestRequiredMode {
+			highestRequiredMode = newMode
+		}
 	}
 
 	d.actual = append(d.actual, segment{dataMode: mode, data: d.data[start:len(d.data)]})
+
+	return highestRequiredMode
 }
 
 // optimiseDataModes optimises the list of segments to reduce the overall output

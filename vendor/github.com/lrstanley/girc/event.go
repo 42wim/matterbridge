@@ -248,7 +248,7 @@ func (e *Event) Len() (length int) {
 
 			// If param contains a space or it's empty, it's trailing, so it should be
 			// prefixed with a colon (:).
-			if i == len(e.Params)-1 && (strings.Contains(e.Params[i], " ") || e.Params[i] == "") {
+			if i == len(e.Params)-1 && (strings.Contains(e.Params[i], " ") || strings.HasPrefix(e.Params[i], ":") || e.Params[i] == "") {
 				length++
 			}
 		}
@@ -284,9 +284,8 @@ func (e *Event) Bytes() []byte {
 	// Space separated list of arguments.
 	if len(e.Params) > 0 {
 		// buffer.WriteByte(eventSpace)
-
 		for i := 0; i < len(e.Params); i++ {
-			if i == len(e.Params)-1 && (strings.Contains(e.Params[i], " ") || e.Params[i] == "") {
+			if i == len(e.Params)-1 && (strings.Contains(e.Params[i], " ") || strings.HasPrefix(e.Params[i], ":") || e.Params[i] == "") {
 				buffer.WriteString(string(eventSpace) + string(messagePrefix) + e.Params[i])
 				continue
 			}
@@ -363,7 +362,15 @@ func (e *Event) Pretty() (out string, ok bool) {
 
 			return fmt.Sprintf("[*] CTCP query from %s: %s%s", ctcp.Source.Name, ctcp.Command, " "+ctcp.Text), true
 		}
-		return fmt.Sprintf("[%s] (%s) %s", strings.Join(e.Params[0:len(e.Params)-1], ","), e.Source.Name, e.Last()), true
+
+		var source string
+		if e.Command == PRIVMSG {
+			source = fmt.Sprintf("(%s)", e.Source.Name)
+		} else { // NOTICE
+			source = fmt.Sprintf("--%s--", e.Source.Name)
+		}
+
+		return fmt.Sprintf("[%s] %s %s", strings.Join(e.Params[0:len(e.Params)-1], ","), source, e.Last()), true
 	}
 
 	if e.Command == RPL_MOTD || e.Command == RPL_MOTDSTART ||

@@ -32,6 +32,7 @@ type GroupsAddress struct {
 	Timetable         GroupsAddressTimetable `json:"timetable"`        // Week timetable for the address
 	Title             string                 `json:"title"`            // Title of the place (Zinger, etc)
 	WorkInfoStatus    string                 `json:"work_info_status"` // Status of information about timetable
+	PlaceID           int                    `json:"place_id"`
 }
 
 // GroupsAddressTimetable Timetable for a week.
