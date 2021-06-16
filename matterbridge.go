@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	version = "1.22.3-dev"
+	version = "1.22.3"
 	githash string
 
 	flagConfig  = flag.String("conf", "matterbridge.toml", "config file")
