@@ -262,6 +262,7 @@ type BaseSticker struct {
 	ImagesWithBackground []BaseImage `json:"images_with_background"`
 	ProductID            int         `json:"product_id"`
 	StickerID            int         `json:"sticker_id"`
+	IsAllowed            bool        `json:"is_allowed"`
 	AnimationURL         string      `json:"animation_url"`
 }
 

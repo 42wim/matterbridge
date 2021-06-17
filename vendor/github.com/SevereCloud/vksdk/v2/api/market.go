@@ -306,8 +306,9 @@ func (vk *VK) MarketRestoreComment(params Params) (response int, err error) {
 
 // MarketSearchResponse struct.
 type MarketSearchResponse struct {
-	Count int                       `json:"count"`
-	Items []object.MarketMarketItem `json:"items"`
+	Count    int                       `json:"count"`
+	Items    []object.MarketMarketItem `json:"items"`
+	ViewType int                       `json:"view_type"`
 }
 
 // MarketSearch searches market items in a community's catalog.

@@ -1,3 +1,12 @@
+# v1.22.3
+
+## Bugfixes
+
+- whatsapp: Update Rhymen/go-whatsapp module to latest master (2b8a3e9b8aa2) (#1518)
+
+This release couldn't exist without the following contributors:
+@nathanaelhoun
+
 # v1.22.2
 
 ## Enhancements

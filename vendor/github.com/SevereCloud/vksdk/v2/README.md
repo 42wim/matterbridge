@@ -14,7 +14,7 @@
 
 ## Features
 
-Version API 5.126.
+Version API 5.131.
 
 - [API](https://pkg.go.dev/github.com/SevereCloud/vksdk/v2/api)
   - 400+ methods
@@ -40,6 +40,9 @@ Version API 5.126.
   - Machine-readable ontology describing persons
   - Works with users and groups
   - The only place to get page creation date
+- [Games](https://pkg.go.dev/github.com/SevereCloud/vksdk/v2/games)
+  - Checking launch parameters
+  - Intermediate http handler
 - [VK Mini Apps](https://pkg.go.dev/github.com/SevereCloud/vksdk/v2/vkapps)
   - Checking launch parameters
   - Intermediate http handler
@@ -47,6 +50,7 @@ Version API 5.126.
   - Processes payment notifications
 - [Marusia Skills](https://pkg.go.dev/github.com/SevereCloud/vksdk/v2/marusia)
   - For creating Marusia Skills
+  - Support SSML
 
 ## Install
 

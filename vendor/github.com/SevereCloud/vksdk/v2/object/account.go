@@ -16,9 +16,11 @@ type AccountPushConversations struct {
 
 // AccountPushConversationsItem struct.
 type AccountPushConversationsItem struct {
-	DisabledUntil int `json:"disabled_until"` // Time until that notifications are disabled in seconds
-	PeerID        int `json:"peer_id"`        // Peer ID
-	Sound         int `json:"sound"`          // Information whether the sound are enabled
+	DisabledUntil        int         `json:"disabled_until"` // Time until that notifications are disabled in seconds
+	PeerID               int         `json:"peer_id"`        // Peer ID
+	Sound                int         `json:"sound"`          // Information whether the sound are enabled
+	DisabledMentions     BaseBoolInt `json:"disabled_mentions"`
+	DisabledMassMentions BaseBoolInt `json:"disabled_mass_mentions"`
 }
 
 // AccountPushParams struct.

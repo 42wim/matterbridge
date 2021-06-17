@@ -174,6 +174,9 @@ const (
 	// Unknown group.
 	ErrUnknownGroup ErrorType = 40
 
+	// Additional signup required.
+	ErrAdditionalSignupRequired ErrorType = 41
+
 	// One of the parameters specified was missing or invalid
 	//
 	// Check the required parameters list and their format on a method
@@ -658,8 +661,14 @@ const (
 	// Item has bad links in description.
 	ErrMarketItemHasBadLinks ErrorType = 1408
 
-	// Shop not enabled.
+	// Extended market not enabled.
 	ErrMarketShopNotEnabled ErrorType = 1409
+
+	// Grouping items with different properties.
+	ErrMarketGroupingItemsWithDifferentProperties ErrorType = 1412
+
+	// Grouping already has such variant.
+	ErrMarketGroupingAlreadyHasSuchVariant ErrorType = 1413
 
 	// Variant not found.
 	ErrMarketVariantNotFound ErrorType = 1416
@@ -697,6 +706,9 @@ const (
 	// Crop size is less than the minimum.
 	ErrMarketPhotosCropSizeTooLow ErrorType = 1435
 
+	// Market not enabled.
+	ErrMarketNotEnabled ErrorType = 1438
+
 	// Cart is empty.
 	ErrMarketCartEmpty ErrorType = 1427
 
@@ -729,6 +741,15 @@ const (
 
 	// Servers number limit is reached.
 	ErrCallbackServersLimit ErrorType = 2000
+
+	// Stickers are not purchased.
+	ErrStickersNotPurchased ErrorType = 2100
+
+	// Too many favorite stickers.
+	ErrStickersTooManyFavorites ErrorType = 2101
+
+	// Stickers are not favorite.
+	ErrStickersNotFavorite ErrorType = 2102
 
 	// Specified link is incorrect (can't find source).
 	ErrWallCheckLinkCantDetermineSource ErrorType = 3102

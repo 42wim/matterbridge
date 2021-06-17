@@ -63,6 +63,7 @@ type MessagesMessage struct {
 	Important    BaseBoolInt       `json:"important"` // Is it an important message
 	IsHidden     BaseBoolInt       `json:"is_hidden"`
 	IsCropped    BaseBoolInt       `json:"is_cropped"`
+	IsSilent     BaseBoolInt       `json:"is_silent"`
 	Out          BaseBoolInt       `json:"out"` // Information whether the message is outcoming
 	WasListened  BaseBoolInt       `json:"was_listened,omitempty"`
 	Keyboard     MessagesKeyboard  `json:"keyboard"`
@@ -461,6 +462,7 @@ type MessagesChatPreview struct {
 	LocalID      int                              `json:"local_id"`
 	Joined       bool                             `json:"joined"`
 	ChatSettings MessagesConversationChatSettings `json:"chat_settings"`
+	IsMember     BaseBoolInt                      `json:"is_member"`
 }
 
 // MessagesChatPushSettings struct.
@@ -510,6 +512,7 @@ type MessagesConversationCanWrite struct {
 // MessagesConversationChatSettings struct.
 type MessagesConversationChatSettings struct {
 	MembersCount  int                       `json:"members_count"`
+	FriendsCount  int                       `json:"friends_count"`
 	Photo         MessagesChatSettingsPhoto `json:"photo"`
 	PinnedMessage MessagesPinnedMessage     `json:"pinned_message"`
 	State         string                    `json:"state"`

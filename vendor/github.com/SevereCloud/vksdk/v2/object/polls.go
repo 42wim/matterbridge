@@ -38,6 +38,7 @@ type PollsPoll struct {
 	Friends       []PollsFriend   `json:"friends"`
 	Profiles      []UsersUser     `json:"profiles"`
 	Groups        []GroupsGroup   `json:"groups"`
+	EmbedHash     string          `json:"embed_hash"`
 }
 
 // ToAttachment return attachment format.
