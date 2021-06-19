@@ -1469,6 +1469,9 @@ Password = "talkuserpass"
 # Suffix for Guest Users
 GuestSuffix = " (Guest)"
 
+# Separate display name (Note: needs to be configured from Nextcloud Talk to work)
+SeparateDisplayName=false
+
 ###################################################################
 # Mumble
 ###################################################################
@@ -1883,7 +1886,7 @@ enable=true
     # -------------------------------------------------------------------------------------------------------------------------------------
     #  telegram  |      chatid        |          -123456789           | A large negative number. see https://www.linkedin.com/pulse/telegram-bots-beginners-marco-frau
     # -------------------------------------------------------------------------------------------------------------------------------------
-    #  vk        |      peerid        |          2000000002           | A number that starts form 2000000000. Use --debug and send any message in chat to get PeerID in the logs 
+    #  vk        |      peerid        |          2000000002           | A number that starts form 2000000000. Use --debug and send any message in chat to get PeerID in the logs
     # -------------------------------------------------------------------------------------------------------------------------------------
     #  whatsapp  |     group JID      | 48111222333-123455678999@g.us | A unique group JID. If you specify an empty string, bridge will list all the possibilities
     #            |    "Group Name"    |         "Family Chat"         | if you specify a group name, the bridge will find hint the JID to specify. Names can change over time and are not stable.

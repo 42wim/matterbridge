@@ -85,7 +85,7 @@ func (b *Btalk) JoinChannel(channel config.ChannelInfo) error {
 			}
 
 			// Ignore messages that are from the bot user
-			if msg.ActorID == b.user.User {
+			if msg.ActorID == b.user.User || msg.ActorType == "bridged" {
 				continue
 			}
 
@@ -123,7 +123,7 @@ func (b *Btalk) Send(msg config.Message) (string, error) {
 			return "", nil
 		}
 
-		sentMessage, err := r.room.SendMessage(msg.Username + msg.Text)
+		sentMessage, err := b.sendText(r, &msg, msg.Text)
 		if err != nil {
 			b.Log.Errorf("Could not send message to room %v from %v: %v", msg.Channel, msg.Username, err)
 
@@ -158,6 +158,17 @@ func (b *Btalk) getRoom(token string) *Broom {
 	return nil
 }
 
+func (b *Btalk) sendText(r *Broom, msg *config.Message, text string) (*ocs.TalkRoomMessageData, error) {
+	messageToSend := &room.Message{Message: msg.Username + text}
+
+	if b.GetBool("SeparateDisplayName") {
+		messageToSend.Message = text
+		messageToSend.ActorDisplayName = msg.Username
+	}
+
+	return r.room.SendComplexMessage(messageToSend)
+}
+
 func (b *Btalk) handleFiles(mmsg *config.Message, message *ocs.TalkRoomMessageData) error {
 	for _, parameter := range message.MessageParameters {
 		if parameter.Type == ocs.ROSTypeFile {
@@ -190,12 +201,12 @@ func (b *Btalk) handleSendingFile(msg *config.Message, r *Broom) error {
 			continue
 		}
 
-		message := msg.Username
+		message := ""
 		if fi.Comment != "" {
 			message += fi.Comment + " "
 		}
 		message += fi.URL
-		_, err := r.room.SendMessage(message)
+		_, err := b.sendText(r, msg, message)
 		if err != nil {
 			return err
 		}

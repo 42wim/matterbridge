@@ -56,6 +56,21 @@ type TalkRoom struct {
 	Token string
 }
 
+// Message represents a message to be sent
+type Message struct {
+	Message          string
+	ActorDisplayName string
+	ReplyTo          int
+}
+
+func (t *Message) toParameters() map[string]string {
+	return map[string]string{
+		"message":          t.Message,
+		"actorDisplayName": t.ActorDisplayName,
+		"replyTo":          strconv.Itoa(t.ReplyTo),
+	}
+}
+
 // NewTalkRoom returns a new TalkRoom instance
 // Token should be the Nextcloud Room Token (e.g. "d6zoa2zs" if the room URL is https://cloud.mydomain.me/call/d6zoa2zs)
 func NewTalkRoom(tuser *user.TalkUser, token string) (*TalkRoom, error) {
@@ -71,17 +86,19 @@ func NewTalkRoom(tuser *user.TalkUser, token string) (*TalkRoom, error) {
 	}, nil
 }
 
-// SendMessage sends a message in the Talk room
+// SendMessage sends a string message in the Talk room
 func (t *TalkRoom) SendMessage(msg string) (*ocs.TalkRoomMessageData, error) {
+	return t.SendComplexMessage(&Message{Message: msg})
+}
+
+// SendComplexMessage sends a Message type message in the talk room
+func (t *TalkRoom) SendComplexMessage(msg *Message) (*ocs.TalkRoomMessageData, error) {
 	url := t.User.NextcloudURL + constants.BaseEndpoint + "chat/" + t.Token
-	requestParams := map[string]string{
-		"message": msg,
-	}
 
 	client := t.User.RequestClient(request.Client{
 		URL:    url,
 		Method: "POST",
-		Params: requestParams,
+		Params: msg.toParameters(),
 	})
 	res, err := client.Do()
 	if err != nil {
