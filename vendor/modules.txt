@@ -38,6 +38,8 @@ github.com/SevereCloud/vksdk/v2/longpoll-bot
 github.com/SevereCloud/vksdk/v2/object
 # github.com/blang/semver v3.5.1+incompatible
 github.com/blang/semver
+# github.com/btcsuite/btcutil v1.0.2
+github.com/btcsuite/btcutil/base58
 # github.com/d5/tengo/v2 v2.7.0
 ## explicit
 github.com/d5/tengo/v2
@@ -137,7 +139,6 @@ github.com/lrstanley/girc
 github.com/magiconair/properties
 # github.com/matrix-org/gomatrix v0.0.0-20210324163249-be2af5ef2e16
 ## explicit
-github.com/matrix-org/gomatrix
 # github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20210403163225-761e8622445d
 ## explicit
 github.com/matterbridge/Rocket.Chat.Go.SDK/models
@@ -325,6 +326,7 @@ golang.org/x/crypto/ed25519/internal/edwards25519
 golang.org/x/crypto/hkdf
 golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/nacl/secretbox
+golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/poly1305
 golang.org/x/crypto/salsa20/salsa
 golang.org/x/crypto/ssh
@@ -445,3 +447,12 @@ layeh.com/gumble/gumble
 layeh.com/gumble/gumble/MumbleProto
 layeh.com/gumble/gumble/varint
 layeh.com/gumble/gumbleutil
+# maunium.net/go/mautrix v0.9.14
+## explicit
+maunium.net/go/mautrix
+maunium.net/go/mautrix/crypto/attachment
+maunium.net/go/mautrix/crypto/utils
+maunium.net/go/mautrix/event
+maunium.net/go/mautrix/id
+maunium.net/go/mautrix/pushrules
+maunium.net/go/mautrix/pushrules/glob

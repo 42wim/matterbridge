@@ -1,14 +1,13 @@
 package bmatrix
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"html"
-	"strings"
 	"time"
 
-	matrix "github.com/matrix-org/gomatrix"
+	matrix "maunium.net/go/mautrix"
+	"maunium.net/go/mautrix/id"
 )
 
 func newMatrixUsername(username string) *matrixUsername {
@@ -28,7 +27,7 @@ func newMatrixUsername(username string) *matrixUsername {
 }
 
 // getRoomID retrieves a matching room ID from the channel name.
-func (b *Bmatrix) getRoomID(channel string) string {
+func (b *Bmatrix) getRoomID(channel string) id.RoomID {
 	b.RLock()
 	defer b.RUnlock()
 	for ID, name := range b.RoomMap {
@@ -40,21 +39,10 @@ func (b *Bmatrix) getRoomID(channel string) string {
 	return ""
 }
 
-// interface2Struct marshals and immediately unmarshals an interface.
-// Useful for converting map[string]interface{} to a struct.
-func interface2Struct(in interface{}, out interface{}) error {
-	jsonObj, err := json.Marshal(in)
-	if err != nil {
-		return err //nolint:wrapcheck
-	}
-
-	return json.Unmarshal(jsonObj, out)
-}
-
 // getDisplayName retrieves the displayName for mxid, querying the homeserver if the mxid is not in the cache.
-func (b *Bmatrix) getDisplayName(channelID string, mxid string) string {
+func (b *Bmatrix) getDisplayName(channelID id.RoomID, mxid id.UserID) string {
 	if b.GetBool("UseUserName") {
-		return mxid[1:]
+		return string(mxid)[1:]
 	}
 
 	b.RLock()
@@ -74,7 +62,7 @@ func (b *Bmatrix) getDisplayName(channelID string, mxid string) string {
 	}
 
 	if err != nil {
-		return b.cacheDisplayName(channelID, mxid, mxid[1:])
+		return b.cacheDisplayName(channelID, mxid, string(mxid)[1:])
 	}
 
 	return b.cacheDisplayName(channelID, mxid, displayName.DisplayName)
@@ -82,12 +70,12 @@ func (b *Bmatrix) getDisplayName(channelID string, mxid string) string {
 
 // cacheDisplayName stores the mapping between a mxid and a display name, to be reused later without performing a query to the homeserver.
 // Note that old entries are cleaned when this function is called.
-func (b *Bmatrix) cacheDisplayName(channelID string, mxid string, displayName string) string {
+func (b *Bmatrix) cacheDisplayName(channelID id.RoomID, mxid id.UserID, displayName string) string {
 	now := time.Now()
 
 	// scan to delete old entries, to stop memory usage from becoming high with obsolete entries.
 	// In addition, we detect if another user have the same username, and if so, we append their mxids to their usernames to differentiate them.
-	toDelete := map[string]string{}
+	toDelete := map[id.RoomID]id.UserID{}
 	conflict := false
 
 	b.Lock()
@@ -118,7 +106,7 @@ func (b *Bmatrix) cacheDisplayName(channelID string, mxid string, displayName st
 	}
 
 	if _, channelPresent := b.NicknameMap[channelID]; !channelPresent {
-		b.NicknameMap[channelID] = make(map[string]NicknameCacheEntry)
+		b.NicknameMap[channelID] = make(map[id.UserID]NicknameCacheEntry)
 	}
 
 	b.NicknameMap[channelID][mxid] = NicknameCacheEntry{
@@ -130,77 +118,43 @@ func (b *Bmatrix) cacheDisplayName(channelID string, mxid string, displayName st
 	return displayName
 }
 
-// handleError converts errors into httpError.
-//nolint:exhaustivestruct
-func handleError(err error) *httpError {
-	var mErr matrix.HTTPError
-	if !errors.As(err, &mErr) {
-		return &httpError{
-			Err: "not a HTTPError",
-		}
-	}
-
-	var httpErr httpError
-
-	if err := json.Unmarshal(mErr.Contents, &httpErr); err != nil {
-		return &httpError{
-			Err: "unmarshal failed",
-		}
-	}
-
-	return &httpErr
-}
-
-func (b *Bmatrix) containsAttachment(content map[string]interface{}) bool {
-	// Skip empty messages
-	if content["msgtype"] == nil {
-		return false
-	}
-
-	// Only allow image,video or file msgtypes
-	if !(content["msgtype"].(string) == "m.image" ||
-		content["msgtype"].(string) == "m.video" ||
-		content["msgtype"].(string) == "m.file") {
-		return false
-	}
-
-	return true
-}
-
 // getAvatarURL returns the avatar URL of the specified sender.
-func (b *Bmatrix) getAvatarURL(sender string) string {
-	urlPath := b.mc.BuildURL("profile", sender, "avatar_url")
-
-	s := struct {
-		AvatarURL string `json:"avatar_url"`
-	}{}
-
-	err := b.mc.MakeRequest("GET", urlPath, nil, &s)
+func (b *Bmatrix) getAvatarURL(sender id.UserID) string {
+	url, err := b.mc.GetAvatarURL(sender)
 	if err != nil {
-		b.Log.Errorf("getAvatarURL failed: %s", err)
-
+		b.Log.Errorf("Couldn't retrieve the URL of the avatar for MXID %s", sender)
 		return ""
 	}
 
-	url := strings.ReplaceAll(s.AvatarURL, "mxc://", b.GetString("Server")+"/_matrix/media/r0/thumbnail/")
-	if url != "" {
-		url += "?width=37&height=37&method=crop"
-	}
-
-	return url
+	return url.String()
 }
 
 // handleRatelimit handles the ratelimit errors and return if we're ratelimited and the amount of time to sleep
 func (b *Bmatrix) handleRatelimit(err error) (time.Duration, bool) {
-	httpErr := handleError(err)
-	if httpErr.Errcode != "M_LIMIT_EXCEEDED" {
+	var mErr matrix.HTTPError
+	if !errors.As(err, &mErr) {
+		b.Log.Errorf("Received a non-HTTPError, don't know what to make of it:\n%#v", err)
 		return 0, false
 	}
 
-	b.Log.Debugf("ratelimited: %s", httpErr.Err)
-	b.Log.Infof("getting ratelimited by matrix, sleeping approx %d seconds before retrying", httpErr.RetryAfterMs/1000)
+	if mErr.RespError.ErrCode != "M_LIMIT_EXCEEDED" {
+		return 0, false
+	}
 
-	return time.Duration(httpErr.RetryAfterMs) * time.Millisecond, true
+	b.Log.Debugf("ratelimited: %s", mErr.RespError.Err)
+
+	// fallback to a one-second delay
+	retryDelayMs := 1000
+
+	if retryDelayString, present := mErr.RespError.ExtraData["retry_after_ms"]; present {
+		if retryDelayInt, correct := retryDelayString.(int); correct && retryDelayInt > retryDelayMs {
+			retryDelayMs = retryDelayInt
+		}
+	}
+
+	b.Log.Infof("getting ratelimited by matrix, sleeping approx %d seconds before retrying", retryDelayMs/1000)
+
+	return time.Duration(retryDelayMs) * time.Millisecond, true
 }
 
 // retry function will check if we're ratelimited and retries again when backoff time expired

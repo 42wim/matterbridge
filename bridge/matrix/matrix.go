@@ -1,3 +1,4 @@
+//nolint: exhaustivestruct
 package bmatrix
 
 import (
@@ -9,10 +10,13 @@ import (
 	"sync"
 	"time"
 
+	matrix "maunium.net/go/mautrix"
+	"maunium.net/go/mautrix/event"
+	"maunium.net/go/mautrix/id"
+
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	matrix "github.com/matrix-org/gomatrix"
 )
 
 var (
@@ -26,20 +30,15 @@ type NicknameCacheEntry struct {
 }
 
 type Bmatrix struct {
-	mc     *matrix.Client
-	UserID string
-	// channelId -> mxid -> NickNameCacheEntry
-	NicknameMap map[string]map[string]NicknameCacheEntry
-	RoomMap     map[string]string
+	mc          *matrix.Client
+	UserID      id.UserID
+	NicknameMap map[id.RoomID]map[id.UserID]NicknameCacheEntry
+	RoomMap     map[id.RoomID]string
 	rateMutex   sync.RWMutex
 	sync.RWMutex
 	*bridge.Config
-}
-
-type httpError struct {
-	Errcode      string `json:"errcode"`
-	Err          string `json:"error"`
-	RetryAfterMs int    `json:"retry_after_ms"`
+	stop    chan int
+	stopAck chan int
 }
 
 type matrixUsername struct {
@@ -47,29 +46,12 @@ type matrixUsername struct {
 	formatted string
 }
 
-// SubTextMessage represents the new content of the message in edit messages.
-type SubTextMessage struct {
-	MsgType string `json:"msgtype"`
-	Body    string `json:"body"`
-}
-
-// MessageRelation explains how the current message relates to a previous message.
-// Notably used for message edits.
-type MessageRelation struct {
-	EventID string `json:"event_id"`
-	Type    string `json:"rel_type"`
-}
-
-type EditedMessage struct {
-	NewContent SubTextMessage  `json:"m.new_content"`
-	RelatedTo  MessageRelation `json:"m.relates_to"`
-	matrix.TextMessage
-}
-
 func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Bmatrix{Config: cfg}
-	b.RoomMap = make(map[string]string)
-	b.NicknameMap = make(map[string]map[string]NicknameCacheEntry)
+	b.RoomMap = make(map[id.RoomID]string)
+	b.NicknameMap = make(map[id.RoomID]map[id.UserID]NicknameCacheEntry)
+	b.stop = make(chan int, 1)
+	b.stopAck = make(chan int, 1)
 	return b
 }
 
@@ -77,13 +59,13 @@ func (b *Bmatrix) Connect() error {
 	var err error
 	b.Log.Infof("Connecting %s", b.GetString("Server"))
 	if b.GetString("MxID") != "" && b.GetString("Token") != "" {
+		b.UserID = id.UserID(b.GetString("MxID"))
 		b.mc, err = matrix.NewClient(
-			b.GetString("Server"), b.GetString("MxID"), b.GetString("Token"),
+			b.GetString("Server"), b.UserID, b.GetString("Token"),
 		)
 		if err != nil {
 			return err
 		}
-		b.UserID = b.GetString("MxID")
 		b.Log.Info("Using existing Matrix credentials")
 	} else {
 		b.mc, err = matrix.NewClient(b.GetString("Server"), "", "")
@@ -91,15 +73,14 @@ func (b *Bmatrix) Connect() error {
 			return err
 		}
 		resp, err := b.mc.Login(&matrix.ReqLogin{
-			Type:       "m.login.password",
-			User:       b.GetString("Login"),
-			Password:   b.GetString("Password"),
-			Identifier: matrix.NewUserIdentifier(b.GetString("Login")),
+			Type:             matrix.AuthTypePassword,
+			Password:         b.GetString("Password"),
+			Identifier:       matrix.UserIdentifier{Type: matrix.IdentifierTypeUser, User: b.GetString("Login")},
+			StoreCredentials: true,
 		})
 		if err != nil {
 			return err
 		}
-		b.mc.SetCredentials(resp.UserID, resp.AccessToken)
 		b.UserID = resp.UserID
 		b.Log.Info("Connection succeeded")
 	}
@@ -108,6 +89,13 @@ func (b *Bmatrix) Connect() error {
 }
 
 func (b *Bmatrix) Disconnect() error {
+	// tell the Sync() loop to exit
+	b.stop <- 0
+	b.mc.StopSync()
+
+	// wait for the syncer to terminate
+	<-b.stopAck
+
 	return nil
 }
 
@@ -136,26 +124,13 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 
 	// Make a action /me of the message
 	if msg.Event == config.EventUserAction {
-		m := matrix.TextMessage{
-			MsgType:       "m.emote",
+		m := event.MessageEventContent{
+			MsgType:       event.MsgEmote,
 			Body:          username.plain + msg.Text,
 			FormattedBody: username.formatted + msg.Text,
 		}
 
-		msgID := ""
-
-		err := b.retry(func() error {
-			resp, err := b.mc.SendMessageEvent(channel, "m.room.message", m)
-			if err != nil {
-				return err
-			}
-
-			msgID = resp.EventID
-
-			return err
-		})
-
-		return msgID, err
+		return b.sendEventWithRetries(channel, event.EventMessage, m)
 	}
 
 	// Delete message
@@ -167,12 +142,12 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 		msgID := ""
 
 		err := b.retry(func() error {
-			resp, err := b.mc.RedactEvent(channel, msg.ID, &matrix.ReqRedact{})
+			resp, err := b.mc.RedactEvent(channel, id.EventID(msg.ID), matrix.ReqRedact{})
 			if err != nil {
 				return err
 			}
 
-			msgID = resp.EventID
+			msgID = string(resp.EventID)
 
 			return err
 		})
@@ -183,13 +158,12 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	// Upload a file if it exists
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			rmsg := rmsg
+			m := event.MessageEventContent{
+				MsgType: event.MsgText,
+				Body:    rmsg.Username + rmsg.Text,
+			}
 
-			err := b.retry(func() error {
-				_, err := b.mc.SendText(channel, rmsg.Username+rmsg.Text)
-
-				return err
-			})
+			_, err := b.sendEventWithRetries(channel, event.EventMessage, m)
 			if err != nil {
 				b.Log.Errorf("sendText failed: %s", err)
 			}
@@ -202,89 +176,84 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 
 	// Edit message if we have an ID
 	if msg.ID != "" {
-		rmsg := EditedMessage{TextMessage: matrix.TextMessage{
+		rmsg := event.MessageEventContent{
 			Body:    username.plain + msg.Text,
-			MsgType: "m.text",
-		}}
+			MsgType: event.MsgText,
+		}
 		if b.GetBool("HTMLDisable") {
-			rmsg.TextMessage.FormattedBody = username.formatted + "* " + msg.Text
+			rmsg.FormattedBody = username.formatted + "* " + msg.Text
 		} else {
-			rmsg.Format = "org.matrix.custom.html"
-			rmsg.TextMessage.FormattedBody = username.formatted + "* " + helper.ParseMarkdown(msg.Text)
+			rmsg.Format = event.FormatHTML
+			rmsg.FormattedBody = username.formatted + "* " + helper.ParseMarkdown(msg.Text)
 		}
-		rmsg.NewContent = SubTextMessage{
-			Body:    rmsg.TextMessage.Body,
-			MsgType: "m.text",
+		rmsg.NewContent = &event.MessageEventContent{
+			Body:    rmsg.Body,
+			MsgType: event.MsgText,
 		}
-		rmsg.RelatedTo = MessageRelation{
-			EventID: msg.ID,
-			Type:    "m.replace",
-		}
-
-		err := b.retry(func() error {
-			_, err := b.mc.SendMessageEvent(channel, "m.room.message", rmsg)
-
-			return err
-		})
-		if err != nil {
-			return "", err
+		rmsg.RelatesTo = &event.RelatesTo{
+			EventID: id.EventID(msg.ID),
+			Type:    event.RelReplace,
 		}
 
-		return msg.ID, nil
+		return b.sendEventWithRetries(channel, event.EventMessage, rmsg)
+	}
+
+	m := event.MessageEventContent{
+		Body:          username.plain + msg.Text,
+		FormattedBody: username.formatted + msg.Text,
 	}
 
 	// Use notices to send join/leave events
 	if msg.Event == config.EventJoinLeave {
-		m := matrix.TextMessage{
-			MsgType:       "m.notice",
-			Body:          username.plain + msg.Text,
-			FormattedBody: username.formatted + msg.Text,
+		m.MsgType = event.MsgNotice
+	} else {
+		m.MsgType = event.MsgText
+		if b.GetBool("HTMLDisable") {
+			m.FormattedBody = ""
+		} else {
+			m.FormattedBody = username.formatted + helper.ParseMarkdown(msg.Text)
 		}
-
-		var (
-			resp *matrix.RespSendEvent
-			err  error
-		)
-
-		err = b.retry(func() error {
-			resp, err = b.mc.SendMessageEvent(channel, "m.room.message", m)
-
-			return err
-		})
-		if err != nil {
-			return "", err
-		}
-
-		return resp.EventID, err
 	}
 
-	if b.GetBool("HTMLDisable") {
-		var (
-			resp *matrix.RespSendEvent
-			err  error
-		)
+	return b.sendEventWithRetries(channel, event.EventMessage, m)
+}
 
-		err = b.retry(func() error {
-			resp, err = b.mc.SendText(channel, username.plain+msg.Text)
+func (b *Bmatrix) handlematrix() {
+	syncer, ok := b.mc.Syncer.(*matrix.DefaultSyncer)
+	if !ok {
+		b.Log.Errorln("couldn't convert the Syncer object to a DefaultSyncer structure, the matrix bridge won't work")
 
-			return err
-		})
-		if err != nil {
-			return "", err
-		}
-
-		return resp.EventID, err
+		return
 	}
 
-	// Post normal message with HTML support (eg riot.im)
+	syncer.OnEventType(event.EventRedaction, b.handleEvent)
+	syncer.OnEventType(event.EventMessage, b.handleEvent)
+	syncer.OnEventType(event.StateMember, b.handleMemberChange)
+	go func() {
+		for {
+			select {
+			case <-b.stop:
+				b.stopAck <- 1
+
+				return
+			default:
+				if err := b.mc.Sync(); err != nil {
+					b.Log.Println("Sync() returned ", err)
+				}
+			}
+		}
+	}()
+}
+
+//nolint: wrapcheck
+func (b *Bmatrix) sendEventWithRetries(channel id.RoomID, eventType event.Type, eventData interface{}) (string, error) {
 	var (
 		resp *matrix.RespSendEvent
 		err  error
 	)
 
 	err = b.retry(func() error {
-		resp, err = b.mc.SendFormattedText(channel, username.plain+msg.Text,
-			username.formatted+helper.ParseMarkdown(msg.Text))
+		resp, err = b.mc.SendMessageEvent(channel, eventType, eventData)
 
 		return err
 	})
@@ -292,63 +261,57 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 		return "", err
 	}
 
-	return resp.EventID, err
+	return string(resp.EventID), err
 }
 
-func (b *Bmatrix) handlematrix() {
-	syncer := b.mc.Syncer.(*matrix.DefaultSyncer)
-	syncer.OnEventType("m.room.redaction", b.handleEvent)
-	syncer.OnEventType("m.room.message", b.handleEvent)
-	syncer.OnEventType("m.room.member", b.handleMemberChange)
-	go func() {
-		for {
-			if err := b.mc.Sync(); err != nil {
-				b.Log.Println("Sync() returned ", err)
-			}
+func (b *Bmatrix) handleMemberChange(source matrix.EventSource, ev *event.Event) {
+	member := ev.Content.AsMember()
+	if member == nil {
+		b.Log.Errorf("Couldn't process a member event:\n%#v", ev)
+
+		return
+	}
+	// Update the displayname on join messages, according to https://matrix.org/docs/spec/client_server/r0.6.1#events-on-change-of-profile-information
+	if member.Membership == event.MembershipJoin {
+		b.cacheDisplayName(ev.RoomID, ev.Sender, member.Displayname)
+	}
+}
+
+func (b *Bmatrix) handleMessage(rmsg config.Message, msg event.MessageEventContent, ev *event.Event) {
+	rmsg.Text = msg.Body
+
+	// Do we have a /me action
+	if msg.MsgType == event.MsgEmote {
+		rmsg.Event = config.EventUserAction
+	}
+
+	// Is it an edit?
+	if msg.RelatesTo != nil && msg.NewContent != nil && msg.RelatesTo.Type == event.RelReplace {
+		rmsg.ID = string(msg.RelatesTo.EventID)
+		rmsg.Text = msg.NewContent.Body
+		b.Remote <- rmsg
+
+		return
+	}
+
+	// Do we have attachments (we only allow image,video or file msgtypes)
+	if msg.MsgType == event.MsgImage || msg.MsgType == event.MsgVideo || msg.MsgType == event.MsgFile {
+		err := b.handleDownloadFile(&rmsg, msg)
+		if err != nil {
+			b.Log.Errorf("download failed: %#v", err)
 		}
-	}()
-}
-
-func (b *Bmatrix) handleEdit(ev *matrix.Event, rmsg config.Message) bool {
-	relationInterface, present := ev.Content["m.relates_to"]
-	newContentInterface, present2 := ev.Content["m.new_content"]
-	if !(present && present2) {
-		return false
 	}
 
-	var relation MessageRelation
-	if err := interface2Struct(relationInterface, &relation); err != nil {
-		b.Log.Warnf("Couldn't parse 'm.relates_to' object with value %#v", relationInterface)
-		return false
-	}
-
-	var newContent SubTextMessage
-	if err := interface2Struct(newContentInterface, &newContent); err != nil {
-		b.Log.Warnf("Couldn't parse 'm.new_content' object with value %#v", newContentInterface)
-		return false
-	}
-
-	if relation.Type != "m.replace" {
-		return false
-	}
-
-	rmsg.ID = relation.EventID
-	rmsg.Text = newContent.Body
+	b.Log.Debugf("<= Sending message from %s on %s to gateway", ev.Sender, b.Account)
 	b.Remote <- rmsg
 
-	return true
-}
-
-func (b *Bmatrix) handleMemberChange(ev *matrix.Event) {
-	// Update the displayname on join messages, according to https://matrix.org/docs/spec/client_server/r0.6.1#events-on-change-of-profile-information
-	if ev.Content["membership"] == "join" {
-		if dn, ok := ev.Content["displayname"].(string); ok {
-			b.cacheDisplayName(ev.RoomID, ev.Sender, dn)
-		}
+	// not crucial, so no ratelimit check here
+	if err := b.mc.MarkRead(ev.RoomID, ev.ID); err != nil {
+		b.Log.Errorf("couldn't mark message as read %s", err.Error())
 	}
 }
 
-func (b *Bmatrix) handleEvent(ev *matrix.Event) {
+func (b *Bmatrix) handleEvent(source matrix.EventSource, ev *event.Event) {
 	b.Log.Debugf("== Receiving event: %#v", ev)
 	if ev.Sender != b.UserID {
 		b.RLock()
@@ -364,8 +327,8 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 			Username: b.getDisplayName(ev.RoomID, ev.Sender),
 			Channel:  channel,
 			Account:  b.Account,
-			UserID:   ev.Sender,
-			ID:       ev.ID,
+			UserID:   string(ev.Sender),
+			ID:       string(ev.ID),
 			Avatar:   b.getAvatarURL(ev.Sender),
 		}
 
@@ -376,95 +339,52 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 		}
 
 		// Delete event
-		if ev.Type == "m.room.redaction" {
+		if ev.Type == event.EventRedaction {
 			rmsg.Event = config.EventMsgDelete
-			rmsg.ID = ev.Redacts
+			rmsg.ID = string(ev.Redacts)
 			rmsg.Text = config.EventMsgDelete
 			b.Remote <- rmsg
 			return
 		}
 
-		// Text must be a string
-		if rmsg.Text, ok = ev.Content["body"].(string); !ok {
-			b.Log.Errorf("Content[body] is not a string: %T\n%#v",
-				ev.Content["body"], ev.Content)
+		msg := ev.Content.AsMessage()
+		if msg == nil {
+			b.Log.Errorf("matterbridge don't support this event type: %s", ev.Type.Type)
+			b.Log.Debugf("Full event: %#v", ev)
+
 			return
 		}
 
-		// Do we have a /me action
-		if ev.Content["msgtype"].(string) == "m.emote" {
-			rmsg.Event = config.EventUserAction
-		}
-
-		// Is it an edit?
-		if b.handleEdit(ev, rmsg) {
-			return
-		}
-
-		// Do we have attachments
-		if b.containsAttachment(ev.Content) {
-			err := b.handleDownloadFile(&rmsg, ev.Content)
-			if err != nil {
-				b.Log.Errorf("download failed: %#v", err)
-			}
-		}
-
-		b.Log.Debugf("<= Sending message from %s on %s to gateway", ev.Sender, b.Account)
-		b.Remote <- rmsg
-
-		// not crucial, so no ratelimit check here
-		if err := b.mc.MarkRead(ev.RoomID, ev.ID); err != nil {
-			b.Log.Errorf("couldn't mark message as read %s", err.Error())
-		}
+		b.handleMessage(rmsg, *msg, ev)
 	}
 }
 
 // handleDownloadFile handles file download
-func (b *Bmatrix) handleDownloadFile(rmsg *config.Message, content map[string]interface{}) error {
-	var (
-		ok                        bool
-		url, name, msgtype, mtype string
-		info                      map[string]interface{}
-		size                      float64
-	)
-
+func (b *Bmatrix) handleDownloadFile(rmsg *config.Message, msg event.MessageEventContent) error {
 	rmsg.Extra = make(map[string][]interface{})
-	if url, ok = content["url"].(string); !ok {
-		return fmt.Errorf("url isn't a %T", url)
+	if msg.URL == "" || msg.Info == nil {
+		b.Log.Error("couldn't download a file with no URL or no file informations (invalid event ?)")
+		b.Log.Debugf("Full Message content:\n%#v", msg)
 	}
-	url = strings.Replace(url, "mxc://", b.GetString("Server")+"/_matrix/media/v1/download/", -1)
 
-	if info, ok = content["info"].(map[string]interface{}); !ok {
-		return fmt.Errorf("info isn't a %T", info)
-	}
-	if size, ok = info["size"].(float64); !ok {
-		return fmt.Errorf("size isn't a %T", size)
-	}
-	if name, ok = content["body"].(string); !ok {
-		return fmt.Errorf("name isn't a %T", name)
-	}
-	if msgtype, ok = content["msgtype"].(string); !ok {
-		return fmt.Errorf("msgtype isn't a %T", msgtype)
-	}
-	if mtype, ok = info["mimetype"].(string); !ok {
-		return fmt.Errorf("mtype isn't a %T", mtype)
-	}
+	url := strings.ReplaceAll(string(msg.URL), "mxc://", b.GetString("Server")+"/_matrix/media/v1/download/")
+	filename := msg.Body
 
 	// check if we have an image uploaded without extension
-	if !strings.Contains(name, ".") {
-		if msgtype == "m.image" {
-			mext, _ := mime.ExtensionsByType(mtype)
-			if len(mext) > 0 {
-				name += mext[0]
-			}
+	if !strings.Contains(filename, ".") {
+		mext, _ := mime.ExtensionsByType(msg.Info.MimeType)
+		if len(mext) > 0 {
+			filename += mext[0]
 		} else {
-			// just a default .png extension if we don't have mime info
-			name += ".png"
+			if msg.MsgType == event.MsgImage {
+				// just a default .png extension if we don't have mime info
+				filename += ".png"
+			}
 		}
 	}
 
 	// check if the size is ok
-	err := helper.HandleDownloadSize(b.Log, rmsg, name, int64(size), b.General)
+	err := helper.HandleDownloadSize(b.Log, rmsg, filename, int64(msg.Info.Size), b.General)
 	if err != nil {
 		return err
 	}
@@ -474,12 +394,12 @@ func (b *Bmatrix) handleDownloadFile(rmsg *config.Message, content map[string]in
 		return fmt.Errorf("download %s failed %#v", url, err)
 	}
 	// add the downloaded data to the message
-	helper.HandleDownloadData(b.Log, rmsg, name, "", url, data, b.General)
+	helper.HandleDownloadData(b.Log, rmsg, filename, "", url, data, b.General)
 	return nil
 }
 
 // handleUploadFiles handles native upload of files.
-func (b *Bmatrix) handleUploadFiles(msg *config.Message, channel string) (string, error) {
+func (b *Bmatrix) handleUploadFiles(msg *config.Message, channel id.RoomID) (string, error) {
 	for _, f := range msg.Extra["file"] {
 		if fi, ok := f.(config.FileInfo); ok {
 			b.handleUploadFile(msg, channel, &fi)
@@ -489,17 +409,21 @@ func (b *Bmatrix) handleUploadFiles(msg *config.Message, channel string) (string
 }
 
 // handleUploadFile handles native upload of a file.
-func (b *Bmatrix) handleUploadFile(msg *config.Message, channel string, fi *config.FileInfo) {
+//nolint: funlen
+func (b *Bmatrix) handleUploadFile(msg *config.Message, channel id.RoomID, fi *config.FileInfo) {
 	username := newMatrixUsername(msg.Username)
 	content := bytes.NewReader(*fi.Data)
 	sp := strings.Split(fi.Name, ".")
 	mtype := mime.TypeByExtension("." + sp[len(sp)-1])
-	// image and video uploads send no username, we have to do this ourself here #715
-	err := b.retry(func() error {
-		_, err := b.mc.SendFormattedText(channel, username.plain+fi.Comment, username.formatted+fi.Comment)
 
-		return err
-	})
+	// image and video uploads send no username, we have to do this ourself here #715
+	m := event.MessageEventContent{
+		MsgType:       event.MsgText,
+		Body:          username.plain + fi.Comment,
+		FormattedBody: username.formatted + fi.Comment,
+	}
+
+	_, err := b.sendEventWithRetries(channel, event.EventMessage, m)
 	if err != nil {
 		b.Log.Errorf("file comment failed: %#v", err)
 	}
@@ -507,9 +431,14 @@ func (b *Bmatrix) handleUploadFile(msg *config.Message, channel string, fi *conf
 	b.Log.Debugf("uploading file: %s %s", fi.Name, mtype)
 
 	var res *matrix.RespMediaUpload
+	req := matrix.ReqUploadMedia{
+		Content:       content,
+		ContentType:   mtype,
+		ContentLength: fi.Size,
+	}
 
 	err = b.retry(func() error {
-		res, err = b.mc.UploadToContentRepo(content, mtype, int64(len(*fi.Data)))
+		res, err = b.mc.UploadMedia(req)
 
 		return err
 	})
@@ -519,63 +448,42 @@ func (b *Bmatrix) handleUploadFile(msg *config.Message, channel string, fi *conf
 		return
 	}
 
+	b.Log.Debugf("result: %#v", res)
+
+	m = event.MessageEventContent{
+		Body: fi.Name,
+		URL:  res.ContentURI.CUString(),
+	}
+
 	switch {
 	case strings.Contains(mtype, "video"):
 		b.Log.Debugf("sendVideo %s", res.ContentURI)
-		err = b.retry(func() error {
-			_, err = b.mc.SendVideo(channel, fi.Name, res.ContentURI)
 
-			return err
-		})
-		if err != nil {
-			b.Log.Errorf("sendVideo failed: %#v", err)
-		}
+		m.MsgType = event.MsgVideo
 	case strings.Contains(mtype, "image"):
 		b.Log.Debugf("sendImage %s", res.ContentURI)
-		err = b.retry(func() error {
-			_, err = b.mc.SendImage(channel, fi.Name, res.ContentURI)
 
-			return err
-		})
-		if err != nil {
-			b.Log.Errorf("sendImage failed: %#v", err)
-		}
+		m.MsgType = event.MsgImage
 	case strings.Contains(mtype, "audio"):
 		b.Log.Debugf("sendAudio %s", res.ContentURI)
-		err = b.retry(func() error {
-			_, err = b.mc.SendMessageEvent(channel, "m.room.message", matrix.AudioMessage{
-				MsgType: "m.audio",
-				Body:    fi.Name,
-				URL:     res.ContentURI,
-				Info: matrix.AudioInfo{
-					Mimetype: mtype,
-					Size:     uint(len(*fi.Data)),
-				},
-			})
 
-			return err
-		})
-		if err != nil {
-			b.Log.Errorf("sendAudio failed: %#v", err)
+		m.MsgType = event.MsgAudio
+		m.Info = &event.FileInfo{
+			MimeType: mtype,
+			Size:     len(*fi.Data),
 		}
 	default:
 		b.Log.Debugf("sendFile %s", res.ContentURI)
-		err = b.retry(func() error {
-			_, err = b.mc.SendMessageEvent(channel, "m.room.message", matrix.FileMessage{
-				MsgType: "m.file",
-				Body:    fi.Name,
-				URL:     res.ContentURI,
-				Info: matrix.FileInfo{
-					Mimetype: mtype,
-					Size:     uint(len(*fi.Data)),
-				},
-			})
 
-			return err
-		})
-		if err != nil {
-			b.Log.Errorf("sendFile failed: %#v", err)
+		m.MsgType = event.MsgFile
+		m.Info = &event.FileInfo{
+			MimeType: mtype,
+			Size:     len(*fi.Data),
 		}
 	}
-	b.Log.Debugf("result: %#v", res)
+
+	_, err = b.sendEventWithRetries(channel, event.EventMessage, m)
+	if err != nil {
+		b.Log.Errorf("sending the message referencing the uploaded file failed: %#v", err)
+	}
 }
