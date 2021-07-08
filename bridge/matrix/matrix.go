@@ -26,9 +26,10 @@ type NicknameCacheEntry struct {
 }
 
 type Bmatrix struct {
-	mc          *matrix.Client
-	UserID      string
-	NicknameMap map[string]NicknameCacheEntry
+	mc     *matrix.Client
+	UserID string
+	// channelId -> mxid -> NickNameCacheEntry
+	NicknameMap map[string]map[string]NicknameCacheEntry
 	RoomMap     map[string]string
 	rateMutex   sync.RWMutex
 	sync.RWMutex
@@ -68,7 +69,7 @@ type EditedMessage struct {
 func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Bmatrix{Config: cfg}
 	b.RoomMap = make(map[string]string)
-	b.NicknameMap = make(map[string]NicknameCacheEntry)
+	b.NicknameMap = make(map[string]map[string]NicknameCacheEntry)
 	return b
 }
 
@@ -342,7 +343,7 @@ func (b *Bmatrix) handleMemberChange(ev *matrix.Event) {
 	// Update the displayname on join messages, according to https://matrix.org/docs/spec/client_server/r0.6.1#events-on-change-of-profile-information
 	if ev.Content["membership"] == "join" {
 		if dn, ok := ev.Content["displayname"].(string); ok {
-			b.cacheDisplayName(ev.Sender, dn)
+			b.cacheDisplayName(ev.RoomID, ev.Sender, dn)
 		}
 	}
 }
@@ -360,7 +361,7 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 
 		// Create our message
 		rmsg := config.Message{
-			Username: b.getDisplayName(ev.Sender),
+			Username: b.getDisplayName(ev.RoomID, ev.Sender),
 			Channel:  channel,
 			Account:  b.Account,
 			UserID:   ev.Sender,

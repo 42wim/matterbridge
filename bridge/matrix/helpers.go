@@ -51,17 +51,19 @@ func interface2Struct(in interface{}, out interface{}) error {
 	return json.Unmarshal(jsonObj, out)
 }
 
-// getDisplayName retrieves the displayName for mxid, querying the homserver if the mxid is not in the cache.
-func (b *Bmatrix) getDisplayName(mxid string) string {
+// getDisplayName retrieves the displayName for mxid, querying the homeserver if the mxid is not in the cache.
+func (b *Bmatrix) getDisplayName(channelID string, mxid string) string {
 	if b.GetBool("UseUserName") {
 		return mxid[1:]
 	}
 
 	b.RLock()
-	if val, present := b.NicknameMap[mxid]; present {
-		b.RUnlock()
+	if channel, channelPresent := b.NicknameMap[channelID]; channelPresent {
+		if val, present := channel[mxid]; present {
+			b.RUnlock()
 
-		return val.displayName
+			return val.displayName
+		}
 	}
 	b.RUnlock()
 
@@ -72,48 +74,54 @@ func (b *Bmatrix) getDisplayName(mxid string) string {
 	}
 
 	if err != nil {
-		return b.cacheDisplayName(mxid, mxid[1:])
+		return b.cacheDisplayName(channelID, mxid, mxid[1:])
 	}
 
-	return b.cacheDisplayName(mxid, displayName.DisplayName)
+	return b.cacheDisplayName(channelID, mxid, displayName.DisplayName)
 }
 
-// cacheDisplayName stores the mapping between a mxid and a display name, to be reused later without performing a query to the homserver.
+// cacheDisplayName stores the mapping between a mxid and a display name, to be reused later without performing a query to the homeserver.
 // Note that old entries are cleaned when this function is called.
-func (b *Bmatrix) cacheDisplayName(mxid string, displayName string) string {
+func (b *Bmatrix) cacheDisplayName(channelID string, mxid string, displayName string) string {
 	now := time.Now()
 
-	// scan to delete old entries, to stop memory usage from becoming too high with old entries.
-	// In addition, we also detect if another user have the same username, and if so, we append their mxids to their usernames to differentiate them.
-	toDelete := []string{}
+	// scan to delete old entries, to stop memory usage from becoming high with obsolete entries.
+	// In addition, we detect if another user have the same username, and if so, we append their mxids to their usernames to differentiate them.
+	toDelete := map[string]string{}
 	conflict := false
 
 	b.Lock()
-	for mxid, v := range b.NicknameMap {
-		// to prevent username reuse across matrix servers - or even on the same server, append
-		// the mxid to the username when there is a conflict
-		if v.displayName == displayName {
-			conflict = true
-			// TODO: it would be nice to be able to rename previous messages from this user.
-			// The current behavior is that only users with clashing usernames and *that have spoken since the bridge last started* will get their mxids shown, and I don't know if that's the expected behavior.
-			v.displayName = fmt.Sprintf("%s (%s)", displayName, mxid)
-			b.NicknameMap[mxid] = v
-		}
+	for channelIDIter, channelEntriesIter := range b.NicknameMap {
+		for mxidIter, NicknameCacheIter := range channelEntriesIter {
+			// to prevent username reuse across matrix rooms - or even inside the same room, if a user uses multiple servers -
+			// append the mxid to the username when there is a conflict
+			if NicknameCacheIter.displayName == displayName {
+				conflict = true
+				// TODO: it would be nice to be able to rename previous messages from this user.
+				// The current behavior is that only users with clashing usernames and *that have spoken since the bridge last started* will get their mxids shown, and I don't know if that's the expected behavior.
+				NicknameCacheIter.displayName = fmt.Sprintf("%s (%s)", displayName, mxidIter)
+				b.NicknameMap[channelIDIter][mxidIter] = NicknameCacheIter
+			}
 
-		if now.Sub(v.lastUpdated) > 10*time.Minute {
-			toDelete = append(toDelete, mxid)
+			if now.Sub(NicknameCacheIter.lastUpdated) > 10*time.Minute {
+				toDelete[channelIDIter] = mxidIter
+			}
 		}
+	}
+
+	for channelIDIter, mxidIter := range toDelete {
+		delete(b.NicknameMap[channelIDIter], mxidIter)
 	}
 
 	if conflict {
 		displayName = fmt.Sprintf("%s (%s)", displayName, mxid)
 	}
 
-	for _, v := range toDelete {
-		delete(b.NicknameMap, v)
+	if _, channelPresent := b.NicknameMap[channelID]; !channelPresent {
+		b.NicknameMap[channelID] = make(map[string]NicknameCacheEntry)
 	}
 
-	b.NicknameMap[mxid] = NicknameCacheEntry{
+	b.NicknameMap[channelID][mxid] = NicknameCacheEntry{
 		displayName: displayName,
 		lastUpdated: now,
 	}
