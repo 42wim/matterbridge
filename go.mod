@@ -22,7 +22,6 @@ require (
 	github.com/kyokomi/emoji/v2 v2.2.8
 	github.com/labstack/echo/v4 v4.3.0
 	github.com/lrstanley/girc v0.0.0-20210611213246-771323f1624b
-	github.com/matrix-org/gomatrix v0.0.0-20210324163249-be2af5ef2e16 // indirect
 	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20210403163225-761e8622445d
 	github.com/matterbridge/discordgo v0.21.2-0.20210201201054-fb39a175b4f7
 	github.com/matterbridge/go-xmpp v0.0.0-20200418225040-c8a3a57b4050

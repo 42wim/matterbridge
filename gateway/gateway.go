@@ -306,11 +306,12 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 	return false
 }
 
-func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) string {
+func (gw *Gateway) ModifyUsername(msg *config.Message, dest *bridge.Bridge) string {
 	if dest.GetBool("StripNick") {
 		re := regexp.MustCompile("[^a-zA-Z0-9]+")
 		msg.Username = re.ReplaceAllString(msg.Username, "")
 	}
+
 	nick := dest.GetString("RemoteNickFormat")
 
 	// loop to replace nicks
@@ -445,7 +446,8 @@ func (gw *Gateway) SendMessage(
 
 	msg.Channel = channel.Name
 	msg.Avatar = gw.modifyAvatar(rmsg, dest)
-	msg.Username = gw.modifyUsername(rmsg, dest)
+	msg.OriginalUsername = msg.Username
+	msg.Username = gw.ModifyUsername(rmsg, dest)
 
 	msg.ID = gw.getDestMsgID(rmsg.Protocol+" "+rmsg.ID, dest, channel)
 

@@ -31,20 +31,22 @@ const (
 
 const ParentIDNotFound = "msg-parent-not-found"
 
+//nolint: tagliatelle
 type Message struct {
-	Text      string    `json:"text"`
-	Channel   string    `json:"channel"`
-	Username  string    `json:"username"`
-	UserID    string    `json:"userid"` // userid on the bridge
-	Avatar    string    `json:"avatar"`
-	Account   string    `json:"account"`
-	Event     string    `json:"event"`
-	Protocol  string    `json:"protocol"`
-	Gateway   string    `json:"gateway"`
-	ParentID  string    `json:"parent_id"`
-	Timestamp time.Time `json:"timestamp"`
-	ID        string    `json:"id"`
-	Extra     map[string][]interface{}
+	Text             string    `json:"text"`
+	Channel          string    `json:"channel"`
+	Username         string    `json:"username"`
+	OriginalUsername string    `json:"original_username"`
+	UserID           string    `json:"userid"` // userid on the bridge
+	Avatar           string    `json:"avatar"`
+	Account          string    `json:"account"`
+	Event            string    `json:"event"`
+	Protocol         string    `json:"protocol"`
+	Gateway          string    `json:"gateway"`
+	ParentID         string    `json:"parent_id"`
+	Timestamp        time.Time `json:"timestamp"`
+	ID               string    `json:"id"`
+	Extra            map[string][]interface{}
 }
 
 func (m Message) ParentNotFound() bool {
@@ -143,6 +145,10 @@ type Protocol struct {
 	ReplaceNicks           [][]string // all protocols
 	RemoteNickFormat       string     // all protocols
 	RunCommands            []string   // IRC
+	UseAppService          bool       // matrix
+	AppServiceHost         string     // matrix
+	AppServicePort         uint16     // matrix
+	AppServiceConfigPath   string     // matrix
 	Server                 string     // IRC,mattermost,XMPP,discord,matrix
 	SessionFile            string     // msteams,whatsapp
 	ShowJoinPart           bool       // all protocols

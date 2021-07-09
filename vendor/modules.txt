@@ -85,6 +85,8 @@ github.com/google/uuid
 # github.com/gopackage/ddp v0.0.0-20170117053602-652027933df4
 ## explicit
 github.com/gopackage/ddp
+# github.com/gorilla/mux v1.8.0
+github.com/gorilla/mux
 # github.com/gorilla/schema v1.2.0
 ## explicit
 github.com/gorilla/schema
@@ -137,8 +139,6 @@ github.com/labstack/gommon/random
 github.com/lrstanley/girc
 # github.com/magiconair/properties v1.8.5
 github.com/magiconair/properties
-# github.com/matrix-org/gomatrix v0.0.0-20210324163249-be2af5ef2e16
-## explicit
 # github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20210403163225-761e8622445d
 ## explicit
 github.com/matterbridge/Rocket.Chat.Go.SDK/models
@@ -352,6 +352,7 @@ golang.org/x/net/http2
 golang.org/x/net/http2/h2c
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
+golang.org/x/net/publicsuffix
 golang.org/x/net/websocket
 # golang.org/x/oauth2 v0.0.0-20210615190721-d04028783cf1
 ## explicit
@@ -447,9 +448,12 @@ layeh.com/gumble/gumble
 layeh.com/gumble/gumble/MumbleProto
 layeh.com/gumble/gumble/varint
 layeh.com/gumble/gumbleutil
+# maunium.net/go/maulogger/v2 v2.2.4
+maunium.net/go/maulogger/v2
 # maunium.net/go/mautrix v0.9.14
 ## explicit
 maunium.net/go/mautrix
+maunium.net/go/mautrix/appservice
 maunium.net/go/mautrix/crypto/attachment
 maunium.net/go/mautrix/crypto/utils
 maunium.net/go/mautrix/event

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	matrix "maunium.net/go/mautrix"
+	"maunium.net/go/mautrix/appservice"
 	"maunium.net/go/mautrix/event"
 	"maunium.net/go/mautrix/id"
 
@@ -24,21 +25,34 @@ var (
 	htmlReplacementTag = regexp.MustCompile("<[^>]*>")
 )
 
+type EventOrigin int
+
+const (
+	originClassicSyncer EventOrigin = iota
+	originAppService
+)
+
 type NicknameCacheEntry struct {
 	displayName string
 	lastUpdated time.Time
 }
 
+type RoomInfo struct {
+	name       string
+	appService bool
+}
+
 type Bmatrix struct {
 	mc          *matrix.Client
+	appService  *appservice.AppService
 	UserID      id.UserID
 	NicknameMap map[id.RoomID]map[id.UserID]NicknameCacheEntry
-	RoomMap     map[id.RoomID]string
+	RoomMap     map[id.RoomID]RoomInfo
 	rateMutex   sync.RWMutex
 	sync.RWMutex
 	*bridge.Config
-	stop    chan int
-	stopAck chan int
+	stop    chan struct{}
+	stopAck chan struct{}
 }
 
 type matrixUsername struct {
@@ -48,10 +62,10 @@ type matrixUsername struct {
 
 func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Bmatrix{Config: cfg}
-	b.RoomMap = make(map[id.RoomID]string)
+	b.RoomMap = make(map[id.RoomID]RoomInfo)
 	b.NicknameMap = make(map[id.RoomID]map[id.UserID]NicknameCacheEntry)
-	b.stop = make(chan int, 1)
-	b.stopAck = make(chan int, 1)
+	b.stop = make(chan struct{}, 2)
+	b.stopAck = make(chan struct{}, 2)
 	return b
 }
 
@@ -84,17 +98,34 @@ func (b *Bmatrix) Connect() error {
 		b.UserID = resp.UserID
 		b.Log.Info("Connection succeeded")
 	}
+
 	go b.handlematrix()
+
+	if b.GetBool("UseAppService") {
+		err := b.startAppService()
+		if err != nil {
+			b.Log.Errorf("couldn't start the application service: %#v", err)
+
+			return err
+		}
+	}
+
 	return nil
 }
 
 func (b *Bmatrix) Disconnect() error {
 	// tell the Sync() loop to exit
-	b.stop <- 0
+	b.stop <- struct{}{}
+	if b.appService != nil {
+		b.stop <- struct{}{}
+	}
 	b.mc.StopSync()
 
-	// wait for the syncer to terminate
+	// wait for both the syncer and the appservice to terminate
 	<-b.stopAck
+	if b.appService != nil {
+		<-b.stopAck
+	}
 
 	return nil
 }
@@ -107,7 +138,7 @@ func (b *Bmatrix) JoinChannel(channel config.ChannelInfo) error {
 		}
 
 		b.Lock()
-		b.RoomMap[resp.RoomID] = channel.Name
+		b.RoomMap[resp.RoomID] = RoomInfo{name: channel.Name, appService: false}
 		b.Unlock()
 
 		return nil
@@ -118,19 +149,20 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
 
 	channel := b.getRoomID(msg.Channel)
+	if channel == "" {
+		return "", fmt.Errorf("got message for unknown channel '%s'", msg.Channel)
+	}
 	b.Log.Debugf("Channel %s maps to channel id %s", msg.Channel, channel)
-
-	username := newMatrixUsername(msg.Username)
 
 	// Make a action /me of the message
 	if msg.Event == config.EventUserAction {
 		m := event.MessageEventContent{
 			MsgType:       event.MsgEmote,
-			Body:          username.plain + msg.Text,
-			FormattedBody: username.formatted + msg.Text,
+			Body:          msg.Text,
+			FormattedBody: msg.Text,
 		}
 
-		return b.sendEventWithRetries(channel, event.EventMessage, m)
+		return b.sendMessageEventWithRetries(channel, m, msg)
 	}
 
 	// Delete message
@@ -160,10 +192,10 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
 			m := event.MessageEventContent{
 				MsgType: event.MsgText,
-				Body:    rmsg.Username + rmsg.Text,
+				Body:    rmsg.Text,
 			}
 
-			_, err := b.sendEventWithRetries(channel, event.EventMessage, m)
+			_, err := b.sendMessageEventWithRetries(channel, m, msg)
 			if err != nil {
 				b.Log.Errorf("sendText failed: %s", err)
 			}
@@ -177,14 +209,14 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	// Edit message if we have an ID
 	if msg.ID != "" {
 		rmsg := event.MessageEventContent{
-			Body:    username.plain + msg.Text,
 			MsgType: event.MsgText,
+			Body:    msg.Text,
 		}
 		if b.GetBool("HTMLDisable") {
-			rmsg.FormattedBody = username.formatted + "* " + msg.Text
+			rmsg.FormattedBody = "* " + msg.Text
 		} else {
 			rmsg.Format = event.FormatHTML
-			rmsg.FormattedBody = username.formatted + "* " + helper.ParseMarkdown(msg.Text)
+			rmsg.FormattedBody = "* " + helper.ParseMarkdown(msg.Text)
 		}
 		rmsg.NewContent = &event.MessageEventContent{
 			Body:    rmsg.Body,
@@ -195,12 +227,12 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 			Type:    event.RelReplace,
 		}
 
-		return b.sendEventWithRetries(channel, event.EventMessage, rmsg)
+		return b.sendMessageEventWithRetries(channel, rmsg, msg)
 	}
 
 	m := event.MessageEventContent{
-		Body:          username.plain + msg.Text,
-		FormattedBody: username.formatted + msg.Text,
+		Body:          msg.Text,
+		FormattedBody: msg.Text,
 	}
 
 	// Use notices to send join/leave events
@@ -211,11 +243,11 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 		if b.GetBool("HTMLDisable") {
 			m.FormattedBody = ""
 		} else {
-			m.FormattedBody = username.formatted + helper.ParseMarkdown(msg.Text)
+			m.FormattedBody = helper.ParseMarkdown(msg.Text)
 		}
 	}
 
-	return b.sendEventWithRetries(channel, event.EventMessage, m)
+	return b.sendMessageEventWithRetries(channel, m, msg)
 }
 
 func (b *Bmatrix) handlematrix() {
@@ -226,14 +258,17 @@ func (b *Bmatrix) handlematrix() {
 		return
 	}
 
-	syncer.OnEventType(event.EventRedaction, b.handleEvent)
-	syncer.OnEventType(event.EventMessage, b.handleEvent)
-	syncer.OnEventType(event.StateMember, b.handleMemberChange)
+	for _, evType := range []event.Type{event.EventRedaction, event.EventMessage, event.StateMember} {
+		syncer.OnEventType(evType, func(source matrix.EventSource, ev *event.Event) {
+			b.handleEvent(originClassicSyncer, ev)
+		})
+	}
+
 	go func() {
 		for {
 			select {
 			case <-b.stop:
-				b.stopAck <- 1
+				b.stopAck <- struct{}{}
 
 				return
 			default:
@@ -245,26 +280,100 @@ func (b *Bmatrix) handlematrix() {
 	}()
 }
 
-//nolint: wrapcheck
-func (b *Bmatrix) sendEventWithRetries(channel id.RoomID, eventType event.Type, eventData interface{}) (string, error) {
-	var (
-		resp *matrix.RespSendEvent
-		err  error
-	)
-
-	err = b.retry(func() error {
-		resp, err = b.mc.SendMessageEvent(channel, eventType, eventData)
-
-		return err
-	})
-	if err != nil {
-		return "", err
+// Determines if the event comes from ourselves, in which case we want to ignore it
+func (b *Bmatrix) ignoreBridgingEvents(ev *event.Event) bool {
+	if ev.Sender == b.UserID {
+		return true
 	}
 
-	return string(resp.EventID), err
+	// ignore messages we may have sent via the appservice
+	if b.appService != nil {
+		if ev.Sender == b.appService.BotClient().UserID {
+			return true
+		}
+
+		// ignore virtual users messages (we ignore the 'exclusive' field of Namespace for now)
+		for _, namespace := range b.appService.Registration.Namespaces.UserIDs {
+			match, err := regexp.MatchString(namespace.Regex, ev.Sender.String())
+			if match && err == nil {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
-func (b *Bmatrix) handleMemberChange(source matrix.EventSource, ev *event.Event) {
+//nolint: funlen
+func (b *Bmatrix) handleEvent(origin EventOrigin, ev *event.Event) {
+	b.Log.Debugf("== Receiving event: %#v", ev)
+
+	if b.ignoreBridgingEvents(ev) {
+		return
+	}
+
+	if ev.Type == event.StateMember {
+		b.handleMemberChange(ev)
+
+		return
+	}
+
+	b.RLock()
+	channel, ok := b.RoomMap[ev.RoomID]
+	b.RUnlock()
+	if !ok {
+		// we don't know that room yet, that must be a room returned by an application service,
+		// but matterbridge doesn't handle those just yet
+		b.Log.Debugf("Unknown room %s", ev.RoomID)
+
+		return
+	}
+
+	// if we receive appservice events for this room, there is no need to check them with the classical syncer
+	if !channel.appService && origin == originAppService {
+		channel.appService = true
+		b.Lock()
+		b.RoomMap[ev.RoomID] = channel
+		b.Unlock()
+	}
+
+	// if we receive messages both via the classical matrix syncer and appserver, prefer appservice and throw away this duplicate event
+	if channel.appService && origin != originAppService {
+		b.Log.Debugf("Dropping event, should receive it via appservice: %s", ev.ID)
+
+		return
+	}
+
+	// Create our message
+	rmsg := config.Message{
+		Username: b.getDisplayName(ev.RoomID, ev.Sender),
+		Channel:  channel.name,
+		Account:  b.Account,
+		UserID:   string(ev.Sender),
+		ID:       string(ev.ID),
+		Avatar:   b.getAvatarURL(ev.Sender),
+	}
+
+	// Remove homeserver suffix if configured
+	if b.GetBool("NoHomeServerSuffix") {
+		re := regexp.MustCompile("(.*?):.*")
+		rmsg.Username = re.ReplaceAllString(rmsg.Username, `$1`)
+	}
+
+	// Delete event
+	if ev.Type == event.EventRedaction {
+		rmsg.Event = config.EventMsgDelete
+		rmsg.ID = string(ev.Redacts)
+		rmsg.Text = config.EventMsgDelete
+		b.Remote <- rmsg
+
+		return
+	}
+
+	b.handleMessage(rmsg, ev)
+}
+
+func (b *Bmatrix) handleMemberChange(ev *event.Event) {
 	member := ev.Content.AsMember()
 	if member == nil {
 		b.Log.Errorf("Couldn't process a member event:\n%#v", ev)
@@ -277,7 +386,16 @@ func (b *Bmatrix) handleMemberChange(source matrix.EventSource, ev *event.Event)
 	}
 }
 
-func (b *Bmatrix) handleMessage(rmsg config.Message, msg event.MessageEventContent, ev *event.Event) {
+//nolint: cyclop
+func (b *Bmatrix) handleMessage(rmsg config.Message, ev *event.Event) {
+	msg := ev.Content.AsMessage()
+	if msg == nil {
+		b.Log.Errorf("matterbridge don't support this event type: %s", ev.Type.Type)
+		b.Log.Debugf("Full event: %#v", ev)
+
+		return
+	}
+
 	rmsg.Text = msg.Body
 
 	// Do we have a /me action
@@ -296,7 +414,7 @@ func (b *Bmatrix) handleMessage(rmsg config.Message, msg event.MessageEventConte
 
 	// Do we have attachments (we only allow image,video or file msgtypes)
 	if msg.MsgType == event.MsgImage || msg.MsgType == event.MsgVideo || msg.MsgType == event.MsgFile {
-		err := b.handleDownloadFile(&rmsg, msg)
+		err := b.handleDownloadFile(&rmsg, *msg)
 		if err != nil {
 			b.Log.Errorf("download failed: %#v", err)
 		}
@@ -308,54 +426,6 @@ func (b *Bmatrix) handleMessage(rmsg config.Message, msg event.MessageEventConte
 	// not crucial, so no ratelimit check here
 	if err := b.mc.MarkRead(ev.RoomID, ev.ID); err != nil {
 		b.Log.Errorf("couldn't mark message as read %s", err.Error())
-	}
-}
-
-func (b *Bmatrix) handleEvent(source matrix.EventSource, ev *event.Event) {
-	b.Log.Debugf("== Receiving event: %#v", ev)
-	if ev.Sender != b.UserID {
-		b.RLock()
-		channel, ok := b.RoomMap[ev.RoomID]
-		b.RUnlock()
-		if !ok {
-			b.Log.Debugf("Unknown room %s", ev.RoomID)
-			return
-		}
-
-		// Create our message
-		rmsg := config.Message{
-			Username: b.getDisplayName(ev.RoomID, ev.Sender),
-			Channel:  channel,
-			Account:  b.Account,
-			UserID:   string(ev.Sender),
-			ID:       string(ev.ID),
-			Avatar:   b.getAvatarURL(ev.Sender),
-		}
-
-		// Remove homeserver suffix if configured
-		if b.GetBool("NoHomeServerSuffix") {
-			re := regexp.MustCompile("(.*?):.*")
-			rmsg.Username = re.ReplaceAllString(rmsg.Username, `$1`)
-		}
-
-		// Delete event
-		if ev.Type == event.EventRedaction {
-			rmsg.Event = config.EventMsgDelete
-			rmsg.ID = string(ev.Redacts)
-			rmsg.Text = config.EventMsgDelete
-			b.Remote <- rmsg
-			return
-		}
-
-		msg := ev.Content.AsMessage()
-		if msg == nil {
-			b.Log.Errorf("matterbridge don't support this event type: %s", ev.Type.Type)
-			b.Log.Debugf("Full event: %#v", ev)
-
-			return
-		}
-
-		b.handleMessage(rmsg, *msg, ev)
 	}
 }
 
@@ -411,7 +481,6 @@ func (b *Bmatrix) handleUploadFiles(msg *config.Message, channel id.RoomID) (str
 // handleUploadFile handles native upload of a file.
 //nolint: funlen
 func (b *Bmatrix) handleUploadFile(msg *config.Message, channel id.RoomID, fi *config.FileInfo) {
-	username := newMatrixUsername(msg.Username)
 	content := bytes.NewReader(*fi.Data)
 	sp := strings.Split(fi.Name, ".")
 	mtype := mime.TypeByExtension("." + sp[len(sp)-1])
@@ -419,11 +488,11 @@ func (b *Bmatrix) handleUploadFile(msg *config.Message, channel id.RoomID, fi *c
 	// image and video uploads send no username, we have to do this ourself here #715
 	m := event.MessageEventContent{
 		MsgType:       event.MsgText,
-		Body:          username.plain + fi.Comment,
-		FormattedBody: username.formatted + fi.Comment,
+		Body:          fi.Comment,
+		FormattedBody: fi.Comment,
 	}
 
-	_, err := b.sendEventWithRetries(channel, event.EventMessage, m)
+	_, err := b.sendMessageEventWithRetries(channel, m, *msg)
 	if err != nil {
 		b.Log.Errorf("file comment failed: %#v", err)
 	}
@@ -482,7 +551,7 @@ func (b *Bmatrix) handleUploadFile(msg *config.Message, channel id.RoomID, fi *c
 		}
 	}
 
-	_, err = b.sendEventWithRetries(channel, event.EventMessage, m)
+	_, err = b.sendMessageEventWithRetries(channel, m, *msg)
 	if err != nil {
 		b.Log.Errorf("sending the message referencing the uploaded file failed: %#v", err)
 	}

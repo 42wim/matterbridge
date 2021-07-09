@@ -7,7 +7,10 @@ import (
 	"time"
 
 	matrix "maunium.net/go/mautrix"
+	"maunium.net/go/mautrix/event"
 	"maunium.net/go/mautrix/id"
+
+	"github.com/42wim/matterbridge/bridge/config"
 )
 
 func newMatrixUsername(username string) *matrixUsername {
@@ -27,11 +30,11 @@ func newMatrixUsername(username string) *matrixUsername {
 }
 
 // getRoomID retrieves a matching room ID from the channel name.
-func (b *Bmatrix) getRoomID(channel string) id.RoomID {
+func (b *Bmatrix) getRoomID(channelName string) id.RoomID {
 	b.RLock()
 	defer b.RUnlock()
-	for ID, name := range b.RoomMap {
-		if name == channel {
+	for ID, channel := range b.RoomMap {
+		if channelName == channel.name {
 			return ID
 		}
 	}
@@ -173,5 +176,63 @@ func (b *Bmatrix) retry(f func() error) error {
 		} else {
 			return nil
 		}
+	}
+}
+
+type SendMessageEventWrapper struct {
+	inner *matrix.Client
+}
+
+//nolint: wrapcheck
+func (w SendMessageEventWrapper) SendMessageEvent(roomID id.RoomID, eventType event.Type, contentJSON interface{}) (resp *matrix.RespSendEvent, err error) {
+	return w.inner.SendMessageEvent(roomID, eventType, contentJSON)
+}
+
+//nolint: wrapcheck
+func (b *Bmatrix) sendMessageEventWithRetries(channel id.RoomID, message event.MessageEventContent, sourceMessage config.Message) (string, error) {
+	var (
+		resp   *matrix.RespSendEvent
+		client interface {
+			SendMessageEvent(roomID id.RoomID, eventType event.Type, contentJSON interface{}) (resp *matrix.RespSendEvent, err error)
+		}
+		err error
+	)
+
+	b.RLock()
+	appservice := b.RoomMap[channel].appService
+	b.RUnlock()
+
+	client = SendMessageEventWrapper{inner: b.mc}
+
+	if appservice {
+		// when using application services, the sender variable 'sender' is actually not a UserID but the username
+		username := sourceMessage.OriginalUsername
+		intent := b.appService.Intent(id.UserID(fmt.Sprintf("@%s%s:%s", "__bridge_", id.EncodeUserLocalpart(username), b.appService.HomeserverDomain)))
+		// if we can't change the display name it's not great but not the end of the world either, ignore it
+		// TODO: do not perform this action on every message, with an in-memory cache or something
+		_ = intent.SetDisplayName(username)
+		client = intent
+	} else {
+		b.applyUsernametoMessage(&message, sourceMessage)
+	}
+
+	err = b.retry(func() error {
+		resp, err = client.SendMessageEvent(channel, event.EventMessage, message)
+
+		return err
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return string(resp.EventID), err
+}
+
+func (b *Bmatrix) applyUsernametoMessage(newMsg *event.MessageEventContent, origMsg config.Message) {
+	username := newMatrixUsername(origMsg.Username)
+
+	newMsg.Body = username.plain + newMsg.Body
+	if newMsg.FormattedBody != "" {
+		newMsg.FormattedBody = username.formatted + newMsg.FormattedBody
 	}
 }
