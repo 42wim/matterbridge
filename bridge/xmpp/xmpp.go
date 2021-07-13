@@ -169,11 +169,21 @@ func (b *Bxmpp) postSlackCompatibleWebhook(msg config.Message) error {
 }
 
 func (b *Bxmpp) createXMPP() error {
-	if !strings.Contains(b.GetString("Jid"), "@") {
-		return fmt.Errorf("the Jid %s doesn't contain an @", b.GetString("Jid"))
+	var serverName string
+	switch {
+	case !b.GetBool("Anonymous"):
+		if !strings.Contains(b.GetString("Jid"), "@") {
+			return fmt.Errorf("the Jid %s doesn't contain an @", b.GetString("Jid"))
+		}
+		serverName = strings.Split(b.GetString("Jid"), "@")[1]
+	case !strings.Contains(b.GetString("Server"), ":"):
+		serverName = strings.Split(b.GetString("Server"), ":")[0]
+	default:
+		serverName = b.GetString("Server")
 	}
+
 	tc := &tls.Config{
-		ServerName:         strings.Split(b.GetString("Jid"), "@")[1],
+		ServerName:         serverName,
 		InsecureSkipVerify: b.GetBool("SkipTLSVerify"), // nolint: gosec
 	}
 

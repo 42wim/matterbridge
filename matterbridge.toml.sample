@@ -223,12 +223,16 @@ UseRelayMsg=false
 #REQUIRED
 Server="jabber.example.com:5222"
 
+#Use anonymous MUC login
+#OPTIONAL (default false)
+Anonymous=false
+
 #Jid
-#REQUIRED
+#REQUIRED if Anonymous=false
 Jid="user@example.com"
 
 #Password
-#REQUIRED
+#REQUIRED if Anonymous=false
 Password="yourpass"
 
 #MUC
