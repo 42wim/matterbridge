@@ -1714,7 +1714,7 @@ StripNick=false
 #The MediaServerDownload will be used so that bridges without native uploading support:
 #gitter, irc and xmpp will be shown links to the files on MediaServerDownload
 #
-#More information https://github.com/42wim/matterbridge/wiki/Mediaserver-setup-%5Badvanced%5D
+#More information https://github.com/42wim/matterbridge/wiki/Mediaserver-setup-%28advanced%29
 #OPTIONAL (default empty)
 MediaServerUpload="https://user:pass@yourserver.com/upload"
 #OPTIONAL (default empty)
