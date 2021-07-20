@@ -67,6 +67,7 @@ And more...
       - [Bridge slack (#general) - discord (general)](#bridge-slack-general---discord-general)
   - [Running](#running)
     - [Docker](#docker)
+    - [Systemd](#systemd)
   - [Changelog](#changelog)
   - [FAQ](#faq)
   - [Related projects](#related-projects)
@@ -285,6 +286,10 @@ Usage of ./matterbridge:
 ### Docker
 
 Please take a look at the [Docker Wiki page](https://github.com/42wim/matterbridge/wiki/Deploy:-Docker) for more information.
+
+### Systemd
+
+Please take a look at the [Service Files page](https://github.com/42wim/matterbridge/wiki/Service-files) for more information.
 
 ## Changelog
 
