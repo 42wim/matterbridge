@@ -459,7 +459,7 @@ func (b *Bslack) uploadFile(msg *config.Message, channelID string) {
 		b.cache.Add("filename"+fi.Name, ts)
 		initialComment := fmt.Sprintf("File from %s", msg.Username)
 		if fi.Comment != "" {
-			initialComment += fmt.Sprintf("with comment: %s", fi.Comment)
+			initialComment += fmt.Sprintf(" with comment: %s", fi.Comment)
 		}
 		res, err := b.sc.UploadFile(slack.FileUploadParameters{
 			Reader:          bytes.NewReader(*fi.Data),
