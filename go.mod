@@ -25,7 +25,7 @@ require (
 	github.com/matrix-org/gomatrix v0.0.0-20210324163249-be2af5ef2e16
 	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20210403163225-761e8622445d
 	github.com/matterbridge/discordgo v0.21.2-0.20210201201054-fb39a175b4f7
-	github.com/matterbridge/go-xmpp v0.0.0-20200418225040-c8a3a57b4050
+	github.com/matterbridge/go-xmpp v0.0.0-20210731150933-5702291c239f
 	github.com/matterbridge/gozulipbot v0.0.0-20200820220548-be5824faa913
 	github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba
 	github.com/mattermost/mattermost-server/v5 v5.30.1

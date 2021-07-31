@@ -335,13 +335,19 @@ func (c *Client) init(o *Options) error {
 	var domain string
 	var user string
 	a := strings.SplitN(o.User, "@", 2)
-	if len(o.User) > 0 {
+	// Check if User is not empty. Otherwise, we'll be attempting ANONYMOUS with Host domain.
+	switch {
+	case len(o.User) > 0:
 		if len(a) != 2 {
 			return errors.New("xmpp: invalid username (want user@domain): " + o.User)
 		}
 		user = a[0]
 		domain = a[1]
-	} // Otherwise, we'll be attempting ANONYMOUS
+	case strings.Contains(o.Host, ":"):
+		domain = strings.SplitN(o.Host, ":", 2)[0]
+	default:
+		domain = o.Host
+	}
 
 	// Declare intent to be a jabber client and gather stream features.
 	f, err := c.startStream(o, domain)
