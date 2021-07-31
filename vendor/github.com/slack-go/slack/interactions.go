@@ -121,6 +121,7 @@ type Container struct {
 	Type         string      `json:"type"`
 	ViewID       string      `json:"view_id"`
 	MessageTs    string      `json:"message_ts"`
+	ThreadTs     string      `json:"thread_ts,omitempty"`
 	AttachmentID json.Number `json:"attachment_id"`
 	ChannelID    string      `json:"channel_id"`
 	IsEphemeral  bool        `json:"is_ephemeral"`
