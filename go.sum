@@ -562,8 +562,8 @@ github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20210403163225-761e8622445d h1
 github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20210403163225-761e8622445d/go.mod h1:c6MxwqHD+0HvtAJjsHMIdPCiAwGiQwPRPTp69ACMg8A=
 github.com/matterbridge/discordgo v0.21.2-0.20210201201054-fb39a175b4f7 h1:4J2YZuY8dIYrxbLMsWGqPZb/B59ygCwSBkyZHez5PSY=
 github.com/matterbridge/discordgo v0.21.2-0.20210201201054-fb39a175b4f7/go.mod h1:411nZYv0UMMrtppR5glXop1foboJiFAowy+42U+Ahvw=
-github.com/matterbridge/go-xmpp v0.0.0-20200418225040-c8a3a57b4050 h1:kWkP1lXpkvtoNL08jkP3XQH/zvDOEXJpdCJd/DlIvMw=
-github.com/matterbridge/go-xmpp v0.0.0-20200418225040-c8a3a57b4050/go.mod h1:ECDRehsR9TYTKCAsRS8/wLeOk6UUqDydw47ln7wG41Q=
+github.com/matterbridge/go-xmpp v0.0.0-20210731150933-5702291c239f h1:1hfavl4YOoRjgTBWezeX8WXCGnhrxnfEgQtb38wQnyg=
+github.com/matterbridge/go-xmpp v0.0.0-20210731150933-5702291c239f/go.mod h1:ECDRehsR9TYTKCAsRS8/wLeOk6UUqDydw47ln7wG41Q=
 github.com/matterbridge/gozulipbot v0.0.0-20200820220548-be5824faa913 h1:5UGr9fLsvAvhjP6i5XJmd0ZIwYVR2gZCzU1lJZ7wfLY=
 github.com/matterbridge/gozulipbot v0.0.0-20200820220548-be5824faa913/go.mod h1:yAjnZ34DuDyPHMPHHjOsTk/FefW4JJjoMMCGt/8uuQA=
 github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba h1:XleOY4IjAEIcxAh+IFwT5JT5Ze3RHiYz6m+4ZfZ0rc0=
@@ -1317,8 +1317,6 @@ golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898/go.mod h1:I/5z698sn9Ka8T
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 h1:go1bK/D/BFZV2I8cIQd1NKEZ+0owSTG1fDTci4IqFcE=
 golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
-gomod.garykim.dev/nc-talk v0.2.2 h1:+U+daJFPPuwM7yRXYazeMHZgIBSGP6SeQURO0O5a32I=
-gomod.garykim.dev/nc-talk v0.2.2/go.mod h1:q/Adot/H7iqi+H4lANopV7/xcMf+sX3AZXUXqiITwok=
 gomod.garykim.dev/nc-talk v0.3.0 h1:MZxLc/gX2/+bdOw4xt6pi+qQFUQld1woGfw1hEJ0fbM=
 gomod.garykim.dev/nc-talk v0.3.0/go.mod h1:q/Adot/H7iqi+H4lANopV7/xcMf+sX3AZXUXqiITwok=
 google.golang.org/api v0.0.0-20180910000450-7ca32eb868bf/go.mod h1:4mhQ8q/RsB7i+udVvVy5NUi08OU8ZlA0gRVgrF7VFY0=
