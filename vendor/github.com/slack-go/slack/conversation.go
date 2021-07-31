@@ -458,6 +458,7 @@ type GetConversationsParameters struct {
 	ExcludeArchived bool
 	Limit           int
 	Types           []string
+	TeamID          string
 }
 
 // GetConversations returns the list of channels in a Slack team
@@ -481,6 +482,9 @@ func (api *Client) GetConversationsContext(ctx context.Context, params *GetConve
 	}
 	if params.ExcludeArchived {
 		values.Add("exclude_archived", strconv.FormatBool(params.ExcludeArchived))
+	}
+	if params.TeamID != "" {
+		values.Add("team_id", params.TeamID)
 	}
 
 	response := struct {

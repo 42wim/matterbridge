@@ -7,12 +7,12 @@ require (
 	github.com/Philipp15b/go-steam v1.0.1-0.20200727090957-6ae9b3c0a560
 	github.com/Rhymen/go-whatsapp v0.1.2-0.20210615184944-2b8a3e9b8aa2
 	github.com/SevereCloud/vksdk/v2 v2.10.0
-	github.com/d5/tengo/v2 v2.7.0
+	github.com/d5/tengo/v2 v2.8.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-telegram-bot-api/telegram-bot-api v1.0.1-0.20200524105306-7434b0456e81
 	github.com/gomarkdown/markdown v0.0.0-20210514010506-3b9f47219fe7
-	github.com/google/gops v0.3.18
+	github.com/google/gops v0.3.19
 	github.com/gopackage/ddp v0.0.0-20170117053602-652027933df4 // indirect
 	github.com/gorilla/schema v1.2.0
 	github.com/gorilla/websocket v1.4.2
@@ -20,7 +20,7 @@ require (
 	github.com/jpillora/backoff v1.0.0
 	github.com/keybase/go-keybase-chat-bot v0.0.0-20200505163032-5cacf52379da
 	github.com/kyokomi/emoji/v2 v2.2.8
-	github.com/labstack/echo/v4 v4.3.0
+	github.com/labstack/echo/v4 v4.4.0
 	github.com/lrstanley/girc v0.0.0-20210611213246-771323f1624b
 	github.com/matrix-org/gomatrix v0.0.0-20210324163249-be2af5ef2e16
 	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20210403163225-761e8622445d
@@ -42,16 +42,16 @@ require (
 	github.com/shazow/ssh-chat v1.10.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e // indirect
-	github.com/slack-go/slack v0.9.1
-	github.com/spf13/viper v1.8.0
+	github.com/slack-go/slack v0.9.3
+	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/vincent-petithory/dataurl v0.0.0-20191104211930-d1553a71de50
 	github.com/writeas/go-strip-markdown v2.0.1+incompatible
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2 // indirect
 	github.com/yaegashi/msgraph.go v0.1.4
 	github.com/zfjagann/golang-ring v0.0.0-20210116075443-7c86fdb43134
-	golang.org/x/image v0.0.0-20210607152325-775e3b0c77b9
-	golang.org/x/oauth2 v0.0.0-20210615190721-d04028783cf1
+	golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d
+	golang.org/x/oauth2 v0.0.0-20210628180205-a41e5a781914
 	gomod.garykim.dev/nc-talk v0.3.0
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 	layeh.com/gumble v0.0.0-20200818122324-146f9205029b

@@ -54,6 +54,20 @@ func NewStaticSelectDialogInput(name, label string, options []DialogSelectOption
 	}
 }
 
+// NewExternalSelectDialogInput constructor for a `external` datasource menu input
+func NewExternalSelectDialogInput(name, label string, options []DialogSelectOption) *DialogInputSelect {
+	return &DialogInputSelect{
+		DialogInput: DialogInput{
+			Type:     InputTypeSelect,
+			Name:     name,
+			Label:    label,
+			Optional: true,
+		},
+		DataSource: DialogDataSourceExternal,
+		Options:    options,
+	}
+}
+
 // NewGroupedSelectDialogInput creates grouped options select input for Dialogs.
 func NewGroupedSelectDialogInput(name, label string, options []DialogOptionGroup) *DialogInputSelect {
 	return &DialogInputSelect{

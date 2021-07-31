@@ -2,7 +2,6 @@ package echo
 
 import (
 	"encoding"
-	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -66,13 +65,13 @@ func (b *DefaultBinder) BindBody(c Context, i interface{}) (err error) {
 	ctype := req.Header.Get(HeaderContentType)
 	switch {
 	case strings.HasPrefix(ctype, MIMEApplicationJSON):
-		if err = json.NewDecoder(req.Body).Decode(i); err != nil {
-			if ute, ok := err.(*json.UnmarshalTypeError); ok {
-				return NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unmarshal type error: expected=%v, got=%v, field=%v, offset=%v", ute.Type, ute.Value, ute.Field, ute.Offset)).SetInternal(err)
-			} else if se, ok := err.(*json.SyntaxError); ok {
-				return NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Syntax error: offset=%v, error=%v", se.Offset, se.Error())).SetInternal(err)
+		if err = c.Echo().JSONSerializer.Deserialize(c, i); err != nil {
+			switch err.(type) {
+			case *HTTPError:
+				return err
+			default:
+				return NewHTTPError(http.StatusBadRequest, err.Error()).SetInternal(err)
 			}
-			return NewHTTPError(http.StatusBadRequest, err.Error()).SetInternal(err)
 		}
 	case strings.HasPrefix(ctype, MIMEApplicationXML), strings.HasPrefix(ctype, MIMETextXML):
 		if err = xml.NewDecoder(req.Body).Decode(i); err != nil {
@@ -93,6 +92,14 @@ func (b *DefaultBinder) BindBody(c Context, i interface{}) (err error) {
 		}
 	default:
 		return ErrUnsupportedMediaType
+	}
+	return nil
+}
+
+// BindHeaders binds HTTP headers to a bindable object
+func (b *DefaultBinder) BindHeaders(c Context, i interface{}) error {
+	if err := b.bindData(i, c.Request().Header, "header"); err != nil {
+		return NewHTTPError(http.StatusBadRequest, err.Error()).SetInternal(err)
 	}
 	return nil
 }
@@ -134,7 +141,7 @@ func (b *DefaultBinder) bindData(destination interface{}, data map[string][]stri
 
 	// !struct
 	if typ.Kind() != reflect.Struct {
-		if tag == "param" || tag == "query" {
+		if tag == "param" || tag == "query" || tag == "header" {
 			// incompatible type, data is probably to be found in the body
 			return nil
 		}
