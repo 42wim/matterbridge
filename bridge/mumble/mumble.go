@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net"
 	"strconv"
+	"strings"
 	"time"
 
 	"layeh.com/gumble/gumble"
@@ -252,8 +253,10 @@ func (b *Bmumble) processMessage(msg *config.Message) {
 	} else {
 		msgLines = helper.GetSubLines(msg.Text, 0, b.GetString("MessageClipped"))
 	}
-	// Send the individual lindes
+	// Send the individual lines
 	for i := range msgLines {
+		// Remove unnecessary newline character, since either way we're sending it as individual lines
+		msgLines[i] = strings.TrimSuffix(msgLines[i], "\n")
 		b.client.Self.Channel.Send(msg.Username+msgLines[i], false)
 	}
 }
