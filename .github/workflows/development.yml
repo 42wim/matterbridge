@@ -11,12 +11,12 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v2
         with:
-          version: v1.29
+          version: latest
           args: "-v --new-from-rev HEAD~5"
   test-build-upload:
     strategy:
       matrix:
-        go-version: [1.15.x, 1.16.x]
+        go-version: [1.16.x, 1.17.x]
         platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     steps:
@@ -39,19 +39,19 @@ jobs:
         GOOS=windows GOARCH=amd64 go build -ldflags "-s -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o output/win/matterbridge-$VERSION-windows-amd64.exe
         GOOS=darwin GOARCH=amd64 go build -ldflags "-s -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o output/mac/matterbridge-$VERSION-darwin-amd64
     - name: Upload linux 64-bit
-      if: startsWith(matrix.go-version,'1.16')
+      if: startsWith(matrix.go-version,'1.17')
       uses: actions/upload-artifact@v2
       with:
         name: matterbridge-linux-64bit
         path: output/lin
     - name: Upload windows 64-bit
-      if: startsWith(matrix.go-version,'1.16')
+      if: startsWith(matrix.go-version,'1.17')
       uses: actions/upload-artifact@v2
       with:
         name: matterbridge-windows-64bit
         path: output/win
     - name: Upload darwin 64-bit
-      if: startsWith(matrix.go-version,'1.16')
+      if: startsWith(matrix.go-version,'1.17')
       uses: actions/upload-artifact@v2
       with:
         name: matterbridge-darwin-64bit
