@@ -4,6 +4,11 @@ github.com/42wim/go-gitter
 # github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f
 ## explicit
 github.com/Baozisoftware/qrcode-terminal-go
+# github.com/Benau/go_rlottie v0.0.0-20210807002906-98c1b2421989
+github.com/Benau/go_rlottie
+# github.com/Benau/tgsconverter v0.0.0-20210809170556-99f4a4f6337f
+## explicit
+github.com/Benau/tgsconverter/libtgsconverter
 # github.com/Jeffail/gabs v1.4.0
 ## explicit
 github.com/Jeffail/gabs
@@ -36,6 +41,8 @@ github.com/SevereCloud/vksdk/v2/events
 github.com/SevereCloud/vksdk/v2/internal
 github.com/SevereCloud/vksdk/v2/longpoll-bot
 github.com/SevereCloud/vksdk/v2/object
+# github.com/av-elier/go-decimal-to-rational v0.0.0-20191127152832-89e6aad02ecf
+github.com/av-elier/go-decimal-to-rational
 # github.com/blang/semver v3.5.1+incompatible
 github.com/blang/semver
 # github.com/d5/tengo/v2 v2.8.0
@@ -111,6 +118,8 @@ github.com/hashicorp/hcl/json/token
 # github.com/jpillora/backoff v1.0.0
 ## explicit
 github.com/jpillora/backoff
+# github.com/kettek/apng v0.0.0-20191108220231-414630eed80f
+github.com/kettek/apng
 # github.com/keybase/go-keybase-chat-bot v0.0.0-20200505163032-5cacf52379da
 ## explicit
 github.com/keybase/go-keybase-chat-bot/kbchat
@@ -238,6 +247,8 @@ github.com/shazow/ssh-chat/sshd/terminal
 # github.com/sirupsen/logrus v1.8.1
 ## explicit
 github.com/sirupsen/logrus
+# github.com/sizeofint/webpanimation v0.0.0-20210809145948-1d2b32119882
+github.com/sizeofint/webpanimation
 # github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 ## explicit
 github.com/skip2/go-qrcode
