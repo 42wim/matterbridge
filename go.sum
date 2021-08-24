@@ -56,6 +56,10 @@ github.com/Azure/azure-sdk-for-go v26.5.0+incompatible/go.mod h1:9XXNKU+eRnpl9mo
 github.com/Azure/go-autorest v11.5.2+incompatible/go.mod h1:r+4oMnoxhatjLLJ6zxSWATqVooLgysK6ZNox3g/xq24=
 github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f h1:2dk3eOnYllh+wUOuDhOoC2vUVoJF/5z478ryJ+wzEII=
 github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f/go.mod h1:4a58ifQTEe2uwwsaqbh3i2un5/CBPg+At/qHpt18Tmk=
+github.com/Benau/go_rlottie v0.0.0-20210807002906-98c1b2421989 h1:+wrfJITuBoQOE6ST4k3c4EortNVQXVhfAbwt0M/j0+Y=
+github.com/Benau/go_rlottie v0.0.0-20210807002906-98c1b2421989/go.mod h1:aDWSWjsayFyGTvHZH3v4ijGXEBe51xcEkAK+NUWeOeo=
+github.com/Benau/tgsconverter v0.0.0-20210809170556-99f4a4f6337f h1:aUkwZDEMJIGRcWlSDifSLoKG37UCOH/DPeG52/xwois=
+github.com/Benau/tgsconverter v0.0.0-20210809170556-99f4a4f6337f/go.mod h1:AQiQKKI/YIIctvDt3hI3c1S05/JXMM7v/sQcRd0paVE=
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
@@ -118,6 +122,8 @@ github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmV
 github.com/armon/go-metrics v0.3.4/go.mod h1:4O98XIr/9W0sxpJ8UaYkvjk10Iff7SnFrb4QAOwNTFc=
 github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
 github.com/aryann/difflib v0.0.0-20170710044230-e206f873d14a/go.mod h1:DAHtR1m6lCRdSC2Tm3DSWRPvIPr6xNKyeHdqDQSQT+A=
+github.com/av-elier/go-decimal-to-rational v0.0.0-20191127152832-89e6aad02ecf h1:csfEAyvOG4/498Q4SyF48ysFqQC9ESj3o8ppRtg+Rog=
+github.com/av-elier/go-decimal-to-rational v0.0.0-20191127152832-89e6aad02ecf/go.mod h1:POPnOeaYF7U9o3PjLTb9icRfEOxjBNLRXh9BLximJGM=
 github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1/go.mod h1:noBAuukeYOXa0aXGqxr24tADqkwDO2KRD15FsuaZ5a8=
 github.com/aws/aws-lambda-go v1.13.3/go.mod h1:4UKl9IzQMoD+QF79YdCuzCwp8VbmG4VAQwij/eHl5CU=
 github.com/aws/aws-sdk-go v1.19.0/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
@@ -501,6 +507,8 @@ github.com/kataras/golog v0.0.9/go.mod h1:12HJgwBIZFNGL0EJnMRhmvGA0PQGx8VFwrZtM4
 github.com/kataras/iris/v12 v12.0.1/go.mod h1:udK4vLQKkdDqMGJJVd/msuMtN6hpYJhg/lSzuxjhO+U=
 github.com/kataras/neffos v0.0.10/go.mod h1:ZYmJC07hQPW67eKuzlfY7SO3bC0mw83A3j6im82hfqw=
 github.com/kataras/pio v0.0.0-20190103105442-ea782b38602d/go.mod h1:NV88laa9UiiDuX9AhMbDPkGYSPugBOV6yTZB1l2K9Z0=
+github.com/kettek/apng v0.0.0-20191108220231-414630eed80f h1:dnCYnTSltLuPMfc7dMrkz2uBUcEf/OFBR8yRh3oRT98=
+github.com/kettek/apng v0.0.0-20191108220231-414630eed80f/go.mod h1:x78/VRQYKuCftMWS0uK5e+F5RJ7S4gSlESRWI0Prl6Q=
 github.com/keybase/go-keybase-chat-bot v0.0.0-20200505163032-5cacf52379da h1:LK+8uBG3kNikj664cjFt88RBmuGmonxkXv2rUVfbqz4=
 github.com/keybase/go-keybase-chat-bot v0.0.0-20200505163032-5cacf52379da/go.mod h1:xJA+X9ZVyT/irGldcb7q1XnJBq5F9s5H9h2L44Y+poY=
 github.com/keybase/go-ps v0.0.0-20190827175125-91aafc93ba19/go.mod h1:hY+WOq6m2FpbvyrI93sMaypsttvaIL5nhVR92dTMUcQ=
@@ -838,6 +846,8 @@ github.com/sirupsen/logrus v1.6.0/go.mod h1:7uNnSEd1DgxDLC74fIahvMZmmYsHGZGEOFrf
 github.com/sirupsen/logrus v1.7.0/go.mod h1:yWOB1SBYBC5VeMP7gHvWumXLIWorT60ONWic61uBYv0=
 github.com/sirupsen/logrus v1.8.1 h1:dJKuHgqk1NNQlqoA6BTlM1Wf9DOH3NBjQyu0h9+AZZE=
 github.com/sirupsen/logrus v1.8.1/go.mod h1:yWOB1SBYBC5VeMP7gHvWumXLIWorT60ONWic61uBYv0=
+github.com/sizeofint/webpanimation v0.0.0-20210809145948-1d2b32119882 h1:A7o8tOERTtpD/poS+2VoassCjXpjHn916luXbf5QKD0=
+github.com/sizeofint/webpanimation v0.0.0-20210809145948-1d2b32119882/go.mod h1:5IwJoz9Pw7JsrCN4/skkxUtSWT7myuUPLhCgv6Q5vvQ=
 github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e h1:MRM5ITcdelLK2j1vwZ3Je0FKVCfqOLp5zO6trqMLYs0=
 github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e/go.mod h1:XV66xRDqSt+GTGFMVlhk3ULuV0y9ZmzeVGR4mloJI3M=
 github.com/slack-go/slack v0.9.3 h1:H1UwldF1zWQakjaSymbHMgG3Pg1BiClez/a7JRLdxKc=

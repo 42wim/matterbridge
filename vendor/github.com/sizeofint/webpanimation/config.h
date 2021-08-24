@@ -1,0 +1,4 @@
+#ifndef WEBANIMATION_HPP
+#define WEBANIMATION_HPP
+#define WEBP_USE_THREAD
+#endif
