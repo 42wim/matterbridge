@@ -4,6 +4,7 @@ package helper
 
 import (
 	"fmt"
+	
 	"github.com/Benau/tgsconverter/libtgsconverter"
 	"github.com/sirupsen/logrus"
 )
@@ -18,7 +19,7 @@ func ConvertTgsToX(data *[]byte, outputFormat string, logger *logrus.Entry) erro
 	options.SetExtension(outputFormat)
 	blob, err := libtgsconverter.ImportFromData(*data, options)
 	if err != nil {
-		return fmt.Errorf("Failed to run libtgsconverter.ImportFromData: %s", err.Error())
+		return fmt.Errorf("failed to run libtgsconverter.ImportFromData: %s", err.Error())
 	}
 
 	*data = blob
