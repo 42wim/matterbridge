@@ -3,6 +3,7 @@ package bmattermost
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -134,8 +135,8 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 		msg.Text = fmt.Sprintf("[thread]: %s", msg.Text)
 		// if text "mattermost" is present in the parentID/rootID (present in case root message is started on mattermost)
 		// separate it from the ID and use correct ID as parentID/rootID
-		if len(rootID) > 10 && rootID[0:10] == "mattermost" {
-			rootID = rootID[11:]
+		if strings.HasPrefix(rootID, "mattermost") {
+			rootID = rootID[len("mattermost")+1:] // remove the text 'mattermost' and space followed by it from ID
 		}
 
 		// Set rootID of reply message
