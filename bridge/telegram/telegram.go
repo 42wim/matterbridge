@@ -17,8 +17,6 @@ const (
 	HTMLFormat  = "HTML"
 	HTMLNick    = "htmlnick"
 	MarkdownV2  = "MarkdownV2"
-	FormatPng   = "png"
-	FormatWebp  = "webp"
 )
 
 type Btelegram struct {
@@ -32,10 +30,10 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	if tgsConvertFormat != "" {
 		err := helper.CanConvertTgsToX()
 		if err != nil {
-			log.Fatalf("Telegram bridge configured to convert .tgs files to '%s', but lottie does not appear to work:\n%#v", tgsConvertFormat, err)
+			log.Fatalf("Telegram bridge configured to convert .tgs files to '%s', but %s does not appear to work:\n%#v", tgsConvertFormat, helper.LottieBackend(), err)
 		}
-		if tgsConvertFormat != FormatPng && tgsConvertFormat != FormatWebp {
-			log.Fatalf("Telegram bridge configured to convert .tgs files to '%s', but only '%s' and '%s' are supported.", FormatPng, FormatWebp, tgsConvertFormat)
+		if !helper.SupportsFormat(tgsConvertFormat) {
+			log.Fatalf("Telegram bridge configured to convert .tgs files to '%s', but %s doesn't support it.", tgsConvertFormat, helper.LottieBackend())
 		}
 	}
 	return &Btelegram{Config: cfg, avatarMap: make(map[string]string)}

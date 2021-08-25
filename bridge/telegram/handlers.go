@@ -220,20 +220,10 @@ func (b *Btelegram) handleDownloadAvatar(userid int, channel string) {
 }
 
 func (b *Btelegram) maybeConvertTgs(name *string, data *[]byte) {
-	var format string
-	switch b.GetString("MediaConvertTgs") {
-	case FormatWebp:
-		b.Log.Debugf("Tgs to WebP conversion enabled, converting %v", name)
-		format = FormatWebp
-	case FormatPng:
-		// The WebP to PNG converter can't handle animated webp files yet,
-		// and I'm not going to write a path for x/image/webp.
-		// The error message would be:
-		//     conversion failed: webp: non-Alpha VP8X is not implemented
-		// So instead, we tell lottie to directly go to PNG.
-		b.Log.Debugf("Tgs to PNG conversion enabled, converting %v", name)
-		format = FormatPng
-	default:
+	format := b.GetString("MediaConvertTgs")
+	if helper.SupportsFormat(format) {
+		b.Log.Debugf("Format supported by %s, converting %v", helper.LottieBackend(), name)
+	} else {
 		// Otherwise, no conversion was requested. Trying to run the usual webp
 		// converter would fail, because '.tgs.webp' is actually a gzipped JSON
 		// file, and has nothing to do with WebP.

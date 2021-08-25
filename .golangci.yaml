@@ -182,6 +182,9 @@ linters:
     - interfacer
     - goheader
     - noctx
+    - gci
+    - errorlint
+    - nlreturn
 
 # rules to deal with reported isues
 issues:
