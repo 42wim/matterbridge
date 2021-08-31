@@ -142,7 +142,6 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 		// Set rootID of reply message
 		// here 'msg.ParentID' is used, but this is stored as 'RootId' at mattermost, refer to function 'PostMessage' below
 		msg.ParentID = rootID
-
 	}
 
 	// Upload a file if it exists
