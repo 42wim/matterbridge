@@ -125,6 +125,7 @@ func (b *Bzulip) handleQueue() error {
 			b.Log.Debug("heartbeat received.")
 		default:
 			b.Log.Debugf("receiving error: %#v", err)
+			time.Sleep(time.Second * 10)
 		}
 		if err != nil {
 			continue
