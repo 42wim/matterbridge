@@ -22,7 +22,7 @@ builds:
     - 6
     - 7
   ldflags:
-    - -s -w -X main.githash={{.ShortCommit}}
+    - -s -w -X github.com/42wim/matterbridge/version.GitHash={{.ShortCommit}}
 
 archives:
   -

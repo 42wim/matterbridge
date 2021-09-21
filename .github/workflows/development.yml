@@ -35,9 +35,9 @@ jobs:
       run: |
         mkdir -p output/{win,lin,arm,mac}
         VERSION=$(git describe --tags)
-        CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-s -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o output/lin/matterbridge-$VERSION-linux-amd64
-        CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags "-s -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o output/win/matterbridge-$VERSION-windows-amd64.exe
-        CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags "-s -X main.githash=$(git log --pretty=format:'%h' -n 1)" -o output/mac/matterbridge-$VERSION-darwin-amd64
+        CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-s -X github.com/42wim/matterbridge/version.GitHash=$(git log --pretty=format:'%h' -n 1)" -o output/lin/matterbridge-$VERSION-linux-amd64
+        CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags "-s -X github.com/42wim/matterbridge/version.GitHash=$(git log --pretty=format:'%h' -n 1)" -o output/win/matterbridge-$VERSION-windows-amd64.exe
+        CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags "-s -X github.com/42wim/matterbridge/version.GitHash=$(git log --pretty=format:'%h' -n 1)" -o output/mac/matterbridge-$VERSION-darwin-amd64
     - name: Upload linux 64-bit
       if: startsWith(matrix.go-version,'1.17')
       uses: actions/upload-artifact@v2

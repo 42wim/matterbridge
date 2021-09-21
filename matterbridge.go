@@ -10,15 +10,13 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/gateway"
 	"github.com/42wim/matterbridge/gateway/bridgemap"
+	"github.com/42wim/matterbridge/version"
 	"github.com/google/gops/agent"
 	prefixed "github.com/matterbridge/logrus-prefixed-formatter"
 	"github.com/sirupsen/logrus"
 )
 
 var (
-	version = "1.23.1-dev"
-	githash string
-
 	flagConfig  = flag.String("conf", "matterbridge.toml", "config file")
 	flagDebug   = flag.Bool("debug", false, "enable debug")
 	flagVersion = flag.Bool("version", false, "show version")
@@ -28,7 +26,7 @@ var (
 func main() {
 	flag.Parse()
 	if *flagVersion {
-		fmt.Printf("version: %s %s\n", version, githash)
+		fmt.Printf("version: %s %s\n", version.Release, version.GitHash)
 		return
 	}
 
@@ -43,8 +41,8 @@ func main() {
 		}
 	}
 
-	logger.Printf("Running version %s %s", version, githash)
-	if strings.Contains(version, "-dev") {
+	logger.Printf("Running version %s %s", version.Release, version.GitHash)
+	if strings.Contains(version.Release, "-dev") {
 		logger.Println("WARNING: THIS IS A DEVELOPMENT VERSION. Things may break.")
 	}
 

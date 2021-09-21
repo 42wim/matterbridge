@@ -5,7 +5,7 @@ RUN apk add \
     go \
     git \
   && cd /go/src/matterbridge \
-  && go build -mod vendor -ldflags "-X main.githash=$(git log --pretty=format:'%h' -n 1)" -o /bin/matterbridge
+  && go build -mod vendor -ldflags "-X github.com/42wim/matterbridge/version.GitHash=$(git log --pretty=format:'%h' -n 1)" -o /bin/matterbridge
 
 FROM alpine
 RUN apk --no-cache add \
