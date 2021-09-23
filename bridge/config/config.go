@@ -138,6 +138,7 @@ type Protocol struct {
 	QuoteDisable           bool       // telegram
 	QuoteFormat            string     // telegram
 	QuoteLengthLimit       int        // telegram
+	RealName               string     // IRC
 	RejoinDelay            int        // IRC
 	ReplaceMessages        [][]string // all protocols
 	ReplaceNicks           [][]string // all protocols
@@ -169,6 +170,7 @@ type Protocol struct {
 	UseFirstName           bool       // telegram
 	UseUserName            bool       // discord, matrix
 	UseInsecureURL         bool       // telegram
+	UserName               string     // IRC
 	VerboseJoinPart        bool       // IRC
 	WebhookBindAddress     string     // mattermost, slack
 	WebhookURL             string     // mattermost, slack

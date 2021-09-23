@@ -55,6 +55,14 @@ Charset=""
 #REQUIRED
 Nick="matterbot"
 
+#Real name/gecos displayed in e.g. /WHOIS and /WHO
+#OPTIONAL (defaults to the nick)
+RealName="Matterbridge instance on IRC"
+
+#IRC username/ident preceding the hostname in hostmasks and /WHOIS
+#OPTIONAL (defaults to the nick)
+UserName="bridge"
+
 #If you registered your bot with a service like Nickserv on libera.
 #Also being used when UseSASL=true
 #
