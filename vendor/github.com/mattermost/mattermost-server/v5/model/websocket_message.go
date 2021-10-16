@@ -70,6 +70,10 @@ const (
 	WEBSOCKET_WARN_METRIC_STATUS_RECEIVED                    = "warn_metric_status_received"
 	WEBSOCKET_WARN_METRIC_STATUS_REMOVED                     = "warn_metric_status_removed"
 	WEBSOCKET_EVENT_CLOUD_PAYMENT_STATUS_UPDATED             = "cloud_payment_status_updated"
+	WEBSOCKET_EVENT_THREAD_UPDATED                           = "thread_updated"
+	WEBSOCKET_EVENT_THREAD_FOLLOW_CHANGED                    = "thread_follow_changed"
+	WEBSOCKET_EVENT_THREAD_READ_CHANGED                      = "thread_read_changed"
+	WEBSOCKET_FIRST_ADMIN_VISIT_MARKETPLACE_STATUS_RECEIVED  = "first_admin_visit_marketplace_status_received"
 )
 
 type WebSocketMessage interface {

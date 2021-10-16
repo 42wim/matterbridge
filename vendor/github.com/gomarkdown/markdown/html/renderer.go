@@ -304,25 +304,6 @@ func isRelativeLink(link []byte) (yes bool) {
 	return false
 }
 
-func (r *Renderer) ensureUniqueHeadingID(id string) string {
-	for count, found := r.headingIDs[id]; found; count, found = r.headingIDs[id] {
-		tmp := fmt.Sprintf("%s-%d", id, count+1)
-
-		if _, tmpFound := r.headingIDs[tmp]; !tmpFound {
-			r.headingIDs[id] = count + 1
-			id = tmp
-		} else {
-			id = id + "-1"
-		}
-	}
-
-	if _, found := r.headingIDs[id]; !found {
-		r.headingIDs[id] = 0
-	}
-
-	return id
-}
-
 func (r *Renderer) addAbsPrefix(link []byte) []byte {
 	if r.opts.AbsolutePrefix != "" && isRelativeLink(link) && link[0] != '.' {
 		newDest := r.opts.AbsolutePrefix
@@ -701,8 +682,28 @@ func (r *Renderer) headingEnter(w io.Writer, nodeData *ast.Heading) {
 	if class != "" {
 		attrs = []string{`class="` + class + `"`}
 	}
+
+	ensureUniqueHeadingID := func(id string) string {
+		for count, found := r.headingIDs[id]; found; count, found = r.headingIDs[id] {
+			tmp := fmt.Sprintf("%s-%d", id, count+1)
+
+			if _, tmpFound := r.headingIDs[tmp]; !tmpFound {
+				r.headingIDs[id] = count + 1
+				id = tmp
+			} else {
+				id = id + "-1"
+			}
+		}
+
+		if _, found := r.headingIDs[id]; !found {
+			r.headingIDs[id] = 0
+		}
+
+		return id
+	}
+
 	if nodeData.HeadingID != "" {
-		id := r.ensureUniqueHeadingID(nodeData.HeadingID)
+		id := ensureUniqueHeadingID(nodeData.HeadingID)
 		if r.opts.HeadingIDPrefix != "" {
 			id = r.opts.HeadingIDPrefix + id
 		}

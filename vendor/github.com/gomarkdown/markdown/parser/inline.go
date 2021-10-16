@@ -1293,7 +1293,7 @@ func math(p *Parser, data []byte, offset int) (int, ast.Node) {
 }
 
 func newTextNode(d []byte) *ast.Text {
-	return &ast.Text{ast.Leaf{Literal: d}}
+	return &ast.Text{Leaf: ast.Leaf{Literal: d}}
 }
 
 func normalizeURI(s []byte) []byte {

@@ -1,3 +1,5 @@
+// +build go1.15
+
 package middleware
 
 import (
@@ -7,7 +9,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 )
 
@@ -88,7 +90,7 @@ type (
 
 		// ParseTokenFunc defines a user-defined function that parses token from given auth. Returns an error when token
 		// parsing fails or parsed token is invalid.
-		// Defaults to implementation using `github.com/dgrijalva/jwt-go` as JWT implementation library
+		// Defaults to implementation using `github.com/golang-jwt/jwt` as JWT implementation library
 		ParseTokenFunc func(auth string, c echo.Context) (interface{}, error)
 	}
 
@@ -293,7 +295,7 @@ func jwtFromHeader(header string, authScheme string) jwtExtractor {
 	return func(c echo.Context) (string, error) {
 		auth := c.Request().Header.Get(header)
 		l := len(authScheme)
-		if len(auth) > l+1 && auth[:l] == authScheme {
+		if len(auth) > l+1 && strings.EqualFold(auth[:l], authScheme) {
 			return auth[l+1:], nil
 		}
 		return "", ErrJWTMissing

@@ -114,7 +114,7 @@ func (a *API) GetTextMessages(channel chat1.ChatChannel, unreadOnly bool) ([]cha
 
 	var res []chat1.MsgSummary
 	for _, msg := range thread.Result.Messages {
-		if msg.Msg.Content.TypeName == "text" {
+		if msg.Msg != nil && msg.Msg.Content.TypeName == "text" {
 			res = append(res, *msg.Msg)
 		}
 	}

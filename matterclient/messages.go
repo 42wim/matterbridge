@@ -111,7 +111,7 @@ func (m *MMClient) GetFileLinks(filenames []string) []string {
 }
 
 func (m *MMClient) GetPosts(channelId string, limit int) *model.PostList { //nolint:golint
-	res, resp := m.Client.GetPostsForChannel(channelId, 0, limit, "")
+	res, resp := m.Client.GetPostsForChannel(channelId, 0, limit, "", true)
 	if resp.Error != nil {
 		return nil
 	}
@@ -119,7 +119,7 @@ func (m *MMClient) GetPosts(channelId string, limit int) *model.PostList { //nol
 }
 
 func (m *MMClient) GetPostsSince(channelId string, time int64) *model.PostList { //nolint:golint
-	res, resp := m.Client.GetPostsSince(channelId, time)
+	res, resp := m.Client.GetPostsSince(channelId, time, true)
 	if resp.Error != nil {
 		return nil
 	}
