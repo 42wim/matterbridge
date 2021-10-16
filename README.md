@@ -182,8 +182,14 @@ Most people just want to use binaries, you can find those [here](https://github.
 If you really want to build from source, follow these instructions:
 Go 1.17+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed.
 
+To install the latest stable run:
 ```bash
-go get github.com/42wim/matterbridge
+go install github.com/42wim/matterbridge
+```
+
+To install the latest dev run:
+```bash
+go install github.com/42wim/matterbridge@master
 ```
 
 You should now have matterbridge binary in the ~/go/bin directory:
