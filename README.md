@@ -180,7 +180,7 @@ To install or upgrade just download the latest [binary](https://github.com/42wim
 Most people just want to use binaries, you can find those [here](https://github.com/42wim/matterbridge/releases/latest)
 
 If you really want to build from source, follow these instructions:
-Go 1.13+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed.
+Go 1.17+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed.
 
 ```bash
 go get github.com/42wim/matterbridge
