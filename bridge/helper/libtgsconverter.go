@@ -1,9 +1,11 @@
+//go:build cgo
 // +build cgo
 
 package helper
 
 import (
 	"fmt"
+
 	"github.com/Benau/tgsconverter/libtgsconverter"
 	"github.com/sirupsen/logrus"
 )

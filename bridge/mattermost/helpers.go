@@ -1,13 +1,16 @@
 package bmattermost
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/42wim/matterbridge/matterclient"
 	"github.com/42wim/matterbridge/matterhook"
+	matterclient6 "github.com/matterbridge/matterclient"
 	"github.com/mattermost/mattermost-server/v5/model"
+	model6 "github.com/mattermost/mattermost-server/v6/model"
 )
 
 func (b *Bmattermost) doConnectWebhookBind() error {
@@ -15,25 +18,47 @@ func (b *Bmattermost) doConnectWebhookBind() error {
 	case b.GetString("WebhookURL") != "":
 		b.Log.Info("Connecting using webhookurl (sending) and webhookbindaddress (receiving)")
 		b.mh = matterhook.New(b.GetString("WebhookURL"),
-			matterhook.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
-				BindAddress: b.GetString("WebhookBindAddress")})
+			matterhook.Config{
+				InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
+				BindAddress:        b.GetString("WebhookBindAddress"),
+			})
 	case b.GetString("Token") != "":
 		b.Log.Info("Connecting using token (sending)")
-		err := b.apiLogin()
-		if err != nil {
-			return err
+		b.Log.Infof("Using mattermost v6 methods: %t", b.v6)
+
+		if b.v6 {
+			err := b.apiLogin6()
+			if err != nil {
+				return err
+			}
+		} else {
+			err := b.apiLogin()
+			if err != nil {
+				return err
+			}
 		}
 	case b.GetString("Login") != "":
 		b.Log.Info("Connecting using login/password (sending)")
-		err := b.apiLogin()
-		if err != nil {
-			return err
+		b.Log.Infof("Using mattermost v6 methods: %t", b.v6)
+
+		if b.v6 {
+			err := b.apiLogin6()
+			if err != nil {
+				return err
+			}
+		} else {
+			err := b.apiLogin()
+			if err != nil {
+				return err
+			}
 		}
 	default:
 		b.Log.Info("Connecting using webhookbindaddress (receiving)")
 		b.mh = matterhook.New(b.GetString("WebhookURL"),
-			matterhook.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
-				BindAddress: b.GetString("WebhookBindAddress")})
+			matterhook.Config{
+				InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
+				BindAddress:        b.GetString("WebhookBindAddress"),
+			})
 	}
 	return nil
 }
@@ -41,19 +66,39 @@ func (b *Bmattermost) doConnectWebhookBind() error {
 func (b *Bmattermost) doConnectWebhookURL() error {
 	b.Log.Info("Connecting using webhookurl (sending)")
 	b.mh = matterhook.New(b.GetString("WebhookURL"),
-		matterhook.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
-			DisableServer: true})
+		matterhook.Config{
+			InsecureSkipVerify: b.GetBool("SkipTLSVerify"),
+			DisableServer:      true,
+		})
 	if b.GetString("Token") != "" {
 		b.Log.Info("Connecting using token (receiving)")
-		err := b.apiLogin()
-		if err != nil {
-			return err
+		b.Log.Infof("Using mattermost v6 methods: %t", b.v6)
+
+		if b.v6 {
+			err := b.apiLogin6()
+			if err != nil {
+				return err
+			}
+		} else {
+			err := b.apiLogin()
+			if err != nil {
+				return err
+			}
 		}
 	} else if b.GetString("Login") != "" {
 		b.Log.Info("Connecting using login/password (receiving)")
-		err := b.apiLogin()
-		if err != nil {
-			return err
+		b.Log.Infof("Using mattermost v6 methods: %t", b.v6)
+
+		if b.v6 {
+			err := b.apiLogin6()
+			if err != nil {
+				return err
+			}
+		} else {
+			err := b.apiLogin()
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -81,6 +126,31 @@ func (b *Bmattermost) apiLogin() error {
 	b.TeamID = b.mc.GetTeamId()
 	go b.mc.WsReceiver()
 	go b.mc.StatusLoop()
+	return nil
+}
+
+// nolint:wrapcheck
+func (b *Bmattermost) apiLogin6() error {
+	password := b.GetString("Password")
+	if b.GetString("Token") != "" {
+		password = "token=" + b.GetString("Token")
+	}
+
+	b.mc6 = matterclient6.New(b.GetString("Login"), password, b.GetString("Team"), b.GetString("Server"), "")
+	if b.GetBool("debug") {
+		b.mc6.SetLogLevel("debug")
+	}
+	b.mc6.SkipTLSVerify = b.GetBool("SkipTLSVerify")
+	b.mc6.SkipVersionCheck = b.GetBool("SkipVersionCheck")
+	b.mc6.NoTLS = b.GetBool("NoTLS")
+	b.Log.Infof("Connecting %s (team: %s) on %s", b.GetString("Login"), b.GetString("Team"), b.GetString("Server"))
+
+	if err := b.mc6.Login(); err != nil {
+		return err
+	}
+
+	b.Log.Info("Connection succeeded")
+	b.TeamID = b.mc6.GetTeamID()
 	return nil
 }
 
@@ -222,4 +292,85 @@ func (b *Bmattermost) skipMessage(message *matterclient.Message) bool {
 		return true
 	}
 	return false
+}
+
+// skipMessages returns true if this message should not be handled
+// nolint:gocyclo,cyclop
+func (b *Bmattermost) skipMessage6(message *matterclient6.Message) bool {
+	// Handle join/leave
+	if message.Type == "system_join_leave" ||
+		message.Type == "system_join_channel" ||
+		message.Type == "system_leave_channel" {
+		if b.GetBool("nosendjoinpart") {
+			return true
+		}
+		b.Log.Debugf("Sending JOIN_LEAVE event from %s to gateway", b.Account)
+		b.Remote <- config.Message{
+			Username: "system",
+			Text:     message.Text,
+			Channel:  message.Channel,
+			Account:  b.Account,
+			Event:    config.EventJoinLeave,
+		}
+		return true
+	}
+
+	// Handle edited messages
+	if (message.Raw.EventType() == model6.WebsocketEventPostEdited) && b.GetBool("EditDisable") {
+		return true
+	}
+
+	// Ignore non-post messages
+	if message.Post == nil {
+		b.Log.Debugf("ignoring nil message.Post: %#v", message)
+		return true
+	}
+
+	// Ignore messages sent from matterbridge
+	if message.Post.Props != nil {
+		if _, ok := message.Post.Props["matterbridge_"+b.uuid].(bool); ok {
+			b.Log.Debugf("sent by matterbridge, ignoring")
+			return true
+		}
+	}
+
+	// Ignore messages sent from a user logged in as the bot
+	if b.mc6.User.Username == message.Username {
+		return true
+	}
+
+	// if the message has reactions don't repost it (for now, until we can correlate reaction with message)
+	if message.Post.HasReactions {
+		return true
+	}
+
+	// ignore messages from other teams than ours
+	if message.Raw.GetData()["team_id"].(string) != b.TeamID {
+		return true
+	}
+
+	// only handle posted, edited or deleted events
+	if !(message.Raw.EventType() == "posted" || message.Raw.EventType() == model6.WebsocketEventPostEdited ||
+		message.Raw.EventType() == model6.WebsocketEventPostDeleted) {
+		return true
+	}
+	return false
+}
+
+func (b *Bmattermost) getVersion() string {
+	proto := "https"
+
+	if b.GetBool("notls") {
+		proto = "http"
+	}
+
+	resp, err := http.Get(proto + "://" + b.GetString("server"))
+	if err != nil {
+		b.Log.Error("failed getting version")
+		return ""
+	}
+
+	defer resp.Body.Close()
+
+	return resp.Header.Get("X-Version-Id")
 }
