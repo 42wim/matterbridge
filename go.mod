@@ -29,9 +29,10 @@ require (
 	github.com/matterbridge/go-xmpp v0.0.0-20210731150933-5702291c239f
 	github.com/matterbridge/gozulipbot v0.0.0-20200820220548-be5824faa913
 	github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba
+	github.com/matterbridge/matterclient v0.0.0-20211016195328-346acac403d8
 	github.com/mattermost/mattermost-server/v5 v5.30.1
+	github.com/mattermost/mattermost-server/v6 v6.0.0
 	github.com/mattn/godown v0.0.1
-	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/missdeer/golib v1.0.4
 	github.com/mreiferson/go-httpclient v0.0.0-20201222173833-5e475fde3a4d // indirect
 	github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff // indirect
@@ -48,7 +49,6 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/vincent-petithory/dataurl v0.0.0-20191104211930-d1553a71de50
 	github.com/writeas/go-strip-markdown v2.0.1+incompatible
-	github.com/x-cray/logrus-prefixed-formatter v0.5.2 // indirect
 	github.com/yaegashi/msgraph.go v0.1.4
 	github.com/zfjagann/golang-ring v0.0.0-20210116075443-7c86fdb43134
 	golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d
