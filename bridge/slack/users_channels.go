@@ -113,6 +113,12 @@ func (b *users) populateUser(userID string) {
 	b.users[userID] = user
 }
 
+func (b *users) invalidateUser(userID string) {
+	b.usersMutex.Lock()
+	defer b.usersMutex.Unlock()
+	delete(b.users, userID)
+}
+
 func (b *users) populateUsers(wait bool) {
 	b.refreshMutex.Lock()
 	if !wait && (time.Now().Before(b.earliestRefresh) || b.refreshInProgress) {
