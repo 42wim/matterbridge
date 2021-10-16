@@ -185,6 +185,7 @@ linters:
     - gci
     - errorlint
     - nlreturn
+    - exhaustivestruct
 
 # rules to deal with reported isues
 issues:
