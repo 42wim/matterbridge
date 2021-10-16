@@ -95,6 +95,8 @@ func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 			b.users.populateUser(ev.User)
 		case *slack.HelloEvent, *slack.LatencyReport, *slack.ConnectingEvent:
 			continue
+		case *slack.UserChangeEvent:
+			b.users.invalidateUser(ev.User.ID)
 		default:
 			b.Log.Debugf("Unhandled incoming event: %T", ev)
 		}
