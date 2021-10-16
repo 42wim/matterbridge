@@ -271,14 +271,21 @@ func (b *Birc) getClient() (*girc.Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	user := b.GetString("UserName")
+	if user == "" {
+		user = b.GetString("Nick")
+	}
 	// fix strict user handling of girc
-	user := b.GetString("Nick")
 	for !girc.IsValidUser(user) {
 		if len(user) == 1 || len(user) == 0 {
 			user = "matterbridge"
 			break
 		}
 		user = user[1:]
+	}
+	realName := b.GetString("RealName")
+	if realName == "" {
+		realName = b.GetString("Nick")
 	}
 
 	debug := ioutil.Discard
@@ -299,7 +306,7 @@ func (b *Birc) getClient() (*girc.Client, error) {
 		Port:       port,
 		Nick:       b.GetString("Nick"),
 		User:       user,
-		Name:       b.GetString("Nick"),
+		Name:       realName,
 		SSL:        b.GetBool("UseTLS"),
 		TLSConfig:  &tls.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"), ServerName: server}, //nolint:gosec
 		PingDelay:  pingDelay,
