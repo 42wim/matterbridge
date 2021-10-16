@@ -3,6 +3,7 @@ package bmattermost
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -129,11 +130,18 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 
 	// we only can reply to the root of the thread, not to a specific ID (like discord for example does)
 	if msg.ParentID != "" {
-		post, res := b.mc.Client.GetPost(msg.ParentID, "")
-		if res.Error != nil {
-			b.Log.Errorf("getting post %s failed: %s", msg.ParentID, res.Error.DetailedError)
+		rootID := msg.ParentID
+		// If parentID/rootID exists it means message is of reply type, so add 'thread' in message text
+		msg.Text = fmt.Sprintf("[thread]: %s", msg.Text)
+		// if text "mattermost" is present in the parentID/rootID (present in case root message is started on mattermost)
+		// separate it from the ID and use correct ID as parentID/rootID
+		if strings.HasPrefix(rootID, "mattermost") {
+			rootID = rootID[len("mattermost")+1:] // remove the text 'mattermost' and space followed by it from ID
 		}
-		msg.ParentID = post.RootId
+
+		// Set rootID of reply message
+		// here 'msg.ParentID' is used, but this is stored as 'RootId' at mattermost, refer to function 'PostMessage' below
+		msg.ParentID = rootID
 	}
 
 	// Upload a file if it exists
