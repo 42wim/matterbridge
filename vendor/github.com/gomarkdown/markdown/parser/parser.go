@@ -6,6 +6,7 @@ package parser
 import (
 	"bytes"
 	"fmt"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 
@@ -113,6 +114,10 @@ type Parser struct {
 	attr *ast.Attribute
 
 	includeStack *incStack
+
+	// collect headings where we auto-generated id so that we can
+	// ensure they are unique at the end
+	allHeadingsWithAutoID []*ast.Heading
 }
 
 // New creates a markdown parser with CommonExtensions.
@@ -282,6 +287,25 @@ func (p *Parser) Parse(input []byte) ast.Node {
 	if p.Opts.Flags&SkipFootnoteList == 0 {
 		p.parseRefsToAST()
 	}
+
+	// ensure HeadingIDs generated with AutoHeadingIDs are unique
+	// this is delayed here (as opposed to done when we create the id)
+	// so that we can preserve more original ids when there are conflicts
+	taken := map[string]bool{}
+	for _, h := range p.allHeadingsWithAutoID {
+		id := h.HeadingID
+		if id == "" {
+			continue
+		}
+		n := 0
+		for taken[id] {
+			n++
+			id = h.HeadingID + "-" + strconv.Itoa(n)
+		}
+		h.HeadingID = id
+		taken[id] = true
+	}
+
 	return p.Doc
 }
 

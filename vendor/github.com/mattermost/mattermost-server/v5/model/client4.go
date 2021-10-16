@@ -19,25 +19,29 @@ import (
 )
 
 const (
-	HEADER_REQUEST_ID         = "X-Request-ID"
-	HEADER_VERSION_ID         = "X-Version-ID"
-	HEADER_CLUSTER_ID         = "X-Cluster-ID"
-	HEADER_ETAG_SERVER        = "ETag"
-	HEADER_ETAG_CLIENT        = "If-None-Match"
-	HEADER_FORWARDED          = "X-Forwarded-For"
-	HEADER_REAL_IP            = "X-Real-IP"
-	HEADER_FORWARDED_PROTO    = "X-Forwarded-Proto"
-	HEADER_TOKEN              = "token"
-	HEADER_CSRF_TOKEN         = "X-CSRF-Token"
-	HEADER_BEARER             = "BEARER"
-	HEADER_AUTH               = "Authorization"
-	HEADER_REQUESTED_WITH     = "X-Requested-With"
-	HEADER_REQUESTED_WITH_XML = "XMLHttpRequest"
-	STATUS                    = "status"
-	STATUS_OK                 = "OK"
-	STATUS_FAIL               = "FAIL"
-	STATUS_UNHEALTHY          = "UNHEALTHY"
-	STATUS_REMOVE             = "REMOVE"
+	HEADER_REQUEST_ID          = "X-Request-ID"
+	HEADER_VERSION_ID          = "X-Version-ID"
+	HEADER_CLUSTER_ID          = "X-Cluster-ID"
+	HEADER_ETAG_SERVER         = "ETag"
+	HEADER_ETAG_CLIENT         = "If-None-Match"
+	HEADER_FORWARDED           = "X-Forwarded-For"
+	HEADER_REAL_IP             = "X-Real-IP"
+	HEADER_FORWARDED_PROTO     = "X-Forwarded-Proto"
+	HEADER_TOKEN               = "token"
+	HEADER_CSRF_TOKEN          = "X-CSRF-Token"
+	HEADER_BEARER              = "BEARER"
+	HEADER_AUTH                = "Authorization"
+	HEADER_CLOUD_TOKEN         = "X-Cloud-Token"
+	HEADER_REMOTECLUSTER_TOKEN = "X-RemoteCluster-Token"
+	HEADER_REMOTECLUSTER_ID    = "X-RemoteCluster-Id"
+	HEADER_REQUESTED_WITH      = "X-Requested-With"
+	HEADER_REQUESTED_WITH_XML  = "XMLHttpRequest"
+	HEADER_RANGE               = "Range"
+	STATUS                     = "status"
+	STATUS_OK                  = "OK"
+	STATUS_FAIL                = "FAIL"
+	STATUS_UNHEALTHY           = "UNHEALTHY"
+	STATUS_REMOVE              = "REMOVE"
 
 	CLIENT_DIR = "client"
 
@@ -93,9 +97,8 @@ func (c *Client4) boolString(value bool) string {
 
 	if value {
 		return "true"
-	} else {
-		return "false"
 	}
+	return "false"
 }
 
 func closeBody(r *http.Response) {
@@ -189,12 +192,12 @@ func (c *Client4) GetUserRoute(userId string) string {
 	return fmt.Sprintf(c.GetUsersRoute()+"/%v", userId)
 }
 
-func (c *Client4) GetUserThreadsRoute(userId string) string {
-	return fmt.Sprintf(c.GetUsersRoute()+"/%v/threads", userId)
+func (c *Client4) GetUserThreadsRoute(userID, teamID string) string {
+	return c.GetUserRoute(userID) + c.GetTeamRoute(teamID) + "/threads"
 }
 
-func (c *Client4) GetUserThreadRoute(userId, threadId string) string {
-	return fmt.Sprintf(c.GetUserThreadsRoute(userId)+"/%v", threadId)
+func (c *Client4) GetUserThreadRoute(userId, teamId, threadId string) string {
+	return c.GetUserThreadsRoute(userId, teamId) + "/" + threadId
 }
 
 func (c *Client4) GetUserCategoryRoute(userID, teamID string) string {
@@ -383,7 +386,11 @@ func (c *Client4) GetComplianceReportsRoute() string {
 }
 
 func (c *Client4) GetComplianceReportRoute(reportId string) string {
-	return fmt.Sprintf("/compliance/reports/%v", reportId)
+	return fmt.Sprintf("%s/%s", c.GetComplianceReportsRoute(), reportId)
+}
+
+func (c *Client4) GetComplianceReportDownloadRoute(reportId string) string {
+	return fmt.Sprintf("%s/%s/download", c.GetComplianceReportsRoute(), reportId)
 }
 
 func (c *Client4) GetOutgoingWebhooksRoute() string {
@@ -420,6 +427,10 @@ func (c *Client4) GetBrandRoute() string {
 
 func (c *Client4) GetDataRetentionRoute() string {
 	return "/data_retention"
+}
+
+func (c *Client4) GetDataRetentionPolicyRoute(policyID string) string {
+	return fmt.Sprintf(c.GetDataRetentionRoute()+"/policies/%v", policyID)
 }
 
 func (c *Client4) GetElasticsearchRoute() string {
@@ -542,12 +553,44 @@ func (c *Client4) GetGroupSyncablesRoute(groupID string, syncableType GroupSynca
 	return fmt.Sprintf("%s/%ss", c.GetGroupRoute(groupID), strings.ToLower(syncableType.String()))
 }
 
+func (c *Client4) GetImportsRoute() string {
+	return "/imports"
+}
+
+func (c *Client4) GetExportsRoute() string {
+	return "/exports"
+}
+
+func (c *Client4) GetExportRoute(name string) string {
+	return fmt.Sprintf(c.GetExportsRoute()+"/%v", name)
+}
+
+func (c *Client4) GetRemoteClusterRoute() string {
+	return "/remotecluster"
+}
+
+func (c *Client4) GetSharedChannelsRoute() string {
+	return "/sharedchannels"
+}
+
+func (c *Client4) GetPermissionsRoute() string {
+	return "/permissions"
+}
+
 func (c *Client4) DoApiGet(url string, etag string) (*http.Response, *AppError) {
 	return c.DoApiRequest(http.MethodGet, c.ApiUrl+url, "", etag)
 }
 
 func (c *Client4) DoApiPost(url string, data string) (*http.Response, *AppError) {
 	return c.DoApiRequest(http.MethodPost, c.ApiUrl+url, data, "")
+}
+
+func (c *Client4) doApiDeleteBytes(url string, data []byte) (*http.Response, *AppError) {
+	return c.doApiRequestBytes(http.MethodDelete, c.ApiUrl+url, data, "")
+}
+
+func (c *Client4) doApiPatchBytes(url string, data []byte) (*http.Response, *AppError) {
+	return c.doApiRequestBytes(http.MethodPatch, c.ApiUrl+url, data, "")
 }
 
 func (c *Client4) doApiPostBytes(url string, data []byte) (*http.Response, *AppError) {
@@ -567,24 +610,28 @@ func (c *Client4) DoApiDelete(url string) (*http.Response, *AppError) {
 }
 
 func (c *Client4) DoApiRequest(method, url, data, etag string) (*http.Response, *AppError) {
-	return c.doApiRequestReader(method, url, strings.NewReader(data), etag)
+	return c.doApiRequestReader(method, url, strings.NewReader(data), map[string]string{HEADER_ETAG_CLIENT: etag})
+}
+
+func (c *Client4) DoApiRequestWithHeaders(method, url, data string, headers map[string]string) (*http.Response, *AppError) {
+	return c.doApiRequestReader(method, url, strings.NewReader(data), headers)
 }
 
 func (c *Client4) doApiRequestBytes(method, url string, data []byte, etag string) (*http.Response, *AppError) {
-	return c.doApiRequestReader(method, url, bytes.NewReader(data), etag)
+	return c.doApiRequestReader(method, url, bytes.NewReader(data), map[string]string{HEADER_ETAG_CLIENT: etag})
 }
 
-func (c *Client4) doApiRequestReader(method, url string, data io.Reader, etag string) (*http.Response, *AppError) {
+func (c *Client4) doApiRequestReader(method, url string, data io.Reader, headers map[string]string) (*http.Response, *AppError) {
 	rq, err := http.NewRequest(method, url, data)
 	if err != nil {
 		return nil, NewAppError(url, "model.client.connecting.app_error", nil, err.Error(), http.StatusBadRequest)
 	}
 
-	if len(etag) > 0 {
-		rq.Header.Set(HEADER_ETAG_CLIENT, etag)
+	for k, v := range headers {
+		rq.Header.Set(k, v)
 	}
 
-	if len(c.AuthToken) > 0 {
+	if c.AuthToken != "" {
 		rq.Header.Set(HEADER_AUTH, c.AuthType+" "+c.AuthToken)
 	}
 
@@ -625,7 +672,7 @@ func (c *Client4) doUploadFile(url string, body io.Reader, contentType string, c
 	}
 	rq.Header.Set("Content-Type", contentType)
 
-	if len(c.AuthToken) > 0 {
+	if c.AuthToken != "" {
 		rq.Header.Set(HEADER_AUTH, c.AuthType+" "+c.AuthToken)
 	}
 
@@ -649,7 +696,7 @@ func (c *Client4) DoEmojiUploadFile(url string, data []byte, contentType string)
 	}
 	rq.Header.Set("Content-Type", contentType)
 
-	if len(c.AuthToken) > 0 {
+	if c.AuthToken != "" {
 		rq.Header.Set(HEADER_AUTH, c.AuthType+" "+c.AuthToken)
 	}
 
@@ -673,7 +720,7 @@ func (c *Client4) DoUploadImportTeam(url string, data []byte, contentType string
 	}
 	rq.Header.Set("Content-Type", contentType)
 
-	if len(c.AuthToken) > 0 {
+	if c.AuthToken != "" {
 		rq.Header.Set(HEADER_AUTH, c.AuthType+" "+c.AuthToken)
 	}
 
@@ -1393,14 +1440,20 @@ func (c *Client4) AttachDeviceId(deviceId string) (bool, *Response) {
 
 // GetTeamsUnreadForUser will return an array with TeamUnread objects that contain the amount
 // of unread messages and mentions the current user has for the teams it belongs to.
-// An optional team ID can be set to exclude that team from the results. Must be authenticated.
-func (c *Client4) GetTeamsUnreadForUser(userId, teamIdToExclude string) ([]*TeamUnread, *Response) {
-	var optional string
+// An optional team ID can be set to exclude that team from the results.
+// An optional boolean can be set to include collapsed thread unreads. Must be authenticated.
+func (c *Client4) GetTeamsUnreadForUser(userId, teamIdToExclude string, includeCollapsedThreads bool) ([]*TeamUnread, *Response) {
+	query := url.Values{}
+
 	if teamIdToExclude != "" {
-		optional += fmt.Sprintf("?exclude_team=%s", url.QueryEscape(teamIdToExclude))
+		query.Set("exclude_team", teamIdToExclude)
 	}
 
-	r, err := c.DoApiGet(c.GetUserRoute(userId)+"/teams/unread"+optional, "")
+	if includeCollapsedThreads {
+		query.Set("include_collapsed_threads", "true")
+	}
+
+	r, err := c.DoApiGet(c.GetUserRoute(userId)+"/teams/unread?"+query.Encode(), "")
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)
 	}
@@ -1486,7 +1539,7 @@ func (c *Client4) SetProfileImage(userId string, data []byte) (bool, *Response) 
 	}
 	rq.Header.Set("Content-Type", writer.FormDataContentType())
 
-	if len(c.AuthToken) > 0 {
+	if c.AuthToken != "" {
 		rq.Header.Set(HEADER_AUTH, c.AuthType+" "+c.AuthToken)
 	}
 
@@ -1735,7 +1788,7 @@ func (c *Client4) SetBotIconImage(botUserId string, data []byte) (bool, *Respons
 	}
 	rq.Header.Set("Content-Type", writer.FormDataContentType())
 
-	if len(c.AuthToken) > 0 {
+	if c.AuthToken != "" {
 		rq.Header.Set(HEADER_AUTH, c.AuthType+" "+c.AuthToken)
 	}
 
@@ -1820,6 +1873,18 @@ func (c *Client4) GetAllTeamsWithTotalCount(etag string, page int, perPage int) 
 	defer closeBody(r)
 	teamsListWithCount := TeamsWithCountFromJson(r.Body)
 	return teamsListWithCount.Teams, teamsListWithCount.TotalCount, BuildResponse(r)
+}
+
+// GetAllTeamsExcludePolicyConstrained returns all teams which are not part of a data retention policy.
+// Must be a system administrator.
+func (c *Client4) GetAllTeamsExcludePolicyConstrained(etag string, page int, perPage int) ([]*Team, *Response) {
+	query := fmt.Sprintf("?page=%v&per_page=%v&exclude_policy_constrained=%v", page, perPage, true)
+	r, err := c.DoApiGet(c.GetTeamsRoute()+query, etag)
+	if err != nil {
+		return nil, BuildErrorResponse(r, err)
+	}
+	defer closeBody(r)
+	return TeamListFromJson(r.Body), BuildResponse(r)
 }
 
 // GetTeamByName returns a team based on the provided team name string.
@@ -2269,7 +2334,7 @@ func (c *Client4) SetTeamIcon(teamId string, data []byte) (bool, *Response) {
 	}
 	rq.Header.Set("Content-Type", writer.FormDataContentType())
 
-	if len(c.AuthToken) > 0 {
+	if c.AuthToken != "" {
 		rq.Header.Set(HEADER_AUTH, c.AuthType+" "+c.AuthToken)
 	}
 
@@ -2316,16 +2381,23 @@ func (c *Client4) RemoveTeamIcon(teamId string) (bool, *Response) {
 
 // GetAllChannels get all the channels. Must be a system administrator.
 func (c *Client4) GetAllChannels(page int, perPage int, etag string) (*ChannelListWithTeamData, *Response) {
-	return c.getAllChannels(page, perPage, etag, false)
+	return c.getAllChannels(page, perPage, etag, ChannelSearchOpts{})
 }
 
 // GetAllChannelsIncludeDeleted get all the channels. Must be a system administrator.
 func (c *Client4) GetAllChannelsIncludeDeleted(page int, perPage int, etag string) (*ChannelListWithTeamData, *Response) {
-	return c.getAllChannels(page, perPage, etag, true)
+	return c.getAllChannels(page, perPage, etag, ChannelSearchOpts{IncludeDeleted: true})
 }
 
-func (c *Client4) getAllChannels(page int, perPage int, etag string, includeDeleted bool) (*ChannelListWithTeamData, *Response) {
-	query := fmt.Sprintf("?page=%v&per_page=%v&include_deleted=%v", page, perPage, includeDeleted)
+// GetAllChannelsExcludePolicyConstrained gets all channels which are not part of a data retention policy.
+// Must be a system administrator.
+func (c *Client4) GetAllChannelsExcludePolicyConstrained(page, perPage int, etag string) (*ChannelListWithTeamData, *Response) {
+	return c.getAllChannels(page, perPage, etag, ChannelSearchOpts{ExcludePolicyConstrained: true})
+}
+
+func (c *Client4) getAllChannels(page int, perPage int, etag string, opts ChannelSearchOpts) (*ChannelListWithTeamData, *Response) {
+	query := fmt.Sprintf("?page=%v&per_page=%v&include_deleted=%v&exclude_policy_constrained=%v",
+		page, perPage, opts.IncludeDeleted, opts.ExcludePolicyConstrained)
 	r, err := c.DoApiGet(c.GetChannelsRoute()+query, etag)
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)
@@ -2849,8 +2921,9 @@ func (c *Client4) PatchPost(postId string, patch *PostPatch) (*Post, *Response) 
 }
 
 // SetPostUnread marks channel where post belongs as unread on the time of the provided post.
-func (c *Client4) SetPostUnread(userId string, postId string) *Response {
-	r, err := c.DoApiPost(c.GetUserRoute(userId)+c.GetPostRoute(postId)+"/set_unread", "")
+func (c *Client4) SetPostUnread(userId string, postId string, collapsedThreadsSupported bool) *Response {
+	b, _ := json.Marshal(map[string]bool{"collapsed_threads_supported": collapsedThreadsSupported})
+	r, err := c.DoApiPost(c.GetUserRoute(userId)+c.GetPostRoute(postId)+"/set_unread", string(b))
 	if err != nil {
 		return BuildErrorResponse(r, err)
 	}
@@ -2899,8 +2972,12 @@ func (c *Client4) DeletePost(postId string) (bool, *Response) {
 }
 
 // GetPostThread gets a post with all the other posts in the same thread.
-func (c *Client4) GetPostThread(postId string, etag string) (*PostList, *Response) {
-	r, err := c.DoApiGet(c.GetPostRoute(postId)+"/thread", etag)
+func (c *Client4) GetPostThread(postId string, etag string, collapsedThreads bool) (*PostList, *Response) {
+	url := c.GetPostRoute(postId) + "/thread"
+	if collapsedThreads {
+		url += "?collapsedThreads=true"
+	}
+	r, err := c.DoApiGet(url, etag)
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)
 	}
@@ -2909,8 +2986,11 @@ func (c *Client4) GetPostThread(postId string, etag string) (*PostList, *Respons
 }
 
 // GetPostsForChannel gets a page of posts with an array for ordering for a channel.
-func (c *Client4) GetPostsForChannel(channelId string, page, perPage int, etag string) (*PostList, *Response) {
+func (c *Client4) GetPostsForChannel(channelId string, page, perPage int, etag string, collapsedThreads bool) (*PostList, *Response) {
 	query := fmt.Sprintf("?page=%v&per_page=%v", page, perPage)
+	if collapsedThreads {
+		query += "&collapsedThreads=true"
+	}
 	r, err := c.DoApiGet(c.GetChannelRoute(channelId)+"/posts"+query, etag)
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)
@@ -2961,8 +3041,11 @@ func (c *Client4) GetFlaggedPostsForUserInChannel(userId string, channelId strin
 }
 
 // GetPostsSince gets posts created after a specified time as Unix time in milliseconds.
-func (c *Client4) GetPostsSince(channelId string, time int64) (*PostList, *Response) {
+func (c *Client4) GetPostsSince(channelId string, time int64, collapsedThreads bool) (*PostList, *Response) {
 	query := fmt.Sprintf("?since=%v", time)
+	if collapsedThreads {
+		query += "&collapsedThreads=true"
+	}
 	r, err := c.DoApiGet(c.GetChannelRoute(channelId)+"/posts"+query, "")
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)
@@ -2972,8 +3055,11 @@ func (c *Client4) GetPostsSince(channelId string, time int64) (*PostList, *Respo
 }
 
 // GetPostsAfter gets a page of posts that were posted after the post provided.
-func (c *Client4) GetPostsAfter(channelId, postId string, page, perPage int, etag string) (*PostList, *Response) {
+func (c *Client4) GetPostsAfter(channelId, postId string, page, perPage int, etag string, collapsedThreads bool) (*PostList, *Response) {
 	query := fmt.Sprintf("?page=%v&per_page=%v&after=%v", page, perPage, postId)
+	if collapsedThreads {
+		query += "&collapsedThreads=true"
+	}
 	r, err := c.DoApiGet(c.GetChannelRoute(channelId)+"/posts"+query, etag)
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)
@@ -2983,8 +3069,11 @@ func (c *Client4) GetPostsAfter(channelId, postId string, page, perPage int, eta
 }
 
 // GetPostsBefore gets a page of posts that were posted before the post provided.
-func (c *Client4) GetPostsBefore(channelId, postId string, page, perPage int, etag string) (*PostList, *Response) {
+func (c *Client4) GetPostsBefore(channelId, postId string, page, perPage int, etag string, collapsedThreads bool) (*PostList, *Response) {
 	query := fmt.Sprintf("?page=%v&per_page=%v&before=%v", page, perPage, postId)
+	if collapsedThreads {
+		query += "&collapsedThreads=true"
+	}
 	r, err := c.DoApiGet(c.GetChannelRoute(channelId)+"/posts"+query, etag)
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)
@@ -2994,14 +3083,36 @@ func (c *Client4) GetPostsBefore(channelId, postId string, page, perPage int, et
 }
 
 // GetPostsAroundLastUnread gets a list of posts around last unread post by a user in a channel.
-func (c *Client4) GetPostsAroundLastUnread(userId, channelId string, limitBefore, limitAfter int) (*PostList, *Response) {
+func (c *Client4) GetPostsAroundLastUnread(userId, channelId string, limitBefore, limitAfter int, collapsedThreads bool) (*PostList, *Response) {
 	query := fmt.Sprintf("?limit_before=%v&limit_after=%v", limitBefore, limitAfter)
-	if r, err := c.DoApiGet(c.GetUserRoute(userId)+c.GetChannelRoute(channelId)+"/posts/unread"+query, ""); err != nil {
-		return nil, BuildErrorResponse(r, err)
-	} else {
-		defer closeBody(r)
-		return PostListFromJson(r.Body), BuildResponse(r)
+	if collapsedThreads {
+		query += "&collapsedThreads=true"
 	}
+	r, err := c.DoApiGet(c.GetUserRoute(userId)+c.GetChannelRoute(channelId)+"/posts/unread"+query, "")
+	if err != nil {
+		return nil, BuildErrorResponse(r, err)
+	}
+	defer closeBody(r)
+	return PostListFromJson(r.Body), BuildResponse(r)
+}
+
+// SearchFiles returns any posts with matching terms string.
+func (c *Client4) SearchFiles(teamId string, terms string, isOrSearch bool) (*FileInfoList, *Response) {
+	params := SearchParameter{
+		Terms:      &terms,
+		IsOrSearch: &isOrSearch,
+	}
+	return c.SearchFilesWithParams(teamId, &params)
+}
+
+// SearchFilesWithParams returns any posts with matching terms string.
+func (c *Client4) SearchFilesWithParams(teamId string, params *SearchParameter) (*FileInfoList, *Response) {
+	r, err := c.DoApiPost(c.GetTeamRoute(teamId)+"/files/search", params.SearchParameterToJson())
+	if err != nil {
+		return nil, BuildErrorResponse(r, err)
+	}
+	defer closeBody(r)
+	return FileInfoListFromJson(r.Body), BuildResponse(r)
 }
 
 // SearchPosts returns any posts with matching terms string.
@@ -3251,6 +3362,21 @@ func (c *Client4) GetFileInfosForPost(postId string, etag string) ([]*FileInfo, 
 
 // General/System Section
 
+// GenerateSupportPacket downloads the generated support packet
+func (c *Client4) GenerateSupportPacket() ([]byte, *Response) {
+	r, appErr := c.DoApiGet(c.GetSystemRoute()+"/support_packet", "")
+	if appErr != nil {
+		return nil, BuildErrorResponse(r, appErr)
+	}
+	defer closeBody(r)
+
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return nil, BuildErrorResponse(r, NewAppError("GetFile", "model.client.read_job_result_file.app_error", nil, err.Error(), r.StatusCode))
+	}
+	return data, BuildResponse(r)
+}
+
 // GetPing will return ok if the running goRoutines are below the threshold and unhealthy for above.
 func (c *Client4) GetPing() (string, *Response) {
 	r, err := c.DoApiGet(c.GetSystemRoute()+"/ping", "")
@@ -3448,7 +3574,7 @@ func (c *Client4) UploadLicenseFile(data []byte) (bool, *Response) {
 	}
 	rq.Header.Set("Content-Type", writer.FormDataContentType())
 
-	if len(c.AuthToken) > 0 {
+	if c.AuthToken != "" {
 		rq.Header.Set(HEADER_AUTH, c.AuthType+" "+c.AuthToken)
 	}
 
@@ -3815,6 +3941,28 @@ func (c *Client4) GetSamlMetadataFromIdp(samlMetadataURL string) (*SamlMetadataR
 	return SamlMetadataResponseFromJson(r.Body), BuildResponse(r)
 }
 
+// ResetSamlAuthDataToEmail resets the AuthData field of SAML users to their Email.
+func (c *Client4) ResetSamlAuthDataToEmail(includeDeleted bool, dryRun bool, userIDs []string) (int64, *Response) {
+	params := map[string]interface{}{
+		"include_deleted": includeDeleted,
+		"dry_run":         dryRun,
+		"user_ids":        userIDs,
+	}
+	b, _ := json.Marshal(params)
+	r, err := c.doApiPostBytes(c.GetSamlRoute()+"/reset_auth_data", b)
+	if err != nil {
+		return 0, BuildErrorResponse(r, err)
+	}
+	defer closeBody(r)
+	respBody := map[string]int64{}
+	jsonErr := json.NewDecoder(r.Body).Decode(&respBody)
+	if jsonErr != nil {
+		appErr := NewAppError("Api4.ResetSamlAuthDataToEmail", "api.marshal_error", nil, err.Error(), http.StatusInternalServerError)
+		return 0, BuildErrorResponse(r, appErr)
+	}
+	return respBody["num_affected"], BuildResponse(r)
+}
+
 // Compliance Section
 
 // CreateComplianceReport creates an incoming webhook for a channel.
@@ -3850,12 +3998,12 @@ func (c *Client4) GetComplianceReport(reportId string) (*Compliance, *Response) 
 
 // DownloadComplianceReport returns a full compliance report as a file.
 func (c *Client4) DownloadComplianceReport(reportId string) ([]byte, *Response) {
-	rq, err := http.NewRequest("GET", c.ApiUrl+c.GetComplianceReportRoute(reportId), nil)
+	rq, err := http.NewRequest("GET", c.ApiUrl+c.GetComplianceReportDownloadRoute(reportId), nil)
 	if err != nil {
 		return nil, &Response{Error: NewAppError("DownloadComplianceReport", "model.client.connecting.app_error", nil, err.Error(), http.StatusBadRequest)}
 	}
 
-	if len(c.AuthToken) > 0 {
+	if c.AuthToken != "" {
 		rq.Header.Set(HEADER_AUTH, "BEARER "+c.AuthToken)
 	}
 
@@ -3892,8 +4040,13 @@ func (c *Client4) GetClusterStatus() ([]*ClusterInfo, *Response) {
 // LDAP Section
 
 // SyncLdap will force a sync with the configured LDAP server.
-func (c *Client4) SyncLdap() (bool, *Response) {
-	r, err := c.DoApiPost(c.GetLdapRoute()+"/sync", "")
+// If includeRemovedMembers is true, then group members who left or were removed from a
+// synced team/channel will be re-joined; otherwise, they will be excluded.
+func (c *Client4) SyncLdap(includeRemovedMembers bool) (bool, *Response) {
+	reqBody, _ := json.Marshal(map[string]interface{}{
+		"include_removed_members": includeRemovedMembers,
+	})
+	r, err := c.doApiPostBytes(c.GetLdapRoute()+"/sync", reqBody)
 	if err != nil {
 		return false, BuildErrorResponse(r, err)
 	}
@@ -4225,7 +4378,7 @@ func (c *Client4) UploadBrandImage(data []byte) (bool, *Response) {
 	}
 	rq.Header.Set("Content-Type", writer.FormDataContentType())
 
-	if len(c.AuthToken) > 0 {
+	if c.AuthToken != "" {
 		rq.Header.Set(HEADER_AUTH, c.AuthType+" "+c.AuthToken)
 	}
 
@@ -4380,7 +4533,7 @@ func (c *Client4) GetOAuthAccessToken(data url.Values) (*AccessResponse, *Respon
 	}
 	rq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	if len(c.AuthToken) > 0 {
+	if c.AuthToken != "" {
 		rq.Header.Set(HEADER_AUTH, c.AuthType+" "+c.AuthToken)
 	}
 
@@ -4434,14 +4587,236 @@ func (c *Client4) PurgeBleveIndexes() (bool, *Response) {
 
 // Data Retention Section
 
-// GetDataRetentionPolicy will get the current server data retention policy details.
-func (c *Client4) GetDataRetentionPolicy() (*DataRetentionPolicy, *Response) {
+// GetDataRetentionPolicy will get the current global data retention policy details.
+func (c *Client4) GetDataRetentionPolicy() (*GlobalRetentionPolicy, *Response) {
 	r, err := c.DoApiGet(c.GetDataRetentionRoute()+"/policy", "")
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)
 	}
 	defer closeBody(r)
-	return DataRetentionPolicyFromJson(r.Body), BuildResponse(r)
+	return GlobalRetentionPolicyFromJson(r.Body), BuildResponse(r)
+}
+
+// GetDataRetentionPolicyByID will get the details for the granular data retention policy with the specified ID.
+func (c *Client4) GetDataRetentionPolicyByID(policyID string) (*RetentionPolicyWithTeamAndChannelCounts, *Response) {
+	r, appErr := c.DoApiGet(c.GetDataRetentionPolicyRoute(policyID), "")
+	if appErr != nil {
+		return nil, BuildErrorResponse(r, appErr)
+	}
+	defer closeBody(r)
+	policy, err := RetentionPolicyWithTeamAndChannelCountsFromJson(r.Body)
+	if err != nil {
+		return nil, BuildErrorResponse(r, NewAppError("Client4.GetDataRetentionPolicyByID", "model.utils.decode_json.app_error", nil, err.Error(), r.StatusCode))
+	}
+	return policy, BuildResponse(r)
+}
+
+// GetDataRetentionPoliciesCount will get the total number of granular data retention policies.
+func (c *Client4) GetDataRetentionPoliciesCount() (int64, *Response) {
+	type CountBody struct {
+		TotalCount int64 `json:"total_count"`
+	}
+	r, appErr := c.DoApiGet(c.GetDataRetentionRoute()+"/policies_count", "")
+	if appErr != nil {
+		return 0, BuildErrorResponse(r, appErr)
+	}
+	var countObj CountBody
+	jsonErr := json.NewDecoder(r.Body).Decode(&countObj)
+	if jsonErr != nil {
+		return 0, BuildErrorResponse(r, NewAppError("Client4.GetDataRetentionPoliciesCount", "model.utils.decode_json.app_error", nil, jsonErr.Error(), r.StatusCode))
+	}
+	return countObj.TotalCount, BuildResponse(r)
+}
+
+// GetDataRetentionPolicies will get the current granular data retention policies' details.
+func (c *Client4) GetDataRetentionPolicies(page, perPage int) (*RetentionPolicyWithTeamAndChannelCountsList, *Response) {
+	query := fmt.Sprintf("?page=%d&per_page=%d", page, perPage)
+	r, appErr := c.DoApiGet(c.GetDataRetentionRoute()+"/policies"+query, "")
+	if appErr != nil {
+		return nil, BuildErrorResponse(r, appErr)
+	}
+	defer closeBody(r)
+	policies, err := RetentionPolicyWithTeamAndChannelCountsListFromJson(r.Body)
+	if err != nil {
+		return nil, BuildErrorResponse(r, NewAppError("Client4.GetDataRetentionPolicies", "model.utils.decode_json.app_error", nil, err.Error(), r.StatusCode))
+	}
+	return policies, BuildResponse(r)
+}
+
+// CreateDataRetentionPolicy will create a new granular data retention policy which will be applied to
+// the specified teams and channels. The Id field of `policy` must be empty.
+func (c *Client4) CreateDataRetentionPolicy(policy *RetentionPolicyWithTeamAndChannelIDs) (*RetentionPolicyWithTeamAndChannelCounts, *Response) {
+	r, appErr := c.doApiPostBytes(c.GetDataRetentionRoute()+"/policies", policy.ToJson())
+	if appErr != nil {
+		return nil, BuildErrorResponse(r, appErr)
+	}
+	defer closeBody(r)
+	newPolicy, err := RetentionPolicyWithTeamAndChannelCountsFromJson(r.Body)
+	if err != nil {
+		return nil, BuildErrorResponse(r, NewAppError("Client4.CreateDataRetentionPolicy", "model.utils.decode_json.app_error", nil, err.Error(), r.StatusCode))
+	}
+	return newPolicy, BuildResponse(r)
+}
+
+// DeleteDataRetentionPolicy will delete the granular data retention policy with the specified ID.
+func (c *Client4) DeleteDataRetentionPolicy(policyID string) *Response {
+	r, appErr := c.DoApiDelete(c.GetDataRetentionPolicyRoute(policyID))
+	if appErr != nil {
+		return BuildErrorResponse(r, appErr)
+	}
+	defer closeBody(r)
+	return BuildResponse(r)
+}
+
+// PatchDataRetentionPolicy will patch the granular data retention policy with the specified ID.
+// The Id field of `patch` must be non-empty.
+func (c *Client4) PatchDataRetentionPolicy(patch *RetentionPolicyWithTeamAndChannelIDs) (*RetentionPolicyWithTeamAndChannelCounts, *Response) {
+	r, appErr := c.doApiPatchBytes(c.GetDataRetentionPolicyRoute(patch.ID), patch.ToJson())
+	if appErr != nil {
+		return nil, BuildErrorResponse(r, appErr)
+	}
+	defer closeBody(r)
+	policy, err := RetentionPolicyWithTeamAndChannelCountsFromJson(r.Body)
+	if err != nil {
+		return nil, BuildErrorResponse(r, NewAppError("Client4.PatchDataRetentionPolicy", "model.utils.decode_json.app_error", nil, err.Error(), r.StatusCode))
+	}
+	return policy, BuildResponse(r)
+}
+
+// GetTeamsForRetentionPolicy will get the teams to which the specified policy is currently applied.
+func (c *Client4) GetTeamsForRetentionPolicy(policyID string, page, perPage int) (*TeamsWithCount, *Response) {
+	query := fmt.Sprintf("?page=%d&per_page=%d", page, perPage)
+	r, appErr := c.DoApiGet(c.GetDataRetentionPolicyRoute(policyID)+"/teams"+query, "")
+	if appErr != nil {
+		return nil, BuildErrorResponse(r, appErr)
+	}
+	var teams *TeamsWithCount
+	jsonErr := json.NewDecoder(r.Body).Decode(&teams)
+	if jsonErr != nil {
+		return nil, BuildErrorResponse(r, NewAppError("Client4.GetTeamsForRetentionPolicy", "model.utils.decode_json.app_error", nil, jsonErr.Error(), r.StatusCode))
+	}
+	return teams, BuildResponse(r)
+}
+
+// SearchTeamsForRetentionPolicy will search the teams to which the specified policy is currently applied.
+func (c *Client4) SearchTeamsForRetentionPolicy(policyID string, term string) ([]*Team, *Response) {
+	body, _ := json.Marshal(map[string]interface{}{"term": term})
+	r, appErr := c.doApiPostBytes(c.GetDataRetentionPolicyRoute(policyID)+"/teams/search", body)
+	if appErr != nil {
+		return nil, BuildErrorResponse(r, appErr)
+	}
+	var teams []*Team
+	jsonErr := json.NewDecoder(r.Body).Decode(&teams)
+	if jsonErr != nil {
+		return nil, BuildErrorResponse(r, NewAppError("Client4.SearchTeamsForRetentionPolicy", "model.utils.decode_json.app_error", nil, jsonErr.Error(), r.StatusCode))
+	}
+	return teams, BuildResponse(r)
+}
+
+// AddTeamsToRetentionPolicy will add the specified teams to the granular data retention policy
+// with the specified ID.
+func (c *Client4) AddTeamsToRetentionPolicy(policyID string, teamIDs []string) *Response {
+	body, _ := json.Marshal(teamIDs)
+	r, appErr := c.doApiPostBytes(c.GetDataRetentionPolicyRoute(policyID)+"/teams", body)
+	if appErr != nil {
+		return BuildErrorResponse(r, appErr)
+	}
+	defer closeBody(r)
+	return BuildResponse(r)
+}
+
+// RemoveTeamsFromRetentionPolicy will remove the specified teams from the granular data retention policy
+// with the specified ID.
+func (c *Client4) RemoveTeamsFromRetentionPolicy(policyID string, teamIDs []string) *Response {
+	body, _ := json.Marshal(teamIDs)
+	r, appErr := c.doApiDeleteBytes(c.GetDataRetentionPolicyRoute(policyID)+"/teams", body)
+	if appErr != nil {
+		return BuildErrorResponse(r, appErr)
+	}
+	defer closeBody(r)
+	return BuildResponse(r)
+}
+
+// GetChannelsForRetentionPolicy will get the channels to which the specified policy is currently applied.
+func (c *Client4) GetChannelsForRetentionPolicy(policyID string, page, perPage int) (*ChannelsWithCount, *Response) {
+	query := fmt.Sprintf("?page=%d&per_page=%d", page, perPage)
+	r, appErr := c.DoApiGet(c.GetDataRetentionPolicyRoute(policyID)+"/channels"+query, "")
+	if appErr != nil {
+		return nil, BuildErrorResponse(r, appErr)
+	}
+	var channels *ChannelsWithCount
+	jsonErr := json.NewDecoder(r.Body).Decode(&channels)
+	if jsonErr != nil {
+		return nil, BuildErrorResponse(r, NewAppError("Client4.GetChannelsForRetentionPolicy", "model.utils.decode_json.app_error", nil, jsonErr.Error(), r.StatusCode))
+	}
+	return channels, BuildResponse(r)
+}
+
+// SearchChannelsForRetentionPolicy will search the channels to which the specified policy is currently applied.
+func (c *Client4) SearchChannelsForRetentionPolicy(policyID string, term string) (ChannelListWithTeamData, *Response) {
+	body, _ := json.Marshal(map[string]interface{}{"term": term})
+	r, appErr := c.doApiPostBytes(c.GetDataRetentionPolicyRoute(policyID)+"/channels/search", body)
+	if appErr != nil {
+		return nil, BuildErrorResponse(r, appErr)
+	}
+	var channels ChannelListWithTeamData
+	jsonErr := json.NewDecoder(r.Body).Decode(&channels)
+	if jsonErr != nil {
+		return nil, BuildErrorResponse(r, NewAppError("Client4.SearchChannelsForRetentionPolicy", "model.utils.decode_json.app_error", nil, jsonErr.Error(), r.StatusCode))
+	}
+	return channels, BuildResponse(r)
+}
+
+// AddChannelsToRetentionPolicy will add the specified channels to the granular data retention policy
+// with the specified ID.
+func (c *Client4) AddChannelsToRetentionPolicy(policyID string, channelIDs []string) *Response {
+	body, _ := json.Marshal(channelIDs)
+	r, appErr := c.doApiPostBytes(c.GetDataRetentionPolicyRoute(policyID)+"/channels", body)
+	if appErr != nil {
+		return BuildErrorResponse(r, appErr)
+	}
+	defer closeBody(r)
+	return BuildResponse(r)
+}
+
+// RemoveChannelsFromRetentionPolicy will remove the specified channels from the granular data retention policy
+// with the specified ID.
+func (c *Client4) RemoveChannelsFromRetentionPolicy(policyID string, channelIDs []string) *Response {
+	body, _ := json.Marshal(channelIDs)
+	r, appErr := c.doApiDeleteBytes(c.GetDataRetentionPolicyRoute(policyID)+"/channels", body)
+	if appErr != nil {
+		return BuildErrorResponse(r, appErr)
+	}
+	defer closeBody(r)
+	return BuildResponse(r)
+}
+
+// GetTeamPoliciesForUser will get the data retention policies for the teams to which a user belongs.
+func (c *Client4) GetTeamPoliciesForUser(userID string, offset, limit int) (*RetentionPolicyForTeamList, *Response) {
+	r, appErr := c.DoApiGet(c.GetUserRoute(userID)+"/data_retention/team_policies", "")
+	if appErr != nil {
+		return nil, BuildErrorResponse(r, appErr)
+	}
+	var teams RetentionPolicyForTeamList
+	jsonErr := json.NewDecoder(r.Body).Decode(&teams)
+	if jsonErr != nil {
+		return nil, BuildErrorResponse(r, NewAppError("Client4.GetTeamPoliciesForUser", "model.utils.decode_json.app_error", nil, jsonErr.Error(), r.StatusCode))
+	}
+	return &teams, BuildResponse(r)
+}
+
+// GetChannelPoliciesForUser will get the data retention policies for the channels to which a user belongs.
+func (c *Client4) GetChannelPoliciesForUser(userID string, offset, limit int) (*RetentionPolicyForChannelList, *Response) {
+	r, appErr := c.DoApiGet(c.GetUserRoute(userID)+"/data_retention/channel_policies", "")
+	if appErr != nil {
+		return nil, BuildErrorResponse(r, appErr)
+	}
+	var channels RetentionPolicyForChannelList
+	jsonErr := json.NewDecoder(r.Body).Decode(&channels)
+	if jsonErr != nil {
+		return nil, BuildErrorResponse(r, NewAppError("Client4.GetChannelPoliciesForUser", "model.utils.decode_json.app_error", nil, jsonErr.Error(), r.StatusCode))
+	}
+	return &channels, BuildResponse(r)
 }
 
 // Commands Section
@@ -5019,7 +5394,7 @@ func (c *Client4) uploadPlugin(file io.Reader, force bool) (*Manifest, *Response
 	}
 	rq.Header.Set("Content-Type", writer.FormDataContentType())
 
-	if len(c.AuthToken) > 0 {
+	if c.AuthToken != "" {
 		rq.Header.Set(HEADER_AUTH, c.AuthType+" "+c.AuthToken)
 	}
 
@@ -5436,7 +5811,7 @@ func (c *Client4) GetChannelMemberCountsByGroup(channelID string, includeTimezon
 
 // RequestTrialLicense will request a trial license and install it in the server
 func (c *Client4) RequestTrialLicense(users int) (bool, *Response) {
-	b, _ := json.Marshal(map[string]int{"users": users})
+	b, _ := json.Marshal(map[string]interface{}{"users": users, "terms_accepted": true})
 	r, err := c.DoApiPost("/trial-license", string(b))
 	if err != nil {
 		return false, BuildErrorResponse(r, err)
@@ -5626,7 +6001,7 @@ func (c *Client4) GetUploadsForUser(userId string) ([]*UploadSession, *Response)
 // a FileInfo object.
 func (c *Client4) UploadData(uploadId string, data io.Reader) (*FileInfo, *Response) {
 	url := c.GetUploadRoute(uploadId)
-	r, err := c.doApiRequestReader("POST", c.ApiUrl+url, data, "")
+	r, err := c.doApiRequestReader("POST", c.ApiUrl+url, data, nil)
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)
 	}
@@ -5710,6 +6085,18 @@ func (c *Client4) GetSubscription() (*Subscription, *Response) {
 	return subscription, BuildResponse(r)
 }
 
+func (c *Client4) GetSubscriptionStats() (*SubscriptionStats, *Response) {
+	r, appErr := c.DoApiGet(c.GetCloudRoute()+"/subscription/stats", "")
+	if appErr != nil {
+		return nil, BuildErrorResponse(r, appErr)
+	}
+	defer closeBody(r)
+
+	var stats *SubscriptionStats
+	json.NewDecoder(r.Body).Decode(&stats)
+	return stats, BuildResponse(r)
+}
+
 func (c *Client4) GetInvoicesForSubscription() ([]*Invoice, *Response) {
 	r, appErr := c.DoApiGet(c.GetCloudRoute()+"/subscription/invoices", "")
 	if appErr != nil {
@@ -5753,13 +6140,62 @@ func (c *Client4) UpdateCloudCustomerAddress(address *Address) (*CloudCustomer, 
 	return customer, BuildResponse(r)
 }
 
-func (c *Client4) GetUserThreads(userId string, options GetUserThreadsOpts) (*Threads, *Response) {
+func (c *Client4) ListImports() ([]string, *Response) {
+	r, err := c.DoApiGet(c.GetImportsRoute(), "")
+	if err != nil {
+		return nil, BuildErrorResponse(r, err)
+	}
+	defer closeBody(r)
+	return ArrayFromJson(r.Body), BuildResponse(r)
+}
+
+func (c *Client4) ListExports() ([]string, *Response) {
+	r, err := c.DoApiGet(c.GetExportsRoute(), "")
+	if err != nil {
+		return nil, BuildErrorResponse(r, err)
+	}
+	defer closeBody(r)
+	return ArrayFromJson(r.Body), BuildResponse(r)
+}
+
+func (c *Client4) DeleteExport(name string) (bool, *Response) {
+	r, err := c.DoApiDelete(c.GetExportRoute(name))
+	if err != nil {
+		return false, BuildErrorResponse(r, err)
+	}
+	defer closeBody(r)
+	return CheckStatusOK(r), BuildResponse(r)
+}
+
+func (c *Client4) DownloadExport(name string, wr io.Writer, offset int64) (int64, *Response) {
+	var headers map[string]string
+	if offset > 0 {
+		headers = map[string]string{
+			HEADER_RANGE: fmt.Sprintf("bytes=%d-", offset),
+		}
+	}
+	r, appErr := c.DoApiRequestWithHeaders(http.MethodGet, c.ApiUrl+c.GetExportRoute(name), "", headers)
+	if appErr != nil {
+		return 0, BuildErrorResponse(r, appErr)
+	}
+	defer closeBody(r)
+	n, err := io.Copy(wr, r.Body)
+	if err != nil {
+		return n, BuildErrorResponse(r, NewAppError("DownloadExport", "model.client.copy.app_error", nil, err.Error(), r.StatusCode))
+	}
+	return n, BuildResponse(r)
+}
+
+func (c *Client4) GetUserThreads(userId, teamId string, options GetUserThreadsOpts) (*Threads, *Response) {
 	v := url.Values{}
 	if options.Since != 0 {
 		v.Set("since", fmt.Sprintf("%d", options.Since))
 	}
-	if options.Page != 0 {
-		v.Set("page", fmt.Sprintf("%d", options.Page))
+	if options.Before != "" {
+		v.Set("before", options.Before)
+	}
+	if options.After != "" {
+		v.Set("after", options.After)
 	}
 	if options.PageSize != 0 {
 		v.Set("pageSize", fmt.Sprintf("%d", options.PageSize))
@@ -5770,8 +6206,10 @@ func (c *Client4) GetUserThreads(userId string, options GetUserThreadsOpts) (*Th
 	if options.Deleted {
 		v.Set("deleted", "true")
 	}
-
-	url := c.GetUserThreadsRoute(userId)
+	if options.Unread {
+		v.Set("unread", "true")
+	}
+	url := c.GetUserThreadsRoute(userId, teamId)
 	if len(v) > 0 {
 		url += "?" + v.Encode()
 	}
@@ -5788,8 +6226,25 @@ func (c *Client4) GetUserThreads(userId string, options GetUserThreadsOpts) (*Th
 	return &threads, BuildResponse(r)
 }
 
-func (c *Client4) UpdateThreadsReadForUser(userId string, timestamp int64) *Response {
-	r, appErr := c.DoApiPut(fmt.Sprintf("%s/read/%d", c.GetUserThreadsRoute(userId), timestamp), "")
+func (c *Client4) GetUserThread(userId, teamId, threadId string, extended bool) (*ThreadResponse, *Response) {
+	url := c.GetUserThreadRoute(userId, teamId, threadId)
+	if extended {
+		url += "?extended=true"
+	}
+	r, appErr := c.DoApiGet(url, "")
+	if appErr != nil {
+		return nil, BuildErrorResponse(r, appErr)
+	}
+	defer closeBody(r)
+
+	var thread ThreadResponse
+	json.NewDecoder(r.Body).Decode(&thread)
+
+	return &thread, BuildResponse(r)
+}
+
+func (c *Client4) UpdateThreadsReadForUser(userId, teamId string) *Response {
+	r, appErr := c.DoApiPut(fmt.Sprintf("%s/read", c.GetUserThreadsRoute(userId, teamId)), "")
 	if appErr != nil {
 		return BuildErrorResponse(r, appErr)
 	}
@@ -5798,23 +6253,25 @@ func (c *Client4) UpdateThreadsReadForUser(userId string, timestamp int64) *Resp
 	return BuildResponse(r)
 }
 
-func (c *Client4) UpdateThreadReadForUser(userId, threadId string, timestamp int64) *Response {
-	r, appErr := c.DoApiPut(fmt.Sprintf("%s/read/%d", c.GetUserThreadRoute(userId, threadId), timestamp), "")
+func (c *Client4) UpdateThreadReadForUser(userId, teamId, threadId string, timestamp int64) (*ThreadResponse, *Response) {
+	r, appErr := c.DoApiPut(fmt.Sprintf("%s/read/%d", c.GetUserThreadRoute(userId, teamId, threadId), timestamp), "")
 	if appErr != nil {
-		return BuildErrorResponse(r, appErr)
+		return nil, BuildErrorResponse(r, appErr)
 	}
 	defer closeBody(r)
+	var thread ThreadResponse
+	json.NewDecoder(r.Body).Decode(&thread)
 
-	return BuildResponse(r)
+	return &thread, BuildResponse(r)
 }
 
-func (c *Client4) UpdateThreadFollowForUser(userId, threadId string, state bool) *Response {
+func (c *Client4) UpdateThreadFollowForUser(userId, teamId, threadId string, state bool) *Response {
 	var appErr *AppError
 	var r *http.Response
 	if state {
-		r, appErr = c.DoApiPut(c.GetUserThreadRoute(userId, threadId)+"/following", "")
+		r, appErr = c.DoApiPut(c.GetUserThreadRoute(userId, teamId, threadId)+"/following", "")
 	} else {
-		r, appErr = c.DoApiDelete(c.GetUserThreadRoute(userId, threadId) + "/following")
+		r, appErr = c.DoApiDelete(c.GetUserThreadRoute(userId, teamId, threadId) + "/following")
 	}
 	if appErr != nil {
 		return BuildErrorResponse(r, appErr)
@@ -5822,4 +6279,65 @@ func (c *Client4) UpdateThreadFollowForUser(userId, threadId string, state bool)
 	defer closeBody(r)
 
 	return BuildResponse(r)
+}
+
+func (c *Client4) SendAdminUpgradeRequestEmail() *Response {
+	r, appErr := c.DoApiPost(c.GetCloudRoute()+"/subscription/limitreached/invite", "")
+	if appErr != nil {
+		return BuildErrorResponse(r, appErr)
+	}
+	defer closeBody(r)
+
+	return BuildResponse(r)
+}
+
+func (c *Client4) SendAdminUpgradeRequestEmailOnJoin() *Response {
+	r, appErr := c.DoApiPost(c.GetCloudRoute()+"/subscription/limitreached/join", "")
+	if appErr != nil {
+		return BuildErrorResponse(r, appErr)
+	}
+	defer closeBody(r)
+
+	return BuildResponse(r)
+}
+
+func (c *Client4) GetAllSharedChannels(teamID string, page, perPage int) ([]*SharedChannel, *Response) {
+	url := fmt.Sprintf("%s/%s?page=%d&per_page=%d", c.GetSharedChannelsRoute(), teamID, page, perPage)
+	r, appErr := c.DoApiGet(url, "")
+	if appErr != nil {
+		return nil, BuildErrorResponse(r, appErr)
+	}
+	defer closeBody(r)
+
+	var channels []*SharedChannel
+	json.NewDecoder(r.Body).Decode(&channels)
+
+	return channels, BuildResponse(r)
+}
+
+func (c *Client4) GetRemoteClusterInfo(remoteID string) (RemoteClusterInfo, *Response) {
+	url := fmt.Sprintf("%s/remote_info/%s", c.GetSharedChannelsRoute(), remoteID)
+	r, appErr := c.DoApiGet(url, "")
+	if appErr != nil {
+		return RemoteClusterInfo{}, BuildErrorResponse(r, appErr)
+	}
+	defer closeBody(r)
+
+	var rci RemoteClusterInfo
+	json.NewDecoder(r.Body).Decode(&rci)
+
+	return rci, BuildResponse(r)
+}
+
+func (c *Client4) GetAncillaryPermissions(subsectionPermissions []string) ([]string, *Response) {
+	var returnedPermissions []string
+	url := fmt.Sprintf("%s/ancillary?subsection_permissions=%s", c.GetPermissionsRoute(), strings.Join(subsectionPermissions, ","))
+	r, appErr := c.DoApiGet(url, "")
+	if appErr != nil {
+		return returnedPermissions, BuildErrorResponse(r, appErr)
+	}
+	defer closeBody(r)
+
+	json.NewDecoder(r.Body).Decode(&returnedPermissions)
+	return returnedPermissions, BuildResponse(r)
 }

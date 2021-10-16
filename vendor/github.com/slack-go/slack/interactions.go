@@ -53,6 +53,7 @@ type InteractionCallback struct {
 	APIAppID        string          `json:"api_app_id"`
 	BlockID         string          `json:"block_id"`
 	Container       Container       `json:"container"`
+	Enterprise      Enterprise      `json:"enterprise"`
 	DialogSubmissionCallback
 	ViewSubmissionCallback
 	ViewClosedCallback
@@ -126,6 +127,11 @@ type Container struct {
 	ChannelID    string      `json:"channel_id"`
 	IsEphemeral  bool        `json:"is_ephemeral"`
 	IsAppUnfurl  bool        `json:"is_app_unfurl"`
+}
+
+type Enterprise struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 // ActionCallback is a convenience struct defined to allow dynamic unmarshalling of

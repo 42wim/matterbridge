@@ -1,5 +1,51 @@
 # Changelog
 
+## v4.6.1 - 2021-09-26
+
+**Enhancements**
+
+* Add start time to request logger middleware values [#1991](https://github.com/labstack/echo/pull/1991)
+
+## v4.6.0 - 2021-09-20
+
+Introduced a new [request logger](https://github.com/labstack/echo/blob/master/middleware/request_logger.go) middleware 
+to help with cases when you want to use some other logging library in your application.
+
+**Fixes**
+
+* fix timeout middleware warning: superfluous response.WriteHeader [#1905](https://github.com/labstack/echo/issues/1905)
+
+**Enhancements**
+
+* Add Cookie to KeyAuth middleware's KeyLookup [#1929](https://github.com/labstack/echo/pull/1929)
+* JWT middleware should ignore case of auth scheme in request header [#1951](https://github.com/labstack/echo/pull/1951)
+* Refactor default error handler to return first if response is already committed [#1956](https://github.com/labstack/echo/pull/1956)
+* Added request logger middleware which helps to use custom logger library for logging requests. [#1980](https://github.com/labstack/echo/pull/1980)
+* Allow escaping of colon in route path so Google Cloud API "custom methods" could be implemented [#1988](https://github.com/labstack/echo/pull/1988)
+
+## v4.5.0 - 2021-08-01
+
+**Important notes**
+
+A **BREAKING CHANGE** is introduced for JWT middleware users.
+The JWT library used for the JWT middleware had to be changed from [github.com/dgrijalva/jwt-go](https://github.com/dgrijalva/jwt-go) to
+[github.com/golang-jwt/jwt](https://github.com/golang-jwt/jwt) due former library being unmaintained and affected by security
+issues.
+The [github.com/golang-jwt/jwt](https://github.com/golang-jwt/jwt) project is a drop-in replacement, but supports only the latest 2 Go versions.
+So for JWT middleware users Go 1.15+ is required. For detailed information please read [#1940](https://github.com/labstack/echo/discussions/)
+
+To change the library imports in all .go files in your project replace all occurrences of `dgrijalva/jwt-go` with `golang-jwt/jwt`.
+
+For Linux CLI you can use:
+```bash
+find -type f -name "*.go" -exec sed -i "s/dgrijalva\/jwt-go/golang-jwt\/jwt/g" {} \;
+go mod tidy
+```
+
+**Fixes**
+
+* Change JWT library to `github.com/golang-jwt/jwt` [#1946](https://github.com/labstack/echo/pull/1946)
+
 ## v4.4.0 - 2021-07-12
 
 **Fixes**

@@ -38,9 +38,11 @@ func NewClient(serverURL *url.URL, debug bool) (*Client, error) {
 	c := new(Client)
 	c.ddp = ddp.NewClient(wsURL, serverURL.String())
 
-	if debug {
-		c.ddp.SetSocketLogActive(true)
-	}
+	/*
+		if debug {
+			c.ddp.SetSocketLogActive(true)
+		}
+	*/
 
 	if err := c.ddp.Connect(); err != nil {
 		return nil, err
