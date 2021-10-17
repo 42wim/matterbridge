@@ -1,3 +1,31 @@
+# v1.23.0
+
+## New features
+
+- irc: Add UserName and RealName options for IRC (#1590)
+- mattermost: Add support for mattermost v6
+- nctalk: Add support for separate display name (nctalk) (#1506)
+- xmpp: Add support for anonymous connection (xmpp) (#1548)
+
+## Enhancements
+
+- general: Update vendored libraries
+- docker: Use github actions to build dockerhub/ghcr.io images
+- docker: Update GH actions to multi arch (arm64) (#1614)
+- telegram: Convert .tgs with go libraries (and cgo) (telegram) (#1569)
+
+## Bugfix
+
+- mumble: Remove newline character in bridge multiline messages (mumble) (#1572)
+- slack: Add space before file upload comment (slack) (#1554)
+- slack: Invalidate user in cache on user change event (#1604)
+- xmpp: Fix XMPP parseNick function (#1547)
+
+This release couldn't exist without the following contributors:
+@powerjungle, @gary-kim, @KingPin, @Benau, @keenan-v1, @tytan652, @KidA001,@minecraftchest1, @irydacea
+
+##
+
 # v1.22.3
 
 ## Bugfixes
