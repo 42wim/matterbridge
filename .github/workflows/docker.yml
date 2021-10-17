@@ -29,6 +29,8 @@ jobs:
         uses: docker/metadata-action@v3
         with:
           images: 42wim/matterbridge
+          flavor: |
+            latest=true
           tags: |
             type=ref,event=branch
             type=ref,event=pr
