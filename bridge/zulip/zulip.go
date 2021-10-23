@@ -2,6 +2,7 @@ package bzulip
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"strconv"
 	"strings"
@@ -11,6 +12,7 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
+	"github.com/42wim/matterbridge/version"
 	gzb "github.com/matterbridge/gozulipbot"
 )
 
@@ -27,7 +29,7 @@ func New(cfg *bridge.Config) bridge.Bridger {
 }
 
 func (b *Bzulip) Connect() error {
-	bot := gzb.Bot{APIKey: b.GetString("token"), APIURL: b.GetString("server") + "/api/v1/", Email: b.GetString("login")}
+	bot := gzb.Bot{APIKey: b.GetString("token"), APIURL: b.GetString("server") + "/api/v1/", Email: b.GetString("login"), UserAgent: fmt.Sprintf("matterbridge/%s", version.Release)}
 	bot.Init()
 	q, err := bot.RegisterAll()
 	b.q = q
@@ -125,6 +127,7 @@ func (b *Bzulip) handleQueue() error {
 			b.Log.Debug("heartbeat received.")
 		default:
 			b.Log.Debugf("receiving error: %#v", err)
+			time.Sleep(time.Second * 10)
 		}
 		if err != nil {
 			continue
