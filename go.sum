@@ -661,12 +661,10 @@ github.com/matterbridge/discordgo v0.21.2-0.20210201201054-fb39a175b4f7 h1:4J2YZ
 github.com/matterbridge/discordgo v0.21.2-0.20210201201054-fb39a175b4f7/go.mod h1:411nZYv0UMMrtppR5glXop1foboJiFAowy+42U+Ahvw=
 github.com/matterbridge/go-xmpp v0.0.0-20210731150933-5702291c239f h1:1hfavl4YOoRjgTBWezeX8WXCGnhrxnfEgQtb38wQnyg=
 github.com/matterbridge/go-xmpp v0.0.0-20210731150933-5702291c239f/go.mod h1:ECDRehsR9TYTKCAsRS8/wLeOk6UUqDydw47ln7wG41Q=
-github.com/matterbridge/gozulipbot v0.0.0-20200820220548-be5824faa913 h1:5UGr9fLsvAvhjP6i5XJmd0ZIwYVR2gZCzU1lJZ7wfLY=
-github.com/matterbridge/gozulipbot v0.0.0-20200820220548-be5824faa913/go.mod h1:yAjnZ34DuDyPHMPHHjOsTk/FefW4JJjoMMCGt/8uuQA=
+github.com/matterbridge/gozulipbot v0.0.0-20211023205727-a19d6c1f3b75 h1:GslZKF7lW7oSisycGLpxPO+TnKJuA4VZuTWIfYZrClc=
+github.com/matterbridge/gozulipbot v0.0.0-20211023205727-a19d6c1f3b75/go.mod h1:yAjnZ34DuDyPHMPHHjOsTk/FefW4JJjoMMCGt/8uuQA=
 github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba h1:XleOY4IjAEIcxAh+IFwT5JT5Ze3RHiYz6m+4ZfZ0rc0=
 github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba/go.mod h1:iXGEotOvwI1R1SjLxRc+BF5rUORTMtE0iMZBT2lxqAU=
-github.com/matterbridge/matterclient v0.0.0-20211016195328-346acac403d8 h1:6U64ukl/GOvjPTKvUE9jmMLlvJCa+M2aoiq7myoE8RE=
-github.com/matterbridge/matterclient v0.0.0-20211016195328-346acac403d8/go.mod h1:Gh3tFUjkcPIBBeEkfXBbGio4ONMMKNmlmGECvXLY0TE=
 github.com/matterbridge/matterclient v0.0.0-20211021135437-2dc2bc7dce2d h1:zOIeYDh2WcqEZkJTiV5tHynjuP40IFHubliqhvfhc/0=
 github.com/matterbridge/matterclient v0.0.0-20211021135437-2dc2bc7dce2d/go.mod h1:Gh3tFUjkcPIBBeEkfXBbGio4ONMMKNmlmGECvXLY0TE=
 github.com/mattermost/go-i18n v1.11.0 h1:1hLKqn/ZvhZ80OekjVPGYcCrBfMz+YxNNgqS+beL7zE=
