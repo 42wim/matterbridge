@@ -151,6 +151,8 @@ func (q *Queue) GetEvents() ([]EventMessage, error) {
 	switch {
 	case resp.StatusCode == 429:
 		return nil, BackoffError
+	case resp.StatusCode == 401:
+		return nil, UnauthorizedError
 	case resp.StatusCode == 403:
 		return nil, UnauthorizedError
 	case resp.StatusCode >= 400:
