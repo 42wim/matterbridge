@@ -10,14 +10,15 @@ import (
 )
 
 type Bot struct {
-	APIKey  string
-	APIURL  string
-	Email   string
-	Queues  []*Queue
-	Streams []string
-	Client  Doer
-	Backoff time.Duration
-	Retries int64
+	APIKey    string
+	APIURL    string
+	Email     string
+	Queues    []*Queue
+	Streams   []string
+	Client    Doer
+	Backoff   time.Duration
+	Retries   int64
+	UserAgent string
 }
 
 type Doer interface {
@@ -117,6 +118,11 @@ func (b *Bot) Subscribe(streams []string) (*http.Response, error) {
 	body := "subscriptions=" + string(bodyBts)
 
 	req, err := b.constructRequest("POST", "users/me/subscriptions", body)
+	if b.UserAgent != "" {
+		req.Header.Set("User-Agent", b.UserAgent)
+	} else {
+		req.Header.Set("User-Agent", fmt.Sprintf("gozulipbot/%s", Release))
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -174,6 +180,20 @@ func (b *Bot) RegisterEvents(ets []EventType, n Narrow) (*Queue, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		// Try to parse the error out of the body
+		body, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			var jsonErr map[string]string
+			err = json.Unmarshal(body, &jsonErr)
+			if err == nil {
+				if msg, ok := jsonErr["msg"]; ok {
+					return nil, fmt.Errorf("Failed to register: %s", msg)
+				}
+			}
+		}
+		return nil, fmt.Errorf("Got non-200 response code when registering: %d", resp.StatusCode)
+	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {

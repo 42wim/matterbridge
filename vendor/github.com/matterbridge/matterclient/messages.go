@@ -264,9 +264,8 @@ func (m *Client) parseMessage(rmsg *Message) {
 	case model.WebsocketEventPosted, model.WebsocketEventPostEdited, model.WebsocketEventPostDeleted:
 		m.parseActionPost(rmsg)
 	case "user_updated":
-		user := rmsg.Raw.GetData()["user"].(map[string]interface{})
-		if _, ok := user["id"].(string); ok {
-			m.UpdateUser(user["id"].(string))
+		if user, ok := rmsg.Raw.GetData()["user"].(*model.User); ok {
+			m.UpdateUser(user.Id)
 		}
 	case "group_added":
 		if err := m.UpdateChannels(); err != nil {
