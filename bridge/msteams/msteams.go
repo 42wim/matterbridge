@@ -19,8 +19,10 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var defaultScopes = []string{"openid", "profile", "offline_access", "Group.Read.All", "Group.ReadWrite.All"}
-var attachRE = regexp.MustCompile(`<attachment id=.*?attachment>`)
+var (
+	defaultScopes = []string{"openid", "profile", "offline_access", "Group.Read.All", "Group.ReadWrite.All"}
+	attachRE      = regexp.MustCompile(`<attachment id=.*?attachment>`)
+)
 
 type Bmsteams struct {
 	gc    *msgraph.GraphServiceRequestBuilder
@@ -50,7 +52,7 @@ func (b *Bmsteams) Connect() error {
 		b.Log.Errorf("Couldn't save sessionfile in %s: %s", tokenCachePath, err)
 	}
 	// make file readable only for matterbridge user
-	err = os.Chmod(tokenCachePath, 0600)
+	err = os.Chmod(tokenCachePath, 0o600)
 	if err != nil {
 		b.Log.Errorf("Couldn't change permissions for %s: %s", tokenCachePath, err)
 	}
@@ -168,7 +170,7 @@ func (b *Bmsteams) poll(channelName string) error {
 			}
 
 			// skip non-user message for now.
-			if msg.From.User == nil {
+			if msg.From == nil || msg.From.User == nil {
 				continue
 			}
 
