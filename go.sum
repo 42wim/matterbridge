@@ -665,8 +665,8 @@ github.com/matterbridge/gozulipbot v0.0.0-20211023205727-a19d6c1f3b75 h1:GslZKF7
 github.com/matterbridge/gozulipbot v0.0.0-20211023205727-a19d6c1f3b75/go.mod h1:yAjnZ34DuDyPHMPHHjOsTk/FefW4JJjoMMCGt/8uuQA=
 github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba h1:XleOY4IjAEIcxAh+IFwT5JT5Ze3RHiYz6m+4ZfZ0rc0=
 github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba/go.mod h1:iXGEotOvwI1R1SjLxRc+BF5rUORTMtE0iMZBT2lxqAU=
-github.com/matterbridge/matterclient v0.0.0-20211021135437-2dc2bc7dce2d h1:zOIeYDh2WcqEZkJTiV5tHynjuP40IFHubliqhvfhc/0=
-github.com/matterbridge/matterclient v0.0.0-20211021135437-2dc2bc7dce2d/go.mod h1:Gh3tFUjkcPIBBeEkfXBbGio4ONMMKNmlmGECvXLY0TE=
+github.com/matterbridge/matterclient v0.0.0-20211024214211-22e762684b4a h1:j5/5gEHtACfrG/Exygfjqj0ip/zRgsa8KaAyuvO2c5Y=
+github.com/matterbridge/matterclient v0.0.0-20211024214211-22e762684b4a/go.mod h1:Gh3tFUjkcPIBBeEkfXBbGio4ONMMKNmlmGECvXLY0TE=
 github.com/mattermost/go-i18n v1.11.0 h1:1hLKqn/ZvhZ80OekjVPGYcCrBfMz+YxNNgqS+beL7zE=
 github.com/mattermost/go-i18n v1.11.0/go.mod h1:RyS7FDNQlzF1PsjbJWHRI35exqaKGSO9qD4iv8QjE34=
 github.com/mattermost/gorp v1.6.2-0.20210419141818-0904a6a388d3/go.mod h1:QCQ3U0M9T/BlAdjKFJo0I1oe/YAgbyjNdhU8bpOLafk=

@@ -217,7 +217,7 @@ func (m *Client) UploadFile(data []byte, channelID string, filename string) (str
 func (m *Client) parseActionPost(rmsg *Message) {
 	// add post to cache, if it already exists don't relay this again.
 	// this should fix reposts
-	if ok, _ := m.lruCache.ContainsOrAdd(digestString(rmsg.Raw.GetData()["post"].(string)), true); ok {
+	if ok, _ := m.lruCache.ContainsOrAdd(digestString(rmsg.Raw.GetData()["post"].(string)), true); ok && rmsg.Raw.EventType() != model.WebsocketEventPostDeleted {
 		m.logger.Debugf("message %#v in cache, not processing again", rmsg.Raw.GetData()["post"].(string))
 		rmsg.Text = ""
 
