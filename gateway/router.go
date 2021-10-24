@@ -110,7 +110,9 @@ func (r *Router) disableBridge(br *bridge.Bridge, err error) bool {
 	if r.BridgeValues().General.IgnoreFailureOnStart {
 		r.logger.Error(err)
 		// setting this bridge empty
-		*br = bridge.Bridge{}
+		*br = bridge.Bridge{
+			Log: br.Log,
+		}
 		return true
 	}
 	return false

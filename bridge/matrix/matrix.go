@@ -301,6 +301,9 @@ func (b *Bmatrix) handlematrix() {
 	syncer.OnEventType("m.room.member", b.handleMemberChange)
 	go func() {
 		for {
+			if b == nil {
+				return
+			}
 			if err := b.mc.Sync(); err != nil {
 				b.Log.Println("Sync() returned ", err)
 			}
