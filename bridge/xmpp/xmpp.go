@@ -128,7 +128,6 @@ func (b *Bxmpp) Send(msg config.Message) (string, error) {
 	var msgReplaceID string
 	msgID := xid.New().String()
 	if msg.ID != "" {
-		msgID = msg.ID
 		msgReplaceID = msg.ID
 	}
 	b.Log.Debugf("=> Sending message %#v", msg)
