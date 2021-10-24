@@ -9,7 +9,7 @@ import (
 func (m *MMClient) parseActionPost(rmsg *Message) {
 	// add post to cache, if it already exists don't relay this again.
 	// this should fix reposts
-	if ok, _ := m.lruCache.ContainsOrAdd(digestString(rmsg.Raw.Data["post"].(string)), true); ok {
+	if ok, _ := m.lruCache.ContainsOrAdd(digestString(rmsg.Raw.Data["post"].(string)), true); ok && rmsg.Raw.Event != model.WEBSOCKET_EVENT_POST_DELETED {
 		m.logger.Debugf("message %#v in cache, not processing again", rmsg.Raw.Data["post"].(string))
 		rmsg.Text = ""
 		return

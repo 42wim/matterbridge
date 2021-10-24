@@ -27,7 +27,7 @@ require (
 	github.com/matterbridge/go-xmpp v0.0.0-20210731150933-5702291c239f
 	github.com/matterbridge/gozulipbot v0.0.0-20211023205727-a19d6c1f3b75
 	github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba
-	github.com/matterbridge/matterclient v0.0.0-20211021135437-2dc2bc7dce2d
+	github.com/matterbridge/matterclient v0.0.0-20211024214211-22e762684b4a
 	github.com/mattermost/mattermost-server/v5 v5.39.0
 	github.com/mattermost/mattermost-server/v6 v6.0.0
 	github.com/mattn/godown v0.0.1
