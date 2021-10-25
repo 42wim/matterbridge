@@ -336,6 +336,7 @@ See [FAQ](https://github.com/42wim/matterbridge/wiki/FAQ)
 - <https://daniele.tech/2019/02/how-to-use-matterbridge-to-connect-2-different-slack-workspaces/>
 - <https://userlinux.net/mattermost-and-matterbridge.html>
 - <https://nextcloud.com/blog/bridging-chat-services-in-talk/>
+- <https://minecraftchest1.wordpress.com/2021/06/05/how-to-install-and-setup-matterbridge/>
 - Youtube: [whatsapp - telegram bridging](https://www.youtube.com/watch?v=W-VXISoKtNc)
 
 ## Thanks
