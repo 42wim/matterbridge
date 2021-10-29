@@ -283,9 +283,9 @@ func (b *Bxmpp) handleXMPP() error {
 	for {
 		m, err := b.xc.Recv()
 		if err != nil {
+			// An error together with AvatarData is non-fatal
 			switch m.(type) {
 			case xmpp.AvatarData:
-				b.avatarAvailability[v.From] = false
 				continue
 			default:
 				return err
