@@ -283,7 +283,13 @@ func (b *Bxmpp) handleXMPP() error {
 	for {
 		m, err := b.xc.Recv()
 		if err != nil {
-			return err
+			switch m.(type) {
+			case xmpp.AvatarData:
+				b.avatarAvailability[v.From] = false
+				continue
+			default:
+				return err
+			}
 		}
 
 		switch v := m.(type) {
