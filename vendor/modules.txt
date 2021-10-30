@@ -92,7 +92,7 @@ github.com/gomarkdown/markdown
 github.com/gomarkdown/markdown/ast
 github.com/gomarkdown/markdown/html
 github.com/gomarkdown/markdown/parser
-# github.com/google/gops v0.3.21
+# github.com/google/gops v0.3.22
 ## explicit; go 1.12
 github.com/google/gops/agent
 github.com/google/gops/internal
@@ -192,7 +192,7 @@ github.com/matterbridge/logrus-prefixed-formatter
 # github.com/matterbridge/matterclient v0.0.0-20211024214211-22e762684b4a
 ## explicit; go 1.16
 github.com/matterbridge/matterclient
-# github.com/mattermost/go-i18n v1.11.0
+# github.com/mattermost/go-i18n v1.11.1-0.20211013152124-5c415071e404
 ## explicit
 github.com/mattermost/go-i18n/i18n
 github.com/mattermost/go-i18n/i18n/bundle
@@ -221,7 +221,7 @@ github.com/mattermost/mattermost-server/v5/shared/i18n
 github.com/mattermost/mattermost-server/v5/shared/markdown
 github.com/mattermost/mattermost-server/v5/shared/mlog
 github.com/mattermost/mattermost-server/v5/utils/jsonutils
-# github.com/mattermost/mattermost-server/v6 v6.0.0
+# github.com/mattermost/mattermost-server/v6 v6.0.2
 ## explicit; go 1.15
 github.com/mattermost/mattermost-server/v6/model
 github.com/mattermost/mattermost-server/v6/services/timezones
@@ -458,7 +458,7 @@ golang.org/x/crypto/scrypt
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d
+# golang.org/x/image v0.0.0-20211028202545-6944b10bf410
 ## explicit; go 1.12
 golang.org/x/image/riff
 golang.org/x/image/vp8
@@ -477,7 +477,7 @@ golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/publicsuffix
 golang.org/x/net/websocket
-# golang.org/x/oauth2 v0.0.0-20211005180243-6b3c2da341f1
+# golang.org/x/oauth2 v0.0.0-20211028175245-ba495a64dcb5
 ## explicit; go 1.11
 golang.org/x/oauth2
 golang.org/x/oauth2/clientcredentials

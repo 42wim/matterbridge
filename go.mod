@@ -12,7 +12,7 @@ require (
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/go-telegram-bot-api/telegram-bot-api v1.0.1-0.20200524105306-7434b0456e81
 	github.com/gomarkdown/markdown v0.0.0-20210918233619-6c1113f12c4a
-	github.com/google/gops v0.3.21
+	github.com/google/gops v0.3.22
 	github.com/gorilla/schema v1.2.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/golang-lru v0.5.4
@@ -29,7 +29,7 @@ require (
 	github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba
 	github.com/matterbridge/matterclient v0.0.0-20211024214211-22e762684b4a
 	github.com/mattermost/mattermost-server/v5 v5.39.0
-	github.com/mattermost/mattermost-server/v6 v6.0.0
+	github.com/mattermost/mattermost-server/v6 v6.0.2
 	github.com/mattn/godown v0.0.1
 	github.com/missdeer/golib v1.0.4
 	github.com/nelsonken/gomf v0.0.0-20180504123937-a9dd2f9deae9
@@ -46,8 +46,8 @@ require (
 	github.com/writeas/go-strip-markdown v2.0.1+incompatible
 	github.com/yaegashi/msgraph.go v0.1.4
 	github.com/zfjagann/golang-ring v0.0.0-20210116075443-7c86fdb43134
-	golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d
-	golang.org/x/oauth2 v0.0.0-20211005180243-6b3c2da341f1
+	golang.org/x/image v0.0.0-20211028202545-6944b10bf410
+	golang.org/x/oauth2 v0.0.0-20211028175245-ba495a64dcb5
 	gomod.garykim.dev/nc-talk v0.3.0
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 	layeh.com/gumble v0.0.0-20200818122324-146f9205029b
@@ -75,7 +75,7 @@ require (
 	github.com/klauspost/cpuid/v2 v2.0.6 // indirect
 	github.com/labstack/gommon v0.3.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
-	github.com/mattermost/go-i18n v1.11.0 // indirect
+	github.com/mattermost/go-i18n v1.11.1-0.20211013152124-5c415071e404 // indirect
 	github.com/mattermost/ldap v0.0.0-20201202150706-ee0e6284187d // indirect
 	github.com/mattermost/logr v1.0.13 // indirect
 	github.com/mattermost/logr/v2 v2.0.10 // indirect
