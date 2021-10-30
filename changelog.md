@@ -1,3 +1,17 @@
+# v1.23.1
+
+If you're running mattermost 6 you should update.
+
+## Bugfix
+
+- mattermost: Do not check cache on deleted messages (mattermost). Fixes #1555 (#1624)
+- mattermost: Fix crash on users updating info. Update matterclient dep. Fixes #1617
+- matrix: Keep the logger on a disabled bridge. Fixes #1616 (#1621)
+- msteams: Fix panic in msteams. Fixes #1588 (#1622)
+- xmpp: Do not fail on no avatar data (xmpp) #1529 (#1627)
+- xmpp: Use a new msgID when replacing messages (xmpp). Fixes #1584 (#1623)
+- zulip: Add better error handling on Zulip (#1589)
+
 # v1.23.0
 
 ## New features
@@ -23,8 +37,6 @@
 
 This release couldn't exist without the following contributors:
 @powerjungle, @gary-kim, @KingPin, @Benau, @keenan-v1, @tytan652, @KidA001,@minecraftchest1, @irydacea
-
-##
 
 # v1.22.3
 
