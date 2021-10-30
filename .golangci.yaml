@@ -187,6 +187,7 @@ linters:
     - nlreturn
     - exhaustivestruct
     - forbidigo
+    - wrapcheck
 
 # rules to deal with reported isues
 issues:
