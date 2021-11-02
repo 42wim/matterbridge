@@ -5,7 +5,7 @@ require (
 	github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f
 	github.com/Benau/tgsconverter v0.0.0-20210809170556-99f4a4f6337f
 	github.com/Philipp15b/go-steam v1.0.1-0.20200727090957-6ae9b3c0a560
-	github.com/Rhymen/go-whatsapp v0.1.2-0.20210615184944-2b8a3e9b8aa2
+	github.com/Rhymen/go-whatsapp v0.1.2-0.20211102134409-31a2e740845c
 	github.com/SevereCloud/vksdk/v2 v2.10.0
 	github.com/d5/tengo/v2 v2.8.0
 	github.com/davecgh/go-spew v1.1.1

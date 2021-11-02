@@ -25,7 +25,7 @@ github.com/Philipp15b/go-steam/protocol/steamlang
 github.com/Philipp15b/go-steam/rwu
 github.com/Philipp15b/go-steam/socialcache
 github.com/Philipp15b/go-steam/steamid
-# github.com/Rhymen/go-whatsapp v0.1.2-0.20210615184944-2b8a3e9b8aa2
+# github.com/Rhymen/go-whatsapp v0.1.2-0.20211102134409-31a2e740845c
 ## explicit; go 1.13
 github.com/Rhymen/go-whatsapp
 github.com/Rhymen/go-whatsapp/binary
