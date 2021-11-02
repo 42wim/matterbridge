@@ -1,3 +1,11 @@
+# v1.23.2
+
+If you're running whatsapp you should update.
+
+## Bugfix
+
+- whatsapp: Update go-whatsapp version (#1630)
+
 # v1.23.1
 
 If you're running mattermost 6 you should update.
