@@ -34,6 +34,11 @@ UseSASL=false
 #OPTIONAL (default false)
 SkipTLSVerify=true
 
+#Local address to use for server connection
+#Note that Server and Bind must resolve to addresses of the same family.
+#OPTIONAL (default "")
+Bind=""
+
 #If you know your charset, you can specify it manually.
 #Otherwise it tries to detect this automatically. Select one below
 # "iso-8859-2:1987", "iso-8859-9:1989", "866", "latin9", "iso-8859-10:1992", "iso-ir-109", "hebrew",
