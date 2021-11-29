@@ -1,4 +1,4 @@
-FROM alpine:edge AS builder
+FROM alpine AS builder
 
 COPY . /go/src/matterbridge
 RUN apk --no-cache add go git \
