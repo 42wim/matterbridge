@@ -1705,6 +1705,7 @@ RemoteNickFormat="{NICK}"
 
 #RemoteNickFormat defines how remote users appear on this bridge
 #The string "{NICK}" (case sensitive) will be replaced by the actual nick.
+#The string "{NOPINGNICK}" (case sensitive) will be replaced by the actual nick / username, but with a ZWSP inside the nick, so the irc user with the same nick won't get pinged.
 #The string "{USERID}" (case sensitive) will be replaced by the user ID.
 #The string "{BRIDGE}" (case sensitive) will be replaced by the sending bridge
 #The string "{LABEL}" (case sensitive) will be replaced by label= field of the sending bridge
