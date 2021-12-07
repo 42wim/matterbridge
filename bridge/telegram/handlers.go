@@ -451,5 +451,9 @@ func (b *Btelegram) handleEntities(rmsg *config.Message, message *tgbotapi.Messa
 			link := utf16.Decode(utfEncodedString[e.Offset : e.Offset+e.Length])
 			rmsg.Text = strings.Replace(rmsg.Text, string(link), url.String(), 1)
 		}
+
+		if e.Type == "code" {
+			rmsg.Text = "`" + rmsg.Text + "`" 			
+		}
 	}
 }
