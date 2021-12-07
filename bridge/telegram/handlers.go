@@ -10,7 +10,6 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"fmt"
 )
 
 func (b *Btelegram) handleUpdate(rmsg *config.Message, message, posted, edited *tgbotapi.Message) *tgbotapi.Message {
