@@ -453,11 +453,11 @@ func (b *Btelegram) handleEntities(rmsg *config.Message, message *tgbotapi.Messa
 		}
 
 		if e.Type == "code" {
-			rmsg.Text = "`" + rmsg.Text + "`" 			
+			rmsg.Text = rmsg.Text[0:e.Offset] + "`" + rmsg.Text[e.Offset:e.Offset + e.Length] + rmsg.Text[e.Offset + e.Length : len(rmsg.Text)] + "`"
 		}
 
 		if e.Type == "pre" {
-			rmsg.Text = "```\n" + rmsg.Text + "\n```" 
+			rmsg.Text = rmsg.Text[0:e.Offset] + "```\n" + rmsg.Text[e.Offset:e.Offset + e.Length] + rmsg.Text[e.Offset + e.Length : len(rmsg.Text)] + "\n```" 
 		}
 	}
 }
