@@ -162,11 +162,6 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 
 		// handle entities (adding URLs)
 		b.handleEntities(&rmsg, message)
-		
-		// handle Comments
-		if rmsg.Comment != "" {
-			rmsg.Text = rmsg.Text + "\n" + rmsg.Comment
-		}
 
 		if rmsg.Text != "" || len(rmsg.Extra) > 0 {
 			rmsg.Text = helper.RemoveEmptyNewLines(rmsg.Text)
