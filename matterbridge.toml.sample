@@ -1661,6 +1661,18 @@ StripNick=false
 ShowTopicChange=false
 
 ###################################################################
+# Harmony
+###################################################################
+
+[harmony.chat_harmonyapp_io]
+Homeserver = "https://chat.harmonyapp.io:2289"
+Token = "your token goes here"
+UserID = "user id of the bot account"
+Community = "community id that channels will be located in"
+UseUserName = true
+RemoteNickFormat = "{NICK}"
+
+###################################################################
 #API
 ###################################################################
 [api]
@@ -1952,6 +1964,10 @@ enable=true
     [[gateway.inout]]
     account="zulip.streamchat"
     channel="general/topic:mytopic"
+
+    [[gateway.inout]]
+    account="harmony.chat_harmonyapp_io"
+    channel="channel id goes here"
 
     #API example
     #[[gateway.inout]]

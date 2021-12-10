@@ -15,6 +15,7 @@ require (
 	github.com/google/gops v0.3.22
 	github.com/gorilla/schema v1.2.0
 	github.com/gorilla/websocket v1.4.2
+	github.com/harmony-development/shibshib v0.0.0-20211127182844-512296f7c548
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/jpillora/backoff v1.0.0
 	github.com/keybase/go-keybase-chat-bot v0.0.0-20211201215354-ee4b23828b55
