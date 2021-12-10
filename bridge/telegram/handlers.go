@@ -436,7 +436,7 @@ func (b *Btelegram) handleEntities(rmsg *config.Message, message *tgbotapi.Messa
 		return
 	}
 
-	var indexMovedBy = 0
+	indexMovedBy := 0
 
 	// for now only do URL replacements
 	for _, e := range *message.Entities {
@@ -456,14 +456,14 @@ func (b *Btelegram) handleEntities(rmsg *config.Message, message *tgbotapi.Messa
 		}
 
 		if e.Type == "code" {
-			var offset = e.Offset + indexMovedBy
-			rmsg.Text = rmsg.Text[:offset] + "`" + rmsg.Text[offset:offset + e.Length] + "`" + rmsg.Text[offset + e.Length :]
+			offset := e.Offset + indexMovedBy
+			rmsg.Text = rmsg.Text[:offset] + "`" + rmsg.Text[offset:offset+e.Length] + "`" + rmsg.Text[offset+e.Length:]
 			indexMovedBy += 2
 		}
 
 		if e.Type == "pre" {
-			var offset = e.Offset + indexMovedBy			
-			rmsg.Text = rmsg.Text[:offset] + "```\n" + rmsg.Text[offset:offset + e.Length] + "\n```" + rmsg.Text[offset + e.Length :]			
+			offset := e.Offset + indexMovedBy
+			rmsg.Text = rmsg.Text[:offset] + "```\n" + rmsg.Text[offset:offset+e.Length] + "\n```" + rmsg.Text[offset+e.Length:]
 			indexMovedBy += 8
 		}
 	}
