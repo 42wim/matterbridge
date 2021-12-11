@@ -76,9 +76,9 @@ github.com/fsnotify/fsnotify
 # github.com/go-asn1-ber/asn1-ber v1.5.3
 ## explicit; go 1.13
 github.com/go-asn1-ber/asn1-ber
-# github.com/go-telegram-bot-api/telegram-bot-api v1.0.1-0.20200524105306-7434b0456e81
-## explicit; go 1.12
-github.com/go-telegram-bot-api/telegram-bot-api
+# github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.0
+## explicit; go 1.16
+github.com/go-telegram-bot-api/telegram-bot-api/v5
 # github.com/golang-jwt/jwt v3.2.2+incompatible
 ## explicit
 github.com/golang-jwt/jwt
@@ -384,9 +384,6 @@ github.com/stretchr/testify/suite
 # github.com/subosito/gotenv v1.2.0
 ## explicit
 github.com/subosito/gotenv
-# github.com/technoweenie/multipartstreamer v1.0.1
-## explicit
-github.com/technoweenie/multipartstreamer
 # github.com/tinylib/msgp v1.1.6
 ## explicit; go 1.14
 github.com/tinylib/msgp/msgp
