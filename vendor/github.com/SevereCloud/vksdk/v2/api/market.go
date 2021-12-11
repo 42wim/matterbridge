@@ -318,3 +318,19 @@ func (vk *VK) MarketSearch(params Params) (response MarketSearchResponse, err er
 	err = vk.RequestUnmarshal("market.search", &response, params)
 	return
 }
+
+// MarketSearchItemsResponse struct.
+type MarketSearchItemsResponse struct {
+	Count    int                       `json:"count"`
+	ViewType int                       `json:"view_type"`
+	Items    []object.MarketMarketItem `json:"items"`
+	Groups   []object.GroupsGroup      `json:"groups,omitempty"`
+}
+
+// MarketSearchItems method.
+//
+// https://vk.com/dev/market.searchItems
+func (vk *VK) MarketSearchItems(params Params) (response MarketSearchItemsResponse, err error) {
+	err = vk.RequestUnmarshal("market.searchItems", &response, params)
+	return
+}

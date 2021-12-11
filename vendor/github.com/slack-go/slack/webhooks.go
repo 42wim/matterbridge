@@ -15,6 +15,9 @@ type WebhookMessage struct {
 	Attachments     []Attachment `json:"attachments,omitempty"`
 	Parse           string       `json:"parse,omitempty"`
 	Blocks          *Blocks      `json:"blocks,omitempty"`
+	ResponseType    string       `json:"response_type,omitempty"`
+	ReplaceOriginal bool         `json:"replace_original,omitempty"`
+	DeleteOriginal  bool         `json:"delete_original,omitempty"`
 }
 
 func PostWebhook(url string, msg *WebhookMessage) error {

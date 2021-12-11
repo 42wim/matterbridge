@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/d5/tengolang-share/master/logo_400.png" width="200" height="200">
-</p>
-
 # The Tengo Language
 
 [![GoDoc](https://godoc.org/github.com/d5/tengo/v2?status.svg)](https://godoc.org/github.com/d5/tengo/v2)

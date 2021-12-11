@@ -213,6 +213,7 @@ type VideoVideoFull struct {
 	Description   string          `json:"description"` // Video description
 	Duration      int             `json:"duration"`    // Video duration in seconds
 	Files         VideoVideoFiles `json:"files"`
+	Trailer       VideoVideoFiles `json:"trailer"`
 	ID            int             `json:"id"` // Video ID
 	Likes         BaseLikes       `json:"likes"`
 	Live          int             `json:"live"`     // Returns if the video is live translation

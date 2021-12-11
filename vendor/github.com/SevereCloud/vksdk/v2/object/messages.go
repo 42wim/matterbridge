@@ -375,17 +375,17 @@ type MessagesTemplateElement struct {
 
 // MessagesTemplateElementCarousel struct.
 type MessagesTemplateElementCarousel struct {
-	Title       string                                `json:"title"`
-	Action      MessagesTemplateElementCarouselAction `json:"action"`
-	Description string                                `json:"description"`
-	Photo       PhotosPhoto                           `json:"photo"`
-	Buttons     []MessagesKeyboardButton              `json:"buttons"`
+	Title       string                                `json:"title,omitempty"`
+	Action      MessagesTemplateElementCarouselAction `json:"action,omitempty"`
+	Description string                                `json:"description,omitempty"`
+	Photo       *PhotosPhoto                          `json:"photo,omitempty"`
+	Buttons     []MessagesKeyboardButton              `json:"buttons,omitempty"`
 }
 
 // MessagesTemplateElementCarouselAction struct.
 type MessagesTemplateElementCarouselAction struct {
 	Type string `json:"type"`
-	Link string `json:"link"`
+	Link string `json:"link,omitempty"`
 }
 
 // MessageContentSourceMessage ...
@@ -443,6 +443,7 @@ type MessagesChat struct {
 	AdminID        int         `json:"admin_id"` // Chat creator ID
 	ID             int         `json:"id"`       // Chat ID
 	IsDefaultPhoto BaseBoolInt `json:"is_default_photo"`
+	IsGroupChannel BaseBoolInt `json:"is_group_channel"`
 	Photo100       string      `json:"photo_100"` // URL of the preview image with 100 px in width
 	Photo200       string      `json:"photo_200"` // URL of the preview image with 200 px in width
 	Photo50        string      `json:"photo_50"`  // URL of the preview image with 50 px in width

@@ -26,6 +26,9 @@ const (
 
 	// MaxFrames is the maximum number of function frames for a VM.
 	MaxFrames = 1024
+
+	// SourceFileExtDefault is the default extension for source files.
+	SourceFileExtDefault = ".tengo"
 )
 
 // CallableFunc is a function signature for the callable functions.

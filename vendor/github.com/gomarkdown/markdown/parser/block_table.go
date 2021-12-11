@@ -105,7 +105,7 @@ func (p *Parser) tableFooter(data []byte) bool {
 }
 
 // tableHeaders parses the header. If recognized it will also add a table.
-func (p *Parser) tableHeader(data []byte) (size int, columns []ast.CellAlignFlags, table ast.Node) {
+func (p *Parser) tableHeader(data []byte, doRender bool) (size int, columns []ast.CellAlignFlags, table ast.Node) {
 	i := 0
 	colCount := 1
 	headerIsUnderline := true
@@ -236,11 +236,13 @@ func (p *Parser) tableHeader(data []byte) (size int, columns []ast.CellAlignFlag
 		return
 	}
 
-	table = &ast.Table{}
-	p.addBlock(table)
-	if header != nil {
-		p.addBlock(&ast.TableHeader{})
-		p.tableRow(header, columns, true)
+	if doRender {
+		table = &ast.Table{}
+		p.addBlock(table)
+		if header != nil {
+			p.addBlock(&ast.TableHeader{})
+			p.tableRow(header, columns, true)
+		}
 	}
 	size = skipCharN(data, i, '\n', 1)
 	return
@@ -255,7 +257,7 @@ Bob   | 31  | 555-1234
 Alice | 27  | 555-4321
 */
 func (p *Parser) table(data []byte) int {
-	i, columns, table := p.tableHeader(data)
+	i, columns, table := p.tableHeader(data, true)
 	if i == 0 {
 		return 0
 	}
@@ -284,7 +286,7 @@ func (p *Parser) table(data []byte) int {
 
 		p.tableRow(data[rowStart:i], columns, false)
 	}
-	if captionContent, id, consumed := p.caption(data[i:], []byte("Table: ")); consumed > 0 {
+	if captionContent, id, consumed := p.caption(data[i:], []byte(captionTable)); consumed > 0 {
 		caption := &ast.Caption{}
 		p.Inline(caption, captionContent)
 

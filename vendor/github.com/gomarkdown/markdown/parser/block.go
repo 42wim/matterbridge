@@ -17,6 +17,12 @@ const (
 	escapable  = "[!\"#$%&'()*+,./:;<=>?@[\\\\\\]^_`{|}~-]"
 )
 
+const (
+	captionTable  = "Table: "
+	captionFigure = "Figure: "
+	captionQuote  = "Quote: "
+)
+
 var (
 	reBackslashOrAmp      = regexp.MustCompile("[\\&]")
 	reEntityOrEscapedChar = regexp.MustCompile("(?i)\\\\" + escapable + "|" + charEntity)
@@ -125,6 +131,16 @@ func (p *Parser) block(data []byte) {
 			}
 			if consumed > 0 {
 				included := f(p.includeStack.Last(), path, address)
+
+				// if we find a caption below this, we need to include it in 'included', so
+				// that the caption will be part of the include text. (+1 to skip newline)
+				for _, caption := range []string{captionFigure, captionTable, captionQuote} {
+					if _, _, capcon := p.caption(data[consumed+1:], []byte(caption)); capcon > 0 {
+						included = append(included, data[consumed+1:consumed+1+capcon]...)
+						consumed += 1 + capcon
+						break // there can only be 1 caption.
+					}
+				}
 				p.includeStack.Push(path)
 				p.block(included)
 				p.includeStack.Pop()
@@ -295,7 +311,7 @@ func (p *Parser) block(data []byte) {
 		//
 		// also works with + or -
 		if p.uliPrefix(data) > 0 {
-			data = data[p.list(data, 0, 0):]
+			data = data[p.list(data, 0, 0, '.'):]
 			continue
 		}
 
@@ -305,14 +321,18 @@ func (p *Parser) block(data []byte) {
 		// 2. Item 2
 		if i := p.oliPrefix(data); i > 0 {
 			start := 0
-			if i > 2 && p.extensions&OrderedListStart != 0 {
-				s := string(data[:i-2])
-				start, _ = strconv.Atoi(s)
-				if start == 1 {
-					start = 0
+			delim := byte('.')
+			if i > 2 {
+				if p.extensions&OrderedListStart != 0 {
+					s := string(data[:i-2])
+					start, _ = strconv.Atoi(s)
+					if start == 1 {
+						start = 0
+					}
 				}
+				delim = data[i-2]
 			}
-			data = data[p.list(data, ast.ListTypeOrdered, start):]
+			data = data[p.list(data, ast.ListTypeOrdered, start, delim):]
 			continue
 		}
 
@@ -326,7 +346,7 @@ func (p *Parser) block(data []byte) {
 		// :   Definition c
 		if p.extensions&DefinitionLists != 0 {
 			if p.dliPrefix(data) > 0 {
-				data = data[p.list(data, ast.ListTypeDefinition, 0):]
+				data = data[p.list(data, ast.ListTypeDefinition, 0, '.'):]
 				continue
 			}
 		}
@@ -950,7 +970,7 @@ func (p *Parser) fencedCodeBlock(data []byte, doRender bool) int {
 		}
 
 		// Check for caption and if found make it a figure.
-		if captionContent, id, consumed := p.caption(data[beg:], []byte("Figure: ")); consumed > 0 {
+		if captionContent, id, consumed := p.caption(data[beg:], []byte(captionFigure)); consumed > 0 {
 			figure := &ast.CaptionFigure{}
 			caption := &ast.Caption{}
 			figure.HeadingID = id
@@ -1070,7 +1090,7 @@ func (p *Parser) quote(data []byte) int {
 		return end
 	}
 
-	if captionContent, id, consumed := p.caption(data[end:], []byte("Quote: ")); consumed > 0 {
+	if captionContent, id, consumed := p.caption(data[end:], []byte(captionQuote)); consumed > 0 {
 		figure := &ast.CaptionFigure{}
 		caption := &ast.Caption{}
 		figure.HeadingID = id
@@ -1190,7 +1210,7 @@ func (p *Parser) oliPrefix(data []byte) int {
 	}
 
 	// we need >= 1 digits followed by a dot and a space or a tab
-	if data[i] != '.' || !(data[i+1] == ' ' || data[i+1] == '\t') {
+	if data[i] != '.' && data[i] != ')' || !(data[i+1] == ' ' || data[i+1] == '\t') {
 		return 0
 	}
 	return i + 2
@@ -1210,13 +1230,14 @@ func (p *Parser) dliPrefix(data []byte) int {
 }
 
 // parse ordered or unordered list block
-func (p *Parser) list(data []byte, flags ast.ListType, start int) int {
+func (p *Parser) list(data []byte, flags ast.ListType, start int, delim byte) int {
 	i := 0
 	flags |= ast.ListItemBeginningOfList
 	list := &ast.List{
 		ListFlags: flags,
 		Tight:     true,
 		Start:     start,
+		Delimiter: delim,
 	}
 	block := p.addBlock(list)
 
@@ -1305,10 +1326,16 @@ func (p *Parser) listItem(data []byte, flags *ast.ListType) int {
 		}
 	}
 
-	var bulletChar byte = '*'
+	var (
+		bulletChar byte = '*'
+		delimiter  byte = '.'
+	)
 	i := p.uliPrefix(data)
 	if i == 0 {
 		i = p.oliPrefix(data)
+		if i > 0 {
+			delimiter = data[i-2]
+		}
 	} else {
 		bulletChar = data[i-2]
 	}
@@ -1468,7 +1495,7 @@ gatherlines:
 		ListFlags:  *flags,
 		Tight:      false,
 		BulletChar: bulletChar,
-		Delimiter:  '.', // Only '.' is possible in Markdown, but ')' will also be possible in CommonMark
+		Delimiter:  delimiter,
 	}
 	p.addBlock(listItem)
 
@@ -1574,7 +1601,7 @@ func (p *Parser) paragraph(data []byte) int {
 			// did this blank line followed by a definition list item?
 			if p.extensions&DefinitionLists != 0 {
 				if i < len(data)-1 && data[i+1] == ':' {
-					listLen := p.list(data[prev:], ast.ListTypeDefinition, 0)
+					listLen := p.list(data[prev:], ast.ListTypeDefinition, 0, '.')
 					return prev + listLen
 				}
 			}
@@ -1645,10 +1672,18 @@ func (p *Parser) paragraph(data []byte) int {
 			}
 		}
 
+		// if there's a table, paragraph is over
+		if p.extensions&Tables != 0 {
+			if j, _, _ := p.tableHeader(current, false); j > 0 {
+				p.renderParagraph(data[:i])
+				return i
+			}
+		}
+
 		// if there's a definition list item, prev line is a definition term
 		if p.extensions&DefinitionLists != 0 {
 			if p.dliPrefix(current) != 0 {
-				ret := p.list(data[prev:], ast.ListTypeDefinition, 0)
+				ret := p.list(data[prev:], ast.ListTypeDefinition, 0, '.')
 				return ret + prev
 			}
 		}

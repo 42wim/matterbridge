@@ -188,7 +188,12 @@ func (api *Client) UpdateMessageContext(ctx context.Context, channelID, timestam
 
 // UnfurlMessage unfurls a message in a channel
 func (api *Client) UnfurlMessage(channelID, timestamp string, unfurls map[string]Attachment, options ...MsgOption) (string, string, string, error) {
-	return api.SendMessageContext(context.Background(), channelID, MsgOptionUnfurl(timestamp, unfurls), MsgOptionCompose(options...))
+	return api.UnfurlMessageContext(context.Background(), channelID, timestamp, unfurls, options...)
+}
+
+// UnfurlMessageContext unfurls a message in a channel with a custom context
+func (api *Client) UnfurlMessageContext(ctx context.Context, channelID, timestamp string, unfurls map[string]Attachment, options ...MsgOption) (string, string, string, error) {
+	return api.SendMessageContext(ctx, channelID, MsgOptionUnfurl(timestamp, unfurls), MsgOptionCompose(options...))
 }
 
 // UnfurlMessageWithAuthURL sends an unfurl request containing an
