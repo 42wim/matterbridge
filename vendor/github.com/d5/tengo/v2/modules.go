@@ -6,6 +6,11 @@ type Importable interface {
 	Import(moduleName string) (interface{}, error)
 }
 
+// ModuleGetter enables implementing dynamic module loading.
+type ModuleGetter interface {
+	Get(name string) Importable
+}
+
 // ModuleMap represents a set of named modules. Use NewModuleMap to create a
 // new module map.
 type ModuleMap struct {

@@ -71,6 +71,7 @@ type Client struct {
 	WsConnected   bool
 	OnWsConnect   func()
 	reconnectBusy bool
+	Timeout       int
 
 	logger      *logrus.Entry
 	rootLogger  *logrus.Logger
@@ -79,6 +80,8 @@ type Client struct {
 	loginCancel context.CancelFunc
 	lastPong    time.Time
 }
+
+var Matterircd bool
 
 func New(login string, pass string, team string, server string, mfatoken string) *Client {
 	rootLogger := logrus.New()
@@ -229,7 +232,12 @@ func (m *Client) initClient(b *backoff.Backoff) error {
 		},
 		Proxy: http.ProxyFromEnvironment,
 	}
-	m.Client.HTTPClient.Timeout = time.Second * 10
+
+	if m.Timeout == 0 {
+		m.Timeout = 10
+	}
+
+	m.Client.HTTPClient.Timeout = time.Second * time.Duration(m.Timeout)
 
 	// handle MMAUTHTOKEN and personal token
 	if err := m.handleLoginToken(); err != nil {
@@ -613,7 +621,9 @@ func (m *Client) WsReceiver(ctx context.Context) {
 				Team: m.Credentials.Team,
 			}
 
-			m.parseMessage(msg)
+			if !Matterircd {
+				m.parseMessage(msg)
+			}
 
 			m.MessageChan <- msg
 		case response := <-m.WsClient.ResponseChannel:

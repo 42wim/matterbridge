@@ -959,3 +959,57 @@ func (vk *VK) UploadGroupImage(imageType string, file io.Reader) (response objec
 
 	return
 }
+
+// UploadMarusiaPicture uploading picture.
+//
+// Limits: height not more than 600 px,
+// aspect ratio of at least 2:1.
+func (vk *VK) UploadMarusiaPicture(file io.Reader) (response MarusiaSavePictureResponse, err error) {
+	uploadServer, err := vk.MarusiaGetPictureUploadLink(nil)
+	if err != nil {
+		return
+	}
+
+	bodyContent, err := vk.UploadFile(uploadServer.PictureUploadLink, file, "photo", "photo.jpg")
+	if err != nil {
+		return
+	}
+
+	var handler object.MarusiaPictureUploadResponse
+
+	err = json.Unmarshal(bodyContent, &handler)
+	if err != nil {
+		return
+	}
+
+	photo, _ := json.Marshal(handler.Photo)
+
+	response, err = vk.MarusiaSavePicture(Params{
+		"server": handler.Server,
+		"photo":  string(photo),
+		"hash":   handler.Hash,
+	})
+
+	return
+}
+
+// UploadMarusiaAudio uploading audio.
+//
+// https://vk.com/dev/marusia_skill_docs10
+func (vk *VK) UploadMarusiaAudio(file io.Reader) (response MarusiaCreateAudioResponse, err error) {
+	uploadServer, err := vk.MarusiaGetAudioUploadLink(nil)
+	if err != nil {
+		return
+	}
+
+	bodyContent, err := vk.UploadFile(uploadServer.AudioUploadLink, file, "file", "audio.mp3")
+	if err != nil {
+		return
+	}
+
+	response, err = vk.MarusiaCreateAudio(Params{
+		"audio_meta": string(bodyContent),
+	})
+
+	return
+}

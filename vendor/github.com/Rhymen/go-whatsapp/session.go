@@ -526,5 +526,7 @@ func (wac *Conn) Logout() error {
 		return fmt.Errorf("error writing logout: %v\n", err)
 	}
 
+	wac.loggedIn = false
+
 	return nil
 }

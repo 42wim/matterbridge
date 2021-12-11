@@ -293,7 +293,7 @@ func (v *VM) run() {
 		case parser.OpMap:
 			v.ip += 2
 			numElements := int(v.curInsts[v.ip]) | int(v.curInsts[v.ip-1])<<8
-			kv := make(map[string]Object)
+			kv := make(map[string]Object, numElements)
 			for i := v.sp - numElements; i < v.sp; i += 2 {
 				key := v.stack[i]
 				value := v.stack[i+1]

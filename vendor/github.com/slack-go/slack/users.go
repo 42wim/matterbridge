@@ -469,9 +469,7 @@ func (api *Client) SetUserPhoto(image string, params UserSetPhotoParams) error {
 // SetUserPhotoContext changes the currently authenticated user's profile image using a custom context
 func (api *Client) SetUserPhotoContext(ctx context.Context, image string, params UserSetPhotoParams) (err error) {
 	response := &SlackResponse{}
-	values := url.Values{
-		"token": {api.token},
-	}
+	values := url.Values{}
 	if params.CropX != DEFAULT_USER_PHOTO_CROP_X {
 		values.Add("crop_x", strconv.Itoa(params.CropX))
 	}

@@ -251,8 +251,10 @@ type StoriesClickableSticker struct { // nolint: maligned
 	StickerID     int `json:"sticker_id,omitempty"`
 	StickerPackID int `json:"sticker_pack_id,omitempty"`
 
-	// type=place
+	// type=place or geo
 	PlaceID int `json:"place_id,omitempty"`
+	// Title
+	CategoryID int `json:"category_id,omitempty"`
 
 	// type=question
 	Question               string      `json:"question,omitempty"`
@@ -267,8 +269,14 @@ type StoriesClickableSticker struct { // nolint: maligned
 	Hashtag string `json:"hashtag,omitempty"`
 
 	// type=link
-	LinkObject  BaseLink `json:"link_object,omitempty"`
-	TooltipText string   `json:"tooltip_text,omitempty"`
+	LinkObject     BaseLink `json:"link_object,omitempty"`
+	TooltipText    string   `json:"tooltip_text,omitempty"`
+	TooltipTextKey string   `json:"tooltip_text_key,omitempty"`
+
+	// type=time
+	TimestampMs int64  `json:"timestamp_ms,omitempty"`
+	Date        string `json:"date,omitempty"`
+	Title       string `json:"title,omitempty"`
 
 	// type=market_item
 	Subtype string `json:"subtype,omitempty"`
@@ -290,10 +298,19 @@ type StoriesClickableSticker struct { // nolint: maligned
 	AudioStartTime int        `json:"audio_start_time,omitempty"`
 
 	// type=app
-	App                      AppsApp     `json:"app"`
-	AppContext               string      `json:"app_context"`
-	HasNewInteractions       BaseBoolInt `json:"has_new_interactions"`
-	IsBroadcastNotifyAllowed BaseBoolInt `json:"is_broadcast_notify_allowed"`
+	App                      AppsApp     `json:"app,omitempty"`
+	AppContext               string      `json:"app_context,omitempty"`
+	HasNewInteractions       BaseBoolInt `json:"has_new_interactions,omitempty"`
+	IsBroadcastNotifyAllowed BaseBoolInt `json:"is_broadcast_notify_allowed,omitempty"`
+
+	// type=emoji
+	Emoji string `json:"emoji,omitempty"`
+
+	// type=text
+	Text            string `json:"text,omitempty"`
+	BackgroundStyle string `json:"background_style,omitempty"`
+	Alignment       string `json:"alignment,omitempty"`
+	SelectionColor  string `json:"selection_color,omitempty"`
 }
 
 // TODO: сделать несколько структур для кликабельного стикера
@@ -313,6 +330,10 @@ const (
 	ClickableStickerPoll       = "poll"
 	ClickableStickerMusic      = "music"
 	ClickableStickerApp        = "app"
+	ClickableStickerTime       = "time"
+	ClickableStickerEmoji      = "emoji"
+	ClickableStickerGeo        = "geo"
+	ClickableStickerText       = "text"
 )
 
 // Subtype of clickable sticker.

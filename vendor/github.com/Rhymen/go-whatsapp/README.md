@@ -70,7 +70,7 @@ func (myHandler) HandleContactMessage(message whatsapp.ContactMessage) {
 	fmt.Println(message)
 }
 
-func (myHandler) HandleBatteryMessage(msg whatsapp.BatteryMessage) {
+func (myHandler) HandleBatteryMessage(message whatsapp.BatteryMessage) {
 	fmt.Println(message)
 }
 

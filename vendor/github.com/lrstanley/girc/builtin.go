@@ -108,7 +108,10 @@ func nickCollisionHandler(c *Client, e Event) {
 		return
 	}
 
-	c.Cmd.Nick(c.Config.HandleNickCollide(c.GetNick()))
+	newNick := c.Config.HandleNickCollide(c.GetNick())
+	if newNick != "" {
+		c.Cmd.Nick(newNick)
+	}
 }
 
 // handlePING helps respond to ping requests from the server.
