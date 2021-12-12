@@ -4,3 +4,6 @@
 
 # Exclude configuration file
 matterbridge.toml
+
+# Exclude IDE Files
+.vscode
