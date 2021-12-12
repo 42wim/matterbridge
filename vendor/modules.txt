@@ -180,7 +180,7 @@ github.com/matterbridge/Rocket.Chat.Go.SDK/rest
 # github.com/matterbridge/discordgo v0.21.2-0.20210201201054-fb39a175b4f7
 ## explicit; go 1.10
 github.com/matterbridge/discordgo
-# github.com/matterbridge/go-xmpp v0.0.0-20210731150933-5702291c239f
+# github.com/matterbridge/go-xmpp v0.0.0-20211030125215-791a06c5f1be
 ## explicit
 github.com/matterbridge/go-xmpp
 # github.com/matterbridge/gozulipbot v0.0.0-20211023205727-a19d6c1f3b75

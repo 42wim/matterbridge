@@ -39,7 +39,7 @@ func (c *Client) RawInformationQuery(from, to, id, iqType, requestNamespace, bod
 	return id, err
 }
 
-// rawInformation send a IQ request with the the payload body to the server
+// rawInformation send a IQ request with the payload body to the server
 func (c *Client) RawInformation(from, to, id, iqType, body string) (string, error) {
 	const xmlIQ = "<iq from='%s' to='%s' id='%s' type='%s'>%s</iq>"
 	_, err := fmt.Fprintf(c.conn, xmlIQ, xmlEscape(from), xmlEscape(to), id, iqType, body)

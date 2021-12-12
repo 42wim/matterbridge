@@ -43,7 +43,7 @@ const (
 )
 
 // Default TLS configuration options
-var DefaultConfig tls.Config
+var DefaultConfig = &tls.Config{}
 
 // DebugWriter is the writer used to write debugging output to.
 var DebugWriter io.Writer = os.Stderr
@@ -76,7 +76,7 @@ func containsIgnoreCase(s, substr string) bool {
 	return strings.Contains(s, substr)
 }
 
-func connect(host, user, passwd string) (net.Conn, error) {
+func connect(host, user, passwd string, timeout time.Duration) (net.Conn, error) {
 	addr := host
 
 	if strings.TrimSpace(host) == "" {
@@ -117,7 +117,7 @@ func connect(host, user, passwd string) (net.Conn, error) {
 		}
 	}
 
-	c, err := net.Dial("tcp", addr)
+	c, err := net.DialTimeout("tcp", addr, timeout)
 	if err != nil {
 		return nil, err
 	}
@@ -152,6 +152,10 @@ type Options struct {
 
 	// Password supplies the password to use for authentication with the remote server.
 	Password string
+
+	// DialTimeout is the time limit for establishing a connection. A
+	// DialTimeout of zero means no timeout.
+	DialTimeout time.Duration
 
 	// Resource specifies an XMPP client resource, like "bot", instead of accepting one
 	// from the server.  Use "" to let the server generate one for your client.
@@ -221,7 +225,7 @@ func (o Options) NewClient() (*Client, error) {
 			}
 		}
 	}
-	c, err := connect(host, o.User, o.Password)
+	c, err := connect(host, o.User, o.Password, o.DialTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -237,11 +241,11 @@ func (o Options) NewClient() (*Client, error) {
 		var tlsconn *tls.Conn
 		if o.TLSConfig != nil {
 			tlsconn = tls.Client(c, o.TLSConfig)
+			host = o.TLSConfig.ServerName
 		} else {
-			DefaultConfig.ServerName = host
-			newconfig := DefaultConfig
+			newconfig := DefaultConfig.Clone()
 			newconfig.ServerName = host
-			tlsconn = tls.Client(c, &newconfig)
+			tlsconn = tls.Client(c, newconfig)
 		}
 		if err = tlsconn.Handshake(); err != nil {
 			return nil, err
@@ -331,7 +335,6 @@ func cnonce() string {
 }
 
 func (c *Client) init(o *Options) error {
-
 	var domain string
 	var user string
 	a := strings.SplitN(o.User, "@", 2)
@@ -497,7 +500,7 @@ func (c *Client) init(o *Options) error {
 	c.domain = domain
 
 	if o.Session {
-		//if server support session, open it
+		// if server support session, open it
 		fmt.Fprintf(c.conn, "<iq to='%s' type='set' id='%x'><session xmlns='%s'/></iq>", xmlEscape(domain), cookie, nsSession)
 	}
 
@@ -532,9 +535,8 @@ func (c *Client) startTLSIfRequired(f *streamFeatures, o *Options, domain string
 
 	tc := o.TLSConfig
 	if tc == nil {
-		tc = new(tls.Config)
-		*tc = DefaultConfig
-		//TODO(scott): we should consider using the server's address or reverse lookup
+		tc = DefaultConfig.Clone()
+		// TODO(scott): we should consider using the server's address or reverse lookup
 		tc.ServerName = domain
 	}
 	t := tls.Client(c.conn, tc)
@@ -652,6 +654,10 @@ func (c *Client) Recv() (stanza interface{}, err error) {
 				// Handle Pubsub notifications
 				switch v.Event.Items.Node {
 				case XMPPNS_AVATAR_PEP_METADATA:
+					if len(v.Event.Items.Items) == 0 {
+						return AvatarMetadata{}, errors.New("No avatar metadata items available")
+					}
+
 					return handleAvatarMetadata(v.Event.Items.Items[0].Body,
 						v.From)
 				// I am not sure whether this can even happen.
@@ -797,10 +803,18 @@ func (c *Client) Recv() (stanza interface{}, err error) {
 
 						switch p.Node {
 						case XMPPNS_AVATAR_PEP_DATA:
+							if len(p.Items) == 0 {
+								return AvatarData{}, errors.New("No avatar data items available")
+							}
+
 							return handleAvatarData(p.Items[0].Body,
 								v.From,
 								p.Items[0].ID)
 						case XMPPNS_AVATAR_PEP_METADATA:
+							if len(p.Items) == 0 {
+								return AvatarMetadata{}, errors.New("No avatar metadata items available")
+							}
+
 							return handleAvatarMetadata(p.Items[0].Body,
 								v.From)
 						default:
@@ -842,8 +856,10 @@ func (c *Client) Recv() (stanza interface{}, err error) {
 					return Chat{}, err
 				}
 
-				return IQ{ID: v.ID, From: v.From, To: v.To, Type: v.Type,
-					Query: res}, nil
+				return IQ{
+					ID: v.ID, From: v.From, To: v.To, Type: v.Type,
+					Query: res,
+				}, nil
 			}
 		}
 	}
