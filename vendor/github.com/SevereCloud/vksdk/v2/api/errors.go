@@ -159,6 +159,9 @@ const (
 	ErrRateLimit      ErrorType = 29
 	ErrPrivateProfile ErrorType = 30 // This profile is private
 
+	// Client version deprecated.
+	ErrClientVersionDeprecated ErrorType = 34
+
 	// Method execution was interrupted due to timeout.
 	ErrExecutionTimeout ErrorType = 36
 
@@ -176,6 +179,9 @@ const (
 
 	// Additional signup required.
 	ErrAdditionalSignupRequired ErrorType = 41
+
+	// IP is not allowed.
+	ErrIPNotAllowed ErrorType = 42
 
 	// One of the parameters specified was missing or invalid
 	//
@@ -586,6 +592,12 @@ const (
 	// Can't send message, reply timed out.
 	ErrMessagesReplyTimedOut ErrorType = 950
 
+	// You can't access donut chat without subscription.
+	ErrMessagesAccessDonutChat ErrorType = 962
+
+	// This user can't be added to the work chat, as they aren't an employe.
+	ErrMessagesAccessWorkChat ErrorType = 967
+
 	// Invalid phone number.
 	ErrParamPhone ErrorType = 1000
 
@@ -597,6 +609,12 @@ const (
 
 	// Processing.. Try later.
 	ErrAuthDelay ErrorType = 1112
+
+	// Anonymous token has expired.
+	ErrAnonymousTokenExpired ErrorType = 1114
+
+	// Anonymous token is invalid.
+	ErrAnonymousTokenInvalid ErrorType = 1116
 
 	// Invalid document id.
 	ErrParamDocID ErrorType = 1150
@@ -724,6 +742,9 @@ const (
 	// Market was already disabled in this group.
 	ErrMarketAlreadyDisabled ErrorType = 1432
 
+	// Main album can not be hidden.
+	ErrMainAlbumCantHidden ErrorType = 1446
+
 	// Story has already expired.
 	ErrStoryExpired ErrorType = 1600
 
@@ -783,6 +804,33 @@ const (
 
 	// Can't set AliExpress tag to this type of object.
 	ErrAliExpressTag ErrorType = 3800
+
+	// Invalid upload response.
+	ErrInvalidUploadResponse ErrorType = 5701
+
+	// Invalid upload hash.
+	ErrInvalidUploadHash ErrorType = 5702
+
+	// Invalid upload user.
+	ErrInvalidUploadUser ErrorType = 5703
+
+	// Invalid upload group.
+	ErrInvalidUploadGroup ErrorType = 5704
+
+	// Invalid crop data.
+	ErrInvalidCropData ErrorType = 5705
+
+	// To small avatar.
+	ErrToSmallAvatar ErrorType = 5706
+
+	// Photo not found.
+	ErrPhotoNotFound ErrorType = 5708
+
+	// Invalid Photo.
+	ErrInvalidPhoto ErrorType = 5709
+
+	// Invalid hash.
+	ErrInvalidHash ErrorType = 5710
 )
 
 // ErrorSubtype is the subtype of an error.

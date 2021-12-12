@@ -41,8 +41,16 @@ func (t SlackResponse) Err() error {
 		return nil
 	}
 
-	return errors.New(t.Error)
+	return SlackErrorResponse{Err: t.Error, ResponseMetadata: t.ResponseMetadata}
 }
+
+// SlackErrorResponse brings along the metadata of errors returned by the Slack API.
+type SlackErrorResponse struct {
+	Err              string
+	ResponseMetadata ResponseMetadata
+}
+
+func (r SlackErrorResponse) Error() string { return r.Err }
 
 // RateLimitedError represents the rate limit respond from slack
 type RateLimitedError struct {

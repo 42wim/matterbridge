@@ -389,13 +389,18 @@ func NewTimePickerBlockElement(actionID string) *TimePickerBlockElement {
 //
 // More Information: https://api.slack.com/reference/block-kit/block-elements#input
 type PlainTextInputBlockElement struct {
-	Type         MessageElementType `json:"type"`
-	ActionID     string             `json:"action_id,omitempty"`
-	Placeholder  *TextBlockObject   `json:"placeholder,omitempty"`
-	InitialValue string             `json:"initial_value,omitempty"`
-	Multiline    bool               `json:"multiline,omitempty"`
-	MinLength    int                `json:"min_length,omitempty"`
-	MaxLength    int                `json:"max_length,omitempty"`
+	Type                 MessageElementType    `json:"type"`
+	ActionID             string                `json:"action_id,omitempty"`
+	Placeholder          *TextBlockObject      `json:"placeholder,omitempty"`
+	InitialValue         string                `json:"initial_value,omitempty"`
+	Multiline            bool                  `json:"multiline,omitempty"`
+	MinLength            int                   `json:"min_length,omitempty"`
+	MaxLength            int                   `json:"max_length,omitempty"`
+	DispatchActionConfig *DispatchActionConfig `json:"dispatch_action_config,omitempty"`
+}
+
+type DispatchActionConfig struct {
+	TriggerActionsOn []string `json:"trigger_actions_on,omitempty"`
 }
 
 // ElementType returns the type of the Element

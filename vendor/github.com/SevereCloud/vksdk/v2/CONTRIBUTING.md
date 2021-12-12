@@ -39,6 +39,7 @@ golangci-lint run
 # CLIENT_SECRET=""
 # USER_TOKEN=""
 # WIDGET_TOKEN=""
+# MARUSIA_TOKEN=""
 # CLIENT_ID="123456"
 # GROUP_ID="123456"
 # ACCOUNT_ID="123456"
@@ -56,6 +57,7 @@ go test ./...
     "go.testEnvVars": {
         "SERVICE_TOKEN": "",
         "WIDGET_TOKEN": "",
+        "MARUSIA_TOKEN": "",
         "GROUP_TOKEN": "",
         "CLIENT_SECRET": "",
         "USER_TOKEN": "",

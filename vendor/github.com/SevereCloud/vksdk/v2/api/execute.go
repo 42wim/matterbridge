@@ -22,6 +22,9 @@ func (vk *VK) ExecuteWithArgs(code string, params Params, obj interface{}) error
 	}
 
 	resp, err := vk.Handler("execute", params, reqParams)
+	if err != nil {
+		return err
+	}
 
 	jsonErr := json.Unmarshal(resp.Response, &obj)
 	if jsonErr != nil {

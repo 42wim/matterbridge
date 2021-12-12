@@ -48,6 +48,11 @@ linters:
     - nilerr
     - revive
     - wastedassign
+    - bidichk
+    - contextcheck
+    - ireturn
+    - nilnil
+    - tenv
 
 # - wrapcheck # TODO: v3 Fix
 # - testpackage # TODO: Fix testpackage
@@ -75,6 +80,8 @@ linters:
 # - cyclop
 # - promlinter
 # - tagliatelle
+# - errname
+# - varnamelen
 
 # depricated
 # - maligned

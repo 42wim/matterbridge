@@ -6,30 +6,30 @@ require (
 	github.com/Benau/tgsconverter v0.0.0-20210809170556-99f4a4f6337f
 	github.com/Philipp15b/go-steam v1.0.1-0.20200727090957-6ae9b3c0a560
 	github.com/Rhymen/go-whatsapp v0.1.2-0.20211102134409-31a2e740845c
-	github.com/SevereCloud/vksdk/v2 v2.10.0
-	github.com/d5/tengo/v2 v2.8.0
+	github.com/SevereCloud/vksdk/v2 v2.11.0
+	github.com/d5/tengo/v2 v2.10.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/fsnotify/fsnotify v1.5.1
-	github.com/go-telegram-bot-api/telegram-bot-api v1.0.1-0.20200524105306-7434b0456e81
-	github.com/gomarkdown/markdown v0.0.0-20210918233619-6c1113f12c4a
+	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.0
+	github.com/gomarkdown/markdown v0.0.0-20211207152620-5d6539fd8bfc
 	github.com/google/gops v0.3.22
 	github.com/gorilla/schema v1.2.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/jpillora/backoff v1.0.0
-	github.com/keybase/go-keybase-chat-bot v0.0.0-20211004153716-fd2ee4d6be11
+	github.com/keybase/go-keybase-chat-bot v0.0.0-20211201215354-ee4b23828b55
 	github.com/kyokomi/emoji/v2 v2.2.8
 	github.com/labstack/echo/v4 v4.6.1
-	github.com/lrstanley/girc v0.0.0-20210611213246-771323f1624b
+	github.com/lrstanley/girc v0.0.0-20211023233735-147f0ff77566
 	github.com/matrix-org/gomatrix v0.0.0-20210324163249-be2af5ef2e16
 	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20211016222428-79310a412696
 	github.com/matterbridge/discordgo v0.21.2-0.20210201201054-fb39a175b4f7
 	github.com/matterbridge/go-xmpp v0.0.0-20210731150933-5702291c239f
 	github.com/matterbridge/gozulipbot v0.0.0-20211023205727-a19d6c1f3b75
 	github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba
-	github.com/matterbridge/matterclient v0.0.0-20211024214211-22e762684b4a
+	github.com/matterbridge/matterclient v0.0.0-20211107234719-faca3cd42315
 	github.com/mattermost/mattermost-server/v5 v5.39.0
-	github.com/mattermost/mattermost-server/v6 v6.0.2
+	github.com/mattermost/mattermost-server/v6 v6.1.0
 	github.com/mattn/godown v0.0.1
 	github.com/missdeer/golib v1.0.4
 	github.com/nelsonken/gomf v0.0.0-20180504123937-a9dd2f9deae9
@@ -39,15 +39,15 @@ require (
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca
 	github.com/shazow/ssh-chat v1.10.1
 	github.com/sirupsen/logrus v1.8.1
-	github.com/slack-go/slack v0.9.5
+	github.com/slack-go/slack v0.10.0
 	github.com/spf13/viper v1.9.0
 	github.com/stretchr/testify v1.7.0
-	github.com/vincent-petithory/dataurl v0.0.0-20191104211930-d1553a71de50
+	github.com/vincent-petithory/dataurl v1.0.0
 	github.com/writeas/go-strip-markdown v2.0.1+incompatible
 	github.com/yaegashi/msgraph.go v0.1.4
 	github.com/zfjagann/golang-ring v0.0.0-20210116075443-7c86fdb43134
 	golang.org/x/image v0.0.0-20211028202545-6944b10bf410
-	golang.org/x/oauth2 v0.0.0-20211028175245-ba495a64dcb5
+	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	gomod.garykim.dev/nc-talk v0.3.0
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 	layeh.com/gumble v0.0.0-20200818122324-146f9205029b
@@ -65,31 +65,31 @@ require (
 	github.com/go-asn1-ber/asn1-ber v1.5.3 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/uuid v1.2.0 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/gopackage/ddp v0.0.3 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/json-iterator/go v1.1.11 // indirect
+	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kettek/apng v0.0.0-20191108220231-414630eed80f // indirect
-	github.com/klauspost/cpuid/v2 v2.0.6 // indirect
+	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/labstack/gommon v0.3.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mattermost/go-i18n v1.11.1-0.20211013152124-5c415071e404 // indirect
 	github.com/mattermost/ldap v0.0.0-20201202150706-ee0e6284187d // indirect
 	github.com/mattermost/logr v1.0.13 // indirect
-	github.com/mattermost/logr/v2 v2.0.10 // indirect
-	github.com/mattn/go-colorable v0.1.8 // indirect
+	github.com/mattermost/logr/v2 v2.0.15 // indirect
+	github.com/mattn/go-colorable v0.1.11 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
-	github.com/minio/minio-go/v7 v7.0.11 // indirect
+	github.com/minio/minio-go/v7 v7.0.14 // indirect
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.4.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.1 // indirect
+	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/monaco-io/request v1.0.5 // indirect
 	github.com/mreiferson/go-httpclient v0.0.0-20201222173833-5e475fde3a4d // indirect
 	github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff // indirect
@@ -109,19 +109,18 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
-	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/tinylib/msgp v1.1.6 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/wiggin77/cfg v1.0.2 // indirect
 	github.com/wiggin77/merror v1.0.3 // indirect
 	github.com/wiggin77/srslog v1.0.1 // indirect
-	go.uber.org/atomic v1.8.0 // indirect
+	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.17.0 // indirect
-	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
-	golang.org/x/net v0.0.0-20210913180222-943fd674d43e // indirect
-	golang.org/x/sys v0.0.0-20210910150752-751e447fb3d0 // indirect
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
+	golang.org/x/net v0.0.0-20211006190231-62292e806868 // indirect
+	golang.org/x/sys v0.0.0-20211006225509-1a26e0398eed // indirect
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324 // indirect

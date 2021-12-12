@@ -168,6 +168,9 @@ type Config struct {
 	// an invalid nickname. For example, if "test" is already in use, or is
 	// blocked by the network/a service, the client will try and use "test_",
 	// then it will attempt "test__", "test___", and so on.
+	//
+	// If HandleNickCollide returns an empty string, the client will not
+	// attempt to fix nickname collisions, and you must handle this yourself.
 	HandleNickCollide func(oldNick string) (newNick string)
 }
 

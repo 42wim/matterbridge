@@ -54,12 +54,14 @@ type (
 		Credentials *EncryptedCredentials `json:"credentials"`
 	}
 
-	// PassportFile represents a file uploaded to Telegram Passport. Currently all
+	// PassportFile represents a file uploaded to Telegram Passport. Currently, all
 	// Telegram Passport files are in JPEG format when decrypted and don't exceed
 	// 10MB.
 	PassportFile struct {
 		// Unique identifier for this file
 		FileID string `json:"file_id"`
+
+		FileUniqueID string `json:"file_unique_id"`
 
 		// File size
 		FileSize int `json:"file_size"`
@@ -212,7 +214,7 @@ type (
 	// PassportElementErrorFile represents an issue with a document scan. The
 	// error is considered resolved when the file with the document scan changes.
 	PassportElementErrorFile struct {
-		// Error source, must be file
+		// Error source, must be a file
 		Source string `json:"source"`
 
 		// The section of the user's Telegram Passport which has the issue, one

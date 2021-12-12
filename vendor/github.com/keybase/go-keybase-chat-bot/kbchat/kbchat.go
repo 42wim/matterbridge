@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"runtime"
 	"sync"
 	"time"
 
@@ -207,7 +208,9 @@ func (a *API) getUsername(runOpts RunOptions) (username string, err error) {
 	if err != nil {
 		return "", err
 	}
-	p.ExtraFiles = []*os.File{output.(*os.File)}
+	if runtime.GOOS != "windows" {
+		p.ExtraFiles = []*os.File{output.(*os.File)}
+	}
 	if err = p.Start(); err != nil {
 		return "", err
 	}
@@ -282,7 +285,7 @@ func (a *API) startPipes() (err error) {
 	defer a.Unlock()
 	if a.apiCmd != nil {
 		if err := a.apiCmd.Process.Kill(); err != nil {
-			return err
+			return fmt.Errorf("unable to kill previous API command %v", err)
 		}
 	}
 	a.apiCmd = nil
@@ -290,30 +293,32 @@ func (a *API) startPipes() (err error) {
 	if a.runOpts.StartService {
 		args := []string{fmt.Sprintf("-enable-bot-lite-mode=%v", a.runOpts.DisableBotLiteMode), "service"}
 		if err := a.runOpts.Command(args...).Start(); err != nil {
-			return err
+			return fmt.Errorf("unable to start service %v", err)
 		}
 	}
 
 	if a.username, err = a.auth(); err != nil {
-		return err
+		return fmt.Errorf("unable to auth: %v", err)
 	}
 
 	cmd := a.runOpts.Command("chat", "notification-settings", fmt.Sprintf("-disable-typing=%v", !a.runOpts.EnableTyping))
 	if err = cmd.Run(); err != nil {
-		return err
+		return fmt.Errorf("unable to set notifiation settings %v", err)
 	}
 
 	a.apiCmd = a.runOpts.Command("chat", "api")
 	if a.apiInput, err = a.apiCmd.StdinPipe(); err != nil {
-		return err
+		return fmt.Errorf("unable to get api stdin: %v", err)
 	}
 	output, err := a.apiCmd.StdoutPipe()
 	if err != nil {
-		return err
+		return fmt.Errorf("unabel to get api stdout: %v", err)
 	}
-	a.apiCmd.ExtraFiles = []*os.File{output.(*os.File)}
+	if runtime.GOOS != "windows" {
+		a.apiCmd.ExtraFiles = []*os.File{output.(*os.File)}
+	}
 	if err := a.apiCmd.Start(); err != nil {
-		return err
+		return fmt.Errorf("unable to run chat api cmd: %v", err)
 	}
 	a.apiOutput = bufio.NewReader(output)
 	return nil
@@ -508,7 +513,9 @@ func (a *API) Listen(opts ListenOptions) (*Subscription, error) {
 				time.Sleep(pause)
 				continue
 			}
-			p.ExtraFiles = []*os.File{stderr.(*os.File), output.(*os.File)}
+			if runtime.GOOS != "windows" {
+				p.ExtraFiles = []*os.File{stderr.(*os.File), output.(*os.File)}
+			}
 			boutput := bufio.NewScanner(output)
 			if err := p.Start(); err != nil {
 

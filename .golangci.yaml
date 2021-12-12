@@ -188,7 +188,22 @@ linters:
     - exhaustivestruct
     - forbidigo
     - wrapcheck
-
+    - varnamelen
+    - ireturn
+    - errorlint
+    - tparallel
+    - wrapcheck
+    - paralleltest
+    - makezero
+    - thelper
+    - cyclop
+    - revive
+    - importas
+    - gomoddirectives
+    - promlinter
+    - tagliatelle
+    - errname
+    - typecheck
 # rules to deal with reported isues
 issues:
   # List of regexps of issue texts to exclude, empty list by default.

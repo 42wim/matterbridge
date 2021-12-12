@@ -28,6 +28,8 @@ type MarketMarketAlbum struct {
 	Photo       PhotosPhoto `json:"photo"`
 	Title       string      `json:"title"`        // Market album title
 	UpdatedTime int         `json:"updated_time"` // Date when album has been updated last time in Unixtime
+	IsMain      BaseBoolInt `json:"is_main"`
+	IsHidden    BaseBoolInt `json:"is_hidden"`
 }
 
 // ToAttachment return attachment format.
