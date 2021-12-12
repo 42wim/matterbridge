@@ -10,7 +10,7 @@ require (
 	github.com/d5/tengo/v2 v2.10.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/fsnotify/fsnotify v1.5.1
-	github.com/go-telegram-bot-api/telegram-bot-api v1.0.1-0.20200524105306-7434b0456e81
+	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.0
 	github.com/gomarkdown/markdown v0.0.0-20211207152620-5d6539fd8bfc
 	github.com/google/gops v0.3.22
 	github.com/gorilla/schema v1.2.0
@@ -109,7 +109,6 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
-	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/tinylib/msgp v1.1.6 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
