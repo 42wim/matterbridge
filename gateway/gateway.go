@@ -454,9 +454,9 @@ func (gw *Gateway) SendMessage(
 		msg.Channel = rmsg.Channel
 	}
 
-	msg.ParentID = gw.getDestMsgID(rmsg.Protocol+" "+canonicalParentMsgID, dest, channel)
+	msg.ParentID = gw.getDestMsgID(canonicalParentMsgID, dest, channel)
 	if msg.ParentID == "" {
-		msg.ParentID = canonicalParentMsgID
+		msg.ParentID = strings.Replace(canonicalParentMsgID, dest.Protocol+" ", "", 1)
 	}
 
 	// if the parentID is still empty and we have a parentID set in the original message

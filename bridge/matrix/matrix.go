@@ -386,6 +386,35 @@ func (b *Bmatrix) handleEdit(ev *matrix.Event, rmsg config.Message) bool {
 	return true
 }
 
+func (b *Bmatrix) handleReply(ev *matrix.Event, rmsg config.Message) bool {
+	relationInterface, present := ev.Content["m.relates_to"]
+	if !present {
+		return false
+	}
+
+	var relation InReplyToRelation
+	if err := interface2Struct(relationInterface, &relation); err != nil {
+		// probably fine
+		return false
+	}
+
+	body := rmsg.Text
+	for strings.HasPrefix(body, "> ") {
+		lineIdx := strings.IndexRune(body, '\n')
+		if lineIdx == -1 {
+			body = ""
+		} else {
+			body = body[(lineIdx + 1):]
+		}
+	}
+
+	rmsg.Text = body
+	rmsg.ParentID = relation.InReplyTo.EventID
+	b.Remote <- rmsg
+
+	return true
+}
+
 func (b *Bmatrix) handleMemberChange(ev *matrix.Event) {
 	// Update the displayname on join messages, according to https://matrix.org/docs/spec/client_server/r0.6.1#events-on-change-of-profile-information
 	if ev.Content["membership"] == "join" {
@@ -445,6 +474,11 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 
 		// Is it an edit?
 		if b.handleEdit(ev, rmsg) {
+			return
+		}
+
+		// Is it a reply?
+		if b.handleReply(ev, rmsg) {
 			return
 		}
 
