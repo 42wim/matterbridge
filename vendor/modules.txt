@@ -109,6 +109,14 @@ github.com/gorilla/schema
 # github.com/gorilla/websocket v1.4.2
 ## explicit; go 1.12
 github.com/gorilla/websocket
+# github.com/harmony-development/shibshib v0.0.0-20211127182844-512296f7c548
+## explicit; go 1.15
+github.com/harmony-development/shibshib
+github.com/harmony-development/shibshib/gen/auth/v1
+github.com/harmony-development/shibshib/gen/chat/v1
+github.com/harmony-development/shibshib/gen/emote/v1
+github.com/harmony-development/shibshib/gen/harmonytypes/v1
+github.com/harmony-development/shibshib/gen/profile/v1
 # github.com/hashicorp/errwrap v1.1.0
 ## explicit
 github.com/hashicorp/errwrap
