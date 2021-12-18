@@ -65,6 +65,19 @@ type EditedMessage struct {
 	matrix.TextMessage
 }
 
+type InReplyToRelationContent struct {
+	EventID string `json:"event_id"`
+}
+
+type InReplyToRelation struct {
+	InReplyTo InReplyToRelationContent `json:"m.in_reply_to"`
+}
+
+type ReplyMessage struct {
+	RelatedTo InReplyToRelation `json:"m.relates_to"`
+	matrix.TextMessage
+}
+
 func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Bmatrix{Config: cfg}
 	b.RoomMap = make(map[string]string)
@@ -265,6 +278,38 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 
 		err = b.retry(func() error {
 			resp, err = b.mc.SendText(channel, username.plain+msg.Text)
+
+			return err
+		})
+		if err != nil {
+			return "", err
+		}
+
+		return resp.EventID, err
+	}
+
+	if msg.ParentValid() {
+		m := ReplyMessage {
+			TextMessage: matrix.TextMessage {
+				MsgType:       "m.text",
+				Body:          username.plain + msg.Text,
+				FormattedBody: username.formatted + helper.ParseMarkdown(msg.Text),
+			},
+		}
+
+		m.RelatedTo = InReplyToRelation {
+			InReplyTo: InReplyToRelationContent {
+				EventID: msg.ParentID,
+			},
+		}
+
+		var (
+			resp *matrix.RespSendEvent
+			err  error
+		)
+
+		err = b.retry(func() error {
+			resp, err = b.mc.SendMessageEvent(channel, "m.room.message", m)
 
 			return err
 		})
