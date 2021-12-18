@@ -289,16 +289,16 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	}
 
 	if msg.ParentValid() {
-		m := ReplyMessage {
-			TextMessage: matrix.TextMessage {
+		m := ReplyMessage{
+			TextMessage: matrix.TextMessage{
 				MsgType:       "m.text",
 				Body:          username.plain + msg.Text,
 				FormattedBody: username.formatted + helper.ParseMarkdown(msg.Text),
 			},
 		}
 
-		m.RelatedTo = InReplyToRelation {
-			InReplyTo: InReplyToRelationContent {
+		m.RelatedTo = InReplyToRelation{
+			InReplyTo: InReplyToRelationContent{
 				EventID: msg.ParentID,
 			},
 		}
