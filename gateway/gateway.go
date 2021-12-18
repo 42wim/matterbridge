@@ -66,7 +66,7 @@ func New(rootLogger *logrus.Logger, cfg *config.Gateway, r *Router) *Gateway {
 func (gw *Gateway) FindCanonicalMsgID(protocol string, mID string) string {
 	ID := protocol + " " + mID
 	if gw.Messages.Contains(ID) {
-		return mID
+		return ID
 	}
 
 	// If not keyed, iterate through cache for downstream, and infer upstream.
@@ -75,7 +75,7 @@ func (gw *Gateway) FindCanonicalMsgID(protocol string, mID string) string {
 		ids := v.([]*BrMsgID)
 		for _, downstreamMsgObj := range ids {
 			if ID == downstreamMsgObj.ID {
-				return strings.Replace(mid.(string), protocol+" ", "", 1)
+				return mid.(string)
 			}
 		}
 	}
