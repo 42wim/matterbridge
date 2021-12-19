@@ -5,18 +5,18 @@ version: 2
 updates:
   - package-ecosystem: gomod
     directory: /
-    schedule: {interval: monthly}
+    schedule: {interval: daily}
     reviewers: [42wim]
     assignees: [42wim]
 
   - package-ecosystem: github-actions
     directory: /
-    schedule: {interval: monthly}
+    schedule: {interval: daily}
     reviewers: [42wim]
     assignees: [42wim]
 
   - package-ecosystem: docker
     directory: /
-    schedule: {interval: monthly}
+    schedule: {interval: daily}
     reviewers: [42wim]
     assignees: [42wim]
