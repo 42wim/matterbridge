@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"regexp"
 )
 
 // Message for rocketchat outgoing webhook.
@@ -68,7 +69,6 @@ func (c *Client) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	msg := Message{}
 	body, err := ioutil.ReadAll(r.Body)
-	log.Println(string(body))
 	if err != nil {
 		log.Println(err)
 		http.NotFound(w, r)
@@ -89,7 +89,11 @@ func (c *Client) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	msg.ChannelName = "#" + msg.ChannelName
 	if c.Token != "" {
 		if msg.Token != c.Token {
-			log.Println("invalid token " + msg.Token + " from " + r.RemoteAddr)
+			if regexp.MustCompile(`[^a-zA-Z0-9]+`).MatchString(msg.Token) {
+				log.Println("invalid token " + msg.Token + " from " + r.RemoteAddr)
+			} else {
+				log.Println("invalid token from " + r.RemoteAddr)
+			}
 			http.NotFound(w, r)
 			return
 		}
