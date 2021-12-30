@@ -1539,10 +1539,6 @@ MessageClipped="<clipped message>"
 #See https://vk.com/dev/bots_docs
 Token="Yourtokenhere"
 
-#Group ID
-#For example in URL https://vk.com/public168963511 group ID is 168963511
-GroupID=123456789
-
 ###################################################################
 # WhatsApp
 ###################################################################
