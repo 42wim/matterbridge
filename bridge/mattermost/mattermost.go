@@ -180,13 +180,17 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 			if err != nil {
 				b.Log.Errorf("getting post %s failed: %s", msg.ParentID, err)
 			}
-			msg.ParentID = post.RootId
+			if post.RootId != "" {
+				msg.ParentID = post.RootId
+			}
 		} else {
 			post, res := b.mc.Client.GetPost(msg.ParentID, "")
 			if res.Error != nil {
 				b.Log.Errorf("getting post %s failed: %s", msg.ParentID, res.Error.DetailedError)
 			}
-			msg.ParentID = post.RootId
+			if post.RootId != "" {
+				msg.ParentID = post.RootId
+			}
 		}
 	}
 
