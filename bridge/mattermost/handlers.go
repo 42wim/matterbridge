@@ -188,7 +188,7 @@ func (b *Bmattermost) handleMatterClient(messages chan *config.Message) {
 // nolint:cyclop
 func (b *Bmattermost) handleMatterClient6(messages chan *config.Message) {
 	for message := range b.mc6.MessageChan {
-		b.Log.Debugf("%#v", message.Raw.GetData())
+		b.Log.Debugf("%#v %#v", message.Raw.GetData(), message.Raw.EventType())
 
 		if b.skipMessage6(message) {
 			b.Log.Debugf("Skipped message: %#v", message)
