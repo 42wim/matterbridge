@@ -123,6 +123,25 @@ func (b *Btelegram) handleUsername(rmsg *config.Message, message *tgbotapi.Messa
 		}
 	}
 
+	if message.SenderChat != nil { //nolint:nestif
+		rmsg.UserID = strconv.FormatInt(message.SenderChat.ID, 10)
+		if b.GetBool("UseFirstName") {
+			rmsg.Username = message.SenderChat.FirstName
+		}
+
+		if rmsg.Username == "" || rmsg.Username == "Channel_Bot" {
+			rmsg.Username = message.SenderChat.UserName
+
+			if rmsg.Username == "" || rmsg.Username == "Channel_Bot" {
+				rmsg.Username = message.SenderChat.FirstName
+			}
+		}
+		// only download avatars if we have a place to upload them (configured mediaserver)
+		if b.General.MediaServerUpload != "" || (b.General.MediaServerDownload != "" && b.General.MediaDownloadPath != "") {
+			b.handleDownloadAvatar(message.SenderChat.ID, rmsg.Channel)
+		}
+	}
+
 	// if we really didn't find a username, set it to unknown
 	if rmsg.Username == "" {
 		rmsg.Username = unknownUser
