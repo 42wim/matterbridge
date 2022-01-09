@@ -65,6 +65,19 @@ type EditedMessage struct {
 	matrix.TextMessage
 }
 
+type InReplyToRelationContent struct {
+	EventID string `json:"event_id"`
+}
+
+type InReplyToRelation struct {
+	InReplyTo InReplyToRelationContent `json:"m.in_reply_to"`
+}
+
+type ReplyMessage struct {
+	RelatedTo InReplyToRelation `json:"m.relates_to"`
+	matrix.TextMessage
+}
+
 func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Bmatrix{Config: cfg}
 	b.RoomMap = make(map[string]string)
@@ -275,6 +288,38 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 		return resp.EventID, err
 	}
 
+	if msg.ParentValid() {
+		m := ReplyMessage{
+			TextMessage: matrix.TextMessage{
+				MsgType:       "m.text",
+				Body:          username.plain + msg.Text,
+				FormattedBody: username.formatted + helper.ParseMarkdown(msg.Text),
+			},
+		}
+
+		m.RelatedTo = InReplyToRelation{
+			InReplyTo: InReplyToRelationContent{
+				EventID: msg.ParentID,
+			},
+		}
+
+		var (
+			resp *matrix.RespSendEvent
+			err  error
+		)
+
+		err = b.retry(func() error {
+			resp, err = b.mc.SendMessageEvent(channel, "m.room.message", m)
+
+			return err
+		})
+		if err != nil {
+			return "", err
+		}
+
+		return resp.EventID, err
+	}
+
 	// Post normal message with HTML support (eg riot.im)
 	var (
 		resp *matrix.RespSendEvent
@@ -341,6 +386,35 @@ func (b *Bmatrix) handleEdit(ev *matrix.Event, rmsg config.Message) bool {
 	return true
 }
 
+func (b *Bmatrix) handleReply(ev *matrix.Event, rmsg config.Message) bool {
+	relationInterface, present := ev.Content["m.relates_to"]
+	if !present {
+		return false
+	}
+
+	var relation InReplyToRelation
+	if err := interface2Struct(relationInterface, &relation); err != nil {
+		// probably fine
+		return false
+	}
+
+	body := rmsg.Text
+	for strings.HasPrefix(body, "> ") {
+		lineIdx := strings.IndexRune(body, '\n')
+		if lineIdx == -1 {
+			body = ""
+		} else {
+			body = body[(lineIdx + 1):]
+		}
+	}
+
+	rmsg.Text = body
+	rmsg.ParentID = relation.InReplyTo.EventID
+	b.Remote <- rmsg
+
+	return true
+}
+
 func (b *Bmatrix) handleMemberChange(ev *matrix.Event) {
 	// Update the displayname on join messages, according to https://matrix.org/docs/spec/client_server/r0.6.1#events-on-change-of-profile-information
 	if ev.Content["membership"] == "join" {
@@ -400,6 +474,11 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 
 		// Is it an edit?
 		if b.handleEdit(ev, rmsg) {
+			return
+		}
+
+		// Is it a reply?
+		if b.handleReply(ev, rmsg) {
 			return
 		}
 
