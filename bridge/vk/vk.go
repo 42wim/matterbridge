@@ -34,6 +34,7 @@ type user struct {
 
 type Bvk struct {
 	c            *api.VK
+	lp           *longpoll.LongPoll
 	usernamesMap map[int]user // cache of user names and avatar URLs
 	*bridge.Config
 }
@@ -45,21 +46,23 @@ func New(cfg *bridge.Config) bridge.Bridger {
 func (b *Bvk) Connect() error {
 	b.Log.Info("Connecting")
 	b.c = api.NewVK(b.GetString("Token"))
-	lp, err := longpoll.NewLongPoll(b.c, b.GetInt("GroupID"))
+
+	var err error
+	b.lp, err = longpoll.NewLongPollCommunity(b.c)
 	if err != nil {
 		b.Log.Debugf("%#v", err)
 
 		return err
 	}
 
-	lp.MessageNew(func(ctx context.Context, obj events.MessageNewObject) {
+	b.lp.MessageNew(func(ctx context.Context, obj events.MessageNewObject) {
 		b.handleMessage(obj.Message, false)
 	})
 
 	b.Log.Info("Connection succeeded")
 
 	go func() {
-		err := lp.Run()
+		err := b.lp.Run()
 		if err != nil {
 			b.Log.Fatal("Enable longpoll in group management")
 		}
@@ -69,6 +72,8 @@ func (b *Bvk) Connect() error {
 }
 
 func (b *Bvk) Disconnect() error {
+	b.lp.Shutdown()
+
 	return nil
 }
 
