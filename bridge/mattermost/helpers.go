@@ -329,13 +329,14 @@ func (b *Bmattermost) skipMessage6(message *matterclient6.Message) bool {
 	// Ignore messages sent from matterbridge
 	if message.Post.Props != nil {
 		if _, ok := message.Post.Props["matterbridge_"+b.uuid].(bool); ok {
-			b.Log.Debugf("sent by matterbridge, ignoring")
+			b.Log.Debug("sent by matterbridge, ignoring")
 			return true
 		}
 	}
 
 	// Ignore messages sent from a user logged in as the bot
 	if b.mc6.User.Username == message.Username {
+		b.Log.Debug("message from same user as bot, ignoring")
 		return true
 	}
 
@@ -346,6 +347,7 @@ func (b *Bmattermost) skipMessage6(message *matterclient6.Message) bool {
 
 	// ignore messages from other teams than ours
 	if message.Raw.GetData()["team_id"].(string) != b.TeamID {
+		b.Log.Debug("message from other team, ignoring")
 		return true
 	}
 
