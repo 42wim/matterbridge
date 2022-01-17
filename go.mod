@@ -29,7 +29,7 @@ require (
 	github.com/matterbridge/gozulipbot v0.0.0-20211023205727-a19d6c1f3b75
 	github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba
 	github.com/matterbridge/matterclient v0.0.0-20211107234719-faca3cd42315
-	github.com/mattermost/mattermost-server/v5 v5.39.0
+	github.com/mattermost/mattermost-server/v5 v5.39.3
 	github.com/mattermost/mattermost-server/v6 v6.1.0
 	github.com/mattn/godown v0.0.1
 	github.com/missdeer/golib v1.0.4
