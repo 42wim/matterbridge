@@ -220,7 +220,7 @@ github.com/mattermost/logr/v2
 github.com/mattermost/logr/v2/config
 github.com/mattermost/logr/v2/formatters
 github.com/mattermost/logr/v2/targets
-# github.com/mattermost/mattermost-server/v5 v5.39.0
+# github.com/mattermost/mattermost-server/v5 v5.39.3
 ## explicit; go 1.15
 github.com/mattermost/mattermost-server/v5/model
 github.com/mattermost/mattermost-server/v5/services/timezones
