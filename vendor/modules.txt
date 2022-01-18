@@ -164,11 +164,11 @@ github.com/klauspost/cpuid/v2
 # github.com/kyokomi/emoji/v2 v2.2.8
 ## explicit; go 1.14
 github.com/kyokomi/emoji/v2
-# github.com/labstack/echo/v4 v4.6.1
+# github.com/labstack/echo/v4 v4.6.3
 ## explicit; go 1.15
 github.com/labstack/echo/v4
 github.com/labstack/echo/v4/middleware
-# github.com/labstack/gommon v0.3.0
+# github.com/labstack/gommon v0.3.1
 ## explicit; go 1.12
 github.com/labstack/gommon/bytes
 github.com/labstack/gommon/color
