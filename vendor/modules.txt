@@ -330,8 +330,8 @@ github.com/rivo/uniseg
 # github.com/rs/xid v1.3.0
 ## explicit; go 1.12
 github.com/rs/xid
-# github.com/russross/blackfriday v1.6.0
-## explicit; go 1.13
+# github.com/russross/blackfriday v2.0.0+incompatible
+## explicit
 github.com/russross/blackfriday
 # github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca
 ## explicit
@@ -344,6 +344,9 @@ github.com/shazow/rateio
 github.com/shazow/ssh-chat/internal/sanitize
 github.com/shazow/ssh-chat/sshd
 github.com/shazow/ssh-chat/sshd/terminal
+# github.com/shurcooL/sanitized_anchor_name v1.0.0
+## explicit
+github.com/shurcooL/sanitized_anchor_name
 # github.com/sirupsen/logrus v1.8.1
 ## explicit; go 1.13
 github.com/sirupsen/logrus
