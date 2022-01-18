@@ -153,9 +153,10 @@ func RateLimiterWithConfig(config RateLimiterConfig) echo.MiddlewareFunc {
 type (
 	// RateLimiterMemoryStore is the built-in store implementation for RateLimiter
 	RateLimiterMemoryStore struct {
-		visitors    map[string]*Visitor
-		mutex       sync.Mutex
-		rate        rate.Limit
+		visitors map[string]*Visitor
+		mutex    sync.Mutex
+		rate     rate.Limit //for more info check out Limiter docs - https://pkg.go.dev/golang.org/x/time/rate#Limit.
+
 		burst       int
 		expiresIn   time.Duration
 		lastCleanup time.Time
@@ -170,6 +171,8 @@ type (
 /*
 NewRateLimiterMemoryStore returns an instance of RateLimiterMemoryStore with
 the provided rate (as req/s). The provided rate less than 1 will be treated as zero.
+for more info check out Limiter docs - https://pkg.go.dev/golang.org/x/time/rate#Limit.
+
 Burst and ExpiresIn will be set to default values.
 
 Example (with 20 requests/sec):
@@ -199,7 +202,7 @@ Characteristics:
 Example:
 
 	limiterStore := middleware.NewRateLimiterMemoryStoreWithConfig(
-		middleware.RateLimiterMemoryStoreConfig{Rate: 50, Burst: 200, ExpiresIn: 5 * time.Minutes},
+		middleware.RateLimiterMemoryStoreConfig{Rate: 50, Burst: 200, ExpiresIn: 5 * time.Minute},
 	)
 */
 func NewRateLimiterMemoryStoreWithConfig(config RateLimiterMemoryStoreConfig) (store *RateLimiterMemoryStore) {
@@ -221,7 +224,7 @@ func NewRateLimiterMemoryStoreWithConfig(config RateLimiterMemoryStoreConfig) (s
 
 // RateLimiterMemoryStoreConfig represents configuration for RateLimiterMemoryStore
 type RateLimiterMemoryStoreConfig struct {
-	Rate      rate.Limit    // Rate of requests allowed to pass as req/s
+	Rate      rate.Limit    // Rate of requests allowed to pass as req/s. For more info check out Limiter docs - https://pkg.go.dev/golang.org/x/time/rate#Limit.
 	Burst     int           // Burst additionally allows a number of requests to pass when rate limit is reached
 	ExpiresIn time.Duration // ExpiresIn is the duration after that a rate limiter is cleaned up
 }
