@@ -76,7 +76,7 @@ github.com/fsnotify/fsnotify
 # github.com/go-asn1-ber/asn1-ber v1.5.3
 ## explicit; go 1.13
 github.com/go-asn1-ber/asn1-ber
-# github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.0
+# github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 ## explicit; go 1.16
 github.com/go-telegram-bot-api/telegram-bot-api/v5
 # github.com/golang-jwt/jwt v3.2.2+incompatible

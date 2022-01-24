@@ -10,7 +10,7 @@ require (
 	github.com/d5/tengo/v2 v2.10.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/fsnotify/fsnotify v1.5.1
-	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.0
+	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/gomarkdown/markdown v0.0.0-20211207152620-5d6539fd8bfc
 	github.com/google/gops v0.3.22
 	github.com/gorilla/schema v1.2.0
