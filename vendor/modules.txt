@@ -358,7 +358,7 @@ github.com/sizeofint/webpanimation
 github.com/skip2/go-qrcode
 github.com/skip2/go-qrcode/bitset
 github.com/skip2/go-qrcode/reedsolomon
-# github.com/slack-go/slack v0.10.0
+# github.com/slack-go/slack v0.10.1
 ## explicit; go 1.16
 github.com/slack-go/slack
 github.com/slack-go/slack/internal/backoff

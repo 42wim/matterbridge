@@ -1505,8 +1505,8 @@ github.com/sizeofint/webpanimation v0.0.0-20210809145948-1d2b32119882 h1:A7o8tOE
 github.com/sizeofint/webpanimation v0.0.0-20210809145948-1d2b32119882/go.mod h1:5IwJoz9Pw7JsrCN4/skkxUtSWT7myuUPLhCgv6Q5vvQ=
 github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e h1:MRM5ITcdelLK2j1vwZ3Je0FKVCfqOLp5zO6trqMLYs0=
 github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e/go.mod h1:XV66xRDqSt+GTGFMVlhk3ULuV0y9ZmzeVGR4mloJI3M=
-github.com/slack-go/slack v0.10.0 h1:L16Eqg3QZzRKGXIVsFSZdJdygjOphb2FjRUwH6VrFu8=
-github.com/slack-go/slack v0.10.0/go.mod h1:wWL//kk0ho+FcQXcBTmEafUI5dz4qz5f4mMk8oIkioQ=
+github.com/slack-go/slack v0.10.1 h1:BGbxa0kMsGEvLOEoZmYs8T1wWfoZXwmQFBb6FgYCXUA=
+github.com/slack-go/slack v0.10.1/go.mod h1:wWL//kk0ho+FcQXcBTmEafUI5dz4qz5f4mMk8oIkioQ=
 github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d/go.mod h1:OnSkiWE9lh6wB0YB77sQom3nweQdgAjqCqsofrRNTgc=
 github.com/smartystreets/assertions v1.0.0 h1:UVQPSSmc3qtTi+zPPkCXvZX9VvW/xT/NsRvKfwY81a8=
 github.com/smartystreets/assertions v1.0.0/go.mod h1:kHHU4qYBaI3q23Pp3VPrmWhuIUrLW/7eUrw0BU5VaoM=
