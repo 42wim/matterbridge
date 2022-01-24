@@ -16,11 +16,12 @@
 Version API 5.131.
 
 - [API](https://pkg.go.dev/github.com/SevereCloud/vksdk/v2/api)
-  - 400+ methods
+  - 500+ methods
   - Ability to change the request handler
   - Ability to modify HTTP client
   - Request Limiter
   - Token pool
+  - [OAuth](https://pkg.go.dev/github.com/SevereCloud/vksdk/v2/api/oauth)
 - [Callback API](https://pkg.go.dev/github.com/SevereCloud/vksdk/v2/callback)
   - Tracking tool for users activity in your VK communities
   - Supports all events
@@ -60,6 +61,7 @@ go get github.com/SevereCloud/vksdk/v2@latest
 
 ## Use by
 
+- A simple chat bridge: <https://github.com/42wim/matterbridge>
 - [Joe](https://github.com/go-joe/joe) adapter: <https://github.com/tdakkota/joe-vk-adapter>
 - [Logrus](https://github.com/sirupsen/logrus) hook: <https://github.com/SevereCloud/vkrus>
 

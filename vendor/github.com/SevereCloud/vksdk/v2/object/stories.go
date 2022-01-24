@@ -127,6 +127,7 @@ type StoriesStory struct {
 	Seen                 BaseBoolInt              `json:"seen"`
 	IsOwnerPinned        BaseBoolInt              `json:"is_owner_pinned"`
 	IsOneTime            BaseBoolInt              `json:"is_one_time"`
+	IsAdvice             BaseBoolInt              `json:"is_advice,omitempty"`
 	NeedMute             BaseBoolInt              `json:"need_mute"`
 	MuteReply            BaseBoolInt              `json:"mute_reply"`
 	CanLike              BaseBoolInt              `json:"can_like"`
@@ -152,6 +153,7 @@ type StoriesStory struct {
 	NarrativesCount      int                      `json:"narratives_count"`
 	FirstNarrativeTitle  string                   `json:"first_narrative_title"`
 	Questions            StoriesQuestions         `json:"questions"`
+	ReactionSetID        string                   `json:"reaction_set_id"`
 }
 
 // StoriesFeedItemType type.

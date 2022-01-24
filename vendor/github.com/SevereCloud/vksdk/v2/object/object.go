@@ -346,9 +346,11 @@ const (
 type Privacy struct {
 	Category PrivacyCategory `json:"category,omitempty"`
 	Lists    struct {
-		Allowed []int `json:"allowed"`
+		Allowed  []int `json:"allowed"`
+		Excluded []int `json:"excluded"`
 	} `json:"lists,omitempty"`
 	Owners struct {
+		Allowed  []int `json:"allowed"`
 		Excluded []int `json:"excluded"`
 	} `json:"owners,omitempty"`
 }

@@ -121,7 +121,7 @@ func NewVK(tokens ...string) *VK {
 	vk.accessTokens = tokens
 	vk.Version = Version
 
-	vk.Handler = vk.defaultHandler
+	vk.Handler = vk.DefaultHandler
 
 	vk.MethodURL = MethodURL
 	vk.Client = http.DefaultClient
@@ -207,8 +207,8 @@ func buildQuery(sliceParams ...Params) (context.Context, url.Values) {
 	return ctx, query
 }
 
-// defaultHandler provides access to VK API methods.
-func (vk *VK) defaultHandler(method string, sliceParams ...Params) (Response, error) {
+// DefaultHandler provides access to VK API methods.
+func (vk *VK) DefaultHandler(method string, sliceParams ...Params) (Response, error) {
 	u := vk.MethodURL + method
 	ctx, query := buildQuery(sliceParams...)
 	attempt := 0

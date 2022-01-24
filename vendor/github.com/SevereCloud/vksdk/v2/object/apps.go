@@ -60,6 +60,7 @@ type AppsApp struct {
 	IsNew           BaseBoolInt `json:"is_new"`
 	New             BaseBoolInt `json:"new"`
 	IsInstalled     BaseBoolInt `json:"is_installed"`
+	HasVkConnect    BaseBoolInt `json:"has_vk_connect"`
 	LeaderboardType int         `json:"leaderboard_type"`
 	MembersCount    int         `json:"members_count"` // Members number
 	PlatformID      int         `json:"platform_id"`   // Application ID in store
@@ -78,7 +79,7 @@ type AppsApp struct {
 
 	// mobile_controls_type = 0 - прозрачный элемент управления поверх области с игрой;
 	// mobile_controls_type = 1 - чёрная полоска над областью с игрой;
-	// mobile_controls_type = 2 - только для vk apps, без контроллов.
+	// mobile_controls_type = 2 - только для vk apps, без элементов управления'.
 	MobileControlsType int `json:"mobile_controls_type"`
 
 	// mobile_view_support_type = 0 - игра не использует нижнюю часть экрана на iPhoneX, черная полоса есть.

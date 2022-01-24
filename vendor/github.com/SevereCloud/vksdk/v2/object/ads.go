@@ -8,12 +8,13 @@ type AdsAccesses struct {
 
 // AdsAccount struct.
 type AdsAccount struct {
-	AccessRole    string      `json:"access_role"`
-	AccountID     int         `json:"account_id"` // Account ID
-	AccountName   string      `json:"account_name"`
-	AccountStatus BaseBoolInt `json:"account_status"` // Information whether account is active
-	CanViewBudget BaseBoolInt `json:"can_view_budget"`
-	AccountType   string      `json:"account_type"`
+	AccessRole                  string      `json:"access_role"`
+	AccountID                   int         `json:"account_id"` // Account ID
+	AccountName                 string      `json:"account_name"`
+	AccountStatus               BaseBoolInt `json:"account_status"` // Information whether account is active
+	CanViewBudget               BaseBoolInt `json:"can_view_budget"`
+	AdNetworkAllowedPotentially BaseBoolInt `json:"ad_network_allowed_potentially"`
+	AccountType                 string      `json:"account_type"`
 }
 
 // AdsAdLayout struct.
@@ -317,4 +318,11 @@ type AdsPromotedPostReach struct {
 	VideoViews50p    int `json:"video_views_50p"`   // Video views for 50 percent
 	VideoViews75p    int `json:"video_views_75p"`   // Video views for 75 percent
 	VideoViewsStart  int `json:"video_views_start"` // Video starts
+}
+
+// AdsMusician struct.
+type AdsMusician struct {
+	ID     int    `json:"id"`               // Targeting music artist ID
+	Name   string `json:"name"`             // Music artist name
+	Avatar string `json:"avatar,omitempty"` // Music artist photo.
 }

@@ -153,8 +153,8 @@ github.com/Rhymen/go-whatsapp v0.1.2-0.20211102134409-31a2e740845c/go.mod h1:DNS
 github.com/RoaringBitmap/roaring v0.4.23/go.mod h1:D0gp8kJQgE1A4LQ5wFLggQEyvDi06Mq5mKs52e1TwOo=
 github.com/RoaringBitmap/roaring v0.8.0/go.mod h1:jdT9ykXwHFNdJbEtxePexlFYH9LXucApeS0/+/g+p1I=
 github.com/RoaringBitmap/roaring v0.9.4/go.mod h1:icnadbWcNyfEHlYdr+tDlOTih1Bf/h+rzPpv4sbomAA=
-github.com/SevereCloud/vksdk/v2 v2.11.0 h1:9O85YicxktQB6sh1nmRKig1EZM+jHrdtST5FnOIiDGk=
-github.com/SevereCloud/vksdk/v2 v2.11.0/go.mod h1:o3pBTvwhvzDQhi1Uu+MuTk8TRWosWrGmxeySTGsYKYA=
+github.com/SevereCloud/vksdk/v2 v2.12.0 h1:tzqjETCcsuGTGWbqhsNKwjeHPT7y1CFoI9xbyjD6rAA=
+github.com/SevereCloud/vksdk/v2 v2.12.0/go.mod h1:51Be3iRJfHbJmk/s4Axu7EE9w8bCs5P9B9tF1BJ9zcE=
 github.com/Shopify/goreferrer v0.0.0-20181106222321-ec9c9a553398/go.mod h1:a1uqRtAwp2Xwc6WNPJEufxJ7fx3npB4UV/JOLmbu5I0=
 github.com/Shopify/logrus-bugsnag v0.0.0-20171204204709-577dee27f20d/go.mod h1:HI8ITrYtUY+O+ZhtlqUnD8+KwNPOyugEhfP9fdUIaEQ=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=

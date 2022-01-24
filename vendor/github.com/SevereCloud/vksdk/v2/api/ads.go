@@ -349,7 +349,7 @@ func (vk *VK) AdsGetAdsLayout(params Params) (response AdsGetAdsLayoutResponse, 
 
 // AdsGetMusiciansResponse struct.
 type AdsGetMusiciansResponse struct {
-	Items []object.BaseObjectWithName
+	Items []object.AdsMusician
 }
 
 // AdsGetMusicians returns a list of musicians.
