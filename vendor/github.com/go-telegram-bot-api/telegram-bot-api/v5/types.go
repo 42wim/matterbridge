@@ -1687,7 +1687,7 @@ type ChatJoinRequest struct {
 	// Chat to which the request was sent.
 	Chat Chat `json:"chat"`
 	// User that sent the join request.
-	From User `json:"user"`
+	From User `json:"from"`
 	// Date the request was sent in Unix time.
 	Date int `json:"date"`
 	// Bio of the user.
