@@ -3,7 +3,7 @@
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/SevereCloud/vksdk/v2/api)](https://pkg.go.dev/github.com/SevereCloud/vksdk/v2/api)
 [![VK](https://img.shields.io/badge/developers-%234a76a8.svg?logo=VK&logoColor=white)](https://vk.com/dev/first_guide)
 
-Данная библиотека поддерживает версию API **5.122**.
+Данная библиотека поддерживает версию API **5.131**.
 
 ## Запросы
 
@@ -79,6 +79,54 @@ if errors.As(err, &e) {
 ```
 
 Для Execute существует отдельная ошибка `ExecuteErrors`
+
+### Поддержка MessagePack и zstd
+
+> Результат перехода с gzip (JSON) на zstd (msgpack):
+>
+> - в 7 раз быстрее сжатие (–1 мкс);
+> - на 10% меньше размер данных (8 Кбайт вместо 9 Кбайт);
+> - продуктовый эффект не статзначимый :(
+>
+> [Как мы отказались от JPEG, JSON, TCP и ускорили ВКонтакте в два раза](https://habr.com/ru/company/vk/blog/594633/)
+
+VK API способно возвращать ответ в виде [MessagePack](https://msgpack.org/).
+Это эффективный формат двоичной сериализации, похожий на JSON, только быстрее
+и меньше по размеру.
+
+ВНИМАНИЕ, C MessagePack НЕКОТОРЫЕ МЕТОДЫ МОГУТ ВОЗВРАЩАТЬ
+СЛОМАННУЮ КОДИРОВКУ.
+
+Для сжатия, вместо классического gzip, можно использовать
+[zstd](https://github.com/facebook/zstd). Сейчас vksdk поддерживает zstd без
+словаря. Если кто знает как получать словарь,
+[отпишитесь сюда](https://github.com/SevereCloud/vksdk/issues/180).
+
+```go
+vk := api.NewVK(os.Getenv("USER_TOKEN"))
+
+method := "store.getStickersKeywords"
+params := api.Params{
+	"aliases":       true,
+	"all_products":  true,
+	"need_stickers": true,
+}
+
+r, err := vk.Request(method, params) // Content-Length: 44758
+if err != nil {
+	log.Fatal(err)
+}
+log.Println("json:", len(r)) // json: 814231
+
+vk.EnableMessagePack() // Включаем поддержку MessagePack
+vk.EnableZstd() // Включаем поддержку zstd
+
+r, err = vk.Request(method, params) // Content-Length: 35755
+if err != nil {
+	log.Fatal(err)
+}
+log.Println("msgpack:", len(r)) // msgpack: 650775
+```
 
 ### Запрос любого метода
 

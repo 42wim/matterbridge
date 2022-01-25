@@ -7,9 +7,11 @@ package api // import "github.com/SevereCloud/vksdk/v2/api"
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"mime"
 	"net/http"
 	"net/url"
@@ -21,6 +23,8 @@ import (
 	"github.com/SevereCloud/vksdk/v2"
 	"github.com/SevereCloud/vksdk/v2/internal"
 	"github.com/SevereCloud/vksdk/v2/object"
+	"github.com/klauspost/compress/zstd"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 // Api constants.
@@ -91,6 +95,9 @@ type VK struct {
 	UserAgent    string
 	Handler      func(method string, params ...Params) (Response, error)
 
+	msgpack bool
+	zstd    bool
+
 	mux      sync.Mutex
 	lastTime time.Time
 	rps      int
@@ -98,9 +105,9 @@ type VK struct {
 
 // Response struct.
 type Response struct {
-	Response      json.RawMessage `json:"response"`
-	Error         Error           `json:"error"`
-	ExecuteErrors ExecuteErrors   `json:"execute_errors"`
+	Response      object.RawMessage `json:"response"`
+	Error         Error             `json:"error"`
+	ExecuteErrors ExecuteErrors     `json:"execute_errors"`
 }
 
 // NewVK returns a new VK.
@@ -121,7 +128,7 @@ func NewVK(tokens ...string) *VK {
 	vk.accessTokens = tokens
 	vk.Version = Version
 
-	vk.Handler = vk.defaultHandler
+	vk.Handler = vk.DefaultHandler
 
 	vk.MethodURL = MethodURL
 	vk.Client = http.DefaultClient
@@ -207,8 +214,8 @@ func buildQuery(sliceParams ...Params) (context.Context, url.Values) {
 	return ctx, query
 }
 
-// defaultHandler provides access to VK API methods.
-func (vk *VK) defaultHandler(method string, sliceParams ...Params) (Response, error) {
+// DefaultHandler provides access to VK API methods.
+func (vk *VK) DefaultHandler(method string, sliceParams ...Params) (Response, error) {
 	u := vk.MethodURL + method
 	ctx, query := buildQuery(sliceParams...)
 	attempt := 0
@@ -243,24 +250,52 @@ func (vk *VK) defaultHandler(method string, sliceParams ...Params) (Response, er
 			return response, err
 		}
 
+		acceptEncoding := "gzip"
+		if vk.zstd {
+			acceptEncoding = "zstd"
+		}
+
 		req.Header.Set("User-Agent", vk.UserAgent)
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+		req.Header.Set("Accept-Encoding", acceptEncoding)
+
+		var reader io.Reader
 
 		resp, err := vk.Client.Do(req)
 		if err != nil {
 			return response, err
 		}
 
-		mediatype, _, _ := mime.ParseMediaType(resp.Header.Get("Content-Type"))
-		if mediatype != "application/json" {
-			_ = resp.Body.Close()
-			return response, &InvalidContentType{mediatype}
+		switch resp.Header.Get("Content-Encoding") {
+		case "zstd":
+			reader, _ = zstd.NewReader(resp.Body)
+		case "gzip":
+			reader, _ = gzip.NewReader(resp.Body)
+		default:
+			reader = resp.Body
 		}
 
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
+		mediatype, _, _ := mime.ParseMediaType(resp.Header.Get("Content-Type"))
+		switch mediatype {
+		case "application/json":
+			err = json.NewDecoder(reader).Decode(&response)
+			if err != nil {
+				_ = resp.Body.Close()
+				return response, err
+			}
+		case "application/x-msgpack":
+			dec := msgpack.NewDecoder(reader)
+			dec.SetCustomStructTag("json")
+
+			err = dec.Decode(&response)
+			if err != nil {
+				_ = resp.Body.Close()
+				return response, err
+			}
+		default:
 			_ = resp.Body.Close()
-			return response, err
+			return response, &InvalidContentType{mediatype}
 		}
 
 		_ = resp.Body.Close()
@@ -291,6 +326,10 @@ func (vk *VK) Request(method string, sliceParams ...Params) ([]byte, error) {
 
 	sliceParams = append(sliceParams, reqParams)
 
+	if vk.msgpack {
+		method += ".msgpack"
+	}
+
 	resp, err := vk.Handler(method, sliceParams...)
 
 	return resp.Response, err
@@ -303,7 +342,32 @@ func (vk *VK) RequestUnmarshal(method string, obj interface{}, sliceParams ...Pa
 		return err
 	}
 
-	return json.Unmarshal(rawResponse, &obj)
+	if vk.msgpack {
+		dec := msgpack.NewDecoder(bytes.NewReader(rawResponse))
+		dec.SetCustomStructTag("json")
+
+		err = dec.Decode(&obj)
+	} else {
+		err = json.Unmarshal(rawResponse, &obj)
+	}
+
+	return err
+}
+
+// EnableMessagePack enable using MessagePack instead of JSON.
+//
+// THIS IS EXPERIMENTAL FUNCTION! Broken encoding returned in some methods.
+//
+// See https://msgpack.org
+func (vk *VK) EnableMessagePack() {
+	vk.msgpack = true
+}
+
+// EnableZstd enable using zstd instead of gzip.
+//
+// This not use dict.
+func (vk *VK) EnableZstd() {
+	vk.zstd = true
 }
 
 func fmtReflectValue(value reflect.Value, depth int) string {

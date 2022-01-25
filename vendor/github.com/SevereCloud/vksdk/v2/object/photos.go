@@ -239,6 +239,7 @@ type PhotosPhotoFull struct {
 	Photo1280  string             `json:"photo_1280"` // URL of image with 1280 px width
 	Photo2560  string             `json:"photo_2560"` // URL of image with 2560 px width
 	Sizes      []PhotosPhotoSizes `json:"sizes"`
+	OrigPhoto  PhotosPhotoSizes   `json:"orig_photo"`
 }
 
 // ToAttachment return attachment format.

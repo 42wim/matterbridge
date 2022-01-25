@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+
+	"github.com/vmihailenco/msgpack/v5"
+	"github.com/vmihailenco/msgpack/v5/msgpcode"
 )
 
 // User relationship status.
@@ -249,6 +252,36 @@ func (personal *UsersPersonal) UnmarshalJSON(data []byte) error {
 	var r renamedUsersPersonal
 
 	err := json.Unmarshal(data, &r)
+	if err != nil {
+		return err
+	}
+
+	*personal = UsersPersonal(r)
+
+	return nil
+}
+
+// DecodeMsgpack UsersPersonal.
+//
+// BUG(VK): UsersPersonal return [].
+func (personal *UsersPersonal) DecodeMsgpack(dec *msgpack.Decoder) error {
+	data, err := dec.DecodeRaw()
+	if err != nil {
+		return err
+	}
+
+	if bytes.Equal(data, []byte{msgpcode.FixedArrayLow}) {
+		return nil
+	}
+
+	type renamedUsersPersonal UsersPersonal
+
+	var r renamedUsersPersonal
+
+	d := msgpack.NewDecoder(bytes.NewReader(data))
+	d.SetCustomStructTag("json")
+
+	err = d.Decode(&r)
 	if err != nil {
 		return err
 	}

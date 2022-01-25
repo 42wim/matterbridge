@@ -1,5 +1,13 @@
 package object // import "github.com/SevereCloud/vksdk/v2/object"
 
+import (
+	"bytes"
+	"encoding/json"
+
+	"github.com/vmihailenco/msgpack/v5"
+	"github.com/vmihailenco/msgpack/v5/msgpcode"
+)
+
 // UtilsDomainResolvedType object type.
 const (
 	UtilsDomainResolvedTypeUser        = "user"
@@ -13,6 +21,58 @@ const (
 type UtilsDomainResolved struct {
 	ObjectID int    `json:"object_id"` // Object ID
 	Type     string `json:"type"`
+}
+
+// UnmarshalJSON UtilsDomainResolved.
+//
+// BUG(VK): UtilsDomainResolved return [].
+func (link *UtilsDomainResolved) UnmarshalJSON(data []byte) error {
+	if bytes.Equal(data, []byte("[]")) {
+		return nil
+	}
+
+	type renamedUtilsDomainResolved UtilsDomainResolved
+
+	var r renamedUtilsDomainResolved
+
+	err := json.Unmarshal(data, &r)
+	if err != nil {
+		return err
+	}
+
+	*link = UtilsDomainResolved(r)
+
+	return nil
+}
+
+// DecodeMsgpack UtilsDomainResolved.
+//
+// BUG(VK): UtilsDomainResolved return [].
+func (link *UtilsDomainResolved) DecodeMsgpack(dec *msgpack.Decoder) error {
+	data, err := dec.DecodeRaw()
+	if err != nil {
+		return err
+	}
+
+	if bytes.Equal(data, []byte{msgpcode.FixedArrayLow}) {
+		return nil
+	}
+
+	type renamedUtilsDomainResolved UtilsDomainResolved
+
+	var r renamedUtilsDomainResolved
+
+	d := msgpack.NewDecoder(bytes.NewReader(data))
+	d.SetCustomStructTag("json")
+
+	err = d.Decode(&r)
+	if err != nil {
+		return err
+	}
+
+	*link = UtilsDomainResolved(r)
+
+	return nil
 }
 
 // UtilsLastShortenedLink struct.

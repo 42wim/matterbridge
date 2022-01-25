@@ -79,6 +79,7 @@ type MessagesMessage struct {
 	UpdateTime   int    `json:"update_time"`   // Date when the message has been updated in Unixtime
 	MembersCount int    `json:"members_count"` // Members number
 	ExpireTTL    int    `json:"expire_ttl"`
+	MessageTag   string `json:"message_tag"` // for https://notify.mail.ru/
 }
 
 // MessagesBasePayload struct.
@@ -378,7 +379,8 @@ type MessagesTemplateElementCarousel struct {
 	Title       string                                `json:"title,omitempty"`
 	Action      MessagesTemplateElementCarouselAction `json:"action,omitempty"`
 	Description string                                `json:"description,omitempty"`
-	Photo       *PhotosPhoto                          `json:"photo,omitempty"`
+	Photo       *PhotosPhoto                          `json:"photo,omitempty"`    // Only read
+	PhotoID     string                                `json:"photo_id,omitempty"` // Only for send
 	Buttons     []MessagesKeyboardButton              `json:"buttons,omitempty"`
 }
 
@@ -474,20 +476,24 @@ type MessagesChatPushSettings struct {
 
 // MessagesChatSettingsPhoto struct.
 type MessagesChatSettingsPhoto struct {
-	Photo100       string      `json:"photo_100"`
-	Photo200       string      `json:"photo_200"`
-	Photo50        string      `json:"photo_50"`
-	IsDefaultPhoto BaseBoolInt `json:"is_default_photo"`
+	Photo100           string      `json:"photo_100"`
+	Photo200           string      `json:"photo_200"`
+	Photo50            string      `json:"photo_50"`
+	IsDefaultPhoto     BaseBoolInt `json:"is_default_photo"`
+	IsDefaultCallPhoto bool        `json:"is_default_call_photo"`
 }
 
 // MessagesConversation struct.
 type MessagesConversation struct {
-	CanWrite       MessagesConversationCanWrite     `json:"can_write"`
-	ChatSettings   MessagesConversationChatSettings `json:"chat_settings"`
-	InRead         int                              `json:"in_read"`         // Last message user have read
-	LastMessageID  int                              `json:"last_message_id"` // ID of the last message in conversation
-	Mentions       []int                            `json:"mentions"`        // IDs of messages with mentions
-	MessageRequest string                           `json:"message_request"`
+	CanWrite                  MessagesConversationCanWrite     `json:"can_write"`
+	ChatSettings              MessagesConversationChatSettings `json:"chat_settings"`
+	InRead                    int                              `json:"in_read"`         // Last message user have read
+	LastMessageID             int                              `json:"last_message_id"` // ID of the last message in conversation
+	Mentions                  []int                            `json:"mentions"`        // IDs of messages with mentions
+	MessageRequest            string                           `json:"message_request"`
+	LastConversationMessageID int                              `json:"last_conversation_message_id"`
+	InReadCMID                int                              `json:"in_read_cmid"`
+	OutReadCMID               int                              `json:"out_read_cmid"`
 
 	// Last outcoming message have been read by the opponent.
 	OutRead         int                              `json:"out_read"`
@@ -496,6 +502,10 @@ type MessagesConversation struct {
 	Important       BaseBoolInt                      `json:"important"`
 	Unanswered      BaseBoolInt                      `json:"unanswered"`
 	IsMarkedUnread  BaseBoolInt                      `json:"is_marked_unread"`
+	CanSendMoney    BaseBoolInt                      `json:"can_send_money"`
+	CanReceiveMoney BaseBoolInt                      `json:"can_receive_money"`
+	IsNew           BaseBoolInt                      `json:"is_new"`
+	IsArchived      BaseBoolInt                      `json:"is_archived"`
 	UnreadCount     int                              `json:"unread_count"` // Unread messages number
 	CurrentKeyboard MessagesKeyboard                 `json:"current_keyboard"`
 	SortID          struct {
@@ -531,6 +541,7 @@ type MessagesConversationChatSettings struct {
 		CanCall              BaseBoolInt `json:"can_call"`
 		CanUseMassMentions   BaseBoolInt `json:"can_use_mass_mentions"`
 		CanChangeServiceType BaseBoolInt `json:"can_change_service_type"`
+		CanChangeStyle       BaseBoolInt `json:"can_change_style"`
 	} `json:"acl"`
 	IsGroupChannel   BaseBoolInt             `json:"is_group_channel"`
 	IsDisappearing   BaseBoolInt             `json:"is_disappearing"`
@@ -560,6 +571,7 @@ type MessagesChatPermissions struct {
 	SeeInviteLink   MessagesChatPermission `json:"see_invite_link"`
 	Call            MessagesChatPermission `json:"call"`
 	ChangeAdmins    MessagesChatPermission `json:"change_admins"`
+	ChangeStyle     MessagesChatPermission `json:"change_style"`
 }
 
 // MessagesConversationPeer struct.
@@ -571,9 +583,11 @@ type MessagesConversationPeer struct {
 
 // MessagesConversationPushSettings struct.
 type MessagesConversationPushSettings struct {
-	DisabledUntil   int         `json:"disabled_until"`
-	DisabledForever BaseBoolInt `json:"disabled_forever"`
-	NoSound         BaseBoolInt `json:"no_sound"`
+	DisabledUntil        int         `json:"disabled_until"`
+	DisabledForever      BaseBoolInt `json:"disabled_forever"`
+	NoSound              BaseBoolInt `json:"no_sound"`
+	DisabledMentions     BaseBoolInt `json:"disabled_mentions"`
+	DisabledMassMentions BaseBoolInt `json:"disabled_mass_mentions"`
 }
 
 // MessagesConversationWithMessage struct.

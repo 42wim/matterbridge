@@ -4,9 +4,9 @@ package object // import "github.com/SevereCloud/vksdk/v2/object"
 type DatabaseCity struct {
 	ID        int         `json:"id"`    // City ID
 	Title     string      `json:"title"` // City title
-	Area      string      `json:"area"`
-	Region    string      `json:"region"`
-	Important BaseBoolInt `json:"important"`
+	Area      string      `json:"area,omitempty"`
+	Region    string      `json:"region,omitempty"`
+	Important BaseBoolInt `json:"important,omitempty"`
 }
 
 // DatabaseMetroStation  struct.

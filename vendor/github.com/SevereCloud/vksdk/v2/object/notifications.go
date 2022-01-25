@@ -1,7 +1,5 @@
 package object // import "github.com/SevereCloud/vksdk/v2/object"
 
-import "encoding/json"
-
 // NotificationsFeedback struct.
 type NotificationsFeedback struct {
 	Attachments []WallWallpostAttachment `json:"attachments"`
@@ -16,8 +14,8 @@ type NotificationsFeedback struct {
 // NotificationsNotification struct.
 type NotificationsNotification struct {
 	Date     int                `json:"date"` // Date when the event has been occurred
-	Feedback json.RawMessage    `json:"feedback"`
-	Parent   json.RawMessage    `json:"parent"`
+	Feedback RawMessage         `json:"feedback"`
+	Parent   RawMessage         `json:"parent"`
 	Reply    NotificationsReply `json:"reply"`
 	Type     string             `json:"type"` // Notification type
 }

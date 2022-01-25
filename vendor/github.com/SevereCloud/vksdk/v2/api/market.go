@@ -20,6 +20,7 @@ func (vk *VK) MarketAdd(params Params) (response MarketAddResponse, err error) {
 // MarketAddAlbumResponse struct.
 type MarketAddAlbumResponse struct {
 	MarketAlbumID int `json:"market_album_id"` // Album ID
+	AlbumsCount   int `json:"albums_count"`
 }
 
 // MarketAddAlbum creates new collection of items.

@@ -1,9 +1,11 @@
 package api // import "github.com/SevereCloud/vksdk/v2/api"
 
 import (
+	"bytes"
 	"encoding/json"
 
 	"github.com/SevereCloud/vksdk/v2/object"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 // AdsAddOfficeUsersItem struct.
@@ -19,6 +21,23 @@ func (r *AdsAddOfficeUsersItem) UnmarshalJSON(data []byte) (err error) {
 	}
 
 	return
+}
+
+// DecodeMsgpack func.
+func (r *AdsAddOfficeUsersItem) DecodeMsgpack(dec *msgpack.Decoder) error {
+	data, err := dec.DecodeRaw()
+	if err != nil {
+		return err
+	}
+
+	if msgpack.Unmarshal(data, &r.OK) != nil {
+		d := msgpack.NewDecoder(bytes.NewReader(data))
+		d.SetCustomStructTag("json")
+
+		return d.Decode(&r.Error)
+	}
+
+	return nil
 }
 
 // AdsAddOfficeUsersResponse struct.
@@ -349,7 +368,7 @@ func (vk *VK) AdsGetAdsLayout(params Params) (response AdsGetAdsLayoutResponse, 
 
 // AdsGetMusiciansResponse struct.
 type AdsGetMusiciansResponse struct {
-	Items []object.BaseObjectWithName
+	Items []object.AdsMusician
 }
 
 // AdsGetMusicians returns a list of musicians.
