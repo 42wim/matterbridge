@@ -291,6 +291,7 @@ func (b *channels) populateChannels(wait bool) {
 	queryParams := &slack.GetConversationsParameters{
 		ExcludeArchived: true,
 		Types:           []string{"public_channel,private_channel"},
+		Limit:           1000,
 	}
 	for {
 		channels, nextCursor, err := b.sc.GetConversations(queryParams)
