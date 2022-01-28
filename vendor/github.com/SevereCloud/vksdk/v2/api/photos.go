@@ -571,12 +571,13 @@ func (vk *VK) PhotosSaveOwnerCoverPhoto(params Params) (response PhotosSaveOwner
 
 // PhotosSaveOwnerPhotoResponse struct.
 type PhotosSaveOwnerPhotoResponse struct {
-	PhotoHash     string `json:"photo_hash"`
-	PhotoSrc      string `json:"photo_src"`
-	PhotoSrcBig   string `json:"photo_src_big"`
-	PhotoSrcSmall string `json:"photo_src_small"`
-	Saved         int    `json:"saved"`
-	PostID        int    `json:"post_id"`
+	PhotoHash string `json:"photo_hash"`
+	// BUG(VK): returns false
+	// PhotoSrc      string `json:"photo_src"`
+	// PhotoSrcBig   string `json:"photo_src_big"`
+	// PhotoSrcSmall string `json:"photo_src_small"`
+	Saved  int `json:"saved"`
+	PostID int `json:"post_id"`
 }
 
 // PhotosSaveOwnerPhoto saves a profile or community photo.

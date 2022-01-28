@@ -1,9 +1,13 @@
 package object // import "github.com/SevereCloud/vksdk/v2/object"
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"reflect"
+
+	"github.com/vmihailenco/msgpack/v5"
+	"github.com/vmihailenco/msgpack/v5/msgpcode"
 )
 
 // GroupsAddress WorkInfoStatus of information about timetable.
@@ -110,117 +114,130 @@ const (
 
 // GroupsGroup struct.
 type GroupsGroup struct {
-	AdminLevel   int              `json:"admin_level"`
-	Deactivated  string           `json:"deactivated"` // Information whether community is banned
-	FinishDate   int              `json:"finish_date"` // Finish date in Unixtime format
 	ID           int              `json:"id"`          // Community ID
 	Name         string           `json:"name"`        // Community name
-	Photo100     string           `json:"photo_100"`   // URL of square photo of the community with 100 pixels in width
-	Photo200     string           `json:"photo_200"`   // URL of square photo of the community with 200 pixels in width
-	Photo50      string           `json:"photo_50"`    // URL of square photo of the community with 50 pixels in width
 	ScreenName   string           `json:"screen_name"` // Domain of the community page
-	StartDate    int              `json:"start_date"`  // Start date in Unixtime format
 	Type         string           `json:"type"`
-	Market       GroupsMarketInfo `json:"market"`
-	MemberStatus int              `json:"member_status"` // Current user's member status
 	IsClosed     int              `json:"is_closed"`
-	City         BaseObject       `json:"city"`
-	Country      BaseCountry      `json:"country"`
+	AdminLevel   int              `json:"admin_level,omitempty"`
+	Deactivated  string           `json:"deactivated,omitempty"` // Information whether community is banned
+	FinishDate   int              `json:"finish_date,omitempty"` // Finish date in Unixtime format
+	Photo100     string           `json:"photo_100,omitempty"`   // URL of square photo of the community with 100 pixels in width
+	Photo200     string           `json:"photo_200,omitempty"`   // URL of square photo of the community with 200 pixels in width
+	Photo50      string           `json:"photo_50,omitempty"`    // URL of square photo of the community with 50 pixels in width
+	StartDate    int              `json:"start_date,omitempty"`  // Start date in Unixtime format
+	Market       GroupsMarketInfo `json:"market,omitempty"`
+	MemberStatus int              `json:"member_status,omitempty"` // Current user's member status
+	City         BaseObject       `json:"city,omitempty"`
+	Country      BaseCountry      `json:"country,omitempty"`
 
 	// Information whether current user is administrator.
 	IsAdmin BaseBoolInt `json:"is_admin"`
 
 	// Information whether current user is advertiser.
-	IsAdvertiser BaseBoolInt `json:"is_advertiser"`
+	IsAdvertiser BaseBoolInt `json:"is_advertiser,omitempty"`
 
 	// Information whether current user is member.
-	IsMember BaseBoolInt `json:"is_member"`
+	IsMember BaseBoolInt `json:"is_member,omitempty"`
 
 	// Information whether community is in faves.
-	IsFavorite BaseBoolInt `json:"is_favorite"`
+	IsFavorite BaseBoolInt `json:"is_favorite,omitempty"`
 
 	// Information whether community is adult.
-	IsAdult BaseBoolInt `json:"is_adult"`
+	IsAdult BaseBoolInt `json:"is_adult,omitempty"`
 
 	// Information whether current user is subscribed.
-	IsSubscribed BaseBoolInt `json:"is_subscribed"`
+	IsSubscribed BaseBoolInt `json:"is_subscribed,omitempty"`
 
 	// Information whether current user can post on community's wall.
-	CanPost BaseBoolInt `json:"can_post"`
+	CanPost BaseBoolInt `json:"can_post,omitempty"`
 
 	// Information whether current user can see all posts on community's wall.
-	CanSeeAllPosts BaseBoolInt `json:"can_see_all_posts"`
+	CanSeeAllPosts BaseBoolInt `json:"can_see_all_posts,omitempty"`
 
 	// Information whether current user can create topic.
-	CanCreateTopic BaseBoolInt `json:"can_create_topic"`
+	CanCreateTopic BaseBoolInt `json:"can_create_topic,omitempty"`
 
 	// Information whether current user can upload video.
-	CanUploadVideo BaseBoolInt `json:"can_upload_video"`
+	CanUploadVideo BaseBoolInt `json:"can_upload_video,omitempty"`
 
 	// Information whether current user can upload doc.
-	CanUploadDoc BaseBoolInt `json:"can_upload_doc"`
+	CanUploadDoc BaseBoolInt `json:"can_upload_doc,omitempty"`
 
 	// Information whether community has photo.
-	HasPhoto BaseBoolInt `json:"has_photo"`
+	HasPhoto BaseBoolInt `json:"has_photo,omitempty"`
 
 	// Information whether current user can send a message to community.
-	CanMessage BaseBoolInt `json:"can_message"`
+	CanMessage BaseBoolInt `json:"can_message,omitempty"`
 
 	// Information whether community can send a message to current user.
-	IsMessagesBlocked BaseBoolInt `json:"is_messages_blocked"`
+	IsMessagesBlocked BaseBoolInt `json:"is_messages_blocked,omitempty"`
 
 	// Information whether community can send notifications by phone number to current user.
-	CanSendNotify BaseBoolInt `json:"can_send_notify"`
+	CanSendNotify BaseBoolInt `json:"can_send_notify,omitempty"`
 
 	// Information whether current user is subscribed to podcasts.
-	IsSubscribedPodcasts BaseBoolInt `json:"is_subscribed_podcasts"`
+	IsSubscribedPodcasts BaseBoolInt `json:"is_subscribed_podcasts,omitempty"`
 
 	// Owner in whitelist or not.
-	CanSubscribePodcasts BaseBoolInt `json:"can_subscribe_podcasts"`
+	CanSubscribePodcasts BaseBoolInt `json:"can_subscribe_podcasts,omitempty"`
 
 	// Can subscribe to wall.
-	CanSubscribePosts BaseBoolInt `json:"can_subscribe_posts"`
+	CanSubscribePosts BaseBoolInt `json:"can_subscribe_posts,omitempty"`
 
 	// Information whether community has market app.
-	HasMarketApp        BaseBoolInt `json:"has_market_app"`
-	IsHiddenFromFeed    BaseBoolInt `json:"is_hidden_from_feed"`
-	IsMarketCartEnabled BaseBoolInt `json:"is_market_cart_enabled"`
-	Verified            BaseBoolInt `json:"verified"` // Information whether community is verified
+	HasMarketApp        BaseBoolInt `json:"has_market_app,omitempty"`
+	IsHiddenFromFeed    BaseBoolInt `json:"is_hidden_from_feed,omitempty"`
+	IsMarketCartEnabled BaseBoolInt `json:"is_market_cart_enabled,omitempty"`
+	Verified            BaseBoolInt `json:"verified,omitempty"` // Information whether community is verified
 
 	// Information whether the community has a fire pictogram.
-	Trending     BaseBoolInt         `json:"trending"`
-	Description  string              `json:"description"`   // Community description
-	WikiPage     string              `json:"wiki_page"`     // Community's main wiki page title
-	MembersCount int                 `json:"members_count"` // Community members number
-	Counters     GroupsCountersGroup `json:"counters"`
-	Cover        GroupsCover         `json:"cover"`
+	Trending     BaseBoolInt         `json:"trending,omitempty"`
+	Description  string              `json:"description,omitempty"`   // Community description
+	WikiPage     string              `json:"wiki_page,omitempty"`     // Community's main wiki page title
+	MembersCount int                 `json:"members_count,omitempty"` // Community members number
+	Counters     GroupsCountersGroup `json:"counters,omitempty"`
+	Cover        GroupsCover         `json:"cover,omitempty"`
 
 	// Type of group, start date of event or category of public page.
-	Activity        string               `json:"activity"`
-	FixedPost       int                  `json:"fixed_post"`    // Fixed post ID
-	Status          string               `json:"status"`        // Community status
-	MainAlbumID     int                  `json:"main_album_id"` // Community's main photo album ID
-	Links           []GroupsLinksItem    `json:"links"`
-	Contacts        []GroupsContactsItem `json:"contacts"`
-	Site            string               `json:"site"` // Community's website
-	MainSection     int                  `json:"main_section"`
-	OnlineStatus    GroupsOnlineStatus   `json:"online_status"` // Status of replies in community messages
-	AgeLimits       int                  `json:"age_limits"`    // Information whether age limit
-	BanInfo         GroupsGroupBanInfo   `json:"ban_info"`      // User ban info
-	Addresses       GroupsAddressesInfo  `json:"addresses"`     // Info about addresses in Groups
-	LiveCovers      GroupsLiveCovers     `json:"live_covers"`
-	CropPhoto       UsersCropPhoto       `json:"crop_photo"`
-	Wall            int                  `json:"wall"`
-	ActionButton    GroupsActionButton   `json:"action_button"`
-	TrackCode       string               `json:"track_code"`
-	PublicDateLabel string               `json:"public_date_label"`
-	AuthorID        int                  `json:"author_id"`
-	Phone           string               `json:"phone"`
+	Activity        string               `json:"activity,omitempty"`
+	FixedPost       int                  `json:"fixed_post,omitempty"`    // Fixed post ID
+	Status          string               `json:"status,omitempty"`        // Community status
+	MainAlbumID     int                  `json:"main_album_id,omitempty"` // Community's main photo album ID
+	Links           []GroupsLinksItem    `json:"links,omitempty"`
+	Contacts        []GroupsContactsItem `json:"contacts,omitempty"`
+	Site            string               `json:"site,omitempty"` // Community's website
+	MainSection     int                  `json:"main_section,omitempty"`
+	OnlineStatus    GroupsOnlineStatus   `json:"online_status,omitempty"` // Status of replies in community messages
+	AgeLimits       int                  `json:"age_limits,omitempty"`    // Information whether age limit
+	BanInfo         GroupsGroupBanInfo   `json:"ban_info,omitempty"`      // User ban info
+	Addresses       GroupsAddressesInfo  `json:"addresses,omitempty"`     // Info about addresses in Groups
+	LiveCovers      GroupsLiveCovers     `json:"live_covers,omitempty"`
+	CropPhoto       UsersCropPhoto       `json:"crop_photo,omitempty"`
+	Wall            int                  `json:"wall,omitempty"`
+	ActionButton    GroupsActionButton   `json:"action_button,omitempty"`
+	TrackCode       string               `json:"track_code,omitempty"`
+	PublicDateLabel string               `json:"public_date_label,omitempty"`
+	AuthorID        int                  `json:"author_id,omitempty"`
+	Phone           string               `json:"phone,omitempty"`
+	Like            GroupsGroupLike      `json:"like"`
 }
 
 // ToMention return mention.
 func (group GroupsGroup) ToMention() string {
 	return fmt.Sprintf("[club%d|%s]", group.ID, group.Name)
+}
+
+// GroupsGroupLike struct.
+type GroupsGroupLike struct {
+	IsLiked BaseBoolInt            `json:"is_liked"`
+	Friends GroupsGroupLikeFriends `json:"friends"`
+}
+
+// GroupsGroupLikeFriends struct.
+type GroupsGroupLikeFriends struct {
+	Count   int   `json:"count"`
+	Preview []int `json:"preview"`
 }
 
 // GroupsLiveCovers struct.
@@ -275,16 +292,70 @@ type GroupsContactsItem struct {
 
 // GroupsCountersGroup struct.
 type GroupsCountersGroup struct {
-	Addresses  int `json:"addresses"`  // Addresses number
-	Albums     int `json:"albums"`     // Photo albums number
-	Articles   int `json:"articles"`   // Articles number
-	Audios     int `json:"audios"`     // Audios number
-	Docs       int `json:"docs"`       // Docs number
-	Market     int `json:"market"`     // Market items number
-	Photos     int `json:"photos"`     // Photos number
-	Topics     int `json:"topics"`     // Topics number
-	Videos     int `json:"videos"`     // Videos number
-	Narratives int `json:"narratives"` // Narratives number
+	Addresses      int `json:"addresses"`       // Addresses number
+	Albums         int `json:"albums"`          // Photo albums number
+	Articles       int `json:"articles"`        // Articles number
+	Audios         int `json:"audios"`          // Audios number
+	Docs           int `json:"docs"`            // Docs number
+	Market         int `json:"market"`          // Market items number
+	Photos         int `json:"photos"`          // Photos number
+	Topics         int `json:"topics"`          // Topics number
+	Videos         int `json:"videos"`          // Videos number
+	Narratives     int `json:"narratives"`      // Narratives number
+	Clips          int `json:"clips"`           // Clips number
+	ClipsFollowers int `json:"clips_followers"` // Clips followers number
+}
+
+// UnmarshalJSON GroupsCountersGroup.
+//
+// BUG(VK): GroupsCountersGroup return [].
+func (personal *GroupsCountersGroup) UnmarshalJSON(data []byte) error {
+	if bytes.Equal(data, []byte("[]")) {
+		return nil
+	}
+
+	type renamedGroupsCountersGroup GroupsCountersGroup
+
+	var r renamedGroupsCountersGroup
+
+	err := json.Unmarshal(data, &r)
+	if err != nil {
+		return err
+	}
+
+	*personal = GroupsCountersGroup(r)
+
+	return nil
+}
+
+// DecodeMsgpack GroupsCountersGroup.
+//
+// BUG(VK): GroupsCountersGroup return [].
+func (personal *GroupsCountersGroup) DecodeMsgpack(dec *msgpack.Decoder) error {
+	data, err := dec.DecodeRaw()
+	if err != nil {
+		return err
+	}
+
+	if bytes.Equal(data, []byte{msgpcode.FixedArrayLow}) {
+		return nil
+	}
+
+	type renamedGroupsCountersGroup GroupsCountersGroup
+
+	var r renamedGroupsCountersGroup
+
+	d := msgpack.NewDecoder(bytes.NewReader(data))
+	d.SetCustomStructTag("json")
+
+	err = d.Decode(&r)
+	if err != nil {
+		return err
+	}
+
+	*personal = GroupsCountersGroup(r)
+
+	return nil
 }
 
 // GroupsCover struct.
@@ -479,6 +550,70 @@ type GroupsGroupSettings struct {
 	SecondarySection int                  `json:"secondary_section"`
 	ActionButton     GroupsActionButton   `json:"action_button"`
 	Phone            string               `json:"phone"`
+
+	RecognizePhoto int `json:"recognize_photo"`
+
+	MarketServices GroupsMarketServices `json:"market_services"`
+	Narratives     int                  `json:"narratives"`
+	Clips          int                  `json:"clips"`
+	Textlives      int                  `json:"textlives"`
+	Youla          GroupsYoula          `json:"youla"`
+}
+
+// GroupsMarketServices struct.
+type GroupsMarketServices struct {
+	Enabled         BaseBoolInt         `json:"enabled"`
+	CanMessage      BaseBoolInt         `json:"can_message"`
+	CommentsEnabled BaseBoolInt         `json:"comments_enabled"`
+	ContactID       int                 `json:"contact_id"`
+	Currency        MarketCurrency      `json:"currency"`
+	ViewType        GroupsSelectedItems `json:"view_type"`
+	BlockName       GroupsSelectedItems `json:"block_name"`
+	ButtonLabel     GroupsSelectedItems `json:"button_label"`
+}
+
+// GroupsSelectedItems struct.
+type GroupsSelectedItems struct {
+	SelectedItemID int64                `json:"selected_item_id"`
+	Items          []BaseObjectWithName `json:"items"`
+}
+
+// GroupsYoula struct.
+type GroupsYoula struct {
+	CategoryTree  GroupsYoulaCategory `json:"category_tree"`
+	GroupSettings GroupsYoulaSettings `json:"group_settings"`
+}
+
+// GroupsYoulaCategory struct.
+type GroupsYoulaCategory struct {
+	ID            int                      `json:"id"`
+	Title         string                   `json:"title"`
+	Subcategories []GroupsYoulaSubcategory `json:"subcategories"`
+}
+
+// GroupsYoulaSubcategory struct.
+type GroupsYoulaSubcategory struct {
+	ID            int                      `json:"id"`
+	Title         string                   `json:"title"`
+	ParentID      int                      `json:"parent_id"`
+	Subcategories []GroupsYoulaSubcategory `json:"subcategories"`
+}
+
+// GroupsYoulaSettings struct.
+type GroupsYoulaSettings struct {
+	IsActive              BaseBoolInt `json:"is_active"`
+	IsModerated           BaseBoolInt `json:"is_moderated"`
+	ShowModerationSetting BaseBoolInt `json:"show_moderation_setting"`
+	ModerationStatus      int         `json:"moderation_status"`
+	DeclineReason         string      `json:"decline_reason"`
+	GroupMode             int         `json:"group_mode"`
+	SelectedCategoryIDS   []int       `json:"selected_category_ids"`
+	Lat                   float64     `json:"lat"`
+	Long                  float64     `json:"long"`
+	Radius                float64     `json:"radius"`
+	RadiusArea            string      `json:"radius_area"`
+	Address               string      `json:"address"`
+	Radiuses              []float64   `json:"radiuses"`
 }
 
 // GroupsSectionsList struct.
@@ -507,6 +642,53 @@ func (g *GroupsSectionsList) UnmarshalJSON(data []byte) error {
 
 	// default concrete Go type float64 for JSON numbers
 	id, ok := alias[0].(float64)
+	if !ok {
+		return &json.UnmarshalTypeError{
+			Value:  string(data),
+			Type:   reflect.TypeOf((*GroupsSectionsList)(nil)),
+			Struct: "GroupsSectionsList",
+			Field:  "ID",
+		}
+	}
+
+	name, ok := alias[1].(string)
+	if !ok {
+		return &json.UnmarshalTypeError{
+			Value:  string(data),
+			Type:   reflect.TypeOf((*GroupsSectionsList)(nil)),
+			Struct: "GroupsSectionsList",
+			Field:  "Name",
+		}
+	}
+
+	g.ID = int(id)
+	g.Name = name
+
+	return nil
+}
+
+// DecodeMsgpack need for decode dynamic array (Example: [1, "Фотографии"]) to struct.
+func (g *GroupsSectionsList) DecodeMsgpack(dec *msgpack.Decoder) error {
+	data, err := dec.DecodeRaw()
+	if err != nil {
+		return err
+	}
+
+	var alias []interface{}
+
+	err = msgpack.Unmarshal(data, &alias)
+	if err != nil {
+		return err
+	}
+
+	if len(alias) != 2 {
+		return &json.UnmarshalTypeError{
+			Value: string(data),
+			Type:  reflect.TypeOf((*GroupsSectionsList)(nil)),
+		}
+	}
+
+	id, ok := alias[0].(int8)
 	if !ok {
 		return &json.UnmarshalTypeError{
 			Value:  string(data),
@@ -685,7 +867,10 @@ type GroupsLongPollServer struct {
 	Ts     string `json:"ts"`     // Number of the last event
 }
 
-// TODO: func (g GroupsLongPollServer) GetURL() string {
+// GetURL return link.
+func (lp GroupsLongPollServer) GetURL(wait int) string {
+	return fmt.Sprintf("%s?act=a_check&key=%s&ts=%s&wait=%d", lp.Server, lp.Key, lp.Ts, wait)
+}
 
 // GroupsLongPollSettings struct.
 type GroupsLongPollSettings struct {
@@ -714,12 +899,14 @@ type GroupsMarketInfo struct {
 	Enabled         BaseBoolInt       `json:"enabled"`                 // Information whether the market is enabled
 	CommentsEnabled BaseBoolInt       `json:"comments_enabled,omitempty"`
 	CanMessage      BaseBoolInt       `json:"can_message,omitempty"`
+	IsHsEnabled     BaseBoolInt       `json:"is_hs_enabled,omitempty"`
 	MainAlbumID     int               `json:"main_album_id,omitempty"` // Main market album ID
 	PriceMax        string            `json:"price_max,omitempty"`     // Maximum price
 	PriceMin        string            `json:"price_min,omitempty"`     // Minimum price
 	Wiki            PagesWikipageFull `json:"wiki,omitempty"`
 	CityIDs         []int             `json:"city_ids"`
 	CountryIDs      []int             `json:"country_ids,omitempty"`
+	MinOrderPrice   MarketPrice       `json:"min_order_price,omitempty"`
 }
 
 // GroupsGroupRole Role type.

@@ -53,10 +53,10 @@ linters:
     - ireturn
     - nilnil
     - tenv
+    - nestif
 
 # - wrapcheck # TODO: v3 Fix
 # - testpackage # TODO: Fix testpackage
-# - nestif # TODO: Fix nestif
 # - noctx # TODO: Fix noctx
 
 # don't enable:

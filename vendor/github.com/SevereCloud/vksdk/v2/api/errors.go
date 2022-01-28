@@ -598,6 +598,12 @@ const (
 	// This user can't be added to the work chat, as they aren't an employe.
 	ErrMessagesAccessWorkChat ErrorType = 967
 
+	// Message cannot be forwarded.
+	ErrMessagesCantForwarded ErrorType = 969
+
+	// Cannot pin an expiring message.
+	ErrMessagesPinExpiringMessage ErrorType = 970
+
 	// Invalid phone number.
 	ErrParamPhone ErrorType = 1000
 
@@ -985,6 +991,34 @@ func (e AdsError) Is(target error) bool {
 	var tAdsError *AdsError
 	if errors.As(target, &tAdsError) {
 		return e.Code == tAdsError.Code && e.Desc == tAdsError.Desc
+	}
+
+	var tErrorType ErrorType
+	if errors.As(target, &tErrorType) {
+		return e.Code == tErrorType
+	}
+
+	return false
+}
+
+// AuthSilentTokenError struct.
+type AuthSilentTokenError struct {
+	Token       string    `json:"token"`
+	Code        ErrorType `json:"code"`
+	Description string    `json:"description"`
+}
+
+// Error returns the description of a AuthSilentTokenError.
+func (e AuthSilentTokenError) Error() string {
+	return "api: " + e.Description
+}
+
+// Is unwraps its first argument sequentially looking for an error that matches
+// the second.
+func (e AuthSilentTokenError) Is(target error) bool {
+	var tError *AuthSilentTokenError
+	if errors.As(target, &tError) {
+		return e.Code == tError.Code && e.Description == tError.Description
 	}
 
 	var tErrorType ErrorType

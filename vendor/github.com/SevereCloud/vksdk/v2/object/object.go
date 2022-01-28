@@ -9,6 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"reflect"
+
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 // Attachment interface.
@@ -40,6 +42,44 @@ func (b *BaseBoolInt) UnmarshalJSON(data []byte) (err error) {
 	}
 
 	return
+}
+
+// DecodeMsgpack func.
+func (b *BaseBoolInt) DecodeMsgpack(dec *msgpack.Decoder) (err error) {
+	data, err := dec.DecodeRaw()
+	if err != nil {
+		return err
+	}
+
+	var (
+		valueInt  int
+		valueBool bool
+	)
+
+	switch {
+	case msgpack.Unmarshal(data, &valueBool) == nil:
+		*b = BaseBoolInt(valueBool)
+	case msgpack.Unmarshal(data, &valueInt) == nil:
+		if valueInt == 1 {
+			*b = true
+			break
+		}
+
+		if valueInt == 0 {
+			*b = false
+			break
+		}
+
+		fallthrough
+	default:
+		// return msgpack error
+		err = &json.UnmarshalTypeError{
+			Value: string(data),
+			Type:  reflect.TypeOf((*BaseBoolInt)(nil)),
+		}
+	}
+
+	return err
 }
 
 // BaseCountry struct.
@@ -137,6 +177,33 @@ func (obj *BaseImage) UnmarshalJSON(data []byte) (err error) {
 	var renamedObj renamedBaseImage
 
 	err = json.Unmarshal(data, &renamedObj)
+
+	obj.Height = renamedObj.Height
+	obj.Width = renamedObj.Width
+	obj.Type = renamedObj.Type
+
+	if renamedObj.Src == "" {
+		obj.URL = renamedObj.URL
+	} else {
+		obj.URL = renamedObj.Src
+	}
+
+	return err
+}
+
+// DecodeMsgpack is required to support images with `src` field.
+func (obj *BaseImage) DecodeMsgpack(dec *msgpack.Decoder) (err error) {
+	type renamedBaseImage struct {
+		Height float64 `msgpack:"height"`
+		URL    string  `msgpack:"url"`
+		Src    string  `msgpack:"src"`
+		Width  float64 `msgpack:"width"`
+		Type   string  `msgpack:"type"`
+	}
+
+	var renamedObj renamedBaseImage
+
+	err = dec.Decode(&renamedObj)
 
 	obj.Height = renamedObj.Height
 	obj.Width = renamedObj.Width
@@ -346,9 +413,11 @@ const (
 type Privacy struct {
 	Category PrivacyCategory `json:"category,omitempty"`
 	Lists    struct {
-		Allowed []int `json:"allowed"`
+		Allowed  []int `json:"allowed"`
+		Excluded []int `json:"excluded"`
 	} `json:"lists,omitempty"`
 	Owners struct {
+		Allowed  []int `json:"allowed"`
 		Excluded []int `json:"excluded"`
 	} `json:"owners,omitempty"`
 }
