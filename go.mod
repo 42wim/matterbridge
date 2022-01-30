@@ -2,10 +2,8 @@ module github.com/42wim/matterbridge
 
 require (
 	github.com/42wim/go-gitter v0.0.0-20170828205020-017310c2d557
-	github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f
 	github.com/Benau/tgsconverter v0.0.0-20210809170556-99f4a4f6337f
 	github.com/Philipp15b/go-steam v1.0.1-0.20200727090957-6ae9b3c0a560
-	github.com/Rhymen/go-whatsapp v0.1.2-0.20211102134409-31a2e740845c
 	github.com/SevereCloud/vksdk/v2 v2.13.1
 	github.com/bwmarrin/discordgo v0.24.0
 	github.com/d5/tengo/v2 v2.10.1
@@ -32,6 +30,7 @@ require (
 	github.com/mattermost/mattermost-server/v5 v5.39.3
 	github.com/mattermost/mattermost-server/v6 v6.4.2
 	github.com/mattn/godown v0.0.1
+	github.com/mdp/qrterminal v1.0.1
 	github.com/nelsonken/gomf v0.0.0-20180504123937-a9dd2f9deae9
 	github.com/paulrosania/go-charset v0.0.0-20190326053356-55c9d7a5834c
 	github.com/rs/xid v1.3.0
@@ -46,17 +45,22 @@ require (
 	github.com/writeas/go-strip-markdown v2.0.1+incompatible
 	github.com/yaegashi/msgraph.go v0.1.4
 	github.com/zfjagann/golang-ring v0.0.0-20210116075443-7c86fdb43134
+	go.mau.fi/whatsmeow v0.0.0-20220128124639-e64fb976bf15
 	golang.org/x/image v0.0.0-20220302094943-723b81ca9867
 	golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a
 	golang.org/x/text v0.3.7
 	gomod.garykim.dev/nc-talk v0.3.0
+	google.golang.org/protobuf v1.27.1
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 	layeh.com/gumble v0.0.0-20200818122324-146f9205029b
+	modernc.org/sqlite v1.14.5
 )
 
 require (
+	filippo.io/edwards25519 v1.0.0-rc.1 // indirect
 	github.com/Benau/go_rlottie v0.0.0-20210807002906-98c1b2421989 // indirect
 	github.com/Jeffail/gabs v1.4.0 // indirect
+	github.com/Rhymen/go-whatsapp v0.1.2-0.20211102134409-31a2e740845c // indirect
 	github.com/apex/log v1.9.0 // indirect
 	github.com/av-elier/go-decimal-to-rational v0.0.0-20191127152832-89e6aad02ecf // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
@@ -72,6 +76,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/kettek/apng v0.0.0-20191108220231-414630eed80f // indirect
 	github.com/klauspost/compress v1.14.2 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
@@ -100,12 +105,12 @@ require (
 	github.com/philhofer/fwd v1.1.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
 	github.com/rickb777/date v1.12.4 // indirect
 	github.com/rickb777/plural v1.2.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/shazow/rateio v0.0.0-20200113175441-4461efc8bdc4 // indirect
 	github.com/sizeofint/webpanimation v0.0.0-20210809145948-1d2b32119882 // indirect
-	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e // indirect
 	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/cast v1.4.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
@@ -119,20 +124,33 @@ require (
 	github.com/wiggin77/cfg v1.0.2 // indirect
 	github.com/wiggin77/merror v1.0.3 // indirect
 	github.com/wiggin77/srslog v1.0.1 // indirect
+	go.mau.fi/libsignal v0.0.0-20211109153248-a67163214910 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.17.0 // indirect
 	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871 // indirect
+	golang.org/x/mod v0.5.1 // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324 // indirect
+	golang.org/x/tools v0.1.7 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	lukechampine.com/uint128 v1.1.1 // indirect
+	modernc.org/cc/v3 v3.35.22 // indirect
+	modernc.org/ccgo/v3 v3.15.1 // indirect
+	modernc.org/libc v1.14.1 // indirect
+	modernc.org/mathutil v1.4.1 // indirect
+	modernc.org/memory v1.0.5 // indirect
+	modernc.org/opt v0.1.1 // indirect
+	modernc.org/strutil v1.1.1 // indirect
+	modernc.org/token v1.0.0 // indirect
+	rsc.io/qr v0.2.0 // indirect
 )
 
 //replace github.com/matrix-org/gomatrix => github.com/matterbridge/gomatrix v0.0.0-20220205235239-607eb9ee6419
