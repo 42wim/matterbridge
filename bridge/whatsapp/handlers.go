@@ -4,126 +4,92 @@ import (
 	"fmt"
 	"mime"
 	"strings"
-	"time"
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	"github.com/Rhymen/go-whatsapp"
-	"github.com/jpillora/backoff"
+
+	"go.mau.fi/whatsmeow/binary/proto"
+	"go.mau.fi/whatsmeow/types"
+	"go.mau.fi/whatsmeow/types/events"
 )
 
-/*
-Implement handling messages coming from WhatsApp
-Check:
-- https://github.com/Rhymen/go-whatsapp#add-message-handlers
-- https://github.com/Rhymen/go-whatsapp/blob/master/handler.go
-- https://github.com/tulir/mautrix-whatsapp/tree/master/whatsapp-ext for more advanced command handling
-*/
-
-// HandleError received from WhatsApp
-func (b *Bwhatsapp) HandleError(err error) {
-	// ignore received invalid data errors. https://github.com/42wim/matterbridge/issues/843
-	// ignore tag 174 errors. https://github.com/42wim/matterbridge/issues/1094
-	if strings.Contains(err.Error(), "error processing data: received invalid data") ||
-		strings.Contains(err.Error(), "invalid string with tag 174") {
-		return
-	}
-
-	switch err.(type) {
-	case *whatsapp.ErrConnectionClosed, *whatsapp.ErrConnectionFailed:
-		b.reconnect(err)
-	default:
-		switch err {
-		case whatsapp.ErrConnectionTimeout:
-			b.reconnect(err)
-		default:
-			b.Log.Errorf("%v", err)
-		}
+// nolint:gocritic
+func (b *Bwhatsapp) eventHandler(evt interface{}) {
+	switch e := evt.(type) {
+	case *events.Message:
+		b.handleMessage(e)
 	}
 }
 
-func (b *Bwhatsapp) reconnect(err error) {
-	bf := &backoff.Backoff{
-		Min:    time.Second,
-		Max:    5 * time.Minute,
-		Jitter: true,
+func (b *Bwhatsapp) handleMessage(message *events.Message) {
+	msg := message.Message
+	switch {
+	case msg == nil, message.Info.IsFromMe, message.Info.Timestamp.Before(b.startedAt):
+		return
 	}
 
-	for {
-		d := bf.Duration()
-
-		b.Log.Errorf("Connection failed, underlying error: %v", err)
-		b.Log.Infof("Waiting %s...", d)
-
-		time.Sleep(d)
-
-		b.Log.Info("Reconnecting...")
-
-		err := b.conn.Restore()
-		if err == nil {
-			bf.Reset()
-			b.startedAt = uint64(time.Now().Unix())
-
-			return
-		}
+	switch {
+	case msg.Conversation != nil || msg.ExtendedTextMessage != nil:
+		b.handleTextMessage(message.Info, msg)
+	case msg.VideoMessage != nil:
+		b.handleVideoMessage(message)
+	case msg.AudioMessage != nil:
+		b.handleAudioMessage(message)
+	case msg.DocumentMessage != nil:
+		b.handleDocumentMessage(message)
+	case msg.ImageMessage != nil:
+		b.handleImageMessage(message)
 	}
 }
 
-// HandleTextMessage sent from WhatsApp, relay it to the brige
-func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
-	if message.Info.FromMe {
-		return
-	}
-	// whatsapp sends last messages to show context , cut them
-	if message.Info.Timestamp < b.startedAt {
-		return
-	}
+func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.Message) {
+	senderJID := messageInfo.Sender
 
-	groupJID := message.Info.RemoteJid
-	senderJID := message.Info.SenderJid
-
-	if len(senderJID) == 0 {
-		if message.Info.Source != nil && message.Info.Source.Participant != nil {
-			senderJID = *message.Info.Source.Participant
-		}
-	}
-
-	// translate sender's JID to the nicest username we can get
-	senderName := b.getSenderName(senderJID)
+	senderName := b.getSenderName(messageInfo.Sender)
 	if senderName == "" {
 		senderName = "Someone" // don't expose telephone number
 	}
 
-	extText := message.Info.Source.Message.ExtendedTextMessage
-	if extText != nil && extText.ContextInfo != nil && extText.ContextInfo.MentionedJid != nil {
+	if msg.GetExtendedTextMessage() == nil {
+		return
+	}
+
+	text := msg.GetExtendedTextMessage().GetText()
+	ci := msg.GetExtendedTextMessage().GetContextInfo()
+
+	if senderJID == (types.JID{}) && ci.Participant != nil {
+		senderJID = types.NewJID(ci.GetParticipant(), types.DefaultUserServer)
+	}
+
+	if ci.MentionedJid != nil {
 		// handle user mentions
-		for _, mentionedJID := range extText.ContextInfo.MentionedJid {
+		for _, mentionedJID := range ci.MentionedJid {
 			numberAndSuffix := strings.SplitN(mentionedJID, "@", 2)
 
 			// mentions comes as telephone numbers and we don't want to expose it to other bridges
 			// replace it with something more meaninful to others
-			mention := b.getSenderNotify(numberAndSuffix[0] + "@s.whatsapp.net")
+			mention := b.getSenderNotify(types.NewJID(numberAndSuffix[0], types.DefaultUserServer))
 			if mention == "" {
 				mention = "someone"
 			}
 
-			message.Text = strings.Replace(message.Text, "@"+numberAndSuffix[0], "@"+mention, 1)
+			text = strings.Replace(text, "@"+numberAndSuffix[0], "@"+mention, 1)
 		}
 	}
 
 	rmsg := config.Message{
-		UserID:   senderJID,
+		UserID:   senderJID.String(),
 		Username: senderName,
-		Text:     message.Text,
-		Channel:  groupJID,
+		Text:     msg.GetExtendedTextMessage().GetText(),
+		Channel:  ci.GetRemoteJid(),
 		Account:  b.Account,
 		Protocol: b.Protocol,
 		Extra:    make(map[string][]interface{}),
-		//	ParentID: TODO, // TODO handle thread replies  // map from Info.QuotedMessageID string
-		ID: message.Info.Id,
+		//      ParentID: TODO, // TODO handle thread replies  // map from Info.QuotedMessageID string
+		ID: messageInfo.ID,
 	}
 
-	if avatarURL, exists := b.userAvatars[senderJID]; exists {
+	if avatarURL, exists := b.userAvatars[senderJID.String()]; exists {
 		rmsg.Avatar = avatarURL
 	}
 
@@ -134,36 +100,32 @@ func (b *Bwhatsapp) HandleTextMessage(message whatsapp.TextMessage) {
 }
 
 // HandleImageMessage sent from WhatsApp, relay it to the brige
-func (b *Bwhatsapp) HandleImageMessage(message whatsapp.ImageMessage) {
-	if message.Info.FromMe || message.Info.Timestamp < b.startedAt {
-		return
-	}
+func (b *Bwhatsapp) handleImageMessage(msg *events.Message) {
+	imsg := msg.Message.GetImageMessage()
 
-	senderJID := message.Info.SenderJid
-	if len(message.Info.SenderJid) == 0 && message.Info.Source != nil && message.Info.Source.Participant != nil {
-		senderJID = *message.Info.Source.Participant
-	}
+	senderJID := msg.Info.Sender
+	senderName := b.getSenderName(senderJID)
+	ci := imsg.GetContextInfo()
 
-	senderName := b.getSenderName(message.Info.SenderJid)
-	if senderName == "" {
-		senderName = "Someone" // don't expose telephone number
+	if senderJID == (types.JID{}) && ci.Participant != nil {
+		senderJID = types.NewJID(ci.GetParticipant(), types.DefaultUserServer)
 	}
 
 	rmsg := config.Message{
-		UserID:   senderJID,
+		UserID:   senderJID.String(),
 		Username: senderName,
-		Channel:  message.Info.RemoteJid,
+		Channel:  ci.GetRemoteJid(),
 		Account:  b.Account,
 		Protocol: b.Protocol,
 		Extra:    make(map[string][]interface{}),
-		ID:       message.Info.Id,
+		ID:       msg.Info.ID,
 	}
 
-	if avatarURL, exists := b.userAvatars[senderJID]; exists {
+	if avatarURL, exists := b.userAvatars[senderJID.String()]; exists {
 		rmsg.Avatar = avatarURL
 	}
 
-	fileExt, err := mime.ExtensionsByType(message.Type)
+	fileExt, err := mime.ExtensionsByType(imsg.GetMimetype())
 	if err != nil {
 		b.Log.Errorf("Mimetype detection error: %s", err)
 
@@ -180,11 +142,11 @@ func (b *Bwhatsapp) HandleImageMessage(message whatsapp.ImageMessage) {
 		fileExt[0] = ".jpg"
 	}
 
-	filename := fmt.Sprintf("%v%v", message.Info.Id, fileExt[0])
+	filename := fmt.Sprintf("%v%v", msg.Info.ID, fileExt[0])
 
-	b.Log.Debugf("Trying to download %s with type %s", filename, message.Type)
+	b.Log.Debugf("Trying to download %s with type %s", filename, imsg.GetMimetype())
 
-	data, err := message.Download()
+	data, err := b.wc.Download(imsg)
 	if err != nil {
 		b.Log.Errorf("Download image failed: %s", err)
 
@@ -192,7 +154,7 @@ func (b *Bwhatsapp) HandleImageMessage(message whatsapp.ImageMessage) {
 	}
 
 	// Move file to bridge storage
-	helper.HandleDownloadData(b.Log, &rmsg, filename, message.Caption, "", &data, b.General)
+	helper.HandleDownloadData(b.Log, &rmsg, filename, imsg.GetCaption(), "", &data, b.General)
 
 	b.Log.Debugf("<= Sending message from %s on %s to gateway", senderJID, b.Account)
 	b.Log.Debugf("<= Message is %#v", rmsg)
@@ -201,36 +163,32 @@ func (b *Bwhatsapp) HandleImageMessage(message whatsapp.ImageMessage) {
 }
 
 // HandleVideoMessage downloads video messages
-func (b *Bwhatsapp) HandleVideoMessage(message whatsapp.VideoMessage) {
-	if message.Info.FromMe || message.Info.Timestamp < b.startedAt {
-		return
-	}
+func (b *Bwhatsapp) handleVideoMessage(msg *events.Message) {
+	imsg := msg.Message.GetVideoMessage()
 
-	senderJID := message.Info.SenderJid
-	if len(message.Info.SenderJid) == 0 && message.Info.Source != nil && message.Info.Source.Participant != nil {
-		senderJID = *message.Info.Source.Participant
-	}
+	senderJID := msg.Info.Sender
+	senderName := b.getSenderName(senderJID)
+	ci := imsg.GetContextInfo()
 
-	senderName := b.getSenderName(message.Info.SenderJid)
-	if senderName == "" {
-		senderName = "Someone" // don't expose telephone number
+	if senderJID == (types.JID{}) && ci.Participant != nil {
+		senderJID = types.NewJID(ci.GetParticipant(), types.DefaultUserServer)
 	}
 
 	rmsg := config.Message{
-		UserID:   senderJID,
+		UserID:   senderJID.String(),
 		Username: senderName,
-		Channel:  message.Info.RemoteJid,
+		Channel:  ci.GetRemoteJid(),
 		Account:  b.Account,
 		Protocol: b.Protocol,
 		Extra:    make(map[string][]interface{}),
-		ID:       message.Info.Id,
+		ID:       msg.Info.ID,
 	}
 
-	if avatarURL, exists := b.userAvatars[senderJID]; exists {
+	if avatarURL, exists := b.userAvatars[senderJID.String()]; exists {
 		rmsg.Avatar = avatarURL
 	}
 
-	fileExt, err := mime.ExtensionsByType(message.Type)
+	fileExt, err := mime.ExtensionsByType(imsg.GetMimetype())
 	if err != nil {
 		b.Log.Errorf("Mimetype detection error: %s", err)
 
@@ -241,11 +199,11 @@ func (b *Bwhatsapp) HandleVideoMessage(message whatsapp.VideoMessage) {
 		fileExt = append(fileExt, ".mp4")
 	}
 
-	filename := fmt.Sprintf("%v%v", message.Info.Id, fileExt[0])
+	filename := fmt.Sprintf("%v%v", msg.Info.ID, fileExt[0])
 
-	b.Log.Debugf("Trying to download %s with size %#v and type %s", filename, message.Length, message.Type)
+	b.Log.Debugf("Trying to download %s with size %#v and type %s", filename, imsg.GetFileLength(), imsg.GetMimetype())
 
-	data, err := message.Download()
+	data, err := b.wc.Download(imsg)
 	if err != nil {
 		b.Log.Errorf("Download video failed: %s", err)
 
@@ -253,7 +211,7 @@ func (b *Bwhatsapp) HandleVideoMessage(message whatsapp.VideoMessage) {
 	}
 
 	// Move file to bridge storage
-	helper.HandleDownloadData(b.Log, &rmsg, filename, message.Caption, "", &data, b.General)
+	helper.HandleDownloadData(b.Log, &rmsg, filename, imsg.GetCaption(), "", &data, b.General)
 
 	b.Log.Debugf("<= Sending message from %s on %s to gateway", senderJID, b.Account)
 	b.Log.Debugf("<= Message is %#v", rmsg)
@@ -262,36 +220,32 @@ func (b *Bwhatsapp) HandleVideoMessage(message whatsapp.VideoMessage) {
 }
 
 // HandleAudioMessage downloads audio messages
-func (b *Bwhatsapp) HandleAudioMessage(message whatsapp.AudioMessage) {
-	if message.Info.FromMe || message.Info.Timestamp < b.startedAt {
-		return
-	}
+func (b *Bwhatsapp) handleAudioMessage(msg *events.Message) {
+	imsg := msg.Message.GetAudioMessage()
 
-	senderJID := message.Info.SenderJid
-	if len(message.Info.SenderJid) == 0 && message.Info.Source != nil && message.Info.Source.Participant != nil {
-		senderJID = *message.Info.Source.Participant
-	}
+	senderJID := msg.Info.Sender
+	senderName := b.getSenderName(senderJID)
+	ci := imsg.GetContextInfo()
 
-	senderName := b.getSenderName(message.Info.SenderJid)
-	if senderName == "" {
-		senderName = "Someone" // don't expose telephone number
+	if senderJID == (types.JID{}) && ci.Participant != nil {
+		senderJID = types.NewJID(ci.GetParticipant(), types.DefaultUserServer)
 	}
 
 	rmsg := config.Message{
-		UserID:   senderJID,
+		UserID:   senderJID.String(),
 		Username: senderName,
-		Channel:  message.Info.RemoteJid,
+		Channel:  ci.GetRemoteJid(),
 		Account:  b.Account,
 		Protocol: b.Protocol,
 		Extra:    make(map[string][]interface{}),
-		ID:       message.Info.Id,
+		ID:       msg.Info.ID,
 	}
 
-	if avatarURL, exists := b.userAvatars[senderJID]; exists {
+	if avatarURL, exists := b.userAvatars[senderJID.String()]; exists {
 		rmsg.Avatar = avatarURL
 	}
 
-	fileExt, err := mime.ExtensionsByType(message.Type)
+	fileExt, err := mime.ExtensionsByType(imsg.GetMimetype())
 	if err != nil {
 		b.Log.Errorf("Mimetype detection error: %s", err)
 
@@ -302,13 +256,13 @@ func (b *Bwhatsapp) HandleAudioMessage(message whatsapp.AudioMessage) {
 		fileExt = append(fileExt, ".ogg")
 	}
 
-	filename := fmt.Sprintf("%v%v", message.Info.Id, fileExt[0])
+	filename := fmt.Sprintf("%v%v", msg.Info.ID, fileExt[0])
 
-	b.Log.Debugf("Trying to download %s with size %#v and type %s", filename, message.Length, message.Type)
+	b.Log.Debugf("Trying to download %s with size %#v and type %s", filename, imsg.GetFileLength(), imsg.GetMimetype())
 
-	data, err := message.Download()
+	data, err := b.wc.Download(imsg)
 	if err != nil {
-		b.Log.Errorf("Download audio failed: %s", err)
+		b.Log.Errorf("Download video failed: %s", err)
 
 		return
 	}
@@ -323,47 +277,43 @@ func (b *Bwhatsapp) HandleAudioMessage(message whatsapp.AudioMessage) {
 }
 
 // HandleDocumentMessage downloads documents
-func (b *Bwhatsapp) HandleDocumentMessage(message whatsapp.DocumentMessage) {
-	if message.Info.FromMe || message.Info.Timestamp < b.startedAt {
-		return
-	}
+func (b *Bwhatsapp) handleDocumentMessage(msg *events.Message) {
+	imsg := msg.Message.GetDocumentMessage()
 
-	senderJID := message.Info.SenderJid
-	if len(message.Info.SenderJid) == 0 && message.Info.Source != nil && message.Info.Source.Participant != nil {
-		senderJID = *message.Info.Source.Participant
-	}
+	senderJID := msg.Info.Sender
+	senderName := b.getSenderName(senderJID)
+	ci := imsg.GetContextInfo()
 
-	senderName := b.getSenderName(message.Info.SenderJid)
-	if senderName == "" {
-		senderName = "Someone" // don't expose telephone number
+	if senderJID == (types.JID{}) && ci.Participant != nil {
+		senderJID = types.NewJID(ci.GetParticipant(), types.DefaultUserServer)
 	}
 
 	rmsg := config.Message{
-		UserID:   senderJID,
+		UserID:   senderJID.String(),
 		Username: senderName,
-		Channel:  message.Info.RemoteJid,
+		Channel:  ci.GetRemoteJid(),
 		Account:  b.Account,
 		Protocol: b.Protocol,
 		Extra:    make(map[string][]interface{}),
-		ID:       message.Info.Id,
+		ID:       msg.Info.ID,
 	}
 
-	if avatarURL, exists := b.userAvatars[senderJID]; exists {
+	if avatarURL, exists := b.userAvatars[senderJID.String()]; exists {
 		rmsg.Avatar = avatarURL
 	}
 
-	fileExt, err := mime.ExtensionsByType(message.Type)
+	fileExt, err := mime.ExtensionsByType(imsg.GetMimetype())
 	if err != nil {
 		b.Log.Errorf("Mimetype detection error: %s", err)
 
 		return
 	}
 
-	filename := fmt.Sprintf("%v", message.FileName)
+	filename := fmt.Sprintf("%v", imsg.GetFileName())
 
-	b.Log.Debugf("Trying to download %s with extension %s and type %s", filename, fileExt, message.Type)
+	b.Log.Debugf("Trying to download %s with extension %s and type %s", filename, fileExt, imsg.GetMimetype())
 
-	data, err := message.Download()
+	data, err := b.wc.Download(imsg)
 	if err != nil {
 		b.Log.Errorf("Download document message failed: %s", err)
 
