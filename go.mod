@@ -30,7 +30,7 @@ require (
 	github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba
 	github.com/matterbridge/matterclient v0.0.0-20211107234719-faca3cd42315
 	github.com/mattermost/mattermost-server/v5 v5.39.3
-	github.com/mattermost/mattermost-server/v6 v6.3.0
+	github.com/mattermost/mattermost-server/v6 v6.3.2
 	github.com/mattn/godown v0.0.1
 	github.com/missdeer/golib v1.0.4
 	github.com/nelsonken/gomf v0.0.0-20180504123937-a9dd2f9deae9
