@@ -23,7 +23,6 @@ func (b *Btelegram) handleUpdate(rmsg *config.Message, message, posted, edited *
 				Channel: chatID,
 				Text:    fmt.Sprintf("ID of this chat: %s", chatID),
 			})
-
 			if err != nil {
 				b.Log.Warnf("Unable to send chatID to %s", chatID)
 			}
