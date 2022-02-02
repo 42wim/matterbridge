@@ -1,6 +1,7 @@
 package btelegram
 
 import (
+	"fmt"
 	"html"
 	"path/filepath"
 	"strconv"
@@ -15,8 +16,20 @@ import (
 func (b *Btelegram) handleUpdate(rmsg *config.Message, message, posted, edited *tgbotapi.Message) *tgbotapi.Message {
 	// handle channels
 	if posted != nil {
-		message = posted
-		rmsg.Text = message.Text
+		if posted.Text == "/chatId" {
+			chatID := strconv.FormatInt(posted.Chat.ID, 10)
+
+			_, err := b.Send(config.Message{
+				Channel: chatID,
+				Text:    fmt.Sprintf("ID of this chat: %s", chatID),
+			})
+			if err != nil {
+				b.Log.Warnf("Unable to send chatID to %s", chatID)
+			}
+		} else {
+			message = posted
+			rmsg.Text = message.Text
+		}
 	}
 
 	// edited channel message
