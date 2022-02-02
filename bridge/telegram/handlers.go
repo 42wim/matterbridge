@@ -10,6 +10,7 @@ import (
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
+	"github.com/davecgh/go-spew/spew"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
@@ -156,6 +157,10 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 			update.EditedMessage == nil && update.EditedChannelPost == nil {
 			b.Log.Error("Getting nil messages, this shouldn't happen.")
 			continue
+		}
+
+		if b.GetInt("debuglevel") == 1 {
+			spew.Dump(update.Message)
 		}
 
 		var message *tgbotapi.Message
