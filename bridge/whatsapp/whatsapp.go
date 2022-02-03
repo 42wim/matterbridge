@@ -147,51 +147,44 @@ func (b *Bwhatsapp) Disconnect() error {
 func (b *Bwhatsapp) JoinChannel(channel config.ChannelInfo) error {
 	byJid := isGroupJid(channel.Name)
 
+	groups, err := b.wc.GetJoinedGroups()
+	if err != nil {
+		return err
+	}
+
 	// verify if we are member of the given group
 	if byJid {
 		gJID, err := types.ParseJID(channel.Name)
 		if err != nil {
 			return err
 		}
-		// channel.Name specifies static group jID, not the name
-		info, err := b.wc.Store.Contacts.GetContact(gJID)
-		if err != nil {
-			return err
-		}
 
-		if !info.Found {
-			return fmt.Errorf("account doesn't belong to group with jid %s", channel.Name)
-		}
-
-		return nil
-	}
-
-	// channel.Name specifies group name that might change, warn about it
-	var jids []string
-	allContacts, err := b.wc.Store.Contacts.GetAllContacts()
-	if err != nil {
-		return err
-	}
-	for id := range allContacts {
-		if isGroupJid(id.String()) && id.String() == channel.Name {
-			jids = append(jids, id.String())
-		}
-	}
-
-	switch len(jids) {
-	case 0:
-		// didn't match any group - print out possibilites
-		for id, contact := range allContacts {
-			if isGroupJid(id.String()) {
-				b.Log.Infof("%s %s", id, contact.FullName)
+		for _, group := range groups {
+			if group.JID == gJID {
+				return nil
 			}
 		}
+	}
 
+	foundGroups := []string{}
+
+	for _, group := range groups {
+		if group.Name == channel.Name {
+			foundGroups = append(foundGroups, group.Name)
+		}
+	}
+
+	switch len(foundGroups) {
+	case 0:
+		// didn't match any group - print out possibilites
+		for _, group := range groups {
+			b.Log.Infof("%s %s", group.JID, group.Name)
+		}
 		return fmt.Errorf("please specify group's JID from the list above instead of the name '%s'", channel.Name)
 	case 1:
-		return fmt.Errorf("group name might change. Please configure gateway with channel=\"%v\" instead of channel=\"%v\"", jids[0], channel.Name)
+		return fmt.Errorf("group name might change. Please configure gateway with channel=\"%v\" instead of channel=\"%v\"", foundGroups[0], channel.Name)
 	default:
-		return fmt.Errorf("there is more than one group with name '%s'. Please specify one of JIDs as channel name: %v", channel.Name, jids)
+		return fmt.Errorf("there is more than one group with name '%s'. Please specify one of JIDs as channel name: %v", channel.Name, foundGroups)
 	}
 }
 
