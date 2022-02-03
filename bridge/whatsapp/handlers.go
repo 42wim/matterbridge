@@ -28,6 +28,8 @@ func (b *Bwhatsapp) handleMessage(message *events.Message) {
 		return
 	}
 
+	b.Log.Infof("Receiving message %#v", msg)
+
 	switch {
 	case msg.Conversation != nil || msg.ExtendedTextMessage != nil:
 		b.handleTextMessage(message.Info, msg)
