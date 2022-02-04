@@ -447,7 +447,10 @@ func (gw *Gateway) SendMessage(
 	msg.Avatar = gw.modifyAvatar(rmsg, dest)
 	msg.Username = gw.modifyUsername(rmsg, dest)
 
-	msg.ID = gw.getDestMsgID(rmsg.Protocol+" "+rmsg.ID, dest, channel)
+	// exclude file delete event as the msg ID here is the native file ID that needs to be deleted
+	if msg.Event != config.EventFileDelete {
+		msg.ID = gw.getDestMsgID(rmsg.Protocol+" "+rmsg.ID, dest, channel)
+	}
 
 	// for api we need originchannel as channel
 	if dest.Protocol == apiProtocol {

@@ -23,6 +23,7 @@ const (
 	EventRejoinChannels    = "rejoin_channels"
 	EventUserAction        = "user_action"
 	EventMsgDelete         = "msg_delete"
+	EventFileDelete        = "file_delete"
 	EventAPIConnected      = "api_connected"
 	EventUserTyping        = "user_typing"
 	EventGetChannelMembers = "get_channel_members"
@@ -56,13 +57,14 @@ func (m Message) ParentValid() bool {
 }
 
 type FileInfo struct {
-	Name    string
-	Data    *[]byte
-	Comment string
-	URL     string
-	Size    int64
-	Avatar  bool
-	SHA     string
+	Name     string
+	Data     *[]byte
+	Comment  string
+	URL      string
+	Size     int64
+	Avatar   bool
+	SHA      string
+	NativeID string
 }
 
 type ChannelInfo struct {
