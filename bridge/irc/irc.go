@@ -2,6 +2,7 @@ package birc
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"hash/crc32"
 	"io/ioutil"
@@ -72,6 +73,10 @@ func (b *Birc) Command(msg *config.Message) string {
 }
 
 func (b *Birc) Connect() error {
+	if b.GetBool("UseSASL") && b.GetString("TLSClientCertificate") != "" {
+		return errors.New("you can't enable SASL and TLSClientCertificate at the same time")
+	}
+
 	b.Local = make(chan config.Message, b.MessageQueue+10)
 	b.Log.Infof("Connecting %s", b.GetString("Server"))
 
@@ -300,6 +305,11 @@ func (b *Birc) getClient() (*girc.Client, error) {
 
 	b.Log.Debugf("setting pingdelay to %s", pingDelay)
 
+	tlsConfig, err := b.getTLSConfig()
+	if err != nil {
+		return nil, err
+	}
+
 	i := girc.New(girc.Config{
 		Server:     server,
 		ServerPass: b.GetString("Password"),
@@ -309,7 +319,7 @@ func (b *Birc) getClient() (*girc.Client, error) {
 		Name:       realName,
 		SSL:        b.GetBool("UseTLS"),
 		Bind:       b.GetString("Bind"),
-		TLSConfig:  &tls.Config{InsecureSkipVerify: b.GetBool("SkipTLSVerify"), ServerName: server}, //nolint:gosec
+		TLSConfig:  tlsConfig,
 		PingDelay:  pingDelay,
 		// skip gIRC internal rate limiting, since we have our own throttling
 		AllowFlood:    true,
@@ -380,4 +390,24 @@ func (b *Birc) storeNames(client *girc.Client, event girc.Event) {
 
 func (b *Birc) formatnicks(nicks []string) string {
 	return strings.Join(nicks, ", ") + " currently on IRC"
+}
+
+func (b *Birc) getTLSConfig() (*tls.Config, error) {
+	server, _, _ := net.SplitHostPort(b.GetString("server"))
+
+	tlsConfig := &tls.Config{
+		InsecureSkipVerify: b.GetBool("skiptlsverify"), //nolint:gosec
+		ServerName:         server,
+	}
+
+	if filename := b.GetString("TLSClientCertificate"); filename != "" {
+		cert, err := tls.LoadX509KeyPair(filename, filename)
+		if err != nil {
+			return nil, err
+		}
+
+		tlsConfig.Certificates = []tls.Certificate{cert}
+	}
+
+	return tlsConfig, nil
 }
