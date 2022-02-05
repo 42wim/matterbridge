@@ -24,6 +24,13 @@ Password=""
 #OPTIONAL (default false)
 UseTLS=false
 
+#Use client certificate - see CertFP https://libera.chat/guides/certfp.html
+#Specify filename which contains private key and cert
+#OPTIONAL (default "")
+#
+#TLSClientCertificate="cert.pem"
+TLSClientCertificate=""
+
 #Enable SASL (PLAIN) authentication. (libera requires this from eg AWS hosts)
 #It uses NickServNick and NickServPassword as login and password
 #OPTIONAL (default false)
