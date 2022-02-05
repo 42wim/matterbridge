@@ -45,8 +45,8 @@ func (event *Event) MessageType() (msgtype string, ok bool) {
 type TextMessage struct {
 	MsgType       string `json:"msgtype"`
 	Body          string `json:"body"`
-	FormattedBody string `json:"formatted_body"`
-	Format        string `json:"format"`
+	FormattedBody string `json:"formatted_body,omitempty"`
+	Format        string `json:"format,omitempty"`
 }
 
 // ThumbnailInfo contains info about an thumbnail image - http://matrix.org/docs/spec/client_server/r0.2.0.html#m-image
@@ -105,7 +105,7 @@ type HTMLMessage struct {
 // FileInfo contains info about an file - http://matrix.org/docs/spec/client_server/r0.2.0.html#m-file
 type FileInfo struct {
 	Mimetype string `json:"mimetype,omitempty"`
-	Size     uint   `json:"size,omitempty"` //filesize in bytes
+	Size     uint   `json:"size,omitempty"` // filesize in bytes
 }
 
 // FileMessage is an m.file event - http://matrix.org/docs/spec/client_server/r0.2.0.html#m-file
@@ -131,8 +131,8 @@ type LocationMessage struct {
 // AudioInfo contains info about an file - http://matrix.org/docs/spec/client_server/r0.2.0.html#m-audio
 type AudioInfo struct {
 	Mimetype string `json:"mimetype,omitempty"`
-	Size     uint   `json:"size,omitempty"`     //filesize in bytes
-	Duration uint   `json:"duration,omitempty"` //audio duration in ms
+	Size     uint   `json:"size,omitempty"`     // filesize in bytes
+	Duration uint   `json:"duration,omitempty"` // audio duration in ms
 }
 
 // AudioMessage is an m.audio event - http://matrix.org/docs/spec/client_server/r0.2.0.html#m-audio
