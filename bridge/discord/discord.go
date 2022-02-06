@@ -89,6 +89,9 @@ func (b *Bdiscord) Connect() error {
 	b.c.AddHandler(b.messageDeleteBulk)
 	b.c.AddHandler(b.memberAdd)
 	b.c.AddHandler(b.memberRemove)
+	if b.GetInt("debuglevel") == 1 {
+		b.c.AddHandler(b.messageEvent)
+	}
 	// Add privileged intent for guild member tracking. This is needed to track nicks
 	// for display names and @mention translation
 	b.c.Identify.Intents = discordgo.MakeIntent(discordgo.IntentsAllWithoutPrivileged |
@@ -167,7 +170,7 @@ func (b *Bdiscord) Connect() error {
 		return fmt.Errorf("use of removed WebhookURL setting")
 	}
 
-	if b.GetInt("debuglevel") > 0 {
+	if b.GetInt("debuglevel") == 2 {
 		b.Log.Debug("enabling even more discord debug")
 		b.c.Debug = true
 	}
