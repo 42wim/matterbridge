@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -22,13 +23,19 @@ type Bmattermost struct {
 	uuid   string
 	TeamID string
 	*bridge.Config
-	avatarMap map[string]string
+	avatarMap      map[string]string
+	channelsMutex  sync.RWMutex
+	channelInfoMap map[string]*config.ChannelInfo
 }
 
 const mattermostPlugin = "mattermost.plugin"
 
 func New(cfg *bridge.Config) bridge.Bridger {
-	b := &Bmattermost{Config: cfg, avatarMap: make(map[string]string)}
+	b := &Bmattermost{
+		Config:         cfg,
+		avatarMap:      make(map[string]string),
+		channelInfoMap: make(map[string]*config.ChannelInfo),
+	}
 
 	b.v6 = b.GetBool("v6")
 	b.uuid = xid.New().String()
@@ -113,14 +120,14 @@ func (b *Bmattermost) JoinChannel(channel config.ChannelInfo) error {
 	if b.Account == mattermostPlugin {
 		return nil
 	}
+
+	b.channelsMutex.Lock()
+	b.channelInfoMap[channel.ID] = &channel
+	b.channelsMutex.Unlock()
+
 	// we can only join channels using the API
 	if b.GetString("WebhookURL") == "" && b.GetString("WebhookBindAddress") == "" {
-		var id string
-		if b.mc6 != nil {
-			id = b.mc6.GetChannelID(channel.Name, b.TeamID)
-		} else {
-			id = b.mc.GetChannelId(channel.Name, b.TeamID)
-		}
+		id := b.getChannelID(channel.Name)
 		if id == "" {
 			return fmt.Errorf("Could not find channel ID for channel %s", channel.Name)
 		}
@@ -131,6 +138,7 @@ func (b *Bmattermost) JoinChannel(channel config.ChannelInfo) error {
 
 		return b.mc.JoinChannel(id)
 	}
+
 	return nil
 }
 
@@ -198,11 +206,11 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
 			if b.mc6 != nil {
-				if _, err := b.mc6.PostMessage(b.mc.GetChannelId(rmsg.Channel, b.TeamID), rmsg.Username+rmsg.Text, msg.ParentID); err != nil {
+				if _, err := b.mc6.PostMessage(b.getChannelID(rmsg.Channel), rmsg.Username+rmsg.Text, msg.ParentID); err != nil {
 					b.Log.Errorf("PostMessage failed: %s", err)
 				}
 			} else {
-				if _, err := b.mc.PostMessage(b.mc.GetChannelId(rmsg.Channel, b.TeamID), rmsg.Username+rmsg.Text, msg.ParentID); err != nil {
+				if _, err := b.mc.PostMessage(b.getChannelID(rmsg.Channel), rmsg.Username+rmsg.Text, msg.ParentID); err != nil {
 					b.Log.Errorf("PostMessage failed: %s", err)
 				}
 			}
@@ -228,8 +236,8 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 
 	// Post normal message
 	if b.mc6 != nil {
-		return b.mc6.PostMessage(b.mc6.GetChannelID(msg.Channel, b.TeamID), msg.Text, msg.ParentID) // nolint:wrapcheck
+		return b.mc6.PostMessage(b.getChannelID(msg.Channel), msg.Text, msg.ParentID) // nolint:wrapcheck
 	}
 
-	return b.mc.PostMessage(b.mc.GetChannelId(msg.Channel, b.TeamID), msg.Text, msg.ParentID)
+	return b.mc.PostMessage(b.getChannelID(msg.Channel), msg.Text, msg.ParentID)
 }

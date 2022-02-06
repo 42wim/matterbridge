@@ -1897,7 +1897,8 @@ enable=true
     # -------------------------------------------------------------------------------------------------------------------------------------
     #    irc     |      channel       |            #general           | The # symbol is required and should be lowercase!
     # -------------------------------------------------------------------------------------------------------------------------------------
-    # mattermost |      channel       |            general            | This is the channel name as seen in the URL, not the display name
+    #            |      channel       |            general            | This is the channel name as seen in the URL, not the display name
+    # mattermost |    channel id      | ID:oc4wifyuojgw5f3nsuweesmz8w | This is the channel ID (only use if you know what you're doing)
     # -------------------------------------------------------------------------------------------------------------------------------------
     #   matrix   | #channel:server    |    #yourchannel:matrix.org    | Encrypted rooms are not supported in matrix
     # -------------------------------------------------------------------------------------------------------------------------------------

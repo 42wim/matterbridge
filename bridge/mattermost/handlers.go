@@ -140,9 +140,14 @@ func (b *Bmattermost) handleMatterClient(messages chan *config.Message) {
 			continue
 		}
 
+		channelName := b.getChannelName(message.Post.ChannelId)
+		if channelName == "" {
+			channelName = message.Channel
+		}
+
 		// only download avatars if we have a place to upload them (configured mediaserver)
 		if b.General.MediaServerUpload != "" || b.General.MediaDownloadPath != "" {
-			b.handleDownloadAvatar(message.UserID, message.Channel)
+			b.handleDownloadAvatar(message.UserID, channelName)
 		}
 
 		b.Log.Debugf("== Receiving event %#v", message)
@@ -150,7 +155,7 @@ func (b *Bmattermost) handleMatterClient(messages chan *config.Message) {
 		rmsg := &config.Message{
 			Username: message.Username,
 			UserID:   message.UserID,
-			Channel:  message.Channel,
+			Channel:  channelName,
 			Text:     message.Text,
 			ID:       message.Post.Id,
 			ParentID: message.Post.RootId, // ParentID is obsolete with mattermost
@@ -197,9 +202,14 @@ func (b *Bmattermost) handleMatterClient6(messages chan *config.Message) {
 			continue
 		}
 
+		channelName := b.getChannelName(message.Post.ChannelId)
+		if channelName == "" {
+			channelName = message.Channel
+		}
+
 		// only download avatars if we have a place to upload them (configured mediaserver)
 		if b.General.MediaServerUpload != "" || b.General.MediaDownloadPath != "" {
-			b.handleDownloadAvatar(message.UserID, message.Channel)
+			b.handleDownloadAvatar(message.UserID, channelName)
 		}
 
 		b.Log.Debugf("== Receiving event %#v", message)
@@ -207,7 +217,7 @@ func (b *Bmattermost) handleMatterClient6(messages chan *config.Message) {
 		rmsg := &config.Message{
 			Username: message.Username,
 			UserID:   message.UserID,
-			Channel:  message.Channel,
+			Channel:  channelName,
 			Text:     message.Text,
 			ID:       message.Post.Id,
 			ParentID: message.Post.RootId, // ParentID is obsolete with mattermost
@@ -248,6 +258,7 @@ func (b *Bmattermost) handleMatterHook(messages chan *config.Message) {
 	for {
 		message := b.mh.Receive()
 		b.Log.Debugf("Receiving from matterhook %#v", message)
+
 		messages <- &config.Message{
 			UserID:   message.UserID,
 			Username: message.UserName,
@@ -265,7 +276,7 @@ func (b *Bmattermost) handleUploadFile(msg *config.Message) (string, error) {
 
 	var err error
 	var res, id string
-	channelID := b.mc.GetChannelId(msg.Channel, b.TeamID)
+	channelID := b.getChannelID(msg.Channel)
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo)
 		id, err = b.mc.UploadFile(*fi.Data, channelID, fi.Name)
@@ -285,7 +296,7 @@ func (b *Bmattermost) handleUploadFile(msg *config.Message) (string, error) {
 func (b *Bmattermost) handleUploadFile6(msg *config.Message) (string, error) {
 	var err error
 	var res, id string
-	channelID := b.mc6.GetChannelID(msg.Channel, b.TeamID)
+	channelID := b.getChannelID(msg.Channel)
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo)
 		id, err = b.mc6.UploadFile(*fi.Data, channelID, fi.Name)
