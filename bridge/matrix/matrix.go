@@ -48,8 +48,10 @@ type matrixUsername struct {
 
 // SubTextMessage represents the new content of the message in edit messages.
 type SubTextMessage struct {
-	MsgType string `json:"msgtype"`
-	Body    string `json:"body"`
+	MsgType       string `json:"msgtype"`
+	Body          string `json:"body"`
+	FormattedBody string `json:"formatted_body,omitempty"`
+	Format        string `json:"format,omitempty"`
 }
 
 // MessageRelation explains how the current message relates to a previous message.
@@ -151,7 +153,13 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 		m := matrix.TextMessage{
 			MsgType:       "m.emote",
 			Body:          username.plain + msg.Text,
-			FormattedBody: username.formatted + msg.Text,
+			FormattedBody: username.formatted + helper.ParseMarkdown(msg.Text),
+			Format:        "org.matrix.custom.html",
+		}
+
+		if b.GetBool("HTMLDisable") {
+			m.Format = ""
+			m.FormattedBody = ""
 		}
 
 		msgID := ""
@@ -214,20 +222,29 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 
 	// Edit message if we have an ID
 	if msg.ID != "" {
-		rmsg := EditedMessage{TextMessage: matrix.TextMessage{
-			Body:    username.plain + msg.Text,
-			MsgType: "m.text",
-		}}
-		if b.GetBool("HTMLDisable") {
-			rmsg.TextMessage.FormattedBody = username.formatted + "* " + msg.Text
-		} else {
-			rmsg.Format = "org.matrix.custom.html"
-			rmsg.TextMessage.FormattedBody = username.formatted + "* " + helper.ParseMarkdown(msg.Text)
+		rmsg := EditedMessage{
+			TextMessage: matrix.TextMessage{
+				Body:          username.plain + msg.Text,
+				MsgType:       "m.text",
+				Format:        "org.matrix.custom.html",
+				FormattedBody: username.formatted + helper.ParseMarkdown(msg.Text),
+			},
 		}
+
 		rmsg.NewContent = SubTextMessage{
-			Body:    rmsg.TextMessage.Body,
-			MsgType: "m.text",
+			Body:          rmsg.TextMessage.Body,
+			FormattedBody: rmsg.TextMessage.FormattedBody,
+			Format:        rmsg.TextMessage.Format,
+			MsgType:       "m.text",
 		}
+
+		if b.GetBool("HTMLDisable") {
+			rmsg.TextMessage.Format = ""
+			rmsg.TextMessage.FormattedBody = ""
+			rmsg.NewContent.Format = ""
+			rmsg.NewContent.FormattedBody = ""
+		}
+
 		rmsg.RelatedTo = MessageRelation{
 			EventID: msg.ID,
 			Type:    "m.replace",
@@ -251,6 +268,50 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 			MsgType:       "m.notice",
 			Body:          username.plain + msg.Text,
 			FormattedBody: username.formatted + msg.Text,
+			Format:        "org.matrix.custom.html",
+		}
+
+		if b.GetBool("HTMLDisable") {
+			m.Format = ""
+			m.FormattedBody = ""
+		}
+
+		var (
+			resp *matrix.RespSendEvent
+			err  error
+		)
+
+		err = b.retry(func() error {
+			resp, err = b.mc.SendMessageEvent(channel, "m.room.message", m)
+
+			return err
+		})
+		if err != nil {
+			return "", err
+		}
+
+		return resp.EventID, err
+	}
+
+	if msg.ParentValid() {
+		m := ReplyMessage{
+			TextMessage: matrix.TextMessage{
+				MsgType:       "m.text",
+				Body:          username.plain + msg.Text,
+				FormattedBody: username.formatted + helper.ParseMarkdown(msg.Text),
+				Format:        "org.matrix.custom.html",
+			},
+		}
+
+		if b.GetBool("HTMLDisable") {
+			m.TextMessage.Format = ""
+			m.TextMessage.FormattedBody = ""
+		}
+
+		m.RelatedTo = InReplyToRelation{
+			InReplyTo: InReplyToRelationContent{
+				EventID: msg.ParentID,
+			},
 		}
 
 		var (
@@ -278,38 +339,6 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 
 		err = b.retry(func() error {
 			resp, err = b.mc.SendText(channel, username.plain+msg.Text)
-
-			return err
-		})
-		if err != nil {
-			return "", err
-		}
-
-		return resp.EventID, err
-	}
-
-	if msg.ParentValid() {
-		m := ReplyMessage{
-			TextMessage: matrix.TextMessage{
-				MsgType:       "m.text",
-				Body:          username.plain + msg.Text,
-				FormattedBody: username.formatted + helper.ParseMarkdown(msg.Text),
-			},
-		}
-
-		m.RelatedTo = InReplyToRelation{
-			InReplyTo: InReplyToRelationContent{
-				EventID: msg.ParentID,
-			},
-		}
-
-		var (
-			resp *matrix.RespSendEvent
-			err  error
-		)
-
-		err = b.retry(func() error {
-			resp, err = b.mc.SendMessageEvent(channel, "m.room.message", m)
 
 			return err
 		})
