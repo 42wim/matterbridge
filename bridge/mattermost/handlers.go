@@ -177,8 +177,10 @@ func (b *Bmattermost) handleMatterClient(messages chan *config.Message) {
 		}
 
 		// Use nickname instead of username if defined
-		if nick := b.mc.GetNickName(rmsg.UserID); nick != "" {
-			rmsg.Username = nick
+		if !b.GetBool("useusername") {
+			if nick := b.mc.GetNickName(rmsg.UserID); nick != "" {
+				rmsg.Username = nick
+			}
 		}
 
 		messages <- rmsg
@@ -232,8 +234,10 @@ func (b *Bmattermost) handleMatterClient6(messages chan *config.Message) {
 		}
 
 		// Use nickname instead of username if defined
-		if nick := b.mc6.GetNickName(rmsg.UserID); nick != "" {
-			rmsg.Username = nick
+		if !b.GetBool("useusername") {
+			if nick := b.mc6.GetNickName(rmsg.UserID); nick != "" {
+				rmsg.Username = nick
+			}
 		}
 
 		messages <- rmsg
