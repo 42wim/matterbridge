@@ -241,11 +241,17 @@ func (b *Bmattermost) skipMessage(message *matterclient.Message) bool {
 		if b.GetBool("nosendjoinpart") {
 			return true
 		}
+
+		channelName := b.getChannelName(message.Post.ChannelId)
+		if channelName == "" {
+			channelName = message.Channel
+		}
+
 		b.Log.Debugf("Sending JOIN_LEAVE event from %s to gateway", b.Account)
 		b.Remote <- config.Message{
 			Username: "system",
 			Text:     message.Text,
-			Channel:  message.Channel,
+			Channel:  channelName,
 			Account:  b.Account,
 			Event:    config.EventJoinLeave,
 		}
@@ -304,11 +310,17 @@ func (b *Bmattermost) skipMessage6(message *matterclient6.Message) bool {
 		if b.GetBool("nosendjoinpart") {
 			return true
 		}
+
+		channelName := b.getChannelName(message.Post.ChannelId)
+		if channelName == "" {
+			channelName = message.Channel
+		}
+
 		b.Log.Debugf("Sending JOIN_LEAVE event from %s to gateway", b.Account)
 		b.Remote <- config.Message{
 			Username: "system",
 			Text:     message.Text,
-			Channel:  message.Channel,
+			Channel:  channelName,
 			Account:  b.Account,
 			Event:    config.EventJoinLeave,
 		}
@@ -375,4 +387,31 @@ func (b *Bmattermost) getVersion() string {
 	defer resp.Body.Close()
 
 	return resp.Header.Get("X-Version-Id")
+}
+
+func (b *Bmattermost) getChannelID(name string) string {
+	idcheck := strings.Split(name, "ID:")
+	if len(idcheck) > 1 {
+		return idcheck[1]
+	}
+
+	if b.mc6 != nil {
+		return b.mc6.GetChannelID(name, b.TeamID)
+	}
+
+	return b.mc.GetChannelId(name, b.TeamID)
+}
+
+func (b *Bmattermost) getChannelName(id string) string {
+	b.channelsMutex.RLock()
+	defer b.channelsMutex.RUnlock()
+
+	for _, c := range b.channelInfoMap {
+		if c.Name == "ID:"+id {
+			// if we have ID: specified in our gateway configuration return this
+			return c.Name
+		}
+	}
+
+	return ""
 }
