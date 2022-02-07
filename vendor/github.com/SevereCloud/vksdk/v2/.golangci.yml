@@ -54,6 +54,9 @@ linters:
     - nilnil
     - tenv
     - nestif
+    - grouper
+    - decorder
+    - containedctx
 
 # - wrapcheck # TODO: v3 Fix
 # - testpackage # TODO: Fix testpackage
@@ -82,6 +85,8 @@ linters:
 # - tagliatelle
 # - errname
 # - varnamelen
+# - errchkjson
+# - maintidx
 
 # depricated
 # - maligned
