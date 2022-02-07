@@ -1,3 +1,35 @@
+# v1.24.0
+
+## New features
+
+- harmony: new protocol added: Add support for Harmony (#1656)
+- irc: Allow binding to IP on IRC (#1640)
+- irc: Add support for client certificate (irc) (#1710)
+- mattermost: Add UseUsername option (mattermost). Fixes #1665 (#1714)
+- mattermost: Add support for using ID in channel config (mattermost) (#1715)
+- matrix: Reply support for Matrix (#1664)
+- telegram: Add Telegram Bot Command /chatId (telegram) (#1703)
+
+## Enhancements
+
+- general: Update dependencies/vendor (#1659)
+- discord: Add more debug options for discord (#1712)
+- docker: Use Alpine stable again in Dockerfile (#1643)
+- mattermost: Log eventtype in debug (mattermost) (#1676)
+- mattermost: Add more ignore debug messages (mattermost) (#1678)
+- slack: Add support for deleting files from slack to discord. Fixes #1705 (#1709)
+- telegram: Add support for code blocks in telegram (#1650)
+- telegram: Update telegram-bot-api to v5 (#1660)
+- telegram: Add comments to messages (telegram) (#1652)
+- telegram: Add support for sender_chat (telegram) (#1677)
+- vk: Remove GroupID (vk) (#1668)
+
+## Bugfix
+
+- mattermost: Use current parentID if rootId is not set (mattermost) (#1675)
+- matrix: Make HTMLDisable work correct (matrix) (#1716)
+- whatsapp: Make EditSuffix option actually work (whatsapp). Fixes #1510 (#1728)
+
 # v1.23.2
 
 If you're running whatsapp you should update.
