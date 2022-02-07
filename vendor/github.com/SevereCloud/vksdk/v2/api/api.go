@@ -269,9 +269,15 @@ func (vk *VK) DefaultHandler(method string, sliceParams ...Params) (Response, er
 
 		switch resp.Header.Get("Content-Encoding") {
 		case "zstd":
-			reader, _ = zstd.NewReader(resp.Body)
+			zstdReader, _ := zstd.NewReader(resp.Body)
+			defer zstdReader.Close()
+
+			reader = zstdReader
 		case "gzip":
-			reader, _ = gzip.NewReader(resp.Body)
+			gzipReader, _ := gzip.NewReader(resp.Body)
+			defer gzipReader.Close()
+
+			reader = gzipReader
 		default:
 			reader = resp.Body
 		}
