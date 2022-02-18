@@ -371,7 +371,9 @@ github.com/slack-go/slack/internal/backoff
 github.com/slack-go/slack/internal/errorsx
 github.com/slack-go/slack/internal/misc
 github.com/slack-go/slack/internal/timex
+github.com/slack-go/slack/slackevents
 github.com/slack-go/slack/slackutilsx
+github.com/slack-go/slack/socketmode
 # github.com/spf13/afero v1.6.0
 ## explicit; go 1.13
 github.com/spf13/afero
