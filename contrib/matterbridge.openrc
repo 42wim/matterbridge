@@ -1,0 +1,19 @@
+#!/sbin/openrc-run
+# Copyright 2021-2022 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+command=/usr/bin/matterbridge
+command_args="-conf ${MATTERBRIDGE_CONF:-/etc/matterbridge/bridge.toml} ${MATTERBRIDGE_ARGS}"
+command_user="matterbridge:matterbridge"
+pidfile="/run/${RC_SVCNAME}.pid"
+command_background=1
+output_log="/var/log/${RC_SVCNAME}.log"
+error_log="${output_log}"
+
+depend() {
+	need net
+}
+
+start_pre() {
+	checkpath -f "${output_log}" -o "${command_user}" || return 1
+}
