@@ -511,17 +511,17 @@ func (b *Btelegram) handleEntities(rmsg *config.Message, message *tgbotapi.Messa
 			indexMovedBy += 8
 		}
 
-    if ( e.Type == "b" || e.Type == "strong" ) {
+    if e.Type == "bold"  {
 			offset := e.Offset + indexMovedBy
 			rmsg.Text = rmsg.Text[:offset] + "*" + rmsg.Text[offset:offset+e.Length] + "*" + rmsg.Text[offset+e.Length:]
 			indexMovedBy += 2
 		}
-    if ( e.Type == "i" || e.Type == "em" ) {
+    if e.Type == "italic" {
 			offset := e.Offset + indexMovedBy
 			rmsg.Text = rmsg.Text[:offset] + "_" + rmsg.Text[offset:offset+e.Length] + "_" + rmsg.Text[offset+e.Length:]
 			indexMovedBy += 2
 		}
-    if ( e.Type == "s" || e.Type == "strike" ) {
+    if e.Type == "strike" {
 			offset := e.Offset + indexMovedBy
 			rmsg.Text = rmsg.Text[:offset] + "~" + rmsg.Text[offset:offset+e.Length] + "~" + rmsg.Text[offset+e.Length:]
 			indexMovedBy += 2
