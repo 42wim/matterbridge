@@ -57,6 +57,11 @@ func (b *Btelegram) handleForwarded(rmsg *config.Message, message *tgbotapi.Mess
 		return
 	}
 
+	if message.ForwardFromChat != nil && message.ForwardFrom == nil {
+		rmsg.Text = "Forwarded from " + message.ForwardFromChat.Title + ": " + rmsg.Text
+		return
+	}
+
 	if message.ForwardFrom == nil {
 		rmsg.Text = "Forwarded from " + unknownUser + ": " + rmsg.Text
 		return
