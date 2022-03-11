@@ -202,7 +202,7 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 
 		if rmsg.Text != "" || len(rmsg.Extra) > 0 {
 			// Comment the next line out due to avoid removing empty lines in Telegram
-      // rmsg.Text = helper.RemoveEmptyNewLines(rmsg.Text)
+			// rmsg.Text = helper.RemoveEmptyNewLines(rmsg.Text)
 			// channels don't have (always?) user information. see #410
 			if message.From != nil {
 				rmsg.Avatar = helper.GetAvatar(b.avatarMap, strconv.FormatInt(message.From.ID, 10), b.General)
@@ -511,17 +511,17 @@ func (b *Btelegram) handleEntities(rmsg *config.Message, message *tgbotapi.Messa
 			indexMovedBy += 8
 		}
 
-    if e.Type == "bold"  {
+		if e.Type == "bold" {
 			offset := e.Offset + indexMovedBy
 			rmsg.Text = rmsg.Text[:offset] + "*" + rmsg.Text[offset:offset+e.Length] + "*" + rmsg.Text[offset+e.Length:]
 			indexMovedBy += 2
 		}
-    if e.Type == "italic" {
+		if e.Type == "italic" {
 			offset := e.Offset + indexMovedBy
 			rmsg.Text = rmsg.Text[:offset] + "_" + rmsg.Text[offset:offset+e.Length] + "_" + rmsg.Text[offset+e.Length:]
 			indexMovedBy += 2
 		}
-    if e.Type == "strike" {
+		if e.Type == "strike" {
 			offset := e.Offset + indexMovedBy
 			rmsg.Text = rmsg.Text[:offset] + "~" + rmsg.Text[offset:offset+e.Length] + "~" + rmsg.Text[offset+e.Length:]
 			indexMovedBy += 2
