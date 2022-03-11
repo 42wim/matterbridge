@@ -33,7 +33,7 @@ var ErrWSAlreadyOpen = errors.New("web socket already opened")
 var ErrWSNotFound = errors.New("no websocket connection exists")
 
 // ErrWSShardBounds is thrown when you try to use a shard ID that is
-// less than the total shard count
+// more than the total shard count
 var ErrWSShardBounds = errors.New("ShardID must be less than ShardCount")
 
 type resumePacket struct {
@@ -383,6 +383,17 @@ func (s *Session) UpdateListeningStatus(name string) (err error) {
 
 // UpdateStatusComplex allows for sending the raw status update data untouched by discordgo.
 func (s *Session) UpdateStatusComplex(usd UpdateStatusData) (err error) {
+	// The comment does say "untouched by discordgo", but we might need to lie a bit here.
+	// The Discord documentation lists `activities` as being nullable, but in practice this
+	// doesn't seem to be the case. I had filed an issue about this at
+	// https://github.com/discord/discord-api-docs/issues/2559, but as of writing this
+	// haven't had any movement on it, so at this point I'm assuming this is an error,
+	// and am fixing this bug accordingly. Because sending `null` for `activities` instantly
+	// disconnects us, I think that disallowing it from being sent in `UpdateStatusComplex`
+	// isn't that big of an issue.
+	if usd.Activities == nil {
+		usd.Activities = make([]*Activity, 0)
+	}
 
 	s.RLock()
 	defer s.RUnlock()
@@ -755,13 +766,13 @@ func (s *Session) identify() error {
 	s.log(LogDebug, "called")
 
 	// TODO: This is a temporary block of code to help
-	// maintain backwards compatability
+	// maintain backwards compatibility
 	if s.Compress == false {
 		s.Identify.Compress = false
 	}
 
 	// TODO: This is a temporary block of code to help
-	// maintain backwards compatability
+	// maintain backwards compatibility
 	if s.Token != "" && s.Identify.Token == "" {
 		s.Identify.Token = s.Token
 	}

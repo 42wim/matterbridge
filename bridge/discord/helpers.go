@@ -6,7 +6,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/matterbridge/discordgo"
+	"github.com/bwmarrin/discordgo"
 )
 
 func (b *Bdiscord) getAllowedMentions() *discordgo.MessageAllowedMentions {

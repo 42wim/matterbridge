@@ -33,7 +33,7 @@ func NewRatelimiter() *RateLimiter {
 		buckets: make(map[string]*Bucket),
 		global:  new(int64),
 		customRateLimits: []*customRateLimit{
-			&customRateLimit{
+			{
 				suffix:   "//reactions//",
 				requests: 1,
 				reset:    200 * time.Millisecond,
