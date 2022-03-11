@@ -10,8 +10,8 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/discord/transmitter"
 	"github.com/42wim/matterbridge/bridge/helper"
-	lru "github.com/hashicorp/golang-lru"
 	"github.com/bwmarrin/discordgo"
+	lru "github.com/hashicorp/golang-lru"
 )
 
 const (

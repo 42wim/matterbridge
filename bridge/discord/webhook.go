@@ -89,7 +89,7 @@ func (b *Bdiscord) webhookSend(msg *config.Message, channelID string) (*discordg
 				&discordgo.WebhookParams{
 					Username:        msg.Username,
 					AvatarURL:       msg.Avatar,
-					File:            &file,
+					Files:           []*discordgo.File{&file},
 					Content:         content,
 					AllowedMentions: b.getAllowedMentions(),
 				},
