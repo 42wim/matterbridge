@@ -1,0 +1,15 @@
+fmt := import("fmt")
+os := import("os")
+times := import("times")
+
+if msgText != "" && msgUsername != "system" {
+    os.chdir("/var/www/matterbridge")
+    file := os.open_file("inmessage.log", os.o_append|os.o_wronly|os.o_create, 0644)
+    file.write_string(fmt.sprintf(
+        "[%s] <%s> %s\n",
+        times.time_format(times.now(), times.format_rfc1123),
+        msgUsername,
+        msgText
+    ))
+    file.close()
+}
