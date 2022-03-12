@@ -3,7 +3,7 @@ package bdiscord
 import (
 	"testing"
 
-	"github.com/matterbridge/discordgo"
+	"github.com/bwmarrin/discordgo"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -831,9 +831,15 @@ func (v *VoiceConnection) opusReceiver(udpConn *net.UDPConn, close <-chan struct
 		copy(nonce[:], recvbuf[0:12])
 		p.Opus, _ = secretbox.Open(nil, recvbuf[12:rlen], &nonce, &v.op4.SecretKey)
 
-		if len(p.Opus) > 8 && recvbuf[0] == 0x90 {
-			// Extension bit is set, first 8 bytes is the extended header
-			p.Opus = p.Opus[8:]
+		// extension bit set, and not a RTCP packet
+		if ((recvbuf[0] & 0x10) == 0x10) && ((recvbuf[1] & 0x80) == 0) {
+			// get extended header length
+			extlen := binary.BigEndian.Uint16(p.Opus[2:4])
+			// 4 bytes (ext header header) + 4*extlen (ext header data)
+			shift := int(4 + 4*extlen)
+			if len(p.Opus) > shift {
+				p.Opus = p.Opus[shift:]
+			}
 		}
 
 		if c != nil {

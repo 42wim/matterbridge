@@ -1,7 +1,7 @@
 package transmitter
 
 import (
-	"github.com/matterbridge/discordgo"
+	"github.com/bwmarrin/discordgo"
 )
 
 // isDiscordPermissionError returns false for nil, and true if a Discord RESTError with code discordgo.ErrorCodeMissionPermissions

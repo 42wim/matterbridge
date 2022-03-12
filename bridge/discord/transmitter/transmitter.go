@@ -20,7 +20,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/matterbridge/discordgo"
+	"github.com/bwmarrin/discordgo"
 	log "github.com/sirupsen/logrus"
 )
 

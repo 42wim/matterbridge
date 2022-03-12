@@ -2,8 +2,8 @@ package bdiscord
 
 import (
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/bwmarrin/discordgo"
 	"github.com/davecgh/go-spew/spew"
-	"github.com/matterbridge/discordgo"
 )
 
 func (b *Bdiscord) messageDelete(s *discordgo.Session, m *discordgo.MessageDelete) { //nolint:unparam
@@ -56,7 +56,7 @@ func (b *Bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdat
 		return
 	}
 	// only when message is actually edited
-	if m.Message.EditedTimestamp != "" {
+	if m.Message.EditedTimestamp != nil {
 		b.Log.Debugf("Sending edit message")
 		m.Content += b.GetString("EditSuffix")
 		msg := &discordgo.MessageCreate{

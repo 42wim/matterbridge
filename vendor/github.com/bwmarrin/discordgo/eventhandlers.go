@@ -7,50 +7,62 @@ package discordgo
 // Event type values are used to match the events returned by Discord.
 // EventTypes surrounded by __ are synthetic and are internal to DiscordGo.
 const (
-	channelCreateEventType            = "CHANNEL_CREATE"
-	channelDeleteEventType            = "CHANNEL_DELETE"
-	channelPinsUpdateEventType        = "CHANNEL_PINS_UPDATE"
-	channelUpdateEventType            = "CHANNEL_UPDATE"
-	connectEventType                  = "__CONNECT__"
-	disconnectEventType               = "__DISCONNECT__"
-	eventEventType                    = "__EVENT__"
-	guildBanAddEventType              = "GUILD_BAN_ADD"
-	guildBanRemoveEventType           = "GUILD_BAN_REMOVE"
-	guildCreateEventType              = "GUILD_CREATE"
-	guildDeleteEventType              = "GUILD_DELETE"
-	guildEmojisUpdateEventType        = "GUILD_EMOJIS_UPDATE"
-	guildIntegrationsUpdateEventType  = "GUILD_INTEGRATIONS_UPDATE"
-	guildMemberAddEventType           = "GUILD_MEMBER_ADD"
-	guildMemberRemoveEventType        = "GUILD_MEMBER_REMOVE"
-	guildMemberUpdateEventType        = "GUILD_MEMBER_UPDATE"
-	guildMembersChunkEventType        = "GUILD_MEMBERS_CHUNK"
-	guildRoleCreateEventType          = "GUILD_ROLE_CREATE"
-	guildRoleDeleteEventType          = "GUILD_ROLE_DELETE"
-	guildRoleUpdateEventType          = "GUILD_ROLE_UPDATE"
-	guildUpdateEventType              = "GUILD_UPDATE"
-	messageAckEventType               = "MESSAGE_ACK"
-	messageCreateEventType            = "MESSAGE_CREATE"
-	messageDeleteEventType            = "MESSAGE_DELETE"
-	messageDeleteBulkEventType        = "MESSAGE_DELETE_BULK"
-	messageReactionAddEventType       = "MESSAGE_REACTION_ADD"
-	messageReactionRemoveEventType    = "MESSAGE_REACTION_REMOVE"
-	messageReactionRemoveAllEventType = "MESSAGE_REACTION_REMOVE_ALL"
-	messageUpdateEventType            = "MESSAGE_UPDATE"
-	presenceUpdateEventType           = "PRESENCE_UPDATE"
-	presencesReplaceEventType         = "PRESENCES_REPLACE"
-	rateLimitEventType                = "__RATE_LIMIT__"
-	readyEventType                    = "READY"
-	relationshipAddEventType          = "RELATIONSHIP_ADD"
-	relationshipRemoveEventType       = "RELATIONSHIP_REMOVE"
-	resumedEventType                  = "RESUMED"
-	typingStartEventType              = "TYPING_START"
-	userGuildSettingsUpdateEventType  = "USER_GUILD_SETTINGS_UPDATE"
-	userNoteUpdateEventType           = "USER_NOTE_UPDATE"
-	userSettingsUpdateEventType       = "USER_SETTINGS_UPDATE"
-	userUpdateEventType               = "USER_UPDATE"
-	voiceServerUpdateEventType        = "VOICE_SERVER_UPDATE"
-	voiceStateUpdateEventType         = "VOICE_STATE_UPDATE"
-	webhooksUpdateEventType           = "WEBHOOKS_UPDATE"
+	channelCreateEventType             = "CHANNEL_CREATE"
+	channelDeleteEventType             = "CHANNEL_DELETE"
+	channelPinsUpdateEventType         = "CHANNEL_PINS_UPDATE"
+	channelUpdateEventType             = "CHANNEL_UPDATE"
+	connectEventType                   = "__CONNECT__"
+	disconnectEventType                = "__DISCONNECT__"
+	eventEventType                     = "__EVENT__"
+	guildBanAddEventType               = "GUILD_BAN_ADD"
+	guildBanRemoveEventType            = "GUILD_BAN_REMOVE"
+	guildCreateEventType               = "GUILD_CREATE"
+	guildDeleteEventType               = "GUILD_DELETE"
+	guildEmojisUpdateEventType         = "GUILD_EMOJIS_UPDATE"
+	guildIntegrationsUpdateEventType   = "GUILD_INTEGRATIONS_UPDATE"
+	guildMemberAddEventType            = "GUILD_MEMBER_ADD"
+	guildMemberRemoveEventType         = "GUILD_MEMBER_REMOVE"
+	guildMemberUpdateEventType         = "GUILD_MEMBER_UPDATE"
+	guildMembersChunkEventType         = "GUILD_MEMBERS_CHUNK"
+	guildRoleCreateEventType           = "GUILD_ROLE_CREATE"
+	guildRoleDeleteEventType           = "GUILD_ROLE_DELETE"
+	guildRoleUpdateEventType           = "GUILD_ROLE_UPDATE"
+	guildUpdateEventType               = "GUILD_UPDATE"
+	guildScheduledEventCreateEventType = "GUILD_SCHEDULED_EVENT_CREATE"
+	guildScheduledEventUpdateEventType = "GUILD_SCHEDULED_EVENT_UPDATE"
+	guildScheduledEventDeleteEventType = "GUILD_SCHEDULED_EVENT_DELETE"
+	interactionCreateEventType         = "INTERACTION_CREATE"
+	inviteCreateEventType              = "INVITE_CREATE"
+	inviteDeleteEventType              = "INVITE_DELETE"
+	messageAckEventType                = "MESSAGE_ACK"
+	messageCreateEventType             = "MESSAGE_CREATE"
+	messageDeleteEventType             = "MESSAGE_DELETE"
+	messageDeleteBulkEventType         = "MESSAGE_DELETE_BULK"
+	messageReactionAddEventType        = "MESSAGE_REACTION_ADD"
+	messageReactionRemoveEventType     = "MESSAGE_REACTION_REMOVE"
+	messageReactionRemoveAllEventType  = "MESSAGE_REACTION_REMOVE_ALL"
+	messageUpdateEventType             = "MESSAGE_UPDATE"
+	presenceUpdateEventType            = "PRESENCE_UPDATE"
+	presencesReplaceEventType          = "PRESENCES_REPLACE"
+	rateLimitEventType                 = "__RATE_LIMIT__"
+	readyEventType                     = "READY"
+	relationshipAddEventType           = "RELATIONSHIP_ADD"
+	relationshipRemoveEventType        = "RELATIONSHIP_REMOVE"
+	resumedEventType                   = "RESUMED"
+	threadCreateEventType              = "THREAD_CREATE"
+	threadDeleteEventType              = "THREAD_DELETE"
+	threadListSyncEventType            = "THREAD_LIST_SYNC"
+	threadMemberUpdateEventType        = "THREAD_MEMBER_UPDATE"
+	threadMembersUpdateEventType       = "THREAD_MEMBERS_UPDATE"
+	threadUpdateEventType              = "THREAD_UPDATE"
+	typingStartEventType               = "TYPING_START"
+	userGuildSettingsUpdateEventType   = "USER_GUILD_SETTINGS_UPDATE"
+	userNoteUpdateEventType            = "USER_NOTE_UPDATE"
+	userSettingsUpdateEventType        = "USER_SETTINGS_UPDATE"
+	userUpdateEventType                = "USER_UPDATE"
+	voiceServerUpdateEventType         = "VOICE_SERVER_UPDATE"
+	voiceStateUpdateEventType          = "VOICE_STATE_UPDATE"
+	webhooksUpdateEventType            = "WEBHOOKS_UPDATE"
 )
 
 // channelCreateEventHandler is an event handler for ChannelCreate events.
@@ -298,6 +310,66 @@ func (eh guildIntegrationsUpdateEventHandler) Handle(s *Session, i interface{}) 
 	}
 }
 
+// guildScheduledEventCreateEventHandler is an event handler for GuildScheduledEventCreate events.
+type guildScheduledEventCreateEventHandler func(*Session, *GuildScheduledEventCreate)
+
+// Type returns the event type for GuildScheduledEventCreate events.
+func (eh guildScheduledEventCreateEventHandler) Type() string {
+	return guildScheduledEventCreateEventType
+}
+
+// New returns a new instance of GuildScheduledEventCreate.
+func (eh guildScheduledEventCreateEventHandler) New() interface{} {
+	return &GuildScheduledEventCreate{}
+}
+
+// Handle is the handler for GuildScheduledEventCreate events.
+func (eh guildScheduledEventCreateEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*GuildScheduledEventCreate); ok {
+		eh(s, t)
+	}
+}
+
+// guildScheduledEventUpdateEventHandler is an event handler for GuildScheduledEventUpdate events.
+type guildScheduledEventUpdateEventHandler func(*Session, *GuildScheduledEventUpdate)
+
+// Type returns the event type for GuildScheduledEventUpdate events.
+func (eh guildScheduledEventUpdateEventHandler) Type() string {
+	return guildScheduledEventUpdateEventType
+}
+
+// New returns a new instance of GuildScheduledEventUpdate.
+func (eh guildScheduledEventUpdateEventHandler) New() interface{} {
+	return &GuildScheduledEventUpdate{}
+}
+
+// Handle is the handler for GuildScheduledEventUpdate events.
+func (eh guildScheduledEventUpdateEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*GuildScheduledEventUpdate); ok {
+		eh(s, t)
+	}
+}
+
+// guildScheduledEventDeleteEventHandler is an event handler for GuildScheduledEventDelete events.
+type guildScheduledEventDeleteEventHandler func(*Session, *GuildScheduledEventDelete)
+
+// Type returns the event type for GuildScheduledEventDelete events.
+func (eh guildScheduledEventDeleteEventHandler) Type() string {
+	return guildScheduledEventDeleteEventType
+}
+
+// New returns a new instance of GuildScheduledEventDelete.
+func (eh guildScheduledEventDeleteEventHandler) New() interface{} {
+	return &GuildScheduledEventDelete{}
+}
+
+// Handle is the handler for GuildScheduledEventDelete events.
+func (eh guildScheduledEventDeleteEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*GuildScheduledEventDelete); ok {
+		eh(s, t)
+	}
+}
+
 // guildMemberAddEventHandler is an event handler for GuildMemberAdd events.
 type guildMemberAddEventHandler func(*Session, *GuildMemberAdd)
 
@@ -454,6 +526,66 @@ func (eh guildUpdateEventHandler) New() interface{} {
 // Handle is the handler for GuildUpdate events.
 func (eh guildUpdateEventHandler) Handle(s *Session, i interface{}) {
 	if t, ok := i.(*GuildUpdate); ok {
+		eh(s, t)
+	}
+}
+
+// interactionCreateEventHandler is an event handler for InteractionCreate events.
+type interactionCreateEventHandler func(*Session, *InteractionCreate)
+
+// Type returns the event type for InteractionCreate events.
+func (eh interactionCreateEventHandler) Type() string {
+	return interactionCreateEventType
+}
+
+// New returns a new instance of InteractionCreate.
+func (eh interactionCreateEventHandler) New() interface{} {
+	return &InteractionCreate{}
+}
+
+// Handle is the handler for InteractionCreate events.
+func (eh interactionCreateEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*InteractionCreate); ok {
+		eh(s, t)
+	}
+}
+
+// inviteCreateEventHandler is an event handler for InviteCreate events.
+type inviteCreateEventHandler func(*Session, *InviteCreate)
+
+// Type returns the event type for InviteCreate events.
+func (eh inviteCreateEventHandler) Type() string {
+	return inviteCreateEventType
+}
+
+// New returns a new instance of InviteCreate.
+func (eh inviteCreateEventHandler) New() interface{} {
+	return &InviteCreate{}
+}
+
+// Handle is the handler for InviteCreate events.
+func (eh inviteCreateEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*InviteCreate); ok {
+		eh(s, t)
+	}
+}
+
+// inviteDeleteEventHandler is an event handler for InviteDelete events.
+type inviteDeleteEventHandler func(*Session, *InviteDelete)
+
+// Type returns the event type for InviteDelete events.
+func (eh inviteDeleteEventHandler) Type() string {
+	return inviteDeleteEventType
+}
+
+// New returns a new instance of InviteDelete.
+func (eh inviteDeleteEventHandler) New() interface{} {
+	return &InviteDelete{}
+}
+
+// Handle is the handler for InviteDelete events.
+func (eh inviteDeleteEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*InviteDelete); ok {
 		eh(s, t)
 	}
 }
@@ -753,6 +885,126 @@ func (eh resumedEventHandler) Handle(s *Session, i interface{}) {
 	}
 }
 
+// threadCreateEventHandler is an event handler for ThreadCreate events.
+type threadCreateEventHandler func(*Session, *ThreadCreate)
+
+// Type returns the event type for ThreadCreate events.
+func (eh threadCreateEventHandler) Type() string {
+	return threadCreateEventType
+}
+
+// New returns a new instance of ThreadCreate.
+func (eh threadCreateEventHandler) New() interface{} {
+	return &ThreadCreate{}
+}
+
+// Handle is the handler for ThreadCreate events.
+func (eh threadCreateEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*ThreadCreate); ok {
+		eh(s, t)
+	}
+}
+
+// threadDeleteEventHandler is an event handler for ThreadDelete events.
+type threadDeleteEventHandler func(*Session, *ThreadDelete)
+
+// Type returns the event type for ThreadDelete events.
+func (eh threadDeleteEventHandler) Type() string {
+	return threadDeleteEventType
+}
+
+// New returns a new instance of ThreadDelete.
+func (eh threadDeleteEventHandler) New() interface{} {
+	return &ThreadDelete{}
+}
+
+// Handle is the handler for ThreadDelete events.
+func (eh threadDeleteEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*ThreadDelete); ok {
+		eh(s, t)
+	}
+}
+
+// threadListSyncEventHandler is an event handler for ThreadListSync events.
+type threadListSyncEventHandler func(*Session, *ThreadListSync)
+
+// Type returns the event type for ThreadListSync events.
+func (eh threadListSyncEventHandler) Type() string {
+	return threadListSyncEventType
+}
+
+// New returns a new instance of ThreadListSync.
+func (eh threadListSyncEventHandler) New() interface{} {
+	return &ThreadListSync{}
+}
+
+// Handle is the handler for ThreadListSync events.
+func (eh threadListSyncEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*ThreadListSync); ok {
+		eh(s, t)
+	}
+}
+
+// threadMemberUpdateEventHandler is an event handler for ThreadMemberUpdate events.
+type threadMemberUpdateEventHandler func(*Session, *ThreadMemberUpdate)
+
+// Type returns the event type for ThreadMemberUpdate events.
+func (eh threadMemberUpdateEventHandler) Type() string {
+	return threadMemberUpdateEventType
+}
+
+// New returns a new instance of ThreadMemberUpdate.
+func (eh threadMemberUpdateEventHandler) New() interface{} {
+	return &ThreadMemberUpdate{}
+}
+
+// Handle is the handler for ThreadMemberUpdate events.
+func (eh threadMemberUpdateEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*ThreadMemberUpdate); ok {
+		eh(s, t)
+	}
+}
+
+// threadMembersUpdateEventHandler is an event handler for ThreadMembersUpdate events.
+type threadMembersUpdateEventHandler func(*Session, *ThreadMembersUpdate)
+
+// Type returns the event type for ThreadMembersUpdate events.
+func (eh threadMembersUpdateEventHandler) Type() string {
+	return threadMembersUpdateEventType
+}
+
+// New returns a new instance of ThreadMembersUpdate.
+func (eh threadMembersUpdateEventHandler) New() interface{} {
+	return &ThreadMembersUpdate{}
+}
+
+// Handle is the handler for ThreadMembersUpdate events.
+func (eh threadMembersUpdateEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*ThreadMembersUpdate); ok {
+		eh(s, t)
+	}
+}
+
+// threadUpdateEventHandler is an event handler for ThreadUpdate events.
+type threadUpdateEventHandler func(*Session, *ThreadUpdate)
+
+// Type returns the event type for ThreadUpdate events.
+func (eh threadUpdateEventHandler) Type() string {
+	return threadUpdateEventType
+}
+
+// New returns a new instance of ThreadUpdate.
+func (eh threadUpdateEventHandler) New() interface{} {
+	return &ThreadUpdate{}
+}
+
+// Handle is the handler for ThreadUpdate events.
+func (eh threadUpdateEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*ThreadUpdate); ok {
+		eh(s, t)
+	}
+}
+
 // typingStartEventHandler is an event handler for TypingStart events.
 type typingStartEventHandler func(*Session, *TypingStart)
 
@@ -943,6 +1195,12 @@ func handlerForInterface(handler interface{}) EventHandler {
 		return guildEmojisUpdateEventHandler(v)
 	case func(*Session, *GuildIntegrationsUpdate):
 		return guildIntegrationsUpdateEventHandler(v)
+	case func(*Session, *GuildScheduledEventCreate):
+		return guildScheduledEventCreateEventHandler(v)
+	case func(*Session, *GuildScheduledEventUpdate):
+		return guildScheduledEventUpdateEventHandler(v)
+	case func(*Session, *GuildScheduledEventDelete):
+		return guildScheduledEventDeleteEventHandler(v)
 	case func(*Session, *GuildMemberAdd):
 		return guildMemberAddEventHandler(v)
 	case func(*Session, *GuildMemberRemove):
@@ -959,6 +1217,12 @@ func handlerForInterface(handler interface{}) EventHandler {
 		return guildRoleUpdateEventHandler(v)
 	case func(*Session, *GuildUpdate):
 		return guildUpdateEventHandler(v)
+	case func(*Session, *InteractionCreate):
+		return interactionCreateEventHandler(v)
+	case func(*Session, *InviteCreate):
+		return inviteCreateEventHandler(v)
+	case func(*Session, *InviteDelete):
+		return inviteDeleteEventHandler(v)
 	case func(*Session, *MessageAck):
 		return messageAckEventHandler(v)
 	case func(*Session, *MessageCreate):
@@ -989,6 +1253,18 @@ func handlerForInterface(handler interface{}) EventHandler {
 		return relationshipRemoveEventHandler(v)
 	case func(*Session, *Resumed):
 		return resumedEventHandler(v)
+	case func(*Session, *ThreadCreate):
+		return threadCreateEventHandler(v)
+	case func(*Session, *ThreadDelete):
+		return threadDeleteEventHandler(v)
+	case func(*Session, *ThreadListSync):
+		return threadListSyncEventHandler(v)
+	case func(*Session, *ThreadMemberUpdate):
+		return threadMemberUpdateEventHandler(v)
+	case func(*Session, *ThreadMembersUpdate):
+		return threadMembersUpdateEventHandler(v)
+	case func(*Session, *ThreadUpdate):
+		return threadUpdateEventHandler(v)
 	case func(*Session, *TypingStart):
 		return typingStartEventHandler(v)
 	case func(*Session, *UserGuildSettingsUpdate):
@@ -1021,6 +1297,9 @@ func init() {
 	registerInterfaceProvider(guildDeleteEventHandler(nil))
 	registerInterfaceProvider(guildEmojisUpdateEventHandler(nil))
 	registerInterfaceProvider(guildIntegrationsUpdateEventHandler(nil))
+	registerInterfaceProvider(guildScheduledEventCreateEventHandler(nil))
+	registerInterfaceProvider(guildScheduledEventUpdateEventHandler(nil))
+	registerInterfaceProvider(guildScheduledEventDeleteEventHandler(nil))
 	registerInterfaceProvider(guildMemberAddEventHandler(nil))
 	registerInterfaceProvider(guildMemberRemoveEventHandler(nil))
 	registerInterfaceProvider(guildMemberUpdateEventHandler(nil))
@@ -1029,6 +1308,9 @@ func init() {
 	registerInterfaceProvider(guildRoleDeleteEventHandler(nil))
 	registerInterfaceProvider(guildRoleUpdateEventHandler(nil))
 	registerInterfaceProvider(guildUpdateEventHandler(nil))
+	registerInterfaceProvider(interactionCreateEventHandler(nil))
+	registerInterfaceProvider(inviteCreateEventHandler(nil))
+	registerInterfaceProvider(inviteDeleteEventHandler(nil))
 	registerInterfaceProvider(messageAckEventHandler(nil))
 	registerInterfaceProvider(messageCreateEventHandler(nil))
 	registerInterfaceProvider(messageDeleteEventHandler(nil))
@@ -1043,6 +1325,12 @@ func init() {
 	registerInterfaceProvider(relationshipAddEventHandler(nil))
 	registerInterfaceProvider(relationshipRemoveEventHandler(nil))
 	registerInterfaceProvider(resumedEventHandler(nil))
+	registerInterfaceProvider(threadCreateEventHandler(nil))
+	registerInterfaceProvider(threadDeleteEventHandler(nil))
+	registerInterfaceProvider(threadListSyncEventHandler(nil))
+	registerInterfaceProvider(threadMemberUpdateEventHandler(nil))
+	registerInterfaceProvider(threadMembersUpdateEventHandler(nil))
+	registerInterfaceProvider(threadUpdateEventHandler(nil))
 	registerInterfaceProvider(typingStartEventHandler(nil))
 	registerInterfaceProvider(userGuildSettingsUpdateEventHandler(nil))
 	registerInterfaceProvider(userNoteUpdateEventHandler(nil))
