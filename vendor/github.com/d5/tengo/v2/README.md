@@ -147,7 +147,4 @@ fmt.Println(res) // "success"
 - Syntax Highlighters: [VSCode](https://github.com/lissein/vscode-tengo), [Atom](https://github.com/d5/tengo-atom)
 - **Why the name Tengo?** It's from [1Q84](https://en.wikipedia.org/wiki/1Q84).
 
-##
-
-:hearts: Like writing Go code? Come work at Skool. [We're hiring!](https://jobs.lever.co/skool)
 

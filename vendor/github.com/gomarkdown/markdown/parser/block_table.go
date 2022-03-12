@@ -25,6 +25,11 @@ func (p *Parser) tableRow(data []byte, columns []ast.CellAlignFlags, header bool
 
 		cellStart := i
 
+		// If we are in a codespan we should discount any | we see, check for that here and skip ahead.
+		if isCode, _ := codeSpan(p, data[i:], 0); isCode > 0 {
+			i += isCode - 1
+		}
+
 		for i < n && (data[i] != '|' || isBackslashEscaped(data, i)) && data[i] != '\n' {
 			i++
 		}
@@ -84,6 +89,11 @@ func (p *Parser) tableFooter(data []byte) bool {
 	n := len(data)
 	i := skipCharN(data, 0, ' ', 3)
 	for ; i < n && data[i] != '\n'; i++ {
+		// If we are in a codespan we should discount any | we see, check for that here and skip ahead.
+		if isCode, _ := codeSpan(p, data[i:], 0); isCode > 0 {
+			i += isCode - 1
+		}
+
 		if data[i] == '|' && !isBackslashEscaped(data, i) {
 			colCount++
 			continue
@@ -111,6 +121,11 @@ func (p *Parser) tableHeader(data []byte, doRender bool) (size int, columns []as
 	headerIsUnderline := true
 	headerIsWithEmptyFields := true
 	for i = 0; i < len(data) && data[i] != '\n'; i++ {
+		// If we are in a codespan we should discount any | we see, check for that here and skip ahead.
+		if isCode, _ := codeSpan(p, data[i:], 0); isCode > 0 {
+			i += isCode - 1
+		}
+
 		if data[i] == '|' && !isBackslashEscaped(data, i) {
 			colCount++
 		}

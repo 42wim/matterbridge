@@ -1,6 +1,6 @@
 # Markdown Parser and HTML Renderer for Go
 
-[![GoDoc](https://godoc.org/github.com/gomarkdown/markdown?status.svg)](https://godoc.org/github.com/gomarkdown/markdown) [![codecov](https://codecov.io/gh/gomarkdown/markdown/branch/master/graph/badge.svg)](https://codecov.io/gh/gomarkdown/markdown)
+[![pkg.go.dev](https://pkg.go.dev/badge/github.com/gomarkdown/markdown)](https://pkg.go.dev/badge/github.com/gomarkdown/markdown)
 
 Package `github.com/gomarkdown/markdown` is a very fast Go library for parsing [Markdown](https://daringfireball.net/projects/markdown/) documents and rendering them to HTML.
 
@@ -8,10 +8,10 @@ It's fast and supports common extensions.
 
 ## API Docs:
 
-- https://godoc.org/github.com/gomarkdown/markdown : top level package
-- https://godoc.org/github.com/gomarkdown/markdown/ast : defines abstract syntax tree of parsed markdown document
-- https://godoc.org/github.com/gomarkdown/markdown/parser : parser
-- https://godoc.org/github.com/gomarkdown/markdown/html : html renderer
+- https://pkg.go.dev/github.com/gomarkdown/markdown : top level package
+- https://pkg.go.dev/github.com/gomarkdown/markdown/ast : defines abstract syntax tree of parsed markdown document
+- https://pkg.go.dev/github.com/gomarkdown/markdown/parser : parser
+- https://pkg.go.dev/github.com/gomarkdown/markdown/html : html renderer
 
 ## Users
 
@@ -40,7 +40,7 @@ output := markdown.ToHTML(md, nil, nil)
 
 Markdown format is loosely specified and there are multiple extensions invented after original specification was created.
 
-The parser supports several [extensions](https://godoc.org/github.com/gomarkdown/markdown/parser#Extensions).
+The parser supports several [extensions](https://pkg.go.dev/github.com/gomarkdown/markdown/parser#Extensions).
 
 Default parser uses most common `parser.CommonExtensions` but you can easily use parser with custom extension:
 
@@ -59,7 +59,7 @@ html := markdown.ToHTML(md, parser, nil)
 
 ## Customizing HTML renderer
 
-Similarly, HTML renderer can be configured with different [options](https://godoc.org/github.com/gomarkdown/markdown/html#RendererOptions)
+Similarly, HTML renderer can be configured with different [options](https://pkg.go.dev/github.com/gomarkdown/markdown/html#RendererOptions)
 
 Here's how to use a custom renderer:
 
@@ -77,9 +77,9 @@ md := []byte("markdown text")
 html := markdown.ToHTML(md, nil, renderer)
 ```
 
-HTML renderer also supports reusing most of the logic and overriding rendering of only specifc nodes.
+HTML renderer also supports reusing most of the logic and overriding rendering of only specific nodes.
 
-You can provide [RenderNodeFunc](https://godoc.org/github.com/gomarkdown/markdown/html#RenderNodeFunc) in [RendererOptions](https://godoc.org/github.com/gomarkdown/markdown/html#RendererOptions).
+You can provide [RenderNodeFunc](https://pkg.go.dev/github.com/gomarkdown/markdown/html#RenderNodeFunc) in [RendererOptions](https://pkg.go.dev/github.com/gomarkdown/markdown/html#RendererOptions).
 
 The function is called for each node in AST, you can implement custom rendering logic and tell HTML renderer to skip rendering this node.
 
@@ -134,7 +134,7 @@ html := bluemonday.UGCPolicy().SanitizeBytes(maybeUnsafeHTML)
 ## Windows / Mac newlines
 
 The library only supports Unix newlines. If you have markdown text with possibly
-Windows / Mac newlines, normalize newlines before caling this librar using
+Windows / Mac newlines, normalize newlines before calling this library using
 `d = markdown.NormalizeNewlines(d)`
 
 ## mdtohtml command-line tool

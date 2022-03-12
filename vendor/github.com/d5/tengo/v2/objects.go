@@ -1577,9 +1577,8 @@ func (o *Undefined) Value() Object {
 // UserFunction represents a user function.
 type UserFunction struct {
 	ObjectImpl
-	Name       string
-	Value      CallableFunc
-	EncodingID string
+	Name  string
+	Value CallableFunc
 }
 
 // TypeName returns the name of the type.
@@ -1593,7 +1592,7 @@ func (o *UserFunction) String() string {
 
 // Copy returns a copy of the type.
 func (o *UserFunction) Copy() Object {
-	return &UserFunction{Value: o.Value}
+	return &UserFunction{Value: o.Value, Name: o.Name}
 }
 
 // Equals returns true if the value of the type is equal to the value of

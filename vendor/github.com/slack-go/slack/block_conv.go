@@ -2,9 +2,8 @@ package slack
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-
-	"github.com/pkg/errors"
 )
 
 type sumtype struct {
