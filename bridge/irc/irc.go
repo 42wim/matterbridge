@@ -362,8 +362,10 @@ func (b *Birc) skipPrivMsg(event girc.Event) bool {
 		return true
 	}
 	// don't forward message from ourself
-	if event.Source.Name == b.Nick {
-		return true
+	if event.Source != nil {
+		if event.Source.Name == b.Nick {
+			return true
+		}
 	}
 	// don't forward messages we sent via RELAYMSG
 	if relayedNick, ok := event.Tags.Get("draft/relaymsg"); ok && relayedNick == b.Nick {
