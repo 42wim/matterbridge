@@ -161,6 +161,10 @@ func X_exit(_ *TLS, status int32) {
 }
 
 func SetEnviron(t *TLS, env []string) {
+	if environInitialized {
+		return
+	}
+
 	environInitialized = true
 	p := Xcalloc(t, 1, types.Size_t((len(env)+1)*(int(uintptrSize))))
 	if p == 0 {

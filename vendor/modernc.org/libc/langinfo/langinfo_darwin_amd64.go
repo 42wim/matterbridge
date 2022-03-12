@@ -259,6 +259,13 @@ var X__darwin_check_fd_set_overflow uintptr /* <builtin>:146:5: */
 // in between its arguments.  __CONCAT can also concatenate double-quoted
 // strings produced by the __STRING macro, but this only works with ANSI C.
 
+// In non-ANSI C environments, new programs will want ANSI-only C keywords
+// deleted from the program and old programs will want them left alone.
+// When using a compiler other than gcc, programs using the ANSI C keywords
+// const, inline etc. as normal identifiers should define -DNO_ANSI_KEYWORDS.
+// When using "gcc -traditional", we assume that this is the intent; if
+// __GNUC__ is defined but __STDC__ is not, we leave the new keywords alone.
+
 // __unused denotes variables and functions that may not be used, preventing
 // the compiler from warning about it if not used.
 

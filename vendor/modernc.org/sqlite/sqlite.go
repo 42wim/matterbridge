@@ -685,7 +685,13 @@ type tx struct {
 
 func newTx(c *conn) (*tx, error) {
 	r := &tx{c: c}
-	if err := r.exec(context.Background(), "begin"); err != nil {
+	var sql string
+	if c.beginMode != "" {
+		sql = "begin " + c.beginMode
+	} else {
+		sql = "begin"
+	}
+	if err := r.exec(context.Background(), sql); err != nil {
 		return nil, err
 	}
 
@@ -743,6 +749,7 @@ type conn struct {
 	sync.Mutex
 
 	writeTimeFormat string
+	beginMode       string
 }
 
 func newConn(dsn string) (*conn, error) {
@@ -805,6 +812,14 @@ func applyQueryParams(c *conn, query string) error {
 		}
 		c.writeTimeFormat = f
 		return nil
+	}
+
+	if v := q.Get("_txlock"); v != "" {
+		lower := strings.ToLower(v)
+		if lower != "deferred" && lower != "immediate" && lower != "exclusive" {
+			return fmt.Errorf("unknown _txlock %q", v)
+		}
+		c.beginMode = v
 	}
 
 	return nil
@@ -1386,6 +1401,27 @@ func newDriver() *Driver { return &Driver{} }
 // efficient re-use.
 //
 // The returned connection is only used by one goroutine at a time.
+//
+// If name contains a '?', what follows is treated as a query string. This
+// driver supports the following query parameters:
+//
+// _pragma: Each value will be run as a "PRAGMA ..." statement (with the PRAGMA
+// keyword added for you). May be specified more than once. Example:
+// "_pragma=foreign_keys(1)" will enable foreign key enforcement. More
+// information on supported PRAGMAs is available from the SQLite documentation:
+// https://www.sqlite.org/pragma.html
+//
+// _time_format: The name of a format to use when writing time values to the
+// database. Currently the only supported value is "sqlite", which corresponds
+// to format 7 from https://www.sqlite.org/lang_datefunc.html#time_values,
+// including the timezone specifier. If this parameter is not specified, then
+// the default String() format will be used.
+//
+// _txlock: The locking behavior to use when beginning a transaction. May be
+// "deferred", "immediate", or "exclusive" (case insensitive). The default is to
+// not specify one, which SQLite maps to "deferred". More information is
+// available at
+// https://www.sqlite.org/lang_transaction.html#deferred_immediate_and_exclusive_transactions
 func (d *Driver) Open(name string) (driver.Conn, error) {
 	return newConn(name)
 }
