@@ -156,6 +156,9 @@ type ChatServiceClient interface {
 	// Endpoint to unpin a message in a guild channel.
 	UnpinMessage(context.Context, *UnpinMessageRequest) (*UnpinMessageResponse, error)
 	// Endpoint to stream events from the homeserver.
+	// By default, this endpoint will subscribe to all events.
+	// Any guilds joined in the future will be added to the subscription as well.
+	// Use the UnsubscribeFromAll event for unsubscribing from all current subscriptions and disable the automatic guild subscriptions
 	StreamEvents(context.Context, chan *StreamEventsRequest) (chan *StreamEventsResponse, error)
 	// Endpoint to add a reaction to a message.
 	AddReaction(context.Context, *AddReactionRequest) (*AddReactionResponse, error)

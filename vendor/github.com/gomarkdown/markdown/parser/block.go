@@ -1412,6 +1412,13 @@ gatherlines:
 		// is this a nested list item?
 		case (p.uliPrefix(chunk) > 0 && !p.isHRule(chunk)) || p.oliPrefix(chunk) > 0 || p.dliPrefix(chunk) > 0:
 
+			// if indent is 4 or more spaces on unordered or ordered lists
+			// we need to add leadingWhiteSpaces + 1 spaces in the beginning of the chunk
+			if indentIndex >= 4 && p.dliPrefix(chunk) <= 0 {
+				leadingWhiteSpaces := skipChar(chunk, 0, ' ')
+				chunk = data[ line+indentIndex - (leadingWhiteSpaces + 1) : i]
+			}
+
 			// to be a nested list, it must be indented more
 			// if not, it is either a different kind of list
 			// or the next item in the same list
@@ -1484,7 +1491,7 @@ gatherlines:
 		}
 
 		// add the line into the working buffer without prefix
-		raw.Write(data[line+indentIndex : i])
+		raw.Write(chunk)
 
 		line = i
 	}

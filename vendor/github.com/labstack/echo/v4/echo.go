@@ -47,9 +47,6 @@ import (
 	stdLog "log"
 	"net"
 	"net/http"
-	"net/url"
-	"os"
-	"path/filepath"
 	"reflect"
 	"runtime"
 	"sync"
@@ -66,6 +63,7 @@ import (
 type (
 	// Echo is the top-level framework instance.
 	Echo struct {
+		filesystem
 		common
 		// startupMutex is mutex to lock Echo instance access during server configuration and startup. Useful for to get
 		// listener address info (on which interface/port was listener binded) without having data races.
@@ -77,7 +75,6 @@ type (
 		maxParam         *int
 		router           *Router
 		routers          map[string]*Router
-		notFoundHandler  HandlerFunc
 		pool             sync.Pool
 		Server           *http.Server
 		TLSServer        *http.Server
@@ -113,10 +110,10 @@ type (
 	}
 
 	// MiddlewareFunc defines a function to process middleware.
-	MiddlewareFunc func(HandlerFunc) HandlerFunc
+	MiddlewareFunc func(next HandlerFunc) HandlerFunc
 
 	// HandlerFunc defines a function to serve HTTP requests.
-	HandlerFunc func(Context) error
+	HandlerFunc func(c Context) error
 
 	// HTTPErrorHandler is a centralized HTTP error handler.
 	HTTPErrorHandler func(error, Context)
@@ -190,8 +187,12 @@ const (
 
 // Headers
 const (
-	HeaderAccept              = "Accept"
-	HeaderAcceptEncoding      = "Accept-Encoding"
+	HeaderAccept         = "Accept"
+	HeaderAcceptEncoding = "Accept-Encoding"
+	// HeaderAllow is the name of the "Allow" header field used to list the set of methods
+	// advertised as supported by the target resource. Returning an Allow header is mandatory
+	// for status 405 (method not found) and useful for the OPTIONS method in responses.
+	// See RFC 7231: https://datatracker.ietf.org/doc/html/rfc7231#section-7.4.1
 	HeaderAllow               = "Allow"
 	HeaderAuthorization       = "Authorization"
 	HeaderContentDisposition  = "Content-Disposition"
@@ -203,6 +204,7 @@ const (
 	HeaderIfModifiedSince     = "If-Modified-Since"
 	HeaderLastModified        = "Last-Modified"
 	HeaderLocation            = "Location"
+	HeaderRetryAfter          = "Retry-After"
 	HeaderUpgrade             = "Upgrade"
 	HeaderVary                = "Vary"
 	HeaderWWWAuthenticate     = "WWW-Authenticate"
@@ -212,12 +214,14 @@ const (
 	HeaderXForwardedSsl       = "X-Forwarded-Ssl"
 	HeaderXUrlScheme          = "X-Url-Scheme"
 	HeaderXHTTPMethodOverride = "X-HTTP-Method-Override"
-	HeaderXRealIP             = "X-Real-IP"
-	HeaderXRequestID          = "X-Request-ID"
-	HeaderXCorrelationID      = "X-Correlation-ID"
+	HeaderXRealIP             = "X-Real-Ip"
+	HeaderXRequestID          = "X-Request-Id"
+	HeaderXCorrelationID      = "X-Correlation-Id"
 	HeaderXRequestedWith      = "X-Requested-With"
 	HeaderServer              = "Server"
 	HeaderOrigin              = "Origin"
+	HeaderCacheControl        = "Cache-Control"
+	HeaderConnection          = "Connection"
 
 	// Access control
 	HeaderAccessControlRequestMethod    = "Access-Control-Request-Method"
@@ -242,7 +246,7 @@ const (
 
 const (
 	// Version of Echo
-	Version = "4.6.3"
+	Version = "4.7.0"
 	website = "https://echo.labstack.com"
 	// http://patorjk.com/software/taag/#p=display&f=Small%20Slant&t=Echo
 	banner = `
@@ -302,6 +306,12 @@ var (
 	}
 
 	MethodNotAllowedHandler = func(c Context) error {
+		// See RFC 7231 section 7.4.1: An origin server MUST generate an Allow field in a 405 (Method Not Allowed)
+		// response and MAY do so in any other response. For disabled resources an empty Allow header may be returned
+		routerAllowMethods, ok := c.Get(ContextKeyHeaderAllow).(string)
+		if ok && routerAllowMethods != "" {
+			c.Response().Header().Set(HeaderAllow, routerAllowMethods)
+		}
 		return ErrMethodNotAllowed
 	}
 )
@@ -309,8 +319,9 @@ var (
 // New creates an instance of Echo.
 func New() (e *Echo) {
 	e = &Echo{
-		Server:    new(http.Server),
-		TLSServer: new(http.Server),
+		filesystem: createFilesystem(),
+		Server:     new(http.Server),
+		TLSServer:  new(http.Server),
 		AutoTLSManager: autocert.Manager{
 			Prompt: autocert.AcceptTOS,
 		},
@@ -489,50 +500,6 @@ func (e *Echo) Match(methods []string, path string, handler HandlerFunc, middlew
 	return routes
 }
 
-// Static registers a new route with path prefix to serve static files from the
-// provided root directory.
-func (e *Echo) Static(prefix, root string) *Route {
-	if root == "" {
-		root = "." // For security we want to restrict to CWD.
-	}
-	return e.static(prefix, root, e.GET)
-}
-
-func (common) static(prefix, root string, get func(string, HandlerFunc, ...MiddlewareFunc) *Route) *Route {
-	h := func(c Context) error {
-		p, err := url.PathUnescape(c.Param("*"))
-		if err != nil {
-			return err
-		}
-
-		name := filepath.Join(root, filepath.Clean("/"+p)) // "/"+ for security
-		fi, err := os.Stat(name)
-		if err != nil {
-			// The access path does not exist
-			return NotFoundHandler(c)
-		}
-
-		// If the request is for a directory and does not end with "/"
-		p = c.Request().URL.Path // path must not be empty.
-		if fi.IsDir() && p[len(p)-1] != '/' {
-			// Redirect to ends with "/"
-			return c.Redirect(http.StatusMovedPermanently, p+"/")
-		}
-		return c.File(name)
-	}
-	// Handle added routes based on trailing slash:
-	// 	/prefix  => exact route "/prefix" + any route "/prefix/*"
-	// 	/prefix/ => only any route "/prefix/*"
-	if prefix != "" {
-		if prefix[len(prefix)-1] == '/' {
-			// Only add any route for intentional trailing slash
-			return get(prefix+"*", h)
-		}
-		get(prefix, h)
-	}
-	return get(prefix+"/*", h)
-}
-
 func (common) file(path, file string, get func(string, HandlerFunc, ...MiddlewareFunc) *Route,
 	m ...MiddlewareFunc) *Route {
 	return get(path, func(c Context) error {
@@ -643,7 +610,7 @@ func (e *Echo) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Acquire context
 	c := e.pool.Get().(*context)
 	c.Reset(r, w)
-	h := NotFoundHandler
+	var h func(Context) error
 
 	if e.premiddleware == nil {
 		e.findRouter(r.Host).Find(r.Method, GetPath(r), c)

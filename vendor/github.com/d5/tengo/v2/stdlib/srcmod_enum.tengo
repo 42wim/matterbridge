@@ -73,8 +73,7 @@ export {
   },
   // filter iterates over elements of `x`, returning an array of all elements `fn`
   // returns truthy for. `fn` is invoked with two arguments: `key` and `value`.
-  // `key` is an int index if `x` is array. `key` is a string key if `x` is map.
-  // It returns undefined if `x` is not enumerable.
+  // `key` is an int index if `x` is array. It returns undefined if `x` is not array.
   filter: func(x, fn) {
     if !is_array_like(x) { return undefined }
 
