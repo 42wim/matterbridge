@@ -439,7 +439,7 @@ github.com/yaegashi/msgraph.go/msauth
 # github.com/zfjagann/golang-ring v0.0.0-20210116075443-7c86fdb43134
 ## explicit
 github.com/zfjagann/golang-ring
-# go.mau.fi/libsignal v0.0.0-20211109153248-a67163214910
+# go.mau.fi/libsignal v0.0.0-20220308120827-0d87a03fd7c7
 ## explicit; go 1.17
 go.mau.fi/libsignal/cipher
 go.mau.fi/libsignal/ecc
@@ -467,7 +467,7 @@ go.mau.fi/libsignal/util/errorhelper
 go.mau.fi/libsignal/util/keyhelper
 go.mau.fi/libsignal/util/medium
 go.mau.fi/libsignal/util/optional
-# go.mau.fi/whatsmeow v0.0.0-20220128124639-e64fb976bf15
+# go.mau.fi/whatsmeow v0.0.0-20220312175208-0c4681a6ff52
 ## explicit; go 1.17
 go.mau.fi/whatsmeow
 go.mau.fi/whatsmeow/appstate
@@ -498,7 +498,7 @@ go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
-# golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871
+# golang.org/x/crypto v0.0.0-20220307211146-efcb8507fb70
 ## explicit; go 1.17
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
@@ -510,7 +510,6 @@ golang.org/x/crypto/chacha20
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/curve25519/internal/field
 golang.org/x/crypto/ed25519
-golang.org/x/crypto/ed25519/internal/edwards25519
 golang.org/x/crypto/hkdf
 golang.org/x/crypto/internal/poly1305
 golang.org/x/crypto/internal/subtle
@@ -674,10 +673,10 @@ lukechampine.com/uint128
 # modernc.org/cc/v3 v3.35.22
 ## explicit; go 1.15
 modernc.org/cc/v3
-# modernc.org/ccgo/v3 v3.15.1
+# modernc.org/ccgo/v3 v3.15.14
 ## explicit; go 1.16
 modernc.org/ccgo/v3/lib
-# modernc.org/libc v1.14.1
+# modernc.org/libc v1.14.6
 ## explicit; go 1.16
 modernc.org/libc
 modernc.org/libc/errno
@@ -714,7 +713,7 @@ modernc.org/memory
 # modernc.org/opt v0.1.1
 ## explicit; go 1.13
 modernc.org/opt
-# modernc.org/sqlite v1.14.5
+# modernc.org/sqlite v1.14.8
 ## explicit; go 1.16
 modernc.org/sqlite
 modernc.org/sqlite/lib

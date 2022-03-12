@@ -380,7 +380,7 @@ func Xalarm(t *TLS, seconds uint32) uint32 {
 }
 
 // int getnameinfo(const struct sockaddr * restrict sa, socklen_t salen, char * restrict host, socklen_t hostlen, char * restrict serv,  socklen_t servlen, int flags);
-func Xgetnameinfo(tls *TLS, sa1 uintptr, sl socklen_t, node uintptr, nodelen socklen_t, serv uintptr, servlen socklen_t, flags int32) int32 { /* getnameinfo.c:125:5: */
+func Xgetnameinfo(tls *TLS, sa1 uintptr, sl socklen_t, node uintptr, nodelen size_t, serv uintptr, servlen size_t, flags int32) int32 { /* getnameinfo.c:125:5: */
 	panic(todo(""))
 	//TODO bp := tls.Alloc(347)
 	//TODO defer tls.Free(347)

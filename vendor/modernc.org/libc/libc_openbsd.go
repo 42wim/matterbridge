@@ -1481,7 +1481,7 @@ func X__xuname(t *TLS, namesize int32, namebuf uintptr) int32 {
 }
 
 // int chflags(const char *path, u_int flags);
-func Xchflags(t *TLS, path uintptr, flags uint64) int32 {
+func Xchflags(t *TLS, path uintptr, flags uint32) int32 {
 	if err := unix.Chflags(GoString(path), int(flags)); err != nil {
 		if dmesgs {
 			dmesg("%v: %v FAIL", origin(1), err)
@@ -1604,4 +1604,30 @@ func X__assert2(t *TLS, file uintptr, line int32, fn, expr uintptr) {
 // int getpagesize(void);
 func Xgetpagesize(t *TLS) int32 {
 	return int32(unix.Getpagesize())
+}
+
+const PTHREAD_MUTEX_DEFAULT = 0
+
+// The pthread_mutex_init() function shall initialize the mutex referenced by
+// mutex with attributes specified by attr. If attr is NULL, the default mutex
+// attributes are used; the effect shall be the same as passing the address of
+// a default mutex attributes object. Upon successful initialization, the state
+// of the mutex becomes initialized and unlocked.
+//
+// If successful, the pthread_mutex_destroy() and pthread_mutex_init()
+// functions shall return zero; otherwise, an error number shall be returned to
+// indicate the error.
+//
+// int pthread_mutex_init(pthread_mutex_t *restrict mutex, const pthread_mutexattr_t *restrict attr);
+func Xpthread_mutex_init(t *TLS, pMutex, pAttr uintptr) int32 {
+	typ := PTHREAD_MUTEX_DEFAULT
+	if pAttr != 0 {
+		typ = int(X__ccgo_pthreadMutexattrGettype(t, pAttr))
+	}
+	mutexesMu.Lock()
+
+	defer mutexesMu.Unlock()
+
+	mutexes[pMutex] = newMutex(typ)
+	return 0
 }

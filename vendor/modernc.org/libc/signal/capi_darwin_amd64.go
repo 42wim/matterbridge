@@ -4,4 +4,5 @@ package signal
 
 var CAPI = map[string]struct{}{
 	"__darwin_check_fd_set_overflow": {},
+	"__sigbits":                      {},
 }

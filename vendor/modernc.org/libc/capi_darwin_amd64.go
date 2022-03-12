@@ -153,6 +153,7 @@ var CAPI = map[string]struct{}{
 	"atoi":                             {},
 	"atol":                             {},
 	"bind":                             {},
+	"bsearch":                          {},
 	"bzero":                            {},
 	"calloc":                           {},
 	"ceil":                             {},
