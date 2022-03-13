@@ -60,7 +60,6 @@ require (
 	filippo.io/edwards25519 v1.0.0-rc.1 // indirect
 	github.com/Benau/go_rlottie v0.0.0-20210807002906-98c1b2421989 // indirect
 	github.com/Jeffail/gabs v1.4.0 // indirect
-	github.com/Rhymen/go-whatsapp v0.1.2-0.20211102134409-31a2e740845c // indirect
 	github.com/apex/log v1.9.0 // indirect
 	github.com/av-elier/go-decimal-to-rational v0.0.0-20191127152832-89e6aad02ecf // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
