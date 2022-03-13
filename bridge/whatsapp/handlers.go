@@ -46,44 +46,52 @@ func (b *Bwhatsapp) handleMessage(message *events.Message) {
 
 func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.Message) {
 	senderJID := messageInfo.Sender
+	channel := messageInfo.Chat
 
 	senderName := b.getSenderName(messageInfo.Sender)
 	if senderName == "" {
 		senderName = "Someone" // don't expose telephone number
 	}
 
-	if msg.GetExtendedTextMessage() == nil {
+	if msg.GetExtendedTextMessage() == nil && msg.GetConversation() == "" {
+		b.Log.Debugf("message without text content? %#v", msg)
 		return
 	}
 
-	text := msg.GetExtendedTextMessage().GetText()
-	ci := msg.GetExtendedTextMessage().GetContextInfo()
+	var text string
 
-	if senderJID == (types.JID{}) && ci.Participant != nil {
-		senderJID = types.NewJID(ci.GetParticipant(), types.DefaultUserServer)
-	}
+	if msg.GetExtendedTextMessage() == nil {
+		text = msg.GetConversation()
+	} else {
+		text = msg.GetExtendedTextMessage().GetText()
+		ci := msg.GetExtendedTextMessage().GetContextInfo()
 
-	if ci.MentionedJid != nil {
-		// handle user mentions
-		for _, mentionedJID := range ci.MentionedJid {
-			numberAndSuffix := strings.SplitN(mentionedJID, "@", 2)
+		if senderJID == (types.JID{}) && ci.Participant != nil {
+			senderJID = types.NewJID(ci.GetParticipant(), types.DefaultUserServer)
+		}
 
-			// mentions comes as telephone numbers and we don't want to expose it to other bridges
-			// replace it with something more meaninful to others
-			mention := b.getSenderNotify(types.NewJID(numberAndSuffix[0], types.DefaultUserServer))
-			if mention == "" {
-				mention = "someone"
+		if ci.MentionedJid != nil {
+			// handle user mentions
+			for _, mentionedJID := range ci.MentionedJid {
+				numberAndSuffix := strings.SplitN(mentionedJID, "@", 2)
+
+				// mentions comes as telephone numbers and we don't want to expose it to other bridges
+				// replace it with something more meaninful to others
+				mention := b.getSenderNotify(types.NewJID(numberAndSuffix[0], types.DefaultUserServer))
+				if mention == "" {
+					mention = "someone"
+				}
+
+				text = strings.Replace(text, "@"+numberAndSuffix[0], "@"+mention, 1)
 			}
-
-			text = strings.Replace(text, "@"+numberAndSuffix[0], "@"+mention, 1)
 		}
 	}
 
 	rmsg := config.Message{
 		UserID:   senderJID.String(),
 		Username: senderName,
-		Text:     msg.GetExtendedTextMessage().GetText(),
-		Channel:  ci.GetRemoteJid(),
+		Text:     text,
+		Channel:  channel.String(),
 		Account:  b.Account,
 		Protocol: b.Protocol,
 		Extra:    make(map[string][]interface{}),
