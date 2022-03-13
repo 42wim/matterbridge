@@ -124,7 +124,7 @@ func (b *Bwhatsapp) handleImageMessage(msg *events.Message) {
 	rmsg := config.Message{
 		UserID:   senderJID.String(),
 		Username: senderName,
-		Channel:  ci.GetRemoteJid(),
+		Channel:  msg.Info.Chat.String(),
 		Account:  b.Account,
 		Protocol: b.Protocol,
 		Extra:    make(map[string][]interface{}),
@@ -187,7 +187,7 @@ func (b *Bwhatsapp) handleVideoMessage(msg *events.Message) {
 	rmsg := config.Message{
 		UserID:   senderJID.String(),
 		Username: senderName,
-		Channel:  ci.GetRemoteJid(),
+		Channel:  msg.Info.Chat.String(),
 		Account:  b.Account,
 		Protocol: b.Protocol,
 		Extra:    make(map[string][]interface{}),
@@ -244,7 +244,7 @@ func (b *Bwhatsapp) handleAudioMessage(msg *events.Message) {
 	rmsg := config.Message{
 		UserID:   senderJID.String(),
 		Username: senderName,
-		Channel:  ci.GetRemoteJid(),
+		Channel:  msg.Info.Chat.String(),
 		Account:  b.Account,
 		Protocol: b.Protocol,
 		Extra:    make(map[string][]interface{}),
@@ -301,7 +301,7 @@ func (b *Bwhatsapp) handleDocumentMessage(msg *events.Message) {
 	rmsg := config.Message{
 		UserID:   senderJID.String(),
 		Username: senderName,
-		Channel:  ci.GetRemoteJid(),
+		Channel:  msg.Info.Chat.String(),
 		Account:  b.Account,
 		Protocol: b.Protocol,
 		Extra:    make(map[string][]interface{}),
