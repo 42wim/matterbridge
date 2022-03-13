@@ -318,17 +318,21 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 		}
 	}
 
-	var message proto.Message
-
 	text := msg.Username + msg.Text
 
-	message.ExtendedTextMessage = &proto.ExtendedTextMessage{
-		Text: &text,
-	}
+	var message proto.Message
 
-	b.Log.Debugf("=> Sending %#v", msg)
+	message.Conversation = &text
+
+	/*
+		message.ExtendedTextMessage = &proto.ExtendedTextMessage{
+			Text: &text,
+		}
+	*/
 
 	ID := whatsmeow.GenerateMessageID()
+	b.Log.Debugf("=> Sending %#v to %#v with ID %s", message, groupJID, ID)
+
 	_, err := b.wc.SendMessage(groupJID, ID, &message)
 
 	return ID, err
