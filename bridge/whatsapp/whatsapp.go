@@ -325,9 +325,6 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 	message.Conversation = &text
 
 	ID := whatsmeow.GenerateMessageID()
-
-	b.Log.Debugf("=> Sending %#v", message)
-
 	_, err := b.wc.SendMessage(groupJID, ID, &message)
 
 	return ID, err
