@@ -44,6 +44,7 @@ func (b *Bwhatsapp) handleMessage(message *events.Message) {
 	}
 }
 
+// nolint:funlen
 func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.Message) {
 	senderJID := messageInfo.Sender
 	channel := messageInfo.Chat
@@ -60,6 +61,7 @@ func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.
 
 	var text string
 
+	// nolint:nestif
 	if msg.GetExtendedTextMessage() == nil {
 		text = msg.GetConversation()
 	} else {
