@@ -92,7 +92,7 @@ func isGroupJid(identifier string) bool {
 func (b *Bwhatsapp) getDevice() (*store.Device, error) {
 	device := &store.Device{}
 
-	storeContainer, err := sqlstore.New("sqlite", "file:"+b.Config.GetString("sessionfile")+".db?_foreign_keys=on", nil)
+	storeContainer, err := sqlstore.New("sqlite", "file:"+b.Config.GetString("sessionfile")+".db?_foreign_keys=on&_pragma=busy_timeout=10000", nil)
 	if err != nil {
 		return device, fmt.Errorf("failed to connect to database: %v", err)
 	}
