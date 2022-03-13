@@ -74,11 +74,14 @@ func (b *Bwhatsapp) Connect() error {
 	b.wc = whatsmeow.NewClient(device, waLog.Stdout("Client", "INFO", true))
 	b.wc.AddEventHandler(b.eventHandler)
 
-	// No ID stored, new login
-	qrChan, err := b.wc.GetQRChannel(context.Background())
-	// This error means that we're already logged in, so ignore it.
-	if err != nil && !errors.Is(err, whatsmeow.ErrQRStoreContainsID) {
-		return errors.New("failed to to get QR channel:" + err.Error())
+	firstlogin := false
+	var qrChan <-chan whatsmeow.QRChannelItem
+	if b.wc.Store.ID == nil {
+		firstlogin = true
+		qrChan, err = b.wc.GetQRChannel(context.Background())
+		if err != nil && !errors.Is(err, whatsmeow.ErrQRStoreContainsID) {
+			return errors.New("failed to to get QR channel:" + err.Error())
+		}
 	}
 
 	err = b.wc.Connect()
@@ -86,12 +89,25 @@ func (b *Bwhatsapp) Connect() error {
 		return errors.New("failed to connect to WhatsApp: " + err.Error())
 	}
 
-	for evt := range qrChan {
-		if evt.Event == "code" {
-			// Render the QR code here
-			qrterminal.GenerateHalfBlock(evt.Code, qrterminal.L, os.Stdout)
-		} else {
-			b.Log.Infof("QR channel result: %s", evt.Event)
+	if b.wc.Store.ID == nil {
+		for evt := range qrChan {
+			if evt.Event == "code" {
+				qrterminal.GenerateHalfBlock(evt.Code, qrterminal.L, os.Stdout)
+			} else {
+				b.Log.Infof("QR channel result: %s", evt.Event)
+			}
+		}
+	}
+
+	// disconnect and reconnect on our first login/pairing
+	// for some reason the GetJoinedGroups in JoinChannel doesn't work on first login
+	if firstlogin {
+		b.wc.Disconnect()
+		time.Sleep(time.Second)
+
+		err = b.wc.Connect()
+		if err != nil {
+			return errors.New("failed to connect to WhatsApp: " + err.Error())
 		}
 	}
 
@@ -113,7 +129,6 @@ func (b *Bwhatsapp) Connect() error {
 	}
 
 	// get user avatar asynchronously
-	//	go func() {
 	b.Log.Info("Getting user avatars..")
 
 	for jid := range b.users {
@@ -122,13 +137,14 @@ func (b *Bwhatsapp) Connect() error {
 			b.Log.Warnf("Could not get profile photo of %s: %v", jid, err)
 		} else {
 			b.Lock()
-			b.userAvatars[jid] = info.URL
+			if info != nil {
+				b.userAvatars[jid] = info.URL
+			}
 			b.Unlock()
 		}
 	}
 
 	b.Log.Info("Finished getting avatars..")
-	//	}()
 
 	return nil
 }
