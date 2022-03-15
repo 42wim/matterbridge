@@ -185,6 +185,7 @@ func (b *Bmumble) doConnect() error {
 		gumbleConfig.Password = password
 	}
 
+	registerNullCodecAsOpus()
 	client, err := gumble.DialWithDialer(new(net.Dialer), b.GetString("Server"), gumbleConfig, &b.tlsConfig)
 	if err != nil {
 		return err
