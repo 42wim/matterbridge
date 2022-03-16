@@ -489,6 +489,9 @@ func (b *Btelegram) handleEntities(rmsg *config.Message, message *tgbotapi.Messa
 
 	// for now only do URL replacements
 	for _, e := range message.Entities {
+
+		asRunes := []rune(rmsg.Text)
+
 		if e.Type == "text_link" {
 			url, err := e.ParseURL()
 			if err != nil {
@@ -506,29 +509,29 @@ func (b *Btelegram) handleEntities(rmsg *config.Message, message *tgbotapi.Messa
 
 		if e.Type == "code" {
 			offset := e.Offset + indexMovedBy
-			rmsg.Text = rmsg.Text[:offset] + "`" + rmsg.Text[offset:offset+e.Length] + "`" + rmsg.Text[offset+e.Length:]
+			rmsg.Text = string(asRunes[:offset]) + "`" + string(asRunes[offset:offset+e.Length]) + "`" + string(asRunes[offset+e.Length:])
 			indexMovedBy += 2
 		}
 
 		if e.Type == "pre" {
 			offset := e.Offset + indexMovedBy
-			rmsg.Text = rmsg.Text[:offset] + "```\n" + rmsg.Text[offset:offset+e.Length] + "\n```" + rmsg.Text[offset+e.Length:]
+			rmsg.Text = string(asRunes[:offset]) + "```\n" + string(asRunes[offset:offset+e.Length]) + "\n```" + string(asRunes[offset+e.Length:])
 			indexMovedBy += 8
 		}
 
 		if e.Type == "bold" {
 			offset := e.Offset + indexMovedBy
-			rmsg.Text = rmsg.Text[:offset] + "*" + rmsg.Text[offset:offset+e.Length] + "*" + rmsg.Text[offset+e.Length:]
+			rmsg.Text = string(asRunes[:offset]) + "*" + string(asRunes[offset:offset+e.Length]) + "*" + string(asRunes[offset+e.Length:])
 			indexMovedBy += 2
 		}
 		if e.Type == "italic" {
 			offset := e.Offset + indexMovedBy
-			rmsg.Text = rmsg.Text[:offset] + "_" + rmsg.Text[offset:offset+e.Length] + "_" + rmsg.Text[offset+e.Length:]
+			rmsg.Text = string(asRunes[:offset]) + "_" + string(asRunes[offset:offset+e.Length]) + "_" + string(asRunes[offset+e.Length:])
 			indexMovedBy += 2
 		}
 		if e.Type == "strike" {
 			offset := e.Offset + indexMovedBy
-			rmsg.Text = rmsg.Text[:offset] + "~" + rmsg.Text[offset:offset+e.Length] + "~" + rmsg.Text[offset+e.Length:]
+			rmsg.Text = string(asRunes[:offset]) + "~" + string(asRunes[offset:offset+e.Length]) + "~" + string(asRunes[offset+e.Length:])
 			indexMovedBy += 2
 		}
 	}
