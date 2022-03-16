@@ -187,6 +187,9 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		rmsg.ID = strconv.Itoa(message.MessageID)
 		rmsg.Channel = strconv.FormatInt(message.Chat.ID, 10)
 
+		// handle entities (adding URLs)
+		b.handleEntities(&rmsg, message)
+
 		// handle username
 		b.handleUsername(&rmsg, message)
 
@@ -201,9 +204,6 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 
 		// quote the previous message
 		b.handleQuoting(&rmsg, message)
-
-		// handle entities (adding URLs)
-		b.handleEntities(&rmsg, message)
 
 		if rmsg.Text != "" || len(rmsg.Extra) > 0 {
 			// Comment the next line out due to avoid removing empty lines in Telegram
