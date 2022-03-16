@@ -493,18 +493,19 @@ func (b *Btelegram) handleEntities(rmsg *config.Message, message *tgbotapi.Messa
 		asRunes := []rune(rmsg.Text)
 
 		if e.Type == "text_link" {
+			offset := e.Offset + indexMovedBy
 			url, err := e.ParseURL()
 			if err != nil {
 				b.Log.Errorf("entity text_link url parse failed: %s", err)
 				continue
 			}
 			utfEncodedString := utf16.Encode([]rune(rmsg.Text))
-			if e.Offset+e.Length > len(utfEncodedString) {
-				b.Log.Errorf("entity length is too long %d > %d", e.Offset+e.Length, len(utfEncodedString))
+			if offset+e.Length > len(utfEncodedString) {
+				b.Log.Errorf("entity length is too long %d > %d", offset+e.Length, len(utfEncodedString))
 				continue
 			}
-			link := utf16.Decode(utfEncodedString[e.Offset : e.Offset+e.Length])
-			rmsg.Text = strings.Replace(rmsg.Text, string(link), url.String(), 1)
+			rmsg.Text = string(asRunes[:offset+e.Length]) + " (" + url.String() + ")" + string(asRunes[offset+e.Length:])
+			indexMovedBy += len(url.String()) + 3
 		}
 
 		if e.Type == "code" {
