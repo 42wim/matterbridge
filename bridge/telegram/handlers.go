@@ -516,7 +516,7 @@ func (b *Btelegram) handleEntities(rmsg *config.Message, message *tgbotapi.Messa
 
 		if e.Type == "pre" {
 			offset := e.Offset + indexMovedBy
-			rmsg.Text = string(asRunes[:offset]) + "```\n" + string(asRunes[offset:offset+e.Length]) + "\n```" + string(asRunes[offset+e.Length:])
+			rmsg.Text = string(asRunes[:offset]) + "```\n" + string(asRunes[offset:offset+e.Length]) + "```\n" + string(asRunes[offset+e.Length:])
 			indexMovedBy += 8
 		}
 
