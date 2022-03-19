@@ -10,6 +10,7 @@ import (
 // to implement Opus, but does not actually do anything.  This serves
 // as a workaround until https://github.com/layeh/gumble/pull/61 is
 // merged.
+// See https://github.com/42wim/matterbridge/issues/1750 for details.
 
 const (
 	audioCodecIDOpus = 4
