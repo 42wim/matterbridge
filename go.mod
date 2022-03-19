@@ -32,7 +32,6 @@ require (
 	github.com/mattermost/mattermost-server/v5 v5.39.3
 	github.com/mattermost/mattermost-server/v6 v6.4.2
 	github.com/mattn/godown v0.0.1
-	github.com/missdeer/golib v1.0.4
 	github.com/nelsonken/gomf v0.0.0-20180504123937-a9dd2f9deae9
 	github.com/paulrosania/go-charset v0.0.0-20190326053356-55c9d7a5834c
 	github.com/rs/xid v1.3.0
@@ -49,6 +48,7 @@ require (
 	github.com/zfjagann/golang-ring v0.0.0-20210116075443-7c86fdb43134
 	golang.org/x/image v0.0.0-20220302094943-723b81ca9867
 	golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a
+	golang.org/x/text v0.3.7
 	gomod.garykim.dev/nc-talk v0.3.0
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 	layeh.com/gumble v0.0.0-20200818122324-146f9205029b
@@ -126,7 +126,6 @@ require (
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
-	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
