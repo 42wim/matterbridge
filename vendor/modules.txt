@@ -437,7 +437,7 @@ github.com/yaegashi/msgraph.go/msauth
 # github.com/zfjagann/golang-ring v0.0.0-20210116075443-7c86fdb43134
 ## explicit
 github.com/zfjagann/golang-ring
-# go.mau.fi/libsignal v0.0.0-20220308120827-0d87a03fd7c7
+# go.mau.fi/libsignal v0.0.0-20220315232917-871a40435d3b
 ## explicit; go 1.17
 go.mau.fi/libsignal/cipher
 go.mau.fi/libsignal/ecc
@@ -465,7 +465,7 @@ go.mau.fi/libsignal/util/errorhelper
 go.mau.fi/libsignal/util/keyhelper
 go.mau.fi/libsignal/util/medium
 go.mau.fi/libsignal/util/optional
-# go.mau.fi/whatsmeow v0.0.0-20220312175208-0c4681a6ff52
+# go.mau.fi/whatsmeow v0.0.0-20220319105109-ee347f8c0a14
 ## explicit; go 1.17
 go.mau.fi/whatsmeow
 go.mau.fi/whatsmeow/appstate
@@ -496,7 +496,7 @@ go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
-# golang.org/x/crypto v0.0.0-20220307211146-efcb8507fb70
+# golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd
 ## explicit; go 1.17
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
@@ -668,13 +668,13 @@ layeh.com/gumble/gumbleutil
 # lukechampine.com/uint128 v1.1.1
 ## explicit; go 1.12
 lukechampine.com/uint128
-# modernc.org/cc/v3 v3.35.22
+# modernc.org/cc/v3 v3.35.24
 ## explicit; go 1.15
 modernc.org/cc/v3
-# modernc.org/ccgo/v3 v3.15.14
+# modernc.org/ccgo/v3 v3.15.17
 ## explicit; go 1.16
 modernc.org/ccgo/v3/lib
-# modernc.org/libc v1.14.6
+# modernc.org/libc v1.14.11
 ## explicit; go 1.16
 modernc.org/libc
 modernc.org/libc/errno
@@ -705,13 +705,13 @@ modernc.org/libc/wctype
 # modernc.org/mathutil v1.4.1
 ## explicit; go 1.13
 modernc.org/mathutil
-# modernc.org/memory v1.0.5
-## explicit; go 1.15
+# modernc.org/memory v1.0.6
+## explicit; go 1.16
 modernc.org/memory
 # modernc.org/opt v0.1.1
 ## explicit; go 1.13
 modernc.org/opt
-# modernc.org/sqlite v1.14.8
+# modernc.org/sqlite v1.15.2
 ## explicit; go 1.16
 modernc.org/sqlite
 modernc.org/sqlite/lib

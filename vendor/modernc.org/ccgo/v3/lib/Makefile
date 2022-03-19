@@ -80,6 +80,7 @@ build_all_targets:
 	GOOS=linux GOARCH=amd64 go test -c -o /dev/null
 	GOOS=linux GOARCH=arm go test -c -o /dev/null
 	GOOS=linux GOARCH=arm64 go test -c -o /dev/null
+	GOOS=linux GOARCH=riscv64 go test -c -o /dev/null
 	GOOS=linux GOARCH=s390x go test -c -o /dev/null
 	GOOS=netbsd GOARCH=amd64 go test -c -o /dev/null
 	GOOS=openbsd GOARCH=amd64 go test -c -o /dev/null
