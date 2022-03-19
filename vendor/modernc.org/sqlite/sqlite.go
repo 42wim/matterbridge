@@ -491,20 +491,7 @@ func (s *stmt) exec(ctx context.Context, args []driver.NamedValue) (r driver.Res
 	var pstmt uintptr
 	var done int32
 	if ctx != nil && ctx.Done() != nil {
-		donech := make(chan struct{})
-
-		go func() {
-			select {
-			case <-ctx.Done():
-				atomic.AddInt32(&done, 1)
-				s.c.interrupt(s.c.db)
-			case <-donech:
-			}
-		}()
-
-		defer func() {
-			close(donech)
-		}()
+		defer interruptOnDone(ctx, s.c, &done)()
 	}
 
 	for psql := s.psql; *(*byte)(unsafe.Pointer(psql)) != 0 && atomic.LoadInt32(&done) == 0; {
@@ -588,20 +575,7 @@ func (s *stmt) query(ctx context.Context, args []driver.NamedValue) (r driver.Ro
 	var pstmt uintptr
 	var done int32
 	if ctx != nil && ctx.Done() != nil {
-		donech := make(chan struct{})
-
-		go func() {
-			select {
-			case <-ctx.Done():
-				atomic.AddInt32(&done, 1)
-				s.c.interrupt(s.c.db)
-			case <-donech:
-			}
-		}()
-
-		defer func() {
-			close(donech)
-		}()
+		defer interruptOnDone(ctx, s.c, &done)()
 	}
 
 	var allocs []uintptr
@@ -718,19 +692,7 @@ func (t *tx) exec(ctx context.Context, sql string) (err error) {
 	//TODO use t.conn.ExecContext() instead
 
 	if ctx != nil && ctx.Done() != nil {
-		donech := make(chan struct{})
-
-		go func() {
-			select {
-			case <-ctx.Done():
-				t.c.interrupt(t.c.db)
-			case <-donech:
-			}
-		}()
-
-		defer func() {
-			close(donech)
-		}()
+		defer interruptOnDone(ctx, t.c, nil)()
 	}
 
 	if rc := sqlite3.Xsqlite3_exec(t.c.tls, t.c.db, psql, 0, 0, 0); rc != sqlite3.SQLITE_OK {
@@ -738,6 +700,43 @@ func (t *tx) exec(ctx context.Context, sql string) (err error) {
 	}
 
 	return nil
+}
+
+// interruptOnDone sets up a goroutine to interrupt the provided db when the
+// context is canceled, and returns a function the caller must defer so it
+// doesn't interrupt after the caller finishes.
+func interruptOnDone(
+	ctx context.Context,
+	c *conn,
+	done *int32,
+) func() {
+	if done == nil {
+		var d int32
+		done = &d
+	}
+
+	donech := make(chan struct{})
+
+	go func() {
+		select {
+		case <-ctx.Done():
+			// don't call interrupt if we were already done: it indicates that this
+			// call to exec is no longer running and we would be interrupting
+			// nothing, or even possibly an unrelated later call to exec.
+			if atomic.AddInt32(done, 1) == 1 {
+				c.interrupt(c.db)
+			}
+		case <-donech:
+		}
+	}()
+
+	// the caller is expected to defer this function
+	return func() {
+		// set the done flag so that a context cancellation right after the caller
+		// returns doesn't trigger a call to interrupt for some other statement.
+		atomic.AddInt32(done, 1)
+		close(donech)
+	}
 }
 
 type conn struct {
