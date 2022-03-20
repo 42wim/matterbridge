@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	matrix "github.com/matrix-org/gomatrix"
+	matrix "github.com/matterbridge/gomatrix"
 )
 
 func newMatrixUsername(username string) *matrixUsername {

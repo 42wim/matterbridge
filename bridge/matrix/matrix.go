@@ -12,7 +12,7 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	matrix "github.com/matrix-org/gomatrix"
+	matrix "github.com/matterbridge/gomatrix"
 )
 
 var (
