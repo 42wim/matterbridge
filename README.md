@@ -58,21 +58,22 @@ And more...
     - [Binaries](#binaries)
     - [Packages](#packages)
   - [Building](#building)
+  - [Building with whatsapp (beta) multidevice support](#building-with-whatsapp-beta-multidevice-support)
   - [Configuration](#configuration)
     - [Basic configuration](#basic-configuration)
     - [Settings](#settings)
     - [Advanced configuration](#advanced-configuration)
-    - [Examples](#examples)
-      - [Bridge mattermost (off-topic) - irc (#testing)](#bridge-mattermost-off-topic---irc-testing)
-      - [Bridge slack (#general) - discord (general)](#bridge-slack-general---discord-general)
-  - [Running](#running)
-    - [Docker](#docker)
-    - [Systemd](#systemd)
-  - [Changelog](#changelog)
-  - [FAQ](#faq)
-  - [Related projects](#related-projects)
-  - [Articles / Tutorials](#articles--tutorials)
-  - [Thanks](#thanks)
+      - [Examples](#examples)
+        - [Bridge mattermost (off-topic) - irc (#testing)](#bridge-mattermost-off-topic---irc-testing)
+        - [Bridge slack (#general) - discord (general)](#bridge-slack-general---discord-general)
+    - [Running](#running)
+      - [Docker](#docker)
+      - [Systemd](#systemd)
+    - [Changelog](#changelog)
+    - [FAQ](#faq)
+    - [Related projects](#related-projects)
+    - [Articles / Tutorials](#articles--tutorials)
+    - [Thanks](#thanks)
 
 ## Features
 
@@ -89,6 +90,7 @@ And more...
 
 - [Discord](https://discordapp.com)
 - [Gitter](https://gitter.im)
+- [Harmony](https://harmonyapp.io)
 - [IRC](http://www.mirc.com/servers.html)
 - [Keybase](https://keybase.io)
 - [Matrix](https://matrix.org)
@@ -105,6 +107,8 @@ And more...
 - [Twitch](https://twitch.tv)
 - [VK](https://vk.com/)
 - [WhatsApp](https://www.whatsapp.com/)
+  - Whatsapp legacy is natively supported
+  - Whatsapp multidevice beta is natively supported but you need to build yourself, see [here](#building-with-whatsapp-beta-multidevice-support)
 - [XMPP](https://xmpp.org)
 - [Zulip](https://zulipchat.com)
 
@@ -120,6 +124,8 @@ And more...
 - [Counter-Strike, half-life and more](https://forums.alliedmods.net/showthread.php?t=319430)
 - [MatterAMXX](https://github.com/GabeIggy/MatterAMXX)
 - [Vintage Story](https://github.com/NikkyAI/vs-matterbridge)
+- [Ultima Online Emulator](https://github.com/kuoushi/ServUO-Matterbridge)
+- [Teamspeak](https://github.com/Archeb/ts-matterbridge)
 
 ### API
 
@@ -138,6 +144,8 @@ Used by the projects below. Feel free to make a PR to add your project to this l
 - [matterbabble](https://github.com/DeclanHoare/matterbabble) (Discourse support)
 - [MatterAMXX](https://forums.alliedmods.net/showthread.php?t=319430) (Counter-Strike, half-life and more via AMXX mod)
 - [Vintage Story](https://github.com/NikkyAI/vs-matterbridge)
+- [ServUO-matterbridge](https://github.com/kuoushi/ServUO-Matterbridge) (A matterbridge connector for ServUO servers)
+- [ts-matterbridge](https://github.com/Archeb/ts-matterbridge) (Integrate teamspeak chat with matterbridge)
 
 ## Chat with us
 
@@ -167,7 +175,7 @@ See <https://github.com/42wim/matterbridge/wiki>
 - Latest stable release [v1.24.1](https://github.com/42wim/matterbridge/releases/latest)
 - Development releases (follows master) can be downloaded [here](https://github.com/42wim/matterbridge/actions) selecting the latest green build and then artifacts.
 
-To install or upgrade just download the latest [binary](https://github.com/42wim/matterbridge/releases/latest). On \*nix platforms you may need to make the binary executable - you can do this by running `chmod a+x` on the binary (example: `chmod a+x matterbridge-1.20.0-linux-64bit`). After downloading (and making the binary executable, if necessary), follow the instructions on the [howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config) for a step by step walkthrough for creating your configuration.
+To install or upgrade just download the latest [binary](https://github.com/42wim/matterbridge/releases/latest). On \*nix platforms you may need to make the binary executable - you can do this by running `chmod a+x` on the binary (example: `chmod a+x matterbridge-1.24.1-linux-64bit`). After downloading (and making the binary executable, if necessary), follow the instructions on the [howto](https://github.com/42wim/matterbridge/wiki/How-to-create-your-config) for a step by step walkthrough for creating your configuration.
 
 ### Packages
 
@@ -182,16 +190,49 @@ Most people just want to use binaries, you can find those [here](https://github.
 If you really want to build from source, follow these instructions:
 Go 1.17+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed.
 
+Building the binary with **all** the bridges enabled needs about 3GB RAM to compile.
+You can reduce this memory requirement to 0,5GB RAM by adding the `nomsteams` tag if you don't need/use the Microsoft Teams bridge
+
 To install the latest stable run:
 
 ```bash
-go install github.com/42wim/matterbridge@v1.24.1
+go install github.com/42wim/matterbridge@17da95b094e4bb433e5fe240fa42067d94d908c1
 ```
 
 To install the latest dev run:
 
 ```bash
-go install github.com/42wim/matterbridge@latest
+go install github.com/42wim/matterbridge@master
+```
+
+To install the latest stable run without msteams or zulip bridge:
+
+```bash
+go install -tags nomsteams,nozulip github.com/42wim/matterbridge@17da95b094e4bb433e5fe240fa42067d94d908c1
+```
+
+You should now have matterbridge binary in the ~/go/bin directory:
+
+```bash
+$ ls ~/go/bin/
+matterbridge
+```
+
+## Building with whatsapp (beta) multidevice support
+
+Because the library we use for Whatsapp multidevice support includes a GPL3 library we can not provide you binaries.
+(as this would require the Matterbridge to change it license to GPL)
+
+So this means you have to build it yourself using the instructions below:
+
+```bash
+go install -tags whatsappmulti github.com/42wim/matterbridge@master
+```
+
+If you're low on memory and don't need msteams:
+
+```bash
+go install -tags nomsteams,whatsappmulti github.com/42wim/matterbridge@master
 ```
 
 You should now have matterbridge binary in the ~/go/bin directory:
@@ -323,6 +364,8 @@ See [FAQ](https://github.com/42wim/matterbridge/wiki/FAQ)
 - [nextcloud talk](https://github.com/nextcloud/talk_matterbridge) (Integrates matterbridge in Nextcloud Talk)
 - [mattercraft](https://github.com/raws/mattercraft) (Minecraft bridge)
 - [vs-matterbridge](https://github.com/NikkyAI/vs-matterbridge) (Vintage Story bridge)
+- [ServUO-matterbridge](https://github.com/kuoushi/ServUO-Matterbridge) (A matterbridge connector for ServUO servers)
+- [ts-matterbridge](https://github.com/Archeb/ts-matterbridge) (Integrate teamspeak chat with matterbridge)
 
 ## Articles / Tutorials
 
@@ -356,6 +399,7 @@ Matterbridge wouldn't exist without these libraries:
 - gops - <https://github.com/google/gops>
 - gozulipbot - <https://github.com/ifo/gozulipbot>
 - gumble - <https://github.com/layeh/gumble>
+- harmony - <https://github.com/harmony-development/shibshib>
 - irc - <https://github.com/lrstanley/girc>
 - keybase - <https://github.com/keybase/go-keybase-chat-bot>
 - matrix - <https://github.com/matrix-org/gomatrix>
@@ -363,6 +407,7 @@ Matterbridge wouldn't exist without these libraries:
 - msgraph.go - <https://github.com/yaegashi/msgraph.go>
 - mumble - <https://github.com/layeh/gumble>
 - nctalk - <https://github.com/gary-kim/go-nc-talk>
+- rocketchat - <https://github.com/RocketChat/Rocket.Chat.Go.SDK>
 - slack - <https://github.com/nlopes/slack>
 - sshchat - <https://github.com/shazow/ssh-chat>
 - steam - <https://github.com/Philipp15b/go-steam>
@@ -370,6 +415,7 @@ Matterbridge wouldn't exist without these libraries:
 - tengo - <https://github.com/d5/tengo>
 - vk - <https://github.com/SevereCloud/vksdk>
 - whatsapp - <https://github.com/Rhymen/go-whatsapp>
+- whatsapp - <https://github.com/tulir/whatsmeow>
 - xmpp - <https://github.com/mattn/go-xmpp>
 - zulip - <https://github.com/ifo/gozulipbot>
 
