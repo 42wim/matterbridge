@@ -189,9 +189,6 @@ github.com/lrstanley/girc
 # github.com/magiconair/properties v1.8.5
 ## explicit; go 1.13
 github.com/magiconair/properties
-# github.com/matrix-org/gomatrix v0.0.0-20210324163249-be2af5ef2e16 => github.com/matterbridge/gomatrix v0.0.0-20220205235239-607eb9ee6419
-## explicit; go 1.17
-github.com/matrix-org/gomatrix
 # github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20211016222428-79310a412696
 ## explicit
 github.com/matterbridge/Rocket.Chat.Go.SDK/models
@@ -200,6 +197,9 @@ github.com/matterbridge/Rocket.Chat.Go.SDK/rest
 # github.com/matterbridge/go-xmpp v0.0.0-20211030125215-791a06c5f1be
 ## explicit
 github.com/matterbridge/go-xmpp
+# github.com/matterbridge/gomatrix v0.0.0-20220205235239-607eb9ee6419
+## explicit; go 1.17
+github.com/matterbridge/gomatrix
 # github.com/matterbridge/gozulipbot v0.0.0-20211023205727-a19d6c1f3b75
 ## explicit
 github.com/matterbridge/gozulipbot
@@ -603,4 +603,3 @@ layeh.com/gumble/gumble
 layeh.com/gumble/gumble/MumbleProto
 layeh.com/gumble/gumble/varint
 layeh.com/gumble/gumbleutil
-# github.com/matrix-org/gomatrix => github.com/matterbridge/gomatrix v0.0.0-20220205235239-607eb9ee6419

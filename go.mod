@@ -23,9 +23,9 @@ require (
 	github.com/kyokomi/emoji/v2 v2.2.9
 	github.com/labstack/echo/v4 v4.7.0
 	github.com/lrstanley/girc v0.0.0-20211023233735-147f0ff77566
-	github.com/matrix-org/gomatrix v0.0.0-20210324163249-be2af5ef2e16
 	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20211016222428-79310a412696
 	github.com/matterbridge/go-xmpp v0.0.0-20211030125215-791a06c5f1be
+	github.com/matterbridge/gomatrix v0.0.0-20220205235239-607eb9ee6419
 	github.com/matterbridge/gozulipbot v0.0.0-20211023205727-a19d6c1f3b75
 	github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba
 	github.com/matterbridge/matterclient v0.0.0-20211107234719-faca3cd42315
@@ -135,6 +135,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
 
-replace github.com/matrix-org/gomatrix => github.com/matterbridge/gomatrix v0.0.0-20220205235239-607eb9ee6419
+//replace github.com/matrix-org/gomatrix => github.com/matterbridge/gomatrix v0.0.0-20220205235239-607eb9ee6419
 
 go 1.17
