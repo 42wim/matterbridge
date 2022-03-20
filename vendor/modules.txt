@@ -5,6 +5,9 @@ filippo.io/edwards25519/field
 # github.com/42wim/go-gitter v0.0.0-20170828205020-017310c2d557
 ## explicit
 github.com/42wim/go-gitter
+# github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f
+## explicit
+github.com/Baozisoftware/qrcode-terminal-go
 # github.com/Benau/go_rlottie v0.0.0-20210807002906-98c1b2421989
 ## explicit
 github.com/Benau/go_rlottie
@@ -26,6 +29,15 @@ github.com/Philipp15b/go-steam/protocol/steamlang
 github.com/Philipp15b/go-steam/rwu
 github.com/Philipp15b/go-steam/socialcache
 github.com/Philipp15b/go-steam/steamid
+# github.com/Rhymen/go-whatsapp v0.1.2-0.20211102134409-31a2e740845c
+## explicit; go 1.13
+github.com/Rhymen/go-whatsapp
+github.com/Rhymen/go-whatsapp/binary
+github.com/Rhymen/go-whatsapp/binary/proto
+github.com/Rhymen/go-whatsapp/binary/token
+github.com/Rhymen/go-whatsapp/crypto/cbc
+github.com/Rhymen/go-whatsapp/crypto/curve25519
+github.com/Rhymen/go-whatsapp/crypto/hkdf
 # github.com/SevereCloud/vksdk/v2 v2.13.1
 ## explicit; go 1.16
 github.com/SevereCloud/vksdk/v2
@@ -357,6 +369,11 @@ github.com/sirupsen/logrus
 # github.com/sizeofint/webpanimation v0.0.0-20210809145948-1d2b32119882
 ## explicit; go 1.16
 github.com/sizeofint/webpanimation
+# github.com/skip2/go-qrcode v0.0.0-20190110000554-dc11ecdae0a9
+## explicit
+github.com/skip2/go-qrcode
+github.com/skip2/go-qrcode/bitset
+github.com/skip2/go-qrcode/reedsolomon
 # github.com/slack-go/slack v0.10.2
 ## explicit; go 1.16
 github.com/slack-go/slack

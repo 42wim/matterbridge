@@ -1,41 +1,38 @@
 package bwhatsapp
 
 import (
-	"context"
+	"bytes"
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"mime"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
-	"github.com/mdp/qrterminal"
-
-	"go.mau.fi/whatsmeow"
-	"go.mau.fi/whatsmeow/binary/proto"
-	"go.mau.fi/whatsmeow/types"
-	waLog "go.mau.fi/whatsmeow/util/log"
-
-	goproto "google.golang.org/protobuf/proto"
-
-	_ "modernc.org/sqlite" // needed for sqlite
+	"github.com/Rhymen/go-whatsapp"
 )
 
 const (
 	// Account config parameters
-	cfgNumber = "Number"
+	cfgNumber         = "Number"
+	qrOnWhiteTerminal = "QrOnWhiteTerminal"
+	sessionFile       = "SessionFile"
 )
 
 // Bwhatsapp Bridge structure keeping all the information needed for relying
 type Bwhatsapp struct {
 	*bridge.Config
 
-	startedAt   time.Time
-	wc          *whatsmeow.Client
-	contacts    map[types.JID]types.ContactInfo
-	users       map[string]types.ContactInfo
+	session   *whatsapp.Session
+	conn      *whatsapp.Conn
+	startedAt uint64
+
+	users       map[string]whatsapp.Contact
 	userAvatars map[string]string
 }
 
@@ -50,7 +47,7 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Bwhatsapp{
 		Config: cfg,
 
-		users:       make(map[string]types.ContactInfo),
+		users:       make(map[string]whatsapp.Contact),
 		userAvatars: make(map[string]string),
 	}
 
@@ -59,92 +56,101 @@ func New(cfg *bridge.Config) bridge.Bridger {
 
 // Connect to WhatsApp. Required implementation of the Bridger interface
 func (b *Bwhatsapp) Connect() error {
-	device, err := b.getDevice()
-	if err != nil {
-		return err
-	}
-
 	number := b.GetString(cfgNumber)
 	if number == "" {
 		return errors.New("whatsapp's telephone number need to be configured")
 	}
 
 	b.Log.Debugln("Connecting to WhatsApp..")
-
-	b.wc = whatsmeow.NewClient(device, waLog.Stdout("Client", "INFO", true))
-	b.wc.AddEventHandler(b.eventHandler)
-
-	firstlogin := false
-	var qrChan <-chan whatsmeow.QRChannelItem
-	if b.wc.Store.ID == nil {
-		firstlogin = true
-		qrChan, err = b.wc.GetQRChannel(context.Background())
-		if err != nil && !errors.Is(err, whatsmeow.ErrQRStoreContainsID) {
-			return errors.New("failed to to get QR channel:" + err.Error())
-		}
-	}
-
-	err = b.wc.Connect()
+	conn, err := whatsapp.NewConn(20 * time.Second)
 	if err != nil {
 		return errors.New("failed to connect to WhatsApp: " + err.Error())
 	}
 
-	if b.wc.Store.ID == nil {
-		for evt := range qrChan {
-			if evt.Event == "code" {
-				qrterminal.GenerateHalfBlock(evt.Code, qrterminal.L, os.Stdout)
-			} else {
-				b.Log.Infof("QR channel result: %s", evt.Event)
-			}
-		}
-	}
+	b.conn = conn
 
-	// disconnect and reconnect on our first login/pairing
-	// for some reason the GetJoinedGroups in JoinChannel doesn't work on first login
-	if firstlogin {
-		b.wc.Disconnect()
-		time.Sleep(time.Second)
+	b.conn.AddHandler(b)
+	b.Log.Debugln("WhatsApp connection successful")
 
-		err = b.wc.Connect()
-		if err != nil {
-			return errors.New("failed to connect to WhatsApp: " + err.Error())
-		}
-	}
-
-	b.Log.Infoln("WhatsApp connection successful")
-
-	b.contacts, err = b.wc.Store.Contacts.GetAllContacts()
+	// load existing session in order to keep it between restarts
+	b.session, err = b.restoreSession()
 	if err != nil {
-		return errors.New("failed to get contacts: " + err.Error())
+		b.Log.Warn(err.Error())
 	}
 
-	b.startedAt = time.Now()
+	// login to a new session
+	if b.session == nil {
+		if err = b.Login(); err != nil {
+			return err
+		}
+	}
+
+	b.startedAt = uint64(time.Now().Unix())
+
+	_, err = b.conn.Contacts()
+	if err != nil {
+		return fmt.Errorf("error on update of contacts: %v", err)
+	}
+
+	// see https://github.com/Rhymen/go-whatsapp/issues/137#issuecomment-480316013
+	for len(b.conn.Store.Contacts) == 0 {
+		b.conn.Contacts() // nolint:errcheck
+
+		<-time.After(1 * time.Second)
+	}
 
 	// map all the users
-	for id, contact := range b.contacts {
-		if !isGroupJid(id.String()) && id.String() != "status@broadcast" {
+	for id, contact := range b.conn.Store.Contacts {
+		if !isGroupJid(id) && id != "status@broadcast" {
 			// it is user
-			b.users[id.String()] = contact
+			b.users[id] = contact
 		}
 	}
 
 	// get user avatar asynchronously
-	b.Log.Info("Getting user avatars..")
+	go func() {
+		b.Log.Debug("Getting user avatars..")
 
-	for jid := range b.users {
-		info, err := b.GetProfilePicThumb(jid)
-		if err != nil {
-			b.Log.Warnf("Could not get profile photo of %s: %v", jid, err)
-		} else {
-			b.Lock()
-			if info != nil {
+		for jid := range b.users {
+			info, err := b.GetProfilePicThumb(jid)
+			if err != nil {
+				b.Log.Warnf("Could not get profile photo of %s: %v", jid, err)
+			} else {
+				b.Lock()
 				b.userAvatars[jid] = info.URL
+				b.Unlock()
 			}
-			b.Unlock()
 		}
+
+		b.Log.Debug("Finished getting avatars..")
+	}()
+
+	return nil
+}
+
+// Login to WhatsApp creating a new session. This will require to scan a QR code on your mobile device
+func (b *Bwhatsapp) Login() error {
+	b.Log.Debugln("Logging in..")
+
+	invert := b.GetBool(qrOnWhiteTerminal) // false is the default
+	qrChan := qrFromTerminal(invert)
+
+	session, err := b.conn.Login(qrChan)
+	if err != nil {
+		b.Log.Warnln("Failed to log in:", err)
+
+		return err
 	}
 
-	b.Log.Info("Finished getting avatars..")
+	b.session = &session
+
+	b.Log.Infof("Logged into session: %#v", session)
+	b.Log.Infof("Connection: %#v", b.conn)
+
+	err = b.writeSession(session)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error saving session: %v\n", err)
+	}
 
 	return nil
 }
@@ -152,8 +158,8 @@ func (b *Bwhatsapp) Connect() error {
 // Disconnect is called while reconnecting to the bridge
 // Required implementation of the Bridger interface
 func (b *Bwhatsapp) Disconnect() error {
-	b.wc.Disconnect()
-
+	// We could Logout, but that would close the session completely and would require a new QR code scan
+	// https://github.com/Rhymen/go-whatsapp/blob/c31092027237441cffba1b9cb148eadf7c83c3d2/session.go#L377-L381
 	return nil
 }
 
@@ -163,118 +169,111 @@ func (b *Bwhatsapp) Disconnect() error {
 func (b *Bwhatsapp) JoinChannel(channel config.ChannelInfo) error {
 	byJid := isGroupJid(channel.Name)
 
-	groups, err := b.wc.GetJoinedGroups()
-	if err != nil {
-		return err
+	// see https://github.com/Rhymen/go-whatsapp/issues/137#issuecomment-480316013
+	for len(b.conn.Store.Contacts) == 0 {
+		b.conn.Contacts() // nolint:errcheck
+		<-time.After(1 * time.Second)
 	}
 
 	// verify if we are member of the given group
 	if byJid {
-		gJID, err := types.ParseJID(channel.Name)
-		if err != nil {
-			return err
+		// channel.Name specifies static group jID, not the name
+		if _, exists := b.conn.Store.Contacts[channel.Name]; !exists {
+			return fmt.Errorf("account doesn't belong to group with jid %s", channel.Name)
 		}
 
-		for _, group := range groups {
-			if group.JID == gJID {
-				return nil
-			}
+		return nil
+	}
+
+	// channel.Name specifies group name that might change, warn about it
+	var jids []string
+	for id, contact := range b.conn.Store.Contacts {
+		if isGroupJid(id) && contact.Name == channel.Name {
+			jids = append(jids, id)
 		}
 	}
 
-	foundGroups := []string{}
-
-	for _, group := range groups {
-		if group.Name == channel.Name {
-			foundGroups = append(foundGroups, group.Name)
-		}
-	}
-
-	switch len(foundGroups) {
+	switch len(jids) {
 	case 0:
 		// didn't match any group - print out possibilites
-		for _, group := range groups {
-			b.Log.Infof("%s %s", group.JID, group.Name)
+		for id, contact := range b.conn.Store.Contacts {
+			if isGroupJid(id) {
+				b.Log.Infof("%s %s", contact.Jid, contact.Name)
+			}
 		}
+
 		return fmt.Errorf("please specify group's JID from the list above instead of the name '%s'", channel.Name)
 	case 1:
-		return fmt.Errorf("group name might change. Please configure gateway with channel=\"%v\" instead of channel=\"%v\"", foundGroups[0], channel.Name)
+		return fmt.Errorf("group name might change. Please configure gateway with channel=\"%v\" instead of channel=\"%v\"", jids[0], channel.Name)
 	default:
-		return fmt.Errorf("there is more than one group with name '%s'. Please specify one of JIDs as channel name: %v", channel.Name, foundGroups)
+		return fmt.Errorf("there is more than one group with name '%s'. Please specify one of JIDs as channel name: %v", channel.Name, jids)
 	}
 }
 
 // Post a document message from the bridge to WhatsApp
 func (b *Bwhatsapp) PostDocumentMessage(msg config.Message, filetype string) (string, error) {
-	groupJID, _ := types.ParseJID(msg.Channel)
-
 	fi := msg.Extra["file"][0].(config.FileInfo)
 
-	resp, err := b.wc.Upload(context.Background(), *fi.Data, whatsmeow.MediaDocument)
-	if err != nil {
-		return "", err
-	}
-
 	// Post document message
-	var message proto.Message
-
-	message.DocumentMessage = &proto.DocumentMessage{
-		Title:         &fi.Name,
-		FileName:      &fi.Name,
-		Mimetype:      &filetype,
-		MediaKey:      resp.MediaKey,
-		FileEncSha256: resp.FileEncSHA256,
-		FileSha256:    resp.FileSHA256,
-		FileLength:    goproto.Uint64(resp.FileLength),
-		Url:           &resp.URL,
+	message := whatsapp.DocumentMessage{
+		Info: whatsapp.MessageInfo{
+			RemoteJid: msg.Channel,
+		},
+		Title:    fi.Name,
+		FileName: fi.Name,
+		Type:     filetype,
+		Content:  bytes.NewReader(*fi.Data),
 	}
 
 	b.Log.Debugf("=> Sending %#v", msg)
 
-	ID := whatsmeow.GenerateMessageID()
-	_, err = b.wc.SendMessage(groupJID, ID, &message)
+	// create message ID
+	// TODO follow and act if https://github.com/Rhymen/go-whatsapp/issues/101 implemented
+	idBytes := make([]byte, 10)
+	if _, err := rand.Read(idBytes); err != nil {
+		b.Log.Warn(err.Error())
+	}
 
-	return ID, err
+	message.Info.Id = strings.ToUpper(hex.EncodeToString(idBytes))
+	_, err := b.conn.Send(message)
+
+	return message.Info.Id, err
 }
 
 // Post an image message from the bridge to WhatsApp
 // Handle, for sure image/jpeg, image/png and image/gif MIME types
 func (b *Bwhatsapp) PostImageMessage(msg config.Message, filetype string) (string, error) {
-	groupJID, _ := types.ParseJID(msg.Channel)
-
 	fi := msg.Extra["file"][0].(config.FileInfo)
 
-	caption := msg.Username + fi.Comment
-
-	resp, err := b.wc.Upload(context.Background(), *fi.Data, whatsmeow.MediaImage)
-	if err != nil {
-		return "", err
-	}
-
-	var message proto.Message
-
-	message.ImageMessage = &proto.ImageMessage{
-		Mimetype:      &filetype,
-		Caption:       &caption,
-		MediaKey:      resp.MediaKey,
-		FileEncSha256: resp.FileEncSHA256,
-		FileSha256:    resp.FileSHA256,
-		FileLength:    goproto.Uint64(resp.FileLength),
-		Url:           &resp.URL,
+	// Post image message
+	message := whatsapp.ImageMessage{
+		Info: whatsapp.MessageInfo{
+			RemoteJid: msg.Channel,
+		},
+		Type:    filetype,
+		Caption: msg.Username + fi.Comment,
+		Content: bytes.NewReader(*fi.Data),
 	}
 
 	b.Log.Debugf("=> Sending %#v", msg)
 
-	ID := whatsmeow.GenerateMessageID()
-	_, err = b.wc.SendMessage(groupJID, ID, &message)
+	// create message ID
+	// TODO follow and act if https://github.com/Rhymen/go-whatsapp/issues/101 implemented
+	idBytes := make([]byte, 10)
+	if _, err := rand.Read(idBytes); err != nil {
+		b.Log.Warn(err.Error())
+	}
 
-	return ID, err
+	message.Info.Id = strings.ToUpper(hex.EncodeToString(idBytes))
+	_, err := b.conn.Send(message)
+
+	return message.Info.Id, err
 }
 
 // Send a message from the bridge to WhatsApp
+// Required implementation of the Bridger interface
+// https://github.com/42wim/matterbridge/blob/2cfd880cdb0df29771bf8f31df8d990ab897889d/bridge/bridge.go#L11-L16
 func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
-	groupJID, _ := types.ParseJID(msg.Channel)
-
 	b.Log.Debugf("=> Receiving %#v", msg)
 
 	// Delete message
@@ -285,7 +284,7 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 			return "", nil
 		}
 
-		_, err := b.wc.RevokeMessage(groupJID, msg.ID)
+		_, err := b.conn.RevokeMessage(msg.Channel, msg.ID, true)
 
 		return "", err
 	}
@@ -318,14 +317,20 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 		}
 	}
 
-	text := msg.Username + msg.Text
+	// Post text message
+	message := whatsapp.TextMessage{
+		Info: whatsapp.MessageInfo{
+			RemoteJid: msg.Channel, // which equals to group id
+		},
+		Text: msg.Username + msg.Text,
+	}
 
-	var message proto.Message
+	b.Log.Debugf("=> Sending %#v", msg)
 
-	message.Conversation = &text
-
-	ID := whatsmeow.GenerateMessageID()
-	_, err := b.wc.SendMessage(groupJID, ID, &message)
-
-	return ID, err
+	return b.conn.Send(message)
 }
+
+// TODO do we want that? to allow login with QR code from a bridged channel? https://github.com/tulir/mautrix-whatsapp/blob/513eb18e2d59bada0dd515ee1abaaf38a3bfe3d5/commands.go#L76
+//func (b *Bwhatsapp) Command(cmd string) string {
+//	return ""
+//}

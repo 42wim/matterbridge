@@ -1,4 +1,5 @@
 // +build !nowhatsapp
+// +build !whatsappmulti
 
 package bridgemap
 
