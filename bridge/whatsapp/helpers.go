@@ -111,8 +111,7 @@ func (b *Bwhatsapp) getSenderName(senderJid string) string {
 	}
 
 	// try to reload this contact
-	_, err := b.conn.Contacts()
-	if err != nil {
+	if _, err := b.conn.Contacts(); err != nil {
 		b.Log.Errorf("error on update of contacts: %v", err)
 	}
 
