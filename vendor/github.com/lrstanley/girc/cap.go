@@ -106,7 +106,7 @@ func parseCap(raw string) map[string]map[string]string {
 			if j < 0 {
 				out[parts[i][:val]][option] = ""
 			} else {
-				out[parts[i][:val]][option[:j]] = option[j+1 : len(option)]
+				out[parts[i][:val]][option[:j]] = option[j+1:]
 			}
 		}
 	}

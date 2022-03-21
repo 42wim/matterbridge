@@ -1,18 +1,12 @@
-<p align="center"><a href="https://godoc.org/github.com/lrstanley/girc"><img width="270" src="http://i.imgur.com/DEnyrdB.png"></a></p>
+<p align="center"><a href="https://pkg.go.dev/github.com/lrstanley/girc"><img width="270" src="http://i.imgur.com/DEnyrdB.png"></a></p>
 <p align="center">girc, a flexible IRC library for Go</p>
 <p align="center">
-  <a href="https://travis-ci.org/lrstanley/girc"><img src="https://travis-ci.org/lrstanley/girc.svg?branch=master" alt="Build Status"></a>
+  <a href="https://github.com/lrstanley/girc/actions"><img src="https://github.com/lrstanley/girc/workflows/test/badge.svg" alt="Test Status"></a>
   <a href="https://codecov.io/gh/lrstanley/girc"><img src="https://codecov.io/gh/lrstanley/girc/branch/master/graph/badge.svg" alt="Coverage Status"></a>
-  <a href="https://godoc.org/github.com/lrstanley/girc"><img src="https://godoc.org/github.com/lrstanley/girc?status.png" alt="GoDoc"></a>
+  <a href="https://pkg.go.dev/github.com/lrstanley/girc"><img src="https://pkg.go.dev/badge/github.com/lrstanley/girc" alt="GoDoc"></a>
   <a href="https://goreportcard.com/report/github.com/lrstanley/girc"><img src="https://goreportcard.com/badge/github.com/lrstanley/girc" alt="Go Report Card"></a>
-  <a href="https://byteirc.org/channel/%23%2Fdev%2Fnull"><img src="https://img.shields.io/badge/ByteIRC-%23%2Fdev%2Fnull-blue.svg" alt="IRC Chat"></a>
+  <a href="https://liam.sh/chat"><img src="https://img.shields.io/badge/community-chat%20with%20us-green.svg" alt="Community Chat"></a>
 </p>
-
-## Status
-
-**girc is fairly close to marking the 1.0.0 endpoint, which will be tagged as
-necessary, so you will be able to use this with care knowing the specific tag
-you're using won't have breaking changes**
 
 ## Features
 
@@ -20,7 +14,7 @@ you're using won't have breaking changes**
 - Only requires [standard library packages](https://godoc.org/github.com/lrstanley/girc?imports)
 - Event based triggering/responses ([example](https://godoc.org/github.com/lrstanley/girc#ex-package--Commands), and [CTCP too](https://godoc.org/github.com/lrstanley/girc#Commands.SendCTCP)!)
 - [Documentation](https://godoc.org/github.com/lrstanley/girc) is _mostly_ complete.
-- Support for almost all of the [IRCv3 spec](http://ircv3.net/software/libraries.html).
+- Support for a good portion of the [IRCv3 spec](http://ircv3.net/software/libraries.html).
   - SASL Auth (currently only `PLAIN` and `EXTERNAL` is support by default,
   however you can simply implement `SASLMech` yourself to support additional
   mechanisms.)
