@@ -187,6 +187,11 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		rmsg.ID = strconv.Itoa(message.MessageID)
 		rmsg.Channel = strconv.FormatInt(message.Chat.ID, 10)
 
+		// preserve threading from telegram reply
+		if message.ReplyToMessage != nil {
+			rmsg.ParentID = strconv.Itoa(message.ReplyToMessage.MessageID)
+		}
+
 		// handle entities (adding URLs)
 		b.handleEntities(&rmsg, message)
 
