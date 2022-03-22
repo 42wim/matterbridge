@@ -862,6 +862,10 @@ ShowUserTyping=false
 #Default "<clipped message>"
 MessageClipped="<clipped message>"
 
+#If enabled use the "Real Name" as username.
+#OPTIONAL (default false)
+UseRealName=false
+
 ###################################################################
 #discord section
 ###################################################################
