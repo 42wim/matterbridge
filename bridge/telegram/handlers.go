@@ -71,6 +71,9 @@ func (b *Btelegram) handleForwarded(rmsg *config.Message, message *tgbotapi.Mess
 	if b.GetBool("UseFirstName") {
 		usernameForward = message.ForwardFrom.FirstName
 	}
+	if b.GetBool("UseFullName") {
+		usernameForward = message.ForwardFrom.FirstName + " " + message.ForwardFrom.LastName
+	}
 
 	if usernameForward == "" {
 		usernameForward = message.ForwardFrom.UserName
@@ -93,6 +96,9 @@ func (b *Btelegram) handleQuoting(rmsg *config.Message, message *tgbotapi.Messag
 		if message.ReplyToMessage.From != nil {
 			if b.GetBool("UseFirstName") {
 				usernameReply = message.ReplyToMessage.From.FirstName
+			}
+			if b.GetBool("UseFullName") {
+				usernameReply = message.ReplyToMessage.From.FirstName + " " + message.ReplyToMessage.From.LastName
 			}
 			if usernameReply == "" {
 				usernameReply = message.ReplyToMessage.From.UserName
@@ -117,6 +123,9 @@ func (b *Btelegram) handleUsername(rmsg *config.Message, message *tgbotapi.Messa
 		if b.GetBool("UseFirstName") {
 			rmsg.Username = message.From.FirstName
 		}
+		if b.GetBool("UseFullName") {
+			rmsg.Username = message.From.FirstName + " " + message.From.LastName
+		}
 		if rmsg.Username == "" {
 			rmsg.Username = message.From.UserName
 			if rmsg.Username == "" {
@@ -133,6 +142,9 @@ func (b *Btelegram) handleUsername(rmsg *config.Message, message *tgbotapi.Messa
 		rmsg.UserID = strconv.FormatInt(message.SenderChat.ID, 10)
 		if b.GetBool("UseFirstName") {
 			rmsg.Username = message.SenderChat.FirstName
+		}
+		if b.GetBool("UseFullName") {
+			rmsg.Username = message.SenderChat.FirstName + " " + message.SenderChat.LastName
 		}
 
 		if rmsg.Username == "" || rmsg.Username == "Channel_Bot" {
