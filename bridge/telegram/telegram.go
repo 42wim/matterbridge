@@ -1,6 +1,7 @@
 package btelegram
 
 import (
+	"fmt"
 	"html"
 	"log"
 	"strconv"
@@ -106,6 +107,12 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 	// Delete message
 	if msg.Event == config.EventMsgDelete {
 		return b.handleDelete(&msg, chatid)
+	}
+
+	// Handle prefix hint for unthreaded messages.
+	if msg.ParentNotFound() {
+		msg.ParentID = ""
+		msg.Text = fmt.Sprintf("[reply]: %s", msg.Text)
 	}
 
 	// Upload a file if it exists
