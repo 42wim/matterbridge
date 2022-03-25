@@ -347,4 +347,5 @@ const (
 	RPL_LOCALUSERS     = "265" // aircd/hybrid/bahamut, used on freenode.
 	RPL_TOPICWHOTIME   = "333" // ircu, used on freenode.
 	RPL_WHOSPCRPL      = "354" // ircu, used on networks with WHOX support.
+	RPL_CREATIONTIME   = "329"
 )

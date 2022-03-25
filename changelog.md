@@ -1,3 +1,24 @@
+# v1.24.1
+
+## Enhancements
+
+- discord: Switch to discordgo upstream again (#1759)
+- general: Update dependencies and vendor (#1761)
+- general: Create inmessage-logger.tengo (#1688) (#1747)
+- general: Add OpenRC service file (#1746)
+- irc: Refactor utf-8 conversion (irc) (#1767)
+
+## Bugfixes
+
+- irc: Fix panic in irc. Closes #1751 (#1760)
+- mumble: Implement a workaround to signal Opus support (mumble) (#1764)
+- telegram: Fix for complex-formatted Telegram text (#1765)
+- telegram: Fix Telegram channel title in forwards (#1753)
+- telegram: Fix Telegram Problem (unforwarded formatting and skipping of linebreaks) (#1749)
+
+This release couldn't exist without the following contributors:
+@s3lph, @ValdikSS, @reckel-jm, @CyberTailor
+
 # v1.24.0
 
 ## New features
@@ -30,6 +51,9 @@
 - matrix: Make HTMLDisable work correct (matrix) (#1716)
 - whatsapp: Make EditSuffix option actually work (whatsapp). Fixes #1510 (#1728)
 
+This release couldn't exist without the following contributors:
+@DavyJohnesev, @GoliathLabs, @pontaoski, @PeGaSuS-Coder, @dependabot[bot], @vpzomtrrfrt, @SevereCloud, @soloam, @YashRE42, @danwalmsley, @SuperSandro2000, @inzanity
+
 # v1.23.2
 
 If you're running whatsapp you should update.
@@ -37,6 +61,9 @@ If you're running whatsapp you should update.
 ## Bugfix
 
 - whatsapp: Update go-whatsapp version (#1630)
+
+This release couldn't exist without the following contributors:
+@snikpic
 
 # v1.23.1
 
@@ -51,6 +78,9 @@ If you're running mattermost 6 you should update.
 - xmpp: Do not fail on no avatar data (xmpp) #1529 (#1627)
 - xmpp: Use a new msgID when replacing messages (xmpp). Fixes #1584 (#1623)
 - zulip: Add better error handling on Zulip (#1589)
+
+This release couldn't exist without the following contributors:
+@Polynomdivision, @minecraftchest1, @alexmv
 
 # v1.23.0
 

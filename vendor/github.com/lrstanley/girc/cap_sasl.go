@@ -120,7 +120,6 @@ func handleSASL(c *Client, e Event) {
 			break
 		}
 	}
-	return
 }
 
 func handleSASLError(c *Client, e Event) {

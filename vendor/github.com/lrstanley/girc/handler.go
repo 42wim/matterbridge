@@ -458,7 +458,6 @@ func recoverHandlerPanic(client *Client, event *Event, id string, skip int) {
 	}
 
 	client.Config.RecoverFunc(client, err)
-	return
 }
 
 // HandlerError is the error returned when a panic is intentionally recovered
