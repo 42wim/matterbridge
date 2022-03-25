@@ -152,11 +152,11 @@ func (b *Btelegram) getFileDirectURL(id string) string {
 	return res
 }
 
-func (b *Btelegram) sendMessage(chatid int64, username, text, parentId string) (string, error) {
+func (b *Btelegram) sendMessage(chatid int64, username, text, parentID string) (string, error) {
 	m := tgbotapi.NewMessage(chatid, "")
 	m.Text, m.ParseMode = TGGetParseMode(b, username, text)
-	if parentId != "" {
-		rmid, err := strconv.Atoi(parentId)
+	if parentID != "" {
+		rmid, err := strconv.Atoi(parentID)
 		if err != nil {
 			return "", err
 		}
