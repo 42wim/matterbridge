@@ -862,9 +862,9 @@ ShowUserTyping=false
 #Default "<clipped message>"
 MessageClipped="<clipped message>"
 
-#If enabled use the "Real Name" as username.
+#If enabled use the slack "Real Name" as username.
 #OPTIONAL (default false)
-UseRealName=false
+UseFullName=false
 
 ###################################################################
 #discord section
