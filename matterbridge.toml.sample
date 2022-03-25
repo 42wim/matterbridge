@@ -1036,6 +1036,12 @@ DisableWebPagePreview=false
 #OPTIONAL (default false)
 UseFirstName=false
 
+#If enabled use the "Full Name" as username. If this is empty use the Username
+#If disabled use the "Username" as username. If this is empty use the First Name and Last Name as Full Name
+#If all names are empty, username will be "unknown"
+#OPTIONAL (default false)
+UseFullName=false
+
 #WARNING! If enabled this will relay GIF/stickers/documents and other attachments as URLs
 #Those URLs will contain your bot-token. This may not be what you want.
 #For now there is no secure way to relay GIF/stickers/documents without seeing your token.
