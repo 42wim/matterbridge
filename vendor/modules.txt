@@ -190,7 +190,7 @@ github.com/labstack/gommon/bytes
 github.com/labstack/gommon/color
 github.com/labstack/gommon/log
 github.com/labstack/gommon/random
-# github.com/lrstanley/girc v0.0.0-20211023233735-147f0ff77566
+# github.com/lrstanley/girc v0.0.0-20220321215535-9664730c7858
 ## explicit; go 1.12
 github.com/lrstanley/girc
 # github.com/magiconair/properties v1.8.5
