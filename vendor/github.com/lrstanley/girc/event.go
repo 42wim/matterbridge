@@ -13,7 +13,7 @@ import (
 
 const (
 	eventSpace byte = ' ' // Separator.
-	maxLength       = 510 // Maximum length is 510 (2 for line endings).
+	maxLength  int  = 510 // Maximum length is 510 (2 for line endings).
 )
 
 // cutCRFunc is used to trim CR characters from prefixes/messages.
@@ -636,6 +636,4 @@ func (s *Source) writeTo(buffer *bytes.Buffer) {
 		buffer.WriteByte(prefixHost)
 		buffer.WriteString(s.Host)
 	}
-
-	return
 }

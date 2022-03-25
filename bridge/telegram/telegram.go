@@ -1,6 +1,7 @@
 package btelegram
 
 import (
+	"fmt"
 	"html"
 	"log"
 	"strconv"
@@ -108,10 +109,16 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 		return b.handleDelete(&msg, chatid)
 	}
 
+	// Handle prefix hint for unthreaded messages.
+	if msg.ParentNotFound() {
+		msg.ParentID = ""
+		msg.Text = fmt.Sprintf("[reply]: %s", msg.Text)
+	}
+
 	// Upload a file if it exists
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			if _, msgErr := b.sendMessage(chatid, rmsg.Username, rmsg.Text); msgErr != nil {
+			if _, msgErr := b.sendMessage(chatid, rmsg.Username, rmsg.Text, msg.ParentID); msgErr != nil {
 				b.Log.Errorf("sendMessage failed: %s", msgErr)
 			}
 		}
@@ -131,7 +138,7 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 	// Ignore empty text field needs for prevent double messages from whatsapp to telegram
 	// when sending media with text caption
 	if msg.Text != "" {
-		return b.sendMessage(chatid, msg.Username, msg.Text)
+		return b.sendMessage(chatid, msg.Username, msg.Text, msg.ParentID)
 	}
 
 	return "", nil
@@ -145,10 +152,16 @@ func (b *Btelegram) getFileDirectURL(id string) string {
 	return res
 }
 
-func (b *Btelegram) sendMessage(chatid int64, username, text string) (string, error) {
+func (b *Btelegram) sendMessage(chatid int64, username, text, parentID string) (string, error) {
 	m := tgbotapi.NewMessage(chatid, "")
 	m.Text, m.ParseMode = TGGetParseMode(b, username, text)
-
+	if parentID != "" {
+		rmid, err := strconv.Atoi(parentID)
+		if err != nil {
+			return "", err
+		}
+		m.ReplyToMessageID = rmid
+	}
 	m.DisableWebPagePreview = b.GetBool("DisableWebPagePreview")
 
 	res, err := b.c.Send(m)

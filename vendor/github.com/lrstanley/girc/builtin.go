@@ -451,7 +451,7 @@ func handleNAMES(c *Client, e Event) {
 
 	var modes, nick string
 	var ok bool
-	s := &Source{}
+	var s *Source
 
 	c.state.Lock()
 	for i := 0; i < len(parts); i++ {
