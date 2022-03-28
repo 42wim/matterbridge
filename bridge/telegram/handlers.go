@@ -111,7 +111,11 @@ func (b *Btelegram) handleQuoting(rmsg *config.Message, message *tgbotapi.Messag
 			usernameReply = unknownUser
 		}
 		if !b.GetBool("QuoteDisable") {
-			rmsg.Text = b.handleQuote(rmsg.Text, usernameReply, message.ReplyToMessage.Text)
+			quote := message.ReplyToMessage.Text
+			if quote == "" {
+				quote = message.ReplyToMessage.Caption
+			}
+			rmsg.Text = b.handleQuote(rmsg.Text, usernameReply, quote)
 		}
 	}
 }
