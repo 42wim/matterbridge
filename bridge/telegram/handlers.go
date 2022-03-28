@@ -491,7 +491,7 @@ func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64) (string,
 			}
 			res, err := b.c.Send(voc)
 			if err != nil {
-				b.Log.Errorf("file upload failed: %#v", err)
+				return "", err
 			}
 			resId = strconv.Itoa(res.MessageID)
 		default:
@@ -510,7 +510,7 @@ func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64) (string,
 		}
 		messages, err := b.c.SendMediaGroup(mg)
 		if err != nil {
-			b.Log.Errorf("file upload failed: %#v", err)
+			return "", err
 		}
 		// get first message id
 		resId = strconv.Itoa(messages[0].MessageID)
