@@ -124,7 +124,7 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 		}
 		// check if we have files to upload (from slack, telegram or mattermost)
 		if len(msg.Extra["file"]) > 0 {
-			b.handleUploadFile(&msg, chatid)
+			return b.handleUploadFile(&msg, chatid)
 		}
 	}
 

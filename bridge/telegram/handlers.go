@@ -439,8 +439,21 @@ func (b *Btelegram) handleEdit(msg *config.Message, chatid int64) (string, error
 }
 
 // handleUploadFile handles native upload of files
-func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64) string {
-	var c tgbotapi.Chattable
+func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64) (string, error) {
+	var (
+		media    []interface{}
+		parentID int
+		resId    string
+	)
+
+	if msg.ParentID != "" {
+		pid, err := strconv.Atoi(msg.ParentID)
+		if err != nil {
+			return "", err
+		}
+		parentID = pid
+	}
+
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo)
 		file := tgbotapi.FileBytes{
@@ -449,32 +462,57 @@ func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64) string {
 		}
 		switch filepath.Ext(fi.Name) {
 		case ".jpg", ".jpe", ".png":
-			pc := tgbotapi.NewPhoto(chatid, file)
-			pc.Caption, pc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
-			c = pc
+			pc := tgbotapi.NewInputMediaPhoto(file)
+			if fi.Comment != "" {
+				pc.Caption, pc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
+			}
+			media = append(media, pc)
 		case ".mp4", ".m4v":
-			vc := tgbotapi.NewVideo(chatid, file)
-			vc.Caption, vc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
-			c = vc
+			vc := tgbotapi.NewInputMediaVideo(file)
+			if fi.Comment != "" {
+				vc.Caption, vc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
+			}
+			media = append(media, vc)
 		case ".mp3", ".oga":
-			ac := tgbotapi.NewAudio(chatid, file)
-			ac.Caption, ac.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
-			c = ac
+			ac := tgbotapi.NewInputMediaAudio(file)
+			if fi.Comment != "" {
+				ac.Caption, ac.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
+			}
+			media = append(media, ac)
 		case ".ogg":
 			voc := tgbotapi.NewVoice(chatid, file)
 			voc.Caption, voc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
-			c = voc
+			if parentID != 0 {
+				voc.ReplyToMessageID = parentID
+			}
+			res, err := b.c.Send(voc)
+			if err != nil {
+				b.Log.Errorf("file upload failed: %#v", err)
+			}
+			resId = strconv.Itoa(res.MessageID)
 		default:
-			dc := tgbotapi.NewDocument(chatid, file)
-			dc.Caption, dc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
-			c = dc
+			dc := tgbotapi.NewInputMediaDocument(file)
+			if fi.Comment != "" {
+				dc.Caption, dc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
+			}
+			media = append(media, dc)
 		}
-		_, err := b.c.Send(c)
+	}
+
+	if len(media) > 0 {
+		mg := tgbotapi.MediaGroupConfig{ChatID: chatid, ChannelUsername: msg.Username, Media: media}
+		if parentID != 0 {
+			mg.ReplyToMessageID = parentID
+		}
+		messages, err := b.c.SendMediaGroup(mg)
 		if err != nil {
 			b.Log.Errorf("file upload failed: %#v", err)
 		}
+		// get first message id
+		resId = strconv.Itoa(messages[0].MessageID)
 	}
-	return ""
+
+	return resId, nil
 }
 
 func (b *Btelegram) handleQuote(message, quoteNick, quoteMessage string) string {
