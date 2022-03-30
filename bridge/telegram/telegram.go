@@ -115,16 +115,21 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 		msg.Text = fmt.Sprintf("[reply]: %s", msg.Text)
 	}
 
+	var parentID int
+	if msg.ParentID != "" {
+		parentID, _ = b.intParentID(msg.ParentID)
+	}
+
 	// Upload a file if it exists
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			if _, msgErr := b.sendMessage(chatid, rmsg.Username, rmsg.Text, msg.ParentID); msgErr != nil {
+			if _, msgErr := b.sendMessage(chatid, rmsg.Username, rmsg.Text, parentID); msgErr != nil {
 				b.Log.Errorf("sendMessage failed: %s", msgErr)
 			}
 		}
 		// check if we have files to upload (from slack, telegram or mattermost)
 		if len(msg.Extra["file"]) > 0 {
-			b.handleUploadFile(&msg, chatid)
+			return b.handleUploadFile(&msg, chatid, parentID)
 		}
 	}
 
@@ -138,7 +143,7 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 	// Ignore empty text field needs for prevent double messages from whatsapp to telegram
 	// when sending media with text caption
 	if msg.Text != "" {
-		return b.sendMessage(chatid, msg.Username, msg.Text, msg.ParentID)
+		return b.sendMessage(chatid, msg.Username, msg.Text, parentID)
 	}
 
 	return "", nil
@@ -152,16 +157,10 @@ func (b *Btelegram) getFileDirectURL(id string) string {
 	return res
 }
 
-func (b *Btelegram) sendMessage(chatid int64, username, text, parentID string) (string, error) {
+func (b *Btelegram) sendMessage(chatid int64, username, text string, parentID int) (string, error) {
 	m := tgbotapi.NewMessage(chatid, "")
 	m.Text, m.ParseMode = TGGetParseMode(b, username, text)
-	if parentID != "" {
-		rmid, err := strconv.Atoi(parentID)
-		if err != nil {
-			return "", err
-		}
-		m.ReplyToMessageID = rmid
-	}
+	m.ReplyToMessageID = parentID
 	m.DisableWebPagePreview = b.GetBool("DisableWebPagePreview")
 
 	res, err := b.c.Send(m)
@@ -169,6 +168,29 @@ func (b *Btelegram) sendMessage(chatid int64, username, text, parentID string) (
 		return "", err
 	}
 	return strconv.Itoa(res.MessageID), nil
+}
+
+// sendMediaFiles native upload media files via media group
+func (b *Btelegram) sendMediaFiles(msg *config.Message, chatid int64, parentID int, media []interface{}) (string, error) {
+	if len(media) == 0 {
+		return "", nil
+	}
+	mg := tgbotapi.MediaGroupConfig{ChatID: chatid, ChannelUsername: msg.Username, Media: media, ReplyToMessageID: parentID}
+	messages, err := b.c.SendMediaGroup(mg)
+	if err != nil {
+		return "", err
+	}
+	// return first message id
+	return strconv.Itoa(messages[0].MessageID), nil
+}
+
+// intParentID return integer parent id for telegram message
+func (b *Btelegram) intParentID(parentID string) (int, error) {
+	pid, err := strconv.Atoi(parentID)
+	if err != nil {
+		return 0, err
+	}
+	return pid, nil
 }
 
 func (b *Btelegram) cacheAvatar(msg *config.Message) (string, error) {
