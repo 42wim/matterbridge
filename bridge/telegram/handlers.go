@@ -443,21 +443,8 @@ func (b *Btelegram) handleEdit(msg *config.Message, chatid int64) (string, error
 }
 
 // handleUploadFile handles native upload of files
-func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64) (string, error) {
-	var (
-		media    []interface{}
-		parentID int
-		resId    string
-	)
-
-	if msg.ParentID != "" {
-		pid, err := strconv.Atoi(msg.ParentID)
-		if err != nil {
-			return "", err
-		}
-		parentID = pid
-	}
-
+func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64, parentID int) (string, error) {
+	var media []interface{}
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo)
 		file := tgbotapi.FileBytes{
@@ -493,7 +480,7 @@ func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64) (string,
 			if err != nil {
 				return "", err
 			}
-			resId = strconv.Itoa(res.MessageID)
+			return strconv.Itoa(res.MessageID), nil
 		default:
 			dc := tgbotapi.NewInputMediaDocument(file)
 			if fi.Comment != "" {
@@ -504,19 +491,10 @@ func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64) (string,
 	}
 
 	if len(media) > 0 {
-		mg := tgbotapi.MediaGroupConfig{ChatID: chatid, ChannelUsername: msg.Username, Media: media}
-		if parentID != 0 {
-			mg.ReplyToMessageID = parentID
-		}
-		messages, err := b.c.SendMediaGroup(mg)
-		if err != nil {
-			return "", err
-		}
-		// get first message id
-		resId = strconv.Itoa(messages[0].MessageID)
+		return b.sendMediaFiles(msg, chatid, parentID, media)
 	}
 
-	return resId, nil
+	return "", nil
 }
 
 func (b *Btelegram) handleQuote(message, quoteNick, quoteMessage string) string {
