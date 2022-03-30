@@ -321,7 +321,7 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 	}
 
 	// Upload a file if it exists.
-	if msg.Extra != nil {
+	if len(msg.Extra) > 0 {
 		extraMsgs := helper.HandleExtra(&msg, b.General)
 		for i := range extraMsgs {
 			rmsg := &extraMsgs[i]
@@ -332,7 +332,7 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 			}
 		}
 		// Upload files if necessary (from Slack, Telegram or Mattermost).
-		b.uploadFile(&msg, channelInfo.ID)
+		return b.uploadFile(&msg, channelInfo.ID)
 	}
 
 	// Post message.
@@ -443,7 +443,8 @@ func (b *Bslack) postMessage(msg *config.Message, channelInfo *slack.Channel) (s
 }
 
 // uploadFile handles native upload of files
-func (b *Bslack) uploadFile(msg *config.Message, channelID string) {
+func (b *Bslack) uploadFile(msg *config.Message, channelID string) (string, error) {
+	var messageID string
 	for _, f := range msg.Extra["file"] {
 		fi, ok := f.(config.FileInfo)
 		if !ok {
@@ -471,13 +472,22 @@ func (b *Bslack) uploadFile(msg *config.Message, channelID string) {
 		})
 		if err != nil {
 			b.Log.Errorf("uploadfile %#v", err)
-			return
+			return "", err
 		}
 		if res.ID != "" {
 			b.Log.Debugf("Adding file ID %s to cache with timestamp %s", res.ID, ts.String())
 			b.cache.Add("file"+res.ID, ts)
+
+			// search for message id by uploaded file in private/public channels, get thread timestamp from uploaded file
+			if v, ok := res.Shares.Private[channelID]; ok && len(v) > 0 {
+				messageID = v[0].Ts
+			}
+			if v, ok := res.Shares.Public[channelID]; ok && len(v) > 0 {
+				messageID = v[0].Ts
+			}
 		}
 	}
+	return messageID, nil
 }
 
 func (b *Bslack) prepareMessageOptions(msg *config.Message) []slack.MsgOption {
