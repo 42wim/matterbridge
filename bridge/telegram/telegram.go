@@ -172,6 +172,9 @@ func (b *Btelegram) sendMessage(chatid int64, username, text string, parentID in
 
 // sendMediaFiles native upload media files via media group
 func (b *Btelegram) sendMediaFiles(msg *config.Message, chatid int64, parentID int, media []interface{}) (string, error) {
+	if len(media) == 0 {
+		return "", nil
+	}
 	mg := tgbotapi.MediaGroupConfig{ChatID: chatid, ChannelUsername: msg.Username, Media: media, ReplyToMessageID: parentID}
 	messages, err := b.c.SendMediaGroup(mg)
 	if err != nil {

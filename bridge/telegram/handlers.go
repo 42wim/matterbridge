@@ -490,11 +490,7 @@ func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64, parentID
 		}
 	}
 
-	if len(media) > 0 {
-		return b.sendMediaFiles(msg, chatid, parentID, media)
-	}
-
-	return "", nil
+	return b.sendMediaFiles(msg, chatid, parentID, media)
 }
 
 func (b *Btelegram) handleQuote(message, quoteNick, quoteMessage string) string {
