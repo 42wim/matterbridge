@@ -473,9 +473,7 @@ func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64, parentID
 		case ".ogg":
 			voc := tgbotapi.NewVoice(chatid, file)
 			voc.Caption, voc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
-			if parentID != 0 {
-				voc.ReplyToMessageID = parentID
-			}
+			voc.ReplyToMessageID = parentID
 			res, err := b.c.Send(voc)
 			if err != nil {
 				return "", err
