@@ -478,7 +478,7 @@ func (b *Bslack) uploadFile(msg *config.Message, channelID string) (string, erro
 			b.Log.Debugf("Adding file ID %s to cache with timestamp %s", res.ID, ts.String())
 			b.cache.Add("file"+res.ID, ts)
 
-			//search for message id by uploaded file in private/public channels, get thread timestamp from uploaded file
+			// search for message id by uploaded file in private/public channels, get thread timestamp from uploaded file
 			if v, ok := res.Shares.Private[channelID]; ok && len(v) > 0 {
 				messageID = v[0].Ts
 			}
