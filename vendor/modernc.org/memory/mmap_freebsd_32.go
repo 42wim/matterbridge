@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE-GO file.
 
 //go:build freebsd && 386
+// +build freebsd,386
 
 package memory
 

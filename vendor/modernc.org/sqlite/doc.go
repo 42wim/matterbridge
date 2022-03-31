@@ -8,21 +8,26 @@
 // SQLite is an in-process implementation of a self-contained, serverless,
 // zero-configuration, transactional SQL database engine.
 //
+// Thanks
+//
+// This project is sponsored by Schleibinger Geräte Teubert u. Greim GmbH by
+// allowing one of the maintainers to work on it also in office hours.
+//
 // Supported platforms and architectures
 //
 // These combinations of GOOS and GOARCH are currently supported
 //
 //	OS      Arch    SQLite version
 //	------------------------------
-//	darwin	amd64   3.38.1
-//	darwin	arm64   3.38.1
-//	freebsd	amd64   3.38.1
-//	linux	386     3.38.1
-//	linux	amd64   3.38.1
-//	linux	arm     3.38.1
-//	linux	arm64   3.38.1
-//	linux	riscv64 3.38.1
-//	windows	amd64   3.38.1
+//	darwin	amd64   3.38.2
+//	darwin	arm64   3.38.2
+//	freebsd	amd64   3.38.2
+//	linux	386     3.38.2
+//	linux	amd64   3.38.2
+//	linux	arm     3.38.2
+//	linux	arm64   3.38.2
+//	linux	riscv64 3.38.2
+//	windows	amd64   3.38.2
 //
 // Builders
 //

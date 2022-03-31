@@ -67,11 +67,14 @@ type Client struct {
 	appStateProc     *appstate.Processor
 	appStateSyncLock sync.Mutex
 
+	historySyncNotifications  chan *waProto.HistorySyncNotification
+	historySyncHandlerStarted uint32
+
 	uploadPreKeysLock sync.Mutex
 	lastPreKeyUpload  time.Time
 
-	mediaConn     *MediaConn
-	mediaConnLock sync.Mutex
+	mediaConnCache *MediaConn
+	mediaConnLock  sync.Mutex
 
 	responseWaiters     map[string]chan<- *waBinary.Node
 	responseWaitersLock sync.Mutex
@@ -101,6 +104,11 @@ type Client struct {
 	// PreRetryCallback is called before a retry receipt is accepted.
 	// If it returns false, the accepting will be cancelled and the retry receipt will be ignored.
 	PreRetryCallback func(receipt *events.Receipt, retryCount int, msg *waProto.Message) bool
+
+	// Should untrusted identity errors be handled automatically? If true, the stored identity and existing signal
+	// sessions will be removed on untrusted identity errors, and an events.IdentityChange will be dispatched.
+	// If false, decrypting a message from untrusted devices will fail.
+	AutoTrustIdentity bool
 
 	uniqueID  string
 	idCounter uint32
@@ -150,6 +158,8 @@ func NewClient(deviceStore *store.Device, log waLog.Logger) *Client {
 		handlerQueue:    make(chan *waBinary.Node, handlerQueueSize),
 		appStateProc:    appstate.NewProcessor(deviceStore, log.Sub("AppState")),
 
+		historySyncNotifications: make(chan *waProto.HistorySyncNotification, 32),
+
 		groupParticipantsCache: make(map[types.JID][]types.JID),
 		userDevicesCache:       make(map[types.JID][]types.JID),
 
@@ -157,6 +167,7 @@ func NewClient(deviceStore *store.Device, log waLog.Logger) *Client {
 		GetMessageForRetry: func(to types.JID, id types.MessageID) *waProto.Message { return nil },
 
 		EnableAutoReconnect: true,
+		AutoTrustIdentity:   true,
 	}
 	cli.nodeHandlers = map[string]nodeHandler{
 		"message":      cli.handleEncryptedMessage,

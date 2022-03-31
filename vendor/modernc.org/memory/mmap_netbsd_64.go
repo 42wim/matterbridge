@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE-GO file.
 
 //go:build netbsd && amd64
+// +build netbsd,amd64
 
 package memory
 
