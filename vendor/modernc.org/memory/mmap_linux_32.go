@@ -3,6 +3,8 @@
 // license that can be found in the LICENSE-GO file.
 
 //go:build linux && (386 || arm || mips || mipsle)
+// +build linux
+// +build 386 arm mips mipsle
 
 package memory
 

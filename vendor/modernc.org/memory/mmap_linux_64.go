@@ -3,6 +3,8 @@
 // license that can be found in the LICENSE-GO file.
 
 //go:build linux && (amd64 || arm64 || mips64 || mips64le || riscv64)
+// +build linux
+// +build amd64 arm64 mips64 mips64le riscv64
 
 package memory
 

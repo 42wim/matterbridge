@@ -246,7 +246,7 @@ const (
 
 const (
 	// Version of Echo
-	Version = "4.7.0"
+	Version = "4.7.2"
 	website = "https://echo.labstack.com"
 	// http://patorjk.com/software/taag/#p=display&f=Small%20Slant&t=Echo
 	banner = `
@@ -732,7 +732,7 @@ func (e *Echo) StartServer(s *http.Server) (err error) {
 	return s.Serve(e.Listener)
 }
 
-func (e *Echo) configureServer(s *http.Server) (err error) {
+func (e *Echo) configureServer(s *http.Server) error {
 	// Setup
 	e.colorer.SetOutput(e.Logger.Output())
 	s.ErrorLog = e.StdLogger
@@ -747,10 +747,11 @@ func (e *Echo) configureServer(s *http.Server) (err error) {
 
 	if s.TLSConfig == nil {
 		if e.Listener == nil {
-			e.Listener, err = newListener(s.Addr, e.ListenerNetwork)
+			l, err := newListener(s.Addr, e.ListenerNetwork)
 			if err != nil {
 				return err
 			}
+			e.Listener = l
 		}
 		if !e.HidePort {
 			e.colorer.Printf("⇨ http server started on %s\n", e.colorer.Green(e.Listener.Addr()))
@@ -791,7 +792,7 @@ func (e *Echo) TLSListenerAddr() net.Addr {
 }
 
 // StartH2CServer starts a custom http/2 server with h2c (HTTP/2 Cleartext).
-func (e *Echo) StartH2CServer(address string, h2s *http2.Server) (err error) {
+func (e *Echo) StartH2CServer(address string, h2s *http2.Server) error {
 	e.startupMutex.Lock()
 	// Setup
 	s := e.Server
@@ -808,11 +809,12 @@ func (e *Echo) StartH2CServer(address string, h2s *http2.Server) (err error) {
 	}
 
 	if e.Listener == nil {
-		e.Listener, err = newListener(s.Addr, e.ListenerNetwork)
+		l, err := newListener(s.Addr, e.ListenerNetwork)
 		if err != nil {
 			e.startupMutex.Unlock()
 			return err
 		}
+		e.Listener = l
 	}
 	if !e.HidePort {
 		e.colorer.Printf("⇨ http server started on %s\n", e.colorer.Green(e.Listener.Addr()))

@@ -1,5 +1,29 @@
 # Changelog
 
+## v4.7.2 - 2022-03-16
+
+**Fixes**
+
+* Fix nil pointer exception when calling Start again after address binding error [#2131](https://github.com/labstack/echo/pull/2131)
+* Fix CSRF middleware not being able to extract token from multipart/form-data form [#2136](https://github.com/labstack/echo/pull/2136)
+* Fix Timeout middleware write race [#2126](https://github.com/labstack/echo/pull/2126)
+
+**Enhancements**
+
+* Recover middleware should not log panic for aborted handler [#2134](https://github.com/labstack/echo/pull/2134)
+
+
+## v4.7.1 - 2022-03-13
+
+**Fixes**
+
+* Fix `e.Static`, `.File()`, `c.Attachment()` being picky with paths starting with `./`, `../` and `/` after 4.7.0 introduced echo.Filesystem support (Go1.16+) [#2123](https://github.com/labstack/echo/pull/2123)
+
+**Enhancements**
+
+* Remove some unused code [#2116](https://github.com/labstack/echo/pull/2116)
+
+
 ## v4.7.0 - 2022-03-01
 
 **Enhancements**
