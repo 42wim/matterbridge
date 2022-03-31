@@ -312,7 +312,10 @@ func (gw *Gateway) ignoreFilesComment(extra map[string][]interface{}, igMessages
 		return false
 	}
 	for _, f := range extra["file"] {
-		fi := f.(config.FileInfo)
+		fi, ok := f.(config.FileInfo)
+		if !ok {
+			continue
+		}
 		if gw.ignoreText(fi.Comment, igMessages) {
 			return true
 		}
