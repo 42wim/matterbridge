@@ -299,10 +299,24 @@ func (gw *Gateway) ignoreMessage(msg *config.Message) bool {
 
 	igNicks := strings.Fields(gw.Bridges[msg.Account].GetString("IgnoreNicks"))
 	igMessages := strings.Fields(gw.Bridges[msg.Account].GetString("IgnoreMessages"))
-	if gw.ignoreTextEmpty(msg) || gw.ignoreText(msg.Username, igNicks) || gw.ignoreText(msg.Text, igMessages) {
+	if gw.ignoreTextEmpty(msg) || gw.ignoreText(msg.Username, igNicks) || gw.ignoreText(msg.Text, igMessages) || gw.ignoreFilesComment(msg.Extra, igMessages) {
 		return true
 	}
 
+	return false
+}
+
+// ignoreFilesComment returns true if we need to ignore a file with matched comment.
+func (gw *Gateway) ignoreFilesComment(extra map[string][]interface{}, igMessages []string) bool {
+	if extra == nil {
+		return false
+	}
+	for _, f := range extra["file"] {
+		fi := f.(config.FileInfo)
+		if gw.ignoreText(fi.Comment, igMessages) {
+			return true
+		}
+	}
 	return false
 }
 
