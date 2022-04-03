@@ -1,3 +1,35 @@
+# v1.25.0
+
+## Breaking changes
+
+- whatsapp: deprecated, the library <https://github.com/Rhymen/go-whatsapp> isn't maintained anymore.
+We're switching to <https://github.com/tulir/whatsmeow> but as this uses a GPL3 licensed library we can't provide you with binaries.
+You'll need to build it yourself. More information about this can be found here: <https://github.com/42wim/matterbridge#building-with-whatsapp-beta-multidevice-support>
+
+## New features
+
+- whatsappmulti: whatsapp multidevice support added - more info <https://github.com/42wim/matterbridge#building-with-whatsapp-beta-multidevice-support>
+- general: Add Dockerfile_whatsappmulti for building with WhatsApp Multi-Device support (Whatsmeow) (#1774)
+- telegram: Add UseFullName option (telegram) (#1777)
+- slack: Use slack real name as user name (slack) (#1775)
+
+## Enhancements
+
+- general: Ignore sending file with comment, if comment contains IgnoreMessages value (#1783)
+- general: Update dependencies (#1784)
+- irc: Update lrstanley/girc dep (#1773)
+- slack: Preserve threading for messages with files (slack) (#1781)
+- telegram: Preserve threading from telegram replies (telegram) (#1776)
+- telegram: Multiple media in one message (telegram) (#1779)
+- whatsapp: Add whatsapp deprecation warning (#1792)
+
+## Bugfix
+
+- discord: Change discord non-native threading behaviour (discord) (#1791)
+
+This release couldn't exist without the following contributors:
+@sas1024, @tpxtron
+
 # v1.24.1
 
 ## Enhancements
