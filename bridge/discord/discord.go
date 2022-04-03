@@ -272,7 +272,8 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	// Handle prefix hint for unthreaded messages.
 	if msg.ParentNotFound() {
 		msg.ParentID = ""
-		msg.Text = fmt.Sprintf("[thread]: %s", msg.Text)
+		msg.Text = strings.TrimPrefix(msg.Text, "\n")
+		msg.Text = fmt.Sprintf("> %s %s", msg.Username, msg.Text)
 	}
 
 	// Use webhook to send the message
