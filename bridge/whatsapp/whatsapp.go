@@ -40,6 +40,11 @@ type Bwhatsapp struct {
 func New(cfg *bridge.Config) bridge.Bridger {
 	number := cfg.GetString(cfgNumber)
 
+	cfg.Log.Warn("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+	cfg.Log.Warn("This bridge is deprecated and not supported anymore. Use the new multidevice whatsapp bridge")
+	cfg.Log.Warn("See https://github.com/42wim/matterbridge#building-with-whatsapp-beta-multidevice-support for more info")
+	cfg.Log.Warn("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
 	if number == "" {
 		cfg.Log.Fatalf("Missing configuration for WhatsApp bridge: Number")
 	}
