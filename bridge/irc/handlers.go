@@ -122,6 +122,7 @@ func (b *Birc) handleNewConnection(client *girc.Client, event girc.Event) {
 	i := b.i
 	b.Nick = event.Params[0]
 
+	i.Handlers.ClearAll()
 	i.Handlers.AddBg("PRIVMSG", b.handlePrivMsg)
 	i.Handlers.AddBg("CTCP_ACTION", b.handlePrivMsg)
 	i.Handlers.Add(girc.RPL_TOPICWHOTIME, b.handleTopicWhoTime)
