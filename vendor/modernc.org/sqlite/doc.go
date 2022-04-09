@@ -37,6 +37,12 @@
 //
 // Changelog
 //
+// 2022-04-04 v1.16.0:
+//
+// Support scalar application defined functions written in Go.
+//
+//  https://www.sqlite.org/appfunc.html
+//
 // 2022-03-13 v1.15.0:
 //
 // Support linux/riscv64.

@@ -81,6 +81,7 @@ type GroupEvent struct {
 	Object  json.RawMessage `json:"object"`
 	GroupID int             `json:"group_id"`
 	EventID string          `json:"event_id"`
+	V       string          `json:"v"`
 	Secret  string          `json:"secret"`
 }
 
@@ -158,6 +159,7 @@ func NewFuncList() *FuncList {
 func (fl FuncList) Handler(ctx context.Context, e GroupEvent) error { // nolint:gocyclo
 	ctx = context.WithValue(ctx, internal.GroupIDKey, e.GroupID)
 	ctx = context.WithValue(ctx, internal.EventIDKey, e.EventID)
+	ctx = context.WithValue(ctx, internal.EventVersionKey, e.V)
 
 	if sliceFunc, ok := fl.special[e.Type]; ok {
 		for _, f := range sliceFunc {

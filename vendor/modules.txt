@@ -38,7 +38,7 @@ github.com/Rhymen/go-whatsapp/binary/token
 github.com/Rhymen/go-whatsapp/crypto/cbc
 github.com/Rhymen/go-whatsapp/crypto/curve25519
 github.com/Rhymen/go-whatsapp/crypto/hkdf
-# github.com/SevereCloud/vksdk/v2 v2.13.1
+# github.com/SevereCloud/vksdk/v2 v2.14.0
 ## explicit; go 1.16
 github.com/SevereCloud/vksdk/v2
 github.com/SevereCloud/vksdk/v2/api
@@ -182,7 +182,7 @@ github.com/keybase/go-keybase-chat-bot/kbchat/types/chat1
 github.com/keybase/go-keybase-chat-bot/kbchat/types/gregor1
 github.com/keybase/go-keybase-chat-bot/kbchat/types/keybase1
 github.com/keybase/go-keybase-chat-bot/kbchat/types/stellar1
-# github.com/klauspost/compress v1.14.2
+# github.com/klauspost/compress v1.15.1
 ## explicit; go 1.15
 github.com/klauspost/compress
 github.com/klauspost/compress/fse
@@ -207,7 +207,7 @@ github.com/labstack/gommon/bytes
 github.com/labstack/gommon/color
 github.com/labstack/gommon/log
 github.com/labstack/gommon/random
-# github.com/lrstanley/girc v0.0.0-20220321215535-9664730c7858
+# github.com/lrstanley/girc v0.0.0-20220409202343-de3f963fb827
 ## explicit; go 1.12
 github.com/lrstanley/girc
 # github.com/magiconair/properties v1.8.5
@@ -557,7 +557,7 @@ golang.org/x/crypto/scrypt
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/image v0.0.0-20220302094943-723b81ca9867
+# golang.org/x/image v0.0.0-20220321031419-a8550c1d254a
 ## explicit; go 1.12
 golang.org/x/image/riff
 golang.org/x/image/vp8
@@ -654,8 +654,8 @@ google.golang.org/appengine/internal/log
 google.golang.org/appengine/internal/remote_api
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
-# google.golang.org/protobuf v1.27.1
-## explicit; go 1.9
+# google.golang.org/protobuf v1.28.0
+## explicit; go 1.11
 google.golang.org/protobuf/encoding/prototext
 google.golang.org/protobuf/encoding/protowire
 google.golang.org/protobuf/internal/descfmt
@@ -750,7 +750,7 @@ modernc.org/memory
 # modernc.org/opt v0.1.1
 ## explicit; go 1.13
 modernc.org/opt
-# modernc.org/sqlite v1.15.4
+# modernc.org/sqlite v1.16.0
 ## explicit; go 1.16
 modernc.org/sqlite
 modernc.org/sqlite/lib

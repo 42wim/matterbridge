@@ -14,7 +14,7 @@ allowing one of the maintainers to work on it also in office hours.
 
     $ go get modernc.org/sqlite
 
-##Documentation
+## Documentation
 
 [godoc.org/modernc.org/sqlite](http://godoc.org/modernc.org/sqlite)
 

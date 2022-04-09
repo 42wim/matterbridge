@@ -10,7 +10,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -268,7 +267,7 @@ func New(config Config) *Client {
 		if envDebug {
 			c.debug = log.New(os.Stderr, "debug:", log.Ltime|log.Lshortfile)
 		} else {
-			c.debug = log.New(ioutil.Discard, "", 0)
+			c.debug = log.New(io.Discard, "", 0)
 		}
 	} else {
 		if envDebug {
@@ -411,7 +410,7 @@ func (c *Client) execLoop(ctx context.Context, errs chan error, wg *sync.WaitGro
 				// Handles incoming ERROR responses. These are only ever sent
 				// by the server (with the exception that this library may use
 				// them as a lower level way of signalling to disconnect due
-				// to some other client-choosen error), and should always be
+				// to some other client-chosen error), and should always be
 				// followed up by the server disconnecting the client. If for
 				// some reason the server doesn't disconnect the client, or
 				// if this library is the source of the error, this should
@@ -446,7 +445,7 @@ func (c *Client) DisableTracking() {
 // Server returns the string representation of host+port pair for the connection.
 func (c *Client) Server() string {
 	c.state.Lock()
-	defer c.state.Lock()
+	defer c.state.Unlock()
 
 	return c.server()
 }

@@ -1,7 +1,7 @@
 # VK SDK for Golang
 
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/SevereCloud/vksdk/v2/v2)](https://pkg.go.dev/github.com/SevereCloud/vksdk/v2?tab=subdirectories)
-[![VK Developers](https://img.shields.io/badge/developers-%234a76a8.svg?logo=VK&logoColor=white)](https://vk.com/dev/)
+[![VK Developers](https://img.shields.io/badge/developers-%234a76a8.svg?logo=VK&logoColor=white)](https://dev.vk.com/)
 [![codecov](https://codecov.io/gh/SevereCloud/vksdk/branch/master/graph/badge.svg)](https://codecov.io/gh/SevereCloud/vksdk)
 [![VK chat](https://img.shields.io/badge/VK%20chat-%234a76a8.svg?logo=VK&logoColor=white)](https://vk.me/join/AJQ1d6Or8Q00Y_CSOESfbqGt)
 [![release](https://img.shields.io/github/v/tag/SevereCloud/vksdk?label=release)](https://github.com/SevereCloud/vksdk/releases)

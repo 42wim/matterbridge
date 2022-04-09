@@ -28,6 +28,7 @@ const (
 	CallbackRetryCounterKey
 	CallbackRetryAfterKey
 	CallbackRemove
+	EventVersionKey
 )
 
 // ContextClient return *http.Client.

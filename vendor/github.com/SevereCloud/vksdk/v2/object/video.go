@@ -297,3 +297,27 @@ type VideoVideoImage struct {
 	BaseImage
 	WithPadding BaseBoolInt `json:"with_padding"`
 }
+
+// VideoLive struct.
+type VideoLive struct {
+	OwnerID     int             `json:"owner_id"`
+	VideoID     int             `json:"video_id"`
+	Name        string          `json:"name"`
+	Description string          `json:"description"`
+	AccessKey   string          `json:"access_key"`
+	Stream      VideoLiveStream `json:"stream"`
+}
+
+// VideoLiveStream struct.
+type VideoLiveStream struct {
+	URL     string `json:"url"`
+	Key     string `json:"key"`
+	OKMPURL string `json:"okmp_url"`
+}
+
+// VideoLiveCategory struct.
+type VideoLiveCategory struct {
+	ID      int                 `json:"id"`
+	Label   string              `json:"label"`
+	Sublist []VideoLiveCategory `json:"sublist,omitempty"`
+}

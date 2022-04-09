@@ -1,0 +1,37 @@
+# THIS FILE IS GENERATED! DO NOT EDIT! Maintained by Terraform.
+run:
+  tests: False
+  timeout: 3m
+
+issues:
+  max-per-linter: 0
+  max-same-issues: 0
+
+severity:
+  default-severity: error
+  rules:
+    - linters:
+        - errcheck
+        - gocritic
+      severity: warning
+
+linters:
+  enable:
+    - asciicheck
+    - exportloopref
+    - gci
+    - gocritic
+    - gofmt
+    - misspell
+
+linters-settings:
+  gocritic:
+    disabled-checks:
+      - hugeParam
+    enabled-tags:
+      - diagnostic
+      - opinionated
+      - performance
+      - style
+  govet:
+    check-shadowing: true

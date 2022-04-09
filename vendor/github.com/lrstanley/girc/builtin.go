@@ -427,7 +427,7 @@ func handleMOTD(c *Client, e Event) {
 	}
 
 	// Otherwise, assume we're getting sent the MOTD line-by-line.
-	if len(c.state.motd) != 0 {
+	if c.state.motd != "" {
 		c.state.motd += "\n"
 	}
 	c.state.motd += e.Last()
