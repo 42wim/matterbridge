@@ -6,7 +6,7 @@ require (
 	github.com/Benau/tgsconverter v0.0.0-20210809170556-99f4a4f6337f
 	github.com/Philipp15b/go-steam v1.0.1-0.20200727090957-6ae9b3c0a560
 	github.com/Rhymen/go-whatsapp v0.1.2-0.20211102134409-31a2e740845c
-	github.com/SevereCloud/vksdk/v2 v2.13.1
+	github.com/SevereCloud/vksdk/v2 v2.14.0
 	github.com/bwmarrin/discordgo v0.24.0
 	github.com/d5/tengo/v2 v2.10.1
 	github.com/davecgh/go-spew v1.1.1
@@ -22,7 +22,7 @@ require (
 	github.com/keybase/go-keybase-chat-bot v0.0.0-20211201215354-ee4b23828b55
 	github.com/kyokomi/emoji/v2 v2.2.9
 	github.com/labstack/echo/v4 v4.7.2
-	github.com/lrstanley/girc v0.0.0-20220321215535-9664730c7858
+	github.com/lrstanley/girc v0.0.0-20220409202343-de3f963fb827
 	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20211016222428-79310a412696
 	github.com/matterbridge/go-xmpp v0.0.0-20211030125215-791a06c5f1be
 	github.com/matterbridge/gomatrix v0.0.0-20220205235239-607eb9ee6419
@@ -48,14 +48,14 @@ require (
 	github.com/yaegashi/msgraph.go v0.1.4
 	github.com/zfjagann/golang-ring v0.0.0-20210116075443-7c86fdb43134
 	go.mau.fi/whatsmeow v0.0.0-20220329131721-9f73bc00d158
-	golang.org/x/image v0.0.0-20220302094943-723b81ca9867
+	golang.org/x/image v0.0.0-20220321031419-a8550c1d254a
 	golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a
 	golang.org/x/text v0.3.7
 	gomod.garykim.dev/nc-talk v0.3.0
-	google.golang.org/protobuf v1.27.1
+	google.golang.org/protobuf v1.28.0
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 	layeh.com/gumble v0.0.0-20200818122324-146f9205029b
-	modernc.org/sqlite v1.15.4
+	modernc.org/sqlite v1.16.0
 )
 
 require (
@@ -80,7 +80,7 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/kettek/apng v0.0.0-20191108220231-414630eed80f // indirect
-	github.com/klauspost/compress v1.14.2 // indirect
+	github.com/klauspost/compress v1.15.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.11 // indirect
 	github.com/labstack/gommon v0.3.1 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect

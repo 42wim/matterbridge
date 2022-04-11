@@ -104,7 +104,7 @@ func EncodeCTCP(ctcp *CTCPEvent) (out string) {
 // EncodeCTCPRaw is much like EncodeCTCP, however accepts a raw command and
 // string as input.
 func EncodeCTCPRaw(cmd, text string) (out string) {
-	if len(cmd) <= 0 {
+	if cmd == "" {
 		return ""
 	}
 

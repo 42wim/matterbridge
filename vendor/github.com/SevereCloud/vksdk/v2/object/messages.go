@@ -409,7 +409,6 @@ type MessageContentSource struct {
 	Type                        string `json:"type"`
 	MessageContentSourceMessage        // type message
 	MessageContentSourceURL            // type url
-
 }
 
 // NewMessageContentSourceMessage ...

@@ -15,3 +15,8 @@ func GroupIDFromContext(ctx context.Context) int {
 func EventIDFromContext(ctx context.Context) string {
 	return ctx.Value(internal.EventIDKey).(string)
 }
+
+// VersionFromContext returns the version from context.
+func VersionFromContext(ctx context.Context) string {
+	return ctx.Value(internal.EventVersionKey).(string)
+}

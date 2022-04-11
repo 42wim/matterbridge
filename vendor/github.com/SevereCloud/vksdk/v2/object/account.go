@@ -84,7 +84,6 @@ type AccountAccountCounters struct {
 
 // AccountInfo struct.
 type AccountInfo struct {
-
 	// Country code.
 	Country string `json:"country"`
 

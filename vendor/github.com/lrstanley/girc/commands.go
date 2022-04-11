@@ -5,9 +5,9 @@
 package girc
 
 import (
-	"strconv"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // Commands holds a large list of useful methods to interact with the server,
@@ -37,7 +37,7 @@ func (cmd *Commands) Join(channels ...string) {
 			continue
 		}
 
-		if len(buffer) == 0 {
+		if buffer == "" {
 			buffer = channels[i]
 		} else {
 			buffer += "," + channels[i]
@@ -341,7 +341,7 @@ func (cmd *Commands) List(channels ...string) {
 			continue
 		}
 
-		if len(buffer) == 0 {
+		if buffer == "" {
 			buffer = channels[i]
 		} else {
 			buffer += "," + channels[i]

@@ -127,10 +127,10 @@ func Fmt(text string) string {
 // See Fmt() for more information.
 func TrimFmt(text string) string {
 	for color := range fmtColors {
-		text = strings.Replace(text, string(fmtOpenChar)+color+string(fmtCloseChar), "", -1)
+		text = strings.ReplaceAll(text, string(fmtOpenChar)+color+string(fmtCloseChar), "")
 	}
 	for code := range fmtCodes {
-		text = strings.Replace(text, string(fmtOpenChar)+code+string(fmtCloseChar), "", -1)
+		text = strings.ReplaceAll(text, string(fmtOpenChar)+code+string(fmtCloseChar), "")
 	}
 
 	return text
@@ -138,7 +138,7 @@ func TrimFmt(text string) string {
 
 // This is really the only fastest way of doing this (marginally better than
 // actually trying to parse it manually.)
-var reStripColor = regexp.MustCompile(`\x03([019]?[0-9](,[019]?[0-9])?)?`)
+var reStripColor = regexp.MustCompile(`\x03([019]?\d(,[019]?\d)?)?`)
 
 // StripRaw tries to strip all ASCII format codes that are used for IRC.
 // Primarily, foreground/background colors, and other control bytes like
@@ -148,7 +148,7 @@ func StripRaw(text string) string {
 	text = reStripColor.ReplaceAllString(text, "")
 
 	for _, code := range fmtCodes {
-		text = strings.Replace(text, code, "", -1)
+		text = strings.ReplaceAll(text, code, "")
 	}
 
 	return text
@@ -219,7 +219,7 @@ func IsValidChannel(channel string) bool {
 //   digit    =  0x30-0x39
 //   special  =  0x5B-0x60 / 0x7B-0x7D
 func IsValidNick(nick string) bool {
-	if len(nick) <= 0 {
+	if nick == "" {
 		return false
 	}
 
@@ -256,7 +256,7 @@ func IsValidNick(nick string) bool {
 //   user =  1*( %x01-09 / %x0B-0C / %x0E-1F / %x21-3F / %x41-FF )
 //           ; any octet except NUL, CR, LF, " " and "@"
 func IsValidUser(name string) bool {
-	if len(name) <= 0 {
+	if name == "" {
 		return false
 	}
 

@@ -287,7 +287,7 @@ func (c *Caller) Remove(cuid string) (success bool) {
 // on your own.
 func (c *Caller) remove(cuid string) (success bool) {
 	cmd, uid := c.cuidToID(cuid)
-	if len(cmd) == 0 || len(uid) == 0 {
+	if cmd == "" || uid == "" {
 		return false
 	}
 

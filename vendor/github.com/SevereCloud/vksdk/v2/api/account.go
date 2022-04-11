@@ -141,6 +141,8 @@ func (vk *VK) AccountSetInfo(params Params) (response int, err error) {
 // AccountSetNameInMenu sets an application screen name
 // (up to 17 characters), that is shown to the user in the left menu.
 //
+// Deprecated: This method is deprecated and may be disabled soon, please avoid
+//
 // https://vk.com/dev/account.setNameInMenu
 func (vk *VK) AccountSetNameInMenu(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("account.setNameInMenu", &response, params)

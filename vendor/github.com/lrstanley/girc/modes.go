@@ -34,7 +34,7 @@ func (c *CMode) Short() string {
 // String returns a string representation of a mode, including optional
 // arguments. E.g. "+b user*!ident@host.*.com"
 func (c *CMode) String() string {
-	if len(c.args) == 0 {
+	if c.args == "" {
 		return c.Short()
 	}
 
@@ -106,7 +106,7 @@ func (c *CModes) HasMode(mode string) bool {
 func (c *CModes) Get(mode string) (args string, ok bool) {
 	for i := 0; i < len(c.modes); i++ {
 		if string(c.modes[i].name) == mode {
-			if len(c.modes[i].args) == 0 {
+			if c.modes[i].args == "" {
 				return "", false
 			}
 
@@ -157,7 +157,7 @@ func (c *CModes) hasArg(set bool, mode byte) (hasArgs, isSetting bool) {
 // For example, the latter would mean applying an incoming MODE with the modes
 // stored for a channel.
 func (c *CModes) Apply(modes []CMode) {
-	var new []CMode
+	var newModes []CMode
 
 	for j := 0; j < len(c.modes); j++ {
 		isin := false
@@ -166,14 +166,14 @@ func (c *CModes) Apply(modes []CMode) {
 				continue
 			}
 			if c.modes[j].name == modes[i].name && modes[i].add {
-				new = append(new, modes[i])
+				newModes = append(newModes, modes[i])
 				isin = true
 				break
 			}
 		}
 
 		if !isin {
-			new = append(new, c.modes[j])
+			newModes = append(newModes, c.modes[j])
 		}
 	}
 
@@ -183,19 +183,19 @@ func (c *CModes) Apply(modes []CMode) {
 		}
 
 		isin := false
-		for j := 0; j < len(new); j++ {
-			if modes[i].name == new[j].name {
+		for j := 0; j < len(newModes); j++ {
+			if modes[i].name == newModes[j].name {
 				isin = true
 				break
 			}
 		}
 
 		if !isin {
-			new = append(new, modes[i])
+			newModes = append(newModes, modes[i])
 		}
 	}
 
-	c.modes = new
+	c.modes = newModes
 }
 
 // Parse parses a set of flags and args, returning the necessary list of
@@ -221,7 +221,7 @@ func (c *CModes) Parse(flags string, args []string) (out []CMode) {
 		}
 
 		hasArgs, isSetting := c.hasArg(add, flags[i])
-		if hasArgs && len(args) >= argCount+1 {
+		if hasArgs && len(args) > argCount {
 			mode.args = args[argCount]
 			argCount++
 		}
@@ -351,7 +351,7 @@ func handleMODE(c *Client, e Event) {
 
 	// Loop through and update users modes as necessary.
 	for i := 0; i < len(modes); i++ {
-		if modes[i].setting || len(modes[i].args) == 0 {
+		if modes[i].setting || modes[i].args == "" {
 			continue
 		}
 
@@ -493,8 +493,8 @@ func (m *Perms) reset() {
 
 // set translates raw prefix characters into proper permissions. Only
 // use this function when you have a session lock.
-func (m *Perms) set(prefix string, append bool) {
-	if !append {
+func (m *Perms) set(prefix string, add bool) {
+	if !add {
 		m.reset()
 	}
 
