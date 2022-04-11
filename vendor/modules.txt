@@ -221,7 +221,7 @@ github.com/matterbridge/Rocket.Chat.Go.SDK/rest
 # github.com/matterbridge/go-xmpp v0.0.0-20211030125215-791a06c5f1be
 ## explicit
 github.com/matterbridge/go-xmpp
-# github.com/matterbridge/gomatrix v0.0.0-20220205235239-607eb9ee6419
+# github.com/matterbridge/gomatrix v0.0.0-20220411225302-271e5088ea27
 ## explicit; go 1.17
 github.com/matterbridge/gomatrix
 # github.com/matterbridge/gozulipbot v0.0.0-20211023205727-a19d6c1f3b75
