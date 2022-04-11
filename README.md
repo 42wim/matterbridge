@@ -196,7 +196,7 @@ You can reduce this memory requirement to 0,5GB RAM by adding the `nomsteams` ta
 To install the latest stable run:
 
 ```bash
-go install github.com/42wim/matterbridge@17da95b094e4bb433e5fe240fa42067d94d908c1
+go install github.com/42wim/matterbridge
 ```
 
 To install the latest dev run:
@@ -208,7 +208,7 @@ go install github.com/42wim/matterbridge@master
 To install the latest stable run without msteams or zulip bridge:
 
 ```bash
-go install -tags nomsteams,nozulip github.com/42wim/matterbridge@17da95b094e4bb433e5fe240fa42067d94d908c1
+go install -tags nomsteams,nozulip github.com/42wim/matterbridge
 ```
 
 You should now have matterbridge binary in the ~/go/bin directory:
