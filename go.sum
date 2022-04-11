@@ -1085,8 +1085,8 @@ github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20211016222428-79310a412696 h1
 github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20211016222428-79310a412696/go.mod h1:c6MxwqHD+0HvtAJjsHMIdPCiAwGiQwPRPTp69ACMg8A=
 github.com/matterbridge/go-xmpp v0.0.0-20211030125215-791a06c5f1be h1:zlirT+LngOJ60G6FVzI87DljGZLUnfNzmXja61EjtYM=
 github.com/matterbridge/go-xmpp v0.0.0-20211030125215-791a06c5f1be/go.mod h1:ECDRehsR9TYTKCAsRS8/wLeOk6UUqDydw47ln7wG41Q=
-github.com/matterbridge/gomatrix v0.0.0-20220205235239-607eb9ee6419 h1:dx8x2J3EsVwP3hBGNmVT/otz4b42p7TRQ6Cu4BK2910=
-github.com/matterbridge/gomatrix v0.0.0-20220205235239-607eb9ee6419/go.mod h1:/x38AoZf70fK9yZ5gs3BNCaF7/J4QEo4ZpwtLjX95eQ=
+github.com/matterbridge/gomatrix v0.0.0-20220411225302-271e5088ea27 h1:9XSppnbvvReVom+wphkeF4lbhuT6vCYIdyzpwFtW89c=
+github.com/matterbridge/gomatrix v0.0.0-20220411225302-271e5088ea27/go.mod h1:/x38AoZf70fK9yZ5gs3BNCaF7/J4QEo4ZpwtLjX95eQ=
 github.com/matterbridge/gozulipbot v0.0.0-20211023205727-a19d6c1f3b75 h1:GslZKF7lW7oSisycGLpxPO+TnKJuA4VZuTWIfYZrClc=
 github.com/matterbridge/gozulipbot v0.0.0-20211023205727-a19d6c1f3b75/go.mod h1:yAjnZ34DuDyPHMPHHjOsTk/FefW4JJjoMMCGt/8uuQA=
 github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba h1:XleOY4IjAEIcxAh+IFwT5JT5Ze3RHiYz6m+4ZfZ0rc0=
