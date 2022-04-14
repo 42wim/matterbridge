@@ -1929,7 +1929,7 @@ enable=true
     # -------------------------------------------------------------------------------------------------------------------------------------
     #   steam    |      chatid        |         example needed        | The number in the URL when you click "enter chat room" in the browser
     # -------------------------------------------------------------------------------------------------------------------------------------
-    #   nctalk   |      token         |           xs25tz5y            | The token in the URL when you are in a chat. It will be the last part of the URL.
+    #   nctalk   |      channel         |           xs25tz5y            | The token in the URL when you are in a chat. It will be the last part of the URL.
     # -------------------------------------------------------------------------------------------------------------------------------------
     #  telegram  |      chatid        |          -123456789           | A large negative number. see https://www.linkedin.com/pulse/telegram-bots-beginners-marco-frau
     # -------------------------------------------------------------------------------------------------------------------------------------
