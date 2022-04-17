@@ -15,6 +15,7 @@ import (
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/rs/xid"
 	"github.com/slack-go/slack"
+	"github.com/slack-go/slack/socketmode"
 )
 
 type Bslack struct {
@@ -24,7 +25,8 @@ type Bslack struct {
 	mh  *matterhook.Client
 	sc  *slack.Client
 	rtm *slack.RTM
-	si  *slack.Info
+	si  *slack.Bot
+	smc *socketmode.Client
 
 	cache        *lru.Cache
 	uuid         string
@@ -36,27 +38,25 @@ type Bslack struct {
 }
 
 const (
-	sHello               = "hello"
-	sChannelJoin         = "channel_join"
-	sChannelLeave        = "channel_leave"
-	sChannelJoined       = "channel_joined"
-	sMemberJoined        = "member_joined_channel"
-	sMessageChanged      = "message_changed"
-	sMessageDeleted      = "message_deleted"
-	sSlackAttachment     = "slack_attachment"
-	sPinnedItem          = "pinned_item"
-	sUnpinnedItem        = "unpinned_item"
-	sChannelTopic        = "channel_topic"
-	sChannelPurpose      = "channel_purpose"
-	sFileComment         = "file_comment"
-	sMeMessage           = "me_message"
-	sUserTyping          = "user_typing"
-	sLatencyReport       = "latency_report"
+	sChannelJoin     = "channel_join"
+	sChannelLeave    = "channel_leave"
+	sChannelJoined   = "channel_joined"
+	sMemberJoined    = "member_joined_channel"
+	sMessageChanged  = "message_changed"
+	sMessageDeleted  = "message_deleted"
+	sSlackAttachment = "slack_attachment"
+	sPinnedItem      = "pinned_item"
+	sUnpinnedItem    = "unpinned_item"
+	sChannelTopic    = "channel_topic"
+	sChannelPurpose  = "channel_purpose"
+	sFileComment     = "file_comment"
+	sMeMessage       = "me_message"
 	sSystemUser          = "system"
 	sSlackBotUser        = "slackbot"
 	cfileDownloadChannel = "file_download_channel"
 
 	tokenConfig           = "Token"
+	appTokenConfig        = "AppToken"
 	incomingWebhookConfig = "WebhookBindAddress"
 	outgoingWebhookConfig = "WebhookURL"
 	skipTLSConfig         = "SkipTLSVerify"
@@ -71,12 +71,18 @@ const (
 func New(cfg *bridge.Config) bridge.Bridger {
 	// Print a deprecation warning for legacy non-bot tokens (#527).
 	token := cfg.GetString(tokenConfig)
+	appToken := cfg.GetString(appTokenConfig)
 	if token != "" && !strings.HasPrefix(token, "xoxb") {
 		cfg.Log.Warn("Non-bot token detected. It is STRONGLY recommended to use a proper bot-token instead.")
 		cfg.Log.Warn("Legacy tokens may be deprecated by Slack at short notice. See the Matterbridge GitHub wiki for a migration guide.")
 		cfg.Log.Warn("See https://github.com/42wim/matterbridge/wiki/Slack-bot-setup")
 		return NewLegacy(cfg)
 	}
+
+	if appToken == "" || !strings.HasPrefix(appToken, "xapp-") {
+		cfg.Log.Fatalf("%s must have the prefix xapp-", appTokenConfig)
+	}
+
 	return newBridge(cfg)
 }
 
@@ -105,18 +111,22 @@ func (b *Bslack) Connect() error {
 		return errors.New("no connection method found: WebhookBindAddress, WebhookURL or Token need to be configured")
 	}
 
+	token := b.GetString(tokenConfig)
+	appToken := b.GetString(appTokenConfig)
+
 	// If we have a token we use the Slack websocket-based RTM for both sending and receiving.
-	if token := b.GetString(tokenConfig); token != "" {
+	if token != "" && appToken != "" {
 		b.Log.Info("Connecting using token")
 
-		b.sc = slack.New(token, slack.OptionDebug(b.GetBool("Debug")))
+		b.sc = slack.New(token, slack.OptionDebug(b.GetBool("Debug")), slack.OptionAppLevelToken(appToken))
+		b.smc = socketmode.New(b.sc, socketmode.OptionDebug(b.GetBool("Debug")))
 
 		b.channels = newChannelManager(b.Log, b.sc)
 		b.users = newUserManager(b.Log, b.sc)
 
-		b.rtm = b.sc.NewRTM()
-		go b.rtm.ManageConnection()
 		go b.handleSlack()
+		go b.smc.Run()
+
 		return nil
 	}
 
@@ -139,10 +149,6 @@ func (b *Bslack) Connect() error {
 		go b.handleSlack()
 	}
 	return nil
-}
-
-func (b *Bslack) Disconnect() error {
-	return b.rtm.Disconnect()
 }
 
 // JoinChannel only acts as a verification method that checks whether Matterbridge's
@@ -285,12 +291,12 @@ func (b *Bslack) sendRTM(msg config.Message) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("could not send message: %v", err)
 	}
-	if msg.Event == config.EventUserTyping {
+	/*if msg.Event == config.EventUserTyping {
 		if b.GetBool("ShowUserTyping") {
 			b.rtm.SendMessage(b.rtm.NewTypingMessage(channelInfo.ID))
 		}
 		return "", nil
-	}
+	}*/
 
 	var handled bool
 
@@ -345,9 +351,9 @@ func (b *Bslack) updateTopicOrPurpose(msg *config.Message, channelInfo *slack.Ch
 	incomingChangeType, text := b.extractTopicOrPurpose(msg.Text)
 	switch incomingChangeType {
 	case "topic":
-		updateFunc = b.rtm.SetTopicOfConversation
+		updateFunc = b.smc.SetTopicOfConversation
 	case "purpose":
-		updateFunc = b.rtm.SetPurposeOfConversation
+		updateFunc = b.smc.SetPurposeOfConversation
 	default:
 		b.Log.Errorf("Unhandled type received from extractTopicOrPurpose: %s", incomingChangeType)
 		return nil
@@ -393,7 +399,7 @@ func (b *Bslack) deleteMessage(msg *config.Message, channelInfo *slack.Channel) 
 	}
 
 	for {
-		_, _, err := b.rtm.DeleteMessage(channelInfo.ID, msg.ID)
+		_, _, err := b.smc.DeleteMessage(channelInfo.ID, msg.ID)
 		if err == nil {
 			return true, nil
 		}
@@ -411,7 +417,7 @@ func (b *Bslack) editMessage(msg *config.Message, channelInfo *slack.Channel) (b
 	}
 	messageOptions := b.prepareMessageOptions(msg)
 	for {
-		_, _, _, err := b.rtm.UpdateMessage(channelInfo.ID, msg.ID, messageOptions...)
+		_, _, _, err := b.smc.UpdateMessage(channelInfo.ID, msg.ID, messageOptions...)
 		if err == nil {
 			return true, nil
 		}
@@ -430,7 +436,7 @@ func (b *Bslack) postMessage(msg *config.Message, channelInfo *slack.Channel) (s
 	}
 	messageOptions := b.prepareMessageOptions(msg)
 	for {
-		_, id, err := b.rtm.PostMessage(channelInfo.ID, messageOptions...)
+		_, id, err := b.smc.PostMessage(channelInfo.ID, messageOptions...)
 		if err == nil {
 			return id, nil
 		}
