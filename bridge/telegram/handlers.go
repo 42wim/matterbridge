@@ -385,7 +385,7 @@ func (b *Btelegram) getDownloadInfo(id string, suffix string, urlpart bool) (str
 		urlPart := strings.Split(url, "/")
 		name = urlPart[len(urlPart)-1]
 	}
-	if suffix != "" && !strings.HasSuffix(name, suffix) {
+	if suffix != "" && !strings.HasSuffix(name, suffix) && !strings.HasSuffix(name, ".webm") {
 		name += suffix
 	}
 	text := " " + url
