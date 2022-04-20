@@ -282,6 +282,14 @@ func (b *Bslack) handleStatusEvent(ev *slack.MessageEvent, rmsg *config.Message)
 	return false
 }
 
+func getMessageTitle(attach *slack.Attachment) string {
+	if attach.TitleLink != "" {
+		return fmt.Sprintf("[%s](%s)\n", attach.Title, attach.TitleLink)
+	} else {
+		return attach.Title
+	}
+}
+
 func (b *Bslack) handleAttachments(ev *slack.MessageEvent, rmsg *config.Message) {
 	// File comments are set by the system (because there is no username given).
 	if ev.SubType == sFileComment {
@@ -293,9 +301,12 @@ func (b *Bslack) handleAttachments(ev *slack.MessageEvent, rmsg *config.Message)
 		for _, attach := range ev.Attachments {
 			if attach.Text != "" {
 				if attach.Title != "" {
-					rmsg.Text = attach.Title + "\n"
+					rmsg.Text = getMessageTitle(&attach)
 				}
 				rmsg.Text += attach.Text
+				if attach.Footer != "" {
+					rmsg.Text += "\n\n" + attach.Footer
+				}
 			} else {
 				rmsg.Text = attach.Fallback
 			}
