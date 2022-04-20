@@ -517,8 +517,8 @@ func (b *Btelegram) handleEntities(rmsg *config.Message, message *tgbotapi.Messa
 	}
 
 	indexMovedBy := 0
+	prevLinkOffset := -1
 
-	// for now only do URL replacements
 	for _, e := range message.Entities {
 
 		asRunes := utf16.Encode([]rune(rmsg.Text))
@@ -537,6 +537,11 @@ func (b *Btelegram) handleEntities(rmsg *config.Message, message *tgbotapi.Messa
 			}
 			rmsg.Text = string(utf16.Decode(asRunes[:offset+e.Length])) + " (" + url.String() + ")" + string(utf16.Decode(asRunes[offset+e.Length:]))
 			indexMovedBy += len(url.String()) + 3
+			prevLinkOffset = e.Offset
+		}
+
+		if e.Offset == prevLinkOffset {
+			continue
 		}
 
 		if e.Type == "code" {
