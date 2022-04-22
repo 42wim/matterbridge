@@ -285,9 +285,8 @@ func (b *Bslack) handleStatusEvent(ev *slack.MessageEvent, rmsg *config.Message)
 func getMessageTitle(attach *slack.Attachment) string {
 	if attach.TitleLink != "" {
 		return fmt.Sprintf("[%s](%s)\n", attach.Title, attach.TitleLink)
-	} else {
-		return attach.Title
 	}
+	return attach.Title
 }
 
 func (b *Bslack) handleAttachments(ev *slack.MessageEvent, rmsg *config.Message) {
@@ -298,10 +297,10 @@ func (b *Bslack) handleAttachments(ev *slack.MessageEvent, rmsg *config.Message)
 
 	// See if we have some text in the attachments.
 	if rmsg.Text == "" {
-		for _, attach := range ev.Attachments {
+		for i, attach := range ev.Attachments {
 			if attach.Text != "" {
 				if attach.Title != "" {
-					rmsg.Text = getMessageTitle(&attach)
+					rmsg.Text = getMessageTitle(&ev.Attachments[i])
 				}
 				rmsg.Text += attach.Text
 				if attach.Footer != "" {
