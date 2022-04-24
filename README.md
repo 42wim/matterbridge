@@ -225,6 +225,8 @@ matterbridge
 Because the library we use for Whatsapp multidevice support includes a GPL3 library we can not provide you binaries.
 (as this would require the Matterbridge to change it license to GPL)
 
+Matterbridge can be build without gcc/c-compiler: If you're running on windows first run `set CGO_ENABLED=0` on other platforms you prepend `CGO_ENABLED=0` to the `go build` command. (eg `CGO_ENABLED=0 go install github.com/42wim/matterbridge`)
+
 So this means you have to build it yourself using the instructions below:
 
 ```bash
