@@ -191,7 +191,9 @@ If you really want to build from source, follow these instructions:
 Go 1.17+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed.
 
 Building the binary with **all** the bridges enabled needs about 3GB RAM to compile.
-You can reduce this memory requirement to 0,5GB RAM by adding the `nomsteams` tag if you don't need/use the Microsoft Teams bridge
+You can reduce this memory requirement to 0,5GB RAM by adding the `nomsteams` tag if you don't need/use the Microsoft Teams bridge.
+
+Matterbridge can be build without gcc/c-compiler: If you're running on windows first run `set CGO_ENABLED=0` on other platforms you prepend `CGO_ENABLED=0` to the `go build` command. (eg `CGO_ENABLED=0 go install github.com/42wim/matterbridge`)
 
 To install the latest stable run:
 
