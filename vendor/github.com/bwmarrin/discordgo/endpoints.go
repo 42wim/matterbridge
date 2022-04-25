@@ -23,15 +23,16 @@ var (
 	EndpointSmActive   = EndpointSm + "active.json"
 	EndpointSmUpcoming = EndpointSm + "upcoming.json"
 
-	EndpointDiscord    = "https://discord.com/"
-	EndpointAPI        = EndpointDiscord + "api/v" + APIVersion + "/"
-	EndpointGuilds     = EndpointAPI + "guilds/"
-	EndpointChannels   = EndpointAPI + "channels/"
-	EndpointUsers      = EndpointAPI + "users/"
-	EndpointGateway    = EndpointAPI + "gateway"
-	EndpointGatewayBot = EndpointGateway + "/bot"
-	EndpointWebhooks   = EndpointAPI + "webhooks/"
-	EndpointStickers   = EndpointAPI + "stickers/"
+	EndpointDiscord        = "https://discord.com/"
+	EndpointAPI            = EndpointDiscord + "api/v" + APIVersion + "/"
+	EndpointGuilds         = EndpointAPI + "guilds/"
+	EndpointChannels       = EndpointAPI + "channels/"
+	EndpointUsers          = EndpointAPI + "users/"
+	EndpointGateway        = EndpointAPI + "gateway"
+	EndpointGatewayBot     = EndpointGateway + "/bot"
+	EndpointWebhooks       = EndpointAPI + "webhooks/"
+	EndpointStickers       = EndpointAPI + "stickers/"
+	EndpointStageInstances = EndpointAPI + "stage-instances"
 
 	EndpointCDN             = "https://cdn.discordapp.com/"
 	EndpointCDNAttachments  = EndpointCDN + "attachments/"
@@ -72,6 +73,7 @@ var (
 	EndpointGuildPreview             = func(gID string) string { return EndpointGuilds + gID + "/preview" }
 	EndpointGuildChannels            = func(gID string) string { return EndpointGuilds + gID + "/channels" }
 	EndpointGuildMembers             = func(gID string) string { return EndpointGuilds + gID + "/members" }
+	EndpointGuildMembersSearch       = func(gID string) string { return EndpointGuildMembers(gID) + "/search" }
 	EndpointGuildMember              = func(gID, uID string) string { return EndpointGuilds + gID + "/members/" + uID }
 	EndpointGuildMemberRole          = func(gID, uID, rID string) string { return EndpointGuilds + gID + "/members/" + uID + "/roles/" + rID }
 	EndpointGuildBans                = func(gID string) string { return EndpointGuilds + gID + "/bans" }
@@ -94,6 +96,7 @@ var (
 	EndpointGuildBanner              = func(gID, hash string) string { return EndpointCDNBanners + gID + "/" + hash + ".png" }
 	EndpointGuildStickers            = func(gID string) string { return EndpointGuilds + gID + "/stickers" }
 	EndpointGuildSticker             = func(gID, sID string) string { return EndpointGuilds + gID + "/stickers/" + sID }
+	EndpointStageInstance            = func(cID string) string { return EndpointStageInstances + "/" + cID }
 	EndpointGuildScheduledEvents     = func(gID string) string { return EndpointGuilds + gID + "/scheduled-events" }
 	EndpointGuildScheduledEvent      = func(gID, eID string) string { return EndpointGuilds + gID + "/scheduled-events/" + eID }
 	EndpointGuildScheduledEventUsers = func(gID, eID string) string { return EndpointGuildScheduledEvent(gID, eID) + "/users" }

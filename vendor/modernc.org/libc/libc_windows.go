@@ -5874,3 +5874,19 @@ func bootWinEnviron(t *TLS) {
 }
 
 func Xfabsl(t *TLS, x float64) float64 { return math.Abs(x) }
+
+func X__stdio_common_vfprintf(t *TLS, args ...interface{}) int32     { panic("TODO") }
+func X__stdio_common_vfprintf_p(t *TLS, args ...interface{}) int32   { panic("TODO") }
+func X__stdio_common_vfprintf_s(t *TLS, args ...interface{}) int32   { panic("TODO") }
+func X__stdio_common_vfscanf(t *TLS, args ...interface{}) int32      { panic("TODO") }
+func X__stdio_common_vfwprintf_s(t *TLS, args ...interface{}) int32  { panic("TODO") }
+func X__stdio_common_vfwscanf(t *TLS, args ...interface{}) int32     { panic("TODO") }
+func X__stdio_common_vsnprintf_s(t *TLS, args ...interface{}) int32  { panic("TODO") }
+func X__stdio_common_vsnwprintf_s(t *TLS, args ...interface{}) int32 { panic("TODO") }
+func X__stdio_common_vsprintf(t *TLS, args ...interface{}) int32     { panic("TODO") }
+func X__stdio_common_vsprintf_p(t *TLS, args ...interface{}) int32   { panic("TODO") }
+func X__stdio_common_vsprintf_s(t *TLS, args ...interface{}) int32   { panic("TODO") }
+func X__stdio_common_vsscanf(t *TLS, args ...interface{}) int32      { panic("TODO") }
+func X__stdio_common_vswprintf(t *TLS, args ...interface{}) int32    { panic("TODO") }
+func X__stdio_common_vswprintf_s(t *TLS, args ...interface{}) int32  { panic("TODO") }
+func X__stdio_common_vswscanf(t *TLS, args ...interface{}) int32     { panic("TODO") }

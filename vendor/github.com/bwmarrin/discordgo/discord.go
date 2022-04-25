@@ -20,7 +20,7 @@ import (
 )
 
 // VERSION of DiscordGo, follows Semantic Versioning. (http://semver.org/)
-const VERSION = "0.24.0"
+const VERSION = "0.25.0"
 
 // New creates a new Discord session with provided token.
 // If the token is for a bot, it must be prefixed with "Bot "
@@ -36,6 +36,7 @@ func New(token string) (s *Session, err error) {
 		StateEnabled:           true,
 		Compress:               true,
 		ShouldReconnectOnError: true,
+		ShouldRetryOnRateLimit: true,
 		ShardID:                0,
 		ShardCount:             1,
 		MaxRestRetries:         3,
@@ -49,7 +50,6 @@ func New(token string) (s *Session, err error) {
 	// These can be modified prior to calling Open()
 	s.Identify.Compress = true
 	s.Identify.LargeThreshold = 250
-	s.Identify.GuildSubscriptions = true
 	s.Identify.Properties.OS = runtime.GOOS
 	s.Identify.Properties.Browser = "DiscordGo v" + VERSION
 	s.Identify.Intents = IntentsAllWithoutPrivileged

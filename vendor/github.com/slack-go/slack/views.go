@@ -98,7 +98,7 @@ func NewErrorsViewSubmissionResponse(errors map[string]string) *ViewSubmissionRe
 
 type ModalViewRequest struct {
 	Type            ViewType         `json:"type"`
-	Title           *TextBlockObject `json:"title"`
+	Title           *TextBlockObject `json:"title,omitempty"`
 	Blocks          Blocks           `json:"blocks"`
 	Close           *TextBlockObject `json:"close,omitempty"`
 	Submit          *TextBlockObject `json:"submit,omitempty"`

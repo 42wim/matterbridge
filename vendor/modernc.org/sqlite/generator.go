@@ -219,7 +219,6 @@ var (
 		"-DSQLITE_ENABLE_STAT4",
 		"-DSQLITE_ENABLE_STMTVTAB",      // testfixture
 		"-DSQLITE_ENABLE_UNLOCK_NOTIFY", // Adds sqlite3_unlock_notify().
-		"-DSQLITE_HAVE_ZLIB=1",          // testfixture
 		"-DSQLITE_LIKE_DOESNT_MATCH_BLOBS",
 		"-DSQLITE_MUTEX_APPDEF=1",
 		"-DSQLITE_MUTEX_NOOP",
@@ -536,7 +535,6 @@ func makeTestfixture(goos, goarch string, more []string) {
 		"ext/misc/totype.c",
 		"ext/misc/unionvtab.c",
 		"ext/misc/wholenumber.c",
-		"ext/misc/zipfile.c",
 		"ext/rbu/test_rbu.c",
 		"ext/rtree/test_rtreedoc.c",
 		"ext/session/test_session.c",

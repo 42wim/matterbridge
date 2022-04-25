@@ -36,6 +36,7 @@ all:
 	GOOS=openbsd GOARCH=amd64 go build
 	GOOS=windows GOARCH=386 go build
 	GOOS=windows GOARCH=amd64 go build
+	GOOS=windows GOARCH=arm64 go build
 	go vet -unsafeptr=false 2>&1 | grep -v $(ngrep) || true
 	golint 2>&1 | grep -v $(ngrep) || true
 	make todo
@@ -106,6 +107,11 @@ windows_amd64:
 	go generate 2>&1 | tee log-generate
 	go build -v ./...
 
+windows_arm64:
+	@echo "Should be executed only on windows/arm64."
+	go generate 2>&1 | tee log-generate
+	go build -v ./...
+
 windows_386:
 	@echo "Should be executed only on linux/amd64."
 	CCGO_CPP=i686-w64-mingw32-cpp TARGET_GOOS=windows TARGET_GOARCH=386 go generate
@@ -141,6 +147,8 @@ build_all_targets:
 	GOOS=windows GOARCH=386 go test -c -o /dev/null
 	GOOS=windows GOARCH=amd64 go build -v ./...
 	GOOS=windows GOARCH=amd64 go test -c -o /dev/null
+	GOOS=windows GOARCH=arm64 go build -v ./...
+	GOOS=windows GOARCH=arm64 go test -c -o /dev/null
 	echo done
 
 devbench:

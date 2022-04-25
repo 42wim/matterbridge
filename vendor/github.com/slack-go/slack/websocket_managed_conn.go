@@ -9,11 +9,11 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/slack-go/slack/internal/backoff"
-	"github.com/slack-go/slack/internal/misc"
-
 	"github.com/gorilla/websocket"
+
+	"github.com/slack-go/slack/internal/backoff"
 	"github.com/slack-go/slack/internal/errorsx"
+	"github.com/slack-go/slack/internal/misc"
 	"github.com/slack-go/slack/internal/timex"
 )
 

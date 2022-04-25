@@ -1,6 +1,6 @@
 package slack
 
-import "sync"
+import "sync/atomic"
 
 // IDGenerator provides an interface for generating integer ID values.
 type IDGenerator interface {
@@ -11,20 +11,20 @@ type IDGenerator interface {
 // concurrent use by multiple goroutines.
 func NewSafeID(startID int) IDGenerator {
 	return &safeID{
-		nextID: startID,
-		mutex:  &sync.Mutex{},
+		nextID: int64(startID),
 	}
 }
 
 type safeID struct {
-	nextID int
-	mutex  *sync.Mutex
+	nextID int64
 }
 
+// make sure safeID implements the IDGenerator interface.
+var _ IDGenerator = (*safeID)(nil)
+
+// Next implements IDGenerator.Next.
 func (s *safeID) Next() int {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	id := s.nextID
-	s.nextID++
-	return id
+	id := atomic.AddInt64(&s.nextID, 1)
+
+	return int(id)
 }

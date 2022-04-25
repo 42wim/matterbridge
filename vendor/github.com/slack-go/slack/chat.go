@@ -86,12 +86,7 @@ func NewPostMessageParameters() PostMessageParameters {
 
 // DeleteMessage deletes a message in a channel
 func (api *Client) DeleteMessage(channel, messageTimestamp string) (string, string, error) {
-	respChannel, respTimestamp, _, err := api.SendMessageContext(
-		context.Background(),
-		channel,
-		MsgOptionDelete(messageTimestamp),
-	)
-	return respChannel, respTimestamp, err
+	return api.DeleteMessageContext(context.Background(), channel, messageTimestamp)
 }
 
 // DeleteMessageContext deletes a message in a channel with a custom context
@@ -108,8 +103,15 @@ func (api *Client) DeleteMessageContext(ctx context.Context, channel, messageTim
 // Message is escaped by default according to https://api.slack.com/docs/formatting
 // Use http://davestevens.github.io/slack-message-builder/ to help crafting your message.
 func (api *Client) ScheduleMessage(channelID, postAt string, options ...MsgOption) (string, string, error) {
+	return api.ScheduleMessageContext(context.Background(), channelID, postAt, options...)
+}
+
+// ScheduleMessageContext sends a message to a channel with a custom context
+//
+// For more details, see ScheduleMessage documentation.
+func (api *Client) ScheduleMessageContext(ctx context.Context, channelID, postAt string, options ...MsgOption) (string, string, error) {
 	respChannel, respTimestamp, _, err := api.SendMessageContext(
-		context.Background(),
+		ctx,
 		channelID,
 		MsgOptionSchedule(postAt),
 		MsgOptionCompose(options...),
@@ -121,13 +123,7 @@ func (api *Client) ScheduleMessage(channelID, postAt string, options ...MsgOptio
 // Message is escaped by default according to https://api.slack.com/docs/formatting
 // Use http://davestevens.github.io/slack-message-builder/ to help crafting your message.
 func (api *Client) PostMessage(channelID string, options ...MsgOption) (string, string, error) {
-	respChannel, respTimestamp, _, err := api.SendMessageContext(
-		context.Background(),
-		channelID,
-		MsgOptionPost(),
-		MsgOptionCompose(options...),
-	)
-	return respChannel, respTimestamp, err
+	return api.PostMessageContext(context.Background(), channelID, options...)
 }
 
 // PostMessageContext sends a message to a channel with a custom context
@@ -146,12 +142,7 @@ func (api *Client) PostMessageContext(ctx context.Context, channelID string, opt
 // Message is escaped by default according to https://api.slack.com/docs/formatting
 // Use http://davestevens.github.io/slack-message-builder/ to help crafting your message.
 func (api *Client) PostEphemeral(channelID, userID string, options ...MsgOption) (string, error) {
-	return api.PostEphemeralContext(
-		context.Background(),
-		channelID,
-		userID,
-		options...,
-	)
+	return api.PostEphemeralContext(context.Background(), channelID, userID, options...)
 }
 
 // PostEphemeralContext sends an ephemeal message to a user in a channel with a custom context
@@ -168,12 +159,7 @@ func (api *Client) PostEphemeralContext(ctx context.Context, channelID, userID s
 
 // UpdateMessage updates a message in a channel
 func (api *Client) UpdateMessage(channelID, timestamp string, options ...MsgOption) (string, string, string, error) {
-	return api.SendMessageContext(
-		context.Background(),
-		channelID,
-		MsgOptionUpdate(timestamp),
-		MsgOptionCompose(options...),
-	)
+	return api.UpdateMessageContext(context.Background(), channelID, timestamp, options...)
 }
 
 // UpdateMessageContext updates a message in a channel
@@ -225,7 +211,7 @@ func (api *Client) SendMessageContext(ctx context.Context, channelID string, opt
 		response chatResponseFull
 	)
 
-	if req, parser, err = buildSender(api.endpoint, options...).BuildRequest(api.token, channelID); err != nil {
+	if req, parser, err = buildSender(api.endpoint, options...).BuildRequestContext(ctx, api.token, channelID); err != nil {
 		return "", "", "", err
 	}
 
@@ -306,6 +292,10 @@ type sendConfig struct {
 }
 
 func (t sendConfig) BuildRequest(token, channelID string) (req *http.Request, _ func(*chatResponseFull) responseParser, err error) {
+	return t.BuildRequestContext(context.Background(), token, channelID)
+}
+
+func (t sendConfig) BuildRequestContext(ctx context.Context, token, channelID string) (req *http.Request, _ func(*chatResponseFull) responseParser, err error) {
 	if t, err = applyMsgOptions(token, channelID, t.apiurl, t.options...); err != nil {
 		return nil, nil, err
 	}
@@ -320,9 +310,9 @@ func (t sendConfig) BuildRequest(token, channelID string) (req *http.Request, _ 
 			responseType:    t.responseType,
 			replaceOriginal: t.replaceOriginal,
 			deleteOriginal:  t.deleteOriginal,
-		}.BuildRequest()
+		}.BuildRequestContext(ctx)
 	default:
-		return formSender{endpoint: t.endpoint, values: t.values}.BuildRequest()
+		return formSender{endpoint: t.endpoint, values: t.values}.BuildRequestContext(ctx)
 	}
 }
 
@@ -332,7 +322,11 @@ type formSender struct {
 }
 
 func (t formSender) BuildRequest() (*http.Request, func(*chatResponseFull) responseParser, error) {
-	req, err := formReq(t.endpoint, t.values)
+	return t.BuildRequestContext(context.Background())
+}
+
+func (t formSender) BuildRequestContext(ctx context.Context) (*http.Request, func(*chatResponseFull) responseParser, error) {
+	req, err := formReq(ctx, t.endpoint, t.values)
 	return req, func(resp *chatResponseFull) responseParser {
 		return newJSONParser(resp)
 	}, err
@@ -349,7 +343,11 @@ type responseURLSender struct {
 }
 
 func (t responseURLSender) BuildRequest() (*http.Request, func(*chatResponseFull) responseParser, error) {
-	req, err := jsonReq(t.endpoint, Msg{
+	return t.BuildRequestContext(context.Background())
+}
+
+func (t responseURLSender) BuildRequestContext(ctx context.Context) (*http.Request, func(*chatResponseFull) responseParser, error) {
+	req, err := jsonReq(ctx, t.endpoint, Msg{
 		Text:            t.values.Get("text"),
 		Timestamp:       t.values.Get("ts"),
 		Attachments:     t.attachments,

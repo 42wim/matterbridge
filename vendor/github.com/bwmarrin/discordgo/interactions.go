@@ -35,12 +35,14 @@ type ApplicationCommand struct {
 	Version           string                 `json:"version,omitempty"`
 	Type              ApplicationCommandType `json:"type,omitempty"`
 	Name              string                 `json:"name"`
+	NameLocalizations *map[Locale]string     `json:"name_localizations,omitempty"`
 	DefaultPermission *bool                  `json:"default_permission,omitempty"`
 
 	// NOTE: Chat commands only. Otherwise it mustn't be set.
 
-	Description string                      `json:"description,omitempty"`
-	Options     []*ApplicationCommandOption `json:"options"`
+	Description              string                      `json:"description,omitempty"`
+	DescriptionLocalizations *map[Locale]string          `json:"description_localizations,omitempty"`
+	Options                  []*ApplicationCommandOption `json:"options"`
 }
 
 // ApplicationCommandOptionType indicates the type of a slash command's option.
@@ -91,9 +93,11 @@ func (t ApplicationCommandOptionType) String() string {
 
 // ApplicationCommandOption represents an option/subcommand/subcommands group.
 type ApplicationCommandOption struct {
-	Type        ApplicationCommandOptionType `json:"type"`
-	Name        string                       `json:"name"`
-	Description string                       `json:"description,omitempty"`
+	Type                     ApplicationCommandOptionType `json:"type"`
+	Name                     string                       `json:"name"`
+	NameLocalizations        map[Locale]string            `json:"name_localizations,omitempty"`
+	Description              string                       `json:"description,omitempty"`
+	DescriptionLocalizations map[Locale]string            `json:"description_localizations,omitempty"`
 	// NOTE: This feature was on the API, but at some point developers decided to remove it.
 	// So I commented it, until it will be officially on the docs.
 	// Default     bool                              `json:"default"`
@@ -113,8 +117,9 @@ type ApplicationCommandOption struct {
 
 // ApplicationCommandOptionChoice represents a slash command option choice.
 type ApplicationCommandOptionChoice struct {
-	Name  string      `json:"name"`
-	Value interface{} `json:"value"`
+	Name              string            `json:"name"`
+	NameLocalizations map[Locale]string `json:"name_localizations,omitempty"`
+	Value             interface{}       `json:"value"`
 }
 
 // ApplicationCommandPermissions represents a single user or role permission for a command.
@@ -175,6 +180,7 @@ func (t InteractionType) String() string {
 // Interaction represents data of an interaction.
 type Interaction struct {
 	ID        string          `json:"id"`
+	AppID     string          `json:"application_id"`
 	Type      InteractionType `json:"type"`
 	Data      InteractionData `json:"data"`
 	GuildID   string          `json:"guild_id"`
@@ -509,7 +515,7 @@ type InteractionResponseData struct {
 	TTS             bool                    `json:"tts"`
 	Content         string                  `json:"content"`
 	Components      []MessageComponent      `json:"components"`
-	Embeds          []*MessageEmbed         `json:"embeds,omitempty"`
+	Embeds          []*MessageEmbed         `json:"embeds"`
 	AllowedMentions *MessageAllowedMentions `json:"allowed_mentions,omitempty"`
 	Flags           uint64                  `json:"flags,omitempty"`
 	Files           []*File                 `json:"-"`

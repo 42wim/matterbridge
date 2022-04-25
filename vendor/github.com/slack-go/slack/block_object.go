@@ -187,8 +187,9 @@ func (s ConfirmationBlockObject) validateType() MessageObjectType {
 }
 
 // WithStyle add styling to confirmation object
-func (s *ConfirmationBlockObject) WithStyle(style Style) {
+func (s *ConfirmationBlockObject) WithStyle(style Style) *ConfirmationBlockObject {
 	s.Style = style
+	return s
 }
 
 // NewConfirmationBlockObject returns an instance of a new Confirmation Block Object
