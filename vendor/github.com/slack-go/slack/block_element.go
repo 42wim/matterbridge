@@ -167,6 +167,12 @@ func (s *ButtonBlockElement) WithStyle(style Style) *ButtonBlockElement {
 	return s
 }
 
+// WithConfirm adds a confirmation dialogue to the button object and returns the modified ButtonBlockElement
+func (s *ButtonBlockElement) WithConfirm(confirm *ConfirmationBlockObject) *ButtonBlockElement {
+	s.Confirm = confirm
+	return s
+}
+
 // NewButtonBlockElement returns an instance of a new button element to be used within a block
 func NewButtonBlockElement(actionID, value string, text *TextBlockObject) *ButtonBlockElement {
 	return &ButtonBlockElement{

@@ -70,7 +70,7 @@ type ActionsRow struct {
 func (r ActionsRow) MarshalJSON() ([]byte, error) {
 	type actionsRow ActionsRow
 
-	return json.Marshal(struct {
+	return Marshal(struct {
 		actionsRow
 		Type ComponentType `json:"type"`
 	}{
@@ -145,7 +145,7 @@ func (b Button) MarshalJSON() ([]byte, error) {
 		b.Style = PrimaryButton
 	}
 
-	return json.Marshal(struct {
+	return Marshal(struct {
 		button
 		Type ComponentType `json:"type"`
 	}{
@@ -192,7 +192,7 @@ func (SelectMenu) Type() ComponentType {
 func (m SelectMenu) MarshalJSON() ([]byte, error) {
 	type selectMenu SelectMenu
 
-	return json.Marshal(struct {
+	return Marshal(struct {
 		selectMenu
 		Type ComponentType `json:"type"`
 	}{
@@ -208,7 +208,7 @@ type TextInput struct {
 	Style       TextInputStyle `json:"style"`
 	Placeholder string         `json:"placeholder,omitempty"`
 	Value       string         `json:"value,omitempty"`
-	Required    bool           `json:"required,omitempty"`
+	Required    bool           `json:"required"`
 	MinLength   int            `json:"min_length,omitempty"`
 	MaxLength   int            `json:"max_length,omitempty"`
 }
@@ -222,7 +222,7 @@ func (TextInput) Type() ComponentType {
 func (m TextInput) MarshalJSON() ([]byte, error) {
 	type inputText TextInput
 
-	return json.Marshal(struct {
+	return Marshal(struct {
 		inputText
 		Type ComponentType `json:"type"`
 	}{

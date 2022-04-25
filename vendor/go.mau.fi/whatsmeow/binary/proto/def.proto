@@ -48,6 +48,7 @@ message CompanionProps {
         OHANA = 10;
         ALOHA = 11;
         CATALINA = 12;
+        TCL_TV = 13;
     }
     optional CompanionPropsPlatformType platformType = 3;
     optional bool requireFullSync = 4;
@@ -59,52 +60,6 @@ message AppVersion {
     optional uint32 tertiary = 3;
     optional uint32 quaternary = 4;
     optional uint32 quinary = 5;
-}
-
-message StickerMessage {
-    optional string url = 1;
-    optional bytes fileSha256 = 2;
-    optional bytes fileEncSha256 = 3;
-    optional bytes mediaKey = 4;
-    optional string mimetype = 5;
-    optional uint32 height = 6;
-    optional uint32 width = 7;
-    optional string directPath = 8;
-    optional uint64 fileLength = 9;
-    optional int64 mediaKeyTimestamp = 10;
-    optional uint32 firstFrameLength = 11;
-    optional bytes firstFrameSidecar = 12;
-    optional bool isAnimated = 13;
-    optional bytes pngThumbnail = 16;
-    optional ContextInfo contextInfo = 17;
-}
-
-message SenderKeyDistributionMessage {
-    optional string groupId = 1;
-    optional bytes axolotlSenderKeyDistributionMessage = 2;
-}
-
-message SendPaymentMessage {
-    optional Message noteMessage = 2;
-    optional MessageKey requestMessageKey = 3;
-    optional PaymentBackground background = 4;
-}
-
-message RequestPaymentMessage {
-    optional Message noteMessage = 4;
-    optional string currencyCodeIso4217 = 1;
-    optional uint64 amount1000 = 2;
-    optional string requestFrom = 3;
-    optional int64 expiryTimestamp = 5;
-    optional Money amount = 6;
-    optional PaymentBackground background = 7;
-}
-
-message ReactionMessage {
-    optional MessageKey key = 1;
-    optional string text = 2;
-    optional string groupingKey = 3;
-    optional int64 senderTimestampMs = 4;
 }
 
 message ProtocolMessage {
@@ -158,6 +113,33 @@ message CatalogSnapshot {
     optional ImageMessage catalogImage = 1;
     optional string title = 2;
     optional string description = 3;
+}
+
+message PollVoteMessage {
+    repeated bytes selectedOptions = 1;
+    optional int64 senderTimestampMs = 2;
+}
+
+message PollUpdateMessage {
+    optional MessageKey pollCreationMessageKey = 1;
+    optional PollEncValue vote = 2;
+}
+
+message PollEncValue {
+    optional bytes encPayload = 1;
+    optional bytes encIv = 2;
+}
+
+message PollCreationMessage {
+    optional bytes encKey = 1;
+    optional string name = 2;
+    repeated Option options = 3;
+    optional uint32 selectableOptionsCount = 4;
+    optional ContextInfo contextInfo = 5;
+}
+
+message Option {
+    optional string optionName = 1;
 }
 
 message PaymentInviteMessage {
@@ -547,6 +529,9 @@ message ExtendedTextMessage {
         PARENT = 1;
     }
     optional ExtendedTextMessageInviteLinkGroupType inviteLinkGroupType = 26;
+    optional string inviteLinkParentGroupSubjectV2 = 27;
+    optional bytes inviteLinkParentGroupThumbnailV2 = 28;
+    optional ExtendedTextMessageInviteLinkGroupType inviteLinkGroupTypeV2 = 29;
 }
 
 message DocumentMessage {
@@ -796,6 +781,7 @@ message ContextInfo {
     optional ActionLink actionLink = 33;
     optional string groupSubject = 34;
     optional string parentGroupJid = 35;
+    optional bytes messageSecret = 36;
 }
 
 message ExternalAdReplyInfo {
@@ -857,34 +843,6 @@ message QuickReplyButton {
 message CallButton {
     optional HighlyStructuredMessage displayText = 1;
     optional HighlyStructuredMessage phoneNumber = 2;
-}
-
-message PollUpdateMessage {
-    optional MessageKey pollCreationMessageKey = 1;
-    optional bytes encPayload = 2;
-    optional bytes encIv = 3;
-}
-
-message PollUpdateMessageContent {
-    oneof update {
-        PollVoteMessage voteMessage = 1;
-    }
-}
-
-message PollVoteMessage {
-    repeated bytes selectedOptions = 1;
-    optional int64 senderTimestampMs = 2;
-}
-
-message PollCreationMessage {
-    optional bytes encKey = 1;
-    optional string name = 2;
-    repeated Option options = 3;
-    optional uint32 selectableOptionsCount = 4;
-}
-
-message Option {
-    optional string optionName = 1;
 }
 
 message Point {
@@ -1056,6 +1014,52 @@ message StickerSyncRMRMessage {
     optional int64 requestTimestamp = 3;
 }
 
+message StickerMessage {
+    optional string url = 1;
+    optional bytes fileSha256 = 2;
+    optional bytes fileEncSha256 = 3;
+    optional bytes mediaKey = 4;
+    optional string mimetype = 5;
+    optional uint32 height = 6;
+    optional uint32 width = 7;
+    optional string directPath = 8;
+    optional uint64 fileLength = 9;
+    optional int64 mediaKeyTimestamp = 10;
+    optional uint32 firstFrameLength = 11;
+    optional bytes firstFrameSidecar = 12;
+    optional bool isAnimated = 13;
+    optional bytes pngThumbnail = 16;
+    optional ContextInfo contextInfo = 17;
+}
+
+message SenderKeyDistributionMessage {
+    optional string groupId = 1;
+    optional bytes axolotlSenderKeyDistributionMessage = 2;
+}
+
+message SendPaymentMessage {
+    optional Message noteMessage = 2;
+    optional MessageKey requestMessageKey = 3;
+    optional PaymentBackground background = 4;
+}
+
+message RequestPaymentMessage {
+    optional Message noteMessage = 4;
+    optional string currencyCodeIso4217 = 1;
+    optional uint64 amount1000 = 2;
+    optional string requestFrom = 3;
+    optional int64 expiryTimestamp = 5;
+    optional Money amount = 6;
+    optional PaymentBackground background = 7;
+}
+
+message ReactionMessage {
+    optional MessageKey key = 1;
+    optional string text = 2;
+    optional string groupingKey = 3;
+    optional int64 senderTimestampMs = 4;
+}
+
 message EphemeralSetting {
     optional sfixed32 duration = 1;
     optional sfixed64 timestamp = 2;
@@ -1184,6 +1188,14 @@ message MsgOpaqueData {
     optional bytes futureproofBuffer = 14;
     optional string clientUrl = 15;
     optional string loc = 16;
+    optional string pollName = 17;
+    repeated PollOption pollOptions = 18;
+    optional bytes pollEncKey = 19;
+    optional uint32 pollSelectableOptionsCount = 20;
+}
+
+message PollOption {
+    optional string name = 1;
 }
 
 message ServerErrorReceipt {
@@ -1309,10 +1321,22 @@ message SyncActionValue {
     optional PrimaryFeature primaryFeature = 24;
     optional FavoriteStickerAction favoriteStickerAction = 25;
     optional AndroidUnsupportedActions androidUnsupportedActions = 26;
+    optional AgentAction agentAction = 27;
+    optional SubscriptionAction subscriptionAction = 28;
+    optional UserStatusMuteAction userStatusMuteAction = 29;
+    optional TimeFormatAction timeFormatAction = 30;
+}
+
+message UserStatusMuteAction {
+    optional bool muted = 1;
 }
 
 message UnarchiveChatsSetting {
     optional bool unarchiveChats = 1;
+}
+
+message TimeFormatAction {
+    optional bool isTwentyFourHourFormatEnabled = 1;
 }
 
 message SyncActionMessage {
@@ -1324,6 +1348,12 @@ message SyncActionMessageRange {
     optional int64 lastMessageTimestamp = 1;
     optional int64 lastSystemMessageTimestamp = 2;
     repeated SyncActionMessage messages = 3;
+}
+
+message SubscriptionAction {
+    optional bool isDeactivated = 1;
+    optional bool isAutoRenewing = 2;
+    optional int64 expirationDate = 3;
 }
 
 message StarAction {
@@ -1437,6 +1467,12 @@ message ArchiveChatAction {
 
 message AndroidUnsupportedActions {
     optional bool allowed = 1;
+}
+
+message AgentAction {
+    optional string name = 1;
+    optional int32 deviceID = 2;
+    optional bool isDeleted = 3;
 }
 
 message SyncActionData {
@@ -1899,6 +1935,12 @@ message WebMessageInfo {
         COMMUNITY_LINK_PARENT_GROUP = 134;
         COMMUNITY_LINK_SIBLING_GROUP = 135;
         COMMUNITY_LINK_SUB_GROUP = 136;
+        COMMUNITY_UNLINK_PARENT_GROUP = 137;
+        COMMUNITY_UNLINK_SIBLING_GROUP = 138;
+        COMMUNITY_UNLINK_SUB_GROUP = 139;
+        GROUP_PARTICIPANT_ACCEPT = 140;
+        GROUP_PARTICIPANT_LINKED_GROUP_JOIN = 141;
+        COMMUNITY_CREATE = 142;
     }
     optional WebMessageInfoStubType messageStubType = 24;
     optional bool clearMedia = 25;
@@ -1929,6 +1971,9 @@ message WebMessageInfo {
     optional StatusPSA statusPsa = 44;
     repeated PollUpdate pollUpdates = 45;
     optional PollAdditionalMetadata pollAdditionalMetadata = 46;
+    optional string agentId = 47;
+    optional bool statusAlreadyViewed = 48;
+    optional bytes messageSecret = 49;
 }
 
 message WebFeatures {
@@ -1995,7 +2040,7 @@ message UserReceipt {
 }
 
 message StatusPSA {
-    required string campaignId = 44;
+    required uint64 campaignId = 44;
     optional uint64 campaignExpirationTimestamp = 45;
 }
 
@@ -2009,7 +2054,7 @@ message Reaction {
 
 message PollUpdate {
     optional MessageKey pollUpdateMessageKey = 1;
-    optional PollUpdateMessageContent pollUpdateMessage = 2;
+    optional PollVoteMessage vote = 2;
 }
 
 message PollAdditionalMetadata {
@@ -2080,6 +2125,9 @@ message PaymentInfo {
         COLLECT_CANCELED = 26;
         COLLECT_CANCELLING = 27;
         IN_REVIEW = 28;
+        REVERSAL_SUCCESS = 29;
+        REVERSAL_PENDING = 30;
+        REFUND_PENDING = 31;
     }
     optional PaymentInfoTxnStatus txnStatus = 10;
     optional bool useNoviFiatFormat = 11;

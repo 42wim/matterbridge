@@ -39,6 +39,16 @@ type AuditEntry struct {
 		UA        string `json:"ua"`
 		IPAddress string `json:"ip_address"`
 	} `json:"context"`
+	Details struct {
+		NewValue      interface{} `json:"new_value"`
+		PreviousValue interface{} `json:"previous_value"`
+		MobileOnly    bool        `json:"mobile_only"`
+		WebOnly       bool        `json:"web_only"`
+		NonSSOOnly    bool        `json:"non_sso_only"`
+		ExportType    string      `json:"export_type"`
+		ExportStart   string      `json:"export_start_ts"`
+		ExportEnd     string      `json:"export_end_ts"`
+	} `json:"details"`
 }
 
 type AuditUser struct {

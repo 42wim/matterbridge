@@ -65,6 +65,8 @@ build_all_targets:
 	# GOOS=windows GOARCH=386 go test -c -o /dev/null
 	GOOS=windows GOARCH=amd64 go build -v ./...
 	GOOS=windows GOARCH=amd64 go test -c -o /dev/null
+	GOOS=windows GOARCH=arm64 go build -v ./...
+	GOOS=windows GOARCH=arm64 go test -c -o /dev/null
 	echo done
 
 # 3900x
@@ -72,6 +74,10 @@ windows_amd64:
 	@echo "Should be executed only on linux/amd64."
 	CCGO_CPP=x86_64-w64-mingw32-cpp TARGET_GOOS=windows TARGET_GOARCH=amd64 go generate 2>&1 | tee log-generate
 	GOOS=windows GOARCH=amd64 go build -v ./...
+
+windows_arm64:
+	go run addport.go windows_amd64 windows_arm64
+	GOOS=windows GOARCH=arm64 go build -v ./...
 
 # 3900x
 windows_386:

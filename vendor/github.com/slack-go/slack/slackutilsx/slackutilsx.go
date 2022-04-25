@@ -50,10 +50,12 @@ func DetectChannelType(channelID string) ChannelType {
 	}
 }
 
+// initialize replacer only once (if needed)
+var escapeReplacer = strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;")
+
 // EscapeMessage text
 func EscapeMessage(message string) string {
-	replacer := strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;")
-	return replacer.Replace(message)
+	return escapeReplacer.Replace(message)
 }
 
 // Retryable errors return true.

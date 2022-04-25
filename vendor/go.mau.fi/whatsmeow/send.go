@@ -35,13 +35,13 @@ import (
 //   msgID := whatsmeow.GenerateMessageID()
 //   cli.SendMessage(targetJID, msgID, &waProto.Message{...})
 func GenerateMessageID() types.MessageID {
-	id := make([]byte, 16)
+	id := make([]byte, 8)
 	_, err := rand.Read(id)
 	if err != nil {
 		// Out of entropy
 		panic(err)
 	}
-	return strings.ToUpper(hex.EncodeToString(id))
+	return "3EB0" + strings.ToUpper(hex.EncodeToString(id))
 }
 
 // SendMessage sends the given message.
@@ -229,7 +229,11 @@ func (cli *Client) prepareMessageNode(to types.JID, id types.MessageID, message 
 		}},
 	}
 	if message.ProtocolMessage != nil && message.GetProtocolMessage().GetType() == waProto.ProtocolMessage_REVOKE && message.GetProtocolMessage().GetKey() != nil {
-		node.Attrs["edit"] = "7"
+		if message.GetProtocolMessage().GetKey().GetFromMe() {
+			node.Attrs["edit"] = "7"
+		} else {
+			node.Attrs["edit"] = "8"
+		}
 	}
 	if includeIdentity {
 		err := cli.appendDeviceIdentityNode(&node)

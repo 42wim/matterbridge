@@ -29,6 +29,7 @@ var (
 		{"openbsd", "amd64"}: true,
 		{"windows", "386"}:   true,
 		{"windows", "amd64"}: true,
+		{"windows", "arm64"}: true,
 	}
 )
 
@@ -212,6 +213,29 @@ var abiTypes = map[[2]string]map[Kind]ABIType{
 		Decimal32:  {4, 4, 4},
 		Decimal64:  {8, 8, 8},
 		Decimal128: {16, 16, 16},
+	},
+	// clang version 14.0.0 (https://github.com/llvm/llvm-project.git 329fda39c507e8740978d10458451dcdb21563be)
+	// Target: aarch64-w64-windows-gnu
+	{"windows", "arm64"}: {
+		Void:       {1, 1, 1},
+		Bool:       {1, 1, 1},
+		Char:       {1, 1, 1},
+		SChar:      {1, 1, 1},
+		UChar:      {1, 1, 1},
+		Short:      {2, 2, 2},
+		UShort:     {2, 2, 2},
+		Enum:       {4, 4, 4},
+		Int:        {4, 4, 4},
+		UInt:       {4, 4, 4},
+		Long:       {4, 4, 4},
+		ULong:      {4, 4, 4},
+		LongLong:   {8, 8, 8},
+		ULongLong:  {8, 8, 8},
+		Ptr:        {8, 8, 8},
+		Function:   {8, 8, 8},
+		Float:      {4, 4, 4},
+		Double:     {8, 8, 8},
+		LongDouble: {8, 8, 8},
 	},
 	// $ i686-w64-mingw32-gcc main.c && wine a.exe
 	{"windows", "386"}: {

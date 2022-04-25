@@ -39,6 +39,59 @@ var (
 	ErrUnauthorized            = errors.New("HTTP request was unauthorized. This could be because the provided token was not a bot token. Please add \"Bot \" to the start of your token. https://discord.com/developers/docs/reference#authentication-example-bot-token-authorization-header")
 )
 
+var (
+	// Marshal defines function used to encode JSON payloads
+	Marshal func(v interface{}) ([]byte, error) = json.Marshal
+	// Unmarshal defines function used to decode JSON payloads
+	Unmarshal func(src []byte, v interface{}) error = json.Unmarshal
+)
+
+// RESTError stores error information about a request with a bad response code.
+// Message is not always present, there are cases where api calls can fail
+// without returning a json message.
+type RESTError struct {
+	Request      *http.Request
+	Response     *http.Response
+	ResponseBody []byte
+
+	Message *APIErrorMessage // Message may be nil.
+}
+
+// newRestError returns a new REST API error.
+func newRestError(req *http.Request, resp *http.Response, body []byte) *RESTError {
+	restErr := &RESTError{
+		Request:      req,
+		Response:     resp,
+		ResponseBody: body,
+	}
+
+	// Attempt to decode the error and assume no message was provided if it fails
+	var msg *APIErrorMessage
+	err := Unmarshal(body, &msg)
+	if err == nil {
+		restErr.Message = msg
+	}
+
+	return restErr
+}
+
+// Error returns a Rest API Error with its status code and body.
+func (r RESTError) Error() string {
+	return "HTTP " + r.Response.Status + ", " + string(r.ResponseBody)
+}
+
+// RateLimitError is returned when a request exceeds a rate limit
+// and ShouldRetryOnRateLimit is false. The request may be manually
+// retried after waiting the duration specified by RetryAfter.
+type RateLimitError struct {
+	*RateLimit
+}
+
+// Error returns a rate limit error with rate limited endpoint and retry time.
+func (e RateLimitError) Error() string {
+	return "Rate limit exceeded on " + e.URL + ", retry after " + e.RetryAfter.String()
+}
+
 // Request is the same as RequestWithBucketID but the bucket id is the same as the urlStr
 func (s *Session) Request(method, urlStr string, data interface{}) (response []byte, err error) {
 	return s.RequestWithBucketID(method, urlStr, data, strings.SplitN(urlStr, "?", 2)[0])
@@ -48,7 +101,7 @@ func (s *Session) Request(method, urlStr string, data interface{}) (response []b
 func (s *Session) RequestWithBucketID(method, urlStr string, data interface{}, bucketID string) (response []byte, err error) {
 	var body []byte
 	if data != nil {
-		body, err = json.Marshal(data)
+		body, err = Marshal(data)
 		if err != nil {
 			return
 		}
@@ -108,7 +161,7 @@ func (s *Session) RequestWithLockedBucket(method, urlStr, contentType string, b 
 	}
 	defer func() {
 		err2 := resp.Body.Close()
-		if err2 != nil {
+		if s.Debug && err2 != nil {
 			log.Println("error closing resp body")
 		}
 	}()
@@ -147,19 +200,24 @@ func (s *Session) RequestWithLockedBucket(method, urlStr, contentType string, b 
 		}
 	case 429: // TOO MANY REQUESTS - Rate limiting
 		rl := TooManyRequests{}
-		err = json.Unmarshal(response, &rl)
+		err = Unmarshal(response, &rl)
 		if err != nil {
 			s.log(LogError, "rate limit unmarshal error, %s", err)
 			return
 		}
-		s.log(LogInformational, "Rate Limiting %s, retry in %v", urlStr, rl.RetryAfter)
-		s.handleEvent(rateLimitEventType, &RateLimit{TooManyRequests: &rl, URL: urlStr})
 
-		time.Sleep(rl.RetryAfter)
-		// we can make the above smarter
-		// this method can cause longer delays than required
+		if s.ShouldRetryOnRateLimit {
+			s.log(LogInformational, "Rate Limiting %s, retry in %v", urlStr, rl.RetryAfter)
+			s.handleEvent(rateLimitEventType, &RateLimit{TooManyRequests: &rl, URL: urlStr})
 
-		response, err = s.RequestWithLockedBucket(method, urlStr, contentType, b, s.Ratelimiter.LockBucketObject(bucket), sequence)
+			time.Sleep(rl.RetryAfter)
+			// we can make the above smarter
+			// this method can cause longer delays than required
+
+			response, err = s.RequestWithLockedBucket(method, urlStr, contentType, b, s.Ratelimiter.LockBucketObject(bucket), sequence)
+		} else {
+			err = &RateLimitError{&RateLimit{TooManyRequests: &rl, URL: urlStr}}
+		}
 	case http.StatusUnauthorized:
 		if strings.Index(s.Token, "Bot ") != 0 {
 			s.log(LogInformational, ErrUnauthorized.Error())
@@ -174,7 +232,7 @@ func (s *Session) RequestWithLockedBucket(method, urlStr, contentType string, b 
 }
 
 func unmarshal(data []byte, v interface{}) error {
-	err := json.Unmarshal(data, v)
+	err := Unmarshal(data, v)
 	if err != nil {
 		return fmt.Errorf("%w: %s", ErrJSONUnmarshal, err)
 	}
@@ -438,6 +496,19 @@ func (s *Session) Guild(guildID string) (st *Guild, err error) {
 	return
 }
 
+// GuildWithCounts returns a Guild structure of a specific Guild with approximate member and presence counts.
+// guildID    : The ID of a Guild
+func (s *Session) GuildWithCounts(guildID string) (st *Guild, err error) {
+
+	body, err := s.RequestWithBucketID("GET", EndpointGuild(guildID)+"?with_counts=true", nil, EndpointGuild(guildID))
+	if err != nil {
+		return
+	}
+
+	err = unmarshal(body, &st)
+	return
+}
+
 // GuildPreview returns a GuildPreview structure of a specific public Guild.
 // guildID   : The ID of a Guild
 func (s *Session) GuildPreview(guildID string) (st *GuildPreview, err error) {
@@ -481,7 +552,7 @@ func (s *Session) GuildEdit(guildID string, g GuildParams) (st *Guild, err error
 		}
 	}
 
-	//Bounds checking for regions
+	// Bounds checking for regions
 	if g.Region != "" {
 		isValid := false
 		regions, _ := s.VoiceRegions()
@@ -530,12 +601,30 @@ func (s *Session) GuildLeave(guildID string) (err error) {
 	return
 }
 
-// GuildBans returns an array of GuildBan structures for all bans of a
-// given guild.
-// guildID   : The ID of a Guild.
-func (s *Session) GuildBans(guildID string) (st []*GuildBan, err error) {
+// GuildBans returns an array of GuildBan structures for bans in the given guild.
+//  guildID   : The ID of a Guild
+//  limit     : Max number of bans to return (max 1000)
+//  beforeID  : If not empty all returned users will be after the given id
+//  afterID   : If not empty all returned users will be before the given id
+func (s *Session) GuildBans(guildID string, limit int, beforeID, afterID string) (st []*GuildBan, err error) {
+	uri := EndpointGuildBans(guildID)
 
-	body, err := s.RequestWithBucketID("GET", EndpointGuildBans(guildID), nil, EndpointGuildBans(guildID))
+	v := url.Values{}
+	if limit != 0 {
+		v.Set("limit", strconv.Itoa(limit))
+	}
+	if beforeID != "" {
+		v.Set("before", beforeID)
+	}
+	if afterID != "" {
+		v.Set("after", afterID)
+	}
+
+	if len(v) > 0 {
+		uri += "?" + v.Encode()
+	}
+
+	body, err := s.RequestWithBucketID("GET", uri, nil, EndpointGuildBans(guildID))
 	if err != nil {
 		return
 	}
@@ -631,6 +720,29 @@ func (s *Session) GuildMembers(guildID string, after string, limit int) (st []*M
 	return
 }
 
+// GuildMembersSearch returns a list of guild member objects whose username or nickname starts with a provided string
+// guildID  : The ID of a Guild
+// query    : Query string to match username(s) and nickname(s) against
+// limit    : Max number of members to return (default 1, min 1, max 1000)
+func (s *Session) GuildMembersSearch(guildID, query string, limit int) (st []*Member, err error) {
+
+	uri := EndpointGuildMembersSearch(guildID)
+
+	queryParams := url.Values{}
+	queryParams.Set("query", query)
+	if limit > 1 {
+		queryParams.Set("limit", strconv.Itoa(limit))
+	}
+
+	body, err := s.RequestWithBucketID("GET", uri+"?"+queryParams.Encode(), nil, uri)
+	if err != nil {
+		return
+	}
+
+	err = unmarshal(body, &st)
+	return
+}
+
 // GuildMember returns a member of a guild.
 //  guildID   : The ID of a Guild.
 //  userID    : The ID of a User
@@ -707,6 +819,21 @@ func (s *Session) GuildMemberEdit(guildID, userID string, roles []string) (err e
 	}{roles}
 
 	_, err = s.RequestWithBucketID("PATCH", EndpointGuildMember(guildID, userID), data, EndpointGuildMember(guildID, ""))
+	return
+}
+
+// GuildMemberEditComplex edits the nickname and roles of a member.
+// guildID  : The ID of a Guild.
+// userID   : The ID of a User.
+// data     : A GuildMemberEditData struct with the new nickname and roles
+func (s *Session) GuildMemberEditComplex(guildID, userID string, data GuildMemberParams) (st *Member, err error) {
+	var body []byte
+	body, err = s.RequestWithBucketID("PATCH", EndpointGuildMember(guildID, userID), data, EndpointGuildMember(guildID, ""))
+	if err != nil {
+		return nil, err
+	}
+
+	err = unmarshal(body, &st)
 	return
 }
 
@@ -1218,6 +1345,20 @@ func (s *Session) GuildEmojis(guildID string) (emoji []*Emoji, err error) {
 	return
 }
 
+// GuildEmoji returns specified emoji.
+// guildID : The ID of a Guild
+// emojiID : The ID of an Emoji to retrieve
+func (s *Session) GuildEmoji(guildID, emojiID string) (emoji *Emoji, err error) {
+	var body []byte
+	body, err = s.RequestWithBucketID("GET", EndpointGuildEmoji(guildID, emojiID), nil, EndpointGuildEmoji(guildID, emojiID))
+	if err != nil {
+		return
+	}
+
+	err = unmarshal(body, &emoji)
+	return
+}
+
 // GuildEmojiCreate creates a new emoji
 // guildID : The ID of a Guild.
 // name    : The Name of the Emoji.
@@ -1244,12 +1385,12 @@ func (s *Session) GuildEmojiCreate(guildID, name, image string, roles []string) 
 // guildID : The ID of a Guild.
 // emojiID : The ID of an Emoji.
 // name    : The Name of the Emoji.
-// roles   : The roles for which this emoji will be whitelisted, can be nil.
+// roles   : The roles for which this emoji will be whitelisted, if nil or empty the roles will be reset.
 func (s *Session) GuildEmojiEdit(guildID, emojiID, name string, roles []string) (emoji *Emoji, err error) {
 
 	data := struct {
 		Name  string   `json:"name"`
-		Roles []string `json:"roles,omitempty"`
+		Roles []string `json:"roles"`
 	}{name, roles}
 
 	body, err := s.RequestWithBucketID("PATCH", EndpointGuildEmoji(guildID, emojiID), data, EndpointGuildEmojis(guildID))
@@ -1851,6 +1992,37 @@ func (s *Session) InviteWithCounts(inviteID string) (st *Invite, err error) {
 	return
 }
 
+// InviteComplex returns an Invite structure of the given invite including specified fields.
+//  inviteID                  : The invite code
+//  guildScheduledEventID     : If specified, includes specified guild scheduled event.
+//  withCounts                : Whether to include approximate member counts or not
+//  withExpiration            : Whether to include expiration time or not
+func (s *Session) InviteComplex(inviteID, guildScheduledEventID string, withCounts, withExpiration bool) (st *Invite, err error) {
+	endpoint := EndpointInvite(inviteID)
+	v := url.Values{}
+	if guildScheduledEventID != "" {
+		v.Set("guild_scheduled_event_id", guildScheduledEventID)
+	}
+	if withCounts {
+		v.Set("with_counts", "true")
+	}
+	if withExpiration {
+		v.Set("with_expiration", "true")
+	}
+
+	if len(v) != 0 {
+		endpoint += "?" + v.Encode()
+	}
+
+	body, err := s.RequestWithBucketID("GET", endpoint, nil, EndpointInvite(""))
+	if err != nil {
+		return
+	}
+
+	err = unmarshal(body, &st)
+	return
+}
+
 // InviteDelete deletes an existing invite
 // inviteID   : the code of an invite
 func (s *Session) InviteDelete(inviteID string) (st *Invite, err error) {
@@ -2158,7 +2330,7 @@ func (s *Session) WebhookMessage(webhookID, token, messageID string) (message *M
 		return
 	}
 
-	err = json.Unmarshal(body, &message)
+	err = Unmarshal(body, &message)
 
 	return
 }
@@ -2207,7 +2379,7 @@ func (s *Session) WebhookMessageDelete(webhookID, token, messageID string) (err 
 // MessageReactionAdd creates an emoji reaction to a message.
 // channelID : The channel ID.
 // messageID : The message ID.
-// emojiID   : Either the unicode emoji for the reaction, or a guild emoji identifier.
+// emojiID   : Either the unicode emoji for the reaction, or a guild emoji identifier in name:id format (e.g. "hello:1234567654321")
 func (s *Session) MessageReactionAdd(channelID, messageID, emojiID string) error {
 
 	// emoji such as  #⃣ need to have # escaped
@@ -2687,10 +2859,9 @@ func (s *Session) ApplicationCommandPermissionsBatchEdit(appID, guildID string, 
 }
 
 // InteractionRespond creates the response to an interaction.
-// appID       : The application ID.
 // interaction : Interaction instance.
 // resp        : Response message data.
-func (s *Session) InteractionRespond(interaction *Interaction, resp *InteractionResponse) (err error) {
+func (s *Session) InteractionRespond(interaction *Interaction, resp *InteractionResponse) error {
 	endpoint := EndpointInteractionResponse(interaction.ID, interaction.Token)
 
 	if resp.Data != nil && len(resp.Data.Files) > 0 {
@@ -2700,32 +2871,30 @@ func (s *Session) InteractionRespond(interaction *Interaction, resp *Interaction
 		}
 
 		_, err = s.request("POST", endpoint, contentType, body, endpoint, 0)
-	} else {
-		_, err = s.RequestWithBucketID("POST", endpoint, *resp, endpoint)
+		return err
 	}
+
+	_, err := s.RequestWithBucketID("POST", endpoint, *resp, endpoint)
 	return err
 }
 
 // InteractionResponse gets the response to an interaction.
-// appID       : The application ID.
 // interaction : Interaction instance.
-func (s *Session) InteractionResponse(appID string, interaction *Interaction) (*Message, error) {
-	return s.WebhookMessage(appID, interaction.Token, "@original")
+func (s *Session) InteractionResponse(interaction *Interaction) (*Message, error) {
+	return s.WebhookMessage(interaction.AppID, interaction.Token, "@original")
 }
 
 // InteractionResponseEdit edits the response to an interaction.
-// appID       : The application ID.
 // interaction : Interaction instance.
 // newresp     : Updated response message data.
-func (s *Session) InteractionResponseEdit(appID string, interaction *Interaction, newresp *WebhookEdit) (*Message, error) {
-	return s.WebhookMessageEdit(appID, interaction.Token, "@original", newresp)
+func (s *Session) InteractionResponseEdit(interaction *Interaction, newresp *WebhookEdit) (*Message, error) {
+	return s.WebhookMessageEdit(interaction.AppID, interaction.Token, "@original", newresp)
 }
 
 // InteractionResponseDelete deletes the response to an interaction.
-// appID       : The application ID.
 // interaction : Interaction instance.
-func (s *Session) InteractionResponseDelete(appID string, interaction *Interaction) error {
-	endpoint := EndpointInteractionResponseActions(appID, interaction.Token)
+func (s *Session) InteractionResponseDelete(interaction *Interaction) error {
+	endpoint := EndpointInteractionResponseActions(interaction.AppID, interaction.Token)
 
 	_, err := s.RequestWithBucketID("DELETE", endpoint, nil, endpoint)
 
@@ -2733,29 +2902,76 @@ func (s *Session) InteractionResponseDelete(appID string, interaction *Interacti
 }
 
 // FollowupMessageCreate creates the followup message for an interaction.
-// appID       : The application ID.
 // interaction : Interaction instance.
 // wait        : Waits for server confirmation of message send and ensures that the return struct is populated (it is nil otherwise)
 // data        : Data of the message to send.
-func (s *Session) FollowupMessageCreate(appID string, interaction *Interaction, wait bool, data *WebhookParams) (*Message, error) {
-	return s.WebhookExecute(appID, interaction.Token, wait, data)
+func (s *Session) FollowupMessageCreate(interaction *Interaction, wait bool, data *WebhookParams) (*Message, error) {
+	return s.WebhookExecute(interaction.AppID, interaction.Token, wait, data)
 }
 
 // FollowupMessageEdit edits a followup message of an interaction.
-// appID       : The application ID.
 // interaction : Interaction instance.
 // messageID   : The followup message ID.
 // data        : Data to update the message
-func (s *Session) FollowupMessageEdit(appID string, interaction *Interaction, messageID string, data *WebhookEdit) (*Message, error) {
-	return s.WebhookMessageEdit(appID, interaction.Token, messageID, data)
+func (s *Session) FollowupMessageEdit(interaction *Interaction, messageID string, data *WebhookEdit) (*Message, error) {
+	return s.WebhookMessageEdit(interaction.AppID, interaction.Token, messageID, data)
 }
 
 // FollowupMessageDelete deletes a followup message of an interaction.
-// appID       : The application ID.
 // interaction : Interaction instance.
 // messageID   : The followup message ID.
-func (s *Session) FollowupMessageDelete(appID string, interaction *Interaction, messageID string) error {
-	return s.WebhookMessageDelete(appID, interaction.Token, messageID)
+func (s *Session) FollowupMessageDelete(interaction *Interaction, messageID string) error {
+	return s.WebhookMessageDelete(interaction.AppID, interaction.Token, messageID)
+}
+
+// ------------------------------------------------------------------------------------------------
+// Functions specific to stage instances
+// ------------------------------------------------------------------------------------------------
+
+// StageInstanceCreate creates and returns a new Stage instance associated to a Stage channel.
+// data : Parameters needed to create a stage instance.
+// data : The data of the Stage instance to create
+func (s *Session) StageInstanceCreate(data *StageInstanceParams) (si *StageInstance, err error) {
+	body, err := s.RequestWithBucketID("POST", EndpointStageInstances, data, EndpointStageInstances)
+	if err != nil {
+		return
+	}
+
+	err = unmarshal(body, &si)
+	return
+}
+
+// StageInstance will retrieve a Stage instance by ID of the Stage channel.
+// channelID : The ID of the Stage channel
+func (s *Session) StageInstance(channelID string) (si *StageInstance, err error) {
+	body, err := s.RequestWithBucketID("GET", EndpointStageInstance(channelID), nil, EndpointStageInstance(channelID))
+	if err != nil {
+		return
+	}
+
+	err = unmarshal(body, &si)
+	return
+}
+
+// StageInstanceEdit will edit a Stage instance by ID of the Stage channel.
+// channelID : The ID of the Stage channel
+// data : The data to edit the Stage instance
+func (s *Session) StageInstanceEdit(channelID string, data *StageInstanceParams) (si *StageInstance, err error) {
+
+	body, err := s.RequestWithBucketID("PATCH", EndpointStageInstance(channelID), data, EndpointStageInstance(channelID))
+	if err != nil {
+		return
+	}
+
+	err = unmarshal(body, &si)
+	return
+}
+
+// StageInstanceDelete will delete a Stage instance by ID of the Stage channel.
+// channelID : The ID of the Stage channel
+func (s *Session) StageInstanceDelete(channelID string) (err error) {
+	_, err = s.RequestWithBucketID("DELETE", EndpointStageInstance(channelID), nil, EndpointStageInstance(channelID))
+	return
 }
 
 // ------------------------------------------------------------------------------------------------
