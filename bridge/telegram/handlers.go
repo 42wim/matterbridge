@@ -404,7 +404,7 @@ func (b *Btelegram) handleDelete(msg *config.Message, chatid int64) (string, err
 	}
 
 	cfg := tgbotapi.NewDeleteMessage(chatid, msgid)
-	_, err = b.c.Send(cfg)
+	_, err = b.c.Request(cfg)
 
 	return "", err
 }
