@@ -10,9 +10,9 @@ require (
 	github.com/bwmarrin/discordgo v0.25.0
 	github.com/d5/tengo/v2 v2.10.1
 	github.com/davecgh/go-spew v1.1.1
-	github.com/fsnotify/fsnotify v1.5.3
+	github.com/fsnotify/fsnotify v1.5.4
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
-	github.com/gomarkdown/markdown v0.0.0-20220310201231-552c6011c0b8
+	github.com/gomarkdown/markdown v0.0.0-20220419181919-412bcf14cd2e
 	github.com/google/gops v0.3.22
 	github.com/gorilla/schema v1.2.0
 	github.com/gorilla/websocket v1.5.0
@@ -22,20 +22,20 @@ require (
 	github.com/keybase/go-keybase-chat-bot v0.0.0-20220322223021-75d497527469
 	github.com/kyokomi/emoji/v2 v2.2.9
 	github.com/labstack/echo/v4 v4.7.2
-	github.com/lrstanley/girc v0.0.0-20220410132120-49de39aea653
+	github.com/lrstanley/girc v0.0.0-20220429030656-4462c51ec0bc
 	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20211016222428-79310a412696
 	github.com/matterbridge/go-xmpp v0.0.0-20211030125215-791a06c5f1be
 	github.com/matterbridge/gomatrix v0.0.0-20220411225302-271e5088ea27
 	github.com/matterbridge/gozulipbot v0.0.0-20211023205727-a19d6c1f3b75
 	github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba
-	github.com/matterbridge/matterclient v0.0.0-20211107234719-faca3cd42315
+	github.com/matterbridge/matterclient v0.0.0-20220430213656-07aca2731bc9
 	github.com/mattermost/mattermost-server/v5 v5.39.3
-	github.com/mattermost/mattermost-server/v6 v6.5.0
+	github.com/mattermost/mattermost-server/v6 v6.6.1
 	github.com/mattn/godown v0.0.1
 	github.com/mdp/qrterminal v1.0.1
-	github.com/nelsonken/gomf v0.0.0-20180504123937-a9dd2f9deae9
+	github.com/nelsonken/gomf v0.0.0-20190423072027-c65cc0469e94
 	github.com/paulrosania/go-charset v0.0.0-20190326053356-55c9d7a5834c
-	github.com/rs/xid v1.3.0
+	github.com/rs/xid v1.4.0
 	github.com/russross/blackfriday v1.6.0
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca
 	github.com/shazow/ssh-chat v1.10.1
@@ -46,8 +46,8 @@ require (
 	github.com/vincent-petithory/dataurl v1.0.0
 	github.com/writeas/go-strip-markdown v2.0.1+incompatible
 	github.com/yaegashi/msgraph.go v0.1.4
-	github.com/zfjagann/golang-ring v0.0.0-20210116075443-7c86fdb43134
-	go.mau.fi/whatsmeow v0.0.0-20220425142103-46b439456742
+	github.com/zfjagann/golang-ring v0.0.0-20220330170733-19bcea1b6289
+	go.mau.fi/whatsmeow v0.0.0-20220429163952-136d7f5726e9
 	golang.org/x/image v0.0.0-20220413100746-70e8d0d3baa9
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
 	golang.org/x/text v0.3.7
@@ -93,7 +93,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
-	github.com/minio/minio-go/v7 v7.0.21 // indirect
+	github.com/minio/minio-go/v7 v7.0.23 // indirect
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect

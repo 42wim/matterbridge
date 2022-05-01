@@ -714,6 +714,10 @@ func (m *Client) SetLogLevel(level string) {
 }
 
 func (m *Client) HandleRatelimit(name string, resp *model.Response) error {
+	if resp == nil {
+		return fmt.Errorf("Got a nil model response from %s", name)
+	}
+
 	if resp.StatusCode != 429 {
 		return fmt.Errorf("StatusCode error: %d", resp.StatusCode)
 	}

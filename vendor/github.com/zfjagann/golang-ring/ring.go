@@ -92,6 +92,7 @@ func (r *Ring) Dequeue() interface{} {
 		return nil
 	}
 	v := r.get(r.tail)
+	r.set(r.tail, nil)
 	if r.tail == r.head {
 		r.head = -1
 		r.tail = 0
