@@ -206,7 +206,7 @@ func (b *Bmattermost) sendWebhook(msg config.Message) (string, error) {
 			for _, f := range msg.Extra["file"] {
 				fi := f.(config.FileInfo)
 				if fi.URL != "" {
-					msg.Text += fi.URL
+					msg.Text += " " + fi.URL
 				}
 			}
 		}
