@@ -428,12 +428,15 @@ func (b *Bmatrix) handleReply(ev *matrix.Event, rmsg config.Message) bool {
 	}
 
 	body := rmsg.Text
-	for strings.HasPrefix(body, "> ") {
-		lineIdx := strings.IndexRune(body, '\n')
-		if lineIdx == -1 {
-			body = ""
-		} else {
-			body = body[(lineIdx + 1):]
+
+	if !b.GetBool("keepquotedreply") {
+		for strings.HasPrefix(body, "> ") {
+			lineIdx := strings.IndexRune(body, '\n')
+			if lineIdx == -1 {
+				body = ""
+			} else {
+				body = body[(lineIdx + 1):]
+			}
 		}
 	}
 

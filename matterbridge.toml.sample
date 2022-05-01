@@ -1328,6 +1328,15 @@ HTMLDisable=false
 # UseUserName shows the username instead of the server nickname
 UseUserName=false
 
+# Matrix quotes replies and as of matterbridge 1.24.0 we strip those as this causes
+# issues with bridges support threading and have PreserveThreading enabled.
+# But if you for example use mattermost or discord with webhooks you'll need to enable 
+# this (and keep PreserveThreading disabled) if you want something that looks like a reply from matrix.
+# See issues: 
+# - https://github.com/42wim/matterbridge/issues/1819
+# - https://github.com/42wim/matterbridge/issues/1780
+KeepQuotedReply=false
+
 #Nicks you want to ignore.
 #Regular expressions supported
 #Messages from those users will not be sent to other bridges.
