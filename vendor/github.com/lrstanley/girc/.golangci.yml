@@ -28,6 +28,7 @@ linters-settings:
   gocritic:
     disabled-checks:
       - hugeParam
+      - ifElseChain
     enabled-tags:
       - diagnostic
       - opinionated

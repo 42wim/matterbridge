@@ -52,7 +52,7 @@ func ParseEvent(raw string) (e *Event) {
 		i = 0
 	}
 
-	if raw[0] == messagePrefix {
+	if raw != "" && raw[0] == messagePrefix {
 		// Prefix ends with a space.
 		i = strings.IndexByte(raw, eventSpace)
 
@@ -297,7 +297,9 @@ func (e *Event) Bytes() []byte {
 		buffer.Truncate(maxLength)
 	}
 
-	out := buffer.Bytes()
+	// If we truncated in the middle of a utf8 character, we need to remove
+	// the other (now invalid) bytes.
+	out := bytes.ToValidUTF8(buffer.Bytes(), nil)
 
 	// Strip newlines and carriage returns.
 	for i := 0; i < len(out); i++ {

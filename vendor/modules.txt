@@ -77,8 +77,8 @@ github.com/dyatlov/go-opengraph/opengraph
 # github.com/francoispqt/gojay v1.2.13
 ## explicit; go 1.12
 github.com/francoispqt/gojay
-# github.com/fsnotify/fsnotify v1.5.3
-## explicit; go 1.13
+# github.com/fsnotify/fsnotify v1.5.4
+## explicit; go 1.16
 github.com/fsnotify/fsnotify
 # github.com/go-asn1-ber/asn1-ber v1.5.3
 ## explicit; go 1.13
@@ -93,7 +93,7 @@ github.com/golang-jwt/jwt
 ## explicit; go 1.9
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go/descriptor
-# github.com/gomarkdown/markdown v0.0.0-20220310201231-552c6011c0b8
+# github.com/gomarkdown/markdown v0.0.0-20220419181919-412bcf14cd2e
 ## explicit; go 1.12
 github.com/gomarkdown/markdown
 github.com/gomarkdown/markdown/ast
@@ -207,8 +207,8 @@ github.com/labstack/gommon/bytes
 github.com/labstack/gommon/color
 github.com/labstack/gommon/log
 github.com/labstack/gommon/random
-# github.com/lrstanley/girc v0.0.0-20220410132120-49de39aea653
-## explicit; go 1.12
+# github.com/lrstanley/girc v0.0.0-20220429030656-4462c51ec0bc
+## explicit; go 1.18
 github.com/lrstanley/girc
 # github.com/magiconair/properties v1.8.6
 ## explicit; go 1.13
@@ -230,7 +230,7 @@ github.com/matterbridge/gozulipbot
 # github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba
 ## explicit
 github.com/matterbridge/logrus-prefixed-formatter
-# github.com/matterbridge/matterclient v0.0.0-20211107234719-faca3cd42315
+# github.com/matterbridge/matterclient v0.0.0-20220430213656-07aca2731bc9
 ## explicit; go 1.16
 github.com/matterbridge/matterclient
 # github.com/mattermost/go-i18n v1.11.1-0.20211013152124-5c415071e404
@@ -262,7 +262,7 @@ github.com/mattermost/mattermost-server/v5/shared/i18n
 github.com/mattermost/mattermost-server/v5/shared/markdown
 github.com/mattermost/mattermost-server/v5/shared/mlog
 github.com/mattermost/mattermost-server/v5/utils/jsonutils
-# github.com/mattermost/mattermost-server/v6 v6.5.0
+# github.com/mattermost/mattermost-server/v6 v6.6.1
 ## explicit; go 1.16
 github.com/mattermost/mattermost-server/v6/model
 github.com/mattermost/mattermost-server/v6/services/timezones
@@ -292,7 +292,7 @@ github.com/mgutz/ansi
 # github.com/minio/md5-simd v1.1.2
 ## explicit; go 1.14
 github.com/minio/md5-simd
-# github.com/minio/minio-go/v7 v7.0.21
+# github.com/minio/minio-go/v7 v7.0.23
 ## explicit; go 1.17
 github.com/minio/minio-go/v7
 github.com/minio/minio-go/v7/pkg/credentials
@@ -329,8 +329,8 @@ github.com/mreiferson/go-httpclient
 # github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff
 ## explicit
 github.com/mrexodia/wray
-# github.com/nelsonken/gomf v0.0.0-20180504123937-a9dd2f9deae9
-## explicit
+# github.com/nelsonken/gomf v0.0.0-20190423072027-c65cc0469e94
+## explicit; go 1.12
 github.com/nelsonken/gomf
 # github.com/opentracing/opentracing-go v1.2.0
 ## explicit; go 1.14
@@ -374,7 +374,7 @@ github.com/rickb777/plural
 # github.com/rivo/uniseg v0.2.0
 ## explicit; go 1.12
 github.com/rivo/uniseg
-# github.com/rs/xid v1.3.0
+# github.com/rs/xid v1.4.0
 ## explicit; go 1.12
 github.com/rs/xid
 # github.com/russross/blackfriday v1.6.0
@@ -482,7 +482,7 @@ github.com/writeas/go-strip-markdown
 github.com/yaegashi/msgraph.go/beta
 github.com/yaegashi/msgraph.go/jsonx
 github.com/yaegashi/msgraph.go/msauth
-# github.com/zfjagann/golang-ring v0.0.0-20210116075443-7c86fdb43134
+# github.com/zfjagann/golang-ring v0.0.0-20220330170733-19bcea1b6289
 ## explicit
 github.com/zfjagann/golang-ring
 # go.mau.fi/libsignal v0.0.0-20220425070825-c40c839ee6a0
@@ -513,7 +513,7 @@ go.mau.fi/libsignal/util/errorhelper
 go.mau.fi/libsignal/util/keyhelper
 go.mau.fi/libsignal/util/medium
 go.mau.fi/libsignal/util/optional
-# go.mau.fi/whatsmeow v0.0.0-20220425142103-46b439456742
+# go.mau.fi/whatsmeow v0.0.0-20220429163952-136d7f5726e9
 ## explicit; go 1.17
 go.mau.fi/whatsmeow
 go.mau.fi/whatsmeow/appstate

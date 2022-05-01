@@ -26,8 +26,8 @@ links or code blocks.
 
 	// a very dummy render hook that will output "code_replacements" instead of
 	// <code>${content}</code> emitted by html.Renderer
-	func renderHookCodeBlock(w io.Writer, node *ast.Node, entering bool) (ast.WalkStatus, bool) {
-		_, ok := node.Data.(*ast.CodeBlockData)
+	func renderHookCodeBlock(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
+		_, ok := node.(*ast.CodeBlock)
 		if !ok {
 			return ast.GoToNext, false
 		}
