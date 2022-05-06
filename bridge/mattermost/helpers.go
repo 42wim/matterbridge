@@ -183,6 +183,7 @@ func (b *Bmattermost) sendWebhook(msg config.Message) (string, error) {
 	if b.GetBool("PrefixMessagesWithNick") {
 		msg.Text = msg.Username + msg.Text
 	}
+
 	if msg.Extra != nil {
 		// this sends a message only if we received a config.EVENT_FILE_FAILURE_SIZE
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
