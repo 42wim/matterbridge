@@ -12,8 +12,8 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
-	github.com/gomarkdown/markdown v0.0.0-20220419181919-412bcf14cd2e
-	github.com/google/gops v0.3.22
+	github.com/gomarkdown/markdown v0.0.0-20220509074759-a57bf950ab8c
+	github.com/google/gops v0.3.23
 	github.com/gorilla/schema v1.2.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/harmony-development/shibshib v0.0.0-20220101224523-c98059d09cfa
@@ -22,7 +22,7 @@ require (
 	github.com/keybase/go-keybase-chat-bot v0.0.0-20220322223021-75d497527469
 	github.com/kyokomi/emoji/v2 v2.2.9
 	github.com/labstack/echo/v4 v4.7.2
-	github.com/lrstanley/girc v0.0.0-20220429030656-4462c51ec0bc
+	github.com/lrstanley/girc v0.0.0-20220507183218-96757fe3d2a2
 	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20211016222428-79310a412696
 	github.com/matterbridge/go-xmpp v0.0.0-20211030125215-791a06c5f1be
 	github.com/matterbridge/gomatrix v0.0.0-20220411225302-271e5088ea27
@@ -47,7 +47,7 @@ require (
 	github.com/writeas/go-strip-markdown v2.0.1+incompatible
 	github.com/yaegashi/msgraph.go v0.1.4
 	github.com/zfjagann/golang-ring v0.0.0-20220330170733-19bcea1b6289
-	go.mau.fi/whatsmeow v0.0.0-20220429163952-136d7f5726e9
+	go.mau.fi/whatsmeow v0.0.0-20220504135614-f1f2a9d231fb
 	golang.org/x/image v0.0.0-20220413100746-70e8d0d3baa9
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
 	golang.org/x/text v0.3.7
@@ -55,7 +55,7 @@ require (
 	google.golang.org/protobuf v1.28.0
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 	layeh.com/gumble v0.0.0-20200818122324-146f9205029b
-	modernc.org/sqlite v1.17.0
+	modernc.org/sqlite v1.17.2
 )
 
 require (
@@ -147,11 +147,11 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	lukechampine.com/uint128 v1.1.1 // indirect
-	modernc.org/cc/v3 v3.35.26 // indirect
-	modernc.org/ccgo/v3 v3.16.2 // indirect
-	modernc.org/libc v1.15.0 // indirect
+	modernc.org/cc/v3 v3.36.0 // indirect
+	modernc.org/ccgo/v3 v3.16.6 // indirect
+	modernc.org/libc v1.16.7 // indirect
 	modernc.org/mathutil v1.4.1 // indirect
-	modernc.org/memory v1.0.7 // indirect
+	modernc.org/memory v1.1.1 // indirect
 	modernc.org/opt v0.1.1 // indirect
 	modernc.org/strutil v1.1.1 // indirect
 	modernc.org/token v1.0.0 // indirect

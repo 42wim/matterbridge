@@ -19,16 +19,16 @@
 //
 //	OS      Arch    SQLite version
 //	------------------------------
-//	darwin	amd64   3.38.2
-//	darwin	arm64   3.38.2
-//	freebsd	amd64   3.38.2
-//	linux	386     3.38.2
-//	linux	amd64   3.38.2
-//	linux	arm     3.38.2
-//	linux	arm64   3.38.2
-//	linux	riscv64 3.38.2
-//	windows	amd64   3.38.2
-//	windows	arm64   3.38.2
+//	darwin	amd64   3.38.5
+//	darwin	arm64   3.38.5
+//	freebsd	amd64   3.38.5
+//	linux	386     3.38.5
+//	linux	amd64   3.38.5
+//	linux	arm     3.38.5
+//	linux	arm64   3.38.5
+//	linux	riscv64 3.38.5
+//	windows	amd64   3.38.5
+//	windows	arm64   3.38.5
 //
 // Builders
 //

@@ -131,7 +131,11 @@ func codeSpan(p *Parser, data []byte, offset int) (int, ast.Node) {
 
 	// find the next delimiter
 	i, end := 0, 0
+	hasLFBeforeDelimiter := false
 	for end = nb; end < len(data) && i < nb; end++ {
+		if data[end] == '\n' {
+			hasLFBeforeDelimiter = true
+		}
 		if data[end] == '`' {
 			i++
 		} else {
@@ -142,6 +146,18 @@ func codeSpan(p *Parser, data []byte, offset int) (int, ast.Node) {
 	// no matching delimiter?
 	if i < nb && end >= len(data) {
 		return 0, nil
+	}
+
+	// If there are non-space chars after the ending delimiter and before a '\n',
+	// flag that this is not a well formed fenced code block.
+	hasCharsAfterDelimiter := false
+	for j := end; j < len(data); j++ {
+		if data[j] == '\n' {
+			break
+		}
+		if !isSpace(data[j]) {
+			hasCharsAfterDelimiter = true
+		}
 	}
 
 	// trim outside whitespace
@@ -155,14 +171,31 @@ func codeSpan(p *Parser, data []byte, offset int) (int, ast.Node) {
 		fEnd--
 	}
 
-	// render the code span
-	if fBegin != fEnd {
-		code := &ast.Code{}
-		code.Literal = data[fBegin:fEnd]
-		return end, code
+	if fBegin == fEnd {
+		return end, nil
 	}
 
-	return end, nil
+	// if delimiter has 3 backticks
+	if nb == 3 {
+		i := fBegin
+		syntaxStart, syntaxLen := syntaxRange(data, &i)
+
+		// If we found a '\n' before the end marker and there are only spaces
+		// after the end marker, then this is a code block.
+		if hasLFBeforeDelimiter && !hasCharsAfterDelimiter {
+			codeblock := &ast.CodeBlock{
+				IsFenced: true,
+				Info:     data[syntaxStart : syntaxStart+syntaxLen],
+			}
+			codeblock.Literal = data[i:fEnd]
+			return end, codeblock
+		}
+	}
+
+	// render the code span
+	code := &ast.Code{}
+	code.Literal = data[fBegin:fEnd]
+	return end, code
 }
 
 // newline preceded by two spaces becomes <br>
@@ -781,7 +814,7 @@ func entity(p *Parser, data []byte, offset int) (int, ast.Node) {
 		codepoint, err = strconv.ParseUint(string(ent[2:len(ent)-1]), 10, 64)
 	}
 	if err == nil { // only if conversion was valid return here.
-		return end, newTextNode([]byte(string(codepoint)))
+		return end, newTextNode([]byte(string(rune(codepoint))))
 	}
 
 	return end, newTextNode(ent)

@@ -93,13 +93,13 @@ github.com/golang-jwt/jwt
 ## explicit; go 1.9
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go/descriptor
-# github.com/gomarkdown/markdown v0.0.0-20220419181919-412bcf14cd2e
+# github.com/gomarkdown/markdown v0.0.0-20220509074759-a57bf950ab8c
 ## explicit; go 1.12
 github.com/gomarkdown/markdown
 github.com/gomarkdown/markdown/ast
 github.com/gomarkdown/markdown/html
 github.com/gomarkdown/markdown/parser
-# github.com/google/gops v0.3.22
+# github.com/google/gops v0.3.23
 ## explicit; go 1.12
 github.com/google/gops/agent
 github.com/google/gops/internal
@@ -207,7 +207,7 @@ github.com/labstack/gommon/bytes
 github.com/labstack/gommon/color
 github.com/labstack/gommon/log
 github.com/labstack/gommon/random
-# github.com/lrstanley/girc v0.0.0-20220429030656-4462c51ec0bc
+# github.com/lrstanley/girc v0.0.0-20220507183218-96757fe3d2a2
 ## explicit; go 1.18
 github.com/lrstanley/girc
 # github.com/magiconair/properties v1.8.6
@@ -513,7 +513,7 @@ go.mau.fi/libsignal/util/errorhelper
 go.mau.fi/libsignal/util/keyhelper
 go.mau.fi/libsignal/util/medium
 go.mau.fi/libsignal/util/optional
-# go.mau.fi/whatsmeow v0.0.0-20220429163952-136d7f5726e9
+# go.mau.fi/whatsmeow v0.0.0-20220504135614-f1f2a9d231fb
 ## explicit; go 1.17
 go.mau.fi/whatsmeow
 go.mau.fi/whatsmeow/appstate
@@ -716,13 +716,13 @@ layeh.com/gumble/gumbleutil
 # lukechampine.com/uint128 v1.1.1
 ## explicit; go 1.12
 lukechampine.com/uint128
-# modernc.org/cc/v3 v3.35.26
+# modernc.org/cc/v3 v3.36.0
 ## explicit; go 1.15
 modernc.org/cc/v3
-# modernc.org/ccgo/v3 v3.16.2
+# modernc.org/ccgo/v3 v3.16.6
 ## explicit; go 1.16
 modernc.org/ccgo/v3/lib
-# modernc.org/libc v1.15.0
+# modernc.org/libc v1.16.7
 ## explicit; go 1.16
 modernc.org/libc
 modernc.org/libc/errno
@@ -753,13 +753,13 @@ modernc.org/libc/wctype
 # modernc.org/mathutil v1.4.1
 ## explicit; go 1.13
 modernc.org/mathutil
-# modernc.org/memory v1.0.7
+# modernc.org/memory v1.1.1
 ## explicit; go 1.16
 modernc.org/memory
 # modernc.org/opt v0.1.1
 ## explicit; go 1.13
 modernc.org/opt
-# modernc.org/sqlite v1.17.0
+# modernc.org/sqlite v1.17.2
 ## explicit; go 1.16
 modernc.org/sqlite
 modernc.org/sqlite/lib

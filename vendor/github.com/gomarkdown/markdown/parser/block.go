@@ -858,12 +858,9 @@ func isFenceLine(data []byte, syntax *string, oldmarker string) (end int, marker
 		return 0, ""
 	}
 
-	// TODO(shurcooL): It's probably a good idea to simplify the 2 code paths here
-	// into one, always get the syntax, and discard it if the caller doesn't care.
-	if syntax != nil {
-		syn := 0
+	// if just read the beginning marker, read the syntax
+	if oldmarker == "" {
 		i = skipChar(data, i, ' ')
-
 		if i >= n {
 			if i == n {
 				return i, marker
@@ -871,41 +868,15 @@ func isFenceLine(data []byte, syntax *string, oldmarker string) (end int, marker
 			return 0, ""
 		}
 
-		syntaxStart := i
-
-		if data[i] == '{' {
-			i++
-			syntaxStart++
-
-			for i < n && data[i] != '}' && data[i] != '\n' {
-				syn++
-				i++
-			}
-
-			if i >= n || data[i] != '}' {
-				return 0, ""
-			}
-
-			// strip all whitespace at the beginning and the end
-			// of the {} block
-			for syn > 0 && isSpace(data[syntaxStart]) {
-				syntaxStart++
-				syn--
-			}
-
-			for syn > 0 && isSpace(data[syntaxStart+syn-1]) {
-				syn--
-			}
-
-			i++
-		} else {
-			for i < n && !isSpace(data[i]) {
-				syn++
-				i++
-			}
+		syntaxStart, syntaxLen := syntaxRange(data, &i)
+		if syntaxStart == 0 && syntaxLen == 0 {
+			return 0, ""
 		}
 
-		*syntax = string(data[syntaxStart : syntaxStart+syn])
+		// caller wants the syntax
+		if syntax != nil {
+			*syntax = string(data[syntaxStart : syntaxStart+syntaxLen])
+		}
 	}
 
 	i = skipChar(data, i, ' ')
@@ -916,6 +887,47 @@ func isFenceLine(data []byte, syntax *string, oldmarker string) (end int, marker
 		return 0, ""
 	}
 	return i + 1, marker // Take newline into account.
+}
+
+func syntaxRange(data []byte, iout *int) (int, int) {
+	n := len(data)
+	syn := 0
+	i := *iout
+	syntaxStart := i
+	if data[i] == '{' {
+		i++
+		syntaxStart++
+
+		for i < n && data[i] != '}' && data[i] != '\n' {
+			syn++
+			i++
+		}
+
+		if i >= n || data[i] != '}' {
+			return 0, 0
+		}
+
+		// strip all whitespace at the beginning and the end
+		// of the {} block
+		for syn > 0 && isSpace(data[syntaxStart]) {
+			syntaxStart++
+			syn--
+		}
+
+		for syn > 0 && isSpace(data[syntaxStart+syn-1]) {
+			syn--
+		}
+
+		i++
+	} else {
+		for i < n && !isSpace(data[i]) {
+			syn++
+			i++
+		}
+	}
+
+	*iout = i
+	return syntaxStart, syn
 }
 
 // fencedCodeBlock returns the end index if data contains a fenced code block at the beginning,
@@ -1416,7 +1428,7 @@ gatherlines:
 			// we need to add leadingWhiteSpaces + 1 spaces in the beginning of the chunk
 			if indentIndex >= 4 && p.dliPrefix(chunk) <= 0 {
 				leadingWhiteSpaces := skipChar(chunk, 0, ' ')
-				chunk = data[ line+indentIndex - (leadingWhiteSpaces + 1) : i]
+				chunk = data[line+indentIndex-(leadingWhiteSpaces+1) : i]
 			}
 
 			// to be a nested list, it must be indented more
