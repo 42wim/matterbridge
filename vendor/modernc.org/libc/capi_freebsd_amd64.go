@@ -110,6 +110,7 @@ var CAPI = map[string]struct{}{
 	"__runes_for_locale":               {},
 	"__shgetc":                         {},
 	"__shlim":                          {},
+	"__srget":                          {},
 	"__stderrp":                        {},
 	"__stdinp":                         {},
 	"__stdoutp":                        {},

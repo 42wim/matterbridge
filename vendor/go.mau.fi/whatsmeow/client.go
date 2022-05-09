@@ -112,6 +112,8 @@ type Client struct {
 	AutoTrustIdentity bool
 
 	DebugDecodeBeforeSend bool
+	OneMessageAtATime     bool
+	messageSendLock       sync.Mutex
 
 	uniqueID  string
 	idCounter uint32
@@ -262,7 +264,7 @@ func (cli *Client) onDisconnect(ns *socket.NoiseSocket, remote bool) {
 	defer cli.socketLock.Unlock()
 	if cli.socket == ns {
 		cli.socket = nil
-		cli.clearResponseWaiters()
+		cli.clearResponseWaiters(xmlStreamEndNode)
 		if !cli.isExpectedDisconnect() && remote {
 			cli.Log.Debugf("Emitting Disconnected event")
 			go cli.dispatchEvent(&events.Disconnected{})
@@ -294,9 +296,9 @@ func (cli *Client) autoReconnect() {
 		return
 	}
 	for {
-		cli.AutoReconnectErrors++
 		autoReconnectDelay := time.Duration(cli.AutoReconnectErrors) * 2 * time.Second
 		cli.Log.Debugf("Automatically reconnecting after %v", autoReconnectDelay)
+		cli.AutoReconnectErrors++
 		time.Sleep(autoReconnectDelay)
 		err := cli.Connect()
 		if errors.Is(err, ErrAlreadyConnected) {
@@ -489,30 +491,35 @@ func (cli *Client) handlerQueueLoop(ctx context.Context) {
 	}
 }
 
-func (cli *Client) sendNode(node waBinary.Node) error {
+func (cli *Client) sendNodeDebug(node waBinary.Node) ([]byte, error) {
 	cli.socketLock.RLock()
 	sock := cli.socket
 	cli.socketLock.RUnlock()
 	if sock == nil {
-		return ErrNotConnected
+		return nil, ErrNotConnected
 	}
 
 	payload, err := waBinary.Marshal(node)
 	if err != nil {
-		return fmt.Errorf("failed to marshal node: %w", err)
+		return nil, fmt.Errorf("failed to marshal node: %w", err)
 	}
 	if cli.DebugDecodeBeforeSend {
 		var decoded *waBinary.Node
 		decoded, err = waBinary.Unmarshal(payload[1:])
 		if err != nil {
 			cli.Log.Infof("Malformed payload: %s", base64.URLEncoding.EncodeToString(payload))
-			return fmt.Errorf("failed to decode the binary we just produced: %w", err)
+			return nil, fmt.Errorf("failed to decode the binary we just produced: %w", err)
 		}
 		node = *decoded
 	}
 
 	cli.sendLog.Debugf("%s", node.XMLString())
-	return sock.SendFrame(payload)
+	return payload, sock.SendFrame(payload)
+}
+
+func (cli *Client) sendNode(node waBinary.Node) error {
+	_, err := cli.sendNodeDebug(node)
+	return err
 }
 
 func (cli *Client) dispatchEvent(evt interface{}) {

@@ -8,6 +8,7 @@ package whatsmeow
 
 import (
 	"context"
+	"encoding/base64"
 	"strconv"
 	"sync/atomic"
 	"time"
@@ -20,13 +21,17 @@ func (cli *Client) generateRequestID() string {
 	return cli.uniqueID + strconv.FormatUint(uint64(atomic.AddUint32(&cli.idCounter, 1)), 10)
 }
 
-var closedNode = &waBinary.Node{Tag: "xmlstreamend"}
+var xmlStreamEndNode = &waBinary.Node{Tag: "xmlstreamend"}
 
-func (cli *Client) clearResponseWaiters() {
+func isDisconnectNode(node *waBinary.Node) bool {
+	return node == xmlStreamEndNode || node.Tag == "stream:error"
+}
+
+func (cli *Client) clearResponseWaiters(node *waBinary.Node) {
 	cli.responseWaitersLock.Lock()
 	for _, waiter := range cli.responseWaiters {
 		select {
-		case waiter <- closedNode:
+		case waiter <- node:
 		default:
 			close(waiter)
 		}
@@ -86,7 +91,7 @@ type infoQuery struct {
 	Context context.Context
 }
 
-func (cli *Client) sendIQAsync(query infoQuery) (<-chan *waBinary.Node, error) {
+func (cli *Client) sendIQAsyncDebug(query infoQuery) (<-chan *waBinary.Node, []byte, error) {
 	if len(query.ID) == 0 {
 		query.ID = cli.generateRequestID()
 	}
@@ -102,20 +107,25 @@ func (cli *Client) sendIQAsync(query infoQuery) (<-chan *waBinary.Node, error) {
 	if !query.Target.IsEmpty() {
 		attrs["target"] = query.Target
 	}
-	err := cli.sendNode(waBinary.Node{
+	data, err := cli.sendNodeDebug(waBinary.Node{
 		Tag:     "iq",
 		Attrs:   attrs,
 		Content: query.Content,
 	})
 	if err != nil {
 		cli.cancelResponse(query.ID, waiter)
-		return nil, err
+		return nil, data, err
 	}
-	return waiter, nil
+	return waiter, data, nil
+}
+
+func (cli *Client) sendIQAsync(query infoQuery) (<-chan *waBinary.Node, error) {
+	ch, _, err := cli.sendIQAsyncDebug(query)
+	return ch, err
 }
 
 func (cli *Client) sendIQ(query infoQuery) (*waBinary.Node, error) {
-	resChan, err := cli.sendIQAsync(query)
+	resChan, data, err := cli.sendIQAsyncDebug(query)
 	if err != nil {
 		return nil, err
 	}
@@ -127,8 +137,11 @@ func (cli *Client) sendIQ(query infoQuery) (*waBinary.Node, error) {
 	}
 	select {
 	case res := <-resChan:
-		if res == closedNode {
-			return nil, ErrIQDisconnected
+		if isDisconnectNode(res) {
+			if cli.DebugDecodeBeforeSend && res.Tag == "stream:error" && res.GetChildByTag("xml-not-well-formed").Tag != "" {
+				cli.Log.Debugf("Info query that was interrupted by xml-not-well-formed: %s", base64.URLEncoding.EncodeToString(data))
+			}
+			return nil, &DisconnectedError{Action: "info query", Node: res}
 		}
 		resType, _ := res.Attrs["type"].(string)
 		if res.Tag != "iq" || (resType != "result" && resType != "error") {
