@@ -1,3 +1,23 @@
+# v1.25.1
+
+## Enhancements
+
+- matrix: Add KeepQuotedReply option for matrix to fix regression (#1823)
+- slack: Improve Slack attachments formatting (slack) (#1807)
+
+## Bugfix
+
+- general: Update dependencies (#1813,#1822,#1833)
+- mattermost: Add space between filename and URL (mattermost). Fixes #1820
+- matrix: Update matterbridge/gomatrix. Fixes #1772 (#1803)
+- telegram: Do not modify .webm files (telegram). Fixes #17**88 (#1802)
+- telegram: Do not apply any markup to URL entities (telegram) (#1808)
+- telegram: Fix telegram message deletion request (#1818)
+- vk: Fix UploadMessagesPhoto for vk community chat (vk) (#1812)
+
+This release couldn't exist without the following contributors:
+@bd808, @chugunov, @sas1024, @SevereCloud, @ValdikSS
+
 # v1.25.0
 
 ## Breaking changes
