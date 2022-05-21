@@ -17,6 +17,7 @@ import (
 
 // nolint:gocritic
 func (b *Bwhatsapp) eventHandler(evt interface{}) {
+
 	switch e := evt.(type) {
 	case *events.Message:
 		b.handleMessage(e)
@@ -25,6 +26,7 @@ func (b *Bwhatsapp) eventHandler(evt interface{}) {
 
 func (b *Bwhatsapp) handleMessage(message *events.Message) {
 	msg := message.Message
+
 	switch {
 	case msg == nil, message.Info.IsFromMe, message.Info.Timestamp.Before(b.startedAt):
 		return
@@ -32,8 +34,30 @@ func (b *Bwhatsapp) handleMessage(message *events.Message) {
 
 	b.Log.Infof("Receiving message %#v", msg)
 
+	mEvent :=""
+
+	if msg.GetProtocolMessage() != nil {
+		pMsg := msg.GetProtocolMessage()
+		b.Log.Debugf("ProtocolMessage is %v", pMsg.Type)
+
+		if pMsg.GetType() == proto.ProtocolMessage_REVOKE {
+		b.Log.Debug("Succesful trigger")
+		mEvent = "msg_delete"
+		}
+
+
+
+		} //Delete info
+  //b.Log.Debugf("Event is %#v", msg.GetProtocolMessage().String()) //Delete info
+
+  //igIndex := 0
+  //b.Log.Debugf("Ig Vid is %#v", b.IgVid[igIndex]) //filter test
+
+
 	switch {
-	case msg.Conversation != nil || msg.ExtendedTextMessage != nil:
+	case mEvent == "msg_delete":
+		b.handleDelete(message)
+	case (msg.Conversation != nil || msg.ExtendedTextMessage != nil):
 		b.handleTextMessage(message.Info, msg)
 	case msg.VideoMessage != nil:
 		b.handleVideoMessage(message)
@@ -50,6 +74,7 @@ func (b *Bwhatsapp) handleMessage(message *events.Message) {
 func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.Message) {
 	senderJID := messageInfo.Sender
 	channel := messageInfo.Chat
+	mPushName := messageInfo.PushName
 
 	senderName := b.getSenderName(messageInfo.Sender)
 	if senderName == "" {
@@ -61,20 +86,22 @@ func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.
 		return
 	}
 
-	var text string
 
+	var text string
+	ci := msg.GetExtendedTextMessage().GetContextInfo()
+	b.Log.Debugf("<= ContextInfo is %+v", ci)
 	// nolint:nestif
 	if msg.GetExtendedTextMessage() == nil {
 		text = msg.GetConversation()
 	} else {
 		text = msg.GetExtendedTextMessage().GetText()
-		ci := msg.GetExtendedTextMessage().GetContextInfo()
+		//if ci != nil {ci := msg.GetExtendedTextMessage().GetContextInfo()}
 
 		if senderJID == (types.JID{}) && ci.Participant != nil {
 			senderJID = types.NewJID(ci.GetParticipant(), types.DefaultUserServer)
 		}
 
-		if ci.MentionedJid != nil {
+		if ci != nil && ci.MentionedJid != nil {
 			// handle user mentions
 			for _, mentionedJID := range ci.MentionedJid {
 				numberAndSuffix := strings.SplitN(mentionedJID, "@", 2)
@@ -91,9 +118,18 @@ func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.
 		}
 	}
 
+
+if ci != nil{
+	if len(ci.QuotedMessage.GetConversation()) >0 {
+		//handleQuote , only for text msgs now
+		text = strings.Join([]string{text, "(re" , ci.GetParticipant() ,ci.QuotedMessage.GetConversation(),")"}, " ")
+	}
+}
+
+
 	rmsg := config.Message{
 		UserID:   senderJID.String(),
-		Username: senderName,
+		Username: mPushName, //changed to pushname
 		Text:     text,
 		Channel:  channel.String(),
 		Account:  b.Account,
@@ -109,6 +145,8 @@ func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.
 
 	b.Log.Debugf("<= Sending message from %s on %s to gateway", senderJID, b.Account)
 	b.Log.Debugf("<= Message is %#v", rmsg)
+
+	b.Log.Debugf("<= PushName is %s", mPushName)
 
 	b.Remote <- rmsg
 }
@@ -338,6 +376,61 @@ func (b *Bwhatsapp) handleDocumentMessage(msg *events.Message) {
 	helper.HandleDownloadData(b.Log, &rmsg, filename, "document", "", &data, b.General)
 
 	b.Log.Debugf("<= Sending message from %s on %s to gateway", senderJID, b.Account)
+	b.Log.Debugf("<= Message is %#v", rmsg)
+
+	b.Remote <- rmsg
+}
+
+
+// Handle Delete
+func (b *Bwhatsapp) handleDelete(msg *events.Message) {
+	//imsg := msg.Message.GetDocumentMessage()
+
+	senderJID := msg.Info.Sender
+	senderName := b.getSenderName(senderJID)
+	//ci := imsg.GetContextInfo()
+
+	//if senderJID == (types.JID{}) && ci.Participant != nil {
+	//	senderJID = types.NewJID(ci.GetParticipant(), types.DefaultUserServer)
+//	}
+
+	rmsg := config.Message{
+		UserID:   senderJID.String(),
+		Username: senderName,
+		Channel:  msg.Info.Chat.String(),
+		Account:  b.Account,
+		Protocol: b.Protocol,
+		//Extra:    make(map[string][]interface{}),
+		ID:       msg.Info.ID,
+		Event:		"msg_delete",
+	}
+
+	if avatarURL, exists := b.userAvatars[senderJID.String()]; exists {
+		rmsg.Avatar = avatarURL
+	}
+
+	//fileExt, err := mime.ExtensionsByType(imsg.GetMimetype())
+//	if err != nil {
+	//	b.Log.Errorf("Mimetype detection error: %s", err)
+
+//		return
+//	}
+
+//	filename := fmt.Sprintf("%v", imsg.GetFileName())
+
+//	b.Log.Debugf("Trying to download %s with extension %s and type %s", filename, fileExt, imsg.GetMimetype())
+
+//	data, err := b.wc.Download(imsg)
+//	if err != nil {
+//		b.Log.Errorf("Download document message failed: %s", err)
+
+//		return
+//	}
+
+	// Move file to bridge storage
+//	helper.HandleDownloadData(b.Log, &rmsg, filename, "document", "", &data, b.General)
+
+	b.Log.Debugf("<= Sending delete message from %s on %s to gateway", senderJID, b.Account)
 	b.Log.Debugf("<= Message is %#v", rmsg)
 
 	b.Remote <- rmsg

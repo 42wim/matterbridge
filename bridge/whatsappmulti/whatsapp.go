@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+	//"strings"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -39,6 +40,11 @@ type Bwhatsapp struct {
 	contacts    map[types.JID]types.ContactInfo
 	users       map[string]types.ContactInfo
 	userAvatars map[string]string
+	//Filters
+	//IgVid				[]bool
+	//IgImg				[]bool
+	//IgAud				[]bool
+	//IgText			[]bool
 }
 
 // New Create a new WhatsApp bridge. This will be called for each [whatsapp.<server>] entry you have in the config file
@@ -55,6 +61,8 @@ func New(cfg *bridge.Config) bridge.Bridger {
 		users:       make(map[string]types.ContactInfo),
 		userAvatars: make(map[string]string),
 	}
+
+
 
 	return b
 }
@@ -130,6 +138,8 @@ func (b *Bwhatsapp) Connect() error {
 		}
 	}
 
+    if b.Log.Level != 0 {
+
 	// get user avatar asynchronously
 	b.Log.Info("Getting user avatars..")
 
@@ -144,6 +154,8 @@ func (b *Bwhatsapp) Connect() error {
 			}
 			b.Unlock()
 		}
+	}
+
 	}
 
 	b.Log.Info("Finished getting avatars..")
@@ -266,6 +278,7 @@ func (b *Bwhatsapp) PostImageMessage(msg config.Message, filetype string) (strin
 	}
 
 	b.Log.Debugf("=> Sending %#v", msg)
+	b.Log.Debugf("ImageMessageStruct: %+v", message.ImageMessage)
 
 	ID := whatsmeow.GenerateMessageID()
 	_, err = b.wc.SendMessage(groupJID, ID, &message)
@@ -273,6 +286,42 @@ func (b *Bwhatsapp) PostImageMessage(msg config.Message, filetype string) (strin
 	return ID, err
 }
 
+// Post an audio message
+// Handle for audio/ogg codecs=opus
+func (b *Bwhatsapp) PostAudioMessage(msg config.Message, filetype string) (string, error) {
+	groupJID, _ := types.ParseJID(msg.Channel)
+
+	fi := msg.Extra["file"][0].(config.FileInfo)
+
+	// caption := msg.Username + fi.Comment
+
+	resp, err := b.wc.Upload(context.Background(), *fi.Data, whatsmeow.MediaAudio)
+	if err != nil {
+		return "", err
+	}
+
+	//filetype = "audio/ogg; codecs=opus"
+
+	var message proto.Message
+
+	message.AudioMessage = &proto.AudioMessage{
+		Mimetype:      &filetype,
+		MediaKey:      resp.MediaKey,
+		FileEncSha256: resp.FileEncSHA256,
+		FileSha256:    resp.FileSHA256,
+		FileLength:    goproto.Uint64(resp.FileLength),
+		Url:           &resp.URL,
+		DirectPath:    &resp.DirectPath,
+	}
+
+	b.Log.Debugf("=> Sending %#v", msg)
+	b.Log.Debugf("AudioMessageStruct: %+v", message.AudioMessage)
+
+	ID := whatsmeow.GenerateMessageID()
+	_, err = b.wc.SendMessage(groupJID, ID, &message)
+
+	return ID, err
+}
 // Send a message from the bridge to WhatsApp
 func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 	groupJID, _ := types.ParseJID(msg.Channel)
@@ -315,6 +364,8 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 		switch filetype {
 		case "image/jpeg", "image/png", "image/gif":
 			return b.PostImageMessage(msg, filetype)
+		case "audio/ogg":
+			return b.PostAudioMessage(msg, "audio/ogg; codecs=opus")
 		default:
 			return b.PostDocumentMessage(msg, filetype)
 		}
