@@ -24,8 +24,8 @@ const (
 )
 
 var (
-	reBackslashOrAmp      = regexp.MustCompile("[\\&]")
-	reEntityOrEscapedChar = regexp.MustCompile("(?i)\\\\" + escapable + "|" + charEntity)
+	reBackslashOrAmp      = regexp.MustCompile(`[\&]`)
+	reEntityOrEscapedChar = regexp.MustCompile(`(?i)\\` + escapable + "|" + charEntity)
 
 	// blockTags is a set of tags that are recognized as HTML block tags.
 	// Any of these can be included in markdown text without special escaping.

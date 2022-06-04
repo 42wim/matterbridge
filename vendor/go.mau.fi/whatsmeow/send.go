@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Tulir Asokan
+// Copyright (c) 2022 Tulir Asokan
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,6 +14,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -65,7 +66,8 @@ func GenerateMessageID() types.MessageID {
 // For other message types, you'll have to figure it out yourself. Looking at the protobuf schema
 // in binary/proto/def.proto may be useful to find out all the allowed fields.
 func (cli *Client) SendMessage(to types.JID, id types.MessageID, message *waProto.Message) (time.Time, error) {
-	if to.AD {
+	isPeerMessage := to.User == cli.Store.ID.User
+	if to.AD && !isPeerMessage {
 		return time.Time{}, ErrRecipientADJID
 	}
 
@@ -73,23 +75,27 @@ func (cli *Client) SendMessage(to types.JID, id types.MessageID, message *waProt
 		id = GenerateMessageID()
 	}
 
-	if cli.OneMessageAtATime {
-		cli.messageSendLock.Lock()
-		defer cli.messageSendLock.Unlock()
-	}
+	// Sending multiple messages at a time can cause weird issues and makes it harder to retry safely
+	cli.messageSendLock.Lock()
+	defer cli.messageSendLock.Unlock()
 
-	cli.addRecentMessage(to, id, message)
 	respChan := cli.waitResponse(id)
+	// Peer message retries aren't implemented yet
+	if !isPeerMessage {
+		cli.addRecentMessage(to, id, message)
+	}
 	var err error
 	var phash string
 	var data []byte
 	switch to.Server {
-	case types.GroupServer:
+	case types.GroupServer, types.BroadcastServer:
 		phash, data, err = cli.sendGroup(to, id, message)
 	case types.DefaultUserServer:
-		data, err = cli.sendDM(to, id, message)
-	case types.BroadcastServer:
-		err = ErrBroadcastListUnsupported
+		if isPeerMessage {
+			data, err = cli.sendPeerMessage(to, id, message)
+		} else {
+			data, err = cli.sendDM(to, id, message)
+		}
 	default:
 		err = fmt.Errorf("%w %s", ErrUnknownServer, to.Server)
 	}
@@ -99,13 +105,13 @@ func (cli *Client) SendMessage(to types.JID, id types.MessageID, message *waProt
 	}
 	resp := <-respChan
 	if isDisconnectNode(resp) {
-		if cli.DebugDecodeBeforeSend && resp.Tag == "stream:error" && resp.GetChildByTag("xml-not-well-formed").Tag != "" {
-			cli.Log.Debugf("Message that was interrupted by xml-not-well-formed: %s", base64.URLEncoding.EncodeToString(data))
+		resp, err = cli.retryFrame("message send", id, data, resp, nil, 0)
+		if err != nil {
+			return time.Time{}, err
 		}
-		return time.Time{}, &DisconnectedError{Action: "message send", Node: resp}
 	}
 	ag := resp.AttrGetter()
-	ts := time.Unix(ag.Int64("t"), 0)
+	ts := ag.UnixTime("t")
 	expectedPHash := ag.OptionalString("phash")
 	if len(expectedPHash) > 0 && phash != expectedPHash {
 		cli.Log.Warnf("Server returned different participant list hash when sending to %s. Some devices may not have received the message.", to)
@@ -135,6 +141,66 @@ func (cli *Client) RevokeMessage(chat types.JID, id types.MessageID) (time.Time,
 	})
 }
 
+const (
+	DisappearingTimerOff     = time.Duration(0)
+	DisappearingTimer24Hours = 24 * time.Hour
+	DisappearingTimer7Days   = 7 * 24 * time.Hour
+	DisappearingTimer90Days  = 90 * 24 * time.Hour
+)
+
+// ParseDisappearingTimerString parses common human-readable disappearing message timer strings into Duration values.
+// If the string doesn't look like one of the allowed values (0, 24h, 7d, 90d), the second return value is false.
+func ParseDisappearingTimerString(val string) (time.Duration, bool) {
+	switch strings.ReplaceAll(strings.ToLower(val), " ", "") {
+	case "0d", "0h", "0s", "0", "off":
+		return DisappearingTimerOff, true
+	case "1day", "day", "1d", "1", "24h", "24", "86400s", "86400":
+		return DisappearingTimer24Hours, true
+	case "1week", "week", "7d", "7", "168h", "168", "604800s", "604800":
+		return DisappearingTimer7Days, true
+	case "3months", "3m", "3mo", "90d", "90", "2160h", "2160", "7776000s", "7776000":
+		return DisappearingTimer90Days, true
+	default:
+		return 0, false
+	}
+}
+
+// SetDisappearingTimer sets the disappearing timer in a chat. Both private chats and groups are supported, but they're
+// set with different methods.
+//
+// Note that while this function allows passing non-standard durations, official WhatsApp apps will ignore those,
+// and in groups the server will just reject the change. You can use the DisappearingTimer<Duration> constants for convenience.
+//
+// In groups, the server will echo the change as a notification, so it'll show up as a *events.GroupInfo update.
+func (cli *Client) SetDisappearingTimer(chat types.JID, timer time.Duration) (err error) {
+	switch chat.Server {
+	case types.DefaultUserServer:
+		_, err = cli.SendMessage(chat, "", &waProto.Message{
+			ProtocolMessage: &waProto.ProtocolMessage{
+				Type:                waProto.ProtocolMessage_EPHEMERAL_SETTING.Enum(),
+				EphemeralExpiration: proto.Uint32(uint32(timer.Seconds())),
+			},
+		})
+	case types.GroupServer:
+		if timer == 0 {
+			_, err = cli.sendGroupIQ(iqSet, chat, waBinary.Node{Tag: "not_ephemeral"})
+		} else {
+			_, err = cli.sendGroupIQ(iqSet, chat, waBinary.Node{
+				Tag: "ephemeral",
+				Attrs: waBinary.Attrs{
+					"expiration": strconv.Itoa(int(timer.Seconds())),
+				},
+			})
+			if errors.Is(err, ErrIQBadRequest) {
+				err = wrapIQError(ErrInvalidDisappearingTimer, err)
+			}
+		}
+	default:
+		err = fmt.Errorf("can't set disappearing time in a %s chat", chat.Server)
+	}
+	return
+}
+
 func participantListHashV2(participants []types.JID) string {
 	participantsStrings := make([]string, len(participants))
 	for i, part := range participants {
@@ -147,9 +213,18 @@ func participantListHashV2(participants []types.JID) string {
 }
 
 func (cli *Client) sendGroup(to types.JID, id types.MessageID, message *waProto.Message) (string, []byte, error) {
-	participants, err := cli.getGroupMembers(to)
-	if err != nil {
-		return "", nil, fmt.Errorf("failed to get group members: %w", err)
+	var participants []types.JID
+	var err error
+	if to.Server == types.GroupServer {
+		participants, err = cli.getGroupMembers(to)
+		if err != nil {
+			return "", nil, fmt.Errorf("failed to get group members: %w", err)
+		}
+	} else {
+		participants, err = cli.getBroadcastListParticipants(to)
+		if err != nil {
+			return "", nil, fmt.Errorf("failed to get broadcast list members: %w", err)
+		}
 	}
 
 	plaintext, _, err := marshalMessage(to, message)
@@ -194,11 +269,23 @@ func (cli *Client) sendGroup(to types.JID, id types.MessageID, message *waProto.
 		Attrs:   waBinary.Attrs{"v": "2", "type": "skmsg"},
 	})
 
-	data, err := cli.sendNodeDebug(*node)
+	data, err := cli.sendNodeAndGetData(*node)
 	if err != nil {
 		return "", nil, fmt.Errorf("failed to send message node: %w", err)
 	}
 	return phash, data, nil
+}
+
+func (cli *Client) sendPeerMessage(to types.JID, id types.MessageID, message *waProto.Message) ([]byte, error) {
+	node, err := cli.preparePeerMessageNode(to, id, message)
+	if err != nil {
+		return nil, err
+	}
+	data, err := cli.sendNodeAndGetData(*node)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send message node: %w", err)
+	}
+	return data, nil
 }
 
 func (cli *Client) sendDM(to types.JID, id types.MessageID, message *waProto.Message) ([]byte, error) {
@@ -211,11 +298,72 @@ func (cli *Client) sendDM(to types.JID, id types.MessageID, message *waProto.Mes
 	if err != nil {
 		return nil, err
 	}
-	data, err := cli.sendNodeDebug(*node)
+	data, err := cli.sendNodeAndGetData(*node)
 	if err != nil {
 		return nil, fmt.Errorf("failed to send message node: %w", err)
 	}
 	return data, nil
+}
+
+func getTypeFromMessage(msg *waProto.Message) string {
+	switch {
+	case msg.ViewOnceMessage != nil:
+		return getTypeFromMessage(msg.ViewOnceMessage.Message)
+	case msg.EphemeralMessage != nil:
+		return getTypeFromMessage(msg.EphemeralMessage.Message)
+	case msg.ReactionMessage != nil:
+		return "reaction"
+	case msg.Conversation != nil, msg.ExtendedTextMessage != nil, msg.ProtocolMessage != nil:
+		return "text"
+	//TODO this requires setting mediatype in the enc nodes
+	//case msg.ImageMessage != nil, msg.DocumentMessage != nil, msg.AudioMessage != nil, msg.VideoMessage != nil:
+	//	return "media"
+	default:
+		return "text"
+	}
+}
+
+func getEditAttribute(msg *waProto.Message) string {
+	if msg.ProtocolMessage != nil && msg.GetProtocolMessage().GetType() == waProto.ProtocolMessage_REVOKE && msg.GetProtocolMessage().GetKey() != nil {
+		if msg.GetProtocolMessage().GetKey().GetFromMe() {
+			return "7"
+		} else {
+			return "8"
+		}
+	} else if msg.ReactionMessage != nil && msg.ReactionMessage.GetText() == "" {
+		return "7"
+	}
+	return ""
+}
+
+func (cli *Client) preparePeerMessageNode(to types.JID, id types.MessageID, message *waProto.Message) (*waBinary.Node, error) {
+	attrs := waBinary.Attrs{
+		"id":       id,
+		"type":     "text",
+		"category": "peer",
+		"to":       to,
+	}
+	if message.GetProtocolMessage().GetType() == waProto.ProtocolMessage_APP_STATE_SYNC_KEY_REQUEST {
+		attrs["push_priority"] = "high"
+	}
+	plaintext, err := proto.Marshal(message)
+	if err != nil {
+		err = fmt.Errorf("failed to marshal message: %w", err)
+		return nil, err
+	}
+	encrypted, isPreKey, err := cli.encryptMessageForDevice(plaintext, to, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encrypt peer message for %s: %v", to, err)
+	}
+	content := []waBinary.Node{*encrypted}
+	if isPreKey {
+		content = append(content, cli.makeDeviceIdentityNode())
+	}
+	return &waBinary.Node{
+		Tag:     "message",
+		Attrs:   attrs,
+		Content: content,
+	}, nil
 }
 
 func (cli *Client) prepareMessageNode(to types.JID, id types.MessageID, message *waProto.Message, participants []types.JID, plaintext, dsmPlaintext []byte) (*waBinary.Node, []types.JID, error) {
@@ -223,34 +371,29 @@ func (cli *Client) prepareMessageNode(to types.JID, id types.MessageID, message 
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get device list: %w", err)
 	}
-	participantNodes, includeIdentity := cli.encryptMessageForDevices(allDevices, id, plaintext, dsmPlaintext)
 
-	node := waBinary.Node{
-		Tag: "message",
-		Attrs: waBinary.Attrs{
-			"id":   id,
-			"type": "text",
-			"to":   to,
-		},
-		Content: []waBinary.Node{{
-			Tag:     "participants",
-			Content: participantNodes,
-		}},
+	attrs := waBinary.Attrs{
+		"id":   id,
+		"type": getTypeFromMessage(message),
+		"to":   to,
 	}
-	if message.ProtocolMessage != nil && message.GetProtocolMessage().GetType() == waProto.ProtocolMessage_REVOKE && message.GetProtocolMessage().GetKey() != nil {
-		if message.GetProtocolMessage().GetKey().GetFromMe() {
-			node.Attrs["edit"] = "7"
-		} else {
-			node.Attrs["edit"] = "8"
-		}
+	if editAttr := getEditAttribute(message); editAttr != "" {
+		attrs["edit"] = editAttr
 	}
+
+	participantNodes, includeIdentity := cli.encryptMessageForDevices(allDevices, id, plaintext, dsmPlaintext)
+	content := []waBinary.Node{{
+		Tag:     "participants",
+		Content: participantNodes,
+	}}
 	if includeIdentity {
-		err := cli.appendDeviceIdentityNode(&node)
-		if err != nil {
-			return nil, nil, err
-		}
+		content = append(content, cli.makeDeviceIdentityNode())
 	}
-	return &node, allDevices, nil
+	return &waBinary.Node{
+		Tag:     "message",
+		Attrs:   attrs,
+		Content: content,
+	}, allDevices, nil
 }
 
 func marshalMessage(to types.JID, message *waProto.Message) (plaintext, dsmPlaintext []byte, err error) {
@@ -276,16 +419,15 @@ func marshalMessage(to types.JID, message *waProto.Message) (plaintext, dsmPlain
 	return
 }
 
-func (cli *Client) appendDeviceIdentityNode(node *waBinary.Node) error {
+func (cli *Client) makeDeviceIdentityNode() waBinary.Node {
 	deviceIdentity, err := proto.Marshal(cli.Store.Account)
 	if err != nil {
-		return fmt.Errorf("failed to marshal device identity: %w", err)
+		panic(fmt.Errorf("failed to marshal device identity: %w", err))
 	}
-	node.Content = append(node.GetChildren(), waBinary.Node{
+	return waBinary.Node{
 		Tag:     "device-identity",
 		Content: deviceIdentity,
-	})
-	return nil
+	}
 }
 
 func (cli *Client) encryptMessageForDevices(allDevices []types.JID, id string, msgPlaintext, dsmPlaintext []byte) ([]waBinary.Node, bool) {

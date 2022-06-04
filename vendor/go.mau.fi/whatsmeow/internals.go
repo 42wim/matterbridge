@@ -53,3 +53,11 @@ func (int *DangerousInternalClient) RefreshMediaConn(force bool) (*MediaConn, er
 func (int *DangerousInternalClient) GetServerPreKeyCount() (int, error) {
 	return int.c.getServerPreKeyCount()
 }
+
+func (int *DangerousInternalClient) RequestAppStateKeys(keyIDs [][]byte) {
+	int.c.requestAppStateKeys(keyIDs)
+}
+
+func (int *DangerousInternalClient) SendRetryReceipt(node *waBinary.Node, forceIncludeIdentity bool) {
+	int.c.sendRetryReceipt(node, forceIncludeIdentity)
+}

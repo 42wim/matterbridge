@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gomarkdown/markdown/ast"
+	"github.com/gomarkdown/markdown/internal/valid"
 )
 
 // Parsing of inline elements
@@ -994,12 +995,9 @@ func isEndOfLink(char byte) bool {
 	return isSpace(char) || char == '<'
 }
 
-var validUris = [][]byte{[]byte("http://"), []byte("https://"), []byte("ftp://"), []byte("mailto://")}
-var validPaths = [][]byte{[]byte("/"), []byte("./"), []byte("../")}
-
 func isSafeLink(link []byte) bool {
 	nLink := len(link)
-	for _, path := range validPaths {
+	for _, path := range valid.Paths {
 		nPath := len(path)
 		linkPrefix := link[:nPath]
 		if nLink >= nPath && bytes.Equal(linkPrefix, path) {
@@ -1011,7 +1009,7 @@ func isSafeLink(link []byte) bool {
 		}
 	}
 
-	for _, prefix := range validUris {
+	for _, prefix := range valid.URIs {
 		// TODO: handle unicode here
 		// case-insensitive prefix test
 		nPrefix := len(prefix)
@@ -1119,7 +1117,7 @@ func isMailtoAutoLink(data []byte) int {
 			nb++
 
 		case '-', '.', '_':
-			break
+			// no-op but not defult
 
 		case '>':
 			if nb == 1 {

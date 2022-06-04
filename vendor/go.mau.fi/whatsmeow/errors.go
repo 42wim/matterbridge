@@ -50,11 +50,13 @@ var (
 	ErrMediaNotAvailableOnPhone = errors.New("media no longer available on phone")
 	// ErrUnknownMediaRetryError is returned by DecryptMediaRetryNotification if the given event contains an unknown error code.
 	ErrUnknownMediaRetryError = errors.New("unknown media retry error")
+	// ErrInvalidDisappearingTimer is returned by SetDisappearingTimer if the given timer is not one of the allowed values.
+	ErrInvalidDisappearingTimer = errors.New("invalid disappearing timer provided")
 )
 
 // Some errors that Client.SendMessage can return
 var (
-	ErrBroadcastListUnsupported = errors.New("sending to broadcast lists is not yet supported")
+	ErrBroadcastListUnsupported = errors.New("sending to non-status broadcast lists is not yet supported")
 	ErrUnknownServer            = errors.New("can't send message to unknown server")
 	ErrRecipientADJID           = errors.New("message recipient must be normal (non-AD) JID")
 )
@@ -104,6 +106,7 @@ type IQError struct {
 
 // Common errors returned by info queries for use with errors.Is
 var (
+	ErrIQBadRequest    error = &IQError{Code: 400, Text: "bad-request"}
 	ErrIQNotAuthorized error = &IQError{Code: 401, Text: "not-authorized"}
 	ErrIQForbidden     error = &IQError{Code: 403, Text: "forbidden"}
 	ErrIQNotFound      error = &IQError{Code: 404, Text: "item-not-found"}

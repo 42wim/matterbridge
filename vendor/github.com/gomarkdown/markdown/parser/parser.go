@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/gomarkdown/markdown/ast"
 )
@@ -720,6 +719,7 @@ func isAlnum(c byte) bool {
 // TODO: this is not used
 // Replace tab characters with spaces, aligning to the next TAB_SIZE column.
 // always ends output with a newline
+/*
 func expandTabs(out *bytes.Buffer, line []byte, tabSize int) {
 	// first, check for common cases: no tabs, or only tabs at beginning of line
 	i, prefix := 0, 0
@@ -775,6 +775,7 @@ func expandTabs(out *bytes.Buffer, line []byte, tabSize int) {
 		i++
 	}
 }
+*/
 
 // Find if a line counts as indented or not.
 // Returns number of characters the indent is (0 = not indented).
