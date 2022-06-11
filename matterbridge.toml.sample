@@ -197,7 +197,7 @@ ShowJoinPart=false
 VerboseJoinPart=false
 
 #Do not send joins/parts to other bridges
-#Currently works for messages from the following bridges: irc, mattermost, slack
+#Currently works for messages from the following bridges: irc, mattermost, slack, discord
 #OPTIONAL (default false)
 NoSendJoinPart=false
 
@@ -496,7 +496,7 @@ RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 ShowJoinPart=false
 
 #Do not send joins/parts to other bridges
-#Currently works for messages from the following bridges: irc, mattermost, slack
+#Currently works for messages from the following bridges: irc, mattermost, slack, discord
 #OPTIONAL (default false)
 NoSendJoinPart=false
 
@@ -830,7 +830,7 @@ RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 ShowJoinPart=false
 
 #Do not send joins/parts to other bridges
-#Currently works for messages from the following bridges: irc, mattermost, slack
+#Currently works for messages from the following bridges: irc, mattermost, slack, discord
 #OPTIONAL (default false)
 NoSendJoinPart=false
 

@@ -171,6 +171,9 @@ func (b *Bdiscord) memberUpdate(s *discordgo.Session, m *discordgo.GuildMemberUp
 }
 
 func (b *Bdiscord) memberAdd(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
+	if b.GetBool("nosendjoinpart") {
+		return
+	}
 	if m.Member == nil {
 		b.Log.Warnf("Received member update with no member information: %#v", m)
 		return
@@ -192,6 +195,9 @@ func (b *Bdiscord) memberAdd(s *discordgo.Session, m *discordgo.GuildMemberAdd) 
 }
 
 func (b *Bdiscord) memberRemove(s *discordgo.Session, m *discordgo.GuildMemberRemove) {
+	if b.GetBool("nosendjoinpart") {
+		return
+	}
 	if m.Member == nil {
 		b.Log.Warnf("Received member update with no member information: %#v", m)
 		return
