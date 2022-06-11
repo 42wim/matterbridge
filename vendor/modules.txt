@@ -93,11 +93,12 @@ github.com/golang-jwt/jwt
 ## explicit; go 1.9
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go/descriptor
-# github.com/gomarkdown/markdown v0.0.0-20220509074759-a57bf950ab8c
+# github.com/gomarkdown/markdown v0.0.0-20220603122033-8f3b341fef32
 ## explicit; go 1.12
 github.com/gomarkdown/markdown
 github.com/gomarkdown/markdown/ast
 github.com/gomarkdown/markdown/html
+github.com/gomarkdown/markdown/internal/valid
 github.com/gomarkdown/markdown/parser
 # github.com/google/gops v0.3.23
 ## explicit; go 1.12
@@ -191,7 +192,7 @@ github.com/klauspost/compress/internal/snapref
 github.com/klauspost/compress/s2
 github.com/klauspost/compress/zstd
 github.com/klauspost/compress/zstd/internal/xxhash
-# github.com/klauspost/cpuid/v2 v2.0.11
+# github.com/klauspost/cpuid/v2 v2.0.12
 ## explicit; go 1.15
 github.com/klauspost/cpuid/v2
 # github.com/kyokomi/emoji/v2 v2.2.9
@@ -262,7 +263,7 @@ github.com/mattermost/mattermost-server/v5/shared/i18n
 github.com/mattermost/mattermost-server/v5/shared/markdown
 github.com/mattermost/mattermost-server/v5/shared/mlog
 github.com/mattermost/mattermost-server/v5/utils/jsonutils
-# github.com/mattermost/mattermost-server/v6 v6.6.1
+# github.com/mattermost/mattermost-server/v6 v6.7.0
 ## explicit; go 1.16
 github.com/mattermost/mattermost-server/v6/model
 github.com/mattermost/mattermost-server/v6/services/timezones
@@ -292,7 +293,7 @@ github.com/mgutz/ansi
 # github.com/minio/md5-simd v1.1.2
 ## explicit; go 1.14
 github.com/minio/md5-simd
-# github.com/minio/minio-go/v7 v7.0.23
+# github.com/minio/minio-go/v7 v7.0.24
 ## explicit; go 1.17
 github.com/minio/minio-go/v7
 github.com/minio/minio-go/v7/pkg/credentials
@@ -311,7 +312,7 @@ github.com/minio/sha256-simd
 # github.com/mitchellh/go-homedir v1.1.0
 ## explicit
 github.com/mitchellh/go-homedir
-# github.com/mitchellh/mapstructure v1.4.3
+# github.com/mitchellh/mapstructure v1.5.0
 ## explicit; go 1.14
 github.com/mitchellh/mapstructure
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
@@ -344,10 +345,10 @@ github.com/paulrosania/go-charset/data
 # github.com/pborman/uuid v1.2.1
 ## explicit
 github.com/pborman/uuid
-# github.com/pelletier/go-toml v1.9.4
+# github.com/pelletier/go-toml v1.9.5
 ## explicit; go 1.12
 github.com/pelletier/go-toml
-# github.com/pelletier/go-toml/v2 v2.0.0-beta.8
+# github.com/pelletier/go-toml/v2 v2.0.1
 ## explicit; go 1.16
 github.com/pelletier/go-toml/v2
 github.com/pelletier/go-toml/v2/internal/ast
@@ -414,8 +415,8 @@ github.com/slack-go/slack/slackutilsx
 ## explicit; go 1.13
 github.com/spf13/afero
 github.com/spf13/afero/mem
-# github.com/spf13/cast v1.4.1
-## explicit
+# github.com/spf13/cast v1.5.0
+## explicit; go 1.18
 github.com/spf13/cast
 # github.com/spf13/jwalterweatherman v1.1.0
 ## explicit
@@ -423,7 +424,7 @@ github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.5
 ## explicit; go 1.12
 github.com/spf13/pflag
-# github.com/spf13/viper v1.11.0
+# github.com/spf13/viper v1.12.0
 ## explicit; go 1.17
 github.com/spf13/viper
 github.com/spf13/viper/internal/encoding
@@ -439,8 +440,8 @@ github.com/spf13/viper/internal/encoding/yaml
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 github.com/stretchr/testify/suite
-# github.com/subosito/gotenv v1.2.0
-## explicit
+# github.com/subosito/gotenv v1.3.0
+## explicit; go 1.18
 github.com/subosito/gotenv
 # github.com/tinylib/msgp v1.1.6
 ## explicit; go 1.14
@@ -513,7 +514,7 @@ go.mau.fi/libsignal/util/errorhelper
 go.mau.fi/libsignal/util/keyhelper
 go.mau.fi/libsignal/util/medium
 go.mau.fi/libsignal/util/optional
-# go.mau.fi/whatsmeow v0.0.0-20220504135614-f1f2a9d231fb
+# go.mau.fi/whatsmeow v0.0.0-20220601182603-a8d86cf1812c
 ## explicit; go 1.17
 go.mau.fi/whatsmeow
 go.mau.fi/whatsmeow/appstate
@@ -566,16 +567,16 @@ golang.org/x/crypto/scrypt
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/image v0.0.0-20220413100746-70e8d0d3baa9
+# golang.org/x/image v0.0.0-20220601225756-64ec528b34cd
 ## explicit; go 1.12
 golang.org/x/image/riff
 golang.org/x/image/vp8
 golang.org/x/image/vp8l
 golang.org/x/image/webp
-# golang.org/x/mod v0.5.1
+# golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3
 ## explicit; go 1.17
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20220412020605-290c469a71a5
+# golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2
 ## explicit; go 1.17
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
@@ -588,13 +589,13 @@ golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/publicsuffix
 golang.org/x/net/websocket
-# golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
+# golang.org/x/oauth2 v0.0.0-20220524215830-622c5d57e401
 ## explicit; go 1.11
 golang.org/x/oauth2
 golang.org/x/oauth2/clientcredentials
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/microsoft
-# golang.org/x/sys v0.0.0-20220412211240-33da011f77ad
+# golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a
 ## explicit; go 1.17
 golang.org/x/sys/cpu
 golang.org/x/sys/execabs
@@ -630,7 +631,7 @@ golang.org/x/text/width
 # golang.org/x/time v0.0.0-20201208040808-7e3f01d25324
 ## explicit
 golang.org/x/time/rate
-# golang.org/x/tools v0.1.9
+# golang.org/x/tools v0.1.10
 ## explicit; go 1.17
 golang.org/x/tools/go/gcexportdata
 golang.org/x/tools/go/internal/gcimporter
@@ -644,8 +645,8 @@ golang.org/x/tools/internal/gocommand
 golang.org/x/tools/internal/packagesinternal
 golang.org/x/tools/internal/typeparams
 golang.org/x/tools/internal/typesinternal
-# golang.org/x/xerrors v0.0.0-20220411194840-2f41105eb62f
-## explicit; go 1.11
+# golang.org/x/xerrors v0.0.0-20220517211312-f3a8303e98df
+## explicit; go 1.17
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
 # gomod.garykim.dev/nc-talk v0.3.0
@@ -704,7 +705,7 @@ gopkg.in/olahol/melody.v1
 # gopkg.in/yaml.v2 v2.4.0
 ## explicit; go 1.15
 gopkg.in/yaml.v2
-# gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+# gopkg.in/yaml.v3 v3.0.0
 ## explicit
 gopkg.in/yaml.v3
 # layeh.com/gumble v0.0.0-20200818122324-146f9205029b
@@ -759,7 +760,7 @@ modernc.org/memory
 # modernc.org/opt v0.1.1
 ## explicit; go 1.13
 modernc.org/opt
-# modernc.org/sqlite v1.17.2
+# modernc.org/sqlite v1.17.3
 ## explicit; go 1.16
 modernc.org/sqlite
 modernc.org/sqlite/lib

@@ -89,11 +89,7 @@ func (cli *Client) handleConnectFailure(node *waBinary.Node) {
 		}
 	} else if reason == events.ConnectFailureTempBanned {
 		cli.Log.Warnf("Temporary ban connect failure: %s", node.XMLString())
-		expiryTimeUnix := ag.Int64("expire")
-		var expiryTime time.Time
-		if expiryTimeUnix > 0 {
-			expiryTime = time.Unix(expiryTimeUnix, 0)
-		}
+		expiryTime := ag.UnixTime("expire")
 		go cli.dispatchEvent(&events.TemporaryBan{
 			Code:   events.TempBanReason(ag.Int("code")),
 			Expire: expiryTime,
@@ -130,6 +126,7 @@ func (cli *Client) handleConnectSuccess(node *waBinary.Node) {
 			cli.Log.Warnf("Failed to send post-connect passive IQ: %v", err)
 		}
 		cli.dispatchEvent(&events.Connected{})
+		cli.closeSocketWaitChan()
 	}()
 }
 
