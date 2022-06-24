@@ -13,7 +13,6 @@ import (
 
 	"github.com/slack-go/slack/internal/backoff"
 	"github.com/slack-go/slack/internal/errorsx"
-	"github.com/slack-go/slack/internal/misc"
 	"github.com/slack-go/slack/internal/timex"
 )
 
@@ -127,7 +126,7 @@ func (rtm *RTM) connect(connectionCount int, useRTMStart bool) (*Info, *websocke
 		}
 
 		switch actual := err.(type) {
-		case misc.StatusCodeError:
+		case StatusCodeError:
 			if actual.Code == http.StatusNotFound {
 				rtm.Debugf("invalid auth when connecting with RTM: %s", err)
 				rtm.IncomingEvents <- RTMEvent{"invalid_auth", &InvalidAuthEvent{}}
@@ -475,7 +474,7 @@ func (rtm *RTM) handleEvent(typeStr string, event json.RawMessage) {
 	v, exists := EventMapping[typeStr]
 	if !exists {
 		rtm.Debugf("RTM Error - received unmapped event %q: %s\n", typeStr, string(event))
-		err := fmt.Errorf("RTM Error: Received unmapped event %q: %s", typeStr, string(event))
+		err := fmt.Errorf("RTM Error: Received unmapped event %q", typeStr)
 		rtm.IncomingEvents <- RTMEvent{"unmarshalling_error", &UnmarshallingErrorEvent{err}}
 		return
 	}
@@ -484,7 +483,7 @@ func (rtm *RTM) handleEvent(typeStr string, event json.RawMessage) {
 	err := json.Unmarshal(event, recvEvent)
 	if err != nil {
 		rtm.Debugf("RTM Error, could not unmarshall event %q: %s\n", typeStr, string(event))
-		err := fmt.Errorf("RTM Error: Could not unmarshall event %q: %s", typeStr, string(event))
+		err := fmt.Errorf("RTM Error: Could not unmarshall event %q", typeStr)
 		rtm.IncomingEvents <- RTMEvent{"unmarshalling_error", &UnmarshallingErrorEvent{err}}
 		return
 	}

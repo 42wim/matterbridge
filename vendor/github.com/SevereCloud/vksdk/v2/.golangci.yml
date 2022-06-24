@@ -57,6 +57,8 @@ linters:
     - grouper
     - decorder
     - containedctx
+    # - execinquery # FIXME: panic in 1.46.0
+    - nosprintfhostport
 
 # - wrapcheck # TODO: v3 Fix
 # - testpackage # TODO: Fix testpackage
@@ -87,6 +89,7 @@ linters:
 # - varnamelen
 # - errchkjson
 # - maintidx
+# - nonamedreturns
 
 # depricated
 # - maligned

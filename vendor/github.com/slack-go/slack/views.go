@@ -18,24 +18,25 @@ type ViewState struct {
 
 type View struct {
 	SlackResponse
-	ID              string           `json:"id"`
-	TeamID          string           `json:"team_id"`
-	Type            ViewType         `json:"type"`
-	Title           *TextBlockObject `json:"title"`
-	Close           *TextBlockObject `json:"close"`
-	Submit          *TextBlockObject `json:"submit"`
-	Blocks          Blocks           `json:"blocks"`
-	PrivateMetadata string           `json:"private_metadata"`
-	CallbackID      string           `json:"callback_id"`
-	State           *ViewState       `json:"state"`
-	Hash            string           `json:"hash"`
-	ClearOnClose    bool             `json:"clear_on_close"`
-	NotifyOnClose   bool             `json:"notify_on_close"`
-	RootViewID      string           `json:"root_view_id"`
-	PreviousViewID  string           `json:"previous_view_id"`
-	AppID           string           `json:"app_id"`
-	ExternalID      string           `json:"external_id"`
-	BotID           string           `json:"bot_id"`
+	ID                 string           `json:"id"`
+	TeamID             string           `json:"team_id"`
+	Type               ViewType         `json:"type"`
+	Title              *TextBlockObject `json:"title"`
+	Close              *TextBlockObject `json:"close"`
+	Submit             *TextBlockObject `json:"submit"`
+	Blocks             Blocks           `json:"blocks"`
+	PrivateMetadata    string           `json:"private_metadata"`
+	CallbackID         string           `json:"callback_id"`
+	State              *ViewState       `json:"state"`
+	Hash               string           `json:"hash"`
+	ClearOnClose       bool             `json:"clear_on_close"`
+	NotifyOnClose      bool             `json:"notify_on_close"`
+	RootViewID         string           `json:"root_view_id"`
+	PreviousViewID     string           `json:"previous_view_id"`
+	AppID              string           `json:"app_id"`
+	ExternalID         string           `json:"external_id"`
+	BotID              string           `json:"bot_id"`
+	AppInstalledTeamID string           `json:"app_installed_team_id"`
 }
 
 type ViewSubmissionCallbackResponseURL struct {

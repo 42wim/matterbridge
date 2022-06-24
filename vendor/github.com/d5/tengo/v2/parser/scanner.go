@@ -93,9 +93,9 @@ func (s *Scanner) Scan() (
 			token.Export, token.True, token.False, token.Undefined:
 			insertSemi = true
 		}
-	case '0' <= ch && ch <= '9':
+	case ('0' <= ch && ch <= '9') || (ch == '.' && '0' <= s.peek() && s.peek() <= '9'):
 		insertSemi = true
-		tok, literal = s.scanNumber(false)
+		tok, literal = s.scanNumber()
 	default:
 		s.next() // always make progress
 
@@ -125,16 +125,11 @@ func (s *Scanner) Scan() (
 		case ':':
 			tok = s.switch2(token.Colon, token.Define)
 		case '.':
-			if '0' <= s.ch && s.ch <= '9' {
-				insertSemi = true
-				tok, literal = s.scanNumber(true)
-			} else {
-				tok = token.Period
-				if s.ch == '.' && s.peek() == '.' {
-					s.next()
-					s.next() // consume last '.'
-					tok = token.Ellipsis
-				}
+			tok = token.Period
+			if s.ch == '.' && s.peek() == '.' {
+				s.next()
+				s.next() // consume last '.'
+				tok = token.Ellipsis
 			}
 		case ',':
 			tok = token.Comma
@@ -379,86 +374,58 @@ func (s *Scanner) scanIdentifier() string {
 	return string(s.src[offs:s.offset])
 }
 
-func (s *Scanner) scanMantissa(base int) {
-	for digitVal(s.ch) < base {
+func (s *Scanner) scanDigits(base int) {
+	for s.ch == '_' || digitVal(s.ch) < base {
 		s.next()
 	}
 }
 
-func (s *Scanner) scanNumber(
-	seenDecimalPoint bool,
-) (tok token.Token, lit string) {
-	// digitVal(s.ch) < 10
+func (s *Scanner) scanNumber() (token.Token, string) {
 	offs := s.offset
-	tok = token.Int
+	tok := token.Int
+	base := 10
 
-	defer func() {
-		lit = string(s.src[offs:s.offset])
-	}()
-
-	if seenDecimalPoint {
-		offs--
-		tok = token.Float
-		s.scanMantissa(10)
-		goto exponent
-	}
-
-	if s.ch == '0' {
-		// int or float
-		offs := s.offset
+	// Determine base
+	switch {
+	case s.ch == '0' && lower(s.peek()) == 'b':
+		base = 2
 		s.next()
-		if s.ch == 'x' || s.ch == 'X' {
-			// hexadecimal int
-			s.next()
-			s.scanMantissa(16)
-			if s.offset-offs <= 2 {
-				// only scanned "0x" or "0X"
-				s.error(offs, "illegal hexadecimal number")
-			}
-		} else {
-			// octal int or float
-			seenDecimalDigit := false
-			s.scanMantissa(8)
-			if s.ch == '8' || s.ch == '9' {
-				// illegal octal int or float
-				seenDecimalDigit = true
-				s.scanMantissa(10)
-			}
-			if s.ch == '.' || s.ch == 'e' || s.ch == 'E' || s.ch == 'i' {
-				goto fraction
-			}
-			// octal int
-			if seenDecimalDigit {
-				s.error(offs, "illegal octal number")
-			}
-		}
-		return
+		s.next()
+	case s.ch == '0' && lower(s.peek()) == 'o':
+		base = 8
+		s.next()
+		s.next()
+	case s.ch == '0' && lower(s.peek()) == 'x':
+		base = 16
+		s.next()
+		s.next()
 	}
 
-	// decimal int or float
-	s.scanMantissa(10)
+	// Scan whole number
+	s.scanDigits(base)
 
-fraction:
-	if s.ch == '.' {
+	// Scan fractional part
+	if s.ch == '.' && (base == 10 || base == 16) {
 		tok = token.Float
 		s.next()
-		s.scanMantissa(10)
+		s.scanDigits(base)
 	}
 
-exponent:
-	if s.ch == 'e' || s.ch == 'E' {
+	// Scan exponent
+	if s.ch == 'e' || s.ch == 'E' || s.ch == 'p' || s.ch == 'P' {
 		tok = token.Float
 		s.next()
 		if s.ch == '-' || s.ch == '+' {
 			s.next()
 		}
-		if digitVal(s.ch) < 10 {
-			s.scanMantissa(10)
-		} else {
-			s.error(offs, "illegal floating-point exponent")
+		offs := s.offset
+		s.scanDigits(10)
+		if offs == s.offset {
+			s.error(offs, "exponent has no digits")
 		}
 	}
-	return
+
+	return tok, string(s.src[offs:s.offset])
 }
 
 func (s *Scanner) scanEscape(quote rune) bool {
@@ -686,4 +653,8 @@ func digitVal(ch rune) int {
 		return int(ch - 'A' + 10)
 	}
 	return 16 // larger than any legal digit val
+}
+
+func lower(c byte) byte {
+	return c | ('x' - 'X')
 }

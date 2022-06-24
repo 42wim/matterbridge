@@ -375,7 +375,12 @@ func (p *Parser) parseOperand() Expr {
 	case token.Ident:
 		return p.parseIdent()
 	case token.Int:
-		v, _ := strconv.ParseInt(p.tokenLit, 10, 64)
+		v, err := strconv.ParseInt(p.tokenLit, 0, 64)
+		if err == strconv.ErrRange {
+			p.error(p.pos, "number out of range")
+		} else if err != nil {
+			p.error(p.pos, "invalid integer")
+		}
 		x := &IntLit{
 			Value:    v,
 			ValuePos: p.pos,
@@ -383,8 +388,14 @@ func (p *Parser) parseOperand() Expr {
 		}
 		p.next()
 		return x
+
 	case token.Float:
-		v, _ := strconv.ParseFloat(p.tokenLit, 64)
+		v, err := strconv.ParseFloat(p.tokenLit, 64)
+		if err == strconv.ErrRange {
+			p.error(p.pos, "number out of range")
+		} else if err != nil {
+			p.error(p.pos, "invalid float")
+		}
 		x := &FloatLit{
 			Value:    v,
 			ValuePos: p.pos,
@@ -447,10 +458,11 @@ func (p *Parser) parseOperand() Expr {
 		return p.parseErrorExpr()
 	case token.Immutable: // immutable expression
 		return p.parseImmutableExpr()
+	default:
+		p.errorExpected(p.pos, "operand")
 	}
 
 	pos := p.pos
-	p.errorExpected(pos, "operand")
 	p.advance(stmtStart)
 	return &BadExpr{From: pos, To: p.pos}
 }

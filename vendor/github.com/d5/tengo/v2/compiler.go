@@ -1220,14 +1220,14 @@ func (c *Compiler) optimizeFunc(node parser.Node) {
 	iterateInstructions(c.scopes[c.scopeIndex].Instructions,
 		func(pos int, opcode parser.Opcode, operands []int) bool {
 			switch {
+			case dsts[pos]:
+				dstIdx++
+				deadCode = false
 			case opcode == parser.OpReturn:
 				if deadCode {
 					return true
 				}
 				deadCode = true
-			case dsts[pos]:
-				dstIdx++
-				deadCode = false
 			case deadCode:
 				return true
 			}
@@ -1242,6 +1242,7 @@ func (c *Compiler) optimizeFunc(node parser.Node) {
 	var appendReturn bool
 	endPos := len(c.scopes[c.scopeIndex].Instructions)
 	newEndPost := len(newInsts)
+
 	iterateInstructions(newInsts,
 		func(pos int, opcode parser.Opcode, operands []int) bool {
 			switch opcode {

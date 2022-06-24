@@ -31,7 +31,7 @@ type VideoVideo struct {
 	CanLike BaseBoolInt `json:"can_like"`
 
 	// Information whether current user can download the video.
-	CanDownload BaseBoolInt `json:"can_download"`
+	CanDownload int `json:"can_download"`
 
 	// Information whether current user can repost this video.
 	CanRepost         BaseBoolInt       `json:"can_repost"`
