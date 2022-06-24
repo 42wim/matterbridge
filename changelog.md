@@ -1,3 +1,18 @@
+# v1.25.2
+
+## Enhancements
+
+- general: Update dependencies (#1851,#1841)
+- mattermost: Support mattermost v7.x (#1852)
+
+## Bugfix
+
+- discord: Fix Unwanted join notifications from one Discord server to another (#1612)
+- discord: Ignore events from other guilds, add nosendjoinpart support (#1846)
+
+This release couldn't exist without the following contributors:
+@wlcx
+
 # v1.25.1
 
 ## Enhancements
