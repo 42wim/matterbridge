@@ -52,7 +52,7 @@ func (b *Bmattermost) Connect() error {
 		return nil
 	}
 
-	if strings.HasPrefix(b.getVersion(), "6.") {
+	if strings.HasPrefix(b.getVersion(), "6.") || strings.HasPrefix(b.getVersion(), "7.") {
 		if !b.v6 {
 			b.v6 = true
 		}
