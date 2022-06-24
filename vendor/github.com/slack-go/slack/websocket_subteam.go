@@ -14,9 +14,9 @@ type SubteamMembersChangedEvent struct {
 	DatePreviousUpdate JSONTime `json:"date_previous_update"`
 	DateUpdate         JSONTime `json:"date_update"`
 	AddedUsers         []string `json:"added_users"`
-	AddedUsersCount    string   `json:"added_users_count"`
+	AddedUsersCount    int      `json:"added_users_count"`
 	RemovedUsers       []string `json:"removed_users"`
-	RemovedUsersCount  string   `json:"removed_users_count"`
+	RemovedUsersCount  int      `json:"removed_users_count"`
 }
 
 // SubteamSelfAddedEvent represents an event of you have been added to a User Group

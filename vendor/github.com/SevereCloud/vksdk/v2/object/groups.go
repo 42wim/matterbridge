@@ -210,7 +210,7 @@ type GroupsGroup struct {
 	MainSection     int                  `json:"main_section,omitempty"`
 	OnlineStatus    GroupsOnlineStatus   `json:"online_status,omitempty"` // Status of replies in community messages
 	AgeLimits       int                  `json:"age_limits,omitempty"`    // Information whether age limit
-	BanInfo         GroupsGroupBanInfo   `json:"ban_info,omitempty"`      // User ban info
+	BanInfo         *GroupsGroupBanInfo  `json:"ban_info,omitempty"`      // User ban info
 	Addresses       GroupsAddressesInfo  `json:"addresses,omitempty"`     // Info about addresses in Groups
 	LiveCovers      GroupsLiveCovers     `json:"live_covers,omitempty"`
 	CropPhoto       UsersCropPhoto       `json:"crop_photo,omitempty"`
@@ -963,10 +963,10 @@ type GroupsOnlineStatus struct {
 
 // GroupsOwnerXtrBanInfo struct.
 type GroupsOwnerXtrBanInfo struct {
-	BanInfo GroupsBanInfo `json:"ban_info"`
-	Group   GroupsGroup   `json:"group"`
-	Profile UsersUser     `json:"profile"`
-	Type    string        `json:"type"`
+	BanInfo *GroupsBanInfo `json:"ban_info"`
+	Group   GroupsGroup    `json:"group"`
+	Profile UsersUser      `json:"profile"`
+	Type    string         `json:"type"`
 }
 
 // GroupsSubjectItem struct.

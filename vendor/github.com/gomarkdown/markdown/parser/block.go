@@ -1675,6 +1675,12 @@ func (p *Parser) paragraph(data []byte) int {
 			return i
 		}
 
+		// if there's a block quote, paragraph is over
+		if p.quotePrefix(current) > 0 {
+			p.renderParagraph(data[:i])
+			return i
+		}
+
 		// if there's a fenced code block, paragraph is over
 		if p.extensions&FencedCode != 0 {
 			if p.fencedCodeBlock(current, false) > 0 {
