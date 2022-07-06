@@ -2,7 +2,6 @@ package btelegram
 
 import (
 	"bytes"
-	"html"
 
 	"github.com/russross/blackfriday"
 )
@@ -24,8 +23,14 @@ func (options *customHTML) Paragraph(out *bytes.Buffer, text func() bool) {
 func (options *customHTML) BlockCode(out *bytes.Buffer, text []byte, lang string) {
 	out.WriteString("<pre>")
 
-	out.WriteString(html.EscapeString(string(text)))
+	out.WriteString(string(text))
 	out.WriteString("</pre>\n")
+}
+
+func (options *customHTML) CodeSpan(out *bytes.Buffer, text []byte) {
+	out.WriteString("<code>")
+	out.WriteString(string(text))
+	out.WriteString("</code>")
 }
 
 func (options *customHTML) Header(out *bytes.Buffer, text func() bool, level int, id string) {
@@ -39,6 +44,10 @@ func (options *customHTML) HRule(out *bytes.Buffer) {
 func (options *customHTML) BlockQuote(out *bytes.Buffer, text []byte) {
 	out.WriteString("> ")
 	out.Write(text)
+	out.WriteByte('\n')
+}
+
+func (options *customHTML) LineBreak(out *bytes.Buffer) {
 	out.WriteByte('\n')
 }
 
