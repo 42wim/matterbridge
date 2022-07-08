@@ -101,7 +101,7 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 	}
 
 	if b.GetString("MessageFormat") == HTMLFormat {
-		msg.Text = makeHTML(msg.Text)
+		msg.Text = makeHTML(html.EscapeString(msg.Text))
 	}
 
 	// Delete message
