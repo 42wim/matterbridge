@@ -1,4 +1,4 @@
-module github.com/greenlighttec/matterbridge
+module github.com/42wim/matterbridge
 
 require (
 	github.com/42wim/go-gitter v0.0.0-20170828205020-017310c2d557
