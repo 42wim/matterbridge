@@ -176,7 +176,7 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 
 		if update.Message == nil && update.ChannelPost == nil &&
 			update.EditedMessage == nil && update.EditedChannelPost == nil {
-			b.Log.Error("Getting nil messages, this shouldn't happen.")
+			b.Log.Info("Received event without messages, skipping.")
 			continue
 		}
 
