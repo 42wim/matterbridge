@@ -323,11 +323,12 @@ func (gw *Gateway) ignoreFilesComment(extra map[string][]interface{}, igMessages
 	return false
 }
 
-func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) string {
+func (gw *Gateway) ModifyUsername(msg *config.Message, dest *bridge.Bridge) string {
 	if dest.GetBool("StripNick") {
 		re := regexp.MustCompile("[^a-zA-Z0-9]+")
 		msg.Username = re.ReplaceAllString(msg.Username, "")
 	}
+
 	nick := dest.GetString("RemoteNickFormat")
 
 	// loop to replace nicks
@@ -462,7 +463,7 @@ func (gw *Gateway) SendMessage(
 
 	msg.Channel = channel.Name
 	msg.Avatar = gw.modifyAvatar(rmsg, dest)
-	msg.Username = gw.modifyUsername(rmsg, dest)
+	msg.Username = gw.ModifyUsername(rmsg, dest)
 
 	// exclude file delete event as the msg ID here is the native file ID that needs to be deleted
 	if msg.Event != config.EventFileDelete {

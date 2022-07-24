@@ -8,4 +8,5 @@ import (
 
 func init() {
 	FullMap["matrix"] = bmatrix.New
+	UserTypingSupport["matrix"] = struct{}{}
 }

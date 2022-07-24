@@ -17,6 +17,12 @@ type Bridger interface {
 	Disconnect() error
 }
 
+// additional methods for bridges that are not started when Connect() is called,
+// because we must join the channels prior to starting processing events
+type BridgerWithChannelDependency interface {
+	Start() error
+}
+
 type Bridge struct {
 	Bridger
 	*sync.RWMutex

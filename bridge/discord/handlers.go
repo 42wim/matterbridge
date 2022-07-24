@@ -58,6 +58,7 @@ func (b *Bdiscord) messageTyping(s *discordgo.Session, m *discordgo.TypingStart)
 		return
 	}
 
+	//nolint:exhaustruct
 	rmsg := config.Message{Account: b.Account, Event: config.EventUserTyping}
 	rmsg.Channel = b.getChannelName(m.ChannelID)
 	b.Remote <- rmsg

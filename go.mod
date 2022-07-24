@@ -23,7 +23,6 @@ require (
 	github.com/lrstanley/girc v0.0.0-20221222153823-a92667a5c9b4
 	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20211016222428-79310a412696
 	github.com/matterbridge/go-xmpp v0.0.0-20211030125215-791a06c5f1be
-	github.com/matterbridge/gomatrix v0.0.0-20220411225302-271e5088ea27
 	github.com/matterbridge/gozulipbot v0.0.0-20211023205727-a19d6c1f3b75
 	github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba
 	github.com/matterbridge/matterclient v0.0.0-20221106190440-8bcf49695e0d
@@ -37,6 +36,7 @@ require (
 	github.com/olahol/melody v1.1.2
 	github.com/paulrosania/go-charset v0.0.0-20190326053356-55c9d7a5834c
 	github.com/rs/xid v1.4.0
+	github.com/rs/zerolog v1.29.0
 	github.com/russross/blackfriday v1.6.0
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d
 	github.com/shazow/ssh-chat v1.10.1
@@ -55,6 +55,7 @@ require (
 	gomod.garykim.dev/nc-talk v0.3.0
 	google.golang.org/protobuf v1.29.1
 	layeh.com/gumble v0.0.0-20221205141517-d1df60a3cc14
+	maunium.net/go/mautrix v0.15.0
 	modernc.org/sqlite v1.21.0
 )
 
@@ -73,6 +74,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gopackage/ddp v0.0.3 // indirect
+	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/graph-gophers/graphql-go v1.3.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
@@ -118,6 +120,10 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
+	github.com/tidwall/gjson v1.14.4 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.0 // indirect
+	github.com/tidwall/sjson v1.2.5 // indirect
 	github.com/tinylib/msgp v1.1.6 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
@@ -139,10 +145,11 @@ require (
 	golang.org/x/tools v0.6.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
-	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	lukechampine.com/uint128 v1.2.0 // indirect
+	maunium.net/go/maulogger/v2 v2.4.1 // indirect
 	modernc.org/cc/v3 v3.40.0 // indirect
 	modernc.org/ccgo/v3 v3.16.13 // indirect
 	modernc.org/libc v1.22.3 // indirect
@@ -153,7 +160,5 @@ require (
 	modernc.org/token v1.0.1 // indirect
 	rsc.io/qr v0.2.0 // indirect
 )
-
-//replace github.com/matrix-org/gomatrix => github.com/matterbridge/gomatrix v0.0.0-20220205235239-607eb9ee6419
 
 go 1.18

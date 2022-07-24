@@ -282,11 +282,12 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 		return b.handleEventWebhook(&msg, channelID)
 	}
 
-	return b.handleEventBotUser(&msg, channelID)
+	return b.handleEventBotUser(&msg, channelID, useWebhooks)
 }
 
 // handleEventDirect handles events via the bot user
-func (b *Bdiscord) handleEventBotUser(msg *config.Message, channelID string) (string, error) {
+//nolint:funlen
+func (b *Bdiscord) handleEventBotUser(msg *config.Message, channelID string, webhookPreferred bool) (string, error) {
 	b.Log.Debugf("Broadcasting using token (API)")
 
 	// Delete message
@@ -336,8 +337,16 @@ func (b *Bdiscord) handleEventBotUser(msg *config.Message, channelID string) (st
 		return msg.ID, err
 	}
 
+	content := msg.Username + msg.Text
+	// we would have preferred to use webhooks but we can't (e.g. we are replying
+	// to a message, as webhooks doesn't support that behavior)
+	// in that case, the username is probably not properly formatted for appending
+	// directly, so we add a line return as a stopgap mechanism
+	if webhookPreferred {
+		content = msg.Username + ":\n" + msg.Text
+	}
 	m := discordgo.MessageSend{
-		Content:         msg.Username + msg.Text,
+		Content:         content,
 		AllowedMentions: b.getAllowedMentions(),
 	}
 

@@ -75,7 +75,7 @@ func (r *Router) Start() error {
 		r.logger.Infof("Starting bridge: %s ", br.Account)
 		err := br.Connect()
 		if err != nil {
-			e := fmt.Errorf("Bridge %s failed to start: %v", br.Account, err)
+			e := fmt.Errorf("bridge %s failed to initialize: %v", br.Account, err)
 			if r.disableBridge(br, e) {
 				continue
 			}
@@ -83,11 +83,22 @@ func (r *Router) Start() error {
 		}
 		err = br.JoinChannels()
 		if err != nil {
-			e := fmt.Errorf("Bridge %s failed to join channel: %v", br.Account, err)
+			e := fmt.Errorf("bridge %s failed to join channel: %v", br.Account, err)
 			if r.disableBridge(br, e) {
 				continue
 			}
 			return e
+		}
+
+		if starter, ok := br.Bridger.(bridge.BridgerWithChannelDependency); ok {
+			err = starter.Start()
+			if err != nil {
+				e := fmt.Errorf("bridge %s failed to start: %v", br.Account, err)
+				if r.disableBridge(br, e) {
+					continue
+				}
+				return e
+			}
 		}
 	}
 	// remove unused bridges

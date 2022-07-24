@@ -32,6 +32,7 @@ const (
 
 const ParentIDNotFound = "msg-parent-not-found"
 
+//nolint: tagliatelle
 type Message struct {
 	Text      string    `json:"text"`
 	Channel   string    `json:"channel"`
@@ -146,11 +147,15 @@ type Protocol struct {
 	ReplaceNicks           [][]string // all protocols
 	RemoteNickFormat       string     // all protocols
 	RunCommands            []string   // IRC
+	UseAppService          bool       // matrix
+	AppServiceHost         string     // matrix
+	AppServicePort         uint16     // matrix
+	AppServiceConfigPath   string     // matrix
 	Server                 string     // IRC,mattermost,XMPP,discord,matrix
 	SessionFile            string     // msteams,whatsapp
 	ShowJoinPart           bool       // all protocols
 	ShowTopicChange        bool       // slack
-	ShowUserTyping         bool       // slack
+	ShowUserTyping         bool       // discord, matrix, slack
 	ShowEmbeds             bool       // discord
 	SkipTLSVerify          bool       // IRC, mattermost
 	SkipVersionCheck       bool       // mattermost
@@ -269,7 +274,8 @@ func NewConfig(rootLogger *logrus.Logger, cfgfile string) Config {
 	cfgtype := detectConfigType(cfgfile)
 	mycfg := newConfigFromString(logger, input, cfgtype)
 	if mycfg.cv.General.LogFile != "" {
-		logfile, err := os.OpenFile(mycfg.cv.General.LogFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+		//nolint:nosnakecase
+		logfile, err := os.OpenFile(mycfg.cv.General.LogFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o600)
 		if err == nil {
 			logger.Info("Opening log file ", mycfg.cv.General.LogFile)
 			rootLogger.Out = logfile

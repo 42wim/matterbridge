@@ -1329,6 +1329,18 @@ StripNick=false
 #OPTIONAL (default false)
 ShowTopicChange=false
 
+#Enable to start an application service.
+#Must be paired with an AppServiceConfigPath directive
+#The application service must be registered in your matrix homeserver too!
+UseAppService=false
+
+#If the application service is enabled, specify the listening host and port
+AppServiceHost="0.0.0.0"
+AppServicePort=1234
+
+#Path to the application service configuration file (in the format used by synapse)
+AppServiceConfigPath="appservice_matterbridge_config.yml"
+
 ###################################################################
 #steam section
 ###################################################################
