@@ -28,6 +28,7 @@ type Birc struct {
 	Nick                                      string
 	names                                     map[string][]string
 	activeUsers                               map[string]int64
+	activeUsersLastCleaned                    int64
 	connected                                 chan error
 	Local                                     chan config.Message // local queue for flood control
 	FirstConnection, authDone                 bool
@@ -68,6 +69,7 @@ func New(cfg *bridge.Config) bridge.Bridger {
 		} else {
 			b.ActivityTimeout = int64(b.GetInt("ActivityTimeout"))
 		}
+		b.activeUsersLastCleaned = time.Now().Unix()
 	} else {
 		b.ActivityTimeout = 0 // Disable
 	}
@@ -87,6 +89,10 @@ func (b *Birc) Command(msg *config.Message) string {
 func (b *Birc) Connect() error {
 	if b.GetBool("UseSASL") && b.GetString("TLSClientCertificate") != "" {
 		return errors.New("you can't enable SASL and TLSClientCertificate at the same time")
+	}
+
+	if b.GetBool("NoSendJoinPart") && b.GetBool("ShowActiveUserEvents") {
+		return errors.New("you must disable NoSendJoinPart to use ShowActiveUserEvents")
 	}
 
 	b.Local = make(chan config.Message, b.MessageQueue+10)
@@ -450,4 +456,17 @@ func (b *Birc) getPseudoChannel() string {
 	}
 	b.Log.Warningf("Bot not active in any channels!")
 	return ""
+}
+
+func (b *Birc) cleanActiveMap() {
+	now := time.Now().Unix()
+	if b.ActivityTimeout == 0 || (b.activeUsersLastCleaned-now < b.ActivityTimeout) {
+		return
+	}
+	for nick, activeTime := range b.activeUsers {
+		if now-activeTime > b.ActivityTimeout {
+			b.Log.Debugf("last activity for %s was %d, currently %d. Deleting.", nick, activeTime, now)
+			delete(b.activeUsers, nick)
+		}
+	}
 }

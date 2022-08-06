@@ -296,6 +296,7 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 		b.activeUsers[event.Source.Name] = time.Now().Unix()
 	}
 	b.Remote <- rmsg
+	b.cleanActiveMap()
 }
 
 func (b *Birc) handleRunCommands() {
