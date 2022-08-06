@@ -106,28 +106,6 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 		}
 		return
 	}
-	if event.Command == "QUIT" {
-		if event.Source.Name == b.Nick && strings.Contains(event.Last(), "Ping timeout") {
-			b.Log.Infof("%s reconnecting ..", b.Account)
-			b.Remote <- config.Message{Username: "system", Text: "reconnect", Channel: b.getPseudoChannel(), Account: b.Account, Event: config.EventFailure}
-			return
-		} else if b.GetBool("nosendjoinpart") {
-			return
-		} else if isActive, _ := b.isUserActive(event.Source.Name); isActive || isKill(event.Last()) {
-			verbosequit := ""
-			quitmsg := ""
-			if len(event.Params) >= 1 {
-				quitmsg = " with message: " + event.Last()
-			}
-			if b.GetBool("verbosejoinpart") {
-				verbosequit = " (" + event.Source.Ident + "@" + event.Source.Host + ")"
-			}
-			msg := config.Message{Username: "system", Text: event.Source.Name + verbosequit + " quit" + quitmsg, Channel: b.getPseudoChannel(), Account: b.Account, Event: config.EventJoinLeave}
-			b.Log.Debugf("<= Message is %#v", msg)
-			b.Remote <- msg
-			return
-		}
-	}
 	if event.Source.Name != b.Nick {
 		if isActive, _ := b.isUserActive(event.Source.Name); !isActive || b.GetBool("nosendjoinpart") {
 			return
@@ -155,16 +133,16 @@ func (b *Birc) handleNewConnection(client *girc.Client, event girc.Event) {
 	i := b.i
 	b.Nick = event.Params[0]
 
-	i.Handlers.AddBg("PRIVMSG", b.handlePrivMsg)
-	i.Handlers.AddBg("CTCP_ACTION", b.handlePrivMsg)
-	i.Handlers.Add(girc.RPL_TOPICWHOTIME, b.handleTopicWhoTime)
-	i.Handlers.AddBg(girc.NOTICE, b.handleNotice)
+	i.Handlers.Add("INVITE", b.handleInvite)
 	i.Handlers.AddBg("JOIN", b.handleJoinPart)
 	i.Handlers.AddBg("PART", b.handleJoinPart)
-	i.Handlers.AddBg("QUIT", b.handleJoinPart)
 	i.Handlers.AddBg("KICK", b.handleJoinPart)
 	i.Handlers.AddBg("NICK", b.handleNick)
-	i.Handlers.Add("INVITE", b.handleInvite)
+	i.Handlers.AddBg(girc.NOTICE, b.handleNotice)
+	i.Handlers.AddBg("PRIVMSG", b.handlePrivMsg)
+	i.Handlers.AddBg("CTCP_ACTION", b.handlePrivMsg)
+	i.Handlers.AddBg("QUIT", b.handleQuit)
+	i.Handlers.Add(girc.RPL_TOPICWHOTIME, b.handleTopicWhoTime)
 }
 
 func (b *Birc) handleNick(client *girc.Client, event girc.Event) {
@@ -298,7 +276,28 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 	b.Remote <- rmsg
 	b.cleanActiveMap()
 }
-
+func (b *Birc) handleQuit(client *girc.Client, event girc.Event) {
+	if event.Source.Name == b.Nick && strings.Contains(event.Last(), "Ping timeout") {
+		b.Log.Infof("%s reconnecting ..", b.Account)
+		b.Remote <- config.Message{Username: "system", Text: "reconnect", Channel: b.getPseudoChannel(), Account: b.Account, Event: config.EventFailure}
+		return
+	} else if b.GetBool("nosendjoinpart") {
+		return
+	} else if isActive, _ := b.isUserActive(event.Source.Name); isActive || isKill(event.Last()) {
+		verbosequit := ""
+		quitmsg := ""
+		if len(event.Params) >= 1 {
+			quitmsg = " with message: " + event.Last()
+		}
+		if b.GetBool("verbosejoinpart") {
+			verbosequit = " (" + event.Source.Ident + "@" + event.Source.Host + ")"
+		}
+		msg := config.Message{Username: "system", Text: event.Source.Name + verbosequit + " quit" + quitmsg, Channel: b.getPseudoChannel(), Account: b.Account, Event: config.EventJoinLeave}
+		b.Log.Debugf("<= Message is %#v", msg)
+		b.Remote <- msg
+		return
+	}
+}
 func (b *Birc) handleRunCommands() {
 	for _, cmd := range b.GetStringSlice("RunCommands") {
 		if err := b.i.Cmd.SendRaw(cmd); err != nil {
