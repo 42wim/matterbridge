@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/42wim/matterbridge/bridge"
@@ -29,6 +30,7 @@ type Birc struct {
 	names                                     map[string][]string
 	activeUsers                               map[string]int64
 	activeUsersLastCleaned                    int64
+	activeUsersMutex                          sync.RWMutex
 	connected                                 chan error
 	Local                                     chan config.Message // local queue for flood control
 	FirstConnection, authDone                 bool
@@ -432,20 +434,24 @@ func (b *Birc) getTLSConfig() (*tls.Config, error) {
 	return tlsConfig, nil
 }
 
-func (b *Birc) isUserActive(nick string) bool {
+func (b *Birc) isUserActive(nick string) (bool, int64) {
 	b.Log.Debugf("checking activity for %s", nick)
 	if b.ActivityTimeout == 0 {
-		return true
-	} else if activeTime, ok := b.activeUsers[nick]; ok {
-		now := time.Now().Unix()
-		b.Log.Debugf("last activity for %s was %d, currently %d", nick, activeTime, now)
-		if now < activeTime {
-			b.Log.Errorf("User %s has active time in the future: %d", nick, activeTime)
-			return true // err on the side of caution
+		return true, 0
+	} else {
+		b.activeUsersMutex.RLock()
+		defer b.activeUsersMutex.RUnlock()
+		if activeTime, ok := b.activeUsers[nick]; ok {
+			now := time.Now().Unix()
+			b.Log.Debugf("last activity for %s was %d, currently %d", nick, activeTime, now)
+			if now < activeTime {
+				b.Log.Errorf("User %s has active time in the future: %d", nick, activeTime)
+				return true, now // err on the side of caution
+			}
+			return (now - activeTime) < b.ActivityTimeout, activeTime
 		}
-		return (now - activeTime) < b.ActivityTimeout
 	}
-	return false
+	return false, 0
 }
 
 func (b *Birc) getPseudoChannel() string {
@@ -463,10 +469,18 @@ func (b *Birc) cleanActiveMap() {
 	if b.ActivityTimeout == 0 || (b.activeUsersLastCleaned-now < b.ActivityTimeout) {
 		return
 	}
+	b.activeUsersMutex.Lock()
+	defer b.activeUsersMutex.Unlock()
 	for nick, activeTime := range b.activeUsers {
 		if now-activeTime > b.ActivityTimeout {
 			b.Log.Debugf("last activity for %s was %d, currently %d. Deleting.", nick, activeTime, now)
 			delete(b.activeUsers, nick)
 		}
 	}
+}
+
+func (b *Birc) markUserActive(nick string, activeTime int64) {
+	b.activeUsersMutex.Lock()
+	defer b.activeUsersMutex.Unlock()
+	b.activeUsers[nick] = activeTime
 }

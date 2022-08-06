@@ -113,7 +113,7 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 			return
 		} else if b.GetBool("nosendjoinpart") {
 			return
-		} else if b.isUserActive(event.Source.Name) || isKill(event.Last()) {
+		} else if isActive, _ := b.isUserActive(event.Source.Name); isActive || isKill(event.Last()) {
 			verbosequit := ""
 			quitmsg := ""
 			if len(event.Params) >= 1 {
@@ -129,7 +129,7 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 		}
 	}
 	if event.Source.Name != b.Nick {
-		if b.GetBool("nosendjoinpart") || !b.isUserActive(event.Source.Name) {
+		if isActive, _ := b.isUserActive(event.Source.Name); !isActive || b.GetBool("nosendjoinpart") {
 			return
 		}
 		partmsg := ""
@@ -171,7 +171,7 @@ func (b *Birc) handleNick(client *girc.Client, event girc.Event) {
 	if len(event.Params) != 1 {
 		b.Log.Debugf("handleJoinPart: malformed nick change? %#v", event)
 		return
-	} else if b.isUserActive(event.Source.Name) {
+	} else if isActive, activeTime := b.isUserActive(event.Source.Name); isActive {
 		msg := config.Message{Username: "system",
 			Text:    event.Source.Name + " changed nick to " + event.Params[0],
 			Channel: b.getPseudoChannel(),
@@ -181,7 +181,7 @@ func (b *Birc) handleNick(client *girc.Client, event girc.Event) {
 		b.Remote <- msg
 		if b.ActivityTimeout != 0 {
 			// This doesn't count as new activity, but it does preserve the value
-			b.activeUsers[event.Params[0]] = b.activeUsers[event.Source.Name]
+			b.markUserActive(event.Params[0], activeTime)
 		}
 	}
 }
@@ -293,7 +293,7 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 	b.Log.Debugf("<= Sending message from %s on %s to gateway", event.Params[0], b.Account)
 	if b.ActivityTimeout > 0 {
 		b.Log.Debugf("<= Updating last-active time for user %s", event.Source.Name)
-		b.activeUsers[event.Source.Name] = time.Now().Unix()
+		b.markUserActive(event.Source.Name, time.Now().Unix())
 	}
 	b.Remote <- rmsg
 	b.cleanActiveMap()
