@@ -27,10 +27,12 @@ type Birc struct {
 	i                                         *girc.Client
 	Nick                                      string
 	names                                     map[string][]string
+	activeUsers                               map[string]int64
 	connected                                 chan error
 	Local                                     chan config.Message // local queue for flood control
 	FirstConnection, authDone                 bool
 	MessageDelay, MessageQueue, MessageLength int
+	ActivityTimeout                           int64
 	channels                                  map[string]bool
 
 	*bridge.Config
@@ -41,6 +43,7 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	b.Config = cfg
 	b.Nick = b.GetString("Nick")
 	b.names = make(map[string][]string)
+	b.activeUsers = make(map[string]int64)
 	b.connected = make(chan error)
 	b.channels = make(map[string]bool)
 
@@ -58,6 +61,15 @@ func New(cfg *bridge.Config) bridge.Bridger {
 		b.MessageLength = 400
 	} else {
 		b.MessageLength = b.GetInt("MessageLength")
+	}
+	if b.GetBool("ShowActiveUserEvents") {
+		if b.GetInt("ActivityTimeout") == 0 {
+			b.ActivityTimeout = 1800 // 30 minutes
+		} else {
+			b.ActivityTimeout = int64(b.GetInt("ActivityTimeout"))
+		}
+	} else {
+		b.ActivityTimeout = 0 // Disable
 	}
 	b.FirstConnection = true
 	return b
@@ -412,4 +424,30 @@ func (b *Birc) getTLSConfig() (*tls.Config, error) {
 	}
 
 	return tlsConfig, nil
+}
+
+func (b *Birc) isUserActive(nick string) bool {
+	b.Log.Debugf("checking activity for %s", nick)
+	if b.ActivityTimeout == 0 {
+		return true
+	} else if activeTime, ok := b.activeUsers[nick]; ok {
+		now := time.Now().Unix()
+		b.Log.Debugf("last activity for %s was %d, currently %d", nick, activeTime, now)
+		if now < activeTime {
+			b.Log.Errorf("User %s has active time in the future: %d", nick, activeTime)
+			return true // err on the side of caution
+		}
+		return (now - activeTime) < b.ActivityTimeout
+	}
+	return false
+}
+
+func (b *Birc) getPseudoChannel() string {
+	for channelname, active := range b.channels {
+		if active {
+			return channelname
+		}
+	}
+	b.Log.Warningf("Bot not active in any channels!")
+	return ""
 }

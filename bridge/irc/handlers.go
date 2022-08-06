@@ -80,33 +80,66 @@ func (b *Birc) handleInvite(client *girc.Client, event girc.Event) {
 	}
 }
 
+func isKill(quitmsg string) bool {
+	return strings.HasPrefix(quitmsg, "Killed") || strings.HasPrefix(quitmsg, "Local kill") || strings.HasPrefix(quitmsg[1:], "-lined")
+}
+
 func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 	if len(event.Params) == 0 {
 		b.Log.Debugf("handleJoinPart: empty Params? %#v", event)
 		return
 	}
 	channel := strings.ToLower(event.Params[0])
-	if event.Command == "KICK" && event.Params[1] == b.Nick {
-		b.Log.Infof("Got kicked from %s by %s", channel, event.Source.Name)
-		time.Sleep(time.Duration(b.GetInt("RejoinDelay")) * time.Second)
-		b.Remote <- config.Message{Username: "system", Text: "rejoin", Channel: channel, Account: b.Account, Event: config.EventRejoinChannels}
+	if event.Command == "KICK" {
+		if event.Params[1] == b.Nick {
+			b.Log.Infof("Got kicked from %s by %s", channel, event.Source.Name)
+			time.Sleep(time.Duration(b.GetInt("RejoinDelay")) * time.Second)
+			b.Remote <- config.Message{Username: "system", Text: "rejoin", Channel: channel, Account: b.Account, Event: config.EventRejoinChannels}
+		} else {
+			msg := config.Message{Username: "system",
+				Text:    event.Source.Name + " kicked " + event.Params[1] + " with message: " + event.Last(),
+				Channel: channel,
+				Account: b.Account,
+				Event:   config.EventJoinLeave}
+			b.Log.Debugf("<= Message is %#v", msg)
+			b.Remote <- msg
+		}
 		return
 	}
 	if event.Command == "QUIT" {
 		if event.Source.Name == b.Nick && strings.Contains(event.Last(), "Ping timeout") {
 			b.Log.Infof("%s reconnecting ..", b.Account)
-			b.Remote <- config.Message{Username: "system", Text: "reconnect", Channel: channel, Account: b.Account, Event: config.EventFailure}
+			b.Remote <- config.Message{Username: "system", Text: "reconnect", Channel: b.getPseudoChannel(), Account: b.Account, Event: config.EventFailure}
+			return
+		} else if b.GetBool("nosendjoinpart") {
+			return
+		} else if b.isUserActive(event.Source.Name) || isKill(event.Last()) {
+			verbosequit := ""
+			quitmsg := ""
+			if len(event.Params) >= 1 {
+				quitmsg = " with message: " + event.Last()
+			}
+			if b.GetBool("verbosejoinpart") {
+				verbosequit = " (" + event.Source.Ident + "@" + event.Source.Host + ")"
+			}
+			msg := config.Message{Username: "system", Text: event.Source.Name + verbosequit + " quit" + quitmsg, Channel: b.getPseudoChannel(), Account: b.Account, Event: config.EventJoinLeave}
+			b.Log.Debugf("<= Message is %#v", msg)
+			b.Remote <- msg
 			return
 		}
 	}
 	if event.Source.Name != b.Nick {
-		if b.GetBool("nosendjoinpart") {
+		if b.GetBool("nosendjoinpart") || !b.isUserActive(event.Source.Name) {
 			return
 		}
-		msg := config.Message{Username: "system", Text: event.Source.Name + " " + strings.ToLower(event.Command) + "s", Channel: channel, Account: b.Account, Event: config.EventJoinLeave}
+		partmsg := ""
+		if event.Command == "PART" && len(event.Params) >= 2 {
+			partmsg = " with message: " + event.Last()
+		}
+		msg := config.Message{Username: "system", Text: event.Source.Name + " " + strings.ToLower(event.Command) + "s" + partmsg, Channel: channel, Account: b.Account, Event: config.EventJoinLeave}
 		if b.GetBool("verbosejoinpart") {
 			b.Log.Debugf("<= Sending verbose JOIN_LEAVE event from %s to gateway", b.Account)
-			msg = config.Message{Username: "system", Text: event.Source.Name + " (" + event.Source.Ident + "@" + event.Source.Host + ") " + strings.ToLower(event.Command) + "s", Channel: channel, Account: b.Account, Event: config.EventJoinLeave}
+			msg = config.Message{Username: "system", Text: event.Source.Name + " (" + event.Source.Ident + "@" + event.Source.Host + ") " + strings.ToLower(event.Command) + "s" + partmsg, Channel: channel, Account: b.Account, Event: config.EventJoinLeave}
 		} else {
 			b.Log.Debugf("<= Sending JOIN_LEAVE event from %s to gateway", b.Account)
 		}
@@ -130,7 +163,27 @@ func (b *Birc) handleNewConnection(client *girc.Client, event girc.Event) {
 	i.Handlers.AddBg("PART", b.handleJoinPart)
 	i.Handlers.AddBg("QUIT", b.handleJoinPart)
 	i.Handlers.AddBg("KICK", b.handleJoinPart)
+	i.Handlers.AddBg("NICK", b.handleNick)
 	i.Handlers.Add("INVITE", b.handleInvite)
+}
+
+func (b *Birc) handleNick(client *girc.Client, event girc.Event) {
+	if len(event.Params) != 1 {
+		b.Log.Debugf("handleJoinPart: malformed nick change? %#v", event)
+		return
+	} else if b.isUserActive(event.Source.Name) {
+		msg := config.Message{Username: "system",
+			Text:    event.Source.Name + " changed nick to " + event.Params[0],
+			Channel: b.getPseudoChannel(),
+			Account: b.Account,
+			Event:   config.EventJoinLeave}
+		b.Log.Debugf("<= Message is %#v", msg)
+		b.Remote <- msg
+		if b.ActivityTimeout != 0 {
+			// This doesn't count as new activity, but it does preserve the value
+			b.activeUsers[event.Params[0]] = b.activeUsers[event.Source.Name]
+		}
+	}
 }
 
 func (b *Birc) handleNickServ() {
@@ -238,6 +291,10 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 	}
 
 	b.Log.Debugf("<= Sending message from %s on %s to gateway", event.Params[0], b.Account)
+	if b.ActivityTimeout > 0 {
+		b.Log.Debugf("<= Updating last-active time for user %s", event.Source.Name)
+		b.activeUsers[event.Source.Name] = time.Now().Unix()
+	}
 	b.Remote <- rmsg
 }
 
