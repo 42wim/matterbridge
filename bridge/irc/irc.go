@@ -34,6 +34,7 @@ type Birc struct {
 	connected                                 chan error
 	Local                                     chan config.Message // local queue for flood control
 	FirstConnection, authDone                 bool
+	SuppressPartQuitURLs                      bool
 	MessageDelay, MessageQueue, MessageLength int
 	ActivityTimeout                           int64
 	channels                                  map[string]bool
@@ -75,6 +76,7 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	} else {
 		b.ActivityTimeout = 0 // Disable
 	}
+	b.SuppressPartQuitURLs = b.GetBool("SuppressPartQuitURLs")
 	b.FirstConnection = true
 	return b
 }
