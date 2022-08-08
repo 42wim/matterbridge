@@ -84,10 +84,6 @@ func isKill(quitmsg string) bool {
 	return strings.HasPrefix(quitmsg, "Killed") || strings.HasPrefix(quitmsg, "Local kill") || strings.HasPrefix(quitmsg[1:], "-lined")
 }
 
-func suppressUrls(msg *string) {
-	*msg = strings.ReplaceAll(*msg, "://", ": //")
-}
-
 func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 	if len(event.Params) == 0 {
 		b.Log.Debugf("handleJoinPart: empty Params? %#v", event)
@@ -117,9 +113,6 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 		partmsg := ""
 		if event.Command == "PART" && len(event.Params) >= 2 {
 			partmsg = " with message: " + event.Last()
-		}
-		if len(partmsg) > 0 && b.SuppressPartQuitURLs {
-			suppressUrls(&partmsg)
 		}
 		msg := config.Message{Username: "system", Text: event.Source.Name + " " + strings.ToLower(event.Command) + "s" + partmsg, Channel: channel, Account: b.Account, Event: config.EventJoinLeave}
 		if b.GetBool("verbosejoinpart") {
@@ -295,9 +288,6 @@ func (b *Birc) handleQuit(client *girc.Client, event girc.Event) {
 		quitmsg := ""
 		if len(event.Params) >= 1 {
 			quitmsg = " with message: " + event.Last()
-		}
-		if len(quitmsg) > 0 && b.SuppressPartQuitURLs {
-			suppressUrls(&quitmsg)
 		}
 		if b.GetBool("verbosejoinpart") {
 			verbosequit = " (" + event.Source.Ident + "@" + event.Source.Host + ")"
