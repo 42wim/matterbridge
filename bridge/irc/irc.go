@@ -438,18 +438,17 @@ func (b *Birc) isUserActive(nick string) (bool, int64) {
 	b.Log.Debugf("checking activity for %s", nick)
 	if b.ActivityTimeout == 0 {
 		return true, 0
-	} else {
-		b.activeUsersMutex.RLock()
-		defer b.activeUsersMutex.RUnlock()
-		if activeTime, ok := b.activeUsers[nick]; ok {
-			now := time.Now().Unix()
-			b.Log.Debugf("last activity for %s was %d, currently %d", nick, activeTime, now)
-			if now < activeTime {
-				b.Log.Errorf("User %s has active time in the future: %d", nick, activeTime)
-				return true, now // err on the side of caution
-			}
-			return (now - activeTime) < b.ActivityTimeout, activeTime
+	}
+	b.activeUsersMutex.RLock()
+	defer b.activeUsersMutex.RUnlock()
+	if activeTime, ok := b.activeUsers[nick]; ok {
+		now := time.Now().Unix()
+		b.Log.Debugf("last activity for %s was %d, currently %d", nick, activeTime, now)
+		if now < activeTime {
+			b.Log.Errorf("User %s has active time in the future: %d", nick, activeTime)
+			return true, now // err on the side of caution
 		}
+		return (now - activeTime) < b.ActivityTimeout, activeTime
 	}
 	return false, 0
 }
