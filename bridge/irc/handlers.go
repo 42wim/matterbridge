@@ -81,7 +81,9 @@ func (b *Birc) handleInvite(client *girc.Client, event girc.Event) {
 }
 
 func isKill(quitmsg string) bool {
-	return strings.HasPrefix(quitmsg, "Killed") || strings.HasPrefix(quitmsg, "Local kill") || strings.HasPrefix(quitmsg[1:], "-lined")
+	return (strings.HasPrefix(quitmsg, "Killed") ||
+		strings.HasPrefix(quitmsg, "Local kill") ||
+		(len(quitmsg) > 7 && strings.HasPrefix(quitmsg[1:], "-lined")))
 }
 
 func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
