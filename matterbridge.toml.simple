@@ -1,6 +1,6 @@
 #WARNING: as this file contains credentials, be sure to set correct file permissions
 [irc]
-    [irc.freenode]
+    [irc.libera]
     Server="irc.libera.chat:6667"
     Nick="matterbot"
 
