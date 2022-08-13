@@ -100,3 +100,12 @@ type AppsScope struct {
 	Name  string `json:"name"`  // Scope name
 	Title string `json:"title"` // Scope title
 }
+
+// AppsTestingGroup testing group description.
+type AppsTestingGroup struct {
+	GroupID   int      `json:"group_id"`
+	UserIDs   []int    `json:"user_ids"`
+	Name      string   `json:"name"`
+	Webview   string   `json:"webview"`
+	Platforms []string `json:"platforms"`
+}

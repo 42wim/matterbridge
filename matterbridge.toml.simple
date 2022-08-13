@@ -1,7 +1,7 @@
 #WARNING: as this file contains credentials, be sure to set correct file permissions
 [irc]
-    [irc.freenode]
-    Server="irc.freenode.net:6667"
+    [irc.libera]
+    Server="irc.libera.chat:6667"
     Nick="matterbot"
 
 [mattermost]
@@ -17,7 +17,7 @@
 name="gateway1"
 enable=true
     [[gateway.inout]]
-    account="irc.freenode"
+    account="irc.libera"
     channel="#testing"
 
     [[gateway.inout]]
@@ -29,6 +29,6 @@ enable=true
 #name="gateway2"
 #enable=true
 #inout = [
-#    { account="irc.freenode", channel="#testing", options={key="channelkey"}},
+#    { account="irc.libera", channel="#testing", options={key="channelkey"}},
 #    { account="mattermost.work", channel="off-topic" },
 #]

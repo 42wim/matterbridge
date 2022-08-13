@@ -21,7 +21,7 @@ all:
 	go generate
 	gofmt -l -s -w *.go
 	go install -v ./...
-	go test -i
+	go test
 	go test 2>&1 -timeout 1h | tee -a $(log)
 	GOOS=darwin GOARCH=amd64 go build
 	GOOS=darwin GOARCH=arm64 go build
@@ -37,12 +37,11 @@ all:
 	GOOS=windows GOARCH=386 go build
 	GOOS=windows GOARCH=amd64 go build
 	GOOS=windows GOARCH=arm64 go build
-	go vet -unsafeptr=false 2>&1 | grep -v $(ngrep) || true
-	golint 2>&1 | grep -v $(ngrep) || true
-	make todo
-	misspell *.go
-	staticcheck || true
-	maligned || true
+	# go vet -unsafeptr=false 2>&1 | grep -v $(ngrep) || true
+	# golint 2>&1 | grep -v $(ngrep) || true
+	# make todo
+	# misspell *.go
+	# staticcheck || true
 	grep -n 'FAIL\|PASS' $(log)
 	go version
 	date 2>&1 | tee -a $(log)

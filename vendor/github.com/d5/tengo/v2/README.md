@@ -144,7 +144,7 @@ fmt.Println(res) // "success"
 - [Interoperability](https://github.com/d5/tengo/blob/master/docs/interoperability.md)
 - [Tengo CLI](https://github.com/d5/tengo/blob/master/docs/tengo-cli.md)
 - [Standard Library](https://github.com/d5/tengo/blob/master/docs/stdlib.md)
-- Syntax Highlighters: [VSCode](https://github.com/lissein/vscode-tengo), [Atom](https://github.com/d5/tengo-atom)
+- Syntax Highlighters: [VSCode](https://github.com/lissein/vscode-tengo), [Atom](https://github.com/d5/tengo-atom), [Vim](https://github.com/geseq/tengo-vim)
 - **Why the name Tengo?** It's from [1Q84](https://en.wikipedia.org/wiki/1Q84).
 
 

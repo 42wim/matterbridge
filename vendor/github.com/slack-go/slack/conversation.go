@@ -571,12 +571,13 @@ func (api *Client) JoinConversationContext(ctx context.Context, channelID string
 }
 
 type GetConversationHistoryParameters struct {
-	ChannelID string
-	Cursor    string
-	Inclusive bool
-	Latest    string
-	Limit     int
-	Oldest    string
+	ChannelID          string
+	Cursor             string
+	Inclusive          bool
+	Latest             string
+	Limit              int
+	Oldest             string
+	IncludeAllMetadata bool
 }
 
 type GetConversationHistoryResponse struct {
@@ -614,6 +615,11 @@ func (api *Client) GetConversationHistoryContext(ctx context.Context, params *Ge
 	}
 	if params.Oldest != "" {
 		values.Add("oldest", params.Oldest)
+	}
+	if params.IncludeAllMetadata {
+		values.Add("include_all_metadata", "1")
+	} else {
+		values.Add("include_all_metadata", "0")
 	}
 
 	response := GetConversationHistoryResponse{}

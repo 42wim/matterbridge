@@ -16,6 +16,31 @@ import (
 	"github.com/slack-go/slack/internal/timex"
 )
 
+// UnmappedError represents error occurred when there is no mapping between given event name
+// and corresponding Go struct.
+type UnmappedError struct {
+	// EventType returns event type name.
+	EventType string
+	// RawEvent returns raw event body.
+	RawEvent json.RawMessage
+
+	ctxMsg string
+}
+
+// NewUnmappedError returns new UnmappedError instance.
+func NewUnmappedError(ctxMsg, eventType string, raw json.RawMessage) *UnmappedError {
+	return &UnmappedError{
+		ctxMsg:    ctxMsg,
+		EventType: eventType,
+		RawEvent:  raw,
+	}
+}
+
+// Error returns human-readable error message.
+func (u UnmappedError) Error() string {
+	return fmt.Sprintf("%s: Received unmapped event %q", u.ctxMsg, u.EventType)
+}
+
 // ManageConnection can be called on a Slack RTM instance returned by the
 // NewRTM method. It will connect to the slack RTM API and handle all incoming
 // and outgoing events. If a connection fails then it will attempt to reconnect
@@ -474,7 +499,7 @@ func (rtm *RTM) handleEvent(typeStr string, event json.RawMessage) {
 	v, exists := EventMapping[typeStr]
 	if !exists {
 		rtm.Debugf("RTM Error - received unmapped event %q: %s\n", typeStr, string(event))
-		err := fmt.Errorf("RTM Error: Received unmapped event %q", typeStr)
+		err := NewUnmappedError("RTM Error", typeStr, event)
 		rtm.IncomingEvents <- RTMEvent{"unmarshalling_error", &UnmarshallingErrorEvent{err}}
 		return
 	}

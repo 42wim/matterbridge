@@ -51,6 +51,11 @@ func (cli *Client) handleEncryptedMessage(node *waBinary.Node) {
 }
 
 func (cli *Client) parseMessageSource(node *waBinary.Node, requireParticipant bool) (source types.MessageSource, err error) {
+	clientID := cli.Store.ID
+	if clientID == nil {
+		err = ErrNotLoggedIn
+		return
+	}
 	ag := node.AttrGetter()
 	from := ag.JID("from")
 	if from.Server == types.GroupServer || from.Server == types.BroadcastServer {
@@ -61,13 +66,13 @@ func (cli *Client) parseMessageSource(node *waBinary.Node, requireParticipant bo
 		} else {
 			source.Sender = ag.OptionalJIDOrEmpty("participant")
 		}
-		if source.Sender.User == cli.Store.ID.User {
+		if source.Sender.User == clientID.User {
 			source.IsFromMe = true
 		}
 		if from.Server == types.BroadcastServer {
 			source.BroadcastListOwner = ag.OptionalJIDOrEmpty("recipient")
 		}
-	} else if from.User == cli.Store.ID.User {
+	} else if from.User == clientID.User {
 		source.IsFromMe = true
 		source.Sender = from
 		recipient := ag.OptionalJID("recipient")
@@ -395,7 +400,8 @@ func (cli *Client) handleDecryptedMessage(info *types.MessageInfo, msg *waProto.
 }
 
 func (cli *Client) sendProtocolMessageReceipt(id, msgType string) {
-	if len(id) == 0 || cli.Store.ID == nil {
+	clientID := cli.Store.ID
+	if len(id) == 0 || clientID == nil {
 		return
 	}
 	err := cli.sendNode(waBinary.Node{
@@ -403,7 +409,7 @@ func (cli *Client) sendProtocolMessageReceipt(id, msgType string) {
 		Attrs: waBinary.Attrs{
 			"id":   id,
 			"type": msgType,
-			"to":   types.NewJID(cli.Store.ID.User, types.LegacyUserServer),
+			"to":   types.NewJID(clientID.User, types.LegacyUserServer),
 		},
 		Content: nil,
 	})

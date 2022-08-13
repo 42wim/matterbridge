@@ -22,7 +22,7 @@ import (
 // The zero value is a valid zero element.
 type Scalar struct {
 	// s is the Scalar value in little-endian. The value is always reduced
-	// between operations.
+	// modulo l between operations.
 	s [32]byte
 }
 
@@ -79,9 +79,12 @@ func (s *Scalar) Set(x *Scalar) *Scalar {
 	return s
 }
 
-// SetUniformBytes sets s to an uniformly distributed value given 64 uniformly
-// distributed random bytes. If x is not of the right length, SetUniformBytes
-// returns nil and an error, and the receiver is unchanged.
+// SetUniformBytes sets s = x mod l, where x is a 64-byte little-endian integer.
+// If x is not of the right length, SetUniformBytes returns nil and an error,
+// and the receiver is unchanged.
+//
+// SetUniformBytes can be used to set s to an uniformly distributed value given
+// 64 uniformly distributed random bytes.
 func (s *Scalar) SetUniformBytes(x []byte) (*Scalar, error) {
 	if len(x) != 64 {
 		return nil, errors.New("edwards25519: invalid SetUniformBytes input length")

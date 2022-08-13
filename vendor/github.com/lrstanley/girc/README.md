@@ -1,6 +1,7 @@
 <p align="center"><a href="https://pkg.go.dev/github.com/lrstanley/girc"><img width="270" src="http://i.imgur.com/DEnyrdB.png"></a></p>
 <!-- template:begin:header -->
 <!-- do not edit anything in this "template" block, its auto-generated -->
+
 <p align="center">girc -- :bomb: girc is a flexible IRC library for Go :ok_hand:</p>
 <p align="center">
   <a href="https://github.com/lrstanley/girc/tags">
@@ -46,13 +47,7 @@
 <!-- do not edit anything in this "template" block, its auto-generated -->
 ## :link: Table of Contents
 
-  - [Features](#features)
-  - [Installing](#installing)
-  - [Examples](#examples)
-  - [References](#references)
-  - [Support &amp; Assistance](#raising_hand_man-support--assistance)
-  - [Contributing](#handshake-contributing)
-  - [License](#balance_scale-license)
+  - []()
 <!-- template:end:toc -->
 
 ## Features

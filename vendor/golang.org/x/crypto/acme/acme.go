@@ -306,6 +306,20 @@ func (c *Client) UpdateReg(ctx context.Context, acct *Account) (*Account, error)
 	return c.updateRegRFC(ctx, acct)
 }
 
+// AccountKeyRollover attempts to transition a client's account key to a new key.
+// On success client's Key is updated which is not concurrency safe.
+// On failure an error will be returned.
+// The new key is already registered with the ACME provider if the following is true:
+//  - error is of type acme.Error
+//  - StatusCode should be 409 (Conflict)
+//  - Location header will have the KID of the associated account
+//
+// More about account key rollover can be found at
+// https://tools.ietf.org/html/rfc8555#section-7.3.5.
+func (c *Client) AccountKeyRollover(ctx context.Context, newKey crypto.Signer) error {
+	return c.accountKeyRollover(ctx, newKey)
+}
+
 // Authorize performs the initial step in the pre-authorization flow,
 // as opposed to order-based flow.
 // The caller will then need to choose from and perform a set of returned
