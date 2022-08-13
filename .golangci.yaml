@@ -204,6 +204,14 @@ linters:
     - tagliatelle
     - errname
     - typecheck
+    - grouper
+    - decorder
+    - maintidx
+    - exhaustruct
+    - asasalint
+    - execinquery
+    - nosnakecase
+    - exhaustive
 # rules to deal with reported isues
 issues:
   # List of regexps of issue texts to exclude, empty list by default.

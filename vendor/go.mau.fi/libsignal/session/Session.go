@@ -166,7 +166,7 @@ func (b *Builder) processV3(sessionRecord *record.Session,
 	if message.PreKeyID() != nil && message.PreKeyID().Value != medium.MaxValue {
 		return message.PreKeyID(), nil
 	}
-	return nil, nil
+	return optional.NewEmptyUint32(), nil
 }
 
 // ProcessBundle builds a new session from a PreKeyBundle retrieved

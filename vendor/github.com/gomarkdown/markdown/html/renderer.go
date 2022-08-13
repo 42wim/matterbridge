@@ -133,6 +133,9 @@ type Renderer struct {
 	// if > 0, will strip html tags in Out and Outs
 	DisableTags int
 
+	// TODO: documentation
+	IsSafeURLOverride func(url []byte) bool
+
 	sr *SPRenderer
 
 	documentMatter ast.DocumentMatters // keep track of front/main/back matter.
@@ -281,11 +284,16 @@ func isMailto(link []byte) bool {
 	return bytes.HasPrefix(link, []byte("mailto:"))
 }
 
-func needSkipLink(flags Flags, dest []byte) bool {
+func needSkipLink(r *Renderer, dest []byte) bool {
+	flags := r.opts.Flags
 	if flags&SkipLinks != 0 {
 		return true
 	}
-	return flags&Safelink != 0 && !isSafeLink(dest) && !isMailto(dest)
+	isSafeURL := r.IsSafeURLOverride
+	if isSafeURL == nil {
+		isSafeURL = valid.IsSafeURL
+	}
+	return flags&Safelink != 0 && !isSafeURL(dest) && !isMailto(dest)
 }
 
 func appendLanguageAttr(attrs []string, info []byte) []string {
@@ -481,7 +489,7 @@ func (r *Renderer) linkExit(w io.Writer, link *ast.Link) {
 // Link writes ast.Link node
 func (r *Renderer) Link(w io.Writer, link *ast.Link, entering bool) {
 	// mark it but don't link it if it is not a safe link: no smartypants
-	if needSkipLink(r.opts.Flags, link.Destination) {
+	if needSkipLink(r, link.Destination) {
 		r.OutOneOf(w, entering, "<tt>", "</tt>")
 		return
 	}
@@ -1224,28 +1232,6 @@ func isListItem(node ast.Node) bool {
 func isListItemTerm(node ast.Node) bool {
 	data, ok := node.(*ast.ListItem)
 	return ok && data.ListFlags&ast.ListTypeTerm != 0
-}
-
-func isSafeLink(link []byte) bool {
-	for _, path := range valid.Paths {
-		if len(link) >= len(path) && bytes.Equal(link[:len(path)], path) {
-			if len(link) == len(path) {
-				return true
-			} else if isAlnum(link[len(path)]) {
-				return true
-			}
-		}
-	}
-
-	for _, prefix := range valid.URIs {
-		// TODO: handle unicode here
-		// case-insensitive prefix test
-		if len(link) > len(prefix) && bytes.Equal(bytes.ToLower(link[:len(prefix)]), prefix) && isAlnum(link[len(prefix)]) {
-			return true
-		}
-	}
-
-	return false
 }
 
 // TODO: move to internal package

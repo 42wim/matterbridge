@@ -116,6 +116,14 @@ func (vk *VK) MessagesEditChat(params Params) (response int, err error) {
 	return
 }
 
+// MessagesForceCallFinish method.
+//
+// https://vk.com/dev/messages.forceCallFinish
+func (vk *VK) MessagesForceCallFinish(params Params) (response int, err error) {
+	err = vk.RequestUnmarshal("messages.forceCallFinish", &response, params)
+	return
+}
+
 // MessagesGetByConversationMessageIDResponse struct.
 type MessagesGetByConversationMessageIDResponse struct {
 	Count int                      `json:"count"`
@@ -630,6 +638,20 @@ type MessagesSetChatPhotoResponse struct {
 // https://vk.com/dev/messages.setChatPhoto
 func (vk *VK) MessagesSetChatPhoto(params Params) (response MessagesSetChatPhotoResponse, err error) {
 	err = vk.RequestUnmarshal("messages.setChatPhoto", &response, params)
+	return
+}
+
+// MessagesStartCallResponse struct.
+type MessagesStartCallResponse struct {
+	JoinLink string `json:"join_link"`
+	CallID   string `json:"call_id"`
+}
+
+// MessagesStartCall method.
+//
+// https://vk.com/dev/messages.startCall
+func (vk *VK) MessagesStartCall(params Params) (response MessagesStartCallResponse, err error) {
+	err = vk.RequestUnmarshal("messages.startCall", &response, params)
 	return
 }
 

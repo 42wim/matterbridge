@@ -533,3 +533,66 @@ func (i *Index) JSON() []byte {
 	b, _ := json.MarshalIndent(x, "", "  ")
 	return b
 }
+
+// RemoveIndexHeaders will trim all headers and trailers from a given index.
+// This is expected to save 20 bytes.
+// These can be restored using RestoreIndexHeaders.
+// This removes a layer of security, but is the most compact representation.
+// Returns nil if headers contains errors.
+// The returned slice references the provided slice.
+func RemoveIndexHeaders(b []byte) []byte {
+	const save = 4 + len(S2IndexHeader) + len(S2IndexTrailer) + 4
+	if len(b) <= save {
+		return nil
+	}
+	if b[0] != ChunkTypeIndex {
+		return nil
+	}
+	chunkLen := int(b[1]) | int(b[2])<<8 | int(b[3])<<16
+	b = b[4:]
+
+	// Validate we have enough...
+	if len(b) < chunkLen {
+		return nil
+	}
+	b = b[:chunkLen]
+
+	if !bytes.Equal(b[:len(S2IndexHeader)], []byte(S2IndexHeader)) {
+		return nil
+	}
+	b = b[len(S2IndexHeader):]
+	if !bytes.HasSuffix(b, []byte(S2IndexTrailer)) {
+		return nil
+	}
+	b = bytes.TrimSuffix(b, []byte(S2IndexTrailer))
+
+	if len(b) < 4 {
+		return nil
+	}
+	return b[:len(b)-4]
+}
+
+// RestoreIndexHeaders will index restore headers removed by RemoveIndexHeaders.
+// No error checking is performed on the input.
+// If a 0 length slice is sent, it is returned without modification.
+func RestoreIndexHeaders(in []byte) []byte {
+	if len(in) == 0 {
+		return in
+	}
+	b := make([]byte, 0, 4+len(S2IndexHeader)+len(in)+len(S2IndexTrailer)+4)
+	b = append(b, ChunkTypeIndex, 0, 0, 0)
+	b = append(b, []byte(S2IndexHeader)...)
+	b = append(b, in...)
+
+	var tmp [4]byte
+	binary.LittleEndian.PutUint32(tmp[:], uint32(len(b)+4+len(S2IndexTrailer)))
+	b = append(b, tmp[:4]...)
+	// Trailer
+	b = append(b, []byte(S2IndexTrailer)...)
+
+	chunkLen := len(b) - skippableFrameHeader
+	b[1] = uint8(chunkLen >> 0)
+	b[2] = uint8(chunkLen >> 8)
+	b[3] = uint8(chunkLen >> 16)
+	return b
+}

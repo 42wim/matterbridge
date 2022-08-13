@@ -188,7 +188,7 @@ To install or upgrade just download the latest [binary](https://github.com/42wim
 Most people just want to use binaries, you can find those [here](https://github.com/42wim/matterbridge/releases/latest)
 
 If you really want to build from source, follow these instructions:
-Go 1.17+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed.
+Go 1.18+ is required. Make sure you have [Go](https://golang.org/doc/install) properly installed.
 
 Building the binary with **all** the bridges enabled needs about 3GB RAM to compile.
 You can reduce this memory requirement to 0,5GB RAM by adding the `nomsteams` tag if you don't need/use the Microsoft Teams bridge.
