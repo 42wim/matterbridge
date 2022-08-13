@@ -692,12 +692,15 @@ func (c *Compiler) compileAssign(
 		return c.errorf(node, "operator ':=' not allowed with selector")
 	}
 
+	_, isFunc := rhs[0].(*parser.FuncLit)
 	symbol, depth, exists := c.symbolTable.Resolve(ident, false)
 	if op == token.Define {
 		if depth == 0 && exists {
 			return c.errorf(node, "'%s' redeclared in this block", ident)
 		}
-		symbol = c.symbolTable.Define(ident)
+		if isFunc {
+			symbol = c.symbolTable.Define(ident)
+		}
 	} else {
 		if !exists {
 			return c.errorf(node, "unresolved reference '%s'", ident)
@@ -716,6 +719,10 @@ func (c *Compiler) compileAssign(
 		if err := c.Compile(expr); err != nil {
 			return err
 		}
+	}
+
+	if op == token.Define && !isFunc {
+		symbol = c.symbolTable.Define(ident)
 	}
 
 	switch op {

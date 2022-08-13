@@ -292,6 +292,13 @@ func GetUsersOptionPresence(n bool) GetUsersOption {
 	}
 }
 
+// GetUsersOptionTeamID include team Id
+func GetUsersOptionTeamID(teamId string) GetUsersOption {
+	return func(p *UserPagination) {
+		p.teamId = teamId
+	}
+}
+
 func newUserPagination(c *Client, options ...GetUsersOption) (up UserPagination) {
 	up = UserPagination{
 		c:     c,
@@ -310,6 +317,7 @@ type UserPagination struct {
 	Users        []User
 	limit        int
 	presence     bool
+	teamId       string
 	previousResp *ResponseMetadata
 	c            *Client
 }
@@ -344,6 +352,7 @@ func (t UserPagination) Next(ctx context.Context) (_ UserPagination, err error) 
 		"presence":       {strconv.FormatBool(t.presence)},
 		"token":          {t.c.token},
 		"cursor":         {t.previousResp.Cursor},
+		"team_id":        {t.teamId},
 		"include_locale": {strconv.FormatBool(true)},
 	}
 
@@ -364,13 +373,13 @@ func (api *Client) GetUsersPaginated(options ...GetUsersOption) UserPagination {
 }
 
 // GetUsers returns the list of users (with their detailed information)
-func (api *Client) GetUsers() ([]User, error) {
-	return api.GetUsersContext(context.Background())
+func (api *Client) GetUsers(options ...GetUsersOption) ([]User, error) {
+	return api.GetUsersContext(context.Background(), options...)
 }
 
 // GetUsersContext returns the list of users (with their detailed information) with a custom context
-func (api *Client) GetUsersContext(ctx context.Context) (results []User, err error) {
-	p := api.GetUsersPaginated()
+func (api *Client) GetUsersContext(ctx context.Context, options ...GetUsersOption) (results []User, err error) {
+	p := api.GetUsersPaginated(options...)
 	for err == nil {
 		p, err = p.Next(ctx)
 		if err == nil {

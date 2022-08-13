@@ -4,6 +4,14 @@ import (
 	"github.com/SevereCloud/vksdk/v2/object"
 )
 
+// AppsAddUsersToTestingGroup method.
+//
+// https://vk.com/dev/apps.addUsersToTestingGroup
+func (vk *VK) AppsAddUsersToTestingGroup(params Params) (response int, err error) {
+	err = vk.RequestUnmarshal("apps.addUsersToTestingGroup", &response, params)
+	return
+}
+
 // AppsDeleteAppRequests deletes all request notifications from the current app.
 //
 // https://vk.com/dev/apps.deleteAppRequests
@@ -140,10 +148,50 @@ func (vk *VK) AppsGetScore(params Params) (response string, err error) {
 	return
 }
 
+// AppsGetTestingGroupsResponse struct.
+type AppsGetTestingGroupsResponse []object.AppsTestingGroup
+
+// AppsGetTestingGroups method.
+//
+// https://vk.com/dev/apps.getTestingGroups
+func (vk *VK) AppsGetTestingGroups(params Params) (response AppsGetTestingGroupsResponse, err error) {
+	err = vk.RequestUnmarshal("apps.getTestingGroups", &response, params)
+	return
+}
+
+// AppsRemoveTestingGroup method.
+//
+// https://vk.com/dev/apps.removeTestingGroup
+func (vk *VK) AppsRemoveTestingGroup(params Params) (response int, err error) {
+	err = vk.RequestUnmarshal("apps.removeTestingGroup", &response, params)
+	return
+}
+
+// AppsRemoveUsersFromTestingGroups method.
+//
+// https://vk.com/dev/apps.removeUsersFromTestingGroups
+func (vk *VK) AppsRemoveUsersFromTestingGroups(params Params) (response int, err error) {
+	err = vk.RequestUnmarshal("apps.removeUsersFromTestingGroups", &response, params)
+	return
+}
+
 // AppsSendRequest sends a request to another user in an app that uses VK authorization.
 //
 // https://vk.com/dev/apps.sendRequest
 func (vk *VK) AppsSendRequest(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("apps.sendRequest", &response, params)
+	return
+}
+
+// AppsUpdateMetaForTestingGroupResponse struct.
+type AppsUpdateMetaForTestingGroupResponse struct {
+	GroupID int `json:"group_id"`
+}
+
+// AppsUpdateMetaForTestingGroup method.
+//
+// https://vk.com/dev/apps.updateMetaForTestingGroup
+func (vk *VK) AppsUpdateMetaForTestingGroup(params Params) (response AppsUpdateMetaForTestingGroupResponse, err error) {
+	err = vk.RequestUnmarshal("apps.updateMetaForTestingGroup", &response, params)
 	return
 }
