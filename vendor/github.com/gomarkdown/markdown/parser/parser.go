@@ -84,6 +84,9 @@ type Parser struct {
 	// the bottom will be used to fill in the link details.
 	ReferenceOverride ReferenceOverrideFunc
 
+	// TODO: documentation
+	IsSafeURLOverride func(url []byte) bool
+
 	Opts Options
 
 	// after parsing, this is AST root of parsed markdown text

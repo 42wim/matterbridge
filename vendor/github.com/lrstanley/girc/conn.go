@@ -588,6 +588,7 @@ func (c *Client) pingLoop(ctx context.Context, errs chan error, wg *sync.WaitGro
 
 	started := time.Now()
 	past := false
+	pingSent := false
 
 	for {
 		select {
@@ -603,7 +604,7 @@ func (c *Client) pingLoop(ctx context.Context, errs chan error, wg *sync.WaitGro
 			}
 
 			c.conn.mu.RLock()
-			if time.Since(c.conn.lastPong) > c.Config.PingDelay+(60*time.Second) {
+			if pingSent && time.Since(c.conn.lastPong) > c.Config.PingDelay+(60*time.Second) {
 				// It's 60 seconds over what out ping delay is, connection
 				// has probably dropped.
 				err := ErrTimedOut{
@@ -625,6 +626,7 @@ func (c *Client) pingLoop(ctx context.Context, errs chan error, wg *sync.WaitGro
 			c.conn.mu.Unlock()
 
 			c.Cmd.Ping(fmt.Sprintf("%d", time.Now().UnixNano()))
+			pingSent = true
 		case <-ctx.Done():
 			wg.Done()
 			return

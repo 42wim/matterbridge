@@ -899,7 +899,11 @@ func autoLink(p *Parser, data []byte, offset int) (int, ast.Node) {
 	origData := data
 	data = data[offset-rewind:]
 
-	if !isSafeLink(data) {
+	isSafeURL := p.IsSafeURLOverride
+	if isSafeURL == nil {
+		isSafeURL = valid.IsSafeURL
+	}
+	if !isSafeURL(data) {
 		return 0, nil
 	}
 
@@ -993,35 +997,6 @@ func autoLink(p *Parser, data []byte, offset int) (int, ast.Node) {
 
 func isEndOfLink(char byte) bool {
 	return isSpace(char) || char == '<'
-}
-
-func isSafeLink(link []byte) bool {
-	nLink := len(link)
-	for _, path := range valid.Paths {
-		nPath := len(path)
-		linkPrefix := link[:nPath]
-		if nLink >= nPath && bytes.Equal(linkPrefix, path) {
-			if nLink == nPath {
-				return true
-			} else if isAlnum(link[nPath]) {
-				return true
-			}
-		}
-	}
-
-	for _, prefix := range valid.URIs {
-		// TODO: handle unicode here
-		// case-insensitive prefix test
-		nPrefix := len(prefix)
-		if nLink > nPrefix {
-			linkPrefix := bytes.ToLower(link[:nPrefix])
-			if bytes.Equal(linkPrefix, prefix) && isAlnum(link[nPrefix]) {
-				return true
-			}
-		}
-	}
-
-	return false
 }
 
 // return the length of the given tag, or 0 is it's not valid

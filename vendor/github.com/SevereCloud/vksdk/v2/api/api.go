@@ -203,10 +203,13 @@ func buildQuery(sliceParams ...Params) (context.Context, url.Values) {
 
 	for _, params := range sliceParams {
 		for key, value := range params {
-			if key != ":context" {
-				query.Set(key, FmtValue(value, 0))
-			} else {
+			switch key {
+			case "access_token":
+				continue
+			case ":context":
 				ctx = value.(context.Context)
+			default:
+				query.Set(key, FmtValue(value, 0))
 			}
 		}
 	}
@@ -254,6 +257,9 @@ func (vk *VK) DefaultHandler(method string, sliceParams ...Params) (Response, er
 		if vk.zstd {
 			acceptEncoding = "zstd"
 		}
+
+		token := sliceParams[len(sliceParams)-1]["access_token"].(string)
+		req.Header.Set("Authorization", "Bearer "+token)
 
 		req.Header.Set("User-Agent", vk.UserAgent)
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
