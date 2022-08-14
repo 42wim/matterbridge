@@ -255,7 +255,7 @@ func (b *Birc) doSend() {
 			switch msg.Event {
 			case config.EventUserAction:
 				b.i.Cmd.Action(msg.Channel, username+msg.Text)
-			case config.EventNoticeIRC:
+			case config.EventNotice:
 				b.Log.Debugf("Sending notice to channel %s", msg.Channel)
 				b.i.Cmd.Notice(msg.Channel, username+msg.Text)
 			default:

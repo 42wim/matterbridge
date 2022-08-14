@@ -27,7 +27,7 @@ const (
 	EventAPIConnected      = "api_connected"
 	EventUserTyping        = "user_typing"
 	EventGetChannelMembers = "get_channel_members"
-	EventNoticeIRC         = "notice_irc"
+	EventNotice            = "notice"
 )
 
 const ParentIDNotFound = "msg-parent-not-found"

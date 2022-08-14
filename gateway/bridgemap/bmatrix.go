@@ -1,3 +1,4 @@
+//go:build !nomatrix
 // +build !nomatrix
 
 package bridgemap
@@ -9,4 +10,5 @@ import (
 func init() {
 	FullMap["matrix"] = bmatrix.New
 	UserTypingSupport["matrix"] = struct{}{}
+	NoticeSupport["matrix"] = struct{}{}
 }

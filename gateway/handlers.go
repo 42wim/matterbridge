@@ -199,6 +199,17 @@ func (gw *Gateway) handleMessage(rmsg *config.Message, dest *bridge.Bridge) []*B
 		}
 	}
 
+	if rmsg.Event == config.EventNotice {
+		if _, ok := bridgemap.NoticeSupport[dest.Protocol]; !ok {
+			// we are forced to clone the pointer, as `rmsg` is re-used across calls to handleMessage
+			newMsg := *rmsg
+			// if the destination doesn't support IRC/Matrix 'notices',
+			// emit a normal message
+			newMsg.Event = ""
+			rmsg = &newMsg
+		}
+	}
+
 	// if we have an attached file, or other info
 	if rmsg.Extra != nil && len(rmsg.Extra[config.EventFileFailureSize]) != 0 && rmsg.Text == "" {
 		return brMsgIDs

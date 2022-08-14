@@ -1,3 +1,4 @@
+//go:build !noirc
 // +build !noirc
 
 package bridgemap
@@ -8,4 +9,5 @@ import (
 
 func init() {
 	FullMap["irc"] = birc.New
+	NoticeSupport["irc"] = struct{}{}
 }

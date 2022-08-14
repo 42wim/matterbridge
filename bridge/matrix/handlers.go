@@ -150,6 +150,7 @@ func (b *Bmatrix) handleMemberChange(ev *event.Event) {
 	}
 }
 
+//nolint: funlen
 func (b *Bmatrix) handleMessage(rmsg config.Message, ev *event.Event) {
 	msg := ev.Content.AsMessage()
 	if msg == nil {
@@ -169,10 +170,10 @@ func (b *Bmatrix) handleMessage(rmsg config.Message, ev *event.Event) {
 		rmsg.Avatar = avatarURL
 	}
 
-	// Do we have a /me action
 	//nolint: exhaustive
 	switch msg.MsgType {
 	case event.MsgEmote:
+		// Do we have a /me action
 		rmsg.Event = config.EventUserAction
 	case event.MsgImage, event.MsgVideo, event.MsgFile:
 		// Do we have attachments? (we only allow images, videos or files msgtypes)
@@ -180,6 +181,9 @@ func (b *Bmatrix) handleMessage(rmsg config.Message, ev *event.Event) {
 		if err != nil {
 			b.Log.Errorf("download failed: %#v", err)
 		}
+	case event.MsgNotice:
+		// Support for IRC NOTICE commands/[matrix] m.notice
+		rmsg.Event = config.EventNotice
 	default:
 		if msg.RelatesTo == nil {
 			break

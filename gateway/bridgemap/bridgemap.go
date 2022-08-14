@@ -7,4 +7,5 @@ import (
 var (
 	FullMap           = map[string]bridge.Factory{}
 	UserTypingSupport = map[string]struct{}{}
+	NoticeSupport     = map[string]struct{}{}
 )

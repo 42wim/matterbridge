@@ -195,6 +195,7 @@ func (b *Bmatrix) Start() error {
 	return nil
 }
 
+//nolint: funlen,gocognit,gocyclo
 func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Sending %#v", msg)
 
@@ -305,7 +306,7 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	}
 
 	// Use notices to send join/leave events
-	if msg.Event == config.EventJoinLeave {
+	if msg.Event == config.EventJoinLeave || msg.Event == config.EventNotice {
 		m.MsgType = event.MsgNotice
 	} else {
 		m.MsgType = event.MsgText

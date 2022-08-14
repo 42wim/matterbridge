@@ -201,7 +201,7 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 
 	// set NOTICE event
 	if event.Command == "NOTICE" {
-		rmsg.Event = config.EventNoticeIRC
+		rmsg.Event = config.EventNotice
 	}
 
 	// strip action, we made an event if it was an action
