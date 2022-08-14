@@ -88,9 +88,6 @@ func (c *NicknameCache) retrieveDisplaynameFromCache(channelID id.RoomID, mxid i
 	}
 
 	if cachedEntry.conflictWithOtherUsername {
-		// TODO: the current behavior is that only users with clashing usernames and *that have
-		// spoken since the bridge started* will get their mxids shown, and this doesn't
-		// feel right
 		return fmt.Sprintf("%s (%s)", cachedEntry.displayName, mxid)
 	}
 
@@ -232,18 +229,11 @@ func (b *Bmatrix) cacheDisplayName(channelID id.RoomID, mxid id.UserID, displayN
 		conflictWithOtherUsername: conflict,
 	}
 
-	// this is a local (room-specific) display name, let's cache it as such
 	if channelID == "" {
 		newEntry.globalEntry = &cacheEntry
 	} else {
-		globalDisplayName := b.retrieveGlobalDisplayname(mxid)
-		// updating the global display name or resetting the room name to the global name
-		if globalDisplayName == displayName {
-			delete(newEntry.perChannel, channelID)
-			newEntry.globalEntry = &cacheEntry
-		} else {
-			newEntry.perChannel[channelID] = cacheEntry
-		}
+		// this is a local (room-specific) display name, let's cache it as such
+		newEntry.perChannel[channelID] = cacheEntry
 	}
 
 	cache.users[mxid] = newEntry
@@ -251,13 +241,18 @@ func (b *Bmatrix) cacheDisplayName(channelID id.RoomID, mxid id.UserID, displayN
 	return displayName
 }
 
-func (b *Bmatrix) removeDisplayNameFromCache(mxid id.UserID) {
+func (b *Bmatrix) removeDisplayNameFromCache(mxid id.UserID, roomID id.RoomID) {
 	cache := b.NicknameCache
 
 	cache.Lock()
 	defer cache.Unlock()
 
-	delete(cache.users, mxid)
+	if user, userPresent := cache.users[mxid]; userPresent {
+		if _, roomPresent := user.perChannel[roomID]; roomPresent {
+			delete(user.perChannel, roomID)
+			cache.users[mxid] = user
+		}
+	}
 }
 
 // getAvatarURL returns the avatar URL of the specified sender.

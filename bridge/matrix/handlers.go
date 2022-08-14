@@ -75,15 +75,6 @@ func (b *Bmatrix) handleEvent(origin EventOrigin, ev *event.Event) {
 		b.Unlock()
 	}
 
-	// if we receive messages both via the classical matrix syncer and appserver, prefer appservice and throw away this duplicate event
-	if channel.appService && origin != originAppService {
-		b.Log.Debugf("Dropping event, should receive it via appservice: %s", ev.ID)
-
-		return
-	}
-
-	b.Log.Debugf("== Receiving event: %#v (appService=%t)", ev, origin == originAppService)
-
 	if ev.Type == event.EphemeralEventTyping {
 		typing := ev.Content.AsTyping()
 		if len(typing.UserIDs) > 0 {
@@ -97,6 +88,15 @@ func (b *Bmatrix) handleEvent(origin EventOrigin, ev *event.Event) {
 
 		return
 	}
+
+	// if we receive messages both via the classical matrix syncer and appserver, prefer appservice and throw away this duplicate event
+	if channel.appService && origin != originAppService {
+		b.Log.Debugf("Dropping event, should receive it via appservice: %s", ev.ID)
+
+		return
+	}
+
+	b.Log.Debugf("== Receiving event: %#v (appService=%t)", ev, origin == originAppService)
 
 	defer (func(ev *event.Event) {
 		// not crucial, so no ratelimit check here
@@ -146,7 +146,7 @@ func (b *Bmatrix) handleMemberChange(ev *event.Event) {
 	if member.Membership == event.MembershipJoin {
 		b.cacheDisplayName(ev.RoomID, ev.Sender, member.Displayname)
 	} else if member.Membership == event.MembershipLeave || member.Membership == event.MembershipBan {
-		b.removeDisplayNameFromCache(ev.Sender)
+		b.removeDisplayNameFromCache(ev.Sender, ev.RoomID)
 	}
 }
 
