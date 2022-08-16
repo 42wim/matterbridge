@@ -1390,6 +1390,11 @@ RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 #OPTIONAL (default false)
 ShowJoinPart=false
 
+#Rename the bot in the current room to the username of the message
+#This will make an additional API request per message and will probably count towards rate limits
+#OPTIONAL (default false)
+SpoofUsername=false
+
 #StripNick only allows alphanumerical nicks. See https://github.com/42wim/matterbridge/issues/285
 #It will strip other characters from the nick
 #OPTIONAL (default false)
