@@ -51,7 +51,7 @@ func interface2Struct(in interface{}, out interface{}) error {
 	return json.Unmarshal(jsonObj, out)
 }
 
-// getDisplayName retrieves the displayName for mxid, querying the homserver if the mxid is not in the cache.
+// getDisplayName retrieves the displayName for mxid, querying the homeserver if the mxid is not in the cache.
 func (b *Bmatrix) getDisplayName(mxid string) string {
 	if b.GetBool("UseUserName") {
 		return mxid[1:]
