@@ -33,13 +33,13 @@ type RoomInfo struct {
 }
 
 type Bmatrix struct {
-	mc            *matrix.Client
-	UserID        id.UserID
-	appService    *AppServiceWrapper
-	NicknameCache *NicknameCache
-	RoomMap       map[id.RoomID]RoomInfo
-	rateMutex     sync.RWMutex
-	joinedRooms   []id.RoomID
+	mc          *matrix.Client
+	UserID      id.UserID
+	appService  *AppServiceWrapper
+	UserCache   *UserInfoCache
+	RoomMap     map[id.RoomID]RoomInfo
+	rateMutex   sync.RWMutex
+	joinedRooms []id.RoomID
 	sync.RWMutex
 	*bridge.Config
 	stopNormalSync    chan struct{}
@@ -54,7 +54,7 @@ type matrixUsername struct {
 func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Bmatrix{Config: cfg}
 	b.RoomMap = make(map[id.RoomID]RoomInfo)
-	b.NicknameCache = NewNicknameCache()
+	b.UserCache = NewUserInfoCache()
 	b.stopNormalSync = make(chan struct{}, 1)
 	b.stopNormalSyncAck = make(chan struct{}, 1)
 	return b
@@ -333,6 +333,7 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 
 // DontProcessOldEvents returns true if a sync event should be considered for further processing.
 // We use that function to filter out events we have already read.
+//nolint: gocognit
 func (b *Bmatrix) DontProcessOldEvents(resp *matrix.RespSync, since string) bool {
 	// we only filter old events in the initial sync(), because subsequent sync()
 	// (where since != "") should only return new events

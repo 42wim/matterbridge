@@ -145,12 +145,12 @@ func (b *Bmatrix) handleMemberChange(ev *event.Event) {
 	// Update the displayname on join messages, according to https://spec.matrix.org/v1.3/client-server-api/#events-on-change-of-profile-information
 	if member.Membership == event.MembershipJoin {
 		b.cacheDisplayName(ev.RoomID, ev.Sender, member.Displayname)
+		b.cacheAvatarURL(ev.RoomID, ev.Sender, member.AvatarURL)
 	} else if member.Membership == event.MembershipLeave || member.Membership == event.MembershipBan {
-		b.removeDisplayNameFromCache(ev.Sender, ev.RoomID)
+		b.UserCache.removeFromCache(ev.RoomID, ev.Sender)
 	}
 }
 
-//nolint: funlen
 func (b *Bmatrix) handleMessage(rmsg config.Message, ev *event.Event) {
 	msg := ev.Content.AsMessage()
 	if msg == nil {
@@ -162,13 +162,7 @@ func (b *Bmatrix) handleMessage(rmsg config.Message, ev *event.Event) {
 
 	rmsg.Text = msg.Body
 
-	// TODO: cache the avatars
-	avatarURL := b.getAvatarURL(ev.Sender)
-	contentURI, err := id.ParseContentURI(avatarURL)
-	if err == nil {
-		avatarURL = b.mc.GetDownloadURL(contentURI)
-		rmsg.Avatar = avatarURL
-	}
+	rmsg.Avatar = b.getAvatarURL(ev.RoomID, ev.Sender)
 
 	//nolint: exhaustive
 	switch msg.MsgType {
