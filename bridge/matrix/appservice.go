@@ -128,9 +128,11 @@ func (b *Bmatrix) startAppService() error {
 	b.Log.Debug("appservice launched")
 
 	processor := appservice.NewEventProcessor(wrapper.appService)
-	processor.On(event.EventMessage, func(ev *event.Event) {
-		b.handleEvent(originAppService, ev)
-	})
+	for _, eventType := range []event.Type{event.EventRedaction, event.EventMessage} {
+		processor.On(eventType, func(ev *event.Event) {
+			b.handleEvent(originAppService, ev)
+		})
+	}
 	go processor.Start()
 	b.Log.Debug("appservice event dispatcher launched")
 
