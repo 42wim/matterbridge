@@ -1,14 +1,20 @@
 package bmatrix
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"html"
+	"io"
+	"net/http"
 	"time"
 
 	matrix "maunium.net/go/mautrix"
+	matrixAppService "maunium.net/go/mautrix/appservice"
 	"maunium.net/go/mautrix/event"
 	"maunium.net/go/mautrix/id"
+
+	"github.com/42wim/matterbridge/bridge/helper"
 )
 
 // arbitrary limit to determine when to cleanup nickname cache entries
@@ -63,8 +69,10 @@ func (b *Bmatrix) getDisplayName(channelID id.RoomID, mxid id.UserID) string {
 		return string(mxid)[1:]
 	}
 
-	cachedEntry := b.UserCache.retrieveUserInRoomFromCache(channelID, mxid)
-	if cachedEntry == nil || cachedEntry.displayName == nil {
+	cachedEntry := b.UserCache.getAttributeFromCache(channelID, mxid, func(e UserInRoomCacheEntry) bool {
+		return e.displayName != nil
+	})
+	if cachedEntry == nil {
 		// retrieve the global display name
 		return b.cacheDisplayName("", mxid, b.retrieveGlobalDisplayname(mxid))
 	}
@@ -136,8 +144,10 @@ func (b *Bmatrix) retrieveGlobalAvatarURL(mxid id.UserID) id.ContentURIString {
 
 // getAvatarURL retrieves the avatar URL for mxid, querying the homeserver if the mxid is not in the cache.
 func (b *Bmatrix) getAvatarURL(channelID id.RoomID, mxid id.UserID) string {
-	cachedEntry := b.UserCache.retrieveUserInRoomFromCache(channelID, mxid)
-	if cachedEntry == nil || cachedEntry.avatarURL == nil {
+	cachedEntry := b.UserCache.getAttributeFromCache(channelID, mxid, func(e UserInRoomCacheEntry) bool {
+		return e.avatarURL != nil
+	})
+	if cachedEntry == nil {
 		// retrieve the global display name
 		return b.cacheAvatarURL("", mxid, b.retrieveGlobalAvatarURL(mxid))
 	}
@@ -162,6 +172,28 @@ func (b *Bmatrix) cacheAvatarURL(channelID id.RoomID, mxid id.UserID, avatarURL 
 	})
 
 	return fullURL
+}
+
+// cacheSourceAvatarURL stores the mapping between a virtual user and the *source* URL of the user avatar,
+// to be reused later without reuploading the same avatar repeatedly.
+// Note that old entries are cleaned when this function is called.
+func (b *Bmatrix) cacheSourceAvatarURL(channelID id.RoomID, mxid id.UserID, avatarURL string) {
+	b.cacheEntry(channelID, mxid, func(entry UserInRoomCacheEntry) UserInRoomCacheEntry {
+		entry.sourceAvatar = &avatarURL
+		return entry
+	})
+}
+
+// getSourceAvatarURL retrieves the avatar URL for mxid, querying the homeserver if the mxid is not in the cache.
+func (b *Bmatrix) getSourceAvatarURL(channelID id.RoomID, mxid id.UserID) string {
+	cachedEntry := b.UserCache.getAttributeFromCache(channelID, mxid, func(e UserInRoomCacheEntry) bool {
+		return e.sourceAvatar != nil
+	})
+	if cachedEntry == nil {
+		return ""
+	}
+
+	return *cachedEntry.sourceAvatar
 }
 
 // handleRatelimit handles the ratelimit errors and return if we're ratelimited and the amount of time to sleep
@@ -220,8 +252,61 @@ func (w SendMessageEventWrapper) SendMessageEvent(roomID id.RoomID, eventType ev
 	return w.inner.SendMessageEvent(roomID, eventType, contentJSON)
 }
 
+func (b *Bmatrix) uploadAvatar(channelID id.RoomID, mxid id.UserID, intent *matrixAppService.IntentAPI, avatarURL string) error {
+	cachedURL := b.getSourceAvatarURL(channelID, mxid)
+
+	// do we need to update the avatar for that user
+	if avatarURL == cachedURL {
+		return nil
+	}
+
+	var buf bytes.Buffer
+	client := &http.Client{
+		Timeout: time.Second * 5,
+	}
+	req, err := http.NewRequest(http.MethodGet, avatarURL, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	_, err = io.Copy(&buf, resp.Body)
+	if err != nil {
+		return err
+	}
+	data := buf.Bytes()
+
+	existingData, err := helper.DownloadFile(b.getAvatarURL(channelID, mxid))
+	if err == nil && existingData != nil && bytes.Equal(*existingData, data) {
+		// the existing avatar is already correct, cache the source URL and return
+		b.cacheSourceAvatarURL(channelID, mxid, avatarURL)
+		return nil
+	}
+
+	//nolint: exhaustruct
+	matrixResp, err := b.mc.UploadMedia(matrix.ReqUploadMedia{
+		ContentBytes: data,
+		ContentType:  resp.Header.Get("Content-Type"),
+	})
+	if err != nil {
+		return err
+	}
+
+	err = intent.SetAvatarURL(matrixResp.ContentURI)
+	if err != nil {
+		return err
+	}
+
+	b.cacheSourceAvatarURL(channelID, mxid, avatarURL)
+
+	return nil
+}
+
 //nolint: wrapcheck
-func (b *Bmatrix) sendMessageEventWithRetries(channel id.RoomID, message event.MessageEventContent, username string) (string, error) {
+func (b *Bmatrix) sendMessageEventWithRetries(channel id.RoomID, message event.MessageEventContent, username string, avatarURL string) (string, error) {
 	var (
 		resp   *matrix.RespSendEvent
 		client interface {
@@ -248,6 +333,8 @@ func (b *Bmatrix) sendMessageEventWithRetries(channel id.RoomID, message event.M
 		// if we can't change the display name it's not great but not the end of the world either, ignore it
 		// TODO: do not perform this action on every message, with an in-memory cache or something
 		_ = intent.SetDisplayName(username)
+		//nolint: errcheck
+		go b.uploadAvatar(channel, id.UserID(bridgeUserID), intent, avatarURL)
 		client = intent
 	} else {
 		applyUsernametoMessage(&message, username)

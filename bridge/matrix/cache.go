@@ -9,8 +9,11 @@ import (
 )
 
 type UserInRoomCacheEntry struct {
-	displayName               *string
-	avatarURL                 *string
+	displayName *string
+	avatarURL   *string
+	// for bridged messages that we sent, keep the source URL to know when to upgrade the
+	// profile picture (instead of doing it on every message)
+	sourceAvatar              *string
 	lastUpdated               time.Time
 	conflictWithOtherUsername bool
 }
@@ -32,22 +35,23 @@ func NewUserInfoCache() *UserInfoCache {
 	}
 }
 
-// note: cache is locked inside this function
-func (c *UserInfoCache) retrieveUserInRoomFromCache(channelID id.RoomID, mxid id.UserID) *UserInRoomCacheEntry {
-	var cachedEntry *UserInRoomCacheEntry = nil
-
+// note: the cache is read-locked inside this function
+func (c *UserInfoCache) getAttributeFromCache(channelID id.RoomID, mxid id.UserID, attributeIsPresent func(UserInRoomCacheEntry) bool) *UserInRoomCacheEntry {
 	c.RLock()
+	defer c.RUnlock()
+
 	if user, userPresent := c.users[mxid]; userPresent {
 		// try first the name of the user in the room, then globally
-		if roomCachedEntry, roomPresent := user.perChannel[channelID]; roomPresent {
-			cachedEntry = &roomCachedEntry
-		} else if user.globalEntry != nil {
-			cachedEntry = user.globalEntry
+		if roomCachedEntry, roomPresent := user.perChannel[channelID]; roomPresent && attributeIsPresent(roomCachedEntry) {
+			return &roomCachedEntry
+		}
+
+		if user.globalEntry != nil && attributeIsPresent(*user.globalEntry) {
+			return user.globalEntry
 		}
 	}
-	c.RUnlock()
 
-	return cachedEntry
+	return nil
 }
 
 // note: cache is locked inside this function

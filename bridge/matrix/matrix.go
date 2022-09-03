@@ -222,7 +222,7 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 			m.Format = event.FormatHTML
 		}
 
-		return b.sendMessageEventWithRetries(channel, m, msg.Username)
+		return b.sendMessageEventWithRetries(channel, m, msg.Username, msg.Avatar)
 	}
 
 	// Delete message
@@ -236,8 +236,9 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 		err := b.retry(func() error {
 			//nolint:exhaustruct
 			resp, err := b.mc.RedactEvent(channel, id.EventID(msg.ID), matrix.ReqRedact{})
-
-			msgID = string(resp.EventID)
+			if resp != nil {
+				msgID = string(resp.EventID)
+			}
 
 			return err
 		})
@@ -254,7 +255,7 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 				Body:    rmsg.Text,
 			}
 
-			_, err := b.sendMessageEventWithRetries(channel, m, msg.Username)
+			_, err := b.sendMessageEventWithRetries(channel, m, msg.Username, msg.Avatar)
 			if err != nil {
 				b.Log.Errorf("sendText failed: %s", err)
 			}
@@ -292,7 +293,7 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 			Type:    event.RelReplace,
 		}
 
-		return b.sendMessageEventWithRetries(channel, rmsg, msg.Username)
+		return b.sendMessageEventWithRetries(channel, rmsg, msg.Username, msg.Avatar)
 	}
 
 	//nolint:exhaustruct
@@ -328,7 +329,7 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 		}
 	}
 
-	return b.sendMessageEventWithRetries(channel, m, msg.Username)
+	return b.sendMessageEventWithRetries(channel, m, msg.Username, msg.Avatar)
 }
 
 // DontProcessOldEvents returns true if a sync event should be considered for further processing.

@@ -40,10 +40,6 @@ func (b *Bmatrix) ignoreBridgingEvents(ev *event.Event) bool {
 
 //nolint: funlen
 func (b *Bmatrix) handleEvent(origin EventOrigin, ev *event.Event) {
-	if b.ignoreBridgingEvents(ev) {
-		return
-	}
-
 	b.RLock()
 	channel, ok := b.RoomMap[ev.RoomID]
 	b.RUnlock()
@@ -55,15 +51,25 @@ func (b *Bmatrix) handleEvent(origin EventOrigin, ev *event.Event) {
 		return
 	}
 
+	// This needs to be defined before rejecting bridging events, as we rely on this to cache
+	// avatar URLs sent with appService (otherwise we would upload one avatar per message sent
+	// across the bridge!).
+	// As such, beware! Moving this below the b.ignoreBridgingEvents condiiton would appear to
+	// work, but it would also lead to a high file upload rate, until being eventually
+	// rate-limited by the homeserver
+	if ev.Type == event.StateMember {
+		b.handleMemberChange(ev)
+
+		return
+	}
+
 	if ev.Type == event.EphemeralEventReceipt {
 		// we do not support read receipts across servers, considering that
 		// multiple services (e.g. Discord) doesn't expose that information)
 		return
 	}
 
-	if ev.Type == event.StateMember {
-		b.handleMemberChange(ev)
-
+	if b.ignoreBridgingEvents(ev) {
 		return
 	}
 
@@ -272,7 +278,7 @@ func (b *Bmatrix) handleUploadFile(msg *config.Message, channel id.RoomID, fi *c
 		FormattedBody: fi.Comment,
 	}
 
-	_, err := b.sendMessageEventWithRetries(channel, m, msg.Username)
+	_, err := b.sendMessageEventWithRetries(channel, m, msg.Username, msg.Avatar)
 	if err != nil {
 		b.Log.Errorf("file comment failed: %#v", err)
 	}
@@ -335,7 +341,7 @@ func (b *Bmatrix) handleUploadFile(msg *config.Message, channel id.RoomID, fi *c
 		}
 	}
 
-	_, err = b.sendMessageEventWithRetries(channel, m, msg.Username)
+	_, err = b.sendMessageEventWithRetries(channel, m, msg.Username, msg.Avatar)
 	if err != nil {
 		b.Log.Errorf("sending the message referencing the uploaded file failed: %#v", err)
 	}
