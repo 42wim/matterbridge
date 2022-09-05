@@ -46,8 +46,6 @@ var (
 	EndpointVoice        = EndpointAPI + "/voice/"
 	EndpointVoiceRegions = EndpointVoice + "regions"
 
-	// TODO: EndpointUserGuildMember
-
 	EndpointUser               = func(uID string) string { return EndpointUsers + uID }
 	EndpointUserAvatar         = func(uID, aID string) string { return EndpointCDNAvatars + uID + "/" + aID + ".png" }
 	EndpointUserAvatarAnimated = func(uID, aID string) string { return EndpointCDNAvatars + uID + "/" + aID + ".gif" }
@@ -64,10 +62,14 @@ var (
 
 	EndpointUserGuilds      = func(uID string) string { return EndpointUsers + uID + "/guilds" }
 	EndpointUserGuild       = func(uID, gID string) string { return EndpointUsers + uID + "/guilds/" + gID }
+	EndpointUserGuildMember = func(uID, gID string) string { return EndpointUserGuild(uID, gID) + "/member" }
 	EndpointUserChannels    = func(uID string) string { return EndpointUsers + uID + "/channels" }
 	EndpointUserConnections = func(uID string) string { return EndpointUsers + uID + "/connections" }
 
 	EndpointGuild                    = func(gID string) string { return EndpointGuilds + gID }
+	EndpointGuildAutoModeration      = func(gID string) string { return EndpointGuild(gID) + "/auto-moderation" }
+	EndpointGuildAutoModerationRules = func(gID string) string { return EndpointGuildAutoModeration(gID) + "/rules" }
+	EndpointGuildAutoModerationRule  = func(gID, rID string) string { return EndpointGuildAutoModerationRules(gID) + "/" + rID }
 	EndpointGuildThreads             = func(gID string) string { return EndpointGuild(gID) + "/threads" }
 	EndpointGuildActiveThreads       = func(gID string) string { return EndpointGuildThreads(gID) + "/active" }
 	EndpointGuildPreview             = func(gID string) string { return EndpointGuilds + gID + "/preview" }

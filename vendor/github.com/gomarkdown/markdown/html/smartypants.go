@@ -3,9 +3,17 @@ package html
 import (
 	"bytes"
 	"io"
+
+	"github.com/gomarkdown/markdown/parser"
 )
 
 // SmartyPants rendering
+
+var (
+	isSpace       = parser.IsSpace
+	isAlnum       = parser.IsAlnum
+	isPunctuation = parser.IsPunctuation
+)
 
 // SPRenderer is a struct containing state of a Smartypants renderer.
 type SPRenderer struct {

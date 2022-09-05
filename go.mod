@@ -7,12 +7,12 @@ require (
 	github.com/Philipp15b/go-steam v1.0.1-0.20200727090957-6ae9b3c0a560
 	github.com/Rhymen/go-whatsapp v0.1.2-0.20211102134409-31a2e740845c
 	github.com/SevereCloud/vksdk/v2 v2.15.0
-	github.com/bwmarrin/discordgo v0.25.0
-	github.com/d5/tengo/v2 v2.12.1
+	github.com/bwmarrin/discordgo v0.26.1
+	github.com/d5/tengo/v2 v2.12.2
 	github.com/davecgh/go-spew v1.1.1
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
-	github.com/gomarkdown/markdown v0.0.0-20220731190611-dcdaee8e7a53
+	github.com/gomarkdown/markdown v0.0.0-20220830015526-01a3c37d6f50
 	github.com/google/gops v0.3.25
 	github.com/gorilla/schema v1.2.0
 	github.com/gorilla/websocket v1.5.0
@@ -21,8 +21,8 @@ require (
 	github.com/jpillora/backoff v1.0.0
 	github.com/keybase/go-keybase-chat-bot v0.0.0-20220322223021-75d497527469
 	github.com/kyokomi/emoji/v2 v2.2.10
-	github.com/labstack/echo/v4 v4.8.0
-	github.com/lrstanley/girc v0.0.0-20220812131643-56459d73b75a
+	github.com/labstack/echo/v4 v4.9.0
+	github.com/lrstanley/girc v0.0.0-20220821023908-8e7df6d970f8
 	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20211016222428-79310a412696
 	github.com/matterbridge/go-xmpp v0.0.0-20211030125215-791a06c5f1be
 	github.com/matterbridge/gomatrix v0.0.0-20220411225302-271e5088ea27
@@ -47,9 +47,9 @@ require (
 	github.com/writeas/go-strip-markdown v2.0.1+incompatible
 	github.com/yaegashi/msgraph.go v0.1.4
 	github.com/zfjagann/golang-ring v0.0.0-20220330170733-19bcea1b6289
-	go.mau.fi/whatsmeow v0.0.0-20220804175245-31c5af44cb82
-	golang.org/x/image v0.0.0-20220722155232-062f8c9fd539
-	golang.org/x/oauth2 v0.0.0-20220808172628-8227340efae7
+	go.mau.fi/whatsmeow v0.0.0-20220811191500-f650c10b0068
+	golang.org/x/image v0.0.0-20220902085622-e7cb96979f69
+	golang.org/x/oauth2 v0.0.0-20220822191816-0ebed06d0094
 	golang.org/x/text v0.3.7
 	gomod.garykim.dev/nc-talk v0.3.0
 	google.golang.org/protobuf v1.28.1

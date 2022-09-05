@@ -77,7 +77,7 @@ func (s *Session) Open() error {
 	s.log(LogInformational, "connecting to gateway %s", s.gateway)
 	header := http.Header{}
 	header.Add("accept-encoding", "zlib")
-	s.wsConn, _, err = websocket.DefaultDialer.Dial(s.gateway, header)
+	s.wsConn, _, err = s.Dialer.Dial(s.gateway, header)
 	if err != nil {
 		s.log(LogError, "error connecting to gateway %s, %s", s.gateway, err)
 		s.gateway = "" // clear cached gateway

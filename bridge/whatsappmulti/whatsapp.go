@@ -1,3 +1,4 @@
+//go:build whatsappmulti
 // +build whatsappmulti
 
 package bwhatsapp
@@ -234,7 +235,7 @@ func (b *Bwhatsapp) PostDocumentMessage(msg config.Message, filetype string) (st
 	b.Log.Debugf("=> Sending %#v", msg)
 
 	ID := whatsmeow.GenerateMessageID()
-	_, err = b.wc.SendMessage(groupJID, ID, &message)
+	_, err = b.wc.SendMessage(context.TODO(), groupJID, ID, &message)
 
 	return ID, err
 }
@@ -268,7 +269,7 @@ func (b *Bwhatsapp) PostImageMessage(msg config.Message, filetype string) (strin
 	b.Log.Debugf("=> Sending %#v", msg)
 
 	ID := whatsmeow.GenerateMessageID()
-	_, err = b.wc.SendMessage(groupJID, ID, &message)
+	_, err = b.wc.SendMessage(context.TODO(), groupJID, ID, &message)
 
 	return ID, err
 }
@@ -327,7 +328,7 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 	message.Conversation = &text
 
 	ID := whatsmeow.GenerateMessageID()
-	_, err := b.wc.SendMessage(groupJID, ID, &message)
+	_, err := b.wc.SendMessage(context.TODO(), groupJID, ID, &message)
 
 	return ID, err
 }
