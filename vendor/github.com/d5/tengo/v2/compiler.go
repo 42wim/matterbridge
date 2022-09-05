@@ -141,25 +141,7 @@ func (c *Compiler) Compile(node parser.Node) error {
 		if node.Token == token.LAnd || node.Token == token.LOr {
 			return c.compileLogical(node)
 		}
-		if node.Token == token.Less {
-			if err := c.Compile(node.RHS); err != nil {
-				return err
-			}
-			if err := c.Compile(node.LHS); err != nil {
-				return err
-			}
-			c.emit(node, parser.OpBinaryOp, int(token.Greater))
-			return nil
-		} else if node.Token == token.LessEq {
-			if err := c.Compile(node.RHS); err != nil {
-				return err
-			}
-			if err := c.Compile(node.LHS); err != nil {
-				return err
-			}
-			c.emit(node, parser.OpBinaryOp, int(token.GreaterEq))
-			return nil
-		}
+
 		if err := c.Compile(node.LHS); err != nil {
 			return err
 		}
@@ -182,6 +164,10 @@ func (c *Compiler) Compile(node parser.Node) error {
 			c.emit(node, parser.OpBinaryOp, int(token.Greater))
 		case token.GreaterEq:
 			c.emit(node, parser.OpBinaryOp, int(token.GreaterEq))
+		case token.Less:
+			c.emit(node, parser.OpBinaryOp, int(token.Less))
+		case token.LessEq:
+			c.emit(node, parser.OpBinaryOp, int(token.LessEq))
 		case token.Equal:
 			c.emit(node, parser.OpEqual)
 		case token.NotEqual:

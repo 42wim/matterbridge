@@ -1,3 +1,4 @@
+//go:build whatsappmulti
 // +build whatsappmulti
 
 package bwhatsapp
@@ -77,7 +78,7 @@ func (b *Bwhatsapp) getSenderNotify(senderJid types.JID) string {
 
 func (b *Bwhatsapp) GetProfilePicThumb(jid string) (*types.ProfilePictureInfo, error) {
 	pjid, _ := types.ParseJID(jid)
-	info, err := b.wc.GetProfilePictureInfo(pjid, true)
+	info, err := b.wc.GetProfilePictureInfo(pjid, true, "")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get avatar: %v", err)
 	}

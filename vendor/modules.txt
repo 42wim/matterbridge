@@ -55,10 +55,10 @@ github.com/av-elier/go-decimal-to-rational
 # github.com/blang/semver v3.5.1+incompatible
 ## explicit
 github.com/blang/semver
-# github.com/bwmarrin/discordgo v0.25.0
+# github.com/bwmarrin/discordgo v0.26.1
 ## explicit; go 1.13
 github.com/bwmarrin/discordgo
-# github.com/d5/tengo/v2 v2.12.1
+# github.com/d5/tengo/v2 v2.12.2
 ## explicit; go 1.13
 github.com/d5/tengo/v2
 github.com/d5/tengo/v2/parser
@@ -93,12 +93,11 @@ github.com/golang-jwt/jwt
 ## explicit; go 1.9
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go/descriptor
-# github.com/gomarkdown/markdown v0.0.0-20220731190611-dcdaee8e7a53
+# github.com/gomarkdown/markdown v0.0.0-20220830015526-01a3c37d6f50
 ## explicit; go 1.12
 github.com/gomarkdown/markdown
 github.com/gomarkdown/markdown/ast
 github.com/gomarkdown/markdown/html
-github.com/gomarkdown/markdown/internal/valid
 github.com/gomarkdown/markdown/parser
 # github.com/google/gops v0.3.25
 ## explicit; go 1.13
@@ -199,7 +198,7 @@ github.com/klauspost/cpuid/v2
 # github.com/kyokomi/emoji/v2 v2.2.10
 ## explicit; go 1.14
 github.com/kyokomi/emoji/v2
-# github.com/labstack/echo/v4 v4.8.0
+# github.com/labstack/echo/v4 v4.9.0
 ## explicit; go 1.17
 github.com/labstack/echo/v4
 github.com/labstack/echo/v4/middleware
@@ -209,7 +208,7 @@ github.com/labstack/gommon/bytes
 github.com/labstack/gommon/color
 github.com/labstack/gommon/log
 github.com/labstack/gommon/random
-# github.com/lrstanley/girc v0.0.0-20220812131643-56459d73b75a
+# github.com/lrstanley/girc v0.0.0-20220821023908-8e7df6d970f8
 ## explicit; go 1.18
 github.com/lrstanley/girc
 # github.com/magiconair/properties v1.8.6
@@ -514,7 +513,7 @@ go.mau.fi/libsignal/util/errorhelper
 go.mau.fi/libsignal/util/keyhelper
 go.mau.fi/libsignal/util/medium
 go.mau.fi/libsignal/util/optional
-# go.mau.fi/whatsmeow v0.0.0-20220804175245-31c5af44cb82
+# go.mau.fi/whatsmeow v0.0.0-20220811191500-f650c10b0068
 ## explicit; go 1.17
 go.mau.fi/whatsmeow
 go.mau.fi/whatsmeow/appstate
@@ -567,7 +566,7 @@ golang.org/x/crypto/scrypt
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/image v0.0.0-20220722155232-062f8c9fd539
+# golang.org/x/image v0.0.0-20220902085622-e7cb96979f69
 ## explicit; go 1.12
 golang.org/x/image/riff
 golang.org/x/image/vp8
@@ -589,7 +588,7 @@ golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/publicsuffix
 golang.org/x/net/websocket
-# golang.org/x/oauth2 v0.0.0-20220808172628-8227340efae7
+# golang.org/x/oauth2 v0.0.0-20220822191816-0ebed06d0094
 ## explicit; go 1.17
 golang.org/x/oauth2
 golang.org/x/oauth2/clientcredentials

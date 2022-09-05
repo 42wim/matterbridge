@@ -7,8 +7,8 @@ import (
 	"github.com/gomarkdown/markdown/ast"
 )
 
-// parse '(#r)', where r does not contain spaces. Or.
-// (!item) (!item, subitem), for an index, (!!item) signals primary.
+// parse '(#r, text)', where r does not contain spaces, but text may (similar to a citation). Or. (!item) (!item,
+// subitem), for an index, (!!item) signals primary.
 func maybeShortRefOrIndex(p *Parser, data []byte, offset int) (int, ast.Node) {
 	if len(data[offset:]) < 4 {
 		return 0, nil
@@ -25,8 +25,8 @@ func maybeShortRefOrIndex(p *Parser, data []byte, offset int) (int, ast.Node) {
 			switch {
 			case c == ')':
 				break Loop
-			case !isAlnum(c):
-				if c == '_' || c == '-' || c == ':' {
+			case !IsAlnum(c):
+				if c == '_' || c == '-' || c == ':' || c == ' ' || c == ',' {
 					i++
 					continue
 				}
@@ -45,6 +45,21 @@ func maybeShortRefOrIndex(p *Parser, data []byte, offset int) (int, ast.Node) {
 		id := data[2:i]
 		node := &ast.CrossReference{}
 		node.Destination = id
+		if c := bytes.Index(id, []byte(",")); c > 0 {
+			idpart := id[:c]
+			suff := id[c+1:]
+			suff = bytes.TrimSpace(suff)
+			node.Destination = idpart
+			node.Suffix = suff
+		}
+		if bytes.Index(node.Destination, []byte(" ")) > 0 {
+			// no spaces allowed in id
+			return 0, nil
+		}
+		if bytes.Index(node.Destination, []byte(",")) > 0 {
+			// nor comma
+			return 0, nil
+		}
 
 		return i + 1, node
 

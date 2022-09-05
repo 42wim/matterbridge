@@ -84,7 +84,9 @@ type Parser struct {
 	// the bottom will be used to fill in the link details.
 	ReferenceOverride ReferenceOverrideFunc
 
-	// TODO: documentation
+	// IsSafeURLOverride allows overriding the default URL matcher. URL is
+	// safe if the overriding function returns true. Can be used to extend
+	// the default list of safe URLs.
 	IsSafeURLOverride func(url []byte) bool
 
 	Opts Options
@@ -390,35 +392,35 @@ func (p *Parser) parseRefsToAST() {
 //
 // Consider this markdown with reference-style links:
 //
-//     [link][ref]
+//	[link][ref]
 //
-//     [ref]: /url/ "tooltip title"
+//	[ref]: /url/ "tooltip title"
 //
 // It will be ultimately converted to this HTML:
 //
-//     <p><a href=\"/url/\" title=\"title\">link</a></p>
+//	<p><a href=\"/url/\" title=\"title\">link</a></p>
 //
 // And a reference structure will be populated as follows:
 //
-//     p.refs["ref"] = &reference{
-//         link: "/url/",
-//         title: "tooltip title",
-//     }
+//	p.refs["ref"] = &reference{
+//	    link: "/url/",
+//	    title: "tooltip title",
+//	}
 //
 // Alternatively, reference can contain information about a footnote. Consider
 // this markdown:
 //
-//     Text needing a footnote.[^a]
+//	Text needing a footnote.[^a]
 //
-//     [^a]: This is the note
+//	[^a]: This is the note
 //
 // A reference structure will be populated as follows:
 //
-//     p.refs["a"] = &reference{
-//         link: "a",
-//         title: "This is the note",
-//         noteID: <some positive int>,
-//     }
+//	p.refs["a"] = &reference{
+//	    link: "a",
+//	    title: "This is the note",
+//	    noteID: <some positive int>,
+//	}
 //
 // TODO: As you can see, it begs for splitting into two dedicated structures
 // for refs and for footnotes.
@@ -693,8 +695,8 @@ gatherLines:
 	return
 }
 
-// isPunctuation returns true if c is a punctuation symbol.
-func isPunctuation(c byte) bool {
+// IsPunctuation returns true if c is a punctuation symbol.
+func IsPunctuation(c byte) bool {
 	for _, r := range []byte("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~") {
 		if c == r {
 			return true
@@ -703,20 +705,63 @@ func isPunctuation(c byte) bool {
 	return false
 }
 
-// isSpace returns true if c is a white-space charactr
-func isSpace(c byte) bool {
+// IsSpace returns true if c is a white-space charactr
+func IsSpace(c byte) bool {
 	return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' || c == '\v'
 }
 
-// isLetter returns true if c is ascii letter
-func isLetter(c byte) bool {
+// IsLetter returns true if c is ascii letter
+func IsLetter(c byte) bool {
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
 }
 
-// isAlnum returns true if c is a digit or letter
+// IsAlnum returns true if c is a digit or letter
 // TODO: check when this is looking for ASCII alnum and when it should use unicode
-func isAlnum(c byte) bool {
-	return (c >= '0' && c <= '9') || isLetter(c)
+func IsAlnum(c byte) bool {
+	return (c >= '0' && c <= '9') || IsLetter(c)
+}
+
+var URIs = [][]byte{
+	[]byte("http://"),
+	[]byte("https://"),
+	[]byte("ftp://"),
+	[]byte("mailto:"),
+}
+
+var Paths = [][]byte{
+	[]byte("/"),
+	[]byte("./"),
+	[]byte("../"),
+}
+
+// IsSafeURL returns true if url starts with one of the valid schemes or is a relative path.
+func IsSafeURL(url []byte) bool {
+	nLink := len(url)
+	for _, path := range Paths {
+		nPath := len(path)
+		linkPrefix := url[:nPath]
+		if nLink >= nPath && bytes.Equal(linkPrefix, path) {
+			if nLink == nPath {
+				return true
+			} else if IsAlnum(url[nPath]) {
+				return true
+			}
+		}
+	}
+
+	for _, prefix := range URIs {
+		// TODO: handle unicode here
+		// case-insensitive prefix test
+		nPrefix := len(prefix)
+		if nLink > nPrefix {
+			linkPrefix := bytes.ToLower(url[:nPrefix])
+			if bytes.Equal(linkPrefix, prefix) && IsAlnum(url[nPrefix]) {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 // TODO: this is not used
@@ -809,7 +854,7 @@ func slugify(in []byte) []byte {
 	sym := false
 
 	for _, ch := range in {
-		if isAlnum(ch) {
+		if IsAlnum(ch) {
 			sym = false
 			out = append(out, ch)
 		} else if sym {

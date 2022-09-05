@@ -7,7 +7,7 @@
 
 // This file contains code related to state tracking.  If enabled, state
 // tracking will capture the initial READY packet and many other websocket
-// events and maintain an in-memory state of of guilds, channels, users, and
+// events and maintain an in-memory state of guilds, channels, users, and
 // so forth.  This information can be accessed through the Session.State struct.
 
 package discordgo
@@ -659,18 +659,6 @@ func (s *State) ThreadMemberUpdate(mu *ThreadMemberUpdate) error {
 
 	thread.Member = mu.ThreadMember
 	return nil
-}
-
-// GuildChannel gets a channel by ID from a guild.
-// This method is Deprecated, use Channel(channelID)
-func (s *State) GuildChannel(guildID, channelID string) (*Channel, error) {
-	return s.Channel(channelID)
-}
-
-// PrivateChannel gets a private channel by ID.
-// This method is Deprecated, use Channel(channelID)
-func (s *State) PrivateChannel(channelID string) (*Channel, error) {
-	return s.Channel(channelID)
 }
 
 // Channel gets a channel by ID, it will look in all guilds and private channels.

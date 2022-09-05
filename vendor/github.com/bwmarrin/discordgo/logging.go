@@ -90,7 +90,7 @@ func (v *VoiceConnection) log(msgL int, format string, a ...interface{}) {
 	msglog(msgL, 2, format, a...)
 }
 
-// printJSON is a helper function to display JSON data in a easy to read format.
+// printJSON is a helper function to display JSON data in an easy to read format.
 /* NOT USED ATM
 func printJSON(body []byte) {
 	var prettyJSON bytes.Buffer

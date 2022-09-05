@@ -146,6 +146,7 @@ Used by the projects below. Feel free to make a PR to add your project to this l
 - [Vintage Story](https://github.com/NikkyAI/vs-matterbridge)
 - [ServUO-matterbridge](https://github.com/kuoushi/ServUO-Matterbridge) (A matterbridge connector for ServUO servers)
 - [ts-matterbridge](https://github.com/Archeb/ts-matterbridge) (Integrate teamspeak chat with matterbridge)
+- [beerchat](https://github.com/mt-mods/beerchat) (Matterbridge link for minetest)
 
 ## Chat with us
 
