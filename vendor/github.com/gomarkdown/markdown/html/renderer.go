@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/gomarkdown/markdown/ast"
-	"github.com/gomarkdown/markdown/internal/valid"
 	"github.com/gomarkdown/markdown/parser"
 )
 
@@ -133,7 +132,9 @@ type Renderer struct {
 	// if > 0, will strip html tags in Out and Outs
 	DisableTags int
 
-	// TODO: documentation
+	// IsSafeURLOverride allows overriding the default URL matcher. URL is
+	// safe if the overriding function returns true. Can be used to extend
+	// the default list of safe URLs.
 	IsSafeURLOverride func(url []byte) bool
 
 	sr *SPRenderer
@@ -216,6 +217,11 @@ func NewRenderer(opts RendererOptions) *Renderer {
 }
 
 func isRelativeLink(link []byte) (yes bool) {
+	// empty links considerd relative
+	if len(link) == 0 {
+		return true
+	}
+
 	// a tag begin with '#'
 	if link[0] == '#' {
 		return true
@@ -245,6 +251,9 @@ func isRelativeLink(link []byte) (yes bool) {
 }
 
 func (r *Renderer) addAbsPrefix(link []byte) []byte {
+	if len(link) == 0 {
+		return link
+	}
 	if r.opts.AbsolutePrefix != "" && isRelativeLink(link) && link[0] != '.' {
 		newDest := r.opts.AbsolutePrefix
 		if link[0] != '/' {
@@ -291,7 +300,7 @@ func needSkipLink(r *Renderer, dest []byte) bool {
 	}
 	isSafeURL := r.IsSafeURLOverride
 	if isSafeURL == nil {
-		isSafeURL = valid.IsSafeURL
+		isSafeURL = parser.IsSafeURL
 	}
 	return flags&Safelink != 0 && !isSafeURL(dest) && !isMailto(dest)
 }
@@ -1267,33 +1276,6 @@ func slugify(in []byte) []byte {
 		}
 	}
 	return out[a : b+1]
-}
-
-// TODO: move to internal package
-// isAlnum returns true if c is a digit or letter
-// TODO: check when this is looking for ASCII alnum and when it should use unicode
-func isAlnum(c byte) bool {
-	return (c >= '0' && c <= '9') || isLetter(c)
-}
-
-// isSpace returns true if c is a white-space charactr
-func isSpace(c byte) bool {
-	return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' || c == '\v'
-}
-
-// isLetter returns true if c is ascii letter
-func isLetter(c byte) bool {
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
-}
-
-// isPunctuation returns true if c is a punctuation symbol.
-func isPunctuation(c byte) bool {
-	for _, r := range []byte("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~") {
-		if c == r {
-			return true
-		}
-	}
-	return false
 }
 
 // BlockAttrs takes a node and checks if it has block level attributes set. If so it

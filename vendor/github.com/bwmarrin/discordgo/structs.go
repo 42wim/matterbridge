@@ -59,12 +59,12 @@ type Session struct {
 	ShardCount int
 
 	// Should state tracking be enabled.
-	// State tracking is the best way for getting the the users
+	// State tracking is the best way for getting the users
 	// active guilds and the members of the guilds.
 	StateEnabled bool
 
 	// Whether or not to call event handlers synchronously.
-	// e.g false = launch event handlers in their own goroutines.
+	// e.g. false = launch event handlers in their own goroutines.
 	SyncEvents bool
 
 	// Exposed but should not be modified by User.
@@ -75,7 +75,7 @@ type Session struct {
 	// Max number of REST API retries
 	MaxRestRetries int
 
-	// Status stores the currect status of the websocket connection
+	// Status stores the current status of the websocket connection
 	// this is being tested, may stay, may go away.
 	status int32
 
@@ -94,6 +94,9 @@ type Session struct {
 
 	// The http client used for REST requests
 	Client *http.Client
+
+	// The dialer used for WebSocket connection
+	Dialer *websocket.Dialer
 
 	// The user agent used for REST APIs
 	UserAgent string
@@ -197,23 +200,8 @@ type IntegrationAccount struct {
 
 // A VoiceRegion stores data for a specific voice region server.
 type VoiceRegion struct {
-	ID       string `json:"id"`
-	Name     string `json:"name"`
-	Hostname string `json:"sample_hostname"`
-	Port     int    `json:"sample_port"`
-}
-
-// A VoiceICE stores data for voice ICE servers.
-type VoiceICE struct {
-	TTL     string       `json:"ttl"`
-	Servers []*ICEServer `json:"servers"`
-}
-
-// A ICEServer stores data for a specific voice ICE server.
-type ICEServer struct {
-	URL        string `json:"url"`
-	Username   string `json:"username"`
-	Credential string `json:"credential"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 // InviteTargetType indicates the type of target of an invite
@@ -222,8 +210,8 @@ type InviteTargetType uint8
 
 // Invite target types
 const (
-	InviteTargetStream             InviteTargetType = 1
-	InviteTargetEmbeddedAppliction InviteTargetType = 2
+	InviteTargetStream              InviteTargetType = 1
+	InviteTargetEmbeddedApplication InviteTargetType = 2
 )
 
 // A Invite stores all data related to a specific Discord Guild or Channel invite.
@@ -246,6 +234,8 @@ type Invite struct {
 	// will only be filled when using InviteWithCounts
 	ApproximatePresenceCount int `json:"approximate_presence_count"`
 	ApproximateMemberCount   int `json:"approximate_member_count"`
+
+	ExpiresAt *time.Time `json:"expires_at"`
 }
 
 // ChannelType is the type of a Channel
@@ -358,7 +348,7 @@ func (c *Channel) IsThread() bool {
 type ChannelEdit struct {
 	Name                 string                 `json:"name,omitempty"`
 	Topic                string                 `json:"topic,omitempty"`
-	NSFW                 bool                   `json:"nsfw,omitempty"`
+	NSFW                 *bool                  `json:"nsfw,omitempty"`
 	Position             int                    `json:"position"`
 	Bitrate              int                    `json:"bitrate,omitempty"`
 	UserLimit            int                    `json:"user_limit,omitempty"`
@@ -368,10 +358,10 @@ type ChannelEdit struct {
 
 	// NOTE: threads only
 
-	Archived            bool `json:"archived,omitempty"`
-	AutoArchiveDuration int  `json:"auto_archive_duration,omitempty"`
-	Locked              bool `json:"locked,bool"`
-	Invitable           bool `json:"invitable,omitempty"`
+	Archived            *bool `json:"archived,omitempty"`
+	AutoArchiveDuration int   `json:"auto_archive_duration,omitempty"`
+	Locked              *bool `json:"locked,omitempty"`
+	Invitable           *bool `json:"invitable,omitempty"`
 }
 
 // A ChannelFollow holds data returned after following a news channel
@@ -487,6 +477,17 @@ func (e *Emoji) APIName() string {
 		return e.Name
 	}
 	return e.ID
+}
+
+// EmojiParams represents parameters needed to create or update an Emoji.
+type EmojiParams struct {
+	// Name of the emoji
+	Name string `json:"name,omitempty"`
+	// A base64 encoded emoji image, has to be smaller than 256KB.
+	// NOTE: can be only set on creation.
+	Image string `json:"image,omitempty"`
+	// Roles for which this emoji will be available.
+	Roles []string `json:"roles,omitempty"`
 }
 
 // StickerFormat is the file format of the Sticker.
@@ -694,7 +695,7 @@ type Guild struct {
 	NSFWLevel GuildNSFWLevel `json:"nsfw_level"`
 
 	// The list of enabled guild features
-	Features []string `json:"features"`
+	Features []GuildFeature `json:"features"`
 
 	// Required MFA level for the guild
 	MfaLevel MfaLevel `json:"mfa_level"`
@@ -946,19 +947,19 @@ type GuildScheduledEventUser struct {
 	Member                *Member `json:"member"`
 }
 
-// A GuildTemplate represents
+// A GuildTemplate represents a replicable template for guild creation
 type GuildTemplate struct {
 	// The unique code for the guild template
 	Code string `json:"code"`
 
 	// The name of the template
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 
 	// The description for the template
-	Description string `json:"description"`
+	Description *string `json:"description,omitempty"`
 
 	// The number of times this template has been used
-	UsageCount string `json:"usage_count"`
+	UsageCount int `json:"usage_count"`
 
 	// The ID of the user who created the template
 	CreatorID string `json:"creator_id"`
@@ -980,6 +981,14 @@ type GuildTemplate struct {
 
 	// Whether the template has unsynced changes
 	IsDirty bool `json:"is_dirty"`
+}
+
+// GuildTemplateParams stores the data needed to create or update a GuildTemplate.
+type GuildTemplateParams struct {
+	// The name of the template (1-100 characters)
+	Name string `json:"name,omitempty"`
+	// The description of the template (0-120 characters)
+	Description string `json:"description,omitempty"`
 }
 
 // MessageNotifications is the notification level for a guild
@@ -1025,12 +1034,41 @@ func (g *Guild) BannerURL() string {
 
 // A UserGuild holds a brief version of a Guild
 type UserGuild struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Icon        string `json:"icon"`
-	Owner       bool   `json:"owner"`
-	Permissions int64  `json:"permissions,string"`
+	ID          string         `json:"id"`
+	Name        string         `json:"name"`
+	Icon        string         `json:"icon"`
+	Owner       bool           `json:"owner"`
+	Permissions int64          `json:"permissions,string"`
+	Features    []GuildFeature `json:"features"`
 }
+
+// GuildFeature indicates the presence of a feature in a guild
+type GuildFeature string
+
+// Constants for GuildFeature
+const (
+	GuildFeatureAnimatedBanner                GuildFeature = "ANIMATED_BANNER"
+	GuildFeatureAnimatedIcon                  GuildFeature = "ANIMATED_ICON"
+	GuildFeatureAutoModeration                GuildFeature = "AUTO_MODERATION"
+	GuildFeatureBanner                        GuildFeature = "BANNER"
+	GuildFeatureCommunity                     GuildFeature = "COMMUNITY"
+	GuildFeatureDiscoverable                  GuildFeature = "DISCOVERABLE"
+	GuildFeatureFeaturable                    GuildFeature = "FEATURABLE"
+	GuildFeatureInviteSplash                  GuildFeature = "INVITE_SPLASH"
+	GuildFeatureMemberVerificationGateEnabled GuildFeature = "MEMBER_VERIFICATION_GATE_ENABLED"
+	GuildFeatureMonetizationEnabled           GuildFeature = "MONETIZATION_ENABLED"
+	GuildFeatureMoreStickers                  GuildFeature = "MORE_STICKERS"
+	GuildFeatureNews                          GuildFeature = "NEWS"
+	GuildFeaturePartnered                     GuildFeature = "PARTNERED"
+	GuildFeaturePreviewEnabled                GuildFeature = "PREVIEW_ENABLED"
+	GuildFeaturePrivateThreads                GuildFeature = "PRIVATE_THREADS"
+	GuildFeatureRoleIcons                     GuildFeature = "ROLE_ICONS"
+	GuildFeatureTicketedEventsEnabled         GuildFeature = "TICKETED_EVENTS_ENABLED"
+	GuildFeatureVanityURL                     GuildFeature = "VANITY_URL"
+	GuildFeatureVerified                      GuildFeature = "VERIFIED"
+	GuildFeatureVipRegions                    GuildFeature = "VIP_REGIONS"
+	GuildFeatureWelcomeScreenEnabled          GuildFeature = "WELCOME_SCREEN_ENABLED"
+)
 
 // A GuildParams stores all the data needed to update discord guild settings
 type GuildParams struct {
@@ -1081,6 +1119,20 @@ func (r *Role) Mention() string {
 	return fmt.Sprintf("<@&%s>", r.ID)
 }
 
+// RoleParams represents the parameters needed to create or update a Role
+type RoleParams struct {
+	// The role's name
+	Name string `json:"name,omitempty"`
+	// The color the role should have (as a decimal, not hex)
+	Color *int `json:"color,omitempty"`
+	// Whether to display the role's users separately
+	Hoist *bool `json:"hoist,omitempty"`
+	// The overall permissions number of the role
+	Permissions *int64 `json:"permissions,omitempty,string"`
+	// Whether this role is mentionable
+	Mentionable *bool `json:"mentionable,omitempty"`
+}
+
 // Roles are a collection of Role
 type Roles []*Role
 
@@ -1098,15 +1150,19 @@ func (r Roles) Swap(i, j int) {
 
 // A VoiceState stores the voice states of Guilds
 type VoiceState struct {
-	UserID    string `json:"user_id"`
-	SessionID string `json:"session_id"`
-	ChannelID string `json:"channel_id"`
-	GuildID   string `json:"guild_id"`
-	Suppress  bool   `json:"suppress"`
-	SelfMute  bool   `json:"self_mute"`
-	SelfDeaf  bool   `json:"self_deaf"`
-	Mute      bool   `json:"mute"`
-	Deaf      bool   `json:"deaf"`
+	GuildID                 string     `json:"guild_id"`
+	ChannelID               string     `json:"channel_id"`
+	UserID                  string     `json:"user_id"`
+	Member                  *Member    `json:"member"`
+	SessionID               string     `json:"session_id"`
+	Deaf                    bool       `json:"deaf"`
+	Mute                    bool       `json:"mute"`
+	SelfDeaf                bool       `json:"self_deaf"`
+	SelfMute                bool       `json:"self_mute"`
+	SelfStream              bool       `json:"self_stream"`
+	SelfVideo               bool       `json:"self_video"`
+	Suppress                bool       `json:"suppress"`
+	RequestToSpeakTimestamp *time.Time `json:"request_to_speak_timestamp"`
 }
 
 // A Presence stores the online, offline, or idle and game status of Guild members.
@@ -1206,25 +1262,6 @@ func (m *Member) AvatarURL(size string) string {
 
 }
 
-// A Settings stores data for a specific users Discord client settings.
-type Settings struct {
-	RenderEmbeds           bool               `json:"render_embeds"`
-	InlineEmbedMedia       bool               `json:"inline_embed_media"`
-	InlineAttachmentMedia  bool               `json:"inline_attachment_media"`
-	EnableTTSCommand       bool               `json:"enable_tts_command"`
-	MessageDisplayCompact  bool               `json:"message_display_compact"`
-	ShowCurrentGame        bool               `json:"show_current_game"`
-	ConvertEmoticons       bool               `json:"convert_emoticons"`
-	Locale                 string             `json:"locale"`
-	Theme                  string             `json:"theme"`
-	GuildPositions         []string           `json:"guild_positions"`
-	RestrictedGuilds       []string           `json:"restricted_guilds"`
-	FriendSourceFlags      *FriendSourceFlags `json:"friend_source_flags"`
-	Status                 Status             `json:"status"`
-	DetectPlatformAccounts bool               `json:"detect_platform_accounts"`
-	DeveloperMode          bool               `json:"developer_mode"`
-}
-
 // Status type definition
 type Status string
 
@@ -1236,20 +1273,6 @@ const (
 	StatusInvisible    Status = "invisible"
 	StatusOffline      Status = "offline"
 )
-
-// FriendSourceFlags stores ... TODO :)
-type FriendSourceFlags struct {
-	All           bool `json:"all"`
-	MutualGuilds  bool `json:"mutual_guilds"`
-	MutualFriends bool `json:"mutual_friends"`
-}
-
-// A Relationship between the logged in user and Relationship.User
-type Relationship struct {
-	User *User  `json:"user"`
-	Type int    `json:"type"` // 1 = friend, 2 = blocked, 3 = incoming friend req, 4 = sent friend req
-	ID   string `json:"id"`
-}
 
 // A TooManyRequests struct holds information received from Discord
 // when receiving a HTTP 429 response.
@@ -1286,11 +1309,6 @@ type ReadState struct {
 	ID            string `json:"id"`
 }
 
-// An Ack is used to ack messages
-type Ack struct {
-	Token string `json:"token"`
-}
-
 // A GuildRole stores data for guild roles.
 type GuildRole struct {
 	Role    *Role  `json:"role"`
@@ -1303,10 +1321,92 @@ type GuildBan struct {
 	User   *User  `json:"user"`
 }
 
+// AutoModerationRule stores data for an auto moderation rule.
+type AutoModerationRule struct {
+	ID              string                         `json:"id,omitempty"`
+	GuildID         string                         `json:"guild_id,omitempty"`
+	Name            string                         `json:"name,omitempty"`
+	CreatorID       string                         `json:"creator_id,omitempty"`
+	EventType       AutoModerationRuleEventType    `json:"event_type,omitempty"`
+	TriggerType     AutoModerationRuleTriggerType  `json:"trigger_type,omitempty"`
+	TriggerMetadata *AutoModerationTriggerMetadata `json:"trigger_metadata,omitempty"`
+	Actions         []AutoModerationAction         `json:"actions,omitempty"`
+	Enabled         *bool                          `json:"enabled,omitempty"`
+	ExemptRoles     *[]string                      `json:"exempt_roles,omitempty"`
+	ExemptChannels  *[]string                      `json:"exempt_channels,omitempty"`
+}
+
+// AutoModerationRuleEventType indicates in what event context a rule should be checked.
+type AutoModerationRuleEventType int
+
+// Auto moderation rule event types.
+const (
+	// AutoModerationEventMessageSend is checked when a member sends or edits a message in the guild
+	AutoModerationEventMessageSend AutoModerationRuleEventType = 1
+)
+
+// AutoModerationRuleTriggerType represents the type of content which can trigger the rule.
+type AutoModerationRuleTriggerType int
+
+// Auto moderation rule trigger types.
+const (
+	AutoModerationEventTriggerKeyword       AutoModerationRuleTriggerType = 1
+	AutoModerationEventTriggerHarmfulLink   AutoModerationRuleTriggerType = 2
+	AutoModerationEventTriggerSpam          AutoModerationRuleTriggerType = 3
+	AutoModerationEventTriggerKeywordPreset AutoModerationRuleTriggerType = 4
+)
+
+// AutoModerationKeywordPreset represents an internally pre-defined wordset.
+type AutoModerationKeywordPreset uint
+
+// Auto moderation keyword presets.
+const (
+	AutoModerationKeywordPresetProfanity     AutoModerationKeywordPreset = 1
+	AutoModerationKeywordPresetSexualContent AutoModerationKeywordPreset = 2
+	AutoModerationKeywordPresetSlurs         AutoModerationKeywordPreset = 3
+)
+
+// AutoModerationTriggerMetadata represents additional metadata used to determine whether rule should be triggered.
+type AutoModerationTriggerMetadata struct {
+	// Substrings which will be searched for in content.
+	// NOTE: should be only used with keyword trigger type.
+	KeywordFilter []string `json:"keyword_filter,omitempty"`
+	// Internally pre-defined wordsets which will be searched for in content.
+	// NOTE: should be only used with keyword preset trigger type.
+	Presets []AutoModerationKeywordPreset `json:"presets,omitempty"`
+}
+
+// AutoModerationActionType represents an action which will execute whenever a rule is triggered.
+type AutoModerationActionType int
+
+// Auto moderation actions types.
+const (
+	AutoModerationRuleActionBlockMessage     AutoModerationActionType = 1
+	AutoModerationRuleActionSendAlertMessage AutoModerationActionType = 2
+	AutoModerationRuleActionTimeout          AutoModerationActionType = 3
+)
+
+// AutoModerationActionMetadata represents additional metadata needed during execution for a specific action type.
+type AutoModerationActionMetadata struct {
+	// Channel to which user content should be logged.
+	// NOTE: should be only used with send alert message action type.
+	ChannelID string `json:"channel_id,omitempty"`
+
+	// Timeout duration in seconds (maximum of 2419200 - 4 weeks).
+	// NOTE: should be only used with timeout action type.
+	Duration int `json:"duration_seconds,omitempty"`
+}
+
+// AutoModerationAction stores data for an auto moderation action.
+type AutoModerationAction struct {
+	Type     AutoModerationActionType      `json:"type"`
+	Metadata *AutoModerationActionMetadata `json:"metadata,omitempty"`
+}
+
 // A GuildEmbed stores data for a guild embed.
 type GuildEmbed struct {
-	Enabled   bool   `json:"enabled"`
-	ChannelID string `json:"channel_id"`
+	Enabled   *bool  `json:"enabled,omitempty"`
+	ChannelID string `json:"channel_id,omitempty"`
 }
 
 // A GuildAuditLog stores data for a guild audit log.
@@ -1574,41 +1674,79 @@ const (
 	AuditLogActionThreadCreate AuditLogAction = 110
 	AuditLogActionThreadUpdate AuditLogAction = 111
 	AuditLogActionThreadDelete AuditLogAction = 112
+
+	AuditLogActionApplicationCommandPermissionUpdate AuditLogAction = 121
 )
-
-// A UserGuildSettingsChannelOverride stores data for a channel override for a users guild settings.
-type UserGuildSettingsChannelOverride struct {
-	Muted                bool   `json:"muted"`
-	MessageNotifications int    `json:"message_notifications"`
-	ChannelID            string `json:"channel_id"`
-}
-
-// A UserGuildSettings stores data for a users guild settings.
-type UserGuildSettings struct {
-	SupressEveryone      bool                                `json:"suppress_everyone"`
-	Muted                bool                                `json:"muted"`
-	MobilePush           bool                                `json:"mobile_push"`
-	MessageNotifications int                                 `json:"message_notifications"`
-	GuildID              string                              `json:"guild_id"`
-	ChannelOverrides     []*UserGuildSettingsChannelOverride `json:"channel_overrides"`
-}
-
-// A UserGuildSettingsEdit stores data for editing UserGuildSettings
-type UserGuildSettingsEdit struct {
-	SupressEveryone      bool                                         `json:"suppress_everyone"`
-	Muted                bool                                         `json:"muted"`
-	MobilePush           bool                                         `json:"mobile_push"`
-	MessageNotifications int                                          `json:"message_notifications"`
-	ChannelOverrides     map[string]*UserGuildSettingsChannelOverride `json:"channel_overrides"`
-}
 
 // GuildMemberParams stores data needed to update a member
 // https://discord.com/developers/docs/resources/guild#modify-guild-member
 type GuildMemberParams struct {
-	// Value to set user's nickname to
+	// Value to set user's nickname to.
 	Nick string `json:"nick,omitempty"`
-	// Array of role ids the member is assigned
+	// Array of role ids the member is assigned.
 	Roles *[]string `json:"roles,omitempty"`
+	// ID of channel to move user to (if they are connected to voice).
+	// Set to "" to remove user from a voice channel.
+	ChannelID *string `json:"channel_id,omitempty"`
+	// Whether the user is muted in voice channels.
+	Mute *bool `json:"mute,omitempty"`
+	// Whether the user is deafened in voice channels.
+	Deaf *bool `json:"deaf,omitempty"`
+	// When the user's timeout will expire and the user will be able
+	// to communicate in the guild again (up to 28 days in the future).
+	// Set to time.Time{} to remove timeout.
+	CommunicationDisabledUntil *time.Time `json:"communication_disabled_until,omitempty"`
+}
+
+// MarshalJSON is a helper function to marshal GuildMemberParams.
+func (p GuildMemberParams) MarshalJSON() (res []byte, err error) {
+	type guildMemberParams GuildMemberParams
+	v := struct {
+		guildMemberParams
+		ChannelID                  json.RawMessage `json:"channel_id,omitempty"`
+		CommunicationDisabledUntil json.RawMessage `json:"communication_disabled_until,omitempty"`
+	}{guildMemberParams: guildMemberParams(p)}
+
+	if p.ChannelID != nil {
+		if *p.ChannelID == "" {
+			v.ChannelID = json.RawMessage(`null`)
+		} else {
+			res, err = json.Marshal(p.ChannelID)
+			if err != nil {
+				return
+			}
+			v.ChannelID = res
+		}
+	}
+
+	if p.CommunicationDisabledUntil != nil {
+		if p.CommunicationDisabledUntil.IsZero() {
+			v.CommunicationDisabledUntil = json.RawMessage(`null`)
+		} else {
+			res, err = json.Marshal(p.CommunicationDisabledUntil)
+			if err != nil {
+				return
+			}
+			v.CommunicationDisabledUntil = res
+		}
+	}
+
+	return json.Marshal(v)
+}
+
+// GuildMemberAddParams stores data needed to add a user to a guild.
+// NOTE: All fields are optional, except AccessToken.
+type GuildMemberAddParams struct {
+	// Valid access_token for the user.
+	AccessToken string `json:"access_token"`
+	// Value to set users nickname to.
+	Nick string `json:"nick,omitempty"`
+	// A list of role ID's to set on the member.
+	Roles []string `json:"roles,omitempty"`
+	// Whether the user is muted.
+	Mute bool `json:"mute,omitempty"`
+	// Whether the user is deafened.
+	Deaf bool `json:"deaf,omitempty"`
 }
 
 // An APIErrorMessage is an api error message returned from discord
@@ -2059,23 +2197,25 @@ type Intent int
 
 // Constants for the different bit offsets of intents
 const (
-	IntentGuilds                 Intent = 1 << 0
-	IntentGuildMembers           Intent = 1 << 1
-	IntentGuildBans              Intent = 1 << 2
-	IntentGuildEmojis            Intent = 1 << 3
-	IntentGuildIntegrations      Intent = 1 << 4
-	IntentGuildWebhooks          Intent = 1 << 5
-	IntentGuildInvites           Intent = 1 << 6
-	IntentGuildVoiceStates       Intent = 1 << 7
-	IntentGuildPresences         Intent = 1 << 8
-	IntentGuildMessages          Intent = 1 << 9
-	IntentGuildMessageReactions  Intent = 1 << 10
-	IntentGuildMessageTyping     Intent = 1 << 11
-	IntentDirectMessages         Intent = 1 << 12
-	IntentDirectMessageReactions Intent = 1 << 13
-	IntentDirectMessageTyping    Intent = 1 << 14
-	IntentMessageContent         Intent = 1 << 15
-	IntentGuildScheduledEvents   Intent = 1 << 16
+	IntentGuilds                      Intent = 1 << 0
+	IntentGuildMembers                Intent = 1 << 1
+	IntentGuildBans                   Intent = 1 << 2
+	IntentGuildEmojis                 Intent = 1 << 3
+	IntentGuildIntegrations           Intent = 1 << 4
+	IntentGuildWebhooks               Intent = 1 << 5
+	IntentGuildInvites                Intent = 1 << 6
+	IntentGuildVoiceStates            Intent = 1 << 7
+	IntentGuildPresences              Intent = 1 << 8
+	IntentGuildMessages               Intent = 1 << 9
+	IntentGuildMessageReactions       Intent = 1 << 10
+	IntentGuildMessageTyping          Intent = 1 << 11
+	IntentDirectMessages              Intent = 1 << 12
+	IntentDirectMessageReactions      Intent = 1 << 13
+	IntentDirectMessageTyping         Intent = 1 << 14
+	IntentMessageContent              Intent = 1 << 15
+	IntentGuildScheduledEvents        Intent = 1 << 16
+	IntentAutoModerationConfiguration Intent = 1 << 20
+	IntentAutoModerationExecution     Intent = 1 << 21
 
 	// TODO: remove when compatibility is not needed
 
@@ -2110,7 +2250,9 @@ const (
 		IntentDirectMessages |
 		IntentDirectMessageReactions |
 		IntentDirectMessageTyping |
-		IntentGuildScheduledEvents
+		IntentGuildScheduledEvents |
+		IntentAutoModerationConfiguration |
+		IntentAutoModerationExecution
 
 	IntentsAll = IntentsAllWithoutPrivileged |
 		IntentGuildMembers |

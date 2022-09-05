@@ -58,7 +58,7 @@ func captionID(data []byte) (string, int) {
 	}
 	// remains must be whitespace.
 	for l := k + 1; l < end; l++ {
-		if !isSpace(data[l]) {
+		if !IsSpace(data[l]) {
 			return "", 0
 		}
 	}

@@ -321,6 +321,9 @@ type MessageAllowedMentions struct {
 	// A list of user IDs to allow. This cannot be used when specifying
 	// AllowedMentionTypeUsers in the Parse slice.
 	Users []string `json:"users,omitempty"`
+
+	// For replies, whether to mention the author of the message being replied to
+	RepliedUser bool `json:"replied_user"`
 }
 
 // A MessageAttachment stores data for message attachments.
@@ -454,7 +457,7 @@ type MessageApplication struct {
 // MessageReference contains reference data sent with crossposted messages
 type MessageReference struct {
 	MessageID string `json:"message_id"`
-	ChannelID string `json:"channel_id"`
+	ChannelID string `json:"channel_id,omitempty"`
 	GuildID   string `json:"guild_id,omitempty"`
 }
 

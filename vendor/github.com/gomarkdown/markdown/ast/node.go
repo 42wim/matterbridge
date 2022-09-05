@@ -272,6 +272,7 @@ type CrossReference struct {
 	Container
 
 	Destination []byte // Destination is where the reference points to
+	Suffix      []byte // Potential citation suffix, i.e. (#myid, text)
 }
 
 // Citation is a citation node.
