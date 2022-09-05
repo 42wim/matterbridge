@@ -233,6 +233,11 @@ func (b *Bdiscord) splitURL(url string) (string, string, bool) {
 	return webhookURLSplit[webhookIdxID], webhookURLSplit[webhookIdxToken], true
 }
 
+func disableEmbedUrls(msg *string) {
+	regex := regexp.MustCompile(`(\w+://\S+)`)
+	*msg = regex.ReplaceAllString(*msg, "<$1>")
+}
+
 func enumerateUsernames(s string) []string {
 	onlySpace := true
 	for _, r := range s {

@@ -939,6 +939,15 @@ IgnoreNicks=""
 #   IgnoreMessages="^~~ badword"
 IgnoreMessages=""
 
+# Prevent URL embeds by encasing URLs in <> angle brackets.
+# Useful if trolls are a problem on the other end of your bridge.
+NoEmbedUrls=false
+
+# Prevent URL embeds in part/quit messages by encasing URLs in <> angle brackets.
+# Useful if trolls spam in their quit messages or you're tired of seeing embeds for
+# IRC client homepages.
+NoEmbedPartUrls=false
+
 # ReplaceMessages replaces substrings of messages in outgoing messages.
 # Regular expressions are supported.
 #
