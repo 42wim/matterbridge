@@ -97,17 +97,20 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 			b.Log.Infof("Got kicked from %s by %s", channel, event.Source.Name)
 			time.Sleep(time.Duration(b.GetInt("RejoinDelay")) * time.Second)
 			b.Remote <- config.Message{Username: "system", Text: "rejoin", Channel: channel, Account: b.Account, Event: config.EventRejoinChannels}
-		} else {
-			msg := config.Message{
-				Username: "system",
-				Text:     event.Source.Name + " kicked " + event.Params[1] + " with message: " + event.Last(),
-				Channel:  channel,
-				Account:  b.Account,
-				Event:    config.EventJoinLeave,
-			}
-			b.Log.Debugf("<= Message is %#v", msg)
-			b.Remote <- msg
+			return
 		}
+		if b.GetBool("nosendjoinpart") {
+			return
+		}
+		msg := config.Message{
+			Username: "system",
+			Text:     event.Source.Name + " kicked " + event.Params[1] + " with message: " + event.Last(),
+			Channel:  channel,
+			Account:  b.Account,
+			Event:    config.EventJoinLeave,
+		}
+		b.Log.Debugf("<= Message is %#v", msg)
+		b.Remote <- msg
 		return
 	}
 	if event.Source.Name != b.Nick {
@@ -153,7 +156,11 @@ func (b *Birc) handleNick(client *girc.Client, event girc.Event) {
 	if len(event.Params) != 1 {
 		b.Log.Debugf("handleJoinPart: malformed nick change? %#v", event)
 		return
-	} else if isActive, activeTime := b.isUserActive(event.Source.Name); isActive {
+	}
+	if b.GetBool("nosendjoinpart") {
+		return
+	}
+	if isActive, activeTime := b.isUserActive(event.Source.Name); isActive {
 		msg := config.Message{
 			Username: "system",
 			Text:     event.Source.Name + " changed nick to " + event.Params[0],
