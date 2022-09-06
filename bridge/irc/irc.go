@@ -28,7 +28,7 @@ type Birc struct {
 	i                                         *girc.Client
 	Nick                                      string
 	names                                     map[string][]string
-	activeUsers                               map[string]int64
+	activeUsers                               map[string]map[string]int64
 	activeUsersLastCleaned                    int64
 	activeUsersMutex                          sync.RWMutex
 	connected                                 chan error
@@ -41,12 +41,17 @@ type Birc struct {
 	*bridge.Config
 }
 
+type ActivityInfo struct {
+	channel    string
+	activeTime int64
+}
+
 func New(cfg *bridge.Config) bridge.Bridger {
 	b := &Birc{}
 	b.Config = cfg
 	b.Nick = b.GetString("Nick")
 	b.names = make(map[string][]string)
-	b.activeUsers = make(map[string]int64)
+	b.activeUsers = make(map[string]map[string]int64)
 	b.connected = make(chan error)
 	b.channels = make(map[string]bool)
 
@@ -434,33 +439,45 @@ func (b *Birc) getTLSConfig() (*tls.Config, error) {
 	return tlsConfig, nil
 }
 
-func (b *Birc) isUserActive(nick string) (bool, int64) {
+func (b *Birc) isActive(activityTime int64, nowTime int64) bool {
+	return (nowTime - activityTime) < b.ActivityTimeout
+}
+
+func (b *Birc) isUserActive(nick string, channel string) (bool, int64) {
 	b.Log.Debugf("checking activity for %s", nick)
 	if b.ActivityTimeout == 0 {
 		return true, 0
 	}
 	b.activeUsersMutex.RLock()
 	defer b.activeUsersMutex.RUnlock()
-	if activeTime, ok := b.activeUsers[nick]; ok {
+	if activeTime, ok := b.activeUsers[nick][channel]; ok {
 		now := time.Now().Unix()
 		b.Log.Debugf("last activity for %s was %d, currently %d", nick, activeTime, now)
 		if now < activeTime {
 			b.Log.Errorf("User %s has active time in the future: %d", nick, activeTime)
 			return true, now // err on the side of caution
 		}
-		return (now - activeTime) < b.ActivityTimeout, activeTime
+		return b.isActive(now, activeTime), activeTime
 	}
 	return false, 0
 }
 
-func (b *Birc) getPseudoChannel() string {
-	for channelname, active := range b.channels {
-		if active {
-			return channelname
+func (b *Birc) getActiveChannels(nick string) []ActivityInfo {
+	retval := make([]ActivityInfo, 0)
+	if channels, found := b.activeUsers[nick]; found {
+		now := time.Now().Unix()
+		for channel, activeTime := range channels {
+			if now < activeTime {
+				b.Log.Errorf("User %s has active time for channel %s in the future: %d",
+					nick,
+					channel,
+					activeTime)
+			} else if (now - activeTime) < b.ActivityTimeout {
+				retval = append(retval, ActivityInfo{channel, activeTime})
+			}
 		}
 	}
-	b.Log.Warningf("Bot not active in any channels!")
-	return ""
+	return retval
 }
 
 func (b *Birc) cleanActiveMap() {
@@ -470,16 +487,26 @@ func (b *Birc) cleanActiveMap() {
 	}
 	b.activeUsersMutex.Lock()
 	defer b.activeUsersMutex.Unlock()
-	for nick, activeTime := range b.activeUsers {
-		if now-activeTime > b.ActivityTimeout {
-			b.Log.Debugf("last activity for %s was %d, currently %d. Deleting.", nick, activeTime, now)
+	for nick, activeChannels := range b.activeUsers {
+		for channel, activeTime := range activeChannels {
+			if now-activeTime > b.ActivityTimeout {
+				b.Log.Debugf("last activity for %s was %d, currently %d. Deleting.", nick, activeTime, now)
+				delete(activeChannels, channel)
+			}
+		}
+		if 0 == len(activeChannels) {
 			delete(b.activeUsers, nick)
 		}
 	}
 }
 
-func (b *Birc) markUserActive(nick string, activeTime int64) {
+func (b *Birc) markUserActive(nick string, channel string, activeTime int64) {
 	b.activeUsersMutex.Lock()
 	defer b.activeUsersMutex.Unlock()
-	b.activeUsers[nick] = activeTime
+	nickActivity, found := b.activeUsers[nick]
+	if !found {
+		b.activeUsers[nick] = make(map[string]int64)
+		nickActivity = b.activeUsers[nick]
+	}
+	nickActivity[channel] = activeTime
 }
