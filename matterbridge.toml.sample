@@ -122,10 +122,11 @@ RejoinDelay=0
 #Only works in IRC right now.
 ColorNicks=false
 
-#RunCommands allows you to send RAW irc commands after connection
+#RunCommands allows you to send RAW irc commands after connection.
+#The substring {BOTNICK} will be replaced with the bot's current nickname.
 #Array of strings
 #OPTIONAL (default empty)
-RunCommands=["PRIVMSG user hello","PRIVMSG chanserv something"]
+RunCommands=["PRIVMSG user hello","PRIVMSG chanserv something", "MODE {BOTNICK} +B"]
 
 #PingDelay specifies how long to wait to send a ping to the irc server.
 #You can use s for second, m for minute
