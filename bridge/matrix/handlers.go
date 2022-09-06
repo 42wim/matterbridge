@@ -6,6 +6,7 @@ import (
 	"mime"
 	"regexp"
 	"strings"
+	"time"
 
 	matrix "maunium.net/go/mautrix"
 	"maunium.net/go/mautrix/event"
@@ -14,6 +15,44 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 )
+
+func (b *Bmatrix) handlematrix() {
+	syncer, ok := b.mc.Syncer.(*matrix.DefaultSyncer)
+	if !ok {
+		b.Log.Errorf("couldn't convert the Syncer object to a DefaultSyncer structure, the matrix bridge won't work")
+
+		return
+	}
+
+	// register our custom filtering function
+	syncer.OnSync(b.DontProcessOldEvents)
+
+	eventsTypes := []event.Type{event.EventRedaction, event.EventMessage, event.StateMember, event.EventSticker, event.EphemeralEventReceipt}
+	if b.GetBool("ShowUserTyping") {
+		eventsTypes = append(eventsTypes, event.EphemeralEventTyping)
+	}
+	for _, evType := range eventsTypes {
+		syncer.OnEventType(evType, func(source matrix.EventSource, ev *event.Event) {
+			b.handleEvent(originClassicSyncer, ev)
+		})
+	}
+
+	go func() {
+		for {
+			select {
+			case <-b.stopNormalSync:
+				b.stopNormalSyncAck <- struct{}{}
+
+				return
+			default:
+
+				if err := b.mc.Sync(); err != nil {
+					b.Log.Warningf("Sync() returned %#v", err)
+				}
+			}
+		}
+	}()
+}
 
 // Determines if the event comes from ourselves, in which case we want to ignore it
 func (b *Bmatrix) ignoreBridgingEvents(ev *event.Event) bool {
@@ -40,6 +79,12 @@ func (b *Bmatrix) ignoreBridgingEvents(ev *event.Event) bool {
 
 //nolint:funlen
 func (b *Bmatrix) handleEvent(origin EventOrigin, ev *event.Event) {
+	if ev.Type == event.EphemeralEventReceipt {
+		// we do not support read receipts across servers, considering that
+		// multiple services (e.g. Discord) don't expose that information
+		return
+	}
+
 	b.RLock()
 	channel, ok := b.RoomMap[ev.RoomID]
 	b.RUnlock()
@@ -63,9 +108,10 @@ func (b *Bmatrix) handleEvent(origin EventOrigin, ev *event.Event) {
 		return
 	}
 
-	if ev.Type == event.EphemeralEventReceipt {
-		// we do not support read receipts across servers, considering that
-		// multiple services (e.g. Discord) doesn't expose that information)
+	// if we receive messages both via the classical matrix syncer and appserver, prefer appservice and throw away this duplicate event
+	if channel.appService && origin != originAppService {
+		b.Log.Debugf("Dropping event, should receive it via appservice: %s", ev.ID)
+
 		return
 	}
 
@@ -91,13 +137,6 @@ func (b *Bmatrix) handleEvent(origin EventOrigin, ev *event.Event) {
 				Account: b.Account,
 			}
 		}
-
-		return
-	}
-
-	// if we receive messages both via the classical matrix syncer and appserver, prefer appservice and throw away this duplicate event
-	if channel.appService && origin != originAppService {
-		b.Log.Debugf("Dropping event, should receive it via appservice: %s", ev.ID)
 
 		return
 	}
@@ -170,6 +209,13 @@ func (b *Bmatrix) handleMessage(rmsg config.Message, ev *event.Event) {
 
 	rmsg.Avatar = b.getAvatarURL(ev.RoomID, ev.Sender)
 
+	if ev.Type == event.EventSticker {
+		err := b.handleSticker(&rmsg, ev, *msg)
+		if err != nil {
+			b.Log.Errorf("sticker handling failed: %#v", err)
+		}
+	}
+
 	//nolint:exhaustive
 	switch msg.MsgType {
 	case event.MsgEmote:
@@ -216,6 +262,39 @@ func (b *Bmatrix) handleMessage(rmsg config.Message, ev *event.Event) {
 	b.Remote <- rmsg
 }
 
+func (b *Bmatrix) handleSticker(rmsg *config.Message, ev *event.Event, msg event.MessageEventContent) error {
+	if msg.URL == "" || msg.Info == nil {
+		b.Log.Error("couldn't download a sticker with no URL or no file informations (invalid event ?)")
+		b.Log.Debugf("Full Message content:\n%#v", msg)
+	}
+
+	mext, _ := mime.ExtensionsByType(msg.Info.MimeType)
+	filename := fmt.Sprintf("sticker-%d.%s", time.Now().UnixNano(), mext)
+
+	// check if the size is ok
+	err := helper.HandleDownloadSize(b.Log, rmsg, filename, int64(msg.Info.Size), b.General)
+	if err != nil {
+		return err
+	}
+
+	// actually download the file
+	url := b.mc.GetDownloadURL(msg.URL.ParseOrIgnore())
+	data, err := helper.DownloadFile(url)
+	if err != nil {
+		return fmt.Errorf("download %s failed %#v", url, err)
+	}
+
+	rmsg.Extra = make(map[string][]interface{})
+
+	// we have a terrible alt-text support, so right now we emit the information but nobody uses it
+	rmsg.Extra["Alt-Text"] = []interface{}{msg.Body}
+
+	// add the downloaded data to the message
+	helper.HandleDownloadData2(b.Log, rmsg, filename, string(ev.ID), "", url, data, b.General)
+
+	return nil
+}
+
 // handleDownloadFile handles file download
 func (b *Bmatrix) handleDownloadFile(rmsg *config.Message, msg event.MessageEventContent) error {
 	rmsg.Extra = make(map[string][]interface{})
@@ -224,7 +303,7 @@ func (b *Bmatrix) handleDownloadFile(rmsg *config.Message, msg event.MessageEven
 		b.Log.Debugf("Full Message content:\n%#v", msg)
 	}
 
-	url := strings.ReplaceAll(string(msg.URL), "mxc://", b.GetString("Server")+"/_matrix/media/v1/download/")
+	url := b.mc.GetDownloadURL(msg.URL.ParseOrIgnore())
 	filename := msg.Body
 
 	// check if we have an image uploaded without extension
