@@ -457,7 +457,7 @@ func (b *Birc) isUserActive(nick string, channel string) (bool, int64) {
 			b.Log.Errorf("User %s has active time in the future: %d", nick, activeTime)
 			return true, now // err on the side of caution
 		}
-		return b.isActive(now, activeTime), activeTime
+		return b.isActive(activeTime, now), activeTime
 	}
 	return false, 0
 }
