@@ -1,4 +1,4 @@
-// nolint: exhaustivestruct
+//nolint:exhaustivestruct
 package bmatrix
 
 import (
@@ -80,7 +80,7 @@ func (b *Bmatrix) Connect() error {
 		resp, err := b.mc.Login(&matrix.ReqLogin{
 			Type:             matrix.AuthTypePassword,
 			Password:         b.GetString("Password"),
-			Identifier:       matrix.UserIdentifier{Type: matrix.IdentifierTypeUser, User: b.GetString("Login")}, //nolint: exhaustruct
+			Identifier:       matrix.UserIdentifier{Type: matrix.IdentifierTypeUser, User: b.GetString("Login")}, //nolint:exhaustruct
 			StoreCredentials: true,
 		})
 		if err != nil {
@@ -195,7 +195,7 @@ func (b *Bmatrix) Start() error {
 	return nil
 }
 
-//nolint: funlen,gocognit,gocyclo
+//nolint:funlen,gocognit,gocyclo
 func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Sending %#v", msg)
 
@@ -334,7 +334,8 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 
 // DontProcessOldEvents returns true if a sync event should be considered for further processing.
 // We use that function to filter out events we have already read.
-//nolint: gocognit
+//
+//nolint:gocognit
 func (b *Bmatrix) DontProcessOldEvents(resp *matrix.RespSync, since string) bool {
 	// we only filter old events in the initial sync(), because subsequent sync()
 	// (where since != "") should only return new events

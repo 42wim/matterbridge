@@ -38,7 +38,7 @@ func (b *Bmatrix) ignoreBridgingEvents(ev *event.Event) bool {
 	return false
 }
 
-//nolint: funlen
+//nolint:funlen
 func (b *Bmatrix) handleEvent(origin EventOrigin, ev *event.Event) {
 	b.RLock()
 	channel, ok := b.RoomMap[ev.RoomID]
@@ -170,7 +170,7 @@ func (b *Bmatrix) handleMessage(rmsg config.Message, ev *event.Event) {
 
 	rmsg.Avatar = b.getAvatarURL(ev.RoomID, ev.Sender)
 
-	//nolint: exhaustive
+	//nolint:exhaustive
 	switch msg.MsgType {
 	case event.MsgEmote:
 		// Do we have a /me action
@@ -264,7 +264,7 @@ func (b *Bmatrix) handleUploadFiles(msg *config.Message, channel id.RoomID) (str
 }
 
 // handleUploadFile handles native upload of a file.
-//nolint: funlen
+//nolint:funlen
 func (b *Bmatrix) handleUploadFile(msg *config.Message, channel id.RoomID, fi *config.FileInfo) {
 	content := bytes.NewReader(*fi.Data)
 	sp := strings.Split(fi.Name, ".")

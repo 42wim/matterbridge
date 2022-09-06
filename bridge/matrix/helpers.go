@@ -247,7 +247,7 @@ type SendMessageEventWrapper struct {
 	inner *matrix.Client
 }
 
-//nolint: wrapcheck
+//nolint:wrapcheck
 func (w SendMessageEventWrapper) SendMessageEvent(roomID id.RoomID, eventType event.Type, contentJSON interface{}) (*matrix.RespSendEvent, error) {
 	return w.inner.SendMessageEvent(roomID, eventType, contentJSON)
 }
@@ -286,7 +286,7 @@ func (b *Bmatrix) uploadAvatar(channelID id.RoomID, mxid id.UserID, intent *matr
 		return nil
 	}
 
-	//nolint: exhaustruct
+	//nolint:exhaustruct
 	matrixResp, err := b.mc.UploadMedia(matrix.ReqUploadMedia{
 		ContentBytes: data,
 		ContentType:  resp.Header.Get("Content-Type"),
@@ -305,7 +305,7 @@ func (b *Bmatrix) uploadAvatar(channelID id.RoomID, mxid id.UserID, intent *matr
 	return nil
 }
 
-//nolint: wrapcheck
+//nolint:wrapcheck
 func (b *Bmatrix) sendMessageEventWithRetries(channel id.RoomID, message event.MessageEventContent, username string, avatarURL string) (string, error) {
 	var (
 		resp   *matrix.RespSendEvent
@@ -333,7 +333,7 @@ func (b *Bmatrix) sendMessageEventWithRetries(channel id.RoomID, message event.M
 		// if we can't change the display name it's not great but not the end of the world either, ignore it
 		// TODO: do not perform this action on every message, with an in-memory cache or something
 		_ = intent.SetDisplayName(username)
-		//nolint: errcheck
+		//nolint:errcheck
 		go b.uploadAvatar(channel, id.UserID(bridgeUserID), intent, avatarURL)
 		client = intent
 	} else {

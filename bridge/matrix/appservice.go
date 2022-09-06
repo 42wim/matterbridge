@@ -120,7 +120,7 @@ func (a *AppServiceNamespaces) containsRoom(roomID id.RoomID) bool {
 	return false
 }
 
-// nolint: wrapcheck
+//nolint:wrapcheck
 func (b *Bmatrix) startAppService() error {
 	wrapper := b.appService
 	// TODO: detect service completion and rerun automatically
