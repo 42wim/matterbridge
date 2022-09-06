@@ -501,6 +501,7 @@ func (b *Birc) cleanActiveMap() {
 }
 
 func (b *Birc) markUserActive(nick string, channel string, activeTime int64) {
+	b.Log.Debugf("<= Updating last-active time for user %s in channel %s to %d", nick, channel, activeTime)
 	b.activeUsersMutex.Lock()
 	defer b.activeUsersMutex.Unlock()
 	nickActivity, found := b.activeUsers[nick]

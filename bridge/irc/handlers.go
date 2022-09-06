@@ -287,7 +287,6 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 
 	b.Log.Debugf("<= Sending message from %s on %s to gateway", event.Params[0], b.Account)
 	if b.ActivityTimeout > 0 {
-		b.Log.Debugf("<= Updating last-active time for user %s", event.Source.Name)
 		b.markUserActive(event.Source.Name, channel, time.Now().Unix())
 	}
 	b.Remote <- rmsg
