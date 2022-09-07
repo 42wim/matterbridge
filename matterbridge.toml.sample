@@ -123,7 +123,7 @@ RejoinDelay=0
 ColorNicks=false
 
 #RunCommands allows you to send RAW irc commands after connection.
-#The substring {BOTNICK} will be replaced with the bot's current nickname.
+#The string {BOTNICK} (case sensitive) will be replaced with the bot's current nickname.
 #Array of strings
 #OPTIONAL (default empty)
 RunCommands=["PRIVMSG user hello","PRIVMSG chanserv something", "MODE {BOTNICK} +B"]
