@@ -86,6 +86,12 @@ func GetSubLines(message string, maxLineLength int, clippingMessage string) []st
 
 	var lines []string
 	for _, line := range strings.Split(strings.TrimSpace(message), "\n") {
+		if line == "" {
+			// Prevent sending empty messages, so we'll skip this line
+			// if it has no content.
+			continue
+		}
+
 		if maxLineLength == 0 || len([]byte(line)) <= maxLineLength {
 			lines = append(lines, line)
 			continue
