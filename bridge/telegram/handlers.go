@@ -114,6 +114,8 @@ func (b *Btelegram) handleQuoting(rmsg *config.Message, message *tgbotapi.Messag
 			quote := message.ReplyToMessage.Text
 			if quote == "" {
 				quote = message.ReplyToMessage.Caption
+			} else if b.GetBool("StripQuote") {
+				quote = strings.ReplaceAll(quote, "\n", " ")
 			}
 			rmsg.Text = b.handleQuote(rmsg.Text, usernameReply, quote)
 		}

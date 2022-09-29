@@ -1146,6 +1146,10 @@ ShowJoinPart=false
 #OPTIONAL (default false)
 StripNick=false
 
+#Replace line breaks with spaces in quoted messages to avoid flooding
+#OPTIONAL (default false)
+StripQuote=false
+
 #Enable to show topic changes from other bridges
 #Only works hiding/show topic changes from slack bridge for now
 #OPTIONAL (default false)
