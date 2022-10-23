@@ -16,6 +16,7 @@ package transmitter
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -170,12 +171,25 @@ func (t *Transmitter) RefreshGuildWebhooks(channelIDs []string) error {
 	return nil
 }
 
+const THINGS_YOU_CANT_CALL_A_WEBHOOK = `(?i)discord|clyde`
+
 // createWebhook creates a webhook for a specific channel.
 func (t *Transmitter) createWebhook(channel string) (*discordgo.Webhook, error) {
+	ptn := regexp.MustCompile(THINGS_YOU_CANT_CALL_A_WEBHOOK)
+	cleanTitle := ptn.ReplaceAllStringFunc(t.title, func(match string) string {
+		// s and y are enough to cover diScord and clYde right now
+		// might need more in future
+		match = strings.Replace(match, `s`, `ѕ`, 1)
+		match = strings.Replace(match, `S`, `Ѕ`, 1)
+		match = strings.Replace(match, `y`, `у`, 1)
+		match = strings.Replace(match, `Y`, `Ү`, 1)
+		return match
+	})
+
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 
-	wh, err := t.session.WebhookCreate(channel, t.title+time.Now().Format(" 3:04:05PM"), "")
+	wh, err := t.session.WebhookCreate(channel, cleanTitle+time.Now().Format(" 3:04:05PM"), "")
 	if err != nil {
 		return nil, err
 	}
