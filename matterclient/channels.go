@@ -73,7 +73,14 @@ func (m *MMClient) getChannelIdTeam(name string, teamId string) string { //nolin
 			}
 		}
 	}
-	return ""
+
+	// Fallback if it's not found in the t.Channels or t.MoreChannels cache.
+	// This also let's us join private channels.
+	channel, _ := m.Client.GetChannelByName(name, teamId, "")
+	if channel == nil {
+		return ""
+	}
+	return channel.Id
 }
 
 func (m *MMClient) GetChannelName(channelId string) string { //nolint:golint
