@@ -63,13 +63,13 @@ func New(session *discordgo.Session, guild string, title string, autoCreate bool
 }
 
 // Send transmits a message to the given channel with the provided webhook data, and waits until Discord responds with message data.
-func (t *Transmitter) Send(channelID string, params *discordgo.WebhookParams) (*discordgo.Message, error) {
+func (t *Transmitter) SendThread(channelID string, threadID string, params *discordgo.WebhookParams) (*discordgo.Message, error) {
 	wh, err := t.getOrCreateWebhook(channelID)
 	if err != nil {
 		return nil, err
 	}
 
-	msg, err := t.session.WebhookExecute(wh.ID, wh.Token, true, params)
+	msg, err := t.session.WebhookThreadExecute(wh.ID, wh.Token, true, threadID, params)
 	if err != nil {
 		return nil, fmt.Errorf("execute failed: %w", err)
 	}
@@ -77,21 +77,34 @@ func (t *Transmitter) Send(channelID string, params *discordgo.WebhookParams) (*
 	return msg, nil
 }
 
+func (t *Transmitter) Send(channelID string, params *discordgo.WebhookParams) (*discordgo.Message, error) {
+	return t.SendThread(channelID, "", params)
+}
+
 // Edit will edit a message in a channel, if possible.
-func (t *Transmitter) Edit(channelID string, messageID string, params *discordgo.WebhookParams) error {
+func (t *Transmitter) EditThread(channelID string, threadID string, messageID string, params *discordgo.WebhookParams) error {
 	wh := t.getWebhook(channelID)
 
 	if wh == nil {
 		return ErrWebhookNotFound
 	}
 
-	uri := discordgo.EndpointWebhookToken(wh.ID, wh.Token) + "/messages/" + messageID
+	threadParam := ""
+	if threadID != "" {
+		threadParam = "?thread_id=" + threadID
+	}
+
+	uri := discordgo.EndpointWebhookToken(wh.ID, wh.Token) + "/messages/" + messageID + threadParam
 	_, err := t.session.RequestWithBucketID("PATCH", uri, params, discordgo.EndpointWebhookToken("", ""))
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (t *Transmitter) Edit(channelID string, messageID string, params *discordgo.WebhookParams) error {
+	return t.EditThread(channelID, "", messageID, params)
 }
 
 // HasWebhook checks whether the transmitter is using a particular webhook.

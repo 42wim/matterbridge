@@ -1928,8 +1928,13 @@ enable=true
     channel="mygreatgame"
 
         [gateway.inout.options]
-        # WebhookURL sends messages in the style of "puppets". You must configure a webhook URL for each channel you want to bridge.
+        # OPTIONAL - ForumID: the ID of the forum channel containing the thread. The thread ID should be used for "channel" then.
+        # Note: Do not add "ID:" at the beginning of the ForumID.
+        # Example: "123456789"
+        ForumID=""
+        # OPTIONAL - WebhookURL sends messages in the style of "puppets". You must configure a webhook URL for each channel you want to bridge.
         # If you have more than one channel and don't wnat to configure each channel manually, see the "AutoWebhooks" option in the gateway config.
+        # WebhookURL does not support forum channels (URLs containing "?thread_id="), see "ForumID"
         # Example: "https://discord.com/api/webhooks/1234/abcd_xyzw"
         WebhookURL=""
 

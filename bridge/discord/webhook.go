@@ -42,10 +42,10 @@ func (b *Bdiscord) maybeGetLocalAvatar(msg *config.Message) string {
 	return ""
 }
 
-// webhookSend send one or more message via webhook, taking care of file
-// uploads (from slack, telegram or mattermost).
+// webhookSendThread send one or more message via webhook, taking care of file
+// uploads (from slack, telegram or mattermost) and forum threads.
 // Returns messageID and error.
-func (b *Bdiscord) webhookSend(msg *config.Message, channelID string) (*discordgo.Message, error) {
+func (b *Bdiscord) webhookSendThread(msg *config.Message, channelID string, threadID string) (*discordgo.Message, error) {
 	var (
 		res  *discordgo.Message
 		res2 *discordgo.Message
@@ -61,8 +61,9 @@ func (b *Bdiscord) webhookSend(msg *config.Message, channelID string) (*discordg
 
 	// We can't send empty messages.
 	if msg.Text != "" {
-		res, err = b.transmitter.Send(
+		res, err = b.transmitter.SendThread(
 			channelID,
+			threadID,
 			&discordgo.WebhookParams{
 				Content:         msg.Text,
 				Username:        msg.Username,
@@ -85,8 +86,9 @@ func (b *Bdiscord) webhookSend(msg *config.Message, channelID string) (*discordg
 			}
 			content := fi.Comment
 
-			res2, err = b.transmitter.Send(
+			res2, err = b.transmitter.SendThread(
 				channelID,
+				threadID,
 				&discordgo.WebhookParams{
 					Username:        msg.Username,
 					AvatarURL:       msg.Avatar,
@@ -108,6 +110,10 @@ func (b *Bdiscord) webhookSend(msg *config.Message, channelID string) (*discordg
 	return res, err
 }
 
+func (b *Bdiscord) webhookSend(msg *config.Message, channelID string) (*discordgo.Message, error) {
+	return b.webhookSendThread(msg, channelID, "")
+}
+
 func (b *Bdiscord) handleEventWebhook(msg *config.Message, channelID string) (string, error) {
 	// skip events
 	if msg.Event != "" && msg.Event != config.EventUserAction && msg.Event != config.EventJoinLeave && msg.Event != config.EventTopicChange {
@@ -120,6 +126,15 @@ func (b *Bdiscord) handleEventWebhook(msg *config.Message, channelID string) (st
 		return "", nil
 	}
 
+	// If ForumID is set, it should be used as channelID for the webhook and the channelID is used as the thread_id
+	threadID := ""
+	if ci, ok := b.channelInfoMap[msg.Channel+b.Account]; ok {
+		if ci.Options.ForumID != "" {
+			threadID = channelID
+			channelID = ci.Options.ForumID
+		}
+	}
+
 	msg.Text = helper.ClipMessage(msg.Text, MessageLength, b.GetString("MessageClipped"))
 	msg.Text = b.replaceUserMentions(msg.Text)
 	// discord username must be [0..32] max
@@ -129,7 +144,7 @@ func (b *Bdiscord) handleEventWebhook(msg *config.Message, channelID string) (st
 
 	if msg.ID != "" {
 		b.Log.Debugf("Editing webhook message")
-		err := b.transmitter.Edit(channelID, msg.ID, &discordgo.WebhookParams{
+		err := b.transmitter.EditThread(channelID, threadID, msg.ID, &discordgo.WebhookParams{
 			Content:         msg.Text,
 			Username:        msg.Username,
 			AllowedMentions: b.getAllowedMentions(),
@@ -141,7 +156,7 @@ func (b *Bdiscord) handleEventWebhook(msg *config.Message, channelID string) (st
 	}
 
 	b.Log.Debugf("Processing webhook sending for message %#v", msg)
-	discordMsg, err := b.webhookSend(msg, channelID)
+	discordMsg, err := b.webhookSendThread(msg, channelID, threadID)
 	if err != nil {
 		b.Log.Errorf("Could not broadcast via webhook for message %#v: %s", msg, err)
 		return "", err
