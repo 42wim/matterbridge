@@ -213,6 +213,8 @@ func (b *Bwhatsapp) PostDocumentMessage(msg config.Message, filetype string) (st
 
 	fi := msg.Extra["file"][0].(config.FileInfo)
 
+	caption := msg.Username + fi.Comment
+
 	resp, err := b.wc.Upload(context.Background(), *fi.Data, whatsmeow.MediaDocument)
 	if err != nil {
 		return "", err
@@ -225,6 +227,7 @@ func (b *Bwhatsapp) PostDocumentMessage(msg config.Message, filetype string) (st
 		Title:         &fi.Name,
 		FileName:      &fi.Name,
 		Mimetype:      &filetype,
+		Caption:       &caption,
 		MediaKey:      resp.MediaKey,
 		FileEncSha256: resp.FileEncSHA256,
 		FileSha256:    resp.FileSHA256,
