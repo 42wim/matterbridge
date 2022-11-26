@@ -391,7 +391,7 @@ func (l *Logger) log(level Lvl, format string, args ...interface{}) {
 		if err == nil {
 			s := buf.String()
 			i := buf.Len() - 1
-			if s[i] == '}' {
+			if i >= 0 && s[i] == '}' {
 				// JSON header
 				buf.Truncate(i)
 				buf.WriteByte(',')
@@ -404,7 +404,9 @@ func (l *Logger) log(level Lvl, format string, args ...interface{}) {
 				}
 			} else {
 				// Text header
-				buf.WriteByte(' ')
+				if len(s) > 0 {
+					buf.WriteByte(' ')
+				}
 				buf.WriteString(message)
 			}
 			buf.WriteByte('\n')

@@ -157,9 +157,13 @@ func (l *Leaf) GetChildren() []Node {
 	return nil
 }
 
-// SetChildren will panic becuase Leaf cannot have children
+// SetChildren will panic if trying to set non-empty children
+// because Leaf cannot have children
 func (l *Leaf) SetChildren(newChildren []Node) {
-	panic("leaf node cannot have children")
+	if len(newChildren) != 0 {
+		panic("leaf node cannot have children")
+	}
+
 }
 
 // Document represents markdown document node, a root of ast

@@ -409,6 +409,11 @@ func (t JSONTime) Time() time.Time {
 func (t *JSONTime) UnmarshalJSON(buf []byte) error {
 	s := bytes.Trim(buf, `"`)
 
+	if bytes.EqualFold(s, []byte("null")) {
+		*t = JSONTime(0)
+		return nil
+	}
+
 	v, err := strconv.Atoi(string(s))
 	if err != nil {
 		return err

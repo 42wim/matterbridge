@@ -376,8 +376,8 @@ func (v *VM) run() {
 
 			var lowIdx int64
 			if low != UndefinedValue {
-				if low, ok := low.(*Int); ok {
-					lowIdx = low.Value
+				if lowInt, ok := low.(*Int); ok {
+					lowIdx = lowInt.Value
 				} else {
 					v.err = fmt.Errorf("invalid slice index type: %s",
 						low.TypeName())
@@ -391,8 +391,8 @@ func (v *VM) run() {
 				var highIdx int64
 				if high == UndefinedValue {
 					highIdx = numElements
-				} else if high, ok := high.(*Int); ok {
-					highIdx = high.Value
+				} else if highInt, ok := high.(*Int); ok {
+					highIdx = highInt.Value
 				} else {
 					v.err = fmt.Errorf("invalid slice index type: %s",
 						high.TypeName())
@@ -428,8 +428,8 @@ func (v *VM) run() {
 				var highIdx int64
 				if high == UndefinedValue {
 					highIdx = numElements
-				} else if high, ok := high.(*Int); ok {
-					highIdx = high.Value
+				} else if highInt, ok := high.(*Int); ok {
+					highIdx = highInt.Value
 				} else {
 					v.err = fmt.Errorf("invalid slice index type: %s",
 						high.TypeName())
@@ -465,8 +465,8 @@ func (v *VM) run() {
 				var highIdx int64
 				if high == UndefinedValue {
 					highIdx = numElements
-				} else if high, ok := high.(*Int); ok {
-					highIdx = high.Value
+				} else if highInt, ok := high.(*Int); ok {
+					highIdx = highInt.Value
 				} else {
 					v.err = fmt.Errorf("invalid slice index type: %s",
 						high.TypeName())
@@ -502,8 +502,8 @@ func (v *VM) run() {
 				var highIdx int64
 				if high == UndefinedValue {
 					highIdx = numElements
-				} else if high, ok := high.(*Int); ok {
-					highIdx = high.Value
+				} else if highInt, ok := high.(*Int); ok {
+					highIdx = highInt.Value
 				} else {
 					v.err = fmt.Errorf("invalid slice index type: %s",
 						high.TypeName())
@@ -767,6 +767,7 @@ func (v *VM) run() {
 				NumLocals:     fn.NumLocals,
 				NumParameters: fn.NumParameters,
 				VarArgs:       fn.VarArgs,
+				SourceMap:     fn.SourceMap,
 				Free:          free,
 			}
 			v.allocs--

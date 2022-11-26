@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.10 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/keybase1/identify_ui.avdl
 
 package keybase1
@@ -357,13 +357,13 @@ func (o UserCard) DeepCopy() UserCard {
 	return UserCard{
 		UnverifiedNumFollowing: o.UnverifiedNumFollowing,
 		UnverifiedNumFollowers: o.UnverifiedNumFollowers,
-		Uid:          o.Uid.DeepCopy(),
-		FullName:     o.FullName,
-		Location:     o.Location,
-		Bio:          o.Bio,
-		BioDecorated: o.BioDecorated,
-		Website:      o.Website,
-		Twitter:      o.Twitter,
+		Uid:                    o.Uid.DeepCopy(),
+		FullName:               o.FullName,
+		Location:               o.Location,
+		Bio:                    o.Bio,
+		BioDecorated:           o.BioDecorated,
+		Website:                o.Website,
+		Twitter:                o.Twitter,
 		TeamShowcase: (func(x []UserTeamShowcase) []UserTeamShowcase {
 			if x == nil {
 				return nil

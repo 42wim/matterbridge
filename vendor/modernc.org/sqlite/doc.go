@@ -19,16 +19,17 @@
 //
 //	OS      Arch    SQLite version
 //	------------------------------
-//	darwin	amd64   3.39.2
-//	darwin	arm64   3.39.2
-//	freebsd	amd64   3.39.2
-//	linux	386     3.39.2
-//	linux	amd64   3.39.2
-//	linux	arm     3.39.2
-//	linux	arm64   3.39.2
-//	linux	riscv64 3.39.2
-//	windows	amd64   3.39.2
-//	windows	arm64   3.39.2
+//	darwin	amd64   3.39.4
+//	darwin	arm64   3.39.4
+//	freebsd	amd64   3.39.4
+//	freebsd	arm64   3.39.4
+//	linux	386     3.39.4
+//	linux	amd64   3.39.4
+//	linux	arm     3.39.4
+//	linux	arm64   3.39.4
+//	linux	riscv64 3.39.4
+//	windows	amd64   3.39.4
+//	windows	arm64   3.39.4
 //
 // Builders
 //
@@ -37,6 +38,10 @@
 //	https://modern-c.appspot.com/-/builder/?importpath=modernc.org%2fsqlite
 //
 // Changelog
+//
+// 2022-09-16 v1.19.0:
+//
+// Support frebsd/arm64.
 //
 // 2022-07-26 v1.18.0:
 //

@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.10 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/chat1/notify.avdl
 
 package chat1
@@ -115,7 +115,7 @@ func (o IncomingMessage) DeepCopy() IncomingMessage {
 			tmp := (*x).DeepCopy()
 			return &tmp
 		})(o.ModifiedMessage),
-		ConvID: o.ConvID.DeepCopy(),
+		ConvID:                     o.ConvID.DeepCopy(),
 		DisplayDesktopNotification: o.DisplayDesktopNotification,
 		DesktopNotificationSnippet: o.DesktopNotificationSnippet,
 		Conv: (func(x *InboxUIItem) *InboxUIItem {

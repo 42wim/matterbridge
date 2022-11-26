@@ -50,7 +50,7 @@ type SlackErrorResponse struct {
 
 func (r SlackErrorResponse) Error() string { return r.Err }
 
-// RateLimitedError represents the rate limit respond from slack
+// RateLimitedError represents the rate limit response from slack
 type RateLimitedError struct {
 	RetryAfter time.Duration
 }

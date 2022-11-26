@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.10 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/chat1/local.avdl
 
 package chat1
@@ -5150,6 +5150,28 @@ func (o MarkAsReadLocalRes) DeepCopy() MarkAsReadLocalRes {
 	}
 }
 
+type MarkTLFAsReadLocalRes struct {
+	Offline    bool        `codec:"offline" json:"offline"`
+	RateLimits []RateLimit `codec:"rateLimits" json:"rateLimits"`
+}
+
+func (o MarkTLFAsReadLocalRes) DeepCopy() MarkTLFAsReadLocalRes {
+	return MarkTLFAsReadLocalRes{
+		Offline: o.Offline,
+		RateLimits: (func(x []RateLimit) []RateLimit {
+			if x == nil {
+				return nil
+			}
+			ret := make([]RateLimit, len(x))
+			for i, v := range x {
+				vCopy := v.DeepCopy()
+				ret[i] = vCopy
+			}
+			return ret
+		})(o.RateLimits),
+	}
+}
+
 type FindConversationsLocalRes struct {
 	Conversations    []ConversationLocal           `codec:"conversations" json:"conversations"`
 	UiConversations  []InboxUIItem                 `codec:"uiConversations" json:"uiConversations"`
@@ -5262,6 +5284,26 @@ type DeleteConversationLocalRes struct {
 func (o DeleteConversationLocalRes) DeepCopy() DeleteConversationLocalRes {
 	return DeleteConversationLocalRes{
 		Offline: o.Offline,
+		RateLimits: (func(x []RateLimit) []RateLimit {
+			if x == nil {
+				return nil
+			}
+			ret := make([]RateLimit, len(x))
+			for i, v := range x {
+				vCopy := v.DeepCopy()
+				ret[i] = vCopy
+			}
+			return ret
+		})(o.RateLimits),
+	}
+}
+
+type RemoveFromConversationLocalRes struct {
+	RateLimits []RateLimit `codec:"rateLimits" json:"rateLimits"`
+}
+
+func (o RemoveFromConversationLocalRes) DeepCopy() RemoveFromConversationLocalRes {
+	return RemoveFromConversationLocalRes{
 		RateLimits: (func(x []RateLimit) []RateLimit {
 			if x == nil {
 				return nil
@@ -6112,15 +6154,15 @@ func (o PinMessageRes) DeepCopy() PinMessageRes {
 	}
 }
 
-type AddBotConvSearchHit struct {
+type ConvSearchHit struct {
 	Name   string         `codec:"name" json:"name"`
 	ConvID ConversationID `codec:"convID" json:"convID"`
 	IsTeam bool           `codec:"isTeam" json:"isTeam"`
 	Parts  []string       `codec:"parts" json:"parts"`
 }
 
-func (o AddBotConvSearchHit) DeepCopy() AddBotConvSearchHit {
-	return AddBotConvSearchHit{
+func (o ConvSearchHit) DeepCopy() ConvSearchHit {
+	return ConvSearchHit{
 		Name:   o.Name,
 		ConvID: o.ConvID.DeepCopy(),
 		IsTeam: o.IsTeam,

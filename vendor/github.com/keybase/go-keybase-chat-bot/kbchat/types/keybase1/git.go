@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.10 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/keybase1/git.avdl
 
 package keybase1
@@ -223,8 +223,8 @@ type GitServerMetadata struct {
 
 func (o GitServerMetadata) DeepCopy() GitServerMetadata {
 	return GitServerMetadata{
-		Ctime: o.Ctime.DeepCopy(),
-		Mtime: o.Mtime.DeepCopy(),
+		Ctime:                   o.Ctime.DeepCopy(),
+		Mtime:                   o.Mtime.DeepCopy(),
 		LastModifyingUsername:   o.LastModifyingUsername,
 		LastModifyingDeviceID:   o.LastModifyingDeviceID.DeepCopy(),
 		LastModifyingDeviceName: o.LastModifyingDeviceName,

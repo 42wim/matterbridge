@@ -10,15 +10,16 @@ package main
 import (
 	"archive/zip"
 	"bufio"
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 
 	"modernc.org/ccgo/v3/lib"
@@ -146,7 +147,7 @@ import (
 //	-lpthread
 
 const (
-	volatiles = "-volatile=sqlite3_io_error_pending,sqlite3_open_file_count,sqlite3_pager_readdb_count,sqlite3_pager_writedb_count,sqlite3_pager_writej_count,sqlite3_search_count,sqlite3_sort_count,saved_cnt"
+	volatiles = "-volatile=sqlite3_io_error_pending,sqlite3_open_file_count,sqlite3_pager_readdb_count,sqlite3_pager_writedb_count,sqlite3_pager_writej_count,sqlite3_search_count,sqlite3_sort_count,saved_cnt,randomnessPid"
 )
 
 var (
@@ -254,16 +255,16 @@ var (
 		sz       int
 		dev      bool
 	}{
-		{sqliteDir, "https://www.sqlite.org/2022/sqlite-amalgamation-3390200.zip", 2457, false},
-		{sqliteSrcDir, "https://www.sqlite.org/2022/sqlite-src-3390200.zip", 12814, false},
+		{sqliteDir, "https://www.sqlite.org/2022/sqlite-amalgamation-3390400.zip", 2457, false},
+		{sqliteSrcDir, "https://www.sqlite.org/2022/sqlite-src-3390400.zip", 12814, false},
 	}
 
-	sqliteDir    = filepath.FromSlash("testdata/sqlite-amalgamation-3390200")
-	sqliteSrcDir = filepath.FromSlash("testdata/sqlite-src-3390200")
+	sqliteDir    = filepath.FromSlash("testdata/sqlite-amalgamation-3390400")
+	sqliteSrcDir = filepath.FromSlash("testdata/sqlite-src-3390400")
 )
 
 func download() {
-	tmp, err := ioutil.TempDir("", "")
+	tmp, err := os.MkdirTemp("", "")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		return
@@ -709,7 +710,8 @@ func makeMpTest(goos, goarch string, more []string) {
 				"-ignore-unsupported-alignment",
 				"-o", filepath.FromSlash(fmt.Sprintf("internal/mptest/main_%s_%s.go", goos, goarch)),
 				"-trace-translation-units",
-				filepath.Join(sqliteSrcDir, "mptest", "mptest.c"),
+				// filepath.Join(sqliteSrcDir, "mptest", "mptest.c"),
+				filepath.Join("testdata", "mptest.c"),
 				fmt.Sprintf("-I%s", sqliteDir),
 				"-l", "modernc.org/sqlite/lib",
 			},
@@ -726,6 +728,7 @@ func makeMpTest(goos, goarch string, more []string) {
 }
 
 func makeSqliteProduction(goos, goarch string, more []string) {
+	fn := filepath.FromSlash(fmt.Sprintf("lib/sqlite_%s_%s.go", goos, goarch))
 	task := ccgo.NewTask(
 		join(
 			[]string{
@@ -738,7 +741,8 @@ func makeSqliteProduction(goos, goarch string, more []string) {
 				"-export-typedefs", "",
 				"-ignore-unsupported-alignment",
 				"-pkgname", "sqlite3",
-				"-o", filepath.FromSlash(fmt.Sprintf("lib/sqlite_%s_%s.go", goos, goarch)),
+				volatiles,
+				"-o", fn,
 				"-trace-translation-units",
 				filepath.Join(sqliteDir, "sqlite3.c"),
 			},
@@ -752,9 +756,14 @@ func makeSqliteProduction(goos, goarch string, more []string) {
 	if err := task.Main(); err != nil {
 		fail("%s\n", err)
 	}
+
+	if err := patchXsqlite3_initialize(fn); err != nil {
+		fail("%s\n", err)
+	}
 }
 
 func makeSqliteTest(goos, goarch string, more []string) {
+	fn := filepath.FromSlash(fmt.Sprintf("libtest/sqlite_%s_%s.go", goos, goarch))
 	task := ccgo.NewTask(
 		join(
 			[]string{
@@ -767,7 +776,8 @@ func makeSqliteTest(goos, goarch string, more []string) {
 				"-export-typedefs", "",
 				"-ignore-unsupported-alignment",
 				"-pkgname", "sqlite3",
-				"-o", filepath.FromSlash(fmt.Sprintf("libtest/sqlite_%s_%s.go", goos, goarch)),
+				volatiles,
+				"-o", fn,
 				"-trace-translation-units",
 				volatiles,
 				filepath.Join(sqliteDir, "sqlite3.c"),
@@ -782,6 +792,10 @@ func makeSqliteTest(goos, goarch string, more []string) {
 	if err := task.Main(); err != nil {
 		fail("%s\n", err)
 	}
+
+	if err := patchXsqlite3_initialize(fn); err != nil {
+		fail("%s\n", err)
+	}
 }
 
 func join(a ...[]string) (r []string) {
@@ -794,4 +808,48 @@ func join(a ...[]string) (r []string) {
 		r = append(r, v...)
 	}
 	return r
+}
+
+func patchXsqlite3_initialize(fn string) error {
+	const s = "func Xsqlite3_initialize(tls *libc.TLS) int32 {"
+	return patch(fn, func(b []byte) []diff {
+		x := bytes.Index(b, []byte(s))
+		return []diff{{x, x + len(s), `
+var mu mutex
+
+func init() { mu.recursive = true }
+
+func Xsqlite3_initialize(tls *libc.TLS) int32 {
+	mu.enter(tls.ID)
+	defer mu.leave(tls.ID)
+
+`}}
+	})
+}
+
+type diff struct {
+	from, to int    // byte offsets
+	replace  string // replaces b[from:to]
+}
+
+func patch(fn string, f func([]byte) []diff) error {
+	b, err := os.ReadFile(fn)
+	if err != nil {
+		return err
+	}
+
+	diffs := f(b)
+	sort.Slice(diffs, func(i, j int) bool { return diffs[i].from < diffs[j].from })
+	var patched [][]byte
+	off := 0
+	for _, diff := range diffs {
+		from := diff.from - off
+		to := diff.to - off
+		patched = append(patched, b[:from])
+		patched = append(patched, []byte(diff.replace))
+		b = b[to:]
+		off += to
+	}
+	patched = append(patched, b)
+	return os.WriteFile(fn, bytes.Join(patched, nil), 0660)
 }

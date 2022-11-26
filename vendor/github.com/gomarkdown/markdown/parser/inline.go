@@ -157,6 +157,7 @@ func codeSpan(p *Parser, data []byte, offset int) (int, ast.Node) {
 		}
 		if !IsSpace(data[j]) {
 			hasCharsAfterDelimiter = true
+			break
 		}
 	}
 

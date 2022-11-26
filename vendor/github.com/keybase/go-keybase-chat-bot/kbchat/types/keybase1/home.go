@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.10 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/keybase1/home.avdl
 
 package keybase1
@@ -435,7 +435,7 @@ func (o HomeScreenTodo) LegacyEmailVisibility() (res EmailAddress) {
 
 func NewHomeScreenTodoWithVerifyAllPhoneNumber(v PhoneNumber) HomeScreenTodo {
 	return HomeScreenTodo{
-		T__: HomeScreenTodoType_VERIFY_ALL_PHONE_NUMBER,
+		T__:                    HomeScreenTodoType_VERIFY_ALL_PHONE_NUMBER,
 		VerifyAllPhoneNumber__: &v,
 	}
 }
@@ -449,7 +449,7 @@ func NewHomeScreenTodoWithVerifyAllEmail(v EmailAddress) HomeScreenTodo {
 
 func NewHomeScreenTodoWithLegacyEmailVisibility(v EmailAddress) HomeScreenTodo {
 	return HomeScreenTodo{
-		T__: HomeScreenTodoType_LEGACY_EMAIL_VISIBILITY,
+		T__:                     HomeScreenTodoType_LEGACY_EMAIL_VISIBILITY,
 		LegacyEmailVisibility__: &v,
 	}
 }
