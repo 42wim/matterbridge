@@ -243,6 +243,7 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 
 func (b *Birc) handleRunCommands() {
 	for _, cmd := range b.GetStringSlice("RunCommands") {
+		cmd = strings.ReplaceAll(cmd, "{BOTNICK}", b.Nick)
 		if err := b.i.Cmd.SendRaw(cmd); err != nil {
 			b.Log.Errorf("RunCommands %s failed: %s", cmd, err)
 		}
