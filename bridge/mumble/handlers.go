@@ -78,16 +78,72 @@ func (b *Bmumble) handleConnect(event *gumble.ConnectEvent) {
 	}
 }
 
-func (b *Bmumble) handleUserChange(event *gumble.UserChangeEvent) {
-	// Only care about changes to self
-	if event.User != event.Client.Self {
+func (b *Bmumble) handleJoinLeave(event *gumble.UserChangeEvent) {
+	// Ignore events happening before setup is done
+	if b.Channel == nil {
 		return
 	}
-	// Someone attempted to move the user out of the configured channel; attempt to join back
-	if b.Channel != nil {
+	if b.GetBool("nosendjoinpart") {
+		return
+	}
+	b.Log.Debugf("Received gumble user change event: %+v", event)
+
+	text := ""
+	switch {
+	case event.Type&gumble.UserChangeKicked > 0:
+		text = " was kicked"
+	case event.Type&gumble.UserChangeBanned > 0:
+		text = " was banned"
+	case event.Type&gumble.UserChangeDisconnected > 0:
+		if event.User.Channel != nil && event.User.Channel.ID == *b.Channel {
+			text = " left"
+		}
+	case event.Type&gumble.UserChangeConnected > 0:
+		if event.User.Channel != nil && event.User.Channel.ID == *b.Channel {
+			text = " joined"
+		}
+	case event.Type&gumble.UserChangeChannel > 0:
+		// Treat Mumble channel changes the same as connects/disconnects; as far as matterbridge is concerned, they are identical
+		if event.User.Channel != nil && event.User.Channel.ID == *b.Channel {
+			text = " joined"
+		} else {
+			text = " left"
+		}
+	}
+
+	if text != "" {
+		b.Remote <- config.Message{
+			Username: "system",
+			Text:     event.User.Name + text,
+			Channel:  strconv.FormatUint(uint64(*b.Channel), 10),
+			Account:  b.Account,
+			Event:    config.EventJoinLeave,
+		}
+	}
+}
+
+func (b *Bmumble) handleUserModified(event *gumble.UserChangeEvent) {
+	// Ignore events happening before setup is done
+	if b.Channel == nil {
+		return
+	}
+
+	if event.Type&gumble.UserChangeChannel > 0 {
+		// Someone attempted to move the user out of the configured channel; attempt to join back
 		if err := b.doJoin(event.Client, *b.Channel); err != nil {
 			b.Log.Error(err)
 		}
+	}
+}
+
+func (b *Bmumble) handleUserChange(event *gumble.UserChangeEvent) {
+	// The UserChangeEvent is used for both the gumble client itself as well as other clients
+	if event.User != event.Client.Self {
+		// other users
+		b.handleJoinLeave(event)
+	} else {
+		// gumble user
+		b.handleUserModified(event)
 	}
 }
 

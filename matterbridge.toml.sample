@@ -188,7 +188,7 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -198,7 +198,7 @@ ShowJoinPart=false
 VerboseJoinPart=false
 
 #Do not send joins/parts to other bridges
-#Currently works for messages from the following bridges: irc, mattermost, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
 #OPTIONAL (default false)
 NoSendJoinPart=false
 
@@ -325,7 +325,7 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -492,12 +492,12 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
 
 #Do not send joins/parts to other bridges
-#Currently works for messages from the following bridges: irc, mattermost, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
 #OPTIONAL (default false)
 NoSendJoinPart=false
 
@@ -579,7 +579,7 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -687,7 +687,7 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -826,12 +826,12 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
 
 #Do not send joins/parts to other bridges
-#Currently works for messages from the following bridges: irc, mattermost, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
 #OPTIONAL (default false)
 NoSendJoinPart=false
 
@@ -1138,7 +1138,7 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -1275,7 +1275,7 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -1387,7 +1387,7 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -1484,7 +1484,7 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -1571,6 +1571,15 @@ SkipTLSVerify=false
 #Message to show when a message is too big
 #Default "<clipped message>"
 MessageClipped="<clipped message>"
+
+#Enable to show users joins/parts from other bridges
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
+#OPTIONAL (default false)
+ShowJoinPart=false
+
+#Do not send joins/parts to other bridges
+#OPTIONAL (default false)
+NoSendJoinPart=false
 
 ###################################################################
 #VK
@@ -1684,7 +1693,7 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
 #OPTIONAL (default false)
 ShowJoinPart=false
 
