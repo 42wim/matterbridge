@@ -130,17 +130,18 @@ func (api *Client) ListStarsContext(ctx context.Context, params StarsParameters)
 // GetStarred returns a list of StarredItem items.
 //
 // The user then has to iterate over them and figure out what they should
-// be looking at according to what is in the Type.
-//    for _, item := range items {
-//        switch c.Type {
-//        case "file_comment":
-//            log.Println(c.Comment)
-//        case "file":
-//             ...
+// be looking at according to what is in the Type:
 //
-//    }
+//	for _, item := range items {
+//	    switch c.Type {
+//	    case "file_comment":
+//	        log.Println(c.Comment)
+//	    case "file":
+//	        ...
+//	}
+//
 // This function still exists to maintain backwards compatibility.
-// I exposed it as returning []StarredItem, so it shall stay as StarredItem
+// I exposed it as returning []StarredItem, so it shall stay as StarredItem.
 func (api *Client) GetStarred(params StarsParameters) ([]StarredItem, *Paging, error) {
 	return api.GetStarredContext(context.Background(), params)
 }

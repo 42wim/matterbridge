@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"runtime"
@@ -218,7 +217,7 @@ func (a *API) getUsername(runOpts RunOptions) (username string, err error) {
 	doneCh := make(chan error)
 	go func() {
 		defer func() { close(doneCh) }()
-		statusJSON, err := ioutil.ReadAll(output)
+		statusJSON, err := io.ReadAll(output)
 		if err != nil {
 			doneCh <- fmt.Errorf("error reading whoami output: %v", err)
 			return
@@ -533,7 +532,7 @@ func (a *API) Listen(opts ListenOptions) (*Subscription, error) {
 			case <-done:
 			}
 			if err := p.Wait(); err != nil {
-				stderrBytes, rerr := ioutil.ReadAll(stderr)
+				stderrBytes, rerr := io.ReadAll(stderr)
 				if rerr != nil {
 					stderrBytes = []byte(fmt.Sprintf("failed to get stderr: %v", rerr))
 				}

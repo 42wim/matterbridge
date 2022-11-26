@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.10 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/keybase1/incoming-share.avdl
 
 package keybase1
@@ -94,5 +94,41 @@ func (o IncomingShareItem) DeepCopy() IncomingShareItem {
 			tmp := (*x)
 			return &tmp
 		})(o.Content),
+	}
+}
+
+type IncomingShareCompressPreference int
+
+const (
+	IncomingShareCompressPreference_ORIGINAL   IncomingShareCompressPreference = 0
+	IncomingShareCompressPreference_COMPRESSED IncomingShareCompressPreference = 1
+)
+
+func (o IncomingShareCompressPreference) DeepCopy() IncomingShareCompressPreference { return o }
+
+var IncomingShareCompressPreferenceMap = map[string]IncomingShareCompressPreference{
+	"ORIGINAL":   0,
+	"COMPRESSED": 1,
+}
+
+var IncomingShareCompressPreferenceRevMap = map[IncomingShareCompressPreference]string{
+	0: "ORIGINAL",
+	1: "COMPRESSED",
+}
+
+func (e IncomingShareCompressPreference) String() string {
+	if v, ok := IncomingShareCompressPreferenceRevMap[e]; ok {
+		return v
+	}
+	return fmt.Sprintf("%v", int(e))
+}
+
+type IncomingSharePreference struct {
+	CompressPreference IncomingShareCompressPreference `codec:"compressPreference" json:"compressPreference"`
+}
+
+func (o IncomingSharePreference) DeepCopy() IncomingSharePreference {
+	return IncomingSharePreference{
+		CompressPreference: o.CompressPreference.DeepCopy(),
 	}
 }

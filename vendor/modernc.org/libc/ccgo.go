@@ -1082,6 +1082,13 @@ func BoolUint64(b bool) uint64 {
 	return 0
 }
 
+func BoolUintptr(b bool) uintptr {
+	if b {
+		return 1
+	}
+	return 0
+}
+
 func SetBitFieldPtr8Int8(p uintptr, v int8, off int, mask uint8) {
 	*(*uint8)(unsafe.Pointer(p)) = *(*uint8)(unsafe.Pointer(p))&^uint8(mask) | uint8(v)<<off&mask
 }

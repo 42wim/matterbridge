@@ -1245,8 +1245,9 @@ type project struct {
 	wanted             map[*cc.Declarator]struct{}
 	wcharSize          uintptr
 
-	isMain bool
-	pass1  bool
+	isMain       bool
+	pass1        bool
+	pauseCodegen bool
 }
 
 func newProject(t *Task) (*project, error) {
@@ -1366,7 +1367,7 @@ func (p *project) o(s string, args ...interface{}) {
 }
 
 func (p *project) w(s string, args ...interface{}) {
-	if p.pass1 {
+	if p.pass1 || p.pauseCodegen {
 		return
 	}
 
@@ -4633,6 +4634,11 @@ var dummyJumpStatement = &cc.JumpStatement{}
 
 func (p *project) statement(f *function, n *cc.Statement, forceCompoundStmtBrace, forceNoBraces, switchBlock bool, mode exprMode) (r *cc.JumpStatement) {
 	if forceCompoundStmtBrace {
+		if f.switchCtx == inSwitchFirst && p.pauseCodegen {
+			p.pauseCodegen = false
+			p.w(" {")
+			p.pauseCodegen = true
+		}
 		p.w(" {")
 		if !switchBlock {
 			p.instrument(n)
@@ -4679,6 +4685,12 @@ func (p *project) statement(f *function, n *cc.Statement, forceCompoundStmtBrace
 		panic(todo("%v: internal error: %v", n.Position(), n.Case))
 	}
 	if forceCompoundStmtBrace {
+		// We need to do this, to guarantee that we always close the brace is we opened it
+		if f.switchCtx == inSwitchFirst && p.pauseCodegen {
+			p.pauseCodegen = false
+			p.w("}")
+			p.pauseCodegen = true
+		}
 		p.w("}")
 	}
 	return r
@@ -12786,12 +12798,22 @@ func (p *project) selectionStatement(f *function, n *cc.SelectionStatement) {
 			p.statement(f, n.Statement2, true, false, false, 0)
 		}
 	case cc.SelectionStatementSwitch: // "switch" '(' Expression ')' Statement
+		// just dont generate in this case
+		if f.switchCtx == inSwitchFirst {
+			break
+		}
 		sv := f.switchCtx
+		sb := f.block
+		sc := p.pauseCodegen
 		svBreakCtx := f.breakCtx
 		f.breakCtx = 0
+		f.block = f.blocks[n.Statement.CompoundStatement]
+
 		defer func() {
+			f.block = sb
 			f.switchCtx = sv
 			f.breakCtx = svBreakCtx
+			p.pauseCodegen = sc
 		}()
 		if f.hasJumps {
 			f.switchCtx = inSwitchFlat
@@ -12800,9 +12822,27 @@ func (p *project) selectionStatement(f *function, n *cc.SelectionStatement) {
 		}
 
 		f.switchCtx = inSwitchFirst
+		// fmt.Println(f.block.decls)
+		if len(f.block.decls) != 0 {
+			f.block.topDecl = true
+			// fmt.Printf("%p:%tf\n", f.block, f.block.topDecl)
+			p.w("{")
+			for _, v := range f.block.decls {
+				// fmt.Printf("%p:%tf\n", f.block, f.block.topDecl)
+				p.declaration(f, v, true)
+				// fmt.Println("done!")
+			}
+		}
+
 		p.w("switch ")
 		p.expression(f, n.Expression, n.Promote(), exprValue, 0)
+		p.pauseCodegen = true
 		p.statement(f, n.Statement, true, false, true, 0)
+		p.pauseCodegen = false
+		if len(f.block.decls) != 0 {
+			p.w("}")
+		}
+
 	default:
 		panic(todo("%v: internal error: %v", n.Position(), n.Case))
 	}
@@ -12925,6 +12965,7 @@ func (p *project) labeledStatementCase(f *function, n *cc.LabeledStatement) {
 	switch f.switchCtx {
 	case inSwitchFirst:
 		f.switchCtx = inSwitchCase
+		p.pauseCodegen = false
 	case inSwitchCase:
 		p.w("\nfallthrough;")
 	case inSwitchSeenBreak:

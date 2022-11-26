@@ -3,7 +3,6 @@ package kbchat
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -33,9 +32,9 @@ func whichKeybase(t *testing.T) string {
 }
 
 func copyFile(t *testing.T, source, dest string) {
-	sourceData, err := ioutil.ReadFile(source)
+	sourceData, err := os.ReadFile(source)
 	require.NoError(t, err)
-	err = ioutil.WriteFile(dest, sourceData, 0777)
+	err = os.WriteFile(dest, sourceData, 0777)
 	require.NoError(t, err)
 }
 

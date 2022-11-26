@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.10 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/keybase1/notify_team.avdl
 
 package keybase1
@@ -21,6 +21,35 @@ func (o TeamChangeSet) DeepCopy() TeamChangeSet {
 		Renamed:           o.Renamed,
 		Misc:              o.Misc,
 	}
+}
+
+type TeamChangedSource int
+
+const (
+	TeamChangedSource_SERVER       TeamChangedSource = 0
+	TeamChangedSource_LOCAL        TeamChangedSource = 1
+	TeamChangedSource_LOCAL_RENAME TeamChangedSource = 2
+)
+
+func (o TeamChangedSource) DeepCopy() TeamChangedSource { return o }
+
+var TeamChangedSourceMap = map[string]TeamChangedSource{
+	"SERVER":       0,
+	"LOCAL":        1,
+	"LOCAL_RENAME": 2,
+}
+
+var TeamChangedSourceRevMap = map[TeamChangedSource]string{
+	0: "SERVER",
+	1: "LOCAL",
+	2: "LOCAL_RENAME",
+}
+
+func (e TeamChangedSource) String() string {
+	if v, ok := TeamChangedSourceRevMap[e]; ok {
+		return v
+	}
+	return fmt.Sprintf("%v", int(e))
 }
 
 type AvatarUpdateType int

@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.10 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/chat1/common.avdl
 
 package chat1
@@ -2005,6 +2005,8 @@ const (
 	GetThreadReason_COINFLIP           GetThreadReason = 9
 	GetThreadReason_BOTCOMMANDS        GetThreadReason = 10
 	GetThreadReason_EMOJISOURCE        GetThreadReason = 11
+	GetThreadReason_FORWARDMSG         GetThreadReason = 12
+	GetThreadReason_LOCALIZE           GetThreadReason = 13
 )
 
 func (o GetThreadReason) DeepCopy() GetThreadReason { return o }
@@ -2022,6 +2024,8 @@ var GetThreadReasonMap = map[string]GetThreadReason{
 	"COINFLIP":           9,
 	"BOTCOMMANDS":        10,
 	"EMOJISOURCE":        11,
+	"FORWARDMSG":         12,
+	"LOCALIZE":           13,
 }
 
 var GetThreadReasonRevMap = map[GetThreadReason]string{
@@ -2037,6 +2041,8 @@ var GetThreadReasonRevMap = map[GetThreadReason]string{
 	9:  "COINFLIP",
 	10: "BOTCOMMANDS",
 	11: "EMOJISOURCE",
+	12: "FORWARDMSG",
+	13: "LOCALIZE",
 }
 
 func (e GetThreadReason) String() string {

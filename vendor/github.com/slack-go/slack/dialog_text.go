@@ -18,7 +18,7 @@ const (
 )
 
 // TextInputElement subtype of DialogInput
-//	https://api.slack.com/dialogs#option_element_attributes#text_element_attributes
+// https://api.slack.com/dialogs#option_element_attributes#text_element_attributes
 type TextInputElement struct {
 	DialogInput
 	MaxLength int              `json:"max_length,omitempty"`

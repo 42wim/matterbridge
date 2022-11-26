@@ -1419,6 +1419,16 @@ gatherlines:
 
 		chunk := data[line+indentIndex : i]
 
+		// If there is a fence line (marking starting of a code block)
+		// without indent do not process it as part of the list.
+		if p.extensions&FencedCode != 0 {
+			fenceLineEnd, _ := isFenceLine(chunk, nil, "")
+			if fenceLineEnd > 0 && indent == 0 {
+				*flags |= ast.ListItemEndOfList
+				break gatherlines
+			}
+		}
+
 		// evaluate how this line fits in
 		switch {
 		// is this a nested list item?

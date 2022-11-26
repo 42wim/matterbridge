@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.10 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/keybase1/upk.avdl
 
 package keybase1
@@ -127,8 +127,8 @@ func (o SignatureMetadata) DeepCopy() SignatureMetadata {
 		SigningKID:              o.SigningKID.DeepCopy(),
 		PrevMerkleRootSigned:    o.PrevMerkleRootSigned.DeepCopy(),
 		FirstAppearedUnverified: o.FirstAppearedUnverified.DeepCopy(),
-		Time:             o.Time.DeepCopy(),
-		SigChainLocation: o.SigChainLocation.DeepCopy(),
+		Time:                    o.Time.DeepCopy(),
+		SigChainLocation:        o.SigChainLocation.DeepCopy(),
 	}
 }
 

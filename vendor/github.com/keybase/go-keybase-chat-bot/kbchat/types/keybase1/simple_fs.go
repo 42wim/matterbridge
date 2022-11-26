@@ -1,4 +1,4 @@
-// Auto-generated to Go types using avdl-compiler v1.4.8 (https://github.com/keybase/node-avdl-compiler)
+// Auto-generated to Go types using avdl-compiler v1.4.10 (https://github.com/keybase/node-avdl-compiler)
 //   Input file: ../client/protocol/avdl/keybase1/simple_fs.avdl
 
 package keybase1
@@ -752,9 +752,9 @@ type CopyArgs struct {
 
 func (o CopyArgs) DeepCopy() CopyArgs {
 	return CopyArgs{
-		OpID: o.OpID.DeepCopy(),
-		Src:  o.Src.DeepCopy(),
-		Dest: o.Dest.DeepCopy(),
+		OpID:                   o.OpID.DeepCopy(),
+		Src:                    o.Src.DeepCopy(),
+		Dest:                   o.Dest.DeepCopy(),
 		OverwriteExistingFiles: o.OverwriteExistingFiles,
 	}
 }
@@ -768,9 +768,9 @@ type MoveArgs struct {
 
 func (o MoveArgs) DeepCopy() MoveArgs {
 	return MoveArgs{
-		OpID: o.OpID.DeepCopy(),
-		Src:  o.Src.DeepCopy(),
-		Dest: o.Dest.DeepCopy(),
+		OpID:                   o.OpID.DeepCopy(),
+		Src:                    o.Src.DeepCopy(),
+		Dest:                   o.Dest.DeepCopy(),
 		OverwriteExistingFiles: o.OverwriteExistingFiles,
 	}
 }
