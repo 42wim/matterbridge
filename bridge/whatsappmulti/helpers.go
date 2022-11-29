@@ -18,55 +18,47 @@ type ProfilePicInfo struct {
 	Status int16  `json:"status"`
 }
 
-func (b *Bwhatsapp) getSenderName(senderJid types.JID, AltName string) string {
-	if sender, exists := b.contacts[senderJid]; exists {
-		if sender.FullName != "" {
-			return sender.FullName
+func (b *Bwhatsapp) getSenderName(info types.MessageInfo) string {
+	// Parse AD JID
+	var senderJid types.JID
+	senderJid.User, senderJid.Server = info.Sender.User, info.Sender.Server
+
+	for i := 0; i < 2; i++ {
+		if sender, exists := b.contacts[senderJid]; exists {
+			if sender.FullName != "" {
+				return sender.FullName
+			}
 		}
 		// if user is not in phone contacts
 		// it is the most obvious scenario unless you sync your phone contacts with some remote updated source
 		// users can change it in their WhatsApp settings -> profile -> click on Avatar
-		if sender.PushName != "" {
-			return sender.PushName
+		if info.PushName != "" {
+			return info.PushName
 		}
 
-		if sender.FirstName != "" {
-			return sender.FirstName
-		}
-	}
-
-	// try to reload this contact
-	if _, err := b.wc.Store.Contacts.GetAllContacts(); err != nil {
-		b.Log.Errorf("error on update of contacts: %v", err)
-	}
-
-	allcontacts, err := b.wc.Store.Contacts.GetAllContacts()
-	if err != nil {
-		b.Log.Errorf("error on update of contacts: %v", err)
-	}
-
-	if len(allcontacts) > 0 {
-		b.contacts = allcontacts
-	}
-
-	if sender, exists := b.contacts[senderJid]; exists {
-		if sender.FullName != "" {
-			return sender.FullName
-		}
-		// if user is not in phone contacts
-		// it is the most obvious scenario unless you sync your phone contacts with some remote updated source
-		// users can change it in their WhatsApp settings -> profile -> click on Avatar
-		if sender.PushName != "" {
-			return sender.PushName
+		if sender, exists := b.contacts[senderJid]; exists {
+			if sender.FirstName != "" {
+				return sender.FirstName
+			}
 		}
 
-		if sender.FirstName != "" {
-			return sender.FirstName
+		if i > 0 {
+			break
 		}
-	}
 
-	if AltName != "" {
-		return AltName
+		// try to reload this contact
+		if _, err := b.wc.Store.Contacts.GetAllContacts(); err != nil {
+			b.Log.Errorf("error on update of contacts: %v", err)
+		}
+
+		allcontacts, err := b.wc.Store.Contacts.GetAllContacts()
+		if err != nil {
+			b.Log.Errorf("error on update of contacts: %v", err)
+		}
+
+		if len(allcontacts) > 0 {
+			b.contacts = allcontacts
+		}
 	}
 
 	return "Someone"
