@@ -51,7 +51,7 @@ func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.
 	senderJID := messageInfo.Sender
 	channel := messageInfo.Chat
 
-	senderName := b.getSenderName(messageInfo.Sender)
+	senderName := b.getSenderName(messageInfo.Sender, messageInfo.PushName)
 	if senderName == "" {
 		senderName = "Someone" // don't expose telephone number
 	}
@@ -118,7 +118,7 @@ func (b *Bwhatsapp) handleImageMessage(msg *events.Message) {
 	imsg := msg.Message.GetImageMessage()
 
 	senderJID := msg.Info.Sender
-	senderName := b.getSenderName(senderJID)
+	senderName := b.getSenderName(senderJID, msg.Info.PushName)
 	ci := imsg.GetContextInfo()
 
 	if senderJID == (types.JID{}) && ci.Participant != nil {
@@ -181,7 +181,7 @@ func (b *Bwhatsapp) handleVideoMessage(msg *events.Message) {
 	imsg := msg.Message.GetVideoMessage()
 
 	senderJID := msg.Info.Sender
-	senderName := b.getSenderName(senderJID)
+	senderName := b.getSenderName(senderJID, msg.Info.PushName)
 	ci := imsg.GetContextInfo()
 
 	if senderJID == (types.JID{}) && ci.Participant != nil {
@@ -238,7 +238,7 @@ func (b *Bwhatsapp) handleAudioMessage(msg *events.Message) {
 	imsg := msg.Message.GetAudioMessage()
 
 	senderJID := msg.Info.Sender
-	senderName := b.getSenderName(senderJID)
+	senderName := b.getSenderName(senderJID, msg.Info.PushName)
 	ci := imsg.GetContextInfo()
 
 	if senderJID == (types.JID{}) && ci.Participant != nil {
@@ -295,7 +295,7 @@ func (b *Bwhatsapp) handleDocumentMessage(msg *events.Message) {
 	imsg := msg.Message.GetDocumentMessage()
 
 	senderJID := msg.Info.Sender
-	senderName := b.getSenderName(senderJID)
+	senderName := b.getSenderName(senderJID, msg.Info.PushName)
 	ci := imsg.GetContextInfo()
 
 	if senderJID == (types.JID{}) && ci.Participant != nil {

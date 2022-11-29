@@ -18,7 +18,7 @@ type ProfilePicInfo struct {
 	Status int16  `json:"status"`
 }
 
-func (b *Bwhatsapp) getSenderName(senderJid types.JID) string {
+func (b *Bwhatsapp) getSenderName(senderJid types.JID, AltName string) string {
 	if sender, exists := b.contacts[senderJid]; exists {
 		if sender.FullName != "" {
 			return sender.FullName
@@ -63,6 +63,10 @@ func (b *Bwhatsapp) getSenderName(senderJid types.JID) string {
 		if sender.FirstName != "" {
 			return sender.FirstName
 		}
+	}
+
+	if AltName != "" {
+		return AltName
 	}
 
 	return "Someone"
