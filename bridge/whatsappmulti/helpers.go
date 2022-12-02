@@ -18,6 +18,20 @@ type ProfilePicInfo struct {
 	Status int16  `json:"status"`
 }
 
+func (b *Bwhatsapp) reloadContacts(){
+	if _, err := b.wc.Store.Contacts.GetAllContacts(); err != nil {
+		b.Log.Errorf("error on update of contacts: %v", err)
+	}
+
+	allcontacts, err := b.wc.Store.Contacts.GetAllContacts()
+	if err != nil {
+		b.Log.Errorf("error on update of contacts: %v", err)
+	}
+
+	if len(allcontacts) > 0 {
+		b.contacts = allcontacts
+	}
+}
 
 func (b *Bwhatsapp) getSenderName(info types.MessageInfo) string {
 	// Parse AD JID
@@ -26,47 +40,48 @@ func (b *Bwhatsapp) getSenderName(info types.MessageInfo) string {
 
 	sender, exists := b.contacts[senderJid]
 
-	for i := 0; i < 2; i++ {
-		if exists && ( sender.FullName != "" ) {
-			return sender.FullName
-		}
-		
-		// if user is not in phone contacts
-		// it is the most obvious scenario unless you sync your phone contacts with some remote updated source
-		// users can change it in their WhatsApp settings -> profile -> click on Avatar
-		if info.PushName != "" {
-			return info.PushName
-		}
-
-		if exists && ( sender.FirstName != "" ) {
-			return sender.FirstName
-		}
-
-		if i > 0 {
-			break
-		}
-
-		// try to reload this contact
-		if _, err := b.wc.Store.Contacts.GetAllContacts(); err != nil {
-			b.Log.Errorf("error on update of contacts: %v", err)
-		}
-
-		allcontacts, err := b.wc.Store.Contacts.GetAllContacts()
-		if err != nil {
-			b.Log.Errorf("error on update of contacts: %v", err)
-		}
-
-		if len(allcontacts) > 0 {
-			b.contacts = allcontacts
-		}
+	if !exists || (sender.FullName == "" && sender.FirstName == "") {
+		b.reloadContacts() // Contacts may need to be reloaded
 	}
+
+	if exists && ( sender.FullName != "" ) {
+		return sender.FullName
+	}
+	
+	if info.PushName != "" {
+		return info.PushName
+	}
+
+	if exists && ( sender.FirstName != "" ) {
+		return sender.FirstName
+	}
+	
 	return "Someone"
 }
 
 func (b *Bwhatsapp) getSenderNotify(senderJid types.JID) string {
-	if sender, exists := b.contacts[senderJid]; exists {
+	sender, exists := b.contacts[senderJid]
+
+	if !exists || (sender.FullName == "" && sender.PushName == "" && sender.FirstName == "") {
+		b.reloadContacts() // Contacts may need to be reloaded
+	}
+
+	if !exists {
+		return "someone"
+	}
+	
+	if sender.FullName != "" {
+		return sender.FullName
+	}
+	
+	if sender.PushName != "" {
 		return sender.PushName
 	}
+
+	if exists && sender.FirstName != "" {
+		return sender.FirstName
+	}
+	
 	return "someone"
 }
 
