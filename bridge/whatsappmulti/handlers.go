@@ -52,9 +52,6 @@ func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.
 	channel := messageInfo.Chat
 
 	senderName := b.getSenderName(messageInfo)
-	if senderName == "" {
-		senderName = "Someone" // don't expose telephone number
-	}
 
 	if msg.GetExtendedTextMessage() == nil && msg.GetConversation() == "" {
 		b.Log.Debugf("message without text content? %#v", msg)
@@ -82,9 +79,6 @@ func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.
 				// mentions comes as telephone numbers and we don't want to expose it to other bridges
 				// replace it with something more meaninful to others
 				mention := b.getSenderNotify(types.NewJID(numberAndSuffix[0], types.DefaultUserServer))
-				if mention == "" {
-					mention = "someone"
-				}
 
 				text = strings.Replace(text, "@"+numberAndSuffix[0], "@"+mention, 1)
 			}

@@ -18,17 +18,19 @@ type ProfilePicInfo struct {
 	Status int16  `json:"status"`
 }
 
+
 func (b *Bwhatsapp) getSenderName(info types.MessageInfo) string {
 	// Parse AD JID
 	var senderJid types.JID
 	senderJid.User, senderJid.Server = info.Sender.User, info.Sender.Server
 
+	sender, exists := b.contacts[senderJid]
+
 	for i := 0; i < 2; i++ {
-		if sender, exists := b.contacts[senderJid]; exists {
-			if sender.FullName != "" {
-				return sender.FullName
-			}
+		if exists && ( sender.FullName != "" ) {
+			return sender.FullName
 		}
+		
 		// if user is not in phone contacts
 		// it is the most obvious scenario unless you sync your phone contacts with some remote updated source
 		// users can change it in their WhatsApp settings -> profile -> click on Avatar
@@ -36,10 +38,8 @@ func (b *Bwhatsapp) getSenderName(info types.MessageInfo) string {
 			return info.PushName
 		}
 
-		if sender, exists := b.contacts[senderJid]; exists {
-			if sender.FirstName != "" {
-				return sender.FirstName
-			}
+		if exists && ( sender.FirstName != "" ) {
+			return sender.FirstName
 		}
 
 		if i > 0 {
@@ -60,7 +60,6 @@ func (b *Bwhatsapp) getSenderName(info types.MessageInfo) string {
 			b.contacts = allcontacts
 		}
 	}
-
 	return "Someone"
 }
 
@@ -68,8 +67,7 @@ func (b *Bwhatsapp) getSenderNotify(senderJid types.JID) string {
 	if sender, exists := b.contacts[senderJid]; exists {
 		return sender.PushName
 	}
-
-	return ""
+	return "someone"
 }
 
 func (b *Bwhatsapp) GetProfilePicThumb(jid string) (*types.ProfilePictureInfo, error) {
