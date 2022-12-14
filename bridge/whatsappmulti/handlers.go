@@ -335,7 +335,7 @@ func (b *Bwhatsapp) handleDocumentMessage(msg *events.Message) {
 	}
 
 	// Move file to bridge storage
-	helper.HandleDownloadData(b.Log, &rmsg, filename, "document", "", &data, b.General)
+	helper.HandleDownloadData(b.Log, &rmsg, filename, imsg.GetCaption(), "", &data, b.General)
 
 	b.Log.Debugf("<= Sending message from %s on %s to gateway", senderJID, b.Account)
 	b.Log.Debugf("<= Message is %#v", rmsg)
