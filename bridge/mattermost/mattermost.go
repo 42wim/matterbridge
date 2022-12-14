@@ -9,16 +9,14 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	"github.com/42wim/matterbridge/matterclient"
 	"github.com/42wim/matterbridge/matterhook"
-	matterclient6 "github.com/matterbridge/matterclient"
+	"github.com/matterbridge/matterclient"
 	"github.com/rs/xid"
 )
 
 type Bmattermost struct {
 	mh     *matterhook.Client
-	mc     *matterclient.MMClient
-	mc6    *matterclient6.Client
+	mc     *matterclient.Client
 	v6     bool
 	uuid   string
 	TeamID string
@@ -74,34 +72,17 @@ func (b *Bmattermost) Connect() error {
 		return nil
 	case b.GetString("Token") != "":
 		b.Log.Info("Connecting using token (sending and receiving)")
-		b.Log.Infof("Using mattermost v6 methods: %t", b.v6)
-
-		if b.v6 {
-			err := b.apiLogin6()
-			if err != nil {
-				return err
-			}
-		} else {
-			err := b.apiLogin()
-			if err != nil {
-				return err
-			}
+		err := b.apiLogin()
+		if err != nil {
+			return err
 		}
 		go b.handleMatter()
 	case b.GetString("Login") != "":
 		b.Log.Info("Connecting using login/password (sending and receiving)")
 		b.Log.Infof("Using mattermost v6 methods: %t", b.v6)
-
-		if b.v6 {
-			err := b.apiLogin6()
-			if err != nil {
-				return err
-			}
-		} else {
-			err := b.apiLogin()
-			if err != nil {
-				return err
-			}
+		err := b.apiLogin()
+		if err != nil {
+			return err
 		}
 		go b.handleMatter()
 	}
@@ -130,10 +111,6 @@ func (b *Bmattermost) JoinChannel(channel config.ChannelInfo) error {
 		id := b.getChannelID(channel.Name)
 		if id == "" {
 			return fmt.Errorf("Could not find channel ID for channel %s", channel.Name)
-		}
-
-		if b.mc6 != nil {
-			return b.mc6.JoinChannel(id) // nolint:wrapcheck
 		}
 
 		return b.mc.JoinChannel(id)
@@ -168,9 +145,6 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 		if msg.ID == "" {
 			return "", nil
 		}
-		if b.mc6 != nil {
-			return msg.ID, b.mc6.DeleteMessage(msg.ID) // nolint:wrapcheck
-		}
 
 		return msg.ID, b.mc.DeleteMessage(msg.ID)
 	}
@@ -183,36 +157,20 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 
 	// we only can reply to the root of the thread, not to a specific ID (like discord for example does)
 	if msg.ParentID != "" {
-		if b.mc6 != nil {
-			post, _, err := b.mc6.Client.GetPost(msg.ParentID, "")
-			if err != nil {
-				b.Log.Errorf("getting post %s failed: %s", msg.ParentID, err)
-			}
-			if post.RootId != "" {
-				msg.ParentID = post.RootId
-			}
-		} else {
-			post, res := b.mc.Client.GetPost(msg.ParentID, "")
-			if res.Error != nil {
-				b.Log.Errorf("getting post %s failed: %s", msg.ParentID, res.Error.DetailedError)
-			}
-			if post.RootId != "" {
-				msg.ParentID = post.RootId
-			}
+		post, _, err := b.mc.Client.GetPost(msg.ParentID, "")
+		if err != nil {
+			b.Log.Errorf("getting post %s failed: %s", msg.ParentID, err)
+		}
+		if post.RootId != "" {
+			msg.ParentID = post.RootId
 		}
 	}
 
 	// Upload a file if it exists
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			if b.mc6 != nil {
-				if _, err := b.mc6.PostMessage(b.getChannelID(rmsg.Channel), rmsg.Username+rmsg.Text, msg.ParentID); err != nil {
-					b.Log.Errorf("PostMessage failed: %s", err)
-				}
-			} else {
-				if _, err := b.mc.PostMessage(b.getChannelID(rmsg.Channel), rmsg.Username+rmsg.Text, msg.ParentID); err != nil {
-					b.Log.Errorf("PostMessage failed: %s", err)
-				}
+			if _, err := b.mc.PostMessage(b.getChannelID(rmsg.Channel), rmsg.Username+rmsg.Text, msg.ParentID); err != nil {
+				b.Log.Errorf("PostMessage failed: %s", err)
 			}
 		}
 		if len(msg.Extra["file"]) > 0 {
@@ -227,17 +185,9 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 
 	// Edit message if we have an ID
 	if msg.ID != "" {
-		if b.mc6 != nil {
-			return b.mc6.EditMessage(msg.ID, msg.Text) // nolint:wrapcheck
-		}
-
 		return b.mc.EditMessage(msg.ID, msg.Text)
 	}
 
 	// Post normal message
-	if b.mc6 != nil {
-		return b.mc6.PostMessage(b.getChannelID(msg.Channel), msg.Text, msg.ParentID) // nolint:wrapcheck
-	}
-
 	return b.mc.PostMessage(b.getChannelID(msg.Channel), msg.Text, msg.ParentID)
 }
