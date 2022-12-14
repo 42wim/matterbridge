@@ -51,10 +51,7 @@ func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.
 	senderJID := messageInfo.Sender
 	channel := messageInfo.Chat
 
-	senderName := b.getSenderName(messageInfo.Sender)
-	if senderName == "" {
-		senderName = "Someone" // don't expose telephone number
-	}
+	senderName := b.getSenderName(messageInfo)
 
 	if msg.GetExtendedTextMessage() == nil && msg.GetConversation() == "" {
 		b.Log.Debugf("message without text content? %#v", msg)
@@ -82,9 +79,6 @@ func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.
 				// mentions comes as telephone numbers and we don't want to expose it to other bridges
 				// replace it with something more meaninful to others
 				mention := b.getSenderNotify(types.NewJID(numberAndSuffix[0], types.DefaultUserServer))
-				if mention == "" {
-					mention = "someone"
-				}
 
 				text = strings.Replace(text, "@"+numberAndSuffix[0], "@"+mention, 1)
 			}
@@ -118,7 +112,7 @@ func (b *Bwhatsapp) handleImageMessage(msg *events.Message) {
 	imsg := msg.Message.GetImageMessage()
 
 	senderJID := msg.Info.Sender
-	senderName := b.getSenderName(senderJID)
+	senderName := b.getSenderName(msg.Info)
 	ci := imsg.GetContextInfo()
 
 	if senderJID == (types.JID{}) && ci.Participant != nil {
@@ -181,7 +175,7 @@ func (b *Bwhatsapp) handleVideoMessage(msg *events.Message) {
 	imsg := msg.Message.GetVideoMessage()
 
 	senderJID := msg.Info.Sender
-	senderName := b.getSenderName(senderJID)
+	senderName := b.getSenderName(msg.Info)
 	ci := imsg.GetContextInfo()
 
 	if senderJID == (types.JID{}) && ci.Participant != nil {
@@ -238,7 +232,7 @@ func (b *Bwhatsapp) handleAudioMessage(msg *events.Message) {
 	imsg := msg.Message.GetAudioMessage()
 
 	senderJID := msg.Info.Sender
-	senderName := b.getSenderName(senderJID)
+	senderName := b.getSenderName(msg.Info)
 	ci := imsg.GetContextInfo()
 
 	if senderJID == (types.JID{}) && ci.Participant != nil {
@@ -295,7 +289,7 @@ func (b *Bwhatsapp) handleDocumentMessage(msg *events.Message) {
 	imsg := msg.Message.GetDocumentMessage()
 
 	senderJID := msg.Info.Sender
-	senderName := b.getSenderName(senderJID)
+	senderName := b.getSenderName(msg.Info)
 	ci := imsg.GetContextInfo()
 
 	if senderJID == (types.JID{}) && ci.Participant != nil {

@@ -18,24 +18,7 @@ type ProfilePicInfo struct {
 	Status int16  `json:"status"`
 }
 
-func (b *Bwhatsapp) getSenderName(senderJid types.JID) string {
-	if sender, exists := b.contacts[senderJid]; exists {
-		if sender.FullName != "" {
-			return sender.FullName
-		}
-		// if user is not in phone contacts
-		// it is the most obvious scenario unless you sync your phone contacts with some remote updated source
-		// users can change it in their WhatsApp settings -> profile -> click on Avatar
-		if sender.PushName != "" {
-			return sender.PushName
-		}
-
-		if sender.FirstName != "" {
-			return sender.FirstName
-		}
-	}
-
-	// try to reload this contact
+func (b *Bwhatsapp) reloadContacts(){
 	if _, err := b.wc.Store.Contacts.GetAllContacts(); err != nil {
 		b.Log.Errorf("error on update of contacts: %v", err)
 	}
@@ -48,32 +31,60 @@ func (b *Bwhatsapp) getSenderName(senderJid types.JID) string {
 	if len(allcontacts) > 0 {
 		b.contacts = allcontacts
 	}
+}
 
-	if sender, exists := b.contacts[senderJid]; exists {
-		if sender.FullName != "" {
-			return sender.FullName
-		}
-		// if user is not in phone contacts
-		// it is the most obvious scenario unless you sync your phone contacts with some remote updated source
-		// users can change it in their WhatsApp settings -> profile -> click on Avatar
-		if sender.PushName != "" {
-			return sender.PushName
-		}
+func (b *Bwhatsapp) getSenderName(info types.MessageInfo) string {
+	// Parse AD JID
+	var senderJid types.JID
+	senderJid.User, senderJid.Server = info.Sender.User, info.Sender.Server
 
-		if sender.FirstName != "" {
-			return sender.FirstName
-		}
+	sender, exists := b.contacts[senderJid]
+
+	if !exists || (sender.FullName == "" && sender.FirstName == "") {
+		b.reloadContacts() // Contacts may need to be reloaded
+		sender, exists = b.contacts[senderJid]
 	}
 
+	if exists && sender.FullName != "" {
+		return sender.FullName
+	}
+	
+	if info.PushName != "" {
+		return info.PushName
+	}
+
+	if exists && sender.FirstName != "" {
+		return sender.FirstName
+	}
+	
 	return "Someone"
 }
 
 func (b *Bwhatsapp) getSenderNotify(senderJid types.JID) string {
-	if sender, exists := b.contacts[senderJid]; exists {
+	sender, exists := b.contacts[senderJid]
+
+	if !exists || (sender.FullName == "" && sender.PushName == "" && sender.FirstName == "") {
+		b.reloadContacts() // Contacts may need to be reloaded
+		sender, exists = b.contacts[senderJid]
+	}
+
+	if !exists {
+		return "someone"
+	}
+	
+	if exists && sender.FullName != "" {
+		return sender.FullName
+	}
+	
+	if exists && sender.PushName != "" {
 		return sender.PushName
 	}
 
-	return ""
+	if exists && sender.FirstName != "" {
+		return sender.FirstName
+	}
+	
+	return "someone"
 }
 
 func (b *Bwhatsapp) GetProfilePicThumb(jid string) (*types.ProfilePictureInfo, error) {
