@@ -89,33 +89,33 @@ func TGGetParseMode(b *Btelegram, username string, text string) (textout string,
 func (b *Btelegram) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
 
-    var chatid int64
-    topicid := 0
+	var chatid int64
+	topicid := 0
 
 	// get the chatid
-    if strings.Contains(msg.Channel, "/") {
-        s := strings.Split(msg.Channel, "/")
-        if len(s) < 2 {
-            b.Log.Errorf("Invalid channel format: %#v\n", msg.Channel)
-            return "", nil
-        }
-        id, err := strconv.ParseInt(s[0], 10, 64)
-        if err != nil {
-            return "", err
-        }
-        chatid = id
-        tid, err := strconv.Atoi(s[1])
-        if err != nil {
-            return "", err
-        }
-        topicid = tid
-    } else {
-        id, err := strconv.ParseInt(msg.Channel, 10, 64)
-        if err != nil {
-            return "", err
-        }
-        chatid = id
-    }
+	if strings.Contains(msg.Channel, "/") {
+		s := strings.Split(msg.Channel, "/")
+		if len(s) < 2 {
+			b.Log.Errorf("Invalid channel format: %#v\n", msg.Channel)
+			return "", nil
+		}
+		id, err := strconv.ParseInt(s[0], 10, 64)
+		if err != nil {
+			return "", err
+		}
+		chatid = id
+		tid, err := strconv.Atoi(s[1])
+		if err != nil {
+			return "", err
+		}
+		topicid = tid
+	} else {
+		id, err := strconv.ParseInt(msg.Channel, 10, 64)
+		if err != nil {
+			return "", err
+		}
+		chatid = id
+	}
 
 	// map the file SHA to our user (caches the avatar)
 	if msg.Event == config.EventAvatarDownload {
@@ -182,9 +182,9 @@ func (b *Btelegram) getFileDirectURL(id string) string {
 func (b *Btelegram) sendMessage(chatid int64, topicid int, username, text string, parentID int) (string, error) {
 	m := tgbotapi.NewMessage(chatid, "")
 	m.Text, m.ParseMode = TGGetParseMode(b, username, text)
-    if topicid != 0 {
-        m.BaseChat.MessageThreadID = topicid
-    }
+	if topicid != 0 {
+		m.BaseChat.MessageThreadID = topicid
+	}
 	m.ReplyToMessageID = parentID
 	m.DisableWebPagePreview = b.GetBool("DisableWebPagePreview")
 
