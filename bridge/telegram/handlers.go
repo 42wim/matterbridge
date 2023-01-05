@@ -20,6 +20,11 @@ func (b *Btelegram) handleUpdate(rmsg *config.Message, message, posted, edited *
 		if posted.Text == "/chatId" {
 			chatID := strconv.FormatInt(posted.Chat.ID, 10)
 
+			// Handle chat topics
+			if posted.IsTopicMessage {
+				chatID = chatID + "/" + strconv.Itoa(posted.MessageThreadID)
+			}
+
 			_, err := b.Send(config.Message{
 				Channel: chatID,
 				Text:    fmt.Sprintf("ID of this chat: %s", chatID),
