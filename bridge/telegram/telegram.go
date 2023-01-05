@@ -86,35 +86,43 @@ func TGGetParseMode(b *Btelegram, username string, text string) (textout string,
 	return textout, parsemode
 }
 
-func (b *Btelegram) Send(msg config.Message) (string, error) {
-	b.Log.Debugf("=> Receiving %#v", msg)
-
+func (b *Btelegram) getIds(channel string) (int64, int, error) {
 	var chatid int64
 	topicid := 0
 
 	// get the chatid
-	if strings.Contains(msg.Channel, "/") {
-		s := strings.Split(msg.Channel, "/")
+	if strings.Contains(channel, "/") {
+		s := strings.Split(channel, "/")
 		if len(s) < 2 {
-			b.Log.Errorf("Invalid channel format: %#v\n", msg.Channel)
-			return "", nil
+			b.Log.Errorf("Invalid channel format: %#v\n", channel)
+			return 0, 0, nil
 		}
 		id, err := strconv.ParseInt(s[0], 10, 64)
 		if err != nil {
-			return "", err
+			return 0, 0, err
 		}
 		chatid = id
 		tid, err := strconv.Atoi(s[1])
 		if err != nil {
-			return "", err
+			return 0, 0, err
 		}
 		topicid = tid
 	} else {
-		id, err := strconv.ParseInt(msg.Channel, 10, 64)
+		id, err := strconv.ParseInt(channel, 10, 64)
 		if err != nil {
-			return "", err
+			return 0, 0, err
 		}
 		chatid = id
+	}
+	return chatid, topicid, nil
+}
+
+func (b *Btelegram) Send(msg config.Message) (string, error) {
+	b.Log.Debugf("=> Receiving %#v", msg)
+
+	chatid, topicid, err := b.getIds(msg.Channel)
+	if err != nil {
+		return "", err
 	}
 
 	// map the file SHA to our user (caches the avatar)
