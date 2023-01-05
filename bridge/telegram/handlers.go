@@ -326,12 +326,12 @@ func (b *Btelegram) maybeConvertWebp(name *string, data *[]byte) {
 
 // handleDownloadFile handles file download
 func (b *Btelegram) handleDownload(rmsg *config.Message, message *tgbotapi.Message) error {
-	size := 0
+	size := int64(0)
 	var url, name, text string
 	switch {
 	case message.Sticker != nil:
 		text, name, url = b.getDownloadInfo(message.Sticker.FileID, ".webp", true)
-		size = message.Sticker.FileSize
+		size = int64(message.Sticker.FileSize)
 	case message.Voice != nil:
 		text, name, url = b.getDownloadInfo(message.Voice.FileID, ".ogg", true)
 		size = message.Voice.FileSize
@@ -348,7 +348,7 @@ func (b *Btelegram) handleDownload(rmsg *config.Message, message *tgbotapi.Messa
 		text = " " + message.Document.FileName + " : " + url
 	case message.Photo != nil:
 		photos := message.Photo
-		size = photos[len(photos)-1].FileSize
+		size = int64(photos[len(photos)-1].FileSize)
 		text, name, url = b.getDownloadInfo(photos[len(photos)-1].FileID, "", true)
 	}
 
