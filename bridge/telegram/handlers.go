@@ -91,7 +91,9 @@ func (b *Btelegram) handleForwarded(rmsg *config.Message, message *tgbotapi.Mess
 
 // handleQuoting handles quoting of previous messages
 func (b *Btelegram) handleQuoting(rmsg *config.Message, message *tgbotapi.Message) {
-	if message.ReplyToMessage != nil {
+	if message.ReplyToMessage != nil &&
+		// Used to check if the message was a reply to the root topic
+		!(message.ReplyToMessage.MessageID == message.MessageThreadID) {
 		usernameReply := ""
 		if message.ReplyToMessage.From != nil {
 			if b.GetBool("UseFirstName") {
@@ -216,7 +218,9 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
         }
 
 		// preserve threading from telegram reply
-		if message.ReplyToMessage != nil {
+		if message.ReplyToMessage != nil &&
+			// Used to check if the message was a reply to the root topic
+			!(message.ReplyToMessage.MessageID == message.MessageThreadID) {
 			rmsg.ParentID = strconv.Itoa(message.ReplyToMessage.MessageID)
 		}
 
