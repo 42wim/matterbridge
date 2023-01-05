@@ -464,7 +464,7 @@ func (b *Btelegram) handleEdit(msg *config.Message, chatid int64) (string, error
 }
 
 // handleUploadFile handles native upload of files
-func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64, parentID int) (string, error) {
+func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64, threadid int, parentID int) (string, error) {
 	var media []interface{}
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo)
@@ -514,7 +514,7 @@ func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64, parentID
 		}
 	}
 
-	return b.sendMediaFiles(msg, chatid, parentID, media)
+	return b.sendMediaFiles(msg, chatid, threadid, parentID, media)
 }
 
 func (b *Btelegram) handleQuote(message, quoteNick, quoteMessage string) string {

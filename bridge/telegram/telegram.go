@@ -159,7 +159,7 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 		}
 		// check if we have files to upload (from slack, telegram or mattermost)
 		if len(msg.Extra["file"]) > 0 {
-			return b.handleUploadFile(&msg, chatid, parentID)
+			return b.handleUploadFile(&msg, chatid, topicid, parentID)
 		}
 	}
 
@@ -204,13 +204,14 @@ func (b *Btelegram) sendMessage(chatid int64, topicid int, username, text string
 }
 
 // sendMediaFiles native upload media files via media group
-func (b *Btelegram) sendMediaFiles(msg *config.Message, chatid int64, parentID int, media []interface{}) (string, error) {
+func (b *Btelegram) sendMediaFiles(msg *config.Message, chatid int64, threadid int, parentID int, media []interface{}) (string, error) {
 	if len(media) == 0 {
 		return "", nil
 	}
 	mg := tgbotapi.MediaGroupConfig{
 		BaseChat: tgbotapi.BaseChat{
 			ChatID:           chatid,
+			MessageThreadID:  threadid,
 			ChannelUsername:  msg.Username,
 			ReplyToMessageID: parentID,
 		},
