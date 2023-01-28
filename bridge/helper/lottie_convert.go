@@ -1,4 +1,4 @@
-// +build !cgo
+//go:build !cgolottie
 
 package helper
 
@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+
 	"github.com/sirupsen/logrus"
 )
 
