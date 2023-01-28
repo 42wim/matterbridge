@@ -206,6 +206,7 @@ edit:
 editor:
 	gofmt -l -s -w *.go
 	go install -v ./...
+	go test -c -o /dev/null -tags=cgo,cgotest
 
 internalError:
 	egrep -ho '"internal error.*"' *.go | sort | cat -n

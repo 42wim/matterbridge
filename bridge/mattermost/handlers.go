@@ -41,7 +41,7 @@ func (b *Bmattermost) handleDownloadAvatar(userid string, channel string) {
 	}
 }
 
-// nolint:wrapcheck
+//nolint:wrapcheck
 func (b *Bmattermost) handleDownloadFile(rmsg *config.Message, id string) error {
 	url, _, _ := b.mc.Client.GetFileLink(id)
 	finfo, _, err := b.mc.Client.GetFileInfo(id)
@@ -91,7 +91,7 @@ func (b *Bmattermost) handleMatter() {
 	}
 }
 
-// nolint:cyclop
+//nolint:cyclop
 func (b *Bmattermost) handleMatterClient(messages chan *config.Message) {
 	for message := range b.mc.MessageChan {
 		b.Log.Debugf("%#v %#v", message.Raw.GetData(), message.Raw.EventType())
@@ -186,7 +186,7 @@ func (b *Bmattermost) handleUploadFile(msg *config.Message) (string, error) {
 	return res, err
 }
 
-// nolint:forcetypeassert
+//nolint:forcetypeassert
 func (b *Bmattermost) handleProps(rmsg *config.Message, message *matterclient.Message) {
 	props := message.Post.Props
 	if props == nil {

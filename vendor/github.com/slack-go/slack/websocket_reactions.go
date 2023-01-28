@@ -1,7 +1,7 @@
 package slack
 
-// reactionItem is a lighter-weight item than is returned by the reactions list.
-type reactionItem struct {
+// ReactionItem is a lighter-weight item than is returned by the reactions list.
+type ReactionItem struct {
 	Type        string `json:"type"`
 	Channel     string `json:"channel,omitempty"`
 	File        string `json:"file,omitempty"`
@@ -9,17 +9,17 @@ type reactionItem struct {
 	Timestamp   string `json:"ts,omitempty"`
 }
 
-type reactionEvent struct {
+type ReactionEvent struct {
 	Type           string       `json:"type"`
 	User           string       `json:"user"`
 	ItemUser       string       `json:"item_user"`
-	Item           reactionItem `json:"item"`
+	Item           ReactionItem `json:"item"`
 	Reaction       string       `json:"reaction"`
 	EventTimestamp string       `json:"event_ts"`
 }
 
 // ReactionAddedEvent represents the Reaction added event
-type ReactionAddedEvent reactionEvent
+type ReactionAddedEvent ReactionEvent
 
 // ReactionRemovedEvent represents the Reaction removed event
-type ReactionRemovedEvent reactionEvent
+type ReactionRemovedEvent ReactionEvent

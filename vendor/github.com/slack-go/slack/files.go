@@ -2,6 +2,7 @@ package slack
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/url"
@@ -143,6 +144,58 @@ type ListFilesParameters struct {
 	Channel string
 	Types   string
 	Cursor  string
+}
+
+type UploadFileV2Parameters struct {
+	File            string
+	FileSize        int
+	Content         string
+	Reader          io.Reader
+	Filename        string
+	Title           string
+	InitialComment  string
+	Channel         string
+	ThreadTimestamp string
+	AltTxt          string
+	SnippetText     string
+}
+
+type getUploadURLExternalParameters struct {
+	altText     string
+	fileSize    int
+	fileName    string
+	snippetText string
+}
+
+type getUploadURLExternalResponse struct {
+	UploadURL string `json:"upload_url"`
+	FileID    string `json:"file_id"`
+	SlackResponse
+}
+
+type uploadToURLParameters struct {
+	UploadURL string
+	Reader    io.Reader
+	File      string
+	Content   string
+	Filename  string
+}
+
+type FileSummary struct {
+	ID    string `json:"id"`
+	Title string `json:"title"`
+}
+
+type completeUploadExternalParameters struct {
+	title           string
+	channel         string
+	initialComment  string
+	threadTimestamp string
+}
+
+type completeUploadExternalResponse struct {
+	SlackResponse
+	Files []FileSummary `json:"files"`
 }
 
 type fileResponseFull struct {
@@ -415,4 +468,130 @@ func (api *Client) ShareFilePublicURLContext(ctx context.Context, fileID string)
 		return nil, nil, nil, err
 	}
 	return &response.File, response.Comments, &response.Paging, nil
+}
+
+// getUploadURLExternal gets a URL and fileID from slack which can later be used to upload a file
+func (api *Client) getUploadURLExternal(ctx context.Context, params getUploadURLExternalParameters) (*getUploadURLExternalResponse, error) {
+	values := url.Values{
+		"token":    {api.token},
+		"filename": {params.fileName},
+		"length":   {strconv.Itoa(params.fileSize)},
+	}
+	if params.altText != "" {
+		values.Add("initial_comment", params.altText)
+	}
+	if params.snippetText != "" {
+		values.Add("thread_ts", params.snippetText)
+	}
+	response := &getUploadURLExternalResponse{}
+	err := api.postMethod(ctx, "files.getUploadURLExternal", values, response)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, response.Err()
+}
+
+// uploadToURL uploads the file to the provided URL using post method
+func (api *Client) uploadToURL(ctx context.Context, params uploadToURLParameters) (err error) {
+	values := url.Values{}
+	if params.Content != "" {
+		values.Add("content", params.Content)
+		values.Add("token", api.token)
+		err = postForm(ctx, api.httpclient, params.UploadURL, values, nil, api)
+	} else if params.File != "" {
+		err = postLocalWithMultipartResponse(ctx, api.httpclient, params.UploadURL, params.File, "file", api.token, values, nil, api)
+	} else if params.Reader != nil {
+		err = postWithMultipartResponse(ctx, api.httpclient, params.UploadURL, params.Filename, "file", api.token, values, params.Reader, nil, api)
+	}
+	return err
+}
+
+// completeUploadExternal once files are uploaded, this completes the upload and shares it to the specified channel
+func (api *Client) completeUploadExternal(ctx context.Context, fileID string, params completeUploadExternalParameters) (file *completeUploadExternalResponse, err error) {
+	request := []FileSummary{{ID: fileID, Title: params.title}}
+	requestBytes, err := json.Marshal(request)
+	if err != nil {
+		return nil, err
+	}
+	values := url.Values{
+		"token":      {api.token},
+		"files":      {string(requestBytes)},
+		"channel_id": {params.channel},
+	}
+
+	if params.initialComment != "" {
+		values.Add("initial_comment", params.initialComment)
+	}
+	if params.threadTimestamp != "" {
+		values.Add("thread_ts", params.threadTimestamp)
+	}
+	response := &completeUploadExternalResponse{}
+	err = api.postMethod(ctx, "files.completeUploadExternal", values, response)
+	if err != nil {
+		return nil, err
+	}
+	if response.Err() != nil {
+		return nil, response.Err()
+	}
+	return response, nil
+}
+
+// UploadFileV2 uploads file to a given slack channel using 3 steps -
+//  1. Get an upload URL using files.getUploadURLExternal API
+//  2. Send the file as a post to the URL provided by slack
+//  3. Complete the upload and share it to the specified channel using files.completeUploadExternal
+func (api *Client) UploadFileV2(params UploadFileV2Parameters) (*FileSummary, error) {
+	return api.UploadFileV2Context(context.Background(), params)
+}
+
+// UploadFileV2 uploads file to a given slack channel using 3 steps with a custom context -
+//  1. Get an upload URL using files.getUploadURLExternal API
+//  2. Send the file as a post to the URL provided by slack
+//  3. Complete the upload and share it to the specified channel using files.completeUploadExternal
+func (api *Client) UploadFileV2Context(ctx context.Context, params UploadFileV2Parameters) (file *FileSummary, err error) {
+	if params.Filename == "" {
+		return nil, fmt.Errorf("file.upload.v2: filename cannot be empty")
+	}
+	if params.FileSize == 0 {
+		return nil, fmt.Errorf("file.upload.v2: file size cannot be 0")
+	}
+	if params.Channel == "" {
+		return nil, fmt.Errorf("file.upload.v2: channel cannot be empty")
+	}
+	u, err := api.getUploadURLExternal(ctx, getUploadURLExternalParameters{
+		altText:     params.AltTxt,
+		fileName:    params.Filename,
+		fileSize:    params.FileSize,
+		snippetText: params.SnippetText,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	err = api.uploadToURL(ctx, uploadToURLParameters{
+		UploadURL: u.UploadURL,
+		Reader:    params.Reader,
+		File:      params.File,
+		Content:   params.Content,
+		Filename:  params.Filename,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := api.completeUploadExternal(ctx, u.FileID, completeUploadExternalParameters{
+		title:           params.Title,
+		channel:         params.Channel,
+		initialComment:  params.InitialComment,
+		threadTimestamp: params.ThreadTimestamp,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(c.Files) != 1 {
+		return nil, fmt.Errorf("file.upload.v2: something went wrong; received %d files instead of 1", len(c.Files))
+	}
+
+	return &c.Files[0], nil
 }

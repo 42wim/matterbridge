@@ -320,7 +320,7 @@ func (s *Session) heartbeat(wsConn *websocket.Conn, listening <-chan interface{}
 	}
 }
 
-// UpdateStatusData ia provided to UpdateStatusComplex()
+// UpdateStatusData is provided to UpdateStatusComplex()
 type UpdateStatusData struct {
 	IdleSince  *int        `json:"since"`
 	Activities []*Activity `json:"activities"`
@@ -359,6 +359,14 @@ func newUpdateStatusData(idle int, activityType ActivityType, name, url string) 
 // if otherwise, set status to active, and no activity.
 func (s *Session) UpdateGameStatus(idle int, name string) (err error) {
 	return s.UpdateStatusComplex(*newUpdateStatusData(idle, ActivityTypeGame, name, ""))
+}
+
+// UpdateWatchStatus is used to update the user's watch status.
+// If idle>0 then set status to idle.
+// If name!="" then set movie/stream.
+// if otherwise, set status to active, and no activity.
+func (s *Session) UpdateWatchStatus(idle int, name string) (err error) {
+	return s.UpdateStatusComplex(*newUpdateStatusData(idle, ActivityTypeWatching, name, ""))
 }
 
 // UpdateStreamingStatus is used to update the user's streaming status.

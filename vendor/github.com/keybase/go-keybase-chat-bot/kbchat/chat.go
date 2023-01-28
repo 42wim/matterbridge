@@ -122,7 +122,8 @@ func (a *API) GetTextMessages(channel chat1.ChatChannel, unreadOnly bool) ([]cha
 	return res, nil
 }
 
-func (a *API) SendMessage(channel chat1.ChatChannel, body string, args ...interface{}) (SendResponse, error) {
+func (a *API) SendMessage(channel chat1.ChatChannel, body string, args ...interface{}) (resp SendResponse, err error) {
+	defer a.Trace(&err, "SendMessage")()
 	arg := newSendArg(sendMessageOptions{
 		Channel: channel,
 		Message: sendMessageBody{
@@ -139,7 +140,8 @@ func (a *API) Broadcast(body string, args ...interface{}) (SendResponse, error) 
 	}, fmt.Sprintf(body, args...))
 }
 
-func (a *API) SendMessageByConvID(convID chat1.ConvIDStr, body string, args ...interface{}) (SendResponse, error) {
+func (a *API) SendMessageByConvID(convID chat1.ConvIDStr, body string, args ...interface{}) (resp SendResponse, err error) {
+	defer a.Trace(&err, "SendMessageByConvID")()
 	arg := newSendArg(sendMessageOptions{
 		ConversationID: convID,
 		Message: sendMessageBody{
@@ -150,7 +152,8 @@ func (a *API) SendMessageByConvID(convID chat1.ConvIDStr, body string, args ...i
 }
 
 // SendMessageByTlfName sends a message on the given TLF name
-func (a *API) SendMessageByTlfName(tlfName string, body string, args ...interface{}) (SendResponse, error) {
+func (a *API) SendMessageByTlfName(tlfName string, body string, args ...interface{}) (resp SendResponse, err error) {
+	defer a.Trace(&err, "SendMessageByTlfName")()
 	arg := newSendArg(sendMessageOptions{
 		Channel: chat1.ChatChannel{
 			Name: tlfName,
@@ -162,7 +165,8 @@ func (a *API) SendMessageByTlfName(tlfName string, body string, args ...interfac
 	return a.doSend(arg)
 }
 
-func (a *API) SendMessageByTeamName(teamName string, inChannel *string, body string, args ...interface{}) (SendResponse, error) {
+func (a *API) SendMessageByTeamName(teamName string, inChannel *string, body string, args ...interface{}) (resp SendResponse, err error) {
+	defer a.Trace(&err, "SendMessageByTeamName")()
 	channel := "general"
 	if inChannel != nil {
 		channel = *inChannel

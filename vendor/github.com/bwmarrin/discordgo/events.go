@@ -36,13 +36,13 @@ type Event struct {
 
 // A Ready stores all data for the websocket READY event.
 type Ready struct {
-	Version         int        `json:"v"`
-	SessionID       string     `json:"session_id"`
-	User            *User      `json:"user"`
-	Guilds          []*Guild   `json:"guilds"`
-	PrivateChannels []*Channel `json:"private_channels"`
-
-	// TODO: Application and Shard
+	Version         int          `json:"v"`
+	SessionID       string       `json:"session_id"`
+	User            *User        `json:"user"`
+	Shard           *[2]int      `json:"shard"`
+	Application     *Application `json:"application"`
+	Guilds          []*Guild     `json:"guilds"`
+	PrivateChannels []*Channel   `json:"private_channels"`
 }
 
 // ChannelCreate is the data for a ChannelCreate event.
@@ -150,6 +150,7 @@ type GuildMemberAdd struct {
 // GuildMemberUpdate is the data for a GuildMemberUpdate event.
 type GuildMemberUpdate struct {
 	*Member
+	BeforeUpdate *Member `json:"-"`
 }
 
 // GuildMemberRemove is the data for a GuildMemberRemove event.

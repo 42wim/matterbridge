@@ -307,6 +307,9 @@ type responseParser func(*http.Response) error
 
 func newJSONParser(dst interface{}) responseParser {
 	return func(resp *http.Response) error {
+		if dst == nil {
+			return nil
+		}
 		return json.NewDecoder(resp.Body).Decode(dst)
 	}
 }

@@ -207,6 +207,15 @@ func (s *State) presenceAdd(guildID string, presence *Presence) error {
 			if presence.Status != "" {
 				guild.Presences[i].Status = presence.Status
 			}
+			if presence.ClientStatus.Desktop != "" {
+				guild.Presences[i].ClientStatus.Desktop = presence.ClientStatus.Desktop
+			}
+			if presence.ClientStatus.Mobile != "" {
+				guild.Presences[i].ClientStatus.Mobile = presence.ClientStatus.Mobile
+			}
+			if presence.ClientStatus.Web != "" {
+				guild.Presences[i].ClientStatus.Web = presence.ClientStatus.Web
+			}
 
 			//Update the optionally sent user information
 			//ID Is a mandatory field so you should not need to check if it is empty
@@ -909,9 +918,11 @@ func (s *State) onReady(se *Session, r *Ready) (err error) {
 	// if state is disabled, store the bare essentials.
 	if !se.StateEnabled {
 		ready := Ready{
-			Version:   r.Version,
-			SessionID: r.SessionID,
-			User:      r.User,
+			Version:     r.Version,
+			SessionID:   r.SessionID,
+			User:        r.User,
+			Shard:       r.Shard,
+			Application: r.Application,
 		}
 
 		s.Ready = ready
@@ -981,6 +992,13 @@ func (s *State) OnInterface(se *Session, i interface{}) (err error) {
 		}
 	case *GuildMemberUpdate:
 		if s.TrackMembers {
+			var old *Member
+			old, err = s.Member(t.GuildID, t.User.ID)
+			if err == nil {
+				oldCopy := *old
+				t.BeforeUpdate = &oldCopy
+			}
+
 			err = s.MemberAdd(t.Member)
 		}
 	case *GuildMemberRemove:
@@ -1023,7 +1041,14 @@ func (s *State) OnInterface(se *Session, i interface{}) (err error) {
 		}
 	case *GuildEmojisUpdate:
 		if s.TrackEmojis {
-			err = s.EmojisAdd(t.GuildID, t.Emojis)
+			var guild *Guild
+			guild, err = s.Guild(t.GuildID)
+			if err != nil {
+				return err
+			}
+			s.Lock()
+			defer s.Unlock()
+			guild.Emojis = t.Emojis
 		}
 	case *ChannelCreate:
 		if s.TrackChannels {

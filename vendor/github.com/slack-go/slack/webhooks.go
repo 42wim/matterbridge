@@ -21,8 +21,8 @@ type WebhookMessage struct {
 	Parse           string       `json:"parse,omitempty"`
 	Blocks          *Blocks      `json:"blocks,omitempty"`
 	ResponseType    string       `json:"response_type,omitempty"`
-	ReplaceOriginal bool         `json:"replace_original,omitempty"`
-	DeleteOriginal  bool         `json:"delete_original,omitempty"`
+	ReplaceOriginal bool         `json:"replace_original"`
+	DeleteOriginal  bool         `json:"delete_original"`
 	ReplyBroadcast  bool         `json:"reply_broadcast,omitempty"`
 }
 

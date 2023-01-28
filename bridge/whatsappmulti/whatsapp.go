@@ -238,7 +238,7 @@ func (b *Bwhatsapp) PostDocumentMessage(msg config.Message, filetype string) (st
 	b.Log.Debugf("=> Sending %#v as a document", msg)
 
 	ID := whatsmeow.GenerateMessageID()
-	_, err = b.wc.SendMessage(context.TODO(), groupJID, ID, &message)
+	_, err = b.wc.SendMessage(context.TODO(), groupJID, &message, whatsmeow.SendRequestExtra{ID: ID})
 
 	return ID, err
 }
@@ -272,7 +272,7 @@ func (b *Bwhatsapp) PostImageMessage(msg config.Message, filetype string) (strin
 	b.Log.Debugf("=> Sending %#v as an image", msg)
 
 	ID := whatsmeow.GenerateMessageID()
-	_, err = b.wc.SendMessage(context.TODO(), groupJID, ID, &message)
+	_, err = b.wc.SendMessage(context.TODO(), groupJID, &message, whatsmeow.SendRequestExtra{ID: ID})
 
 	return ID, err
 }
@@ -305,7 +305,7 @@ func (b *Bwhatsapp) PostVideoMessage(msg config.Message, filetype string) (strin
 	b.Log.Debugf("=> Sending %#v as a video", msg)
 
 	ID := whatsmeow.GenerateMessageID()
-	_, err = b.wc.SendMessage(context.TODO(), groupJID, ID, &message)
+	_, err = b.wc.SendMessage(context.TODO(), groupJID, &message, whatsmeow.SendRequestExtra{ID: ID})
 
 	return ID, err
 }
@@ -335,14 +335,14 @@ func (b *Bwhatsapp) PostAudioMessage(msg config.Message, filetype string) (strin
 	b.Log.Debugf("=> Sending %#v as audio", msg)
 
 	ID := whatsmeow.GenerateMessageID()
-	_, err = b.wc.SendMessage(context.TODO(), groupJID, ID, &message)
+	_, err = b.wc.SendMessage(context.TODO(), groupJID, &message, whatsmeow.SendRequestExtra{ID: ID})
 
 	var captionMessage proto.Message
 	caption := msg.Username + fi.Comment + "\u2B06" // the char on the end is upwards arrow emoji
 	captionMessage.Conversation = &caption
 
 	captionID := whatsmeow.GenerateMessageID()
-	_, err = b.wc.SendMessage(context.TODO(), groupJID, captionID, &captionMessage)
+	_, err = b.wc.SendMessage(context.TODO(), groupJID, &captionMessage, whatsmeow.SendRequestExtra{ID: captionID})
 
 	return ID, err
 }
@@ -389,10 +389,10 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 		switch filetype {
 		case "image/jpeg", "image/png", "image/gif":
 			return b.PostImageMessage(msg, filetype)
-		case "video/mp4", "video/3gpp": //TODO: Check if codecs are supported by WA
+		case "video/mp4", "video/3gpp": // TODO: Check if codecs are supported by WA
 			return b.PostVideoMessage(msg, filetype)
 		case "audio/ogg":
-			return b.PostAudioMessage(msg, "audio/ogg; codecs=opus") //TODO: Detect if it is actually OPUS
+			return b.PostAudioMessage(msg, "audio/ogg; codecs=opus") // TODO: Detect if it is actually OPUS
 		case "audio/aac", "audio/mp4", "audio/amr", "audio/mpeg":
 			return b.PostAudioMessage(msg, filetype)
 		default:
@@ -407,7 +407,7 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 	message.Conversation = &text
 
 	ID := whatsmeow.GenerateMessageID()
-	_, err := b.wc.SendMessage(context.TODO(), groupJID, ID, &message)
+	_, err := b.wc.SendMessage(context.TODO(), groupJID, &message, whatsmeow.SendRequestExtra{ID: ID})
 
 	return ID, err
 }

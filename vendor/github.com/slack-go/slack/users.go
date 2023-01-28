@@ -17,30 +17,38 @@ const (
 
 // UserProfile contains all the information details of a given user
 type UserProfile struct {
-	FirstName             string                  `json:"first_name"`
-	LastName              string                  `json:"last_name"`
-	RealName              string                  `json:"real_name"`
-	RealNameNormalized    string                  `json:"real_name_normalized"`
-	DisplayName           string                  `json:"display_name"`
-	DisplayNameNormalized string                  `json:"display_name_normalized"`
-	Email                 string                  `json:"email"`
-	Skype                 string                  `json:"skype"`
-	Phone                 string                  `json:"phone"`
-	Image24               string                  `json:"image_24"`
-	Image32               string                  `json:"image_32"`
-	Image48               string                  `json:"image_48"`
-	Image72               string                  `json:"image_72"`
-	Image192              string                  `json:"image_192"`
-	Image512              string                  `json:"image_512"`
-	ImageOriginal         string                  `json:"image_original"`
-	Title                 string                  `json:"title"`
-	BotID                 string                  `json:"bot_id,omitempty"`
-	ApiAppID              string                  `json:"api_app_id,omitempty"`
-	StatusText            string                  `json:"status_text,omitempty"`
-	StatusEmoji           string                  `json:"status_emoji,omitempty"`
-	StatusExpiration      int                     `json:"status_expiration"`
-	Team                  string                  `json:"team"`
-	Fields                UserProfileCustomFields `json:"fields"`
+	FirstName              string                              `json:"first_name"`
+	LastName               string                              `json:"last_name"`
+	RealName               string                              `json:"real_name"`
+	RealNameNormalized     string                              `json:"real_name_normalized"`
+	DisplayName            string                              `json:"display_name"`
+	DisplayNameNormalized  string                              `json:"display_name_normalized"`
+	Email                  string                              `json:"email"`
+	Skype                  string                              `json:"skype"`
+	Phone                  string                              `json:"phone"`
+	Image24                string                              `json:"image_24"`
+	Image32                string                              `json:"image_32"`
+	Image48                string                              `json:"image_48"`
+	Image72                string                              `json:"image_72"`
+	Image192               string                              `json:"image_192"`
+	Image512               string                              `json:"image_512"`
+	ImageOriginal          string                              `json:"image_original"`
+	Title                  string                              `json:"title"`
+	BotID                  string                              `json:"bot_id,omitempty"`
+	ApiAppID               string                              `json:"api_app_id,omitempty"`
+	StatusText             string                              `json:"status_text,omitempty"`
+	StatusEmoji            string                              `json:"status_emoji,omitempty"`
+	StatusEmojiDisplayInfo []UserProfileStatusEmojiDisplayInfo `json:"status_emoji_display_info,omitempty"`
+	StatusExpiration       int                                 `json:"status_expiration"`
+	Team                   string                              `json:"team"`
+	Fields                 UserProfileCustomFields             `json:"fields"`
+}
+
+type UserProfileStatusEmojiDisplayInfo struct {
+	EmojiName    string `json:"emoji_name"`
+	DisplayAlias string `json:"display_alias,omitempty"`
+	DisplayURL   string `json:"display_url,omitempty"`
+	Unicode      string `json:"unicode,omitempty"`
 }
 
 // UserProfileCustomFields represents user profile's custom fields.
@@ -554,6 +562,55 @@ func (api *Client) SetUserRealNameContextWithUser(ctx context.Context, user, rea
 	}
 
 	return response.Err()
+}
+
+// SetUserCustomFields sets Custom Profile fields on the provided users account.  Due to the non-repeating elements
+// within the request, a map fields is required.  The key in the map signifies the field that will be updated.
+//
+// Note: You may need to change the way the custom field is populated within the Profile section of the Admin Console from
+// SCIM or User Entered to API.
+//
+// See GetTeamProfile for information to retrieve possible fields for your account.
+func (api *Client) SetUserCustomFields(userID string, customFields map[string]UserProfileCustomField) error {
+	return api.SetUserCustomFieldsContext(context.Background(), userID, customFields)
+}
+
+// SetUserCustomFieldsContext will set a users custom profile field with context.
+//
+// For more information see SetUserCustomFields
+func (api *Client) SetUserCustomFieldsContext(ctx context.Context, userID string, customFields map[string]UserProfileCustomField) error {
+
+	// Convert data to data type with custom marshall / unmarshall
+	// For more information, see UserProfileCustomFields definition.
+	updateFields := UserProfileCustomFields{}
+	updateFields.SetMap(customFields)
+
+	// This anonymous struct is needed to set the fields level of the request data.  The base struct for
+	// UserProfileCustomFields has an unexported variable named fields that does not contain a struct tag,
+	// which has resulted in this configuration.
+	profile, err := json.Marshal(&struct {
+		Fields UserProfileCustomFields `json:"fields"`
+	}{
+		Fields: updateFields,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	values := url.Values{
+		"token":   {api.token},
+		"user":    {userID},
+		"profile": {string(profile)},
+	}
+
+	response := &userResponseFull{}
+	if err := postForm(ctx, api.httpclient, APIURL+"users.profile.set", values, response, api); err != nil {
+		return err
+	}
+
+	return response.Err()
+
 }
 
 // SetUserCustomStatus will set a custom status and emoji for the currently
