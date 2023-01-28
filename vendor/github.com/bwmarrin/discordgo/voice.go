@@ -360,6 +360,25 @@ func (v *VoiceConnection) wsListen(wsConn *websocket.Conn, close <-chan struct{}
 				v.wsConn = nil
 				v.Unlock()
 
+				// Wait for VOICE_SERVER_UPDATE.
+				// When the bot is moved by the user to another voice channel,
+				// VOICE_SERVER_UPDATE is received after the code 4014.
+				for i := 0; i < 5; i++ { // TODO: temp, wait for VoiceServerUpdate.
+					<-time.After(1 * time.Second)
+
+					v.RLock()
+					reconnected := v.wsConn != nil
+					v.RUnlock()
+					if !reconnected {
+						continue
+					}
+					v.log(LogInformational, "successfully reconnected after 4014 manual disconnection")
+					return
+				}
+
+				// When VOICE_SERVER_UPDATE is not received, disconnect as usual.
+				v.log(LogInformational, "disconnect due to 4014 manual disconnection")
+
 				v.session.Lock()
 				delete(v.session.VoiceConnections, v.GuildID)
 				v.session.Unlock()
@@ -835,7 +854,7 @@ func (v *VoiceConnection) opusReceiver(udpConn *net.UDPConn, close <-chan struct
 		if opus, ok := secretbox.Open(nil, recvbuf[12:rlen], &nonce, &v.op4.SecretKey); ok {
 			p.Opus = opus
 		} else {
-			return
+			continue
 		}
 
 		// extension bit set, and not a RTCP packet

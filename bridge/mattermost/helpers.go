@@ -66,7 +66,7 @@ func (b *Bmattermost) doConnectWebhookURL() error {
 	return nil
 }
 
-// nolint:wrapcheck
+//nolint:wrapcheck
 func (b *Bmattermost) apiLogin() error {
 	password := b.GetString("Password")
 	if b.GetString("Token") != "" {
@@ -171,7 +171,7 @@ func (b *Bmattermost) sendWebhook(msg config.Message) (string, error) {
 }
 
 // skipMessages returns true if this message should not be handled
-// nolint:gocyclo,cyclop
+//nolint:gocyclo,cyclop
 func (b *Bmattermost) skipMessage(message *matterclient.Message) bool {
 	// Handle join/leave
 	if message.Type == "system_join_leave" ||

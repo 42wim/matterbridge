@@ -249,6 +249,10 @@ type MessageEdit struct {
 	Embeds          []*MessageEmbed         `json:"embeds"`
 	AllowedMentions *MessageAllowedMentions `json:"allowed_mentions,omitempty"`
 	Flags           MessageFlags            `json:"flags,omitempty"`
+	// Files to append to the message
+	Files []*File `json:"-"`
+	// Overwrite existing attachments
+	Attachments *[]*MessageAttachment `json:"attachments,omitempty"`
 
 	ID      string
 	Channel string
@@ -385,8 +389,8 @@ type MessageEmbedAuthor struct {
 
 // MessageEmbedField is a part of a MessageEmbed struct.
 type MessageEmbedField struct {
-	Name   string `json:"name,omitempty"`
-	Value  string `json:"value,omitempty"`
+	Name   string `json:"name"`
+	Value  string `json:"value"`
 	Inline bool   `json:"inline,omitempty"`
 }
 

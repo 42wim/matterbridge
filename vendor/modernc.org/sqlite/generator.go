@@ -150,11 +150,21 @@ const (
 	volatiles = "-volatile=sqlite3_io_error_pending,sqlite3_open_file_count,sqlite3_pager_readdb_count,sqlite3_pager_writedb_count,sqlite3_pager_writej_count,sqlite3_search_count,sqlite3_sort_count,saved_cnt,randomnessPid"
 )
 
+// 2022-11-27 Removing -DSQLITE_ENABLE_SNAPSHOT from configTest. This #define
+// makes a single test fail on linux/ppc64le. That test is run only when the
+// -DSQLITE_ENABLE_SNAPSHOT is present when compiling the testfixture. When
+// investigating the failure it turns out this #define is actually NOT present
+// when doing '$ ./configure && make tcltest' in sqlite-src-3400000, ie. in the
+// original C code.
+//
+// libtool: link: gcc -g -O2 -DSQLITE_OS_UNIX=1 -I. -I/home/jnml/sqlite-src-3400000/src -I/home/jnml/sqlite-src-3400000/ext/rtree -I/home/jnml/sqlite-src-3400000/ext/icu -I/home/jnml/sqlite-src-3400000/ext/fts3 -I/home/jnml/sqlite-src-3400000/ext/async -I/home/jnml/sqlite-src-3400000/ext/session -I/home/jnml/sqlite-src-3400000/ext/userauth -D_HAVE_SQLITE_CONFIG_H -DBUILD_sqlite -DNDEBUG -I/usr/include/tcl8.6 -DSQLITE_THREADSAFE=1 -DSQLITE_ENABLE_MATH_FUNCTIONS -DSQLITE_HAVE_ZLIB=1 -DSQLITE_NO_SYNC=1 -DSQLITE_TEMP_STORE=1 -DSQLITE_TEST=1 -DSQLITE_CRASH_TEST=1 -DTCLSH_INIT_PROC=sqlite3TestInit -DSQLITE_SERVER=1 -DSQLITE_PRIVATE= -DSQLITE_CORE -DBUILD_sqlite -DSQLITE_SERIES_CONSTRAINT_VERIFY=1 -DSQLITE_DEFAULT_PAGE_SIZE=1024 -DSQLITE_ENABLE_STMTVTAB -DSQLITE_ENABLE_DBPAGE_VTAB -DSQLITE_ENABLE_BYTECODE_VTAB -DSQLITE_CKSUMVFS_STATIC -o testfixture ...
+
 var (
 	configProduction = []string{
 		"-DHAVE_USLEEP",
 		"-DLONGDOUBLE_TYPE=double",
 		"-DSQLITE_CORE",
+		"-DSQLITE_DEFAULT_MEMSTATUS=0",
 		"-DSQLITE_ENABLE_COLUMN_METADATA",
 		"-DSQLITE_ENABLE_FTS5",
 		"-DSQLITE_ENABLE_GEOPOLY",
@@ -199,8 +209,8 @@ var (
 		"-DHAVE_USLEEP",
 		"-DLONGDOUBLE_TYPE=double",
 		"-DSQLITE_CKSUMVFS_STATIC",
-		"-DSQLITE_CORE",                   // testfixture
-		"-DSQLITE_DEFAULT_MEMSTATUS=0",    // bug reported https://sqlite.org/forum/info/d8dfd4771689be35, fixed in https://sqlite.org/src/info/3c5e63c22ffbfeb6
+		"-DSQLITE_CORE", // testfixture
+		"-DSQLITE_DEFAULT_MEMSTATUS=1",
 		"-DSQLITE_DEFAULT_PAGE_SIZE=1024", // testfixture, hardcoded. See file_pages in autovacuum.test.
 		"-DSQLITE_ENABLE_BYTECODE_VTAB",   // testfixture
 		"-DSQLITE_ENABLE_COLUMN_METADATA",
@@ -217,7 +227,6 @@ var (
 		"-DSQLITE_ENABLE_RBU",
 		"-DSQLITE_ENABLE_RTREE",
 		"-DSQLITE_ENABLE_SESSION",
-		"-DSQLITE_ENABLE_SNAPSHOT",
 		"-DSQLITE_ENABLE_STAT4",
 		"-DSQLITE_ENABLE_STMTVTAB",      // testfixture
 		"-DSQLITE_ENABLE_UNLOCK_NOTIFY", // Adds sqlite3_unlock_notify().
@@ -230,6 +239,7 @@ var (
 		"-DSQLITE_THREADSAFE=1",
 		//DONT "-DNDEBUG", // To enable GO_GENERATE=-DSQLITE_DEBUG
 		//DONT "-DSQLITE_DQS=0", // testfixture
+		//DONT "-DSQLITE_ENABLE_SNAPSHOT",
 		//DONT "-DSQLITE_NO_SYNC=1",
 		//DONT "-DSQLITE_OMIT_DECLTYPE", // testfixture
 		//DONT "-DSQLITE_OMIT_DEPRECATED", // mptest
@@ -255,12 +265,12 @@ var (
 		sz       int
 		dev      bool
 	}{
-		{sqliteDir, "https://www.sqlite.org/2022/sqlite-amalgamation-3390400.zip", 2457, false},
-		{sqliteSrcDir, "https://www.sqlite.org/2022/sqlite-src-3390400.zip", 12814, false},
+		{sqliteDir, "https://www.sqlite.org/2022/sqlite-amalgamation-3400100.zip", 2457, false},
+		{sqliteSrcDir, "https://www.sqlite.org/2022/sqlite-src-3400100.zip", 12814, false},
 	}
 
-	sqliteDir    = filepath.FromSlash("testdata/sqlite-amalgamation-3390400")
-	sqliteSrcDir = filepath.FromSlash("testdata/sqlite-src-3390400")
+	sqliteDir    = filepath.FromSlash("testdata/sqlite-amalgamation-3400100")
+	sqliteSrcDir = filepath.FromSlash("testdata/sqlite-src-3400100")
 )
 
 func download() {
@@ -543,6 +553,9 @@ func makeTestfixture(goos, goarch string, more []string) {
 		"ext/misc/unionvtab.c",
 		"ext/misc/wholenumber.c",
 		"ext/rbu/test_rbu.c",
+		"ext/recover/dbdata.c",
+		"ext/recover/sqlite3recover.c",
+		"ext/recover/test_recover.c",
 		"ext/rtree/test_rtreedoc.c",
 		"ext/session/test_session.c",
 		"ext/userauth/userauth.c",
@@ -630,9 +643,24 @@ func makeTestfixture(goos, goarch string, more []string) {
 	args := join(
 		[]string{
 			"ccgo",
+			"-DBUILD_sqlite",
+			"-DNDEBUG",
+			"-DSQLITE_CKSUMVFS_STATIC",
+			"-DSQLITE_CORE",
+			"-DSQLITE_CRASH_TEST=1",
+			"-DSQLITE_DEFAULT_PAGE_SIZE=1024",
+			"-DSQLITE_ENABLE_BYTECODE_VTAB",
+			"-DSQLITE_ENABLE_DBPAGE_VTAB",
+			"-DSQLITE_ENABLE_MATH_FUNCTIONS",
+			"-DSQLITE_ENABLE_STMTVTAB",
+			"-DSQLITE_NO_SYNC=1",
 			"-DSQLITE_OMIT_LOAD_EXTENSION",
+			"-DSQLITE_PRIVATE=\"\"",
 			"-DSQLITE_SERIES_CONSTRAINT_VERIFY=1",
 			"-DSQLITE_SERVER=1",
+			"-DSQLITE_TEMP_STORE=1",
+			"-DSQLITE_TEST=1",
+			"-DSQLITE_THREADSAFE=1",
 			"-DTCLSH_INIT_PROC=sqlite3TestInit",
 			"-D_HAVE_SQLITE_CONFIG_H",
 		},

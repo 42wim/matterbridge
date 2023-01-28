@@ -12,7 +12,7 @@
   </a>
 
   <a href="https://github.com/lrstanley/girc/actions?query=workflow%3Atest+event%3Apush">
-    <img title="GitHub Workflow Status (test @ master)" src="https://img.shields.io/github/workflow/status/lrstanley/girc/test/master?label=test&style=flat-square&event=push">
+    <img title="GitHub Workflow Status (test @ master)" src="https://img.shields.io/github/actions/workflow/status/lrstanley/girc/test.yml?branch=master&label=test&style=flat-square">
   </a>
 
   <a href="https://codecov.io/gh/lrstanley/girc">

@@ -38,3 +38,37 @@ func (api *Client) SendAuthRevokeContext(ctx context.Context, token string) (*Au
 
 	return api.authRequest(ctx, "auth.revoke", values)
 }
+
+type listTeamsResponse struct {
+	Teams []Team `json:"teams"`
+	SlackResponse
+}
+
+type ListTeamsParameters struct {
+	Limit  int
+	Cursor string
+}
+
+// ListTeams returns all workspaces a token can access.
+// More info: https://api.slack.com/methods/admin.teams.list
+func (api *Client) ListTeams(params ListTeamsParameters) ([]Team, string, error) {
+	return api.ListTeamsContext(context.Background(), params)
+}
+
+// ListTeams returns all workspaces a token can access with a custom context.
+func (api *Client) ListTeamsContext(ctx context.Context, params ListTeamsParameters) ([]Team, string, error) {
+	values := url.Values{
+		"token": {api.token},
+	}
+	if params.Cursor != "" {
+		values.Add("cursor", params.Cursor)
+	}
+
+	response := &listTeamsResponse{}
+	err := api.postMethod(ctx, "auth.teams.list", values, response)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return response.Teams, response.ResponseMetadata.Cursor, response.Err()
+}

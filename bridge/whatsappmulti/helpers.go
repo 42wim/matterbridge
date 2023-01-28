@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/store/sqlstore"
 	"go.mau.fi/whatsmeow/types"
@@ -18,7 +19,7 @@ type ProfilePicInfo struct {
 	Status int16  `json:"status"`
 }
 
-func (b *Bwhatsapp) reloadContacts(){
+func (b *Bwhatsapp) reloadContacts() {
 	if _, err := b.wc.Store.Contacts.GetAllContacts(); err != nil {
 		b.Log.Errorf("error on update of contacts: %v", err)
 	}
@@ -48,7 +49,7 @@ func (b *Bwhatsapp) getSenderName(info types.MessageInfo) string {
 	if exists && sender.FullName != "" {
 		return sender.FullName
 	}
-	
+
 	if info.PushName != "" {
 		return info.PushName
 	}
@@ -56,7 +57,7 @@ func (b *Bwhatsapp) getSenderName(info types.MessageInfo) string {
 	if exists && sender.FirstName != "" {
 		return sender.FirstName
 	}
-	
+
 	return "Someone"
 }
 
@@ -71,11 +72,11 @@ func (b *Bwhatsapp) getSenderNotify(senderJid types.JID) string {
 	if !exists {
 		return "someone"
 	}
-	
+
 	if exists && sender.FullName != "" {
 		return sender.FullName
 	}
-	
+
 	if exists && sender.PushName != "" {
 		return sender.PushName
 	}
@@ -83,13 +84,16 @@ func (b *Bwhatsapp) getSenderNotify(senderJid types.JID) string {
 	if exists && sender.FirstName != "" {
 		return sender.FirstName
 	}
-	
+
 	return "someone"
 }
 
 func (b *Bwhatsapp) GetProfilePicThumb(jid string) (*types.ProfilePictureInfo, error) {
 	pjid, _ := types.ParseJID(jid)
-	info, err := b.wc.GetProfilePictureInfo(pjid, true, "")
+
+	info, err := b.wc.GetProfilePictureInfo(pjid, &whatsmeow.GetProfilePictureParams{
+		Preview: true,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get avatar: %v", err)
 	}

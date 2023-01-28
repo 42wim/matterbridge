@@ -327,17 +327,17 @@ func NewRichTextSectionUserGroupElement(usergroupID string) *RichTextSectionUser
 
 type RichTextSectionDateElement struct {
 	Type      RichTextSectionElementType `json:"type"`
-	Timestamp string                     `json:"timestamp"`
+	Timestamp JSONTime                   `json:"timestamp"`
 }
 
 func (r RichTextSectionDateElement) RichTextSectionElementType() RichTextSectionElementType {
 	return r.Type
 }
 
-func NewRichTextSectionDateElement(timestamp string) *RichTextSectionDateElement {
+func NewRichTextSectionDateElement(timestamp int64) *RichTextSectionDateElement {
 	return &RichTextSectionDateElement{
 		Type:      RTSEDate,
-		Timestamp: timestamp,
+		Timestamp: JSONTime(timestamp),
 	}
 }
 
