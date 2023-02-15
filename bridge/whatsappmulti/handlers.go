@@ -207,7 +207,16 @@ func (b *Bwhatsapp) handleVideoMessage(msg *events.Message) {
 		fileExt = append(fileExt, ".mp4")
 	}
 
-	filename := fmt.Sprintf("%v%v", msg.Info.ID, fileExt[0])
+	// Prefer .mp4 extension, otherwise fallback to first index
+	fileExtIndex := 0
+	for i, n := range fileExt {
+		if ".mp4" == n {
+			fileExtIndex = i
+			break
+		}
+	}
+
+	filename := fmt.Sprintf("%v%v", msg.Info.ID, fileExt[fileExtIndex])
 
 	b.Log.Debugf("Trying to download %s with size %#v and type %s", filename, imsg.GetFileLength(), imsg.GetMimetype())
 
