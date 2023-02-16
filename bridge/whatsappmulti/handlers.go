@@ -63,6 +63,10 @@ func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.
 	// nolint:nestif
 	if msg.GetExtendedTextMessage() == nil {
 		text = msg.GetConversation()
+	} else if msg.GetExtendedTextMessage().GetContextInfo() == nil {
+		// Handle pure text message with a link preview
+		// A pure text message with a link preview acts as an extended text message but will not contain any context info
+		text = msg.GetExtendedTextMessage().GetText()
 	} else {
 		text = msg.GetExtendedTextMessage().GetText()
 		ci := msg.GetExtendedTextMessage().GetContextInfo()
