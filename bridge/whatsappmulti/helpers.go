@@ -7,7 +7,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/42wim/matterbridge/bridge/config"
+
 	"go.mau.fi/whatsmeow"
+	"go.mau.fi/whatsmeow/binary/proto"
 	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/store/sqlstore"
 	"go.mau.fi/whatsmeow/types"
@@ -121,4 +124,16 @@ func (b *Bwhatsapp) getDevice() (*store.Device, error) {
 	}
 
 	return device, nil
+}
+
+func appendParentID(ci *proto.ContextInfo, rmsg *config.Message) {
+
+	if ci != nil && ci.StanzaId != nil {
+		// rmsg.ParentID = *ci.StanzaId
+		rmsg.ParentID = getMessageIdFormat(*ci.Participant, *ci.StanzaId)
+	}
+}
+
+func getMessageIdFormat(authorJID string, messageID string) string {
+	return fmt.Sprintf("%s:%s", authorJID, messageID)
 }
