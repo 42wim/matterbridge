@@ -47,8 +47,9 @@ func (b *Bdiscord) maybeGetLocalAvatar(msg *config.Message) string {
 // Returns messageID and error.
 func (b *Bdiscord) webhookSend(msg *config.Message, channelID string) (*discordgo.Message, error) {
 	var (
-		res *discordgo.Message
-		err error
+		res  *discordgo.Message
+		res2 *discordgo.Message
+		err  error
 	)
 
 	// If avatar is unset, mutate the message to include the local avatar (but only if settings say we should do this)
@@ -84,7 +85,7 @@ func (b *Bdiscord) webhookSend(msg *config.Message, channelID string) (*discordg
 			}
 			content := fi.Comment
 
-			_, e2 := b.transmitter.Send(
+			res2, err = b.transmitter.Send(
 				channelID,
 				&discordgo.WebhookParams{
 					Username:        msg.Username,
@@ -94,11 +95,16 @@ func (b *Bdiscord) webhookSend(msg *config.Message, channelID string) (*discordg
 					AllowedMentions: b.getAllowedMentions(),
 				},
 			)
-			if e2 != nil {
-				b.Log.Errorf("Could not send file %#v for message %#v: %s", file, msg, e2)
+			if err != nil {
+				b.Log.Errorf("Could not send file %#v for message %#v: %s", file, msg, err)
 			}
 		}
 	}
+
+	if msg.Text == "" {
+		res = res2
+	}
+
 	return res, err
 }
 
