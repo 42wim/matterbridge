@@ -10,7 +10,6 @@ import (
 	"mime"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/42wim/matterbridge/bridge"
@@ -41,6 +40,11 @@ type Bwhatsapp struct {
 	contacts    map[types.JID]types.ContactInfo
 	users       map[string]types.ContactInfo
 	userAvatars map[string]string
+}
+
+type Replyable struct {
+	MessageID types.MessageID
+	Sender    types.JID
 }
 
 // New Create a new WhatsApp bridge. This will be called for each [whatsapp.<server>] entry you have in the config file
@@ -247,8 +251,6 @@ func (b *Bwhatsapp) PostDocumentMessage(msg config.Message, filetype string) (st
 // Post an image message from the bridge to WhatsApp
 // Handle, for sure image/jpeg, image/png and image/gif MIME types
 func (b *Bwhatsapp) PostImageMessage(msg config.Message, filetype string) (string, error) {
-	groupJID, _ := types.ParseJID(msg.Channel)
-
 	fi := msg.Extra["file"][0].(config.FileInfo)
 
 	caption := msg.Username + fi.Comment
@@ -272,16 +274,11 @@ func (b *Bwhatsapp) PostImageMessage(msg config.Message, filetype string) (strin
 
 	b.Log.Debugf("=> Sending %#v as an image", msg)
 
-	ID := whatsmeow.GenerateMessageID()
-	_, err = b.wc.SendMessage(context.TODO(), groupJID, &message, whatsmeow.SendRequestExtra{ID: ID})
-
-	return ID, err
+	return b.sendMessage(msg, &message)
 }
 
 // Post a video message from the bridge to WhatsApp
 func (b *Bwhatsapp) PostVideoMessage(msg config.Message, filetype string) (string, error) {
-	groupJID, _ := types.ParseJID(msg.Channel)
-
 	fi := msg.Extra["file"][0].(config.FileInfo)
 
 	caption := msg.Username + fi.Comment
@@ -305,10 +302,7 @@ func (b *Bwhatsapp) PostVideoMessage(msg config.Message, filetype string) (strin
 
 	b.Log.Debugf("=> Sending %#v as a video", msg)
 
-	ID := whatsmeow.GenerateMessageID()
-	_, err = b.wc.SendMessage(context.TODO(), groupJID, &message, whatsmeow.SendRequestExtra{ID: ID})
-
-	return ID, err
+	return b.sendMessage(msg, &message)
 }
 
 // Post audio inline
@@ -335,8 +329,7 @@ func (b *Bwhatsapp) PostAudioMessage(msg config.Message, filetype string) (strin
 
 	b.Log.Debugf("=> Sending %#v as audio", msg)
 
-	ID := whatsmeow.GenerateMessageID()
-	_, err = b.wc.SendMessage(context.TODO(), groupJID, &message, whatsmeow.SendRequestExtra{ID: ID})
+	ID, err := b.sendMessage(msg, &message)
 
 	var captionMessage proto.Message
 	caption := msg.Username + fi.Comment + "\u2B06" // the char on the end is upwards arrow emoji
@@ -348,9 +341,45 @@ func (b *Bwhatsapp) PostAudioMessage(msg config.Message, filetype string) (strin
 	return ID, err
 }
 
+func (b *Bwhatsapp) sendMessage(rmsg config.Message, message *proto.Message) (string, error) {
+	groupJID, _ := types.ParseJID(rmsg.Channel)
+	ID := whatsmeow.GenerateMessageID()
+	text := rmsg.Username + rmsg.Text
+
+	// If we have a parent ID send an extended message
+	if rmsg.ParentID != "" {
+		replyInfo, err := b.parseMessageID(rmsg.ParentID)
+
+		if err == nil {
+			sender := replyInfo.Sender.String()
+
+			// append reply info
+			message.ExtendedTextMessage = &proto.ExtendedTextMessage{
+				Text: &text,
+				ContextInfo: &proto.ContextInfo{
+					StanzaId:      &replyInfo.MessageID,
+					Participant:   &sender,
+					QuotedMessage: &proto.Message{Conversation: goproto.String("")},
+				},
+			}
+
+			_, err := b.wc.SendMessage(context.Background(), groupJID, message, whatsmeow.SendRequestExtra{ID: ID})
+
+			return getMessageIdFormat(b.Config.GetString("Number")[1:]+"@s.whatsapp.net", ID), err
+		}
+	}
+
+	_, err := b.wc.SendMessage(context.TODO(), groupJID, message, whatsmeow.SendRequestExtra{ID: ID})
+
+	return getMessageIdFormat(b.Config.GetString("Number")[1:]+"@s.whatsapp.net", ID), err
+}
+
 // Send a message from the bridge to WhatsApp
 func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 	groupJID, _ := types.ParseJID(msg.Channel)
+
+	extendedMsgID, _ := b.parseMessageID(msg.ID)
+	msg.ID = extendedMsgID.MessageID
 
 	b.Log.Debugf("=> Receiving %#v", msg)
 
@@ -403,43 +432,9 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 
 	text := msg.Username + msg.Text
 
-	ID := whatsmeow.GenerateMessageID()
-
-	// If we have a parent ID send an extended message
-	if msg.ParentID != "" {
-		// in appendParentID() we combine the "Participant" and the "StanzaID" as both are needed to send a reply
-		replyInfo := strings.Split(msg.ParentID, ":")
-
-		if len(replyInfo) != 2 {
-			b.Log.Debug("Malformed reply info to whatsapp: %s", msg.ParentID)
-		} else {
-			// Send message with reply (not working)
-			// https://github.com/tulir/whatsmeow/issues/88#issuecomment-1093195237
-			_, err := b.wc.SendMessage(
-				context.Background(),
-				groupJID,
-				&proto.Message{
-					ExtendedTextMessage: &proto.ExtendedTextMessage{
-						Text: &text,
-						ContextInfo: &proto.ContextInfo{
-							StanzaId:      &replyInfo[1],
-							Participant:   &replyInfo[0],
-							QuotedMessage: &proto.Message{Conversation: goproto.String("")},
-						},
-					},
-				},
-				whatsmeow.SendRequestExtra{ID: ID},
-			)
-
-			return getMessageIdFormat(b.Config.GetString("Number")[1:]+"@s.whatsapp.net", ID), err
-		}
-	}
-
 	var message proto.Message
 
 	message.Conversation = &text
 
-	_, err := b.wc.SendMessage(context.TODO(), groupJID, &message, whatsmeow.SendRequestExtra{ID: ID})
-
-	return getMessageIdFormat(b.Config.GetString("Number")[1:]+"@s.whatsapp.net", ID), err
+	return b.sendMessage(msg, &message)
 }

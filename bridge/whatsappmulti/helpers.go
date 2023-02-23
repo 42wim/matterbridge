@@ -134,6 +134,31 @@ func appendParentID(ci *proto.ContextInfo, rmsg *config.Message) {
 	}
 }
 
+func (b *Bwhatsapp) parseMessageID(id string) (*Replyable, error) {
+	// No message ID in case action is executed on a message sent before the bridge was started
+	// and then the bridge cache doesn't have this message ID mapped
+	if id == "" {
+		return &Replyable{MessageID: id}, nil
+	}
+
+	replyInfo := strings.Split(id, "/")
+
+	if len(replyInfo) == 2 {
+		sender, err := types.ParseJID(replyInfo[0])
+
+		if err == nil {
+			return &Replyable{
+				MessageID: types.MessageID(replyInfo[1]),
+				Sender:    sender,
+			}, nil
+		}
+	}
+
+	err := fmt.Errorf("MessageID does not match format of {senderJID}:{messageID} : \"%s\"", id)
+
+	return &Replyable{MessageID: id}, err
+}
+
 func getMessageIdFormat(authorJID string, messageID string) string {
-	return fmt.Sprintf("%s:%s", authorJID, messageID)
+	return fmt.Sprintf("%s/%s", authorJID, messageID)
 }
