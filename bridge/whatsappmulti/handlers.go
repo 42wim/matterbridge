@@ -86,6 +86,12 @@ func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.
 		}
 	}
 
+	parentID := ""
+	if msg.GetExtendedTextMessage() != nil {
+		ci := msg.GetExtendedTextMessage().GetContextInfo()
+		parentID = getParentIdFromCtx(ci)
+	}
+
 	rmsg := config.Message{
 		UserID:   senderJID.String(),
 		Username: senderName,
@@ -94,12 +100,8 @@ func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.
 		Account:  b.Account,
 		Protocol: b.Protocol,
 		Extra:    make(map[string][]interface{}),
-		ID:       getMessageIdFormat(senderJID.String(), messageInfo.ID),
-	}
-
-	if msg.GetExtendedTextMessage() != nil {
-		ci := msg.GetExtendedTextMessage().GetContextInfo()
-		appendParentID(ci, &rmsg)
+		ID:       getMessageIdFormat(senderJID, messageInfo.ID),
+		ParentID: parentID,
 	}
 
 	if avatarURL, exists := b.userAvatars[senderJID.String()]; exists {
@@ -131,10 +133,9 @@ func (b *Bwhatsapp) handleImageMessage(msg *events.Message) {
 		Account:  b.Account,
 		Protocol: b.Protocol,
 		Extra:    make(map[string][]interface{}),
-		ID:       getMessageIdFormat(senderJID.String(), msg.Info.ID),
+		ID:       getMessageIdFormat(senderJID, msg.Info.ID),
+		ParentID: getParentIdFromCtx(ci),
 	}
-
-	appendParentID(ci, &rmsg)
 
 	if avatarURL, exists := b.userAvatars[senderJID.String()]; exists {
 		rmsg.Avatar = avatarURL
@@ -196,10 +197,9 @@ func (b *Bwhatsapp) handleVideoMessage(msg *events.Message) {
 		Account:  b.Account,
 		Protocol: b.Protocol,
 		Extra:    make(map[string][]interface{}),
-		ID:       getMessageIdFormat(senderJID.String(), msg.Info.ID),
+		ID:       getMessageIdFormat(senderJID, msg.Info.ID),
+		ParentID: getParentIdFromCtx(ci),
 	}
-
-	appendParentID(ci, &rmsg)
 
 	if avatarURL, exists := b.userAvatars[senderJID.String()]; exists {
 		rmsg.Avatar = avatarURL
@@ -254,10 +254,9 @@ func (b *Bwhatsapp) handleAudioMessage(msg *events.Message) {
 		Account:  b.Account,
 		Protocol: b.Protocol,
 		Extra:    make(map[string][]interface{}),
-		ID:       getMessageIdFormat(senderJID.String(), msg.Info.ID),
+		ID:       getMessageIdFormat(senderJID, msg.Info.ID),
+		ParentID: getParentIdFromCtx(ci),
 	}
-
-	appendParentID(ci, &rmsg)
 
 	if avatarURL, exists := b.userAvatars[senderJID.String()]; exists {
 		rmsg.Avatar = avatarURL
@@ -313,10 +312,9 @@ func (b *Bwhatsapp) handleDocumentMessage(msg *events.Message) {
 		Account:  b.Account,
 		Protocol: b.Protocol,
 		Extra:    make(map[string][]interface{}),
-		ID:       getMessageIdFormat(senderJID.String(), msg.Info.ID),
+		ID:       getMessageIdFormat(senderJID, msg.Info.ID),
+		ParentID: getParentIdFromCtx(ci),
 	}
-
-	appendParentID(ci, &rmsg)
 
 	if avatarURL, exists := b.userAvatars[senderJID.String()]; exists {
 		rmsg.Avatar = avatarURL

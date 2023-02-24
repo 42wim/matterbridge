@@ -227,6 +227,10 @@ func (b *Bwhatsapp) PostDocumentMessage(msg config.Message, filetype string) (st
 
 	// Post document message
 	var message proto.Message
+	var ctx *proto.ContextInfo
+	if msg.ParentID != "" {
+		ctx, _ = b.getNewReplyContext(msg.ParentID)
+	}
 
 	message.DocumentMessage = &proto.DocumentMessage{
 		Title:         &fi.Name,
@@ -238,6 +242,7 @@ func (b *Bwhatsapp) PostDocumentMessage(msg config.Message, filetype string) (st
 		FileSha256:    resp.FileSHA256,
 		FileLength:    goproto.Uint64(resp.FileLength),
 		Url:           &resp.URL,
+		ContextInfo:   ctx,
 	}
 
 	b.Log.Debugf("=> Sending %#v as a document", msg)
@@ -261,6 +266,10 @@ func (b *Bwhatsapp) PostImageMessage(msg config.Message, filetype string) (strin
 	}
 
 	var message proto.Message
+	var ctx *proto.ContextInfo
+	if msg.ParentID != "" {
+		ctx, _ = b.getNewReplyContext(msg.ParentID)
+	}
 
 	message.ImageMessage = &proto.ImageMessage{
 		Mimetype:      &filetype,
@@ -270,6 +279,7 @@ func (b *Bwhatsapp) PostImageMessage(msg config.Message, filetype string) (strin
 		FileSha256:    resp.FileSHA256,
 		FileLength:    goproto.Uint64(resp.FileLength),
 		Url:           &resp.URL,
+		ContextInfo:   ctx,
 	}
 
 	b.Log.Debugf("=> Sending %#v as an image", msg)
@@ -289,6 +299,10 @@ func (b *Bwhatsapp) PostVideoMessage(msg config.Message, filetype string) (strin
 	}
 
 	var message proto.Message
+	var ctx *proto.ContextInfo
+	if msg.ParentID != "" {
+		ctx, _ = b.getNewReplyContext(msg.ParentID)
+	}
 
 	message.VideoMessage = &proto.VideoMessage{
 		Mimetype:      &filetype,
@@ -298,6 +312,7 @@ func (b *Bwhatsapp) PostVideoMessage(msg config.Message, filetype string) (strin
 		FileSha256:    resp.FileSHA256,
 		FileLength:    goproto.Uint64(resp.FileLength),
 		Url:           &resp.URL,
+		ContextInfo:   ctx,
 	}
 
 	b.Log.Debugf("=> Sending %#v as a video", msg)
@@ -317,6 +332,10 @@ func (b *Bwhatsapp) PostAudioMessage(msg config.Message, filetype string) (strin
 	}
 
 	var message proto.Message
+	var ctx *proto.ContextInfo
+	if msg.ParentID != "" {
+		ctx, _ = b.getNewReplyContext(msg.ParentID)
+	}
 
 	message.AudioMessage = &proto.AudioMessage{
 		Mimetype:      &filetype,
@@ -325,6 +344,7 @@ func (b *Bwhatsapp) PostAudioMessage(msg config.Message, filetype string) (strin
 		FileSha256:    resp.FileSHA256,
 		FileLength:    goproto.Uint64(resp.FileLength),
 		Url:           &resp.URL,
+		ContextInfo:   ctx,
 	}
 
 	b.Log.Debugf("=> Sending %#v as audio", msg)
@@ -339,39 +359,6 @@ func (b *Bwhatsapp) PostAudioMessage(msg config.Message, filetype string) (strin
 	_, err = b.wc.SendMessage(context.TODO(), groupJID, &captionMessage, whatsmeow.SendRequestExtra{ID: captionID})
 
 	return ID, err
-}
-
-func (b *Bwhatsapp) sendMessage(rmsg config.Message, message *proto.Message) (string, error) {
-	groupJID, _ := types.ParseJID(rmsg.Channel)
-	ID := whatsmeow.GenerateMessageID()
-	text := rmsg.Username + rmsg.Text
-
-	// If we have a parent ID send an extended message
-	if rmsg.ParentID != "" {
-		replyInfo, err := b.parseMessageID(rmsg.ParentID)
-
-		if err == nil {
-			sender := replyInfo.Sender.String()
-
-			// append reply info
-			message.ExtendedTextMessage = &proto.ExtendedTextMessage{
-				Text: &text,
-				ContextInfo: &proto.ContextInfo{
-					StanzaId:      &replyInfo.MessageID,
-					Participant:   &sender,
-					QuotedMessage: &proto.Message{Conversation: goproto.String("")},
-				},
-			}
-
-			_, err := b.wc.SendMessage(context.Background(), groupJID, message, whatsmeow.SendRequestExtra{ID: ID})
-
-			return getMessageIdFormat(b.Config.GetString("Number")[1:]+"@s.whatsapp.net", ID), err
-		}
-	}
-
-	_, err := b.wc.SendMessage(context.TODO(), groupJID, message, whatsmeow.SendRequestExtra{ID: ID})
-
-	return getMessageIdFormat(b.Config.GetString("Number")[1:]+"@s.whatsapp.net", ID), err
 }
 
 // Send a message from the bridge to WhatsApp
@@ -430,11 +417,35 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 		}
 	}
 
+	var message proto.Message
 	text := msg.Username + msg.Text
 
-	var message proto.Message
+	// If we have a parent ID send an extended message
+	if msg.ParentID != "" {
+		replyContext, err := b.getNewReplyContext(msg.ParentID)
+
+		if err == nil {
+			message = proto.Message{
+				ExtendedTextMessage: &proto.ExtendedTextMessage{
+					Text:        &text,
+					ContextInfo: replyContext,
+				},
+			}
+
+			return b.sendMessage(msg, &message)
+		}
+	}
 
 	message.Conversation = &text
 
 	return b.sendMessage(msg, &message)
+}
+
+func (b *Bwhatsapp) sendMessage(rmsg config.Message, message *proto.Message) (string, error) {
+	groupJID, _ := types.ParseJID(rmsg.Channel)
+	ID := whatsmeow.GenerateMessageID()
+
+	_, err := b.wc.SendMessage(context.Background(), groupJID, message, whatsmeow.SendRequestExtra{ID: ID})
+
+	return getMessageIdFormat(*b.wc.Store.ID, ID), err
 }

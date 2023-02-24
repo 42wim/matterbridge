@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/42wim/matterbridge/bridge/config"
+	goproto "google.golang.org/protobuf/proto"
 
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/binary/proto"
@@ -126,12 +126,21 @@ func (b *Bwhatsapp) getDevice() (*store.Device, error) {
 	return device, nil
 }
 
-func appendParentID(ci *proto.ContextInfo, rmsg *config.Message) {
+func (b *Bwhatsapp) getNewReplyContext(parentID string) (*proto.ContextInfo, error) {
+	replyInfo, err := b.parseMessageID(parentID)
 
-	if ci != nil && ci.StanzaId != nil {
-		// rmsg.ParentID = *ci.StanzaId
-		rmsg.ParentID = getMessageIdFormat(*ci.Participant, *ci.StanzaId)
+	if err != nil {
+		return nil, err
 	}
+
+	sender := fmt.Sprintf("%s@%s", replyInfo.Sender.User, replyInfo.Sender.Server)
+	ctx := &proto.ContextInfo{
+		StanzaId:      &replyInfo.MessageID,
+		Participant:   &sender,
+		QuotedMessage: &proto.Message{Conversation: goproto.String("")},
+	}
+
+	return ctx, nil
 }
 
 func (b *Bwhatsapp) parseMessageID(id string) (*Replyable, error) {
@@ -159,6 +168,20 @@ func (b *Bwhatsapp) parseMessageID(id string) (*Replyable, error) {
 	return &Replyable{MessageID: id}, err
 }
 
-func getMessageIdFormat(authorJID string, messageID string) string {
-	return fmt.Sprintf("%s/%s", authorJID, messageID)
+func getParentIdFromCtx(ci *proto.ContextInfo) string {
+	if ci != nil && ci.StanzaId != nil {
+		senderJid, err := types.ParseJID(*ci.Participant)
+
+		if err == nil {
+			return getMessageIdFormat(senderJid, *ci.StanzaId)
+		}
+	}
+
+	return ""
+}
+
+func getMessageIdFormat(jid types.JID, messageID string) string {
+	// we're crafting our own JID str as AD JID format messes with how stuff looks on a webclient
+	jidStr := fmt.Sprintf("%s@%s", jid.User, jid.Server)
+	return fmt.Sprintf("%s/%s", jidStr, messageID)
 }
