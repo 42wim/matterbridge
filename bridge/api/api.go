@@ -13,6 +13,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	ring "github.com/zfjagann/golang-ring"
+	"github.com/mitchellh/mapstructure"
 )
 
 type API struct {
@@ -137,6 +138,11 @@ func (b *API) handlePostMessage(c echo.Context) error {
 	message.Account = b.Account
 	message.ID = ""
 	message.Timestamp = time.Now()
+	for i, f := range message.Extra["file"] {
+		fi := config.FileInfo{}
+		mapstructure.Decode(f.(map[string]interface{}), &fi)
+		message.Extra["file"][i] = fi
+	}
 	b.Log.Debugf("Sending message from %s on %s to gateway", message.Username, "api")
 	b.Remote <- message
 	return c.JSON(http.StatusOK, message)
