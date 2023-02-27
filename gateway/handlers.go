@@ -86,7 +86,7 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 
 	for i, f := range msg.Extra["file"] {
 		fi, ok := f.(config.FileInfo)
-		if ok {
+		if !ok {
 			mapstructure.Decode(f.(map[string]interface{}), &fi)
 		}
 		ext := filepath.Ext(fi.Name)
