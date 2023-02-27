@@ -15,6 +15,7 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/gateway/bridgemap"
+	"github.com/mitchellh/mapstructure"
 )
 
 // handleEventFailure handles failures and reconnects bridges.
@@ -84,7 +85,10 @@ func (gw *Gateway) handleFiles(msg *config.Message) {
 	}
 
 	for i, f := range msg.Extra["file"] {
-		fi := f.(config.FileInfo)
+		fi, ok := f.(config.FileInfo)
+		if ok {
+			mapstructure.Decode(f.(map[string]interface{}), &fi)
+		}
 		ext := filepath.Ext(fi.Name)
 		fi.Name = fi.Name[0 : len(fi.Name)-len(ext)]
 		fi.Name = reg.ReplaceAllString(fi.Name, "_")
