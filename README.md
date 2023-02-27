@@ -114,6 +114,7 @@ And more...
 
 ### 3rd party via matterbridge api
 
+- [Delta Chat](https://github.com/deltachat-bot/matterdelta)
 - [Discourse](https://github.com/DeclanHoare/matterbabble)
 - [Facebook messenger](https://github.com/powerjungle/fbridge-asyncio)
 - [Facebook messenger](https://github.com/VictorNine/fbridge)
