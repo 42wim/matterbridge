@@ -15,6 +15,7 @@ import (
 	"github.com/d5/tengo/v2/stdlib"
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/kyokomi/emoji/v2"
+	"github.com/philippgille/gokv"
 	"github.com/sirupsen/logrus"
 )
 
@@ -29,14 +30,17 @@ type Gateway struct {
 	Message        chan config.Message
 	Name           string
 	Messages       *lru.Cache
+	MessageStore   gokv.Store
+	CanonicalStore gokv.Store
 
 	logger *logrus.Entry
 }
 
 type BrMsgID struct {
-	br        *bridge.Bridge
-	ID        string
+	Protocol  string
+	DestName  string
 	ChannelID string
+	ID        string
 }
 
 const apiProtocol = "api"
@@ -59,12 +63,41 @@ func New(rootLogger *logrus.Logger, cfg *config.Gateway, r *Router) *Gateway {
 	if err := gw.AddConfig(cfg); err != nil {
 		logger.Errorf("Failed to add configuration to gateway: %#v", err)
 	}
+
+	persistentMessageStorePath, usePersistent := gw.Config.GetString("PersistentMessageStorePath")
+	if usePersistent {
+		rootPath := fmt.Sprintf("%s/%s", persistentMessageStorePath, gw.Name)
+		os.MkdirAll(rootPath, os.ModePerm)
+
+		gw.MessageStore = gw.getMessageMapStore(fmt.Sprintf("%s/Messages", rootPath))
+		gw.CanonicalStore = gw.getMessageMapStore(fmt.Sprintf("%s/Canonical", rootPath))
+	}
+
 	return gw
+}
+
+func (gw *Gateway) SetMessageMap(canonicalMsgID string, msgIDs []*BrMsgID) {
+	_, usePersistent := gw.Config.GetString("PersistentMessageStorePath")
+	if usePersistent {
+		gw.setDestMessagesToStore(canonicalMsgID, msgIDs)
+	} else {
+		gw.Messages.Add(canonicalMsgID, msgIDs)
+	}
 }
 
 // FindCanonicalMsgID returns the ID under which a message was stored in the cache.
 func (gw *Gateway) FindCanonicalMsgID(protocol string, mID string) string {
 	ID := protocol + " " + mID
+
+	_, usePersistent := gw.Config.GetString("PersistentMessageStorePath")
+	if usePersistent {
+		return gw.getCanonicalMessageFromStore(ID)
+	} else {
+		return gw.getCanonicalMessageFromMemCache(ID)
+	}
+}
+
+func (gw *Gateway) getCanonicalMessageFromMemCache(ID string) string {
 	if gw.Messages.Contains(ID) {
 		return ID
 	}
@@ -259,13 +292,26 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 }
 
 func (gw *Gateway) getDestMsgID(msgID string, dest *bridge.Bridge, channel *config.ChannelInfo) string {
+	var destID string
+
+	_, usePersistent := gw.Config.GetString("PersistentMessageStorePath")
+	if usePersistent {
+		destID = gw.getDestMessagesFromStore(msgID, dest, channel)
+	} else {
+		destID = gw.getDestMessageFromMemCache(msgID, dest, channel)
+	}
+
+	return strings.Replace(destID, dest.Protocol+" ", "", 1)
+}
+
+func (gw *Gateway) getDestMessageFromMemCache(msgID string, dest *bridge.Bridge, channel *config.ChannelInfo) string {
 	if res, ok := gw.Messages.Get(msgID); ok {
 		IDs := res.([]*BrMsgID)
 		for _, id := range IDs {
 			// check protocol, bridge name and channelname
 			// for people that reuse the same bridge multiple times. see #342
-			if dest.Protocol == id.br.Protocol && dest.Name == id.br.Name && channel.ID == id.ChannelID {
-				return strings.Replace(id.ID, dest.Protocol+" ", "", 1)
+			if dest.Protocol == id.Protocol && dest.Name == id.DestName && channel.ID == id.ChannelID {
+				return id.ID
 			}
 		}
 	}

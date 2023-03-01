@@ -1,0 +1,56 @@
+# Sudo is required for running Docker
+sudo: required
+
+services:
+  # Docker is required for running some services that aren't provided by Travis CI, e.g. Consul
+  - docker
+  - redis-server
+  - mongodb
+  - memcached
+  - mysql
+
+git:
+  depth: 1
+
+language: go
+
+go:
+  - "1.12"
+  - "1.13"
+
+env:
+  # For encrypted environment variables, use:
+  # travis encrypt 'PASSWORD="SECRET"' -r philippgille/gokv
+  global:
+    - GO111MODULE=on
+    # "DynamoDB local" accepts any credentials
+    - AWS_ACCESS_KEY_ID=user
+    - AWS_SECRET_ACCESS_KEY=secret
+
+before_install:
+  - go version
+  - go env
+
+# Overwrite the `install` phase because the default one runs `travis_install_go_dependencies`,
+# which leads to errors in case some subdirectories are Go modules and others are regular Go packages
+install:
+  - echo "Skipping default install phase"
+
+# Don't start Docker containers all at once. The Travis CI VM doesn't have enough memory for that.
+# TODO: Implement a proper wait (e.g. with container health check) instead of sleeping for 10s
+script:
+  # Build
+  - build/build.sh
+
+  # Linter
+  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.15.0
+  - golangci-lint run
+
+  # Test
+  - build/test.sh
+
+after_success:
+  # Combine coverage reports
+  - build/combine-coverage.sh
+  # Upload coverage data to codecov.io
+  - bash <(curl -s https://codecov.io/bash)
