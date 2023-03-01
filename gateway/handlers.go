@@ -250,6 +250,43 @@ func (gw *Gateway) handleExtractNicks(msg *config.Message) {
 	}
 }
 
+func (r *Router) handleOptOutUser(msg *config.Message) {
+	if msg.UserID == "" {
+		return
+	}
+
+	status := r.getOptOutStatus(msg.UserID)
+
+	if status == OptOut {
+		msg.Avatar = ""
+		msg.Username = "[Opt-out User]"
+		if msg.Text != "" {
+			msg.Text = "Redacted Text\n"
+		}
+		files, exists := msg.Extra["file"]
+		if exists {
+			if files[0].(config.FileInfo).Comment != "" {
+				msg.Text = "Redacted Text\n"
+			}
+			msg.Text += fmt.Sprintf("Redacted %d Attachment(s)", len(files))
+			delete(msg.Extra, "file")
+		}
+	} else if status == OptOutMediaOnly {
+		files, exists := msg.Extra["file"]
+
+		if exists {
+			for _, f := range files {
+				file := f.(config.FileInfo)
+				if file.Comment != "" {
+					msg.Text += file.Comment + "\n"
+				}
+			}
+			msg.Text += fmt.Sprintf("Redacted %d Attachment(s)", len(files))
+			delete(msg.Extra, "file")
+		}
+	}
+}
+
 // extractNick searches for a username (based on "search" a regular expression).
 // if this matches it extracts a nick (based on "extract" another regular expression) from text
 // and replaces username with this result.

@@ -60,6 +60,13 @@ require (
 )
 
 require (
+	github.com/philippgille/gokv/bbolt v0.6.0 // indirect
+	github.com/philippgille/gokv/encoding v0.0.0-20191011213304-eb77f15b9c61 // indirect
+	github.com/philippgille/gokv/util v0.0.0-20191011213304-eb77f15b9c61 // indirect
+	go.etcd.io/bbolt v1.3.6 // indirect
+)
+
+require (
 	filippo.io/edwards25519 v1.0.0 // indirect
 	github.com/Benau/go_rlottie v0.0.0-20210807002906-98c1b2421989 // indirect
 	github.com/Jeffail/gabs v1.4.0 // indirect
@@ -107,6 +114,11 @@ require (
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
 	github.com/philhofer/fwd v1.1.1 // indirect
+	github.com/philippgille/gokv v0.6.0 // indirect
+	github.com/philippgille/gokv/badgerdb v0.6.0 // indirect
+	github.com/philippgille/gokv/encoding v0.0.0-20191011213304-eb77f15b9c61 // indirect
+	github.com/philippgille/gokv/util v0.0.0-20191011213304-eb77f15b9c61 // indirect
+	github.com/philippgille/gokv v0.6.0
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
