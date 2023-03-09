@@ -35,11 +35,12 @@ const (
 type Bwhatsapp struct {
 	*bridge.Config
 
-	startedAt   time.Time
-	wc          *whatsmeow.Client
-	contacts    map[types.JID]types.ContactInfo
-	users       map[string]types.ContactInfo
-	userAvatars map[string]string
+	startedAt    time.Time
+	wc           *whatsmeow.Client
+	contacts     map[types.JID]types.ContactInfo
+	users        map[string]types.ContactInfo
+	userAvatars  map[string]string
+	joinedGroups []*types.GroupInfo
 }
 
 type Replyable struct {
@@ -126,6 +127,11 @@ func (b *Bwhatsapp) Connect() error {
 		return errors.New("failed to get contacts: " + err.Error())
 	}
 
+	b.joinedGroups, err = b.wc.GetJoinedGroups()
+	if err != nil {
+		return errors.New("failed to get list of joined groups: " + err.Error())
+	}
+
 	b.startedAt = time.Now()
 
 	// map all the users
@@ -171,11 +177,6 @@ func (b *Bwhatsapp) Disconnect() error {
 func (b *Bwhatsapp) JoinChannel(channel config.ChannelInfo) error {
 	byJid := isGroupJid(channel.Name)
 
-	groups, err := b.wc.GetJoinedGroups()
-	if err != nil {
-		return err
-	}
-
 	// verify if we are member of the given group
 	if byJid {
 		gJID, err := types.ParseJID(channel.Name)
@@ -183,7 +184,7 @@ func (b *Bwhatsapp) JoinChannel(channel config.ChannelInfo) error {
 			return err
 		}
 
-		for _, group := range groups {
+		for _, group := range b.joinedGroups {
 			if group.JID == gJID {
 				return nil
 			}
@@ -192,7 +193,7 @@ func (b *Bwhatsapp) JoinChannel(channel config.ChannelInfo) error {
 
 	foundGroups := []string{}
 
-	for _, group := range groups {
+	for _, group := range b.joinedGroups {
 		if group.Name == channel.Name {
 			foundGroups = append(foundGroups, group.Name)
 		}
@@ -201,7 +202,7 @@ func (b *Bwhatsapp) JoinChannel(channel config.ChannelInfo) error {
 	switch len(foundGroups) {
 	case 0:
 		// didn't match any group - print out possibilites
-		for _, group := range groups {
+		for _, group := range b.joinedGroups {
 			b.Log.Infof("%s %s", group.JID, group.Name)
 		}
 		return fmt.Errorf("please specify group's JID from the list above instead of the name '%s'", channel.Name)
