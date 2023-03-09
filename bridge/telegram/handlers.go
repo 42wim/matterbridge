@@ -128,7 +128,9 @@ func (b *Btelegram) handleUsername(rmsg *config.Message, message *tgbotapi.Messa
 			rmsg.Username = message.From.FirstName
 		}
 		if b.GetBool("UseFullName") {
-			rmsg.Username = message.From.FirstName + " " + message.From.LastName
+			if message.From.FirstName != "" && message.From.LastName != "" {
+				rmsg.Username = message.From.FirstName + " " + message.From.LastName
+			}
 		}
 		if rmsg.Username == "" {
 			rmsg.Username = message.From.UserName
@@ -148,7 +150,9 @@ func (b *Btelegram) handleUsername(rmsg *config.Message, message *tgbotapi.Messa
 			rmsg.Username = message.SenderChat.FirstName
 		}
 		if b.GetBool("UseFullName") {
-			rmsg.Username = message.SenderChat.FirstName + " " + message.SenderChat.LastName
+			if message.SenderChat.FirstName != "" && message.SenderChat.LastName != "" {
+				rmsg.Username = message.SenderChat.FirstName + " " + message.SenderChat.LastName
+			}
 		}
 
 		if rmsg.Username == "" || rmsg.Username == "Channel_Bot" {
@@ -162,6 +166,11 @@ func (b *Btelegram) handleUsername(rmsg *config.Message, message *tgbotapi.Messa
 		if b.General.MediaServerUpload != "" || (b.General.MediaServerDownload != "" && b.General.MediaDownloadPath != "") {
 			b.handleDownloadAvatar(message.SenderChat.ID, rmsg.Channel)
 		}
+	}
+
+	// Fallback on author signature (used in "channel" type of chat)
+	if rmsg.Username == "" && message.AuthorSignature != "" {
+		rmsg.Username = message.AuthorSignature
 	}
 
 	// if we really didn't find a username, set it to unknown

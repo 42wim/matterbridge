@@ -169,7 +169,7 @@ func (vk *VK) FriendsGetMutual(params Params) (response FriendsGetMutualResponse
 
 // FriendsGetOnline returns a list of user IDs of a user's friends who are online.
 //
-// 	online_mobile=0
+//	online_mobile=0
 //
 // https://vk.com/dev/friends.getOnline
 func (vk *VK) FriendsGetOnline(params Params) (response []int, err error) {
@@ -186,7 +186,7 @@ type FriendsGetOnlineOnlineMobileResponse struct {
 
 // FriendsGetOnlineOnlineMobile returns a list of user IDs of a user's friends who are online.
 //
-// 	online_mobile=1
+//	online_mobile=1
 //
 // https://vk.com/dev/friends.getOnline
 func (vk *VK) FriendsGetOnlineOnlineMobile(params Params) (response FriendsGetOnlineOnlineMobileResponse, err error) {

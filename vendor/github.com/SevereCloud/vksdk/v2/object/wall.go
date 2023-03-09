@@ -161,6 +161,7 @@ type WallWallpost struct {
 	Edited         int                      `json:"edited"` // Date of editing in Unixtime
 	Copyright      WallPostCopyright        `json:"copyright"`
 	PostID         int                      `json:"post_id"`
+	PostponedID    int                      `json:"postponed_id"` // ID from scheduled posts
 	ParentsStack   []int                    `json:"parents_stack"`
 	Donut          WallWallpostDonut        `json:"donut"`
 	ShortTextRate  float64                  `json:"short_text_rate"`

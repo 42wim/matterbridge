@@ -152,7 +152,7 @@ type Params map[string]interface{}
 // cyrillic symbols will be transliterated automatically.
 // Numeric format from account.getInfo is supported as well.
 //
-// 	p.Lang(object.LangRU)
+//	p.Lang(object.LangRU)
 //
 // See all language code in module object.
 func (p Params) Lang(v int) Params {
@@ -248,7 +248,7 @@ func (vk *VK) DefaultHandler(method string, sliceParams ...Params) (Response, er
 
 		rawBody := bytes.NewBufferString(query.Encode())
 
-		req, err := http.NewRequestWithContext(ctx, "POST", u, rawBody)
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, u, rawBody)
 		if err != nil {
 			return response, err
 		}

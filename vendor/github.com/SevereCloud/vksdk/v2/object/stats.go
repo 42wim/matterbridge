@@ -66,12 +66,24 @@ type StatsViews struct {
 
 // StatsWallpostStat struct.
 type StatsWallpostStat struct {
+	PostID           int `json:"post_id"`
 	Hide             int `json:"hide"`              // Hidings number
 	JoinGroup        int `json:"join_group"`        // People have joined the group
 	Links            int `json:"links"`             // Link click-through
 	ReachSubscribers int `json:"reach_subscribers"` // Subscribers reach
 	ReachTotal       int `json:"reach_total"`       // Total reach
+	ReachViral       int `json:"reach_viral"`       // Viral reach
+	ReachAds         int `json:"reach_ads"`         // Advertising reach
 	Report           int `json:"report"`            // Reports number
 	ToGroup          int `json:"to_group"`          // Click-through to community
 	Unsubscribe      int `json:"unsubscribe"`       // Unsubscribed members
+	AdViews          int `json:"ad_views"`
+	AdSubscribers    int `json:"ad_subscribers"`
+	AdHide           int `json:"ad_hide"`
+	AdUnsubscribe    int `json:"ad_unsubscribe"`
+	AdLinks          int `json:"ad_links"`
+	AdToGroup        int `json:"ad_to_group"`
+	AdJoinGroup      int `json:"ad_join_group"`
+	AdCoverage       int `json:"ad_coverage"`
+	AdReport         int `json:"ad_report"`
 }

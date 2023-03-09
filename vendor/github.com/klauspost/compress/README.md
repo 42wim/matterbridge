@@ -9,13 +9,68 @@ This package provides various compression algorithms.
 * [huff0](https://github.com/klauspost/compress/tree/master/huff0) and [FSE](https://github.com/klauspost/compress/tree/master/fse) implementations for raw entropy encoding.
 * [gzhttp](https://github.com/klauspost/compress/tree/master/gzhttp) Provides client and server wrappers for handling gzipped requests efficiently.
 * [pgzip](https://github.com/klauspost/pgzip) is a separate package that provides a very fast parallel gzip implementation.
-* [fuzz package](https://github.com/klauspost/compress-fuzz) for fuzz testing all compressors/decompressors here.
 
 [![Go Reference](https://pkg.go.dev/badge/klauspost/compress.svg)](https://pkg.go.dev/github.com/klauspost/compress?tab=subdirectories)
 [![Go](https://github.com/klauspost/compress/actions/workflows/go.yml/badge.svg)](https://github.com/klauspost/compress/actions/workflows/go.yml)
 [![Sourcegraph Badge](https://sourcegraph.com/github.com/klauspost/compress/-/badge.svg)](https://sourcegraph.com/github.com/klauspost/compress?badge)
 
 # changelog
+
+* Jan 21st, 2023 (v1.15.15)
+	* deflate: Improve level 7-9 by @klauspost in https://github.com/klauspost/compress/pull/739
+	* zstd: Add delta encoding support by @greatroar in https://github.com/klauspost/compress/pull/728
+	* zstd: Various speed improvements by @greatroar https://github.com/klauspost/compress/pull/741 https://github.com/klauspost/compress/pull/734 https://github.com/klauspost/compress/pull/736 https://github.com/klauspost/compress/pull/744 https://github.com/klauspost/compress/pull/743 https://github.com/klauspost/compress/pull/745
+	* gzhttp: Add SuffixETag() and DropETag() options to prevent ETag collisions on compressed responses by @willbicks in https://github.com/klauspost/compress/pull/740
+
+* Jan 3rd, 2023 (v1.15.14)
+
+	* flate: Improve speed in big stateless blocks https://github.com/klauspost/compress/pull/718
+	* zstd: Minor speed tweaks by @greatroar in https://github.com/klauspost/compress/pull/716 https://github.com/klauspost/compress/pull/720
+	* export NoGzipResponseWriter for custom ResponseWriter wrappers by @harshavardhana in https://github.com/klauspost/compress/pull/722
+	* s2: Add example for indexing and existing stream https://github.com/klauspost/compress/pull/723
+
+* Dec 11, 2022 (v1.15.13)
+	* zstd: Add [MaxEncodedSize](https://pkg.go.dev/github.com/klauspost/compress@v1.15.13/zstd#Encoder.MaxEncodedSize) to encoder  https://github.com/klauspost/compress/pull/691
+	* zstd: Various tweaks and improvements https://github.com/klauspost/compress/pull/693 https://github.com/klauspost/compress/pull/695 https://github.com/klauspost/compress/pull/696 https://github.com/klauspost/compress/pull/701 https://github.com/klauspost/compress/pull/702 https://github.com/klauspost/compress/pull/703 https://github.com/klauspost/compress/pull/704 https://github.com/klauspost/compress/pull/705 https://github.com/klauspost/compress/pull/706 https://github.com/klauspost/compress/pull/707 https://github.com/klauspost/compress/pull/708
+
+* Oct 26, 2022 (v1.15.12)
+
+	* zstd: Tweak decoder allocs. https://github.com/klauspost/compress/pull/680
+	* gzhttp: Always delete `HeaderNoCompression` https://github.com/klauspost/compress/pull/683
+
+* Sept 26, 2022 (v1.15.11)
+
+	* flate: Improve level 1-3 compression  https://github.com/klauspost/compress/pull/678
+	* zstd: Improve "best" compression by @nightwolfz in https://github.com/klauspost/compress/pull/677
+	* zstd: Fix+reduce decompression allocations https://github.com/klauspost/compress/pull/668
+	* zstd: Fix non-effective noescape tag https://github.com/klauspost/compress/pull/667
+
+* Sept 16, 2022 (v1.15.10)
+
+	* zstd: Add [WithDecodeAllCapLimit](https://pkg.go.dev/github.com/klauspost/compress@v1.15.10/zstd#WithDecodeAllCapLimit) https://github.com/klauspost/compress/pull/649
+	* Add Go 1.19 - deprecate Go 1.16  https://github.com/klauspost/compress/pull/651
+	* flate: Improve level 5+6 compression https://github.com/klauspost/compress/pull/656
+	* zstd: Improve "better" compresssion  https://github.com/klauspost/compress/pull/657
+	* s2: Improve "best" compression https://github.com/klauspost/compress/pull/658
+	* s2: Improve "better" compression. https://github.com/klauspost/compress/pull/635
+	* s2: Slightly faster non-assembly decompression https://github.com/klauspost/compress/pull/646
+	* Use arrays for constant size copies https://github.com/klauspost/compress/pull/659
+
+* July 21, 2022 (v1.15.9)
+
+	* zstd: Fix decoder crash on amd64 (no BMI) on invalid input https://github.com/klauspost/compress/pull/645
+	* zstd: Disable decoder extended memory copies (amd64) due to possible crashes https://github.com/klauspost/compress/pull/644
+	* zstd: Allow single segments up to "max decoded size" by @klauspost in https://github.com/klauspost/compress/pull/643
+
+* July 13, 2022 (v1.15.8)
+
+	* gzip: fix stack exhaustion bug in Reader.Read https://github.com/klauspost/compress/pull/641
+	* s2: Add Index header trim/restore https://github.com/klauspost/compress/pull/638
+	* zstd: Optimize seqdeq amd64 asm by @greatroar in https://github.com/klauspost/compress/pull/636
+	* zstd: Improve decoder memcopy https://github.com/klauspost/compress/pull/637
+	* huff0: Pass a single bitReader pointer to asm by @greatroar in https://github.com/klauspost/compress/pull/634
+	* zstd: Branchless getBits for amd64 w/o BMI2 by @greatroar in https://github.com/klauspost/compress/pull/640
+	* gzhttp: Remove header before writing https://github.com/klauspost/compress/pull/639
 
 * June 29, 2022 (v1.15.7)
 
@@ -81,15 +136,15 @@ This package provides various compression algorithms.
 	* gzhttp: Add zstd to transport by @klauspost in [#400](https://github.com/klauspost/compress/pull/400)
 	* gzhttp: Make content-type optional by @klauspost in [#510](https://github.com/klauspost/compress/pull/510)
 
-<details>
-	<summary>See  Details</summary>
 Both compression and decompression now supports "synchronous" stream operations. This means that whenever "concurrency" is set to 1, they will operate without spawning goroutines.
 
 Stream decompression is now faster on asynchronous, since the goroutine allocation much more effectively splits the workload. On typical streams this will typically use 2 cores fully for decompression. When a stream has finished decoding no goroutines will be left over, so decoders can now safely be pooled and still be garbage collected.
 
 While the release has been extensively tested, it is recommended to testing when upgrading.
-</details>
 
+<details>
+	<summary>See changes to v1.14.x</summary>
+	
 * Feb 22, 2022 (v1.14.4)
 	* flate: Fix rare huffman only (-2) corruption. [#503](https://github.com/klauspost/compress/pull/503)
 	* zip: Update deprecated CreateHeaderRaw to correctly call CreateRaw by @saracen in [#502](https://github.com/klauspost/compress/pull/502)
@@ -115,6 +170,7 @@ While the release has been extensively tested, it is recommended to testing when
 	* zstd: Performance improvement in [#420]( https://github.com/klauspost/compress/pull/420) [#456](https://github.com/klauspost/compress/pull/456) [#437](https://github.com/klauspost/compress/pull/437) [#467](https://github.com/klauspost/compress/pull/467) [#468](https://github.com/klauspost/compress/pull/468)
 	* zstd: add arm64 xxhash assembly in [#464](https://github.com/klauspost/compress/pull/464)
 	* Add garbled for binaries for s2 in [#445](https://github.com/klauspost/compress/pull/445)
+</details>
 
 <details>
 	<summary>See changes to v1.13.x</summary>
