@@ -42,7 +42,14 @@ func (b *Bmumble) handleTextMessage(event *gumble.TextMessageEvent) {
 		if part.Image == nil {
 			rmsg.Text = part.Text
 		} else {
-			fname := b.Account + "_" + strconv.FormatInt(now.UnixNano(), 10) + "_" + strconv.Itoa(i) + part.FileExtension
+			fileExt := part.FileExtension
+			if fileExt == ".jfif" {
+				fileExt = ".jpg"
+			}
+			if fileExt == ".jpe" {
+				fileExt = ".jpg"
+			}
+			fname := b.Account + "_" + strconv.FormatInt(now.UnixNano(), 10) + "_" + strconv.Itoa(i) + fileExt
 			rmsg.Extra = make(map[string][]interface{})
 			if err = helper.HandleDownloadSize(b.Log, &rmsg, fname, int64(len(part.Image)), b.General); err != nil {
 				b.Log.WithError(err).Warn("not including image in message")
@@ -62,7 +69,6 @@ func (b *Bmumble) handleConnect(event *gumble.ConnectEvent) {
 	}
 	// No need to talk or listen
 	event.Client.Self.SetSelfDeafened(true)
-	event.Client.Self.SetSelfMuted(true)
 	// if the Channel variable is set, this is a reconnect -> rejoin channel
 	if b.Channel != nil {
 		if err := b.doJoin(event.Client, *b.Channel); err != nil {
