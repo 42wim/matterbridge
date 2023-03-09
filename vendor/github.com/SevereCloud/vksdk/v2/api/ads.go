@@ -203,7 +203,6 @@ type AdsDeleteCampaignsResponse []ErrorType
 
 // AdsDeleteCampaigns archives advertising campaigns.
 //
-//
 // Warning! Maximum allowed number of campaigns archived in one request is 100.
 //
 // https://vk.com/dev/ads.deleteCampaigns

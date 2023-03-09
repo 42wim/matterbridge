@@ -24,7 +24,7 @@ type UsersGetFollowersResponse struct {
 // UsersGetFollowers returns a list of IDs of followers of the user in
 // question, sorted by date added, most recent first.
 //
-// 	fields="";
+//	fields="";
 //
 // https://vk.com/dev/users.getFollowers
 func (vk *VK) UsersGetFollowers(params Params) (response UsersGetFollowersResponse, err error) {
@@ -70,7 +70,7 @@ type UsersGetSubscriptionsResponse struct {
 
 // UsersGetSubscriptions returns a list of IDs of users and public pages followed by the user.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/users.getSubscriptions
 //

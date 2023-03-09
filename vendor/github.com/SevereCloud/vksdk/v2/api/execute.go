@@ -13,8 +13,8 @@ import (
 // The Args map variable allows you to retrieve the parameters passed during
 // the request and avoids code formatting.
 //
-// 	return Args.code; // return parameter "code"
-// 	return Args.v; // return parameter "v"
+//	return Args.code; // return parameter "code"
+//	return Args.v; // return parameter "v"
 //
 // https://vk.com/dev/execute
 func (vk *VK) ExecuteWithArgs(code string, params Params, obj interface{}) error {

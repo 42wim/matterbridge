@@ -30,7 +30,7 @@ type StoriesGetResponse struct {
 
 // StoriesGet returns stories available for current user.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/stories.get
 func (vk *VK) StoriesGet(params Params) (response StoriesGetResponse, err error) {
@@ -50,7 +50,7 @@ type StoriesGetExtendedResponse struct {
 
 // StoriesGetExtended returns stories available for current user.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/stories.get
 func (vk *VK) StoriesGetExtended(params Params) (response StoriesGetExtendedResponse, err error) {
@@ -67,7 +67,7 @@ type StoriesGetBannedResponse struct {
 
 // StoriesGetBanned returns list of sources hidden from current user's feed.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/stories.getBanned
 func (vk *VK) StoriesGetBanned(params Params) (response StoriesGetBannedResponse, err error) {
@@ -85,7 +85,7 @@ type StoriesGetBannedExtendedResponse struct {
 
 // StoriesGetBannedExtended returns list of sources hidden from current user's feed.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/stories.getBanned
 func (vk *VK) StoriesGetBannedExtended(params Params) (response StoriesGetBannedExtendedResponse, err error) {
@@ -102,7 +102,7 @@ type StoriesGetByIDResponse struct {
 
 // StoriesGetByID returns story by its ID.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/stories.getById
 func (vk *VK) StoriesGetByID(params Params) (response StoriesGetByIDResponse, err error) {
@@ -120,7 +120,7 @@ type StoriesGetByIDExtendedResponse struct {
 
 // StoriesGetByIDExtended returns story by its ID.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/stories.getById
 func (vk *VK) StoriesGetByIDExtended(params Params) (response StoriesGetByIDExtendedResponse, err error) {
@@ -152,7 +152,7 @@ type StoriesGetRepliesResponse struct {
 
 // StoriesGetReplies returns replies to the story.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/stories.getReplies
 func (vk *VK) StoriesGetReplies(params Params) (response StoriesGetRepliesResponse, err error) {
@@ -170,7 +170,7 @@ type StoriesGetRepliesExtendedResponse struct {
 
 // StoriesGetRepliesExtended returns replies to the story.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/stories.getReplies
 func (vk *VK) StoriesGetRepliesExtended(params Params) (response StoriesGetRepliesExtendedResponse, err error) {
@@ -213,7 +213,7 @@ type StoriesGetViewersResponse struct {
 
 // StoriesGetViewers returns a list of story viewers.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/stories.getViewers
 func (vk *VK) StoriesGetViewers(params Params) (response StoriesGetViewersResponse, err error) {
@@ -261,7 +261,7 @@ type StoriesSearchResponse struct {
 
 // StoriesSearch returns search results for stories.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/stories.search
 func (vk *VK) StoriesSearch(params Params) (response StoriesSearchResponse, err error) {
@@ -279,7 +279,7 @@ type StoriesSearchExtendedResponse struct {
 
 // StoriesSearchExtended returns search results for stories.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/stories.search
 func (vk *VK) StoriesSearchExtended(params Params) (response StoriesSearchExtendedResponse, err error) {

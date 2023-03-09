@@ -49,7 +49,8 @@ func NormalizeShortCode(shortCode string) string {
 // regular expression that matches :flag-[countrycode]:
 var flagRegexp = regexp.MustCompile(":flag-([a-z]{2}):")
 
-func emojize(x string) string {
+// Emojize Converts the string passed as an argument to a emoji. For unsupported emoji, the string passed as an argument is returned as is.
+func Emojize(x string) string {
 	str, ok := emojiCode()[x]
 	if ok {
 		return str + ReplacePadding
@@ -83,7 +84,7 @@ func replaseEmoji(input *bytes.Buffer) string {
 		case unicode.IsSpace(i):
 			return emoji.String()
 		case i == ':':
-			return emojize(emoji.String())
+			return Emojize(emoji.String())
 		}
 	}
 }

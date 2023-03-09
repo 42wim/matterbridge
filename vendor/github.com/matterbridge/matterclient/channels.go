@@ -80,7 +80,14 @@ func (m *Client) getChannelIDTeam(name string, teamID string) string {
 		}
 	}
 
-	return ""
+	// Fallback if it's not found in the t.Channels or t.MoreChannels cache.
+	// This also let's us join private channels.
+	channel, _, err := m.Client.GetChannelByName(name, teamID, "")
+	if err != nil {
+		return ""
+	}
+
+	return channel.Id
 }
 
 func (m *Client) GetChannelName(channelID string) string {
@@ -224,8 +231,13 @@ func (m *Client) UpdateChannelsTeam(teamID string) error {
 		}
 	}
 
+	idx := 0
+	max := 200
+
+	var moreChannels []*model.Channel
+
 	for {
-		mmchannels, resp, err = m.Client.GetPublicChannelsForTeam(teamID, 0, 5000, "")
+		mmchannels, resp, err = m.Client.GetPublicChannelsForTeam(teamID, idx, max, "")
 		if err == nil {
 			break
 		}
@@ -235,10 +247,27 @@ func (m *Client) UpdateChannelsTeam(teamID string) error {
 		}
 	}
 
+	for len(mmchannels) > 0 {
+		moreChannels = append(moreChannels, mmchannels...)
+
+		for {
+			mmchannels, resp, err = m.Client.GetPublicChannelsForTeam(teamID, idx, max, "")
+			if err == nil {
+				idx++
+
+				break
+			}
+
+			if err := m.HandleRatelimit("GetPublicChannelsForTeam", resp); err != nil {
+				return err
+			}
+		}
+	}
+
 	for idx, t := range m.OtherTeams {
 		if t.ID == teamID {
 			m.Lock()
-			m.OtherTeams[idx].MoreChannels = mmchannels
+			m.OtherTeams[idx].MoreChannels = moreChannels
 			m.Unlock()
 		}
 	}
@@ -252,6 +281,10 @@ func (m *Client) UpdateChannels() error {
 	}
 
 	for _, t := range m.OtherTeams {
+		// We've already populated users/channels for team in the above.
+		if t.ID == m.Team.ID {
+			continue
+		}
 		if err := m.UpdateChannelsTeam(t.ID); err != nil {
 			return err
 		}
