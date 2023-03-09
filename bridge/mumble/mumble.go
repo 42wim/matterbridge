@@ -249,10 +249,15 @@ func (b *Bmumble) processMessage(msg *config.Message) {
 
 	// If there is a maximum message length, split and truncate the lines
 	var msgLines []string
-	if maxLength := b.serverConfig.MaximumMessageLength; *maxLength != 0 {
-		msgLines = helper.GetSubLines(msg.Text, *maxLength-len(msg.Username), b.GetString("MessageClipped"))
-	} else {
-		msgLines = helper.GetSubLines(msg.Text, 0, b.GetString("MessageClipped"))
+	if maxLength := b.serverConfig.MaximumMessageLength; maxLength != nil { 
+		if *maxLength != 0 { // Some servers will have unlimited message lengths. 
+			// Not doing this makes underflows happen. 
+			msgLines = helper.GetSubLines(msg.Text, *maxLength-len(msg.Username), b.GetString("MessageClipped")) 
+		} else { 
+			msgLines = helper.GetSubLines(msg.Text, 0, b.GetString("MessageClipped")) 
+		} 
+	} else { 
+		msgLines = helper.GetSubLines(msg.Text, 0, b.GetString("MessageClipped")) 
 	}
 	// Send the individual lines
 	for i := range msgLines {
