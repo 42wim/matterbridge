@@ -239,7 +239,7 @@ func (cs StoriesClickableStickers) ToJSON() string {
 }
 
 // StoriesClickableSticker struct.
-type StoriesClickableSticker struct { // nolint: maligned
+type StoriesClickableSticker struct { //nolint: maligned
 	ID            int                     `json:"id"`
 	Type          string                  `json:"type"`
 	ClickableArea []StoriesClickablePoint `json:"clickable_area"`

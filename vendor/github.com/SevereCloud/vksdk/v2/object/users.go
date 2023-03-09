@@ -125,6 +125,7 @@ type UsersUser struct {
 	MobilePhone     string                `json:"mobile_phone"`
 	HomePhone       string                `json:"home_phone"`
 	FoundWith       int                   `json:"found_with"` // TODO: check it
+	ImageStatus     ImageStatusInfo       `json:"image_status"`
 	OnlineInfo      UsersOnlineInfo       `json:"online_info"`
 	Mutual          FriendsRequestsMutual `json:"mutual"`
 	TrackCode       string                `json:"track_code"`
@@ -136,6 +137,13 @@ type UsersUser struct {
 // ToMention return mention.
 func (user UsersUser) ToMention() string {
 	return fmt.Sprintf("[id%d|%s %s]", user.ID, user.FirstName, user.LastName)
+}
+
+// ImageStatusInfo struct.
+type ImageStatusInfo struct {
+	ID     int         `json:"id"`
+	Name   string      `json:"name"`
+	Images []BaseImage `json:"images"`
 }
 
 // UsersOnlineInfo struct.

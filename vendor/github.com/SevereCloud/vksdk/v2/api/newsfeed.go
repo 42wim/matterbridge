@@ -53,7 +53,7 @@ type NewsfeedGetBannedResponse struct {
 
 // NewsfeedGetBanned returns a list of users and communities banned from the current user's newsfeed.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/newsfeed.getBanned
 func (vk *VK) NewsfeedGetBanned(params Params) (response NewsfeedGetBannedResponse, err error) {
@@ -69,7 +69,7 @@ type NewsfeedGetBannedExtendedResponse struct {
 
 // NewsfeedGetBannedExtended returns a list of users and communities banned from the current user's newsfeed.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/newsfeed.getBanned
 func (vk *VK) NewsfeedGetBannedExtended(params Params) (response NewsfeedGetBannedExtendedResponse, err error) {
@@ -183,7 +183,7 @@ type NewsfeedSearchResponse struct {
 
 // NewsfeedSearch returns search results by statuses.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/newsfeed.search
 func (vk *VK) NewsfeedSearch(params Params) (response NewsfeedSearchResponse, err error) {
@@ -204,7 +204,7 @@ type NewsfeedSearchExtendedResponse struct {
 
 // NewsfeedSearchExtended returns search results by statuses.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/newsfeed.search
 func (vk *VK) NewsfeedSearchExtended(params Params) (response NewsfeedSearchExtendedResponse, err error) {
