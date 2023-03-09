@@ -48,7 +48,7 @@ require (
 	github.com/yaegashi/msgraph.go v0.1.4
 	github.com/zfjagann/golang-ring v0.0.0-20220330170733-19bcea1b6289
 	go.mau.fi/whatsmeow v0.0.0-20230128195103-dcbc8dd31a22
-	golang.org/x/image v0.3.0
+	golang.org/x/image v0.5.0
 	golang.org/x/oauth2 v0.4.0
 	golang.org/x/text v0.7.0
 	gomod.garykim.dev/nc-talk v0.3.0
