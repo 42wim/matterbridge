@@ -95,7 +95,7 @@ type PhotosGetResponse struct {
 
 // PhotosGet returns a list of a user's or community's photos.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/photos.get
 func (vk *VK) PhotosGet(params Params) (response PhotosGetResponse, err error) {
@@ -112,7 +112,7 @@ type PhotosGetExtendedResponse struct {
 
 // PhotosGetExtended returns a list of a user's or community's photos.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/photos.get
 func (vk *VK) PhotosGetExtended(params Params) (response PhotosGetExtendedResponse, err error) {
@@ -152,7 +152,7 @@ type PhotosGetAllResponse struct {
 
 // PhotosGetAll returns a list of photos belonging to a user or community, in reverse chronological order.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/photos.getAll
 func (vk *VK) PhotosGetAll(params Params) (response PhotosGetAllResponse, err error) {
@@ -170,7 +170,7 @@ type PhotosGetAllExtendedResponse struct {
 
 // PhotosGetAllExtended returns a list of photos belonging to a user or community, in reverse chronological order.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/photos.getAll
 func (vk *VK) PhotosGetAllExtended(params Params) (response PhotosGetAllExtendedResponse, err error) {
@@ -199,7 +199,7 @@ type PhotosGetByIDResponse []object.PhotosPhoto
 
 // PhotosGetByID returns information about photos by their IDs.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/photos.getById
 func (vk *VK) PhotosGetByID(params Params) (response PhotosGetByIDResponse, err error) {
@@ -213,7 +213,7 @@ type PhotosGetByIDExtendedResponse []object.PhotosPhotoFull
 
 // PhotosGetByIDExtended returns information about photos by their IDs.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/photos.getById
 func (vk *VK) PhotosGetByIDExtended(params Params) (response PhotosGetByIDExtendedResponse, err error) {
@@ -244,7 +244,7 @@ type PhotosGetCommentsResponse struct {
 
 // PhotosGetComments returns a list of comments on a photo.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/photos.getComments
 func (vk *VK) PhotosGetComments(params Params) (response PhotosGetCommentsResponse, err error) {
@@ -264,7 +264,7 @@ type PhotosGetCommentsExtendedResponse struct {
 
 // PhotosGetCommentsExtended returns a list of comments on a photo.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/photos.getComments
 func (vk *VK) PhotosGetCommentsExtended(params Params) (response PhotosGetCommentsExtendedResponse, err error) {
@@ -395,7 +395,7 @@ type PhotosGetUserPhotosResponse struct {
 
 // PhotosGetUserPhotos returns a list of photos in which a user is tagged.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/photos.getUserPhotos
 func (vk *VK) PhotosGetUserPhotos(params Params) (response PhotosGetUserPhotosResponse, err error) {
@@ -412,7 +412,7 @@ type PhotosGetUserPhotosExtendedResponse struct {
 
 // PhotosGetUserPhotosExtended returns a list of photos in which a user is tagged.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/photos.getUserPhotos
 func (vk *VK) PhotosGetUserPhotosExtended(params Params) (response PhotosGetUserPhotosExtendedResponse, err error) {

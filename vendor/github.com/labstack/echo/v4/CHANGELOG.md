@@ -1,5 +1,32 @@
 # Changelog
 
+## v4.10.2 - 2023-02-22
+
+**Security**
+
+* `filepath.Clean` behaviour has changed in Go 1.20 - adapt to it [#2406](https://github.com/labstack/echo/pull/2406)
+* Add `middleware.CORSConfig.UnsafeWildcardOriginWithAllowCredentials` to make UNSAFE usages of wildcard origin + allow cretentials less likely [#2405](https://github.com/labstack/echo/pull/2405)
+
+**Enhancements**
+
+* Add more HTTP error values [#2277](https://github.com/labstack/echo/pull/2277)
+
+
+## v4.10.1 - 2023-02-19
+
+**Security**
+
+* Upgrade deps due to the latest golang.org/x/net vulnerability [#2402](https://github.com/labstack/echo/pull/2402)
+
+
+**Enhancements**
+
+* Add new JWT repository to the README [#2377](https://github.com/labstack/echo/pull/2377)
+* Return an empty string for ctx.path if there is no registered path [#2385](https://github.com/labstack/echo/pull/2385)
+* Add context timeout middleware [#2380](https://github.com/labstack/echo/pull/2380)
+* Update link to jaegertracing [#2394](https://github.com/labstack/echo/pull/2394)
+
+
 ## v4.10.0 - 2022-12-27
 
 **Security**

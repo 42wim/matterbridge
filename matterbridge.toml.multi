@@ -1,0 +1,61 @@
+#WARNING: as this file contains credentials, be sure to set correct file permissions
+
+[irc]
+    [irc.foo]
+    Server="irc.myfooserver.com:6667"
+    Nick="matterbot"
+
+# Can also connect to multiple different servers of the same protocol:
+[irc]
+    [irc.bar]
+    Server="irc.mybarserver.com:6667"
+    Nick="matterbot"
+
+[telegram]
+    [telegram.mytelegram]
+    Token="123456789:FillInYourTokenHereThatIsImportant"
+
+[mattermost]
+    [mattermost.work]
+    #do not prefix it wit http:// or https://
+    Server="yourmattermostserver.domain" 
+    Team="yourteam"
+    Login="yourlogin"
+    Password="yourpass"
+    PrefixMessagesWithNick=true
+
+# Bridge 1: Copy all messages from all rooms to all rooms.
+# This shows how you can have multiple rooms in a single bridge.
+[[gateway]]
+name="cats-are-cool"
+enable=true
+    [[gateway.inout]]
+    account="irc.foo"
+    channel="#cats-are-cool"
+    [[gateway.inout]]
+    account="irc.bar"
+    channel="#cats-are-cool"
+    [[gateway.inout]]
+    account="telegram.mytelegram"
+    channel="-1234567890123"
+    [[gateway.inout]]
+    account="mattermost.work"
+    channel="cats-are-cool"
+
+# Bridge 2: Copy some messages from some rooms to some rooms.
+# This shows how you can have multiple bridges.
+[[gateway]]
+name="dog-announcements"
+enable=true
+    [[gateway.in]]
+    account="irc.foo"
+    channel="#dog-announcements"
+    [[gateway.in]]
+    account="irc.bar"
+    channel="#dog-announcements"
+    [[gateway.out]]
+    account="telegram.mytelegram"
+    channel="-9876543219876"
+    [[gateway.out]]
+    account="mattermost.work"
+    channel="dog-announcements"

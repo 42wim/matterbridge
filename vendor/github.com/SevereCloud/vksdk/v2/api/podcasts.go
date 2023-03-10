@@ -11,7 +11,7 @@ type PodcastsGetCatalogResponse struct {
 
 // PodcastsGetCatalog method.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/podcasts.getCatalog
 func (vk *VK) PodcastsGetCatalog(params Params) (response PodcastsGetCatalogResponse, err error) {
@@ -28,7 +28,7 @@ type PodcastsGetCatalogExtendedResponse struct {
 
 // PodcastsGetCatalogExtended method.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/podcasts.getCatalog
 func (vk *VK) PodcastsGetCatalogExtended(params Params) (response PodcastsGetCatalogExtendedResponse, err error) {
@@ -70,7 +70,7 @@ type PodcastsGetFeedResponse struct {
 
 // PodcastsGetFeed method.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/podcasts.getFeed
 func (vk *VK) PodcastsGetFeed(params Params) (response PodcastsGetFeedResponse, err error) {
@@ -88,7 +88,7 @@ type PodcastsGetFeedExtendedResponse struct {
 
 // PodcastsGetFeedExtended method.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/podcasts.getFeed
 func (vk *VK) PodcastsGetFeedExtended(params Params) (response PodcastsGetFeedExtendedResponse, err error) {
@@ -116,7 +116,7 @@ type PodcastsGetStartPageResponse struct {
 
 // PodcastsGetStartPage method.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/podcasts.getStartPage
 func (vk *VK) PodcastsGetStartPage(params Params) (response PodcastsGetStartPageResponse, err error) {
@@ -145,7 +145,7 @@ type PodcastsGetStartPageExtendedResponse struct {
 
 // PodcastsGetStartPageExtended method.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/podcasts.getStartPage
 func (vk *VK) PodcastsGetStartPageExtended(params Params) (response PodcastsGetStartPageExtendedResponse, err error) {
