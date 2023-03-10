@@ -157,7 +157,7 @@ type GroupsGetResponse struct {
 
 // GroupsGet returns a list of the communities to which a user belongs.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/groups.get
 func (vk *VK) GroupsGet(params Params) (response GroupsGetResponse, err error) {
@@ -174,7 +174,7 @@ type GroupsGetExtendedResponse struct {
 
 // GroupsGetExtended returns a list of the communities to which a user belongs.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/groups.get
 func (vk *VK) GroupsGetExtended(params Params) (response GroupsGetExtendedResponse, err error) {
@@ -273,6 +273,8 @@ type GroupsGetCatalogResponse struct {
 
 // GroupsGetCatalog returns communities list for a catalog category.
 //
+// Deprecated: This method is deprecated and may be disabled soon, please avoid
+//
 // https://vk.com/dev/groups.getCatalog
 func (vk *VK) GroupsGetCatalog(params Params) (response GroupsGetCatalogResponse, err error) {
 	err = vk.RequestUnmarshal("groups.getCatalog", &response, params)
@@ -287,7 +289,7 @@ type GroupsGetCatalogInfoResponse struct {
 
 // GroupsGetCatalogInfo returns categories list for communities catalog.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/groups.getCatalogInfo
 func (vk *VK) GroupsGetCatalogInfo(params Params) (response GroupsGetCatalogInfoResponse, err error) {
@@ -304,7 +306,7 @@ type GroupsGetCatalogInfoExtendedResponse struct {
 
 // GroupsGetCatalogInfoExtended returns categories list for communities catalog.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/groups.getCatalogInfo
 func (vk *VK) GroupsGetCatalogInfoExtended(params Params) (response GroupsGetCatalogInfoExtendedResponse, err error) {
@@ -421,7 +423,7 @@ type GroupsGetMembersFilterManagersResponse struct {
 
 // GroupsGetMembersFilterManagers returns a list of community members.
 //
-// 	filter=managers
+//	filter=managers
 //
 // https://vk.com/dev/groups.getMembers
 func (vk *VK) GroupsGetMembersFilterManagers(params Params) (
@@ -522,7 +524,7 @@ func (vk *VK) GroupsInvite(params Params) (response int, err error) {
 
 // GroupsIsMember returns information specifying whether a user is a member of a community.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/groups.isMember
 func (vk *VK) GroupsIsMember(params Params) (response int, err error) {
@@ -542,7 +544,7 @@ type GroupsIsMemberExtendedResponse struct {
 
 // GroupsIsMemberExtended returns information specifying whether a user is a member of a community.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/groups.isMember
 func (vk *VK) GroupsIsMemberExtended(params Params) (response GroupsIsMemberExtendedResponse, err error) {
@@ -556,8 +558,8 @@ type GroupsIsMemberUserIDsExtendedResponse []object.GroupsMemberStatusFull
 
 // GroupsIsMemberUserIDsExtended returns information specifying whether a user is a member of a community.
 //
-// 	extended=1
-// 	need user_ids
+//	extended=1
+//	need user_ids
 //
 // https://vk.com/dev/groups.isMember
 func (vk *VK) GroupsIsMemberUserIDsExtended(params Params) (response GroupsIsMemberUserIDsExtendedResponse, err error) {
@@ -571,8 +573,8 @@ type GroupsIsMemberUserIDsResponse []object.GroupsMemberStatus
 
 // GroupsIsMemberUserIDs returns information specifying whether a user is a member of a community.
 //
-// 	extended=0
-// 	need user_ids
+//	extended=0
+//	need user_ids
 //
 // https://vk.com/dev/groups.isMember
 func (vk *VK) GroupsIsMemberUserIDs(params Params) (response GroupsIsMemberUserIDsResponse, err error) {

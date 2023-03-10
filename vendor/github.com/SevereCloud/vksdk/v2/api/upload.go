@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 
 	"github.com/SevereCloud/vksdk/v2/object"
@@ -34,7 +33,7 @@ func (vk *VK) UploadFile(url string, file io.Reader, fieldname, filename string)
 	}
 	defer resp.Body.Close()
 
-	bodyContent, err = ioutil.ReadAll(resp.Body)
+	bodyContent, err = io.ReadAll(resp.Body)
 
 	return
 }
@@ -214,7 +213,7 @@ func (vk *VK) uploadOwnerPhoto(params Params, squareCrop string, file io.Reader)
 	}
 	defer resp.Body.Close()
 
-	bodyContent, err := ioutil.ReadAll(resp.Body)
+	bodyContent, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return
 	}

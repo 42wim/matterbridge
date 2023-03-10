@@ -87,7 +87,7 @@ type WallGetResponse struct {
 
 // WallGet returns a list of posts on a user wall or community wall.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/wall.get
 func (vk *VK) WallGet(params Params) (response WallGetResponse, err error) {
@@ -105,7 +105,7 @@ type WallGetExtendedResponse struct {
 
 // WallGetExtended returns a list of posts on a user wall or community wall.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/wall.get
 func (vk *VK) WallGetExtended(params Params) (response WallGetExtendedResponse, err error) {
@@ -119,7 +119,7 @@ type WallGetByIDResponse []object.WallWallpost
 
 // WallGetByID returns a list of posts from user or community walls by their IDs.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/wall.getById
 func (vk *VK) WallGetByID(params Params) (response WallGetByIDResponse, err error) {
@@ -136,7 +136,7 @@ type WallGetByIDExtendedResponse struct {
 
 // WallGetByIDExtended returns a list of posts from user or community walls by their IDs.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/wall.getById
 func (vk *VK) WallGetByIDExtended(params Params) (response WallGetByIDExtendedResponse, err error) {
@@ -156,7 +156,7 @@ type WallGetCommentResponse struct {
 
 // WallGetComment allows to obtain wall comment info.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/wall.getComment
 func (vk *VK) WallGetComment(params Params) (response WallGetCommentResponse, err error) {
@@ -179,7 +179,7 @@ type WallGetCommentExtendedResponse struct {
 
 // WallGetCommentExtended allows to obtain wall comment info.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/wall.getComment
 func (vk *VK) WallGetCommentExtended(params Params) (response WallGetCommentExtendedResponse, err error) {
@@ -200,7 +200,7 @@ type WallGetCommentsResponse struct {
 
 // WallGetComments returns a list of comments on a post on a user wall or community wall.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/wall.getComments
 func (vk *VK) WallGetComments(params Params) (response WallGetCommentsResponse, err error) {
@@ -222,7 +222,7 @@ type WallGetCommentsExtendedResponse struct {
 
 // WallGetCommentsExtended returns a list of comments on a post on a user wall or community wall.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/wall.getComments
 func (vk *VK) WallGetCommentsExtended(params Params) (response WallGetCommentsExtendedResponse, err error) {
@@ -347,7 +347,7 @@ type WallSearchResponse struct {
 
 // WallSearch allows to search posts on user or community walls.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/wall.search
 func (vk *VK) WallSearch(params Params) (response WallSearchResponse, err error) {
@@ -365,7 +365,7 @@ type WallSearchExtendedResponse struct {
 
 // WallSearchExtended allows to search posts on user or community walls.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/wall.search
 func (vk *VK) WallSearchExtended(params Params) (response WallSearchExtendedResponse, err error) {

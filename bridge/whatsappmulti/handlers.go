@@ -1,3 +1,4 @@
+//go:build whatsappmulti
 // +build whatsappmulti
 
 package bwhatsapp
@@ -63,6 +64,10 @@ func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.
 	// nolint:nestif
 	if msg.GetExtendedTextMessage() == nil {
 		text = msg.GetConversation()
+	} else if msg.GetExtendedTextMessage().GetContextInfo() == nil {
+		// Handle pure text message with a link preview
+		// A pure text message with a link preview acts as an extended text message but will not contain any context info
+		text = msg.GetExtendedTextMessage().GetText()
 	} else {
 		text = msg.GetExtendedTextMessage().GetText()
 		ci := msg.GetExtendedTextMessage().GetContextInfo()
@@ -85,6 +90,12 @@ func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.
 		}
 	}
 
+	parentID := ""
+	if msg.GetExtendedTextMessage() != nil {
+		ci := msg.GetExtendedTextMessage().GetContextInfo()
+		parentID = getParentIdFromCtx(ci)
+	}
+
 	rmsg := config.Message{
 		UserID:   senderJID.String(),
 		Username: senderName,
@@ -93,8 +104,8 @@ func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.
 		Account:  b.Account,
 		Protocol: b.Protocol,
 		Extra:    make(map[string][]interface{}),
-		//      ParentID: TODO, // TODO handle thread replies  // map from Info.QuotedMessageID string
-		ID: messageInfo.ID,
+		ID:       getMessageIdFormat(senderJID, messageInfo.ID),
+		ParentID: parentID,
 	}
 
 	if avatarURL, exists := b.userAvatars[senderJID.String()]; exists {
@@ -126,7 +137,8 @@ func (b *Bwhatsapp) handleImageMessage(msg *events.Message) {
 		Account:  b.Account,
 		Protocol: b.Protocol,
 		Extra:    make(map[string][]interface{}),
-		ID:       msg.Info.ID,
+		ID:       getMessageIdFormat(senderJID, msg.Info.ID),
+		ParentID: getParentIdFromCtx(ci),
 	}
 
 	if avatarURL, exists := b.userAvatars[senderJID.String()]; exists {
@@ -189,7 +201,8 @@ func (b *Bwhatsapp) handleVideoMessage(msg *events.Message) {
 		Account:  b.Account,
 		Protocol: b.Protocol,
 		Extra:    make(map[string][]interface{}),
-		ID:       msg.Info.ID,
+		ID:       getMessageIdFormat(senderJID, msg.Info.ID),
+		ParentID: getParentIdFromCtx(ci),
 	}
 
 	if avatarURL, exists := b.userAvatars[senderJID.String()]; exists {
@@ -207,7 +220,16 @@ func (b *Bwhatsapp) handleVideoMessage(msg *events.Message) {
 		fileExt = append(fileExt, ".mp4")
 	}
 
-	filename := fmt.Sprintf("%v%v", msg.Info.ID, fileExt[0])
+	// Prefer .mp4 extension, otherwise fallback to first index
+	fileExtIndex := 0
+	for i, n := range fileExt {
+		if ".mp4" == n {
+			fileExtIndex = i
+			break
+		}
+	}
+
+	filename := fmt.Sprintf("%v%v", msg.Info.ID, fileExt[fileExtIndex])
 
 	b.Log.Debugf("Trying to download %s with size %#v and type %s", filename, imsg.GetFileLength(), imsg.GetMimetype())
 
@@ -238,7 +260,6 @@ func (b *Bwhatsapp) handleAudioMessage(msg *events.Message) {
 	if senderJID == (types.JID{}) && ci.Participant != nil {
 		senderJID = types.NewJID(ci.GetParticipant(), types.DefaultUserServer)
 	}
-
 	rmsg := config.Message{
 		UserID:   senderJID.String(),
 		Username: senderName,
@@ -246,7 +267,8 @@ func (b *Bwhatsapp) handleAudioMessage(msg *events.Message) {
 		Account:  b.Account,
 		Protocol: b.Protocol,
 		Extra:    make(map[string][]interface{}),
-		ID:       msg.Info.ID,
+		ID:       getMessageIdFormat(senderJID, msg.Info.ID),
+		ParentID: getParentIdFromCtx(ci),
 	}
 
 	if avatarURL, exists := b.userAvatars[senderJID.String()]; exists {
@@ -303,7 +325,8 @@ func (b *Bwhatsapp) handleDocumentMessage(msg *events.Message) {
 		Account:  b.Account,
 		Protocol: b.Protocol,
 		Extra:    make(map[string][]interface{}),
-		ID:       msg.Info.ID,
+		ID:       getMessageIdFormat(senderJID, msg.Info.ID),
+		ParentID: getParentIdFromCtx(ci),
 	}
 
 	if avatarURL, exists := b.userAvatars[senderJID.String()]; exists {
