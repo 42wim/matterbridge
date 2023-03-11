@@ -50,7 +50,12 @@ func NewRouter(rootLogger *logrus.Logger, cfg config.Config, bridgeMap map[strin
 		if _, ok := r.Gateways[entry.Name]; ok {
 			return nil, fmt.Errorf("Gateway with name %s already exists", entry.Name)
 		}
-		r.Gateways[entry.Name] = New(rootLogger, entry, r)
+		gw, err := New(rootLogger, entry, r)
+		if err != nil {
+			return nil, err
+		}
+
+		r.Gateways[entry.Name] = gw
 	}
 	return r, nil
 }

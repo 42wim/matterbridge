@@ -47,7 +47,7 @@ const apiProtocol = "api"
 
 // New creates a new Gateway object associated with the specified router and
 // following the given configuration.
-func New(rootLogger *logrus.Logger, cfg *config.Gateway, r *Router) *Gateway {
+func New(rootLogger *logrus.Logger, cfg *config.Gateway, r *Router) (*Gateway, error) {
 	logger := rootLogger.WithFields(logrus.Fields{"prefix": "gateway"})
 
 	cache, _ := lru.New(5000)
@@ -67,13 +67,25 @@ func New(rootLogger *logrus.Logger, cfg *config.Gateway, r *Router) *Gateway {
 	persistentMessageStorePath, usePersistent := gw.Config.GetString("PersistentMessageStorePath")
 	if usePersistent {
 		rootPath := fmt.Sprintf("%s/%s", persistentMessageStorePath, gw.Name)
-		os.MkdirAll(rootPath, os.ModePerm)
+		err := os.MkdirAll(rootPath, os.ModePerm)
+		if err != nil {
+			return nil, err
+		}
 
-		gw.MessageStore = gw.getMessageMapStore(fmt.Sprintf("%s/Messages", rootPath))
-		gw.CanonicalStore = gw.getMessageMapStore(fmt.Sprintf("%s/Canonical", rootPath))
+		MessageStore, err := gw.getMessageMapStore(fmt.Sprintf("%s/Messages", rootPath))
+		if err != nil {
+			return nil, err
+		}
+		gw.MessageStore = MessageStore
+
+		CanonicalStore, err := gw.getMessageMapStore(fmt.Sprintf("%s/Canonical", rootPath))
+		if err != nil {
+			return nil, err
+		}
+		gw.CanonicalStore = CanonicalStore
 	}
 
-	return gw
+	return gw, nil
 }
 
 func (gw *Gateway) SetMessageMap(canonicalMsgID string, msgIDs []*BrMsgID) {

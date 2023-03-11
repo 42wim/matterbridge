@@ -8,7 +8,7 @@ import (
 	"github.com/philippgille/gokv/encoding"
 )
 
-func (gw *Gateway) getMessageMapStore(path string) gokv.Store {
+func (gw *Gateway) getMessageMapStore(path string) (gokv.Store, error) {
 	options := badgerdb.Options{
 		Dir:   path,
 		Codec: encoding.Gob,
@@ -16,11 +16,12 @@ func (gw *Gateway) getMessageMapStore(path string) gokv.Store {
 
 	store, err := badgerdb.NewStore(options)
 	if err != nil {
-		gw.logger.Error(err)
 		gw.logger.Errorf("Could not connect to db: %s", path)
+		gw.logger.Error(err)
+		return nil, err
 	}
 
-	return store
+	return store, nil
 }
 
 func (gw *Gateway) getCanonicalMessageFromStore(messageID string) string {
