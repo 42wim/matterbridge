@@ -31,7 +31,7 @@ func (b *Bwhatsapp) handleMessage(message *events.Message) {
 		return
 	}
 
-	b.Log.Infof("Receiving message %#v", msg)
+	b.Log.Debugf("Receiving message %#v", msg)
 
 	switch {
 	case msg.Conversation != nil || msg.ExtendedTextMessage != nil:
@@ -44,6 +44,8 @@ func (b *Bwhatsapp) handleMessage(message *events.Message) {
 		b.handleDocumentMessage(message)
 	case msg.ImageMessage != nil:
 		b.handleImageMessage(message)
+	case msg.ProtocolMessage != nil && *msg.ProtocolMessage.Type == proto.ProtocolMessage_REVOKE:
+		b.handleDelete(msg.ProtocolMessage)
 	}
 }
 
@@ -357,5 +359,22 @@ func (b *Bwhatsapp) handleDocumentMessage(msg *events.Message) {
 	b.Log.Debugf("<= Sending message from %s on %s to gateway", senderJID, b.Account)
 	b.Log.Debugf("<= Message is %#v", rmsg)
 
+	b.Remote <- rmsg
+}
+
+func (b *Bwhatsapp) handleDelete(messageInfo *proto.ProtocolMessage) {
+	sender, _ := types.ParseJID(*messageInfo.Key.Participant)
+
+	rmsg := config.Message{
+		Account:  b.Account,
+		Protocol: b.Protocol,
+		ID:       getMessageIdFormat(sender, *messageInfo.Key.Id),
+		Event:    config.EventMsgDelete,
+		Text:     config.EventMsgDelete,
+		Channel:  *messageInfo.Key.RemoteJid,
+	}
+
+	b.Log.Debugf("<= Sending message from %s to gateway", b.Account)
+	b.Log.Debugf("<= Message is %#v", rmsg)
 	b.Remote <- rmsg
 }

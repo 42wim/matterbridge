@@ -1,3 +1,11 @@
+## 2022-09-12 (v1.1.0)
+
+* Create Go module.
+* Update examples.
+* Fix concurrent panic (PR-65).
+* Add `Sessions` to get all sessions (PR-53).
+* Add `LocalAddr` and `RemoteAddr` (PR-55).
+
 ## 2017-05-18
 
 * Fix `HandleSentMessageBinary`.

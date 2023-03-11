@@ -78,3 +78,14 @@ func (h *hub) len() int {
 
 	return len(h.sessions)
 }
+
+func (h *hub) all() []*Session {
+	h.rwmutex.RLock()
+	defer h.rwmutex.RUnlock()
+
+	s := make([]*Session, 0, len(h.sessions))
+	for k := range h.sessions {
+		s = append(s, k)
+	}
+	return s
+}
