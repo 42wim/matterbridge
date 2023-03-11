@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"sync"
@@ -12,6 +13,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/mitchellh/mapstructure"
 	ring "github.com/zfjagann/golang-ring"
 )
 
@@ -137,6 +139,15 @@ func (b *API) handlePostMessage(c echo.Context) error {
 	message.Account = b.Account
 	message.ID = ""
 	message.Timestamp = time.Now()
+	for i, f := range message.Extra["file"] {
+		fi := config.FileInfo{}
+		mapstructure.Decode(f.(map[string]interface{}), &fi)
+		var data []byte
+		// mapstructure doesn't decode base64 into []byte, so it must be done manually for fi.Data
+		data, _ = base64.StdEncoding.DecodeString(f.(map[string]interface{})["Data"].(string))
+		fi.Data = &data
+		message.Extra["file"][i] = fi
+	}
 	b.Log.Debugf("Sending message from %s on %s to gateway", message.Username, "api")
 	b.Remote <- message
 	return c.JSON(http.StatusOK, message)
