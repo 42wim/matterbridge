@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"gopkg.in/olahol/melody.v1"
+	"github.com/olahol/melody"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
@@ -166,15 +166,20 @@ func (b *API) handleStream(c echo.Context) error {
 	}
 	c.Response().Flush()
 	for {
+		select {
 		// TODO: this causes issues, messages should be broadcasted to all connected clients
-		msg := b.Messages.Dequeue()
-		if msg != nil {
-			if err := json.NewEncoder(c.Response()).Encode(msg); err != nil {
-				return err
+		default:
+			msg := b.Messages.Dequeue()
+			if msg != nil {
+				if err := json.NewEncoder(c.Response()).Encode(msg); err != nil {
+					return err
+				}
+				c.Response().Flush()
 			}
-			c.Response().Flush()
+			time.Sleep(100 * time.Millisecond)
+		case <-c.Request().Context().Done():
+			return nil
 		}
-		time.Sleep(200 * time.Millisecond)
 	}
 }
 

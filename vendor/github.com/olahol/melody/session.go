@@ -1,7 +1,7 @@
 package melody
 
 import (
-	"errors"
+	"net"
 	"net/http"
 	"sync"
 	"time"
@@ -11,31 +11,32 @@ import (
 
 // Session wrapper around websocket connections.
 type Session struct {
-	Request *http.Request
-	Keys    map[string]interface{}
-	conn    *websocket.Conn
-	output  chan *envelope
-	melody  *Melody
-	open    bool
-	rwmutex *sync.RWMutex
+	Request    *http.Request
+	Keys       map[string]interface{}
+	conn       *websocket.Conn
+	output     chan *envelope
+	outputDone chan struct{}
+	melody     *Melody
+	open       bool
+	rwmutex    *sync.RWMutex
 }
 
 func (s *Session) writeMessage(message *envelope) {
 	if s.closed() {
-		s.melody.errorHandler(s, errors.New("tried to write to closed a session"))
+		s.melody.errorHandler(s, ErrWriteClosed)
 		return
 	}
 
 	select {
 	case s.output <- message:
 	default:
-		s.melody.errorHandler(s, errors.New("session message buffer is full"))
+		s.melody.errorHandler(s, ErrMessageBufferFull)
 	}
 }
 
 func (s *Session) writeRaw(message *envelope) error {
 	if s.closed() {
-		return errors.New("tried to write to a closed session")
+		return ErrWriteClosed
 	}
 
 	s.conn.SetWriteDeadline(time.Now().Add(s.melody.Config.WriteWait))
@@ -56,12 +57,13 @@ func (s *Session) closed() bool {
 }
 
 func (s *Session) close() {
-	if !s.closed() {
-		s.rwmutex.Lock()
-		s.open = false
+	s.rwmutex.Lock()
+	open := s.open
+	s.open = false
+	s.rwmutex.Unlock()
+	if open {
 		s.conn.Close()
-		close(s.output)
-		s.rwmutex.Unlock()
+		close(s.outputDone)
 	}
 }
 
@@ -76,11 +78,7 @@ func (s *Session) writePump() {
 loop:
 	for {
 		select {
-		case msg, ok := <-s.output:
-			if !ok {
-				break loop
-			}
-
+		case msg := <-s.output:
 			err := s.writeRaw(msg)
 
 			if err != nil {
@@ -101,8 +99,14 @@ loop:
 			}
 		case <-ticker.C:
 			s.ping()
+		case _, ok := <-s.outputDone:
+			if !ok {
+				break loop
+			}
 		}
 	}
+
+	s.close()
 }
 
 func (s *Session) readPump() {
@@ -142,7 +146,7 @@ func (s *Session) readPump() {
 // Write writes message to session.
 func (s *Session) Write(msg []byte) error {
 	if s.closed() {
-		return errors.New("session is closed")
+		return ErrSessionClosed
 	}
 
 	s.writeMessage(&envelope{t: websocket.TextMessage, msg: msg})
@@ -153,7 +157,7 @@ func (s *Session) Write(msg []byte) error {
 // WriteBinary writes a binary message to session.
 func (s *Session) WriteBinary(msg []byte) error {
 	if s.closed() {
-		return errors.New("session is closed")
+		return ErrSessionClosed
 	}
 
 	s.writeMessage(&envelope{t: websocket.BinaryMessage, msg: msg})
@@ -164,7 +168,7 @@ func (s *Session) WriteBinary(msg []byte) error {
 // Close closes session.
 func (s *Session) Close() error {
 	if s.closed() {
-		return errors.New("session is already closed")
+		return ErrSessionClosed
 	}
 
 	s.writeMessage(&envelope{t: websocket.CloseMessage, msg: []byte{}})
@@ -176,7 +180,7 @@ func (s *Session) Close() error {
 // Use the FormatCloseMessage function to format a proper close message payload.
 func (s *Session) CloseWithMsg(msg []byte) error {
 	if s.closed() {
-		return errors.New("session is already closed")
+		return ErrSessionClosed
 	}
 
 	s.writeMessage(&envelope{t: websocket.CloseMessage, msg: msg})
@@ -184,9 +188,12 @@ func (s *Session) CloseWithMsg(msg []byte) error {
 	return nil
 }
 
-// Set is used to store a new key/value pair exclusivelly for this session.
+// Set is used to store a new key/value pair exclusively for this session.
 // It also lazy initializes s.Keys if it was not used previously.
 func (s *Session) Set(key string, value interface{}) {
+	s.rwmutex.Lock()
+	defer s.rwmutex.Unlock()
+
 	if s.Keys == nil {
 		s.Keys = make(map[string]interface{})
 	}
@@ -197,6 +204,9 @@ func (s *Session) Set(key string, value interface{}) {
 // Get returns the value for the given key, ie: (value, true).
 // If the value does not exists it returns (nil, false)
 func (s *Session) Get(key string) (value interface{}, exists bool) {
+	s.rwmutex.RLock()
+	defer s.rwmutex.RUnlock()
+
 	if s.Keys != nil {
 		value, exists = s.Keys[key]
 	}
@@ -216,4 +226,14 @@ func (s *Session) MustGet(key string) interface{} {
 // IsClosed returns the status of the connection.
 func (s *Session) IsClosed() bool {
 	return s.closed()
+}
+
+// LocalAddr returns the local addr of the connection.
+func (s *Session) LocalAddr() net.Addr {
+	return s.conn.LocalAddr()
+}
+
+// RemoteAddr returns the remote addr of the connection.
+func (s *Session) RemoteAddr() net.Addr {
+	return s.conn.RemoteAddr()
 }

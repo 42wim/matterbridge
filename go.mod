@@ -34,6 +34,7 @@ require (
 	github.com/mattn/godown v0.0.1
 	github.com/mdp/qrterminal v1.0.1
 	github.com/nelsonken/gomf v0.0.0-20190423072027-c65cc0469e94
+	github.com/olahol/melody v1.1.2
 	github.com/paulrosania/go-charset v0.0.0-20190326053356-55c9d7a5834c
 	github.com/rs/xid v1.4.0
 	github.com/russross/blackfriday v1.6.0
@@ -53,7 +54,6 @@ require (
 	golang.org/x/text v0.8.0
 	gomod.garykim.dev/nc-talk v0.3.0
 	google.golang.org/protobuf v1.29.0
-	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 	layeh.com/gumble v0.0.0-20221205141517-d1df60a3cc14
 	modernc.org/sqlite v1.21.0
 )
