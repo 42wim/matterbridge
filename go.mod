@@ -33,6 +33,7 @@ require (
 	github.com/mattermost/mattermost-server/v6 v6.7.2
 	github.com/mattn/godown v0.0.1
 	github.com/mdp/qrterminal v1.0.1
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nelsonken/gomf v0.0.0-20190423072027-c65cc0469e94
 	github.com/olahol/melody v1.1.2
 	github.com/paulrosania/go-charset v0.0.0-20190326053356-55c9d7a5834c
@@ -96,7 +97,6 @@ require (
 	github.com/minio/minio-go/v7 v7.0.24 // indirect
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
-	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/monaco-io/request v1.0.5 // indirect
