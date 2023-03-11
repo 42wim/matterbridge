@@ -81,17 +81,6 @@ func (b *Bdiscord) Connect() error {
 		return err
 	}
 	b.Log.Info("Connection succeeded")
-	b.c.AddHandler(b.messageCreate)
-	b.c.AddHandler(b.messageTyping)
-	b.c.AddHandler(b.messageUpdate)
-	b.c.AddHandler(b.messageDelete)
-	b.c.AddHandler(b.messageDeleteBulk)
-	b.c.AddHandler(b.memberAdd)
-	b.c.AddHandler(b.memberRemove)
-	b.c.AddHandler(b.memberUpdate)
-	if b.GetInt("debuglevel") == 1 {
-		b.c.AddHandler(b.messageEvent)
-	}
 	// Add privileged intent for guild member tracking. This is needed to track nicks
 	// for display names and @mention translation
 	b.c.Identify.Intents = discordgo.MakeIntent(discordgo.IntentsAllWithoutPrivileged |
@@ -233,6 +222,19 @@ func (b *Bdiscord) Connect() error {
 			b.nickMemberMap[member.Nick] = member
 		}
 	}
+
+	b.c.AddHandler(b.messageCreate)
+	b.c.AddHandler(b.messageTyping)
+	b.c.AddHandler(b.messageUpdate)
+	b.c.AddHandler(b.messageDelete)
+	b.c.AddHandler(b.messageDeleteBulk)
+	b.c.AddHandler(b.memberAdd)
+	b.c.AddHandler(b.memberRemove)
+	b.c.AddHandler(b.memberUpdate)
+	if b.GetInt("debuglevel") == 1 {
+		b.c.AddHandler(b.messageEvent)
+	}
+
 	return nil
 }
 
