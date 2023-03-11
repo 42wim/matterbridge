@@ -64,7 +64,9 @@ func New(rootLogger *logrus.Logger, cfg *config.Gateway, r *Router) (*Gateway, e
 		logger.Errorf("Failed to add configuration to gateway: %#v", err)
 	}
 
-	persistentMessageStorePath, usePersistent := gw.Config.GetString("PersistentMessageStorePath")
+	persistentMessageStorePath := gw.BridgeValues().General.PersistentMessageStorePath
+	usePersistent := persistentMessageStorePath != ""
+
 	if usePersistent {
 		rootPath := fmt.Sprintf("%s/%s", persistentMessageStorePath, gw.Name)
 		err := os.MkdirAll(rootPath, os.ModePerm)
@@ -89,7 +91,7 @@ func New(rootLogger *logrus.Logger, cfg *config.Gateway, r *Router) (*Gateway, e
 }
 
 func (gw *Gateway) SetMessageMap(canonicalMsgID string, msgIDs []*BrMsgID) {
-	_, usePersistent := gw.Config.GetString("PersistentMessageStorePath")
+	usePersistent := gw.BridgeValues().General.PersistentMessageStorePath != ""
 	if usePersistent {
 		gw.setDestMessagesToStore(canonicalMsgID, msgIDs)
 	} else {
@@ -101,7 +103,7 @@ func (gw *Gateway) SetMessageMap(canonicalMsgID string, msgIDs []*BrMsgID) {
 func (gw *Gateway) FindCanonicalMsgID(protocol string, mID string) string {
 	ID := protocol + " " + mID
 
-	_, usePersistent := gw.Config.GetString("PersistentMessageStorePath")
+	usePersistent := gw.BridgeValues().General.PersistentMessageStorePath != ""
 	if usePersistent {
 		return gw.getCanonicalMessageFromStore(ID)
 	} else {
@@ -306,7 +308,7 @@ func (gw *Gateway) getDestChannel(msg *config.Message, dest bridge.Bridge) []con
 func (gw *Gateway) getDestMsgID(msgID string, dest *bridge.Bridge, channel *config.ChannelInfo) string {
 	var destID string
 
-	_, usePersistent := gw.Config.GetString("PersistentMessageStorePath")
+	usePersistent := gw.BridgeValues().General.PersistentMessageStorePath != ""
 	if usePersistent {
 		destID = gw.getDestMessagesFromStore(msgID, dest, channel)
 	} else {

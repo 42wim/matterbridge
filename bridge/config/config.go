@@ -87,95 +87,96 @@ type ChannelMember struct {
 type ChannelMembers []ChannelMember
 
 type Protocol struct {
-	AllowMention           []string // discord
-	AuthCode               string   // steam
-	BindAddress            string   // mattermost, slack // DEPRECATED
-	Buffer                 int      // api
-	Charset                string   // irc
-	ClientID               string   // msteams
-	ColorNicks             bool     // only irc for now
-	Debug                  bool     // general
-	DebugLevel             int      // only for irc now
-	DisableWebPagePreview  bool     // telegram
-	EditSuffix             string   // mattermost, slack, discord, telegram, gitter
-	EditDisable            bool     // mattermost, slack, discord, telegram, gitter
-	HTMLDisable            bool     // matrix
-	IconURL                string   // mattermost, slack
-	IgnoreFailureOnStart   bool     // general
-	IgnoreNicks            string   // all protocols
-	IgnoreMessages         string   // all protocols
-	Jid                    string   // xmpp
-	JoinDelay              string   // all protocols
-	Label                  string   // all protocols
-	Login                  string   // mattermost, matrix
-	LogFile                string   // general
-	MediaDownloadBlackList []string
-	MediaDownloadPath      string // Basically MediaServerUpload, but instead of uploading it, just write it to a file on the same server.
-	MediaDownloadSize      int    // all protocols
-	MediaServerDownload    string
-	MediaServerUpload      string
-	MediaConvertTgs        string     // telegram
-	MediaConvertWebPToPNG  bool       // telegram
-	MessageDelay           int        // IRC, time in millisecond to wait between messages
-	MessageFormat          string     // telegram
-	MessageLength          int        // IRC, max length of a message allowed
-	MessageQueue           int        // IRC, size of message queue for flood control
-	MessageSplit           bool       // IRC, split long messages with newlines on MessageLength instead of clipping
-	Muc                    string     // xmpp
-	MxID                   string     // matrix
-	Name                   string     // all protocols
-	Nick                   string     // all protocols
-	NickFormatter          string     // mattermost, slack
-	NickServNick           string     // IRC
-	NickServUsername       string     // IRC
-	NickServPassword       string     // IRC
-	NicksPerRow            int        // mattermost, slack
-	NoHomeServerSuffix     bool       // matrix
-	NoSendJoinPart         bool       // all protocols
-	NoTLS                  bool       // mattermost, xmpp
-	Password               string     // IRC,mattermost,XMPP,matrix
-	PrefixMessagesWithNick bool       // mattemost, slack
-	PreserveThreading      bool       // slack
-	Protocol               string     // all protocols
-	QuoteDisable           bool       // telegram
-	QuoteFormat            string     // telegram
-	QuoteLengthLimit       int        // telegram
-	RealName               string     // IRC
-	RejoinDelay            int        // IRC
-	ReplaceMessages        [][]string // all protocols
-	ReplaceNicks           [][]string // all protocols
-	RemoteNickFormat       string     // all protocols
-	RunCommands            []string   // IRC
-	Server                 string     // IRC,mattermost,XMPP,discord,matrix
-	SessionFile            string     // msteams,whatsapp
-	ShowJoinPart           bool       // all protocols
-	ShowTopicChange        bool       // slack
-	ShowUserTyping         bool       // slack
-	ShowEmbeds             bool       // discord
-	SkipTLSVerify          bool       // IRC, mattermost
-	SkipVersionCheck       bool       // mattermost
-	StripNick              bool       // all protocols
-	StripMarkdown          bool       // irc
-	SyncTopic              bool       // slack
-	TengoModifyMessage     string     // general
-	Team                   string     // mattermost, keybase
-	TeamID                 string     // msteams
-	TenantID               string     // msteams
-	Token                  string     // gitter, slack, discord, api, matrix
-	Topic                  string     // zulip
-	URL                    string     // mattermost, slack // DEPRECATED
-	UseAPI                 bool       // mattermost, slack
-	UseLocalAvatar         []string   // discord
-	UseSASL                bool       // IRC
-	UseTLS                 bool       // IRC
-	UseDiscriminator       bool       // discord
-	UseFirstName           bool       // telegram
-	UseUserName            bool       // discord, matrix, mattermost
-	UseInsecureURL         bool       // telegram
-	UserName               string     // IRC
-	VerboseJoinPart        bool       // IRC
-	WebhookBindAddress     string     // mattermost, slack
-	WebhookURL             string     // mattermost, slack
+	AllowMention               []string   // discord
+	AuthCode                   string     // steam
+	BindAddress                string     // mattermost, slack // DEPRECATED
+	Buffer                     int        // api
+	Charset                    string     // irc
+	ClientID                   string     // msteams
+	ColorNicks                 bool       // only irc for now
+	Debug                      bool       // general
+	DebugLevel                 int        // only for irc now
+	DisableWebPagePreview      bool       // telegram
+	EditDisable                bool       // mattermost, slack, discord, telegram, gitter
+	EditSuffix                 string     // mattermost, slack, discord, telegram, gitter
+	HTMLDisable                bool       // matrix
+	IconURL                    string     // mattermost, slack
+	IgnoreFailureOnStart       bool       // general
+	IgnoreMessages             string     // all protocols
+	IgnoreNicks                string     // all protocols
+	Jid                        string     // xmpp
+	JoinDelay                  string     // all protocols
+	Label                      string     // all protocols
+	LogFile                    string     // general
+	Login                      string     // mattermost, matrix
+	MediaConvertTgs            string     // telegram
+	MediaConvertWebPToPNG      bool       // telegram
+	MediaDownloadBlackList     []string   // all protocols
+	MediaDownloadPath          string     // Basically MediaServerUpload, but instead of uploading it, just write it to a file on the same server.
+	MediaDownloadSize          int        // all protocols
+	MediaServerDownload        string     // all protocols
+	MediaServerUpload          string     // all protocols
+	MessageDelay               int        // IRC, time in millisecond to wait between messages
+	MessageFormat              string     // telegram
+	MessageLength              int        // IRC, max length of a message allowed
+	MessageQueue               int        // IRC, size of message queue for flood control
+	MessageSplit               bool       // IRC, split long messages with newlines on MessageLength instead of clipping
+	Muc                        string     // xmpp
+	MxID                       string     // matrix
+	Name                       string     // all protocols
+	Nick                       string     // all protocols
+	NickFormatter              string     // mattermost, slack
+	NickServNick               string     // IRC
+	NickServPassword           string     // IRC
+	NickServUsername           string     // IRC
+	NicksPerRow                int        // mattermost, slack
+	NoHomeServerSuffix         bool       // matrix
+	NoSendJoinPart             bool       // all protocols
+	NoTLS                      bool       // mattermost, xmpp
+	Password                   string     // IRC,mattermost,XMPP,matrix
+	PersistentMessageStorePath string     // all protocols
+	PrefixMessagesWithNick     bool       // mattemost, slack
+	PreserveThreading          bool       // slack, discord, telegram, whatsapp
+	Protocol                   string     // all protocols
+	QuoteDisable               bool       // telegram
+	QuoteFormat                string     // telegram
+	QuoteLengthLimit           int        // telegram
+	RealName                   string     // IRC
+	RejoinDelay                int        // IRC
+	RemoteNickFormat           string     // all protocols
+	ReplaceMessages            [][]string // all protocols
+	ReplaceNicks               [][]string // all protocols
+	RunCommands                []string   // IRC
+	Server                     string     // IRC,mattermost,XMPP,discord,matrix
+	SessionFile                string     // msteams,whatsapp
+	ShowEmbeds                 bool       // discord
+	ShowJoinPart               bool       // all protocols
+	ShowTopicChange            bool       // slack
+	ShowUserTyping             bool       // slack
+	SkipTLSVerify              bool       // IRC, mattermost
+	SkipVersionCheck           bool       // mattermost
+	StripMarkdown              bool       // irc
+	StripNick                  bool       // all protocols
+	SyncTopic                  bool       // slack
+	Team                       string     // mattermost, keybase
+	TeamID                     string     // msteams
+	TenantID                   string     // msteams
+	TengoModifyMessage         string     // general
+	Token                      string     // gitter, slack, discord, api, matrix
+	Topic                      string     // zulip
+	URL                        string     // mattermost, slack // DEPRECATED
+	UseAPI                     bool       // mattermost, slack
+	UseDiscriminator           bool       // discord
+	UseFirstName               bool       // telegram
+	UseInsecureURL             bool       // telegram
+	UseLocalAvatar             []string   // discord
+	UserName                   string     // IRC
+	UseSASL                    bool       // IRC
+	UseTLS                     bool       // IRC
+	UseUserName                bool       // discord, matrix, mattermost
+	VerboseJoinPart            bool       // IRC
+	WebhookBindAddress         string     // mattermost, slack
+	WebhookURL                 string     // mattermost, slack
 }
 
 type ChannelOptions struct {
