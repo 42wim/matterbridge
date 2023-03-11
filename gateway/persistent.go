@@ -31,6 +31,7 @@ func (gw *Gateway) getCanonicalMessageFromStore(messageID string) string {
 	canonicalMsgID := new(string)
 	found, err := gw.CanonicalStore.Get(messageID, canonicalMsgID)
 	if err != nil {
+		gw.logger.Errorf("Error getting destination messages for canonical message id {%s}", messageID)
 		gw.logger.Error(err)
 	}
 
@@ -44,6 +45,7 @@ func (gw *Gateway) getCanonicalMessageFromStore(messageID string) string {
 func (gw *Gateway) setCanonicalMessageToStore(messageID string, canonicalMsgID string) {
 	err := gw.CanonicalStore.Set(messageID, canonicalMsgID)
 	if err != nil {
+		gw.logger.Errorf("Error setting canomical message mapping {%s}->{%s}", messageID, canonicalMsgID)
 		gw.logger.Error(err)
 	}
 }
@@ -56,6 +58,7 @@ func (gw *Gateway) getDestMessagesFromStore(canonicalMsgID string, dest *bridge.
 	destMessageIds := new([]BrMsgID)
 	found, err := gw.MessageStore.Get(canonicalMsgID, destMessageIds)
 	if err != nil {
+		gw.logger.Errorf("Error getting destination messages for canonical message id {%s}", canonicalMsgID)
 		gw.logger.Error(err)
 	}
 
