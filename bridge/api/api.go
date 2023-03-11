@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -139,12 +140,33 @@ func (b *API) handlePostMessage(c echo.Context) error {
 	message.Account = b.Account
 	message.ID = ""
 	message.Timestamp = time.Now()
+
+	var (
+		fm map[string]interface{}
+		ds string
+		ok bool
+	)
+
 	for i, f := range message.Extra["file"] {
 		fi := config.FileInfo{}
-		mapstructure.Decode(f.(map[string]interface{}), &fi)
-		var data []byte
+		if fm, ok = f.(map[string]interface{}); !ok {
+			return echo.NewHTTPError(http.StatusInternalServerError, "invalid format for extra")
+		}
+		err := mapstructure.Decode(fm, &fi)
+		if err != nil {
+			if !strings.Contains(err.Error(), "got string") {
+				return err
+			}
+		}
 		// mapstructure doesn't decode base64 into []byte, so it must be done manually for fi.Data
-		data, _ = base64.StdEncoding.DecodeString(f.(map[string]interface{})["Data"].(string))
+		if ds, ok = fm["Data"].(string); !ok {
+			return echo.NewHTTPError(http.StatusInternalServerError, "invalid format for data")
+		}
+
+		data, err := base64.StdEncoding.DecodeString(ds)
+		if err != nil {
+			return err
+		}
 		fi.Data = &data
 		message.Extra["file"][i] = fi
 	}
