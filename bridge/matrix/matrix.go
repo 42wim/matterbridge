@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"sync"
+	"time"
 
 	matrix "maunium.net/go/mautrix"
 	"maunium.net/go/mautrix/event"
@@ -205,7 +206,7 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 	}
 
 	if msg.Event == config.EventUserTyping && b.GetBool("ShowUserTyping") {
-		_, err := b.mc.UserTyping(channel, true, 15000)
+		_, err := b.mc.UserTyping(channel, true, 5*time.Second)
 		return "", err
 	}
 
@@ -282,7 +283,7 @@ func (b *Bmatrix) Send(msg config.Message) (string, error) {
 			rmsg.FormattedBody = "* " + msg.Text
 		} else {
 			rmsg.Format = event.FormatHTML
-			rmsg.FormattedBody = "* " + helper.ParseMarkdown(msg.Text)
+			rmsg.FormattedBody = helper.ParseMarkdown(msg.Text)
 			rmsg.NewContent.Format = rmsg.Format
 			rmsg.NewContent.FormattedBody = rmsg.FormattedBody
 		}
