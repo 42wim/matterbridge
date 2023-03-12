@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -151,7 +150,7 @@ func (bot *BotAPI) decodeAPIResponse(responseBody io.Reader, resp *APIResponse) 
 	}
 
 	// if debug, read response body
-	data, err := ioutil.ReadAll(responseBody)
+	data, err := io.ReadAll(responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -494,6 +493,8 @@ func (bot *BotAPI) ListenForWebhookRespReqFormat(w http.ResponseWriter, r *http.
 	ch := make(chan Update, bot.Buffer)
 
 	func(w http.ResponseWriter, r *http.Request) {
+		defer close(ch)
+
 		update, err := bot.HandleUpdate(r)
 		if err != nil {
 			errMsg, _ := json.Marshal(map[string]string{"error": err.Error()})
@@ -504,7 +505,6 @@ func (bot *BotAPI) ListenForWebhookRespReqFormat(w http.ResponseWriter, r *http.
 		}
 
 		ch <- *update
-		close(ch)
 	}(w, r)
 
 	return ch
@@ -681,12 +681,7 @@ func (bot *BotAPI) GetMyCommandsWithConfig(config GetMyCommandsConfig) ([]BotCom
 // forwardMessage, but the copied message doesn't have a link to the original
 // message. Returns the MessageID of the sent message on success.
 func (bot *BotAPI) CopyMessage(config CopyMessageConfig) (MessageID, error) {
-	params, err := config.params()
-	if err != nil {
-		return MessageID{}, err
-	}
-
-	resp, err := bot.MakeRequest(config.method(), params)
+	resp, err := bot.Request(config)
 	if err != nil {
 		return MessageID{}, err
 	}
@@ -695,6 +690,33 @@ func (bot *BotAPI) CopyMessage(config CopyMessageConfig) (MessageID, error) {
 	err = json.Unmarshal(resp.Result, &messageID)
 
 	return messageID, err
+}
+
+// AnswerWebAppQuery sets the result of an interaction with a Web App and send a
+// corresponding message on behalf of the user to the chat from which the query originated.
+func (bot *BotAPI) AnswerWebAppQuery(config AnswerWebAppQueryConfig) (SentWebAppMessage, error) {
+	var sentWebAppMessage SentWebAppMessage
+
+	resp, err := bot.Request(config)
+	if err != nil {
+		return sentWebAppMessage, err
+	}
+
+	err = json.Unmarshal(resp.Result, &sentWebAppMessage)
+	return sentWebAppMessage, err
+}
+
+// GetMyDefaultAdministratorRights gets the current default administrator rights of the bot.
+func (bot *BotAPI) GetMyDefaultAdministratorRights(config GetMyDefaultAdministratorRightsConfig) (ChatAdministratorRights, error) {
+	var rights ChatAdministratorRights
+
+	resp, err := bot.Request(config)
+	if err != nil {
+		return rights, err
+	}
+
+	err = json.Unmarshal(resp.Result, &rights)
+	return rights, err
 }
 
 // EscapeText takes an input text and escape Telegram markup symbols.
