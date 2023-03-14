@@ -1956,6 +1956,7 @@ enable=true
     #   nctalk   |      token         |           xs25tz5y            | The token in the URL when you are in a chat. It will be the last part of the URL.
     # -------------------------------------------------------------------------------------------------------------------------------------
     #  telegram  |      chatid        |          -123456789           | A large negative number. see https://www.linkedin.com/pulse/telegram-bots-beginners-marco-frau
+    #            |   chatid/topicid   |          -123456789/12        | A large negative number/number.
     # -------------------------------------------------------------------------------------------------------------------------------------
     #  vk        |      peerid        |          2000000002           | A number that starts form 2000000000. Use --debug and send any message in chat to get PeerID in the logs
     # -------------------------------------------------------------------------------------------------------------------------------------
