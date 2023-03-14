@@ -27,8 +27,11 @@ func (r *Router) handleCommand(msg *config.Message) bool {
 
 		r.replyCmd(msg, help)
 	case "!ping":
-		r.logger.Debug("!pong:")
+		r.logger.Debug("!pong")
 		r.replyCmd(msg, "pong!")
+	case "!pingdm":
+		r.logger.Debug("!pongdm")
+		r.replyDM(msg, "pong!")
 	default:
 		return false
 	}
@@ -47,6 +50,22 @@ func (r *Router) replyCmd(msg *config.Message, str string) {
 		Protocol: msg.Protocol,
 		Gateway:  msg.Gateway,
 		ParentID: msg.ID,
+	}
+
+	srcBridge.Send(reply)
+}
+
+func (r *Router) replyDM(msg *config.Message, str string) {
+	srcBridge := r.getBridge(msg.Account)
+
+	reply := config.Message{
+		Text:     str,
+		Channel:  msg.UserID,
+		Account:  msg.Account,
+		Username: "",
+		UserID:   "",
+		Protocol: msg.Protocol,
+		Gateway:  msg.Gateway,
 	}
 
 	srcBridge.Send(reply)

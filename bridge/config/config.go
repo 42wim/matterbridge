@@ -179,9 +179,10 @@ type Protocol struct {
 }
 
 type ChannelOptions struct {
-	Key        string // irc, xmpp
-	WebhookURL string // discord
-	Topic      string // zulip
+	Key            string // irc, xmpp
+	WebhookURL     string // discord
+	Topic          string // zulip
+	WelcomeMessage string // all
 }
 
 type Bridge struct {
