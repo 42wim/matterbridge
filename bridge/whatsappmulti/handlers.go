@@ -21,7 +21,80 @@ func (b *Bwhatsapp) eventHandler(evt interface{}) {
 	switch e := evt.(type) {
 	case *events.Message:
 		b.handleMessage(e)
+	case *events.GroupInfo:
+		b.handleGroupInfo(e)
 	}
+}
+
+func (b *Bwhatsapp) handleGroupInfo(event *events.GroupInfo) {
+
+	b.Log.Debugf("Receiving event %#v", event)
+
+	switch {
+	case event.Join != nil:
+		b.handleUserJoin(event)
+	case event.Leave != nil:
+		b.handleUserLeave(event)
+	case event.Topic != nil:
+		b.handleTopicChange(event)
+	}
+}
+
+func (b *Bwhatsapp) handleUserJoin(event *events.GroupInfo) {
+	for _, joinedJid := range event.Join {
+		senderName := b.getSenderNameFromJID(joinedJid)
+
+		rmsg := config.Message{
+			UserID:   joinedJid.String(),
+			Username: senderName,
+			Channel:  event.JID.String(),
+			Account:  b.Account,
+			Protocol: b.Protocol,
+			Event:    config.EventJoinLeave,
+			Text:     "joined chat",
+		}
+
+		b.Remote <- rmsg
+	}
+}
+func (b *Bwhatsapp) handleUserLeave(event *events.GroupInfo) {
+	for _, leftJid := range event.Leave {
+		senderName := b.getSenderNameFromJID(leftJid)
+
+		rmsg := config.Message{
+			UserID:   leftJid.String(),
+			Username: senderName,
+			Channel:  event.JID.String(),
+			Account:  b.Account,
+			Protocol: b.Protocol,
+			Event:    config.EventJoinLeave,
+			Text:     "left chat",
+		}
+
+		b.Remote <- rmsg
+	}
+}
+func (b *Bwhatsapp) handleTopicChange(event *events.GroupInfo) {
+	msg := event.Topic
+	senderJid := msg.TopicSetBy
+	senderName := b.getSenderNameFromJID(senderJid)
+
+	text := msg.Topic
+	if text == "" {
+		text = "removed topic"
+	}
+
+	rmsg := config.Message{
+		UserID:   senderJid.String(),
+		Username: senderName,
+		Channel:  event.JID.String(),
+		Account:  b.Account,
+		Protocol: b.Protocol,
+		Event:    config.EventTopicChange,
+		Text:     "Topic changed: " + text,
+	}
+
+	b.Remote <- rmsg
 }
 
 func (b *Bwhatsapp) handleMessage(message *events.Message) {

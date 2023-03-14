@@ -64,6 +64,29 @@ func (b *Bwhatsapp) getSenderName(info types.MessageInfo) string {
 	return "Someone"
 }
 
+func (b *Bwhatsapp) getSenderNameFromJID(senderJid types.JID) string {
+	sender, exists := b.contacts[senderJid]
+
+	if !exists || (sender.FullName == "" && sender.FirstName == "") {
+		b.reloadContacts() // Contacts may need to be reloaded
+		sender, exists = b.contacts[senderJid]
+	}
+
+	if exists && sender.FullName != "" {
+		return sender.FullName
+	}
+
+	if exists && sender.FirstName != "" {
+		return sender.FirstName
+	}
+
+	if sender.PushName != "" {
+		return sender.PushName
+	}
+
+	return "Someone"
+}
+
 func (b *Bwhatsapp) getSenderNotify(senderJid types.JID) string {
 	sender, exists := b.contacts[senderJid]
 
