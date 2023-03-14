@@ -91,7 +91,7 @@ func (b *Btelegram) getIds(channel string) (int64, int, error) {
 	topicid := 0
 
 	// get the chatid
-	if strings.Contains(channel, "/") {
+	if strings.Contains(channel, "/") { //nolint:nestif
 		s := strings.Split(channel, "/")
 		if len(s) < 2 {
 			b.Log.Errorf("Invalid channel format: %#v\n", channel)
