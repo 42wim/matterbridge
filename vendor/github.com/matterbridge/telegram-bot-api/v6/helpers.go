@@ -1,7 +1,14 @@
 package tgbotapi
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+	"errors"
+	"fmt"
 	"net/url"
+	"sort"
+	"strings"
 )
 
 // NewMessage creates a new Message.
@@ -171,7 +178,9 @@ func NewVoice(chatID int64, file RequestFileData) VoiceConfig {
 // two to ten InputMediaPhoto or InputMediaVideo.
 func NewMediaGroup(chatID int64, files []interface{}) MediaGroupConfig {
 	return MediaGroupConfig{
-		ChatID: chatID,
+		BaseChat: BaseChat{
+			ChatID: chatID,
+		},
 		Media:  files,
 	}
 }
@@ -567,7 +576,7 @@ func NewEditMessageText(chatID int64, messageID int, text string) EditMessageTex
 	}
 }
 
-// NewEditMessageTextAndMarkup allows you to edit the text and replymarkup of a message.
+// NewEditMessageTextAndMarkup allows you to edit the text and reply markup of a message.
 func NewEditMessageTextAndMarkup(chatID int64, messageID int, text string, replyMarkup InlineKeyboardMarkup) EditMessageTextConfig {
 	return EditMessageTextConfig{
 		BaseEdit: BaseEdit{
@@ -615,6 +624,15 @@ func NewRemoveKeyboard(selective bool) ReplyKeyboardRemove {
 func NewKeyboardButton(text string) KeyboardButton {
 	return KeyboardButton{
 		Text: text,
+	}
+}
+
+// NewKeyboardButtonWebApp creates a keyboard button with text
+// which goes to a WebApp.
+func NewKeyboardButtonWebApp(text string, webapp WebAppInfo) KeyboardButton {
+	return KeyboardButton{
+		Text:   text,
+		WebApp: &webapp,
 	}
 }
 
@@ -670,6 +688,15 @@ func NewInlineKeyboardButtonData(text, data string) InlineKeyboardButton {
 	return InlineKeyboardButton{
 		Text:         text,
 		CallbackData: &data,
+	}
+}
+
+// NewInlineKeyboardButtonWebApp creates an inline keyboard button with text
+// which goes to a WebApp.
+func NewInlineKeyboardButtonWebApp(text string, webapp WebAppInfo) InlineKeyboardButton {
+	return InlineKeyboardButton{
+		Text:   text,
+		WebApp: &webapp,
 	}
 }
 
@@ -924,4 +951,39 @@ func NewDeleteMyCommandsWithScope(scope BotCommandScope) DeleteMyCommandsConfig 
 // scope and language code.
 func NewDeleteMyCommandsWithScopeAndLanguage(scope BotCommandScope, languageCode string) DeleteMyCommandsConfig {
 	return DeleteMyCommandsConfig{Scope: &scope, LanguageCode: languageCode}
+}
+
+// ValidateWebAppData validate data received via the Web App
+// https://core.telegram.org/bots/webapps#validating-data-received-via-the-web-app
+func ValidateWebAppData(token, telegramInitData string) (bool, error) {
+	initData, err := url.ParseQuery(telegramInitData)
+	if err != nil {
+		return false, fmt.Errorf("error parsing data %w", err)
+	}
+
+	dataCheckString := make([]string, 0, len(initData))
+	for k, v := range initData {
+		if k == "hash" {
+			continue
+		}
+		if len(v) > 0 {
+			dataCheckString = append(dataCheckString, fmt.Sprintf("%s=%s", k, v[0]))
+		}
+	}
+
+	sort.Strings(dataCheckString)
+
+	secret := hmac.New(sha256.New, []byte("WebAppData"))
+	secret.Write([]byte(token))
+
+	hHash := hmac.New(sha256.New, secret.Sum(nil))
+	hHash.Write([]byte(strings.Join(dataCheckString, "\n")))
+
+	hash := hex.EncodeToString(hHash.Sum(nil))
+
+	if initData.Get("hash") != hash {
+		return false, errors.New("hash not equal")
+	}
+
+	return true, nil
 }

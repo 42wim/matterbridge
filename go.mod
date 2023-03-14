@@ -11,7 +11,6 @@ require (
 	github.com/d5/tengo/v2 v2.13.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/fsnotify/fsnotify v1.6.0
-	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/gomarkdown/markdown v0.0.0-20221013030248-663e2500819c
 	github.com/google/gops v0.3.27
 	github.com/gorilla/schema v1.2.0
@@ -29,6 +28,7 @@ require (
 	github.com/matterbridge/gozulipbot v0.0.0-20211023205727-a19d6c1f3b75
 	github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba
 	github.com/matterbridge/matterclient v0.0.0-20221106190440-8bcf49695e0d
+	github.com/matterbridge/telegram-bot-api/v6 v6.5.0
 	github.com/mattermost/mattermost-server/v5 v5.39.3
 	github.com/mattermost/mattermost-server/v6 v6.7.2
 	github.com/mattn/godown v0.0.1

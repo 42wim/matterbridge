@@ -95,3 +95,10 @@ func (p Params) AddFirstValid(key string, args ...interface{}) error {
 
 	return nil
 }
+
+// Merge merges two sets of parameters. Overwrites old fields if present
+func (p *Params) Merge(p1 Params) {
+	for k, v := range p1 {
+		(*p)[k] = v
+	}
+}

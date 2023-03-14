@@ -83,9 +83,6 @@ github.com/fsnotify/fsnotify
 # github.com/go-asn1-ber/asn1-ber v1.5.3
 ## explicit; go 1.13
 github.com/go-asn1-ber/asn1-ber
-# github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
-## explicit; go 1.16
-github.com/go-telegram-bot-api/telegram-bot-api/v5
 # github.com/golang-jwt/jwt v3.2.2+incompatible
 ## explicit
 github.com/golang-jwt/jwt
@@ -234,6 +231,9 @@ github.com/matterbridge/logrus-prefixed-formatter
 # github.com/matterbridge/matterclient v0.0.0-20221106190440-8bcf49695e0d
 ## explicit; go 1.17
 github.com/matterbridge/matterclient
+# github.com/matterbridge/telegram-bot-api/v6 v6.5.0
+## explicit; go 1.16
+github.com/matterbridge/telegram-bot-api/v6
 # github.com/mattermost/go-i18n v1.11.1-0.20211013152124-5c415071e404
 ## explicit
 github.com/mattermost/go-i18n/i18n

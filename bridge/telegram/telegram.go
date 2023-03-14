@@ -10,7 +10,7 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	tgbotapi "github.com/matterbridge/telegram-bot-api/v6"
 )
 
 const (
@@ -86,11 +86,41 @@ func TGGetParseMode(b *Btelegram, username string, text string) (textout string,
 	return textout, parsemode
 }
 
+func (b *Btelegram) getIds(channel string) (int64, int, error) {
+	var chatid int64
+	topicid := 0
+
+	// get the chatid
+	if strings.Contains(channel, "/") { //nolint:nestif
+		s := strings.Split(channel, "/")
+		if len(s) < 2 {
+			b.Log.Errorf("Invalid channel format: %#v\n", channel)
+			return 0, 0, nil
+		}
+		id, err := strconv.ParseInt(s[0], 10, 64)
+		if err != nil {
+			return 0, 0, err
+		}
+		chatid = id
+		tid, err := strconv.Atoi(s[1])
+		if err != nil {
+			return 0, 0, err
+		}
+		topicid = tid
+	} else {
+		id, err := strconv.ParseInt(channel, 10, 64)
+		if err != nil {
+			return 0, 0, err
+		}
+		chatid = id
+	}
+	return chatid, topicid, nil
+}
+
 func (b *Btelegram) Send(msg config.Message) (string, error) {
 	b.Log.Debugf("=> Receiving %#v", msg)
 
-	// get the chatid
-	chatid, err := strconv.ParseInt(msg.Channel, 10, 64)
+	chatid, topicid, err := b.getIds(msg.Channel)
 	if err != nil {
 		return "", err
 	}
@@ -123,13 +153,13 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 	// Upload a file if it exists
 	if msg.Extra != nil {
 		for _, rmsg := range helper.HandleExtra(&msg, b.General) {
-			if _, msgErr := b.sendMessage(chatid, rmsg.Username, rmsg.Text, parentID); msgErr != nil {
+			if _, msgErr := b.sendMessage(chatid, topicid, rmsg.Username, rmsg.Text, parentID); msgErr != nil {
 				b.Log.Errorf("sendMessage failed: %s", msgErr)
 			}
 		}
 		// check if we have files to upload (from slack, telegram or mattermost)
 		if len(msg.Extra["file"]) > 0 {
-			return b.handleUploadFile(&msg, chatid, parentID)
+			return b.handleUploadFile(&msg, chatid, topicid, parentID)
 		}
 	}
 
@@ -143,7 +173,7 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 	// Ignore empty text field needs for prevent double messages from whatsapp to telegram
 	// when sending media with text caption
 	if msg.Text != "" {
-		return b.sendMessage(chatid, msg.Username, msg.Text, parentID)
+		return b.sendMessage(chatid, topicid, msg.Username, msg.Text, parentID)
 	}
 
 	return "", nil
@@ -157,9 +187,12 @@ func (b *Btelegram) getFileDirectURL(id string) string {
 	return res
 }
 
-func (b *Btelegram) sendMessage(chatid int64, username, text string, parentID int) (string, error) {
+func (b *Btelegram) sendMessage(chatid int64, topicid int, username, text string, parentID int) (string, error) {
 	m := tgbotapi.NewMessage(chatid, "")
 	m.Text, m.ParseMode = TGGetParseMode(b, username, text)
+	if topicid != 0 {
+		m.BaseChat.MessageThreadID = topicid
+	}
 	m.ReplyToMessageID = parentID
 	m.DisableWebPagePreview = b.GetBool("DisableWebPagePreview")
 
@@ -171,11 +204,19 @@ func (b *Btelegram) sendMessage(chatid int64, username, text string, parentID in
 }
 
 // sendMediaFiles native upload media files via media group
-func (b *Btelegram) sendMediaFiles(msg *config.Message, chatid int64, parentID int, media []interface{}) (string, error) {
+func (b *Btelegram) sendMediaFiles(msg *config.Message, chatid int64, threadid int, parentID int, media []interface{}) (string, error) {
 	if len(media) == 0 {
 		return "", nil
 	}
-	mg := tgbotapi.MediaGroupConfig{ChatID: chatid, ChannelUsername: msg.Username, Media: media, ReplyToMessageID: parentID}
+	mg := tgbotapi.MediaGroupConfig{
+		BaseChat: tgbotapi.BaseChat{
+			ChatID:           chatid,
+			MessageThreadID:  threadid,
+			ChannelUsername:  msg.Username,
+			ReplyToMessageID: parentID,
+		},
+		Media: media,
+	}
 	messages, err := b.c.SendMediaGroup(mg)
 	if err != nil {
 		return "", err
