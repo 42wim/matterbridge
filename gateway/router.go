@@ -8,6 +8,7 @@ import (
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/gateway/samechannel"
+	"github.com/philippgille/gokv"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,6 +20,8 @@ type Router struct {
 	Gateways         map[string]*Gateway
 	Message          chan config.Message
 	MattermostPlugin chan config.Message
+	UserStore        gokv.Store
+	ChannelStore     gokv.Store
 
 	logger *logrus.Entry
 }
@@ -99,6 +102,15 @@ func (r *Router) Start() error {
 			}
 		}
 	}
+	dataStorePath, exists := r.Config.GetString("UserStore")
+	if exists {
+		r.UserStore = r.getUserStore(dataStorePath)
+	}
+	dataStorePath, exists = r.Config.GetString("ChannelStore")
+	if exists {
+		r.ChannelStore = r.getChannelStore(dataStorePath)
+	}
+
 	go r.handleReceive()
 	//go r.updateChannelMembers()
 	return nil
@@ -130,9 +142,18 @@ func (r *Router) getBridge(account string) *bridge.Bridge {
 func (r *Router) handleReceive() {
 	for msg := range r.Message {
 		msg := msg // scopelint
+
+		skipMsg := false
+		skipMsg = skipMsg || r.handleCommand(&msg)
+		skipMsg = skipMsg || r.handleEventWelcome(&msg)
 		r.handleEventGetChannelMembers(&msg)
 		r.handleEventFailure(&msg)
 		r.handleEventRejoinChannels(&msg)
+		r.handleOptOutUser(&msg)
+
+		if skipMsg {
+			continue
+		}
 
 		// Set message protocol based on the account it came from
 		msg.Protocol = r.getBridge(msg.Account).Protocol

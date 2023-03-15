@@ -49,6 +49,20 @@ func (r *Router) handleEventGetChannelMembers(msg *config.Message) {
 	}
 }
 
+func (r *Router) handleEventWelcome(msg *config.Message) bool {
+	if msg.Event != config.EventWelcomeMsg {
+		return false
+	}
+
+	welcomeMsg := r.getWelcomeMessage(msg.Channel)
+
+	if welcomeMsg != nil {
+		r.sendDM(welcomeMsg, msg.UserID)
+	}
+
+	return true
+}
+
 // handleEventRejoinChannels handles rejoining of channels.
 func (r *Router) handleEventRejoinChannels(msg *config.Message) {
 	if msg.Event != config.EventRejoinChannels {
@@ -246,6 +260,43 @@ func (gw *Gateway) handleExtractNicks(msg *config.Message) {
 		if err != nil {
 			gw.logger.Errorf("regexp in %s failed: %s", msg.Account, err)
 			break
+		}
+	}
+}
+
+func (r *Router) handleOptOutUser(msg *config.Message) {
+	if msg.UserID == "" {
+		return
+	}
+
+	status := r.getOptOutStatus(msg.UserID)
+
+	if status == OptOut {
+		msg.Avatar = ""
+		msg.Username = "[Opt-out User]"
+		if msg.Text != "" {
+			msg.Text = "Redacted Text\n"
+		}
+		files, exists := msg.Extra["file"]
+		if exists {
+			if files[0].(config.FileInfo).Comment != "" {
+				msg.Text = "Redacted Text\n"
+			}
+			msg.Text += fmt.Sprintf("Redacted %d Attachment(s)", len(files))
+			delete(msg.Extra, "file")
+		}
+	} else if status == OptOutMediaOnly {
+		files, exists := msg.Extra["file"]
+
+		if exists {
+			for _, f := range files {
+				file := f.(config.FileInfo)
+				if file.Comment != "" {
+					msg.Text += file.Comment + "\n"
+				}
+			}
+			msg.Text += fmt.Sprintf("Redacted %d Attachment(s)", len(files))
+			delete(msg.Extra, "file")
 		}
 	}
 }

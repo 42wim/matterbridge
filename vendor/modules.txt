@@ -361,6 +361,21 @@ github.com/pelletier/go-toml/v2/unstable
 # github.com/philhofer/fwd v1.1.1
 ## explicit
 github.com/philhofer/fwd
+# github.com/philippgille/gokv v0.6.0
+## explicit; go 1.13
+github.com/philippgille/gokv
+# github.com/philippgille/gokv/badgerdb v0.6.0
+## explicit; go 1.13
+github.com/philippgille/gokv/badgerdb
+# github.com/philippgille/gokv/bbolt v0.6.0
+## explicit; go 1.13
+github.com/philippgille/gokv/bbolt
+# github.com/philippgille/gokv/encoding v0.0.0-20191011213304-eb77f15b9c61
+## explicit; go 1.12
+github.com/philippgille/gokv/encoding
+# github.com/philippgille/gokv/util v0.0.0-20191011213304-eb77f15b9c61
+## explicit; go 1.12
+github.com/philippgille/gokv/util
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
@@ -490,6 +505,9 @@ github.com/yaegashi/msgraph.go/msauth
 # github.com/zfjagann/golang-ring v0.0.0-20220330170733-19bcea1b6289
 ## explicit
 github.com/zfjagann/golang-ring
+# go.etcd.io/bbolt v1.3.6
+## explicit; go 1.12
+go.etcd.io/bbolt
 # go.mau.fi/libsignal v0.1.0
 ## explicit; go 1.18
 go.mau.fi/libsignal/cipher
