@@ -1,0 +1,5 @@
+.idea/
+coverage.out
+tmp/
+book/
+.vscode/

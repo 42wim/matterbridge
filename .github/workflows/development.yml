@@ -5,28 +5,28 @@ jobs:
     name: golangci-lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 20
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         with:
           version: latest
           args: "-v --new-from-rev HEAD~5"
   test-build-upload:
     strategy:
       matrix:
-        go-version: [1.18.x]
+        go-version: [1.20.x]
         platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     steps:
     - name: Install Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
         go-version: ${{ matrix.go-version }}
         stable: false
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
           fetch-depth: 0
     - name: Test
@@ -39,20 +39,20 @@ jobs:
         CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags "-s -X github.com/42wim/matterbridge/version.GitHash=$(git log --pretty=format:'%h' -n 1)" -o output/win/matterbridge-$VERSION-windows-amd64.exe
         CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags "-s -X github.com/42wim/matterbridge/version.GitHash=$(git log --pretty=format:'%h' -n 1)" -o output/mac/matterbridge-$VERSION-darwin-amd64
     - name: Upload linux 64-bit
-      if: startsWith(matrix.go-version,'1.18')
-      uses: actions/upload-artifact@v2
+      if: startsWith(matrix.go-version,'1.20')
+      uses: actions/upload-artifact@v3
       with:
         name: matterbridge-linux-64bit
         path: output/lin
     - name: Upload windows 64-bit
-      if: startsWith(matrix.go-version,'1.18')
-      uses: actions/upload-artifact@v2
+      if: startsWith(matrix.go-version,'1.20')
+      uses: actions/upload-artifact@v3
       with:
         name: matterbridge-windows-64bit
         path: output/win
     - name: Upload darwin 64-bit
-      if: startsWith(matrix.go-version,'1.18')
-      uses: actions/upload-artifact@v2
+      if: startsWith(matrix.go-version,'1.20')
+      uses: actions/upload-artifact@v3
       with:
         name: matterbridge-darwin-64bit
         path: output/mac

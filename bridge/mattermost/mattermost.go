@@ -161,7 +161,7 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 		if err != nil {
 			b.Log.Errorf("getting post %s failed: %s", msg.ParentID, err)
 		}
-		if post.RootId != "" {
+		if post != nil && post.RootId != "" {
 			msg.ParentID = post.RootId
 		}
 	}

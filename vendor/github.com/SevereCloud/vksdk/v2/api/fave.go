@@ -79,7 +79,7 @@ type FaveGetResponse struct {
 
 // FaveGet method.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/fave.get
 func (vk *VK) FaveGet(params Params) (response FaveGetResponse, err error) {
@@ -97,7 +97,7 @@ type FaveGetExtendedResponse struct {
 
 // FaveGetExtended method.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/fave.get
 func (vk *VK) FaveGetExtended(params Params) (response FaveGetExtendedResponse, err error) {

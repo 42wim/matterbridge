@@ -1,17 +1,20 @@
 package api
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
-	"gopkg.in/olahol/melody.v1"
+	"github.com/olahol/melody"
 
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/mitchellh/mapstructure"
 	ring "github.com/zfjagann/golang-ring"
 )
 
@@ -137,6 +140,36 @@ func (b *API) handlePostMessage(c echo.Context) error {
 	message.Account = b.Account
 	message.ID = ""
 	message.Timestamp = time.Now()
+
+	var (
+		fm map[string]interface{}
+		ds string
+		ok bool
+	)
+
+	for i, f := range message.Extra["file"] {
+		fi := config.FileInfo{}
+		if fm, ok = f.(map[string]interface{}); !ok {
+			return echo.NewHTTPError(http.StatusInternalServerError, "invalid format for extra")
+		}
+		err := mapstructure.Decode(fm, &fi)
+		if err != nil {
+			if !strings.Contains(err.Error(), "got string") {
+				return err
+			}
+		}
+		// mapstructure doesn't decode base64 into []byte, so it must be done manually for fi.Data
+		if ds, ok = fm["Data"].(string); !ok {
+			return echo.NewHTTPError(http.StatusInternalServerError, "invalid format for data")
+		}
+
+		data, err := base64.StdEncoding.DecodeString(ds)
+		if err != nil {
+			return err
+		}
+		fi.Data = &data
+		message.Extra["file"][i] = fi
+	}
 	b.Log.Debugf("Sending message from %s on %s to gateway", message.Username, "api")
 	b.Remote <- message
 	return c.JSON(http.StatusOK, message)
@@ -166,15 +199,20 @@ func (b *API) handleStream(c echo.Context) error {
 	}
 	c.Response().Flush()
 	for {
+		select {
 		// TODO: this causes issues, messages should be broadcasted to all connected clients
-		msg := b.Messages.Dequeue()
-		if msg != nil {
-			if err := json.NewEncoder(c.Response()).Encode(msg); err != nil {
-				return err
+		default:
+			msg := b.Messages.Dequeue()
+			if msg != nil {
+				if err := json.NewEncoder(c.Response()).Encode(msg); err != nil {
+					return err
+				}
+				c.Response().Flush()
 			}
-			c.Response().Flush()
+			time.Sleep(100 * time.Millisecond)
+		case <-c.Request().Context().Done():
+			return nil
 		}
-		time.Sleep(200 * time.Millisecond)
 	}
 }
 
