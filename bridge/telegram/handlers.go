@@ -199,6 +199,8 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 			spew.Dump(update.Message)
 		}
 
+		b.handleGroupUpdate(update)
+
 		var message *tgbotapi.Message
 
 		rmsg := config.Message{Account: b.Account, Extra: make(map[string][]interface{})}
@@ -259,6 +261,51 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 			b.Remote <- rmsg
 		}
 	}
+}
+
+func (b *Btelegram) handleGroupUpdate(update tgbotapi.Update) {
+	msg := update.Message
+
+	switch {
+	case msg.NewChatMembers != nil:
+		b.handleUserJoin(update)
+	case msg.LeftChatMember != nil:
+		b.handleUserLeave(update)
+	}
+}
+func (b *Btelegram) handleUserJoin(update tgbotapi.Update) {
+	msg := update.Message
+
+	for _, user := range msg.NewChatMembers {
+
+		rmsg := config.Message{
+			UserID:   strconv.FormatInt(user.ID, 10),
+			Username: user.FirstName, // for some reason all the other name felids are empty on this event (at least for me)
+			Channel:  strconv.FormatInt(msg.Chat.ID, 10),
+			Account:  b.Account,
+			Protocol: b.Protocol,
+			Event:    config.EventJoinLeave,
+			Text:     "joined chat",
+		}
+
+		b.Remote <- rmsg
+	}
+}
+func (b *Btelegram) handleUserLeave(update tgbotapi.Update) {
+	msg := update.Message
+	user := msg.LeftChatMember
+
+	rmsg := config.Message{
+		UserID:   strconv.FormatInt(user.ID, 10),
+		Username: user.FirstName, // for some reason all the other name felids are empty on this event (at least for me)
+		Channel:  strconv.FormatInt(msg.Chat.ID, 10),
+		Account:  b.Account,
+		Protocol: b.Protocol,
+		Event:    config.EventJoinLeave,
+		Text:     "left chat",
+	}
+
+	b.Remote <- rmsg
 }
 
 // handleDownloadAvatar downloads the avatar of userid from channel
