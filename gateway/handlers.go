@@ -49,6 +49,20 @@ func (r *Router) handleEventGetChannelMembers(msg *config.Message) {
 	}
 }
 
+func (r *Router) handleEventWelcome(msg *config.Message) bool {
+	if msg.Event != config.EventWelcomeMsg {
+		return false
+	}
+
+	welcomeMsg := r.getWelcomeMessage(msg.Channel)
+
+	if welcomeMsg != nil {
+		r.sendDM(welcomeMsg, msg.UserID)
+	}
+
+	return true
+}
+
 // handleEventRejoinChannels handles rejoining of channels.
 func (r *Router) handleEventRejoinChannels(msg *config.Message) {
 	if msg.Event != config.EventRejoinChannels {

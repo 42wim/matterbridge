@@ -53,7 +53,9 @@ func (b *Bwhatsapp) handleUserJoin(event *events.GroupInfo) {
 			Event:    config.EventJoinLeave,
 			Text:     "joined chat",
 		}
+		b.Remote <- rmsg
 
+		rmsg.Event = config.EventWelcomeMsg
 		b.Remote <- rmsg
 	}
 }

@@ -287,7 +287,9 @@ func (b *Btelegram) handleUserJoin(update tgbotapi.Update) {
 			Event:    config.EventJoinLeave,
 			Text:     "joined chat",
 		}
+		b.Remote <- rmsg
 
+		rmsg.Event = config.EventWelcomeMsg
 		b.Remote <- rmsg
 	}
 }

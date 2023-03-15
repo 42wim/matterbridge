@@ -15,6 +15,7 @@ import (
 )
 
 const (
+	EventWelcomeMsg        = "welcome"
 	EventJoinLeave         = "join_leave"
 	EventTopicChange       = "topic_change"
 	EventFailure           = "failure"
