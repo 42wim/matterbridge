@@ -106,30 +106,31 @@ func (b *Bzulip) getChannel(id int) string {
 func (b *Bzulip) handleQueue() error {
 	for {
 		messages, err := b.q.GetEvents()
-		switch err {
-		case gzb.BackoffError:
-			time.Sleep(time.Second * 5)
-		case gzb.NoJSONError:
-			b.Log.Error("Response wasn't JSON, server down or restarting? sleeping 10 seconds")
-			time.Sleep(time.Second * 10)
-		case gzb.BadEventQueueError:
-			b.Log.Info("got a bad event queue id error, reconnecting")
-			b.bot.Queues = nil
-			for {
-				b.q, err = b.bot.RegisterAll()
-				if err != nil {
-					b.Log.Errorf("reconnecting failed: %s. Sleeping 10 seconds", err)
-					time.Sleep(time.Second * 10)
-				}
-				break
-			}
-		case gzb.HeartbeatError:
-			b.Log.Debug("heartbeat received.")
-		default:
-			b.Log.Debugf("receiving error: %#v", err)
-			time.Sleep(time.Second * 10)
-		}
 		if err != nil {
+			switch err {
+			case gzb.BackoffError:
+				time.Sleep(time.Second * 5)
+			case gzb.NoJSONError:
+				b.Log.Error("Response wasn't JSON, server down or restarting? sleeping 10 seconds")
+				time.Sleep(time.Second * 10)
+			case gzb.BadEventQueueError:
+				b.Log.Info("got a bad event queue id error, reconnecting")
+				b.bot.Queues = nil
+				for {
+					b.q, err = b.bot.RegisterAll()
+					if err != nil {
+						b.Log.Errorf("reconnecting failed: %s. Sleeping 10 seconds", err)
+						time.Sleep(time.Second * 10)
+					}
+					break
+				}
+			case gzb.HeartbeatError:
+				b.Log.Debug("heartbeat received.")
+			default:
+				b.Log.Debugf("receiving error: %#v", err)
+				time.Sleep(time.Second * 10)
+			}
+
 			continue
 		}
 		for _, m := range messages {
