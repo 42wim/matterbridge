@@ -217,7 +217,7 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		// set the ID's from the channel or group message
 		rmsg.ID = strconv.Itoa(message.MessageID)
 		rmsg.Channel = strconv.FormatInt(message.Chat.ID, 10)
-		if message.MessageThreadID != 0 {
+		if message.IsTopicMessage {
 			rmsg.Channel += "/" + strconv.Itoa(message.MessageThreadID)
 		}
 
