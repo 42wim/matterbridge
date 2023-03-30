@@ -1,0 +1,6 @@
+text := import("text")
+
+if outProtocol == "mumble" {
+    urlRE := text.re_compile(`(?is)((http|https):\/\/)?([a-z0-9-]+\.)?[a-z0-9-]+(\.[a-z]{2,6}){1,3}(\/[a-z0-9.,_\/~#&=;%+?-]*)?`)
+    msgText = urlRE.replace(msgText,`<a href="$0">$0</a>`)
+}
