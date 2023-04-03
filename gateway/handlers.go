@@ -54,20 +54,25 @@ func (r *Router) handleEventWelcome(msg *config.Message) bool {
 		return false
 	}
 	welcomeMsg := r.getWelcomeMessage(msg.Channel)
-	srcBridge := r.getBridge(msg.Account)
 
+	srcBridge := r.getBridge(msg.Account)
 	str := srcBridge.Channels[msg.Channel+msg.Account].Options.WelcomeMessage
 
-	if welcomeMsg != nil {
-		r.sendDM(welcomeMsg, msg.UserID)
-	} else if str != "" {
+	// fallback str from config
+	if welcomeMsg == nil && str != "" {
 		rmsg := config.Message{
 			Account:  msg.Account,
 			Protocol: msg.Protocol,
 			Event:    msg.Event,
 			Text:     str,
 		}
-		r.sendDM(&rmsg, msg.UserID)
+
+		welcomeMsg = &rmsg
+	}
+
+	if welcomeMsg != nil {
+		welcomeMsg.Text = strings.ReplaceAll(welcomeMsg.Text, "{NICK}", msg.Username)
+		r.sendDM(welcomeMsg, msg.UserID)
 	}
 
 	return true
@@ -309,6 +314,21 @@ func (r *Router) handleOptOutUser(msg *config.Message) {
 			delete(msg.Extra, "file")
 		}
 	}
+}
+
+func (r *Router) handleName(msg *config.Message) {
+	msg.Username = r.getUserName(msg)
+}
+
+func (r *Router) handleAvatar(msg *config.Message) {
+	avatar := r.getAvatar(msg)
+
+	if avatar == "" {
+		srcBridge := r.getBridge(msg.Account)
+		avatar = srcBridge.GetString("DefaultAvatar")
+	}
+
+	msg.Avatar = avatar
 }
 
 // extractNick searches for a username (based on "search" a regular expression).

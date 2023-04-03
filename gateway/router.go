@@ -150,6 +150,8 @@ func (r *Router) handleReceive() {
 		r.handleEventFailure(&msg)
 		r.handleEventRejoinChannels(&msg)
 		r.handleOptOutUser(&msg)
+		r.handleName(&msg)
+		r.handleAvatar(&msg)
 
 		if skipMsg {
 			continue
