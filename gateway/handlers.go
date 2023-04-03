@@ -53,11 +53,21 @@ func (r *Router) handleEventWelcome(msg *config.Message) bool {
 	if msg.Event != config.EventWelcomeMsg {
 		return false
 	}
-
 	welcomeMsg := r.getWelcomeMessage(msg.Channel)
+	srcBridge := r.getBridge(msg.Account)
+
+	str := srcBridge.Channels[msg.Channel+msg.Account].Options.WelcomeMessage
 
 	if welcomeMsg != nil {
 		r.sendDM(welcomeMsg, msg.UserID)
+	} else if str != "" {
+		rmsg := config.Message{
+			Account:  msg.Account,
+			Protocol: msg.Protocol,
+			Event:    msg.Event,
+			Text:     str,
+		}
+		r.sendDM(&rmsg, msg.UserID)
 	}
 
 	return true

@@ -162,7 +162,10 @@ func (r *Router) handleWelcomeCmd(msg *config.Message, welcomeMsg *config.Messag
 func (r *Router) handleEchoWelcomeCmd(msg *config.Message) {
 	msg.Event = config.EventWelcomeMsg
 
-	if r.getWelcomeMessage(msg.Channel) == nil {
+	srcBridge := r.getBridge(msg.Account)
+	str := srcBridge.Channels[msg.Channel+msg.Account].Options.WelcomeMessage
+
+	if r.getWelcomeMessage(msg.Channel) == nil && str == "" {
 		r.replyCmd(msg, "No welcome message configured, set with !setwelcome")
 		return
 	}
