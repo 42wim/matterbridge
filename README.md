@@ -401,7 +401,6 @@ Matterbridge wouldn't exist without these libraries:
 
 - discord - <https://github.com/bwmarrin/discordgo>
 - echo - <https://github.com/labstack/echo>
-- gitter - <https://github.com/sromku/go-gitter>
 - gops - <https://github.com/google/gops>
 - gozulipbot - <https://github.com/ifo/gozulipbot>
 - gumble - <https://github.com/layeh/gumble>
