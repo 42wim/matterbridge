@@ -97,7 +97,7 @@ func (b *Btelegram) handleForwarded(rmsg *config.Message, message *tgbotapi.Mess
 // handleQuoting handles quoting of previous messages
 func (b *Btelegram) handleQuoting(rmsg *config.Message, message *tgbotapi.Message) {
 	// Used to check if the message was a reply to the root topic
-	if message.ReplyToMessage != nil && !(message.ReplyToMessage.MessageID == message.MessageThreadID) { //nolint:nestif
+	if message.ReplyToMessage != nil && (!message.IsTopicMessage || message.ReplyToMessage.MessageID != message.MessageThreadID) { //nolint:nestif
 		usernameReply := ""
 		if message.ReplyToMessage.From != nil {
 			if b.GetBool("UseFirstName") {
@@ -219,14 +219,14 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 		// set the ID's from the channel or group message
 		rmsg.ID = strconv.Itoa(message.MessageID)
 		rmsg.Channel = strconv.FormatInt(message.Chat.ID, 10)
-		if message.MessageThreadID != 0 {
+		if message.IsTopicMessage {
 			rmsg.Channel += "/" + strconv.Itoa(message.MessageThreadID)
 		}
 
 		// preserve threading from telegram reply
 		if message.ReplyToMessage != nil &&
 			// Used to check if the message was a reply to the root topic
-			!(message.ReplyToMessage.MessageID == message.MessageThreadID) {
+			(!message.IsTopicMessage || message.ReplyToMessage.MessageID != message.MessageThreadID) {
 			rmsg.ParentID = strconv.Itoa(message.ReplyToMessage.MessageID)
 		}
 

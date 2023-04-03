@@ -54,7 +54,7 @@ require (
 	golang.org/x/oauth2 v0.6.0
 	golang.org/x/text v0.8.0
 	gomod.garykim.dev/nc-talk v0.3.0
-	google.golang.org/protobuf v1.29.0
+	google.golang.org/protobuf v1.29.1
 	layeh.com/gumble v0.0.0-20221205141517-d1df60a3cc14
 	modernc.org/sqlite v1.21.0
 )
