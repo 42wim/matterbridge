@@ -1,0 +1,17 @@
+# https://github.com/golangci/golangci-lint#config-file
+issues:
+  # Excluding configuration per-path and per-linter
+  exclude-rules:
+    # Ease some staticcheck warnings.
+    - path: (bigcache/bigcache_test\.go|bigcache\\bigcache_test\.go)
+      text: SA5001
+      linters:
+        - staticcheck
+    - path: (mysql/mysql_test\.go|mysql\\mysql_test\.go)
+      text: SA5001
+      linters:
+        - staticcheck
+    - path: (mysql/mysql\.go|mysql\\mysql\.go)
+      text: SA5001.*tempDB\.Close\(\)
+      linters:
+        - staticcheck

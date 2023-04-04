@@ -5,6 +5,9 @@ filippo.io/edwards25519/field
 # github.com/42wim/go-gitter v0.0.0-20170828205020-017310c2d557
 ## explicit
 github.com/42wim/go-gitter
+# github.com/AndreasBriese/bbloom v0.0.0-20190825152654-46b345b51c96
+## explicit
+github.com/AndreasBriese/bbloom
 # github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f
 ## explicit
 github.com/Baozisoftware/qrcode-terminal-go
@@ -68,6 +71,17 @@ github.com/d5/tengo/v2/token
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
+# github.com/dgraph-io/badger v1.6.0
+## explicit; go 1.12
+github.com/dgraph-io/badger
+github.com/dgraph-io/badger/options
+github.com/dgraph-io/badger/pb
+github.com/dgraph-io/badger/skl
+github.com/dgraph-io/badger/table
+github.com/dgraph-io/badger/y
+# github.com/dgryski/go-farm v0.0.0-20190423205320-6a90982ecee2
+## explicit
+github.com/dgryski/go-farm
 # github.com/dustin/go-humanize v1.0.0
 ## explicit
 github.com/dustin/go-humanize
@@ -361,6 +375,18 @@ github.com/pelletier/go-toml/v2/unstable
 # github.com/philhofer/fwd v1.1.1
 ## explicit
 github.com/philhofer/fwd
+# github.com/philippgille/gokv v0.6.0
+## explicit; go 1.13
+github.com/philippgille/gokv
+# github.com/philippgille/gokv/badgerdb v0.6.0
+## explicit; go 1.13
+github.com/philippgille/gokv/badgerdb
+# github.com/philippgille/gokv/encoding v0.0.0-20191011213304-eb77f15b9c61
+## explicit; go 1.12
+github.com/philippgille/gokv/encoding
+# github.com/philippgille/gokv/util v0.0.0-20191011213304-eb77f15b9c61
+## explicit; go 1.12
+github.com/philippgille/gokv/util
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
@@ -591,7 +617,9 @@ golang.org/x/net/http2
 golang.org/x/net/http2/h2c
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
+golang.org/x/net/internal/timeseries
 golang.org/x/net/publicsuffix
+golang.org/x/net/trace
 golang.org/x/net/websocket
 # golang.org/x/oauth2 v0.6.0
 ## explicit; go 1.17

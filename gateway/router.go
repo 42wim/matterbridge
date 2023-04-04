@@ -50,7 +50,12 @@ func NewRouter(rootLogger *logrus.Logger, cfg config.Config, bridgeMap map[strin
 		if _, ok := r.Gateways[entry.Name]; ok {
 			return nil, fmt.Errorf("Gateway with name %s already exists", entry.Name)
 		}
-		r.Gateways[entry.Name] = New(rootLogger, entry, r)
+		gw, err := New(rootLogger, entry, r)
+		if err != nil {
+			return nil, err
+		}
+
+		r.Gateways[entry.Name] = gw
 	}
 	return r, nil
 }
@@ -163,7 +168,21 @@ func (r *Router) handleReceive() {
 				// This is necessary as msgIDs will change if a bridge returns
 				// a different ID in response to edits.
 				if !exists {
-					gw.Messages.Add(msg.Protocol+" "+msg.ID, msgIDs)
+					// we're adding the original message as a "dest message"
+					// as when we get the dest messages for a delete the source message isnt in the list
+					// therefore the delete doesnt happen on the source platform.
+
+					/* ! use this when merging #1991 (these many branches are getting hard to keep track of)
+					msgIDs = append(msgIDs,
+						&BrMsgID{
+							Protocol:  srcBridge.Protocol,
+							DestName:  srcBridge.Name,
+							ChannelID: msg.Channel + srcBridge.Account,
+							ID:        msg.ID,
+						})
+					*/
+
+					gw.SetMessageMap(msg.Protocol+" "+msg.ID, msgIDs)
 				}
 			}
 		}
