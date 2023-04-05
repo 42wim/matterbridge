@@ -1,7 +1,6 @@
 module github.com/42wim/matterbridge
 
 require (
-	github.com/42wim/go-gitter v0.0.0-20170828205020-017310c2d557
 	github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f
 	github.com/Benau/tgsconverter v0.0.0-20210809170556-99f4a4f6337f
 	github.com/Philipp15b/go-steam v1.0.1-0.20200727090957-6ae9b3c0a560
@@ -100,8 +99,6 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/monaco-io/request v1.0.5 // indirect
-	github.com/mreiferson/go-httpclient v0.0.0-20201222173833-5e475fde3a4d // indirect
-	github.com/mrexodia/wray v0.0.0-20160318003008-78a2c1f284ff // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pborman/uuid v1.2.1 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
