@@ -264,13 +264,13 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 }
 
 func (b *Btelegram) handleGroupUpdate(update tgbotapi.Update) {
-	msg := update.Message
-
-	switch {
-	case msg.NewChatMembers != nil:
-		b.handleUserJoin(update)
-	case msg.LeftChatMember != nil:
-		b.handleUserLeave(update)
+	if msg := update.Message; msg != nil {
+		switch {
+		case msg.NewChatMembers != nil:
+			b.handleUserJoin(update)
+		case msg.LeftChatMember != nil:
+			b.handleUserLeave(update)
+		}
 	}
 }
 
