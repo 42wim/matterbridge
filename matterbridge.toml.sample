@@ -1339,6 +1339,26 @@ AppServiceHost="0.0.0.0"
 AppServicePort=1234
 
 #Path to the application service configuration file (in the format used by synapse)
+#Example content of an application service file:
+#```
+# id: "Matterbridge"
+# url: "http://<matterbridge_ip>:<appservice_port>"
+# as_token: "<redacted>"
+# hs_token: "<redacted>"
+# sender_localpart: "_bridge_bot"
+# namespaces:
+#   users:
+#     - exclusive: true
+#       regex: "@__bridge_.*"
+#   aliases:
+#     - exclusive: false
+#       regex: "#__bridge_.*"
+#   rooms: []
+# # handle ephemeral events
+# push_ephemeral: true
+# # same thing as 'push_ephemeral', but synapse currently expects this prefix until MSC2409 is fully stabilized
+# de.sorunome.msc2409.push_ephemeral: true
+#```
 AppServiceConfigPath="appservice_matterbridge_config.yml"
 
 ###################################################################
