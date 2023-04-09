@@ -29,8 +29,9 @@ const (
 )
 
 type RoomInfo struct {
-	name       string
-	appService bool
+	name                  string
+	appService            bool
+	lastMessageAppService time.Time
 }
 
 type Bmatrix struct {
