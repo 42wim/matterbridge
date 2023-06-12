@@ -65,7 +65,7 @@ func main() {
 	if err = r.Start(); err != nil {
 		logger.Fatalf("Starting gateway failed: %s", err)
 	}
-	logger.Printf("Gateway(s) started succesfully. Now relaying messages")
+	logger.Printf("Gateway(s) started successfully. Now relaying messages")
 	select {}
 }
 
