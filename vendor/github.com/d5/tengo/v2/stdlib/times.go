@@ -180,6 +180,10 @@ var timesModule = map[string]tengo.Object{
 		Name:  "to_utc",
 		Value: timesToUTC,
 	}, // to_utc(time) => time
+	"in_location": &tengo.UserFunction{
+		Name:  "in_location",
+		Value: timesInLocation,
+	}, // in_location(time, location) => time
 }
 
 func timesSleep(args ...tengo.Object) (ret tengo.Object, err error) {
@@ -430,7 +434,7 @@ func timesDate(args ...tengo.Object) (
 	ret tengo.Object,
 	err error,
 ) {
-	if len(args) != 7 {
+	if len(args) < 7 || len(args) > 8 {
 		err = tengo.ErrWrongNumArguments
 		return
 	}
@@ -499,9 +503,29 @@ func timesDate(args ...tengo.Object) (
 		return
 	}
 
+	var loc *time.Location
+	if len(args) == 8 {
+		i8, ok := tengo.ToString(args[7])
+		if !ok {
+			err = tengo.ErrInvalidArgumentType{
+				Name:     "eighth",
+				Expected: "string(compatible)",
+				Found:    args[7].TypeName(),
+			}
+			return
+		}
+		loc, err = time.LoadLocation(i8)
+		if err != nil {
+			ret = wrapError(err)
+			return
+		}
+	} else {
+		loc = time.Now().Location()
+	}
+
 	ret = &tengo.Time{
 		Value: time.Date(i1,
-			time.Month(i2), i3, i4, i5, i6, i7, time.Now().Location()),
+			time.Month(i2), i3, i4, i5, i6, i7, loc),
 	}
 
 	return
@@ -1109,6 +1133,46 @@ func timesTimeLocation(args ...tengo.Object) (
 	}
 
 	ret = &tengo.String{Value: t1.Location().String()}
+
+	return
+}
+
+func timesInLocation(args ...tengo.Object) (
+	ret tengo.Object,
+	err error,
+) {
+	if len(args) != 2 {
+		err = tengo.ErrWrongNumArguments
+		return
+	}
+
+	t1, ok := tengo.ToTime(args[0])
+	if !ok {
+		err = tengo.ErrInvalidArgumentType{
+			Name:     "first",
+			Expected: "time(compatible)",
+			Found:    args[0].TypeName(),
+		}
+		return
+	}
+
+	s2, ok := tengo.ToString(args[1])
+	if !ok {
+		err = tengo.ErrInvalidArgumentType{
+			Name:     "second",
+			Expected: "string(compatible)",
+			Found:    args[1].TypeName(),
+		}
+		return
+	}
+
+	location, err := time.LoadLocation(s2)
+	if err != nil {
+		ret = wrapError(err)
+		return
+	}
+
+	ret = &tengo.Time{Value: t1.In(location)}
 
 	return
 }

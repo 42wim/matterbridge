@@ -100,10 +100,11 @@ type Msg struct {
 	Members []string `json:"members,omitempty"`
 
 	// channels.replies, groups.replies, im.replies, mpim.replies
-	ReplyCount   int     `json:"reply_count,omitempty"`
-	Replies      []Reply `json:"replies,omitempty"`
-	ParentUserId string  `json:"parent_user_id,omitempty"`
-	LatestReply  string  `json:"latest_reply,omitempty"`
+	ReplyCount   int      `json:"reply_count,omitempty"`
+	ReplyUsers   []string `json:"reply_users,omitempty"`
+	Replies      []Reply  `json:"replies,omitempty"`
+	ParentUserId string   `json:"parent_user_id,omitempty"`
+	LatestReply  string   `json:"latest_reply,omitempty"`
 
 	// file_share, file_comment, file_mention
 	Files []File `json:"files,omitempty"`

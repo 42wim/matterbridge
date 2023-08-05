@@ -143,6 +143,7 @@ func (p *Parser) ParseFile() (file *File, err error) {
 	}
 
 	stmts := p.parseStmtList()
+	p.expect(token.EOF)
 	if p.errors.Len() > 0 {
 		return nil, p.errors.Err()
 	}

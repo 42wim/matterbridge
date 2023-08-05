@@ -52,9 +52,12 @@ type Tags map[string]string
 
 // ParseTags parses out the key-value map of tags. raw should only be the tag
 // data, not a full message. For example:
-//   @aaa=bbb;ccc;example.com/ddd=eee
+//
+//	@aaa=bbb;ccc;example.com/ddd=eee
+//
 // NOT:
-//   @aaa=bbb;ccc;example.com/ddd=eee :nick!ident@host.com PRIVMSG me :Hello
+//
+//	@aaa=bbb;ccc;example.com/ddd=eee :nick!ident@host.com PRIVMSG me :Hello
 //
 // Technically, there is a length limit of 4096, but the server should reject
 // tag messages longer than this.

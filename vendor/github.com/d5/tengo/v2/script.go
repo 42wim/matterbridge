@@ -247,8 +247,8 @@ func (c *Compiled) RunContext(ctx context.Context) (err error) {
 // Clone creates a new copy of Compiled. Cloned copies are safe for concurrent
 // use by multiple goroutines.
 func (c *Compiled) Clone() *Compiled {
-	c.lock.Lock()
-	defer c.lock.Unlock()
+	c.lock.RLock()
+	defer c.lock.RUnlock()
 
 	clone := &Compiled{
 		globalIndexes: c.globalIndexes,

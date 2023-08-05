@@ -13,7 +13,41 @@ import (
 
 const (
 	eventSpace byte = ' ' // Separator.
-	maxLength  int  = 510 // Maximum length is 510 (2 for line endings).
+
+	// TODO: if state tracking is enabled, we SHOULD be able to use it's known length.
+
+	// Can be overridden by the NICKLEN (or MAXNICKLEN) ISUPPORT parameter. 30 or 31
+	// are typical values for this parameter advertised by servers today.
+	defaultNickLength = 30
+	// The maximum length of <username> may be specified by the USERLEN RPL_ISUPPORT
+	// parameter. If this length is advertised, the username MUST be silently truncated
+	// to the given length before being used.
+	defaultUserLength = 18
+	// If a looked-up domain name is longer than this length (or overridden by the
+	// HOSTLEN ISUPPORT parameter), the server SHOULD opt to use the IP address instead,
+	// so that the hostname is underneath this length.
+	defaultHostLength = 63
+
+	// defaultPrefixPadding defaults the estimated prefix padding length of a given
+	// event. See also:
+	//   [ ":" ( servername / ( nickname [ [ "!" user ] "@" host ] ) ) SPACE ]
+	defaultPrefixPadding = 4
+)
+
+var (
+	// DefaultMaxLineLength is the default maximum length for an event. 510 (+2 for line endings)
+	// is used as a default as this is used by many older implementations.
+	//
+	// See also: RFC 2812
+	//   IRC messages are always lines of characters terminated with a CR-LF
+	//   (Carriage Return - Line Feed) pair, and these messages SHALL NOT
+	//   exceed 512 characters in length, counting all characters including
+	//   the trailing CR-LF.
+	DefaultMaxLineLength = 510
+
+	// DefaultMaxPrefixLength defines the default max ":nickname!user@host " length
+	// that's used to calculate line splitting.
+	DefaultMaxPrefixLength = defaultPrefixPadding + defaultNickLength + defaultUserLength + defaultHostLength
 )
 
 // cutCRFunc is used to trim CR characters from prefixes/messages.
@@ -125,16 +159,16 @@ func ParseEvent(raw string) (e *Event) {
 
 // Event represents an IRC protocol message, see RFC1459 section 2.3.1
 //
-//    <message>  :: [':' <prefix> <SPACE>] <command> <params> <crlf>
-//    <prefix>   :: <servername> | <nick> ['!' <user>] ['@' <host>]
-//    <command>  :: <letter>{<letter>} | <number> <number> <number>
-//    <SPACE>    :: ' '{' '}
-//    <params>   :: <SPACE> [':' <trailing> | <middle> <params>]
-//    <middle>   :: <Any *non-empty* sequence of octets not including SPACE or NUL
-//                   or CR or LF, the first of which may not be ':'>
-//    <trailing> :: <Any, possibly empty, sequence of octets not including NUL or
-//                   CR or LF>
-//    <crlf>     :: CR LF
+//	<message>  :: [':' <prefix> <SPACE>] <command> <params> <crlf>
+//	<prefix>   :: <servername> | <nick> ['!' <user>] ['@' <host>]
+//	<command>  :: <letter>{<letter>} | <number> <number> <number>
+//	<SPACE>    :: ' '{' '}
+//	<params>   :: <SPACE> [':' <trailing> | <middle> <params>]
+//	<middle>   :: <Any *non-empty* sequence of octets not including SPACE or NUL
+//	               or CR or LF, the first of which may not be ':'>
+//	<trailing> :: <Any, possibly empty, sequence of octets not including NUL or
+//	               CR or LF>
+//	<crlf>     :: CR LF
 type Event struct {
 	// Source is the origin of the event.
 	Source *Source `json:"source"`
@@ -223,11 +257,80 @@ func (e *Event) Equals(ev *Event) bool {
 	return true
 }
 
-// Len calculates the length of the string representation of event. Note that
-// this will return the true length (even if longer than what IRC supports),
-// which may be useful if you are trying to check and see if a message is
-// too long, to trim it down yourself.
+// split will split a potentially large event that is larger than what the server
+// supports, into multiple events. split will ignore events that cannot be split, and
+// if the event isn't longer than what the server supports, it will just return an array
+// with 1 entry, the original event.
+func (e *Event) split(maxLength int) []*Event {
+	if len(e.Params) < 1 || (e.Command != PRIVMSG && e.Command != NOTICE) {
+		return []*Event{e}
+	}
+
+	// Exclude source, even if it does exist, because the server will likely ignore the
+	// sent source anyway.
+	event := e.Copy()
+	event.Source = nil
+
+	if event.LenOpts(false) < maxLength {
+		return []*Event{e}
+	}
+
+	results := []*Event{}
+
+	// Will force the length check to include " :". This will allow us to get the length
+	// of the commands and necessary prefixes.
+	text := event.Last()
+	event.Params[len(event.Params)-1] = ""
+	cmdLen := event.LenOpts(false)
+
+	var ok bool
+	var ctcp *CTCPEvent
+	if ok, ctcp = e.IsCTCP(); ok {
+		if text == "" {
+			return []*Event{e}
+		}
+
+		text = ctcp.Text
+
+		// ctcpDelim's at start and end, and space between command and trailing text.
+		maxLength -= len(ctcp.Command) + 4
+	}
+
+	// If the command itself is longer than the limit, there is a problem. PRIVMSG should
+	// be 1->1 per RFC. Just return the original message and let it be the user of the
+	// libraries problem.
+	if cmdLen > maxLength {
+		return []*Event{e}
+	}
+
+	// Split the text into correctly size segments, and make the necessary number of
+	// events that duplicate the original event.
+	for _, split := range splitMessage(text, maxLength-cmdLen) {
+		if ctcp != nil {
+			split = string(ctcpDelim) + ctcp.Command + string(eventSpace) + split + string(ctcpDelim)
+		}
+		clonedEvent := event.Copy()
+		clonedEvent.Source = e.Source
+		clonedEvent.Params[len(e.Params)-1] = split
+		results = append(results, clonedEvent)
+	}
+
+	return results
+}
+
+// Len calculates the length of the string representation of event (including tags).
+// Note that this will return the true length (even if longer than what IRC supports),
+// which may be useful if you are trying to check and see if a message is too long, to
+// trim it down yourself.
 func (e *Event) Len() (length int) {
+	return e.LenOpts(true)
+}
+
+// LenOpts calculates the length of the string representation of event (with a toggle
+// for tags). Note that this will return the true length (even if longer than what IRC
+// supports), which may be useful if you are trying to check and see if a message is
+// too long, to trim it down yourself.
+func (e *Event) LenOpts(includeTags bool) (length int) {
 	if e.Tags != nil {
 		// Include tags and trailing space.
 		length = e.Tags.Len() + 1
@@ -248,7 +351,7 @@ func (e *Event) Len() (length int) {
 
 			// If param contains a space or it's empty, it's trailing, so it should be
 			// prefixed with a colon (:).
-			if i == len(e.Params)-1 && (strings.Contains(e.Params[i], " ") || strings.HasPrefix(e.Params[i], ":") || e.Params[i] == "") {
+			if i == len(e.Params)-1 && (strings.Contains(e.Params[i], " ") || e.Params[i] == "" || strings.HasPrefix(e.Params[i], ":")) {
 				length++
 			}
 		}
@@ -259,10 +362,6 @@ func (e *Event) Len() (length int) {
 
 // Bytes returns a []byte representation of event. Strips all newlines and
 // carriage returns.
-//
-// Per RFC2812 section 2.3, messages should not exceed 512 characters in
-// length. This method forces that limit by discarding any characters
-// exceeding the length limit.
 func (e *Event) Bytes() []byte {
 	buffer := new(bytes.Buffer)
 
@@ -284,17 +383,12 @@ func (e *Event) Bytes() []byte {
 	// Space separated list of arguments.
 	if len(e.Params) > 0 {
 		for i := 0; i < len(e.Params); i++ {
-			if i == len(e.Params)-1 && (strings.Contains(e.Params[i], " ") || strings.HasPrefix(e.Params[i], ":") || e.Params[i] == "") {
+			if i == len(e.Params)-1 && (strings.Contains(e.Params[i], " ") || e.Params[i] == "" || strings.HasPrefix(e.Params[i], ":")) {
 				buffer.WriteString(string(eventSpace) + string(messagePrefix) + e.Params[i])
 				continue
 			}
 			buffer.WriteString(string(eventSpace) + e.Params[i])
 		}
-	}
-
-	// We need the limit the buffer length.
-	if buffer.Len() > (maxLength) {
-		buffer.Truncate(maxLength)
 	}
 
 	// If we truncated in the middle of a utf8 character, we need to remove

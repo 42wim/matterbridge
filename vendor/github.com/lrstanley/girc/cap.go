@@ -267,9 +267,9 @@ func handleCAP(c *Client, e Event) {
 			}
 
 			if isError {
-				c.rx <- &Event{Command: ERROR, Params: []string{
+				c.receive(&Event{Command: ERROR, Params: []string{
 					fmt.Sprintf("closing connection: strict transport policy provided by server is invalid; possible MITM? config: %#v", sts),
-				}}
+				}})
 				return
 			}
 

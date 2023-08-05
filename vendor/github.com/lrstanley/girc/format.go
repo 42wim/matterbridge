@@ -7,13 +7,21 @@ package girc
 import (
 	"bytes"
 	"fmt"
+	"net/url"
 	"regexp"
 	"strings"
+	"unicode/utf8"
 )
 
 const (
-	fmtOpenChar  = '{'
-	fmtCloseChar = '}'
+	fmtOpenChar        = '{'
+	fmtCloseChar       = '}'
+	maxWordSplitLength = 30
+)
+
+var (
+	reCode  = regexp.MustCompile(`(\x02|\x1d|\x0f|\x03|\x16|\x1f|\x01)`)
+	reColor = regexp.MustCompile(`\x03([019]?\d(,[019]?\d)?)`)
 )
 
 var fmtColors = map[string]int{
@@ -66,9 +74,9 @@ var fmtCodes = map[string]string{
 //
 // For example:
 //
-//   client.Message("#channel", Fmt("{red}{b}Hello {red,blue}World{c}"))
+//	client.Message("#channel", Fmt("{red}{b}Hello {red,blue}World{c}"))
 func Fmt(text string) string {
-	var last = -1
+	last := -1
 	for i := 0; i < len(text); i++ {
 		if text[i] == fmtOpenChar {
 			last = i
@@ -136,16 +144,12 @@ func TrimFmt(text string) string {
 	return text
 }
 
-// This is really the only fastest way of doing this (marginally better than
-// actually trying to parse it manually.)
-var reStripColor = regexp.MustCompile(`\x03([019]?\d(,[019]?\d)?)?`)
-
 // StripRaw tries to strip all ASCII format codes that are used for IRC.
 // Primarily, foreground/background colors, and other control bytes like
 // reset, bold, italic, reverse, etc. This also is done in a specific way
 // in order to ensure no truncation of other non-irc formatting.
 func StripRaw(text string) string {
-	text = reStripColor.ReplaceAllString(text, "")
+	text = reColor.ReplaceAllString(text, "")
 
 	for _, code := range fmtCodes {
 		text = strings.ReplaceAll(text, code, "")
@@ -164,12 +168,12 @@ func StripRaw(text string) string {
 // all ASCII printable chars. This function will NOT do that for
 // compatibility reasons.
 //
-//   channel    =  ( "#" / "+" / ( "!" channelid ) / "&" ) chanstring
-//                 [ ":" chanstring ]
-//   chanstring =  0x01-0x07 / 0x08-0x09 / 0x0B-0x0C / 0x0E-0x1F / 0x21-0x2B
-//   chanstring =  / 0x2D-0x39 / 0x3B-0xFF
-//                   ; any octet except NUL, BELL, CR, LF, " ", "," and ":"
-//   channelid  = 5( 0x41-0x5A / digit )   ; 5( A-Z / 0-9 )
+//	channel    =  ( "#" / "+" / ( "!" channelid ) / "&" ) chanstring
+//	              [ ":" chanstring ]
+//	chanstring =  0x01-0x07 / 0x08-0x09 / 0x0B-0x0C / 0x0E-0x1F / 0x21-0x2B
+//	chanstring =  / 0x2D-0x39 / 0x3B-0xFF
+//	                ; any octet except NUL, BELL, CR, LF, " ", "," and ":"
+//	channelid  = 5( 0x41-0x5A / digit )   ; 5( A-Z / 0-9 )
 func IsValidChannel(channel string) bool {
 	if len(channel) <= 1 || len(channel) > 50 {
 		return false
@@ -214,10 +218,10 @@ func IsValidChannel(channel string) bool {
 // IsValidNick validates an IRC nickname. Note that this does not validate
 // IRC nickname length.
 //
-//   nickname =  ( letter / special ) *8( letter / digit / special / "-" )
-//   letter   =  0x41-0x5A / 0x61-0x7A
-//   digit    =  0x30-0x39
-//   special  =  0x5B-0x60 / 0x7B-0x7D
+//	nickname =  ( letter / special ) *8( letter / digit / special / "-" )
+//	letter   =  0x41-0x5A / 0x61-0x7A
+//	digit    =  0x30-0x39
+//	special  =  0x5B-0x60 / 0x7B-0x7D
 func IsValidNick(nick string) bool {
 	if nick == "" {
 		return false
@@ -253,8 +257,9 @@ func IsValidNick(nick string) bool {
 // not be supported on all networks. Some limit this to only a single period.
 //
 // Per RFC:
-//   user =  1*( %x01-09 / %x0B-0C / %x0E-1F / %x21-3F / %x41-FF )
-//           ; any octet except NUL, CR, LF, " " and "@"
+//
+//	user =  1*( %x01-09 / %x0B-0C / %x0E-1F / %x21-3F / %x41-FF )
+//	        ; any octet except NUL, CR, LF, " " and "@"
 func IsValidUser(name string) bool {
 	if name == "" {
 		return false
@@ -349,4 +354,173 @@ func Glob(input, match string) bool {
 
 	// Check suffix last.
 	return trailingGlob || strings.HasSuffix(input, parts[last])
+}
+
+// sliceInsert inserts a string into a slice at a specific index, while trying
+// to avoid as many allocations as possible.
+func sliceInsert(input []string, i int, v ...string) []string {
+	total := len(input) + len(v)
+	if total <= cap(input) {
+		output := input[:total]
+		copy(output[i+len(v):], input[i:])
+		copy(output[i:], v)
+		return output
+	}
+	output := make([]string, total)
+	copy(output, input[:i])
+	copy(output[i:], v)
+	copy(output[i+len(v):], input[i:])
+	return output
+}
+
+// splitMessage is a text splitter that takes into consideration a few things:
+//   - Ensuring the returned text is no longer than maxWidth.
+//   - Attempting to split at the closest word boundary, while still staying inside
+//     of the specific maxWidth.
+//   - if there is no good word boundary for longer words (or e.g. links, raw data, etc)
+//     that are above maxWordSplitLength characters, split the word into chunks to fit the
+//
+// maximum width.
+func splitMessage(input string, maxWidth int) (output []string) {
+	input = strings.ToValidUTF8(input, "?")
+
+	words := strings.FieldsFunc(strings.TrimSpace(input), func(r rune) bool {
+		switch r { // Same as unicode.IsSpace, but without ctrl/lf.
+		case '\t', '\v', '\f', ' ', 0x85, 0xA0:
+			return true
+		}
+		return false
+	})
+
+	output = []string{""}
+	codes := []string{}
+
+	var lastColor string
+	var match []string
+
+	for i := 0; i < len(words); i++ {
+		j := strings.IndexAny(words[i], "\n\r")
+		if j == -1 {
+			continue
+		}
+
+		word := words[i]
+		words[i] = word[:j]
+
+		words = sliceInsert(words, i+1, "", strings.TrimLeft(word[j:], "\n\r"))
+	}
+
+	for _, word := range words {
+		// Used in place of a single newline.
+		if word == "" {
+			// Last line was already empty or already only had control characters.
+			if output[len(output)-1] == "" || output[len(output)-1] == lastColor+word {
+				continue
+			}
+
+			output = append(output, strings.Join(codes, "")+lastColor+word)
+			continue
+		}
+
+		// Keep track of the last used color codes.
+		match = reColor.FindAllString(word, -1)
+		if len(match) > 0 {
+			lastColor = match[len(match)-1]
+		}
+
+		// Find all sequence codes -- this approach isn't perfect (ideally, a lexer
+		// should be used to track each exact type of code), but it's good enough for
+		// most cases.
+		match = reCode.FindAllString(word, -1)
+		if len(match) > 0 {
+			for _, m := range match {
+				// Reset was used, so clear all codes.
+				if m == fmtCodes["reset"] {
+					lastColor = ""
+					codes = []string{}
+					continue
+				}
+
+				// Check if we already have the code, and if so, remove it (closing).
+				contains := false
+				for i := 0; i < len(codes); i++ {
+					if m == codes[i] {
+						contains = true
+						codes = append(codes[:i], codes[i+1:]...)
+
+						// If it's a closing color code, reset the last used color
+						// as well.
+						if m == fmtCodes["clear"] {
+							lastColor = ""
+						}
+
+						break
+					}
+				}
+
+				// Track the new code, unless it's a color clear but we aren't
+				// tracking a color right now.
+				if !contains && (lastColor == "" || m != fmtCodes["clear"]) {
+					codes = append(codes, m)
+				}
+			}
+		}
+
+	checkappend:
+
+		// Check if we can append, otherwise we must split.
+		if 1+utf8.RuneCountInString(word)+utf8.RuneCountInString(output[len(output)-1]) < maxWidth {
+			if output[len(output)-1] != "" {
+				output[len(output)-1] += " "
+			}
+			output[len(output)-1] += word
+			continue
+		}
+
+		// If the word can fit on a line by itself, check if it's a url. If it is,
+		// put it on it's own line.
+		if utf8.RuneCountInString(word+strings.Join(codes, "")+lastColor) < maxWidth {
+			if _, err := url.Parse(word); err == nil {
+				output = append(output, strings.Join(codes, "")+lastColor+word)
+				continue
+			}
+		}
+
+		// Check to see if we can split by misc symbols, but must be at least a few
+		// characters long to be split by it.
+		if j := strings.IndexAny(word, "-+_=|/~:;,."); j > 3 && 1+utf8.RuneCountInString(word[0:j])+utf8.RuneCountInString(output[len(output)-1]) < maxWidth {
+			if output[len(output)-1] != "" {
+				output[len(output)-1] += " "
+			}
+			output[len(output)-1] += word[0:j]
+			word = word[j+1:]
+			goto checkappend
+		}
+
+		// If the word is longer than is acceptable to just put on the next line,
+		// split it into chunks. Also don't split the word if only a few characters
+		// left of the word would be on the next line.
+		if 1+utf8.RuneCountInString(word) > maxWordSplitLength && maxWidth-utf8.RuneCountInString(output[len(output)-1]) > 5 {
+			left := maxWidth - utf8.RuneCountInString(output[len(output)-1]) - 1 // -1 for the space
+
+			if output[len(output)-1] != "" {
+				output[len(output)-1] += " "
+			}
+			output[len(output)-1] += word[0:left]
+			word = word[left:]
+			goto checkappend
+		}
+
+		left := maxWidth - utf8.RuneCountInString(output[len(output)-1])
+		output[len(output)-1] += word[0:left]
+
+		output = append(output, strings.Join(codes, "")+lastColor)
+		word = word[left:]
+		goto checkappend
+	}
+
+	for i := 0; i < len(output); i++ {
+		output[i] = strings.ToValidUTF8(output[i], "?")
+	}
+	return output
 }

@@ -95,9 +95,9 @@ func handleSASL(c *Client, e Event) {
 		// some reason. The SASL spec and IRCv3 spec do not define a clear
 		// way to abort a SASL exchange, other than to disconnect, or proceed
 		// with CAP END.
-		c.rx <- &Event{Command: ERROR, Params: []string{
+		c.receive(&Event{Command: ERROR, Params: []string{
 			fmt.Sprintf("closing connection: SASL %s failed: %s", c.Config.SASL.Method(), e.Last()),
-		}}
+		}})
 		return
 	}
 
@@ -131,5 +131,5 @@ func handleSASLError(c *Client, e Event) {
 	// Authentication failed. The SASL spec and IRCv3 spec do not define a
 	// clear way to abort a SASL exchange, other than to disconnect, or
 	// proceed with CAP END.
-	c.rx <- &Event{Command: ERROR, Params: []string{"closing connection: " + e.Last()}}
+	c.receive(&Event{Command: ERROR, Params: []string{"closing connection: " + e.Last()}})
 }

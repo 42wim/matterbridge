@@ -98,10 +98,10 @@ func (p *Parser) figureBlock(data []byte, doRender bool) int {
 	}
 
 	figure := &ast.CaptionFigure{}
-	p.addBlock(figure)
-	p.block(raw.Bytes())
+	p.AddBlock(figure)
+	p.Block(raw.Bytes())
 
-	defer p.finalize(figure)
+	defer p.Finalize(figure)
 
 	if captionContent, id, consumed := p.caption(data[beg:], []byte("Figure: ")); consumed > 0 {
 		caption := &ast.Caption{}
@@ -113,7 +113,5 @@ func (p *Parser) figureBlock(data []byte, doRender bool) int {
 
 		beg += consumed
 	}
-
-	p.finalize(figure)
 	return beg
 }

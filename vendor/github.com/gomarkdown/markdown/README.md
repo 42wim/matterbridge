@@ -6,7 +6,16 @@ Package `github.com/gomarkdown/markdown` is a Go library for parsing Markdown te
 
 It's very fast and supports common extensions.
 
-Try code examples online: https://replit.com/@kjk1?path=folder/gomarkdown
+Tutorial: https://blog.kowalczyk.info/article/cxn3/advanced-markdown-processing-in-go.html
+
+Code examples:
+* https://onlinetool.io/goplayground/#txO7hJ-ibeU : basic markdown => HTML
+* https://onlinetool.io/goplayground/#yFRIWRiu-KL : customize HTML renderer
+* https://onlinetool.io/goplayground/#2yV5-HDKBUV : modify AST
+* https://onlinetool.io/goplayground/#9fqKwRbuJ04 : customize parser
+* https://onlinetool.io/goplayground/#Bk0zTvrzUDR : syntax highlight
+
+Those examples are also in [examples](./examples) directory.
 
 ## API Docs:
 
@@ -15,101 +24,58 @@ Try code examples online: https://replit.com/@kjk1?path=folder/gomarkdown
 - https://pkg.go.dev/github.com/gomarkdown/markdown/parser : parser
 - https://pkg.go.dev/github.com/gomarkdown/markdown/html : html renderer
 
-## Users
-
-Some tools using this package: https://pkg.go.dev/github.com/gomarkdown/markdown?tab=importedby
-
 ## Usage
 
 To convert markdown text to HTML using reasonable defaults:
 
 ```go
-md := []byte("## markdown document")
-output := markdown.ToHTML(md, nil, nil)
-```
+package main
 
-Try it online: https://replit.com/@kjk1/gomarkdown-basic
-
-## Customizing markdown parser
-
-Markdown format is loosely specified and there are multiple extensions invented after original specification was created.
-
-The parser supports several [extensions](https://pkg.go.dev/github.com/gomarkdown/markdown/parser#Extensions).
-
-Default parser uses most common `parser.CommonExtensions` but you can easily use parser with custom extension:
-
-```go
 import (
-    "github.com/gomarkdown/markdown"
-    "github.com/gomarkdown/markdown/parser"
+	"os"
+
+	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/ast"
+	"github.com/gomarkdown/markdown/html"
+	"github.com/gomarkdown/markdown/parser"
+
+	"fmt"
 )
 
-extensions := parser.CommonExtensions | parser.AutoHeadingIDs
-parser := parser.NewWithExtensions(extensions)
+var mds = `# header
 
-md := []byte("markdown text")
-html := markdown.ToHTML(md, parser, nil)
-```
+Sample text.
 
-Try it online: https://replit.com/@kjk1/gomarkdown-customized-html-renderer
+[link](http://example.com)
+`
 
-## Customizing HTML renderer
+func mdToHTML(md []byte) []byte {
+	// create markdown parser with extensions
+	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
+	p := parser.NewWithExtensions(extensions)
+	doc := p.Parse(md)
 
-Similarly, HTML renderer can be configured with different [options](https://pkg.go.dev/github.com/gomarkdown/markdown/html#RendererOptions)
+	// create HTML renderer with extensions
+	htmlFlags := html.CommonFlags | html.HrefTargetBlank
+	opts := html.RendererOptions{Flags: htmlFlags}
+	renderer := html.NewRenderer(opts)
 
-Here's how to use a custom renderer:
-
-```go
-import (
-    "github.com/gomarkdown/markdown"
-    "github.com/gomarkdown/markdown/html"
-)
-
-htmlFlags := html.CommonFlags | html.HrefTargetBlank
-opts := html.RendererOptions{Flags: htmlFlags}
-renderer := html.NewRenderer(opts)
-
-md := []byte("markdown text")
-html := markdown.ToHTML(md, nil, renderer)
-```
-
-Try it online: https://replit.com/@kjk1/gomarkdown-customized-html-renderer
-
-HTML renderer also supports reusing most of the logic and overriding rendering of only specific nodes.
-
-You can provide [RenderNodeFunc](https://pkg.go.dev/github.com/gomarkdown/markdown/html#RenderNodeFunc) in [RendererOptions](https://pkg.go.dev/github.com/gomarkdown/markdown/html#RendererOptions).
-
-The function is called for each node in AST, you can implement custom rendering logic and tell HTML renderer to skip rendering this node.
-
-Here's the simplest example that drops all code blocks from the output:
-
-````go
-import (
-    "github.com/gomarkdown/markdown"
-    "github.com/gomarkdown/markdown/ast"
-    "github.com/gomarkdown/markdown/html"
-)
-
-// return (ast.GoToNext, true) to tell html renderer to skip rendering this node
-// (because you've rendered it)
-func renderHookDropCodeBlock(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
-    // skip all nodes that are not CodeBlock nodes
-	if _, ok := node.(*ast.CodeBlock); !ok {
-		return ast.GoToNext, false
-    }
-    // custom rendering logic for ast.CodeBlock. By doing nothing it won't be
-    // present in the output
-	return ast.GoToNext, true
+	return markdown.Render(doc, renderer)
 }
 
-opts := html.RendererOptions{
-    Flags: html.CommonFlags,
-    RenderNodeHook: renderHookDropCodeBlock,
+func main() {
+	md := []byte(mds)
+	html := mdToHTML(md)
+
+	fmt.Printf("--- Markdown:\n%s\n\n--- HTML:\n%s\n", md, html)
 }
-renderer := html.NewRenderer(opts)
-md := "test\n```\nthis code block will be dropped from output\n```\ntext"
-html := markdown.ToHTML([]byte(md), nil, renderer)
-````
+```
+
+Try it online: https://onlinetool.io/goplayground/#txO7hJ-ibeU
+
+For more documentation read [this guide](https://blog.kowalczyk.info/article/cxn3/advanced-markdown-processing-in-go.html)
+
+Comparing to other markdown parsers: https://babelmark.github.io/
 
 ## Sanitize untrusted content
 
@@ -128,12 +94,6 @@ import (
 maybeUnsafeHTML := markdown.ToHTML(md, nil, nil)
 html := bluemonday.UGCPolicy().SanitizeBytes(maybeUnsafeHTML)
 ```
-
-## Windows / Mac newlines
-
-The library only supports Unix newlines. If you have markdown text with possibly
-Windows / Mac newlines, normalize newlines before calling this library using
-`d = markdown.NormalizeNewlines(d)`
 
 ## mdtohtml command-line tool
 
@@ -323,26 +283,15 @@ implements the following extensions:
 
 - **Mmark support**, see <https://mmark.miek.nl/post/syntax/> for all new syntax elements this adds.
 
-## Todo
+## Users
 
-- port https://github.com/russross/blackfriday/issues/348
-- port [LaTeX output](https://github.com/Ambrevar/Blackfriday-LaTeX):
-  renders output as LaTeX.
-- port https://github.com/shurcooL/github_flavored_markdown to markdown
-- port [markdownfmt](https://github.com/shurcooL/markdownfmt): like gofmt,
-  but for markdown.
-- More unit testing
-- Improve unicode support. It does not understand all unicode
-  rules (about what constitutes a letter, a punctuation symbol,
-  etc.), so it may fail to detect word boundaries correctly in
-  some instances. It is safe on all utf-8 input.
+Some tools using this package: https://pkg.go.dev/github.com/gomarkdown/markdown?tab=importedby
 
 ## History
 
-markdown is a fork of v2 of https://github.com/russross/blackfriday that is:
+markdown is a fork of v2 of https://github.com/russross/blackfriday.
 
-- actively maintained (sadly in Feb 2018 blackfriday was inactive for 5 months with many bugs and pull requests accumulated)
-- refactored API (split into ast/parser/html sub-packages)
+I refactored the API (split into ast/parser/html sub-packages).
 
 Blackfriday itself was based on C implementation [sundown](https://github.com/vmg/sundown) which in turn was based on [libsoldout](http://fossil.instinctive.eu/libsoldout/home).
 

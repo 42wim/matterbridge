@@ -465,3 +465,13 @@ func Xiswspace(t *TLS, wc wctype.Wint_t) int32 {
 func Xiswalnum(t *TLS, wc wctype.Wint_t) int32 {
 	return Bool32(unicode.IsLetter(rune(wc)) || unicode.IsNumber(rune(wc)))
 }
+
+// int setrlimit(int resource, const struct rlimit *rlim);
+func Xsetrlimit64(t *TLS, resource int32, rlim uintptr) int32 {
+	if _, _, err := unix.Syscall(unix.SYS_SETRLIMIT, uintptr(resource), uintptr(rlim), 0); err != 0 {
+		t.setErrno(err)
+		return -1
+	}
+
+	return 0
+}

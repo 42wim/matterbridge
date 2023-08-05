@@ -223,6 +223,7 @@ func (s *Session) RequestWithLockedBucket(method, urlStr, contentType string, b 
 	for _, opt := range options {
 		opt(cfg)
 	}
+	req = cfg.Request
 
 	if s.Debug {
 		for k, v := range req.Header {
