@@ -8,9 +8,9 @@ package whatsmeow
 
 import (
 	"context"
-	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -30,20 +30,35 @@ import (
 	waBinary "go.mau.fi/whatsmeow/binary"
 	waProto "go.mau.fi/whatsmeow/binary/proto"
 	"go.mau.fi/whatsmeow/types"
+	"go.mau.fi/whatsmeow/types/events"
+	"go.mau.fi/whatsmeow/util/randbytes"
 )
+
+// GenerateMessageID generates a random string that can be used as a message ID on WhatsApp.
+//
+//	msgID := cli.GenerateMessageID()
+//	cli.SendMessage(context.Background(), targetJID, &waProto.Message{...}, whatsmeow.SendRequestExtra{ID: msgID})
+func (cli *Client) GenerateMessageID() types.MessageID {
+	data := make([]byte, 8, 8+20+16)
+	binary.BigEndian.PutUint64(data, uint64(time.Now().Unix()))
+	ownID := cli.getOwnID()
+	if !ownID.IsEmpty() {
+		data = append(data, []byte(ownID.User)...)
+		data = append(data, []byte("@c.us")...)
+	}
+	data = append(data, randbytes.Make(16)...)
+	hash := sha256.Sum256(data)
+	return "3EB0" + strings.ToUpper(hex.EncodeToString(hash[:9]))
+}
 
 // GenerateMessageID generates a random string that can be used as a message ID on WhatsApp.
 //
 //	msgID := whatsmeow.GenerateMessageID()
 //	cli.SendMessage(context.Background(), targetJID, &waProto.Message{...}, whatsmeow.SendRequestExtra{ID: msgID})
+//
+// Deprecated: WhatsApp web has switched to using a hash of the current timestamp, user id and random bytes. Use Client.GenerateMessageID instead.
 func GenerateMessageID() types.MessageID {
-	id := make([]byte, 8)
-	_, err := rand.Read(id)
-	if err != nil {
-		// Out of entropy
-		panic(err)
-	}
-	return "3EB0" + strings.ToUpper(hex.EncodeToString(id))
+	return "3EB0" + strings.ToUpper(hex.EncodeToString(randbytes.Make(8)))
 }
 
 type MessageDebugTimings struct {
@@ -132,7 +147,7 @@ func (cli *Client) SendMessage(ctx context.Context, to types.JID, message *waPro
 	}
 
 	if len(req.ID) == 0 {
-		req.ID = GenerateMessageID()
+		req.ID = cli.GenerateMessageID()
 	}
 	resp.ID = req.ID
 
@@ -216,17 +231,9 @@ func (cli *Client) RevokeMessage(chat types.JID, id types.MessageID) (SendRespon
 	return cli.SendMessage(context.TODO(), chat, cli.BuildRevoke(chat, types.EmptyJID, id))
 }
 
-// BuildRevoke builds a message revocation message using the given variables.
-// The built message can be sent normally using Client.SendMessage.
-//
-// To revoke your own messages, pass your JID or an empty JID as the second parameter (sender).
-//
-//	resp, err := cli.SendMessage(context.Background(), chat, cli.BuildRevoke(chat, types.EmptyJID, originalMessageID)
-//
-// To revoke someone else's messages when you are group admin, pass the message sender's JID as the second parameter.
-//
-//	resp, err := cli.SendMessage(context.Background(), chat, cli.BuildRevoke(chat, senderJID, originalMessageID)
-func (cli *Client) BuildRevoke(chat, sender types.JID, id types.MessageID) *waProto.Message {
+// BuildMessageKey builds a MessageKey object, which is used to refer to previous messages
+// for things such as replies, revocations and reactions.
+func (cli *Client) BuildMessageKey(chat, sender types.JID, id types.MessageID) *waProto.MessageKey {
 	key := &waProto.MessageKey{
 		FromMe:    proto.Bool(true),
 		Id:        proto.String(id),
@@ -238,13 +245,89 @@ func (cli *Client) BuildRevoke(chat, sender types.JID, id types.MessageID) *waPr
 			key.Participant = proto.String(sender.ToNonAD().String())
 		}
 	}
+	return key
+}
+
+// BuildRevoke builds a message revocation message using the given variables.
+// The built message can be sent normally using Client.SendMessage.
+//
+// To revoke your own messages, pass your JID or an empty JID as the second parameter (sender).
+//
+//	resp, err := cli.SendMessage(context.Background(), chat, cli.BuildRevoke(chat, types.EmptyJID, originalMessageID)
+//
+// To revoke someone else's messages when you are group admin, pass the message sender's JID as the second parameter.
+//
+//	resp, err := cli.SendMessage(context.Background(), chat, cli.BuildRevoke(chat, senderJID, originalMessageID)
+func (cli *Client) BuildRevoke(chat, sender types.JID, id types.MessageID) *waProto.Message {
 	return &waProto.Message{
 		ProtocolMessage: &waProto.ProtocolMessage{
 			Type: waProto.ProtocolMessage_REVOKE.Enum(),
-			Key:  key,
+			Key:  cli.BuildMessageKey(chat, sender, id),
 		},
 	}
 }
+
+// BuildReaction builds a message reaction message using the given variables.
+// The built message can be sent normally using Client.SendMessage.
+//
+//	resp, err := cli.SendMessage(context.Background(), chat, cli.BuildReaction(chat, senderJID, targetMessageID, "🐈️")
+func (cli *Client) BuildReaction(chat, sender types.JID, id types.MessageID, reaction string) *waProto.Message {
+	return &waProto.Message{
+		ReactionMessage: &waProto.ReactionMessage{
+			Key:               cli.BuildMessageKey(chat, sender, id),
+			Text:              proto.String(reaction),
+			SenderTimestampMs: proto.Int64(time.Now().UnixMilli()),
+		},
+	}
+}
+
+// BuildUnavailableMessageRequest builds a message to request the user's primary device to send
+// the copy of a message that this client was unable to decrypt.
+//
+// The built message can be sent using Client.SendMessage, but you must pass whatsmeow.SendRequestExtra{Peer: true} as the last parameter.
+// The full response will come as a ProtocolMessage with type `PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE`.
+// The response events will also be dispatched as normal *events.Message's with UnavailableRequestID set to the request message ID.
+func (cli *Client) BuildUnavailableMessageRequest(chat, sender types.JID, id string) *waProto.Message {
+	return &waProto.Message{
+		ProtocolMessage: &waProto.ProtocolMessage{
+			Type: waProto.ProtocolMessage_PEER_DATA_OPERATION_REQUEST_MESSAGE.Enum(),
+			PeerDataOperationRequestMessage: &waProto.PeerDataOperationRequestMessage{
+				PeerDataOperationRequestType: waProto.PeerDataOperationRequestType_PLACEHOLDER_MESSAGE_RESEND.Enum(),
+				PlaceholderMessageResendRequest: []*waProto.PeerDataOperationRequestMessage_PlaceholderMessageResendRequest{{
+					MessageKey: cli.BuildMessageKey(chat, sender, id),
+				}},
+			},
+		},
+	}
+}
+
+// BuildHistorySyncRequest builds a message to request additional history from the user's primary device.
+//
+// The built message can be sent using Client.SendMessage, but you must pass whatsmeow.SendRequestExtra{Peer: true} as the last parameter.
+// The response will come as an *events.HistorySync with type `ON_DEMAND`.
+//
+// The response will contain to `count` messages immediately before the given message.
+// The recommended number of messages to request at a time is 50.
+func (cli *Client) BuildHistorySyncRequest(lastKnownMessageInfo *types.MessageInfo, count int) *waProto.Message {
+	return &waProto.Message{
+		ProtocolMessage: &waProto.ProtocolMessage{
+			Type: waProto.ProtocolMessage_PEER_DATA_OPERATION_REQUEST_MESSAGE.Enum(),
+			PeerDataOperationRequestMessage: &waProto.PeerDataOperationRequestMessage{
+				PeerDataOperationRequestType: waProto.PeerDataOperationRequestType_HISTORY_SYNC_ON_DEMAND.Enum(),
+				HistorySyncOnDemandRequest: &waProto.PeerDataOperationRequestMessage_HistorySyncOnDemandRequest{
+					ChatJid:              proto.String(lastKnownMessageInfo.Chat.String()),
+					OldestMsgId:          proto.String(lastKnownMessageInfo.ID),
+					OldestMsgFromMe:      proto.Bool(lastKnownMessageInfo.IsFromMe),
+					OnDemandMsgCount:     proto.Int32(int32(count)),
+					OldestMsgTimestampMs: proto.Int64(lastKnownMessageInfo.Timestamp.UnixMilli()),
+				},
+			},
+		},
+	}
+}
+
+// EditWindow specifies how long a message can be edited for after it was sent.
+const EditWindow = 20 * time.Minute
 
 // BuildEdit builds a message edit message using the given variables.
 // The built message can be sent normally using Client.SendMessage.
@@ -399,11 +482,15 @@ func (cli *Client) sendGroup(ctx context.Context, to, ownID types.JID, id types.
 
 	phash := participantListHashV2(allDevices)
 	node.Attrs["phash"] = phash
-	node.Content = append(node.GetChildren(), waBinary.Node{
+	skMsg := waBinary.Node{
 		Tag:     "enc",
 		Content: ciphertext,
 		Attrs:   waBinary.Attrs{"v": "2", "type": "skmsg"},
-	})
+	}
+	if mediaType := getMediaTypeFromMessage(message); mediaType != "" {
+		skMsg.Attrs["mediatype"] = mediaType
+	}
+	node.Content = append(node.GetChildren(), skMsg)
 
 	start = time.Now()
 	data, err := cli.sendNodeAndGetData(*node)
@@ -463,13 +550,106 @@ func getTypeFromMessage(msg *waProto.Message) string {
 		return "reaction"
 	case msg.PollCreationMessage != nil, msg.PollUpdateMessage != nil:
 		return "poll"
+	case getMediaTypeFromMessage(msg) != "":
+		return "media"
 	case msg.Conversation != nil, msg.ExtendedTextMessage != nil, msg.ProtocolMessage != nil:
 		return "text"
-	//TODO this requires setting mediatype in the enc nodes
-	//case msg.ImageMessage != nil, msg.DocumentMessage != nil, msg.AudioMessage != nil, msg.VideoMessage != nil:
-	//	return "media"
 	default:
 		return "text"
+	}
+}
+
+func getMediaTypeFromMessage(msg *waProto.Message) string {
+	switch {
+	case msg.ViewOnceMessage != nil:
+		return getMediaTypeFromMessage(msg.ViewOnceMessage.Message)
+	case msg.ViewOnceMessageV2 != nil:
+		return getMediaTypeFromMessage(msg.ViewOnceMessageV2.Message)
+	case msg.EphemeralMessage != nil:
+		return getMediaTypeFromMessage(msg.EphemeralMessage.Message)
+	case msg.DocumentWithCaptionMessage != nil:
+		return getMediaTypeFromMessage(msg.DocumentWithCaptionMessage.Message)
+	case msg.ExtendedTextMessage != nil && msg.ExtendedTextMessage.Title != nil:
+		return "url"
+	case msg.ImageMessage != nil:
+		return "image"
+	case msg.StickerMessage != nil:
+		return "sticker"
+	case msg.DocumentMessage != nil:
+		return "document"
+	case msg.AudioMessage != nil:
+		if msg.AudioMessage.GetPtt() {
+			return "ptt"
+		} else {
+			return "audio"
+		}
+	case msg.VideoMessage != nil:
+		if msg.VideoMessage.GetGifPlayback() {
+			return "gif"
+		} else {
+			return "video"
+		}
+	case msg.ContactMessage != nil:
+		return "vcard"
+	case msg.ContactsArrayMessage != nil:
+		return "contact_array"
+	case msg.ListMessage != nil:
+		return "list"
+	case msg.ListResponseMessage != nil:
+		return "list_response"
+	case msg.ButtonsResponseMessage != nil:
+		return "buttons_response"
+	case msg.OrderMessage != nil:
+		return "order"
+	case msg.ProductMessage != nil:
+		return "product"
+	case msg.InteractiveResponseMessage != nil:
+		return "native_flow_response"
+	default:
+		return ""
+	}
+}
+
+func getButtonTypeFromMessage(msg *waProto.Message) string {
+	switch {
+	case msg.ViewOnceMessage != nil:
+		return getButtonTypeFromMessage(msg.ViewOnceMessage.Message)
+	case msg.ViewOnceMessageV2 != nil:
+		return getButtonTypeFromMessage(msg.ViewOnceMessageV2.Message)
+	case msg.EphemeralMessage != nil:
+		return getButtonTypeFromMessage(msg.EphemeralMessage.Message)
+	case msg.ButtonsMessage != nil:
+		return "buttons"
+	case msg.ButtonsResponseMessage != nil:
+		return "buttons_response"
+	case msg.ListMessage != nil:
+		return "list"
+	case msg.ListResponseMessage != nil:
+		return "list_response"
+	case msg.InteractiveResponseMessage != nil:
+		return "interactive_response"
+	default:
+		return ""
+	}
+}
+
+func getButtonAttributes(msg *waProto.Message) waBinary.Attrs {
+	switch {
+	case msg.ViewOnceMessage != nil:
+		return getButtonAttributes(msg.ViewOnceMessage.Message)
+	case msg.ViewOnceMessageV2 != nil:
+		return getButtonAttributes(msg.ViewOnceMessageV2.Message)
+	case msg.EphemeralMessage != nil:
+		return getButtonAttributes(msg.EphemeralMessage.Message)
+	case msg.TemplateMessage != nil:
+		return waBinary.Attrs{}
+	case msg.ListMessage != nil:
+		return waBinary.Attrs{
+			"v":    "2",
+			"type": strings.ToLower(waProto.ListMessage_ListType_name[int32(msg.ListMessage.GetListType())]),
+		}
+	default:
+		return waBinary.Attrs{}
 	}
 }
 
@@ -484,6 +664,8 @@ const RemoveReactionText = ""
 
 func getEditAttribute(msg *waProto.Message) string {
 	switch {
+	case msg.EditedMessage != nil && msg.EditedMessage.Message != nil:
+		return getEditAttribute(msg.EditedMessage.Message)
 	case msg.ProtocolMessage != nil && msg.ProtocolMessage.GetKey() != nil:
 		switch msg.ProtocolMessage.GetType() {
 		case waProto.ProtocolMessage_REVOKE:
@@ -493,7 +675,7 @@ func getEditAttribute(msg *waProto.Message) string {
 				return EditAttributeAdminRevoke
 			}
 		case waProto.ProtocolMessage_MESSAGE_EDIT:
-			if msg.EditedMessage != nil {
+			if msg.ProtocolMessage.EditedMessage != nil {
 				return EditAttributeMessageEdit
 			}
 		}
@@ -523,7 +705,7 @@ func (cli *Client) preparePeerMessageNode(to types.JID, id types.MessageID, mess
 		return nil, err
 	}
 	start = time.Now()
-	encrypted, isPreKey, err := cli.encryptMessageForDevice(plaintext, to, nil)
+	encrypted, isPreKey, err := cli.encryptMessageForDevice(plaintext, to, nil, nil)
 	timings.PeerEncrypt = time.Since(start)
 	if err != nil {
 		return nil, fmt.Errorf("failed to encrypt peer message for %s: %v", to, err)
@@ -539,34 +721,12 @@ func (cli *Client) preparePeerMessageNode(to types.JID, id types.MessageID, mess
 	}, nil
 }
 
-func (cli *Client) prepareMessageNode(ctx context.Context, to, ownID types.JID, id types.MessageID, message *waProto.Message, participants []types.JID, plaintext, dsmPlaintext []byte, timings *MessageDebugTimings) (*waBinary.Node, []types.JID, error) {
-	start := time.Now()
-	allDevices, err := cli.GetUserDevicesContext(ctx, participants)
-	timings.GetDevices = time.Since(start)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to get device list: %w", err)
-	}
-
-	attrs := waBinary.Attrs{
-		"id":   id,
-		"type": getTypeFromMessage(message),
-		"to":   to,
-	}
-	if editAttr := getEditAttribute(message); editAttr != "" {
-		attrs["edit"] = editAttr
-	}
-
-	start = time.Now()
-	participantNodes, includeIdentity := cli.encryptMessageForDevices(ctx, allDevices, ownID, id, plaintext, dsmPlaintext)
-	timings.PeerEncrypt = time.Since(start)
-	content := []waBinary.Node{{
-		Tag:     "participants",
-		Content: participantNodes,
-	}}
+func (cli *Client) getMessageContent(baseNode waBinary.Node, message *waProto.Message, msgAttrs waBinary.Attrs, includeIdentity bool) []waBinary.Node {
+	content := []waBinary.Node{baseNode}
 	if includeIdentity {
 		content = append(content, cli.makeDeviceIdentityNode())
 	}
-	if attrs["type"] == "poll" {
+	if msgAttrs["type"] == "poll" {
 		pollType := "creation"
 		if message.PollUpdateMessage != nil {
 			pollType = "vote"
@@ -578,10 +738,56 @@ func (cli *Client) prepareMessageNode(ctx context.Context, to, ownID types.JID, 
 			},
 		})
 	}
+	if buttonType := getButtonTypeFromMessage(message); buttonType != "" {
+		content = append(content, waBinary.Node{
+			Tag: "biz",
+			Content: []waBinary.Node{{
+				Tag:   buttonType,
+				Attrs: getButtonAttributes(message),
+			}},
+		})
+	}
+	return content
+}
+
+func (cli *Client) prepareMessageNode(ctx context.Context, to, ownID types.JID, id types.MessageID, message *waProto.Message, participants []types.JID, plaintext, dsmPlaintext []byte, timings *MessageDebugTimings) (*waBinary.Node, []types.JID, error) {
+	start := time.Now()
+	allDevices, err := cli.GetUserDevicesContext(ctx, participants)
+	timings.GetDevices = time.Since(start)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to get device list: %w", err)
+	}
+
+	msgType := getTypeFromMessage(message)
+	encAttrs := waBinary.Attrs{}
+	// Only include encMediaType for 1:1 messages (groups don't have a device-sent message plaintext)
+	if encMediaType := getMediaTypeFromMessage(message); dsmPlaintext != nil && encMediaType != "" {
+		encAttrs["mediatype"] = encMediaType
+	}
+	attrs := waBinary.Attrs{
+		"id":   id,
+		"type": msgType,
+		"to":   to,
+	}
+	if editAttr := getEditAttribute(message); editAttr != "" {
+		attrs["edit"] = editAttr
+		encAttrs["decrypt-fail"] = string(events.DecryptFailHide)
+	}
+	if msgType == "reaction" {
+		encAttrs["decrypt-fail"] = string(events.DecryptFailHide)
+	}
+
+	start = time.Now()
+	participantNodes, includeIdentity := cli.encryptMessageForDevices(ctx, allDevices, ownID, id, plaintext, dsmPlaintext, encAttrs)
+	timings.PeerEncrypt = time.Since(start)
+	participantNode := waBinary.Node{
+		Tag:     "participants",
+		Content: participantNodes,
+	}
 	return &waBinary.Node{
 		Tag:     "message",
 		Attrs:   attrs,
-		Content: content,
+		Content: cli.getMessageContent(participantNode, message, attrs, includeIdentity),
 	}, allDevices, nil
 }
 
@@ -619,7 +825,7 @@ func (cli *Client) makeDeviceIdentityNode() waBinary.Node {
 	}
 }
 
-func (cli *Client) encryptMessageForDevices(ctx context.Context, allDevices []types.JID, ownID types.JID, id string, msgPlaintext, dsmPlaintext []byte) ([]waBinary.Node, bool) {
+func (cli *Client) encryptMessageForDevices(ctx context.Context, allDevices []types.JID, ownID types.JID, id string, msgPlaintext, dsmPlaintext []byte, encAttrs waBinary.Attrs) ([]waBinary.Node, bool) {
 	includeIdentity := false
 	participantNodes := make([]waBinary.Node, 0, len(allDevices))
 	var retryDevices []types.JID
@@ -631,7 +837,7 @@ func (cli *Client) encryptMessageForDevices(ctx context.Context, allDevices []ty
 			}
 			plaintext = dsmPlaintext
 		}
-		encrypted, isPreKey, err := cli.encryptMessageForDeviceAndWrap(plaintext, jid, nil)
+		encrypted, isPreKey, err := cli.encryptMessageForDeviceAndWrap(plaintext, jid, nil, encAttrs)
 		if errors.Is(err, ErrNoSession) {
 			retryDevices = append(retryDevices, jid)
 			continue
@@ -659,7 +865,7 @@ func (cli *Client) encryptMessageForDevices(ctx context.Context, allDevices []ty
 				if jid.User == ownID.User && dsmPlaintext != nil {
 					plaintext = dsmPlaintext
 				}
-				encrypted, isPreKey, err := cli.encryptMessageForDeviceAndWrap(plaintext, jid, resp.bundle)
+				encrypted, isPreKey, err := cli.encryptMessageForDeviceAndWrap(plaintext, jid, resp.bundle, encAttrs)
 				if err != nil {
 					cli.Log.Warnf("Failed to encrypt %s for %s (retry): %v", id, jid, err)
 					continue
@@ -674,8 +880,8 @@ func (cli *Client) encryptMessageForDevices(ctx context.Context, allDevices []ty
 	return participantNodes, includeIdentity
 }
 
-func (cli *Client) encryptMessageForDeviceAndWrap(plaintext []byte, to types.JID, bundle *prekey.Bundle) (*waBinary.Node, bool, error) {
-	node, includeDeviceIdentity, err := cli.encryptMessageForDevice(plaintext, to, bundle)
+func (cli *Client) encryptMessageForDeviceAndWrap(plaintext []byte, to types.JID, bundle *prekey.Bundle, encAttrs waBinary.Attrs) (*waBinary.Node, bool, error) {
+	node, includeDeviceIdentity, err := cli.encryptMessageForDevice(plaintext, to, bundle, encAttrs)
 	if err != nil {
 		return nil, false, err
 	}
@@ -686,7 +892,13 @@ func (cli *Client) encryptMessageForDeviceAndWrap(plaintext []byte, to types.JID
 	}, includeDeviceIdentity, nil
 }
 
-func (cli *Client) encryptMessageForDevice(plaintext []byte, to types.JID, bundle *prekey.Bundle) (*waBinary.Node, bool, error) {
+func copyAttrs(from, to waBinary.Attrs) {
+	for k, v := range from {
+		to[k] = v
+	}
+}
+
+func (cli *Client) encryptMessageForDevice(plaintext []byte, to types.JID, bundle *prekey.Bundle, extraAttrs waBinary.Attrs) (*waBinary.Node, bool, error) {
 	builder := session.NewBuilderFromSignal(cli.Store, to.SignalAddress(), pbSerializer)
 	if bundle != nil {
 		cli.Log.Debugf("Processing prekey bundle for %s", to)
@@ -708,17 +920,18 @@ func (cli *Client) encryptMessageForDevice(plaintext []byte, to types.JID, bundl
 		return nil, false, fmt.Errorf("cipher encryption failed: %w", err)
 	}
 
-	encType := "msg"
-	if ciphertext.Type() == protocol.PREKEY_TYPE {
-		encType = "pkmsg"
+	encAttrs := waBinary.Attrs{
+		"v":    "2",
+		"type": "msg",
 	}
+	if ciphertext.Type() == protocol.PREKEY_TYPE {
+		encAttrs["type"] = "pkmsg"
+	}
+	copyAttrs(extraAttrs, encAttrs)
 
 	return &waBinary.Node{
-		Tag: "enc",
-		Attrs: waBinary.Attrs{
-			"v":    "2",
-			"type": encType,
-		},
+		Tag:     "enc",
+		Attrs:   encAttrs,
 		Content: ciphertext.Serialize(),
-	}, encType == "pkmsg", nil
+	}, encAttrs["type"] == "pkmsg", nil
 }

@@ -9,6 +9,7 @@ const (
 	METOverflow       MessageElementType = "overflow"
 	METDatepicker     MessageElementType = "datepicker"
 	METTimepicker     MessageElementType = "timepicker"
+	METDatetimepicker MessageElementType = "datetimepicker"
 	METPlainTextInput MessageElementType = "plain_text_input"
 	METRadioButtons   MessageElementType = "radio_buttons"
 	METEmailTextInput MessageElementType = "email_text_input"
@@ -388,6 +389,29 @@ func (s TimePickerBlockElement) ElementType() MessageElementType {
 func NewTimePickerBlockElement(actionID string) *TimePickerBlockElement {
 	return &TimePickerBlockElement{
 		Type:     METTimepicker,
+		ActionID: actionID,
+	}
+}
+
+// DateTimePickerBlockElement defines an element that allows the selection of both
+// a date and a time of day formatted as a UNIX timestamp.
+// More Information: https://api.slack.com/reference/messaging/block-elements#datetimepicker
+type DateTimePickerBlockElement struct {
+	Type            MessageElementType       `json:"type"`
+	ActionID        string                   `json:"action_id,omitempty"`
+	InitialDateTime int64                    `json:"initial_date_time,omitempty"`
+	Confirm         *ConfirmationBlockObject `json:"confirm,omitempty"`
+}
+
+// ElementType returns the type of the Element
+func (s DateTimePickerBlockElement) ElementType() MessageElementType {
+	return s.Type
+}
+
+// NewDatePickerBlockElement returns an instance of a datetime picker element
+func NewDateTimePickerBlockElement(actionID string) *DateTimePickerBlockElement {
+	return &DateTimePickerBlockElement{
+		Type:     METDatetimepicker,
 		ActionID: actionID,
 	}
 }

@@ -25,8 +25,8 @@ func (cmd *Commands) Nick(name string) {
 // prevent sending extensive JOIN commands.
 func (cmd *Commands) Join(channels ...string) {
 	// We can join multiple channels at once, however we need to ensure that
-	// we are not exceeding the line length. (see maxLength)
-	max := maxLength - len(JOIN) - 1
+	// we are not exceeding the line length (see Client.MaxEventLength()).
+	max := cmd.c.MaxEventLength() - len(JOIN) - 1
 
 	var buffer string
 
@@ -329,8 +329,8 @@ func (cmd *Commands) List(channels ...string) {
 	}
 
 	// We can LIST multiple channels at once, however we need to ensure that
-	// we are not exceeding the line length. (see maxLength)
-	max := maxLength - len(JOIN) - 1
+	// we are not exceeding the line length (see Client.MaxEventLength()).
+	max := cmd.c.MaxEventLength() - len(JOIN) - 1
 
 	var buffer string
 

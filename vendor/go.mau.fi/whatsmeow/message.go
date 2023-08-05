@@ -9,7 +9,6 @@ package whatsmeow
 import (
 	"bytes"
 	"compress/zlib"
-	"crypto/rand"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -31,6 +30,7 @@ import (
 	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
+	"go.mau.fi/whatsmeow/util/randbytes"
 )
 
 var pbSerializer = store.SignalProtobufSerializer
@@ -101,6 +101,7 @@ func (cli *Client) parseMessageInfo(node *waBinary.Node) (*types.MessageInfo, er
 	info.Timestamp = ag.UnixTime("t")
 	info.PushName = ag.OptionalString("notify")
 	info.Category = ag.OptionalString("category")
+	info.Type = ag.OptionalString("type")
 	if !ag.OK() {
 		return nil, ag.Error()
 	}
@@ -125,7 +126,7 @@ func (cli *Client) decryptMessages(info *types.MessageInfo, node *waBinary.Node)
 	go cli.sendAck(node)
 	if len(node.GetChildrenByTag("unavailable")) > 0 && len(node.GetChildrenByTag("enc")) == 0 {
 		cli.Log.Warnf("Unavailable message %s from %s", info.ID, info.SourceString())
-		go cli.sendRetryReceipt(node, true)
+		go cli.sendRetryReceipt(node, info, true)
 		cli.dispatchEvent(&events.UndecryptableMessage{Info: *info, IsUnavailable: true})
 		return
 	}
@@ -137,7 +138,8 @@ func (cli *Client) decryptMessages(info *types.MessageInfo, node *waBinary.Node)
 		if child.Tag != "enc" {
 			continue
 		}
-		encType, ok := child.Attrs["type"].(string)
+		ag := child.AttrGetter()
+		encType, ok := ag.GetString("type", false)
 		if !ok {
 			continue
 		}
@@ -155,8 +157,13 @@ func (cli *Client) decryptMessages(info *types.MessageInfo, node *waBinary.Node)
 		if err != nil {
 			cli.Log.Warnf("Error decrypting message from %s: %v", info.SourceString(), err)
 			isUnavailable := encType == "skmsg" && !containsDirectMsg && errors.Is(err, signalerror.ErrNoSenderKeyForUser)
-			go cli.sendRetryReceipt(node, isUnavailable)
-			cli.dispatchEvent(&events.UndecryptableMessage{Info: *info, IsUnavailable: isUnavailable})
+			go cli.sendRetryReceipt(node, info, isUnavailable)
+			decryptFailMode, _ := child.Attrs["decrypt-fail"].(string)
+			cli.dispatchEvent(&events.UndecryptableMessage{
+				Info:            *info,
+				IsUnavailable:   isUnavailable,
+				DecryptFailMode: events.DecryptFailMode(decryptFailMode),
+			})
 			return
 		}
 
@@ -166,8 +173,12 @@ func (cli *Client) decryptMessages(info *types.MessageInfo, node *waBinary.Node)
 			cli.Log.Warnf("Error unmarshaling decrypted message from %s: %v", info.SourceString(), err)
 			continue
 		}
+		retryCount := ag.OptionalInt("count")
+		if retryCount > 0 {
+			cli.cancelDelayedRequestFromPhone(info.ID)
+		}
 
-		cli.handleDecryptedMessage(info, &msg)
+		cli.handleDecryptedMessage(info, &msg, retryCount)
 		handled = true
 	}
 	if handled {
@@ -246,6 +257,9 @@ func isValidPadding(plaintext []byte) bool {
 }
 
 func unpadMessage(plaintext []byte) ([]byte, error) {
+	if len(plaintext) == 0 {
+		return nil, fmt.Errorf("plaintext is empty")
+	}
 	if checkPadding && !isValidPadding(plaintext) {
 		return nil, fmt.Errorf("plaintext doesn't have expected padding")
 	}
@@ -253,11 +267,7 @@ func unpadMessage(plaintext []byte) ([]byte, error) {
 }
 
 func padMessage(plaintext []byte) []byte {
-	var pad [1]byte
-	_, err := rand.Read(pad[:])
-	if err != nil {
-		panic(err)
-	}
+	pad := randbytes.Make(1)
 	pad[0] &= 0xf
 	if pad[0] == 0 {
 		pad[0] = 0xf
@@ -357,6 +367,25 @@ func (cli *Client) handleAppStateSyncKeyShare(keys *waProto.AppStateSyncKeyShare
 	}
 }
 
+func (cli *Client) handlePlaceholderResendResponse(msg *waProto.PeerDataOperationRequestResponseMessage) {
+	reqID := msg.GetStanzaId()
+	parts := msg.GetPeerDataOperationResult()
+	cli.Log.Debugf("Handling response to placeholder resend request %s with %d items", reqID, len(parts))
+	for i, part := range parts {
+		var webMsg waProto.WebMessageInfo
+		if resp := part.GetPlaceholderMessageResendResponse(); resp == nil {
+			cli.Log.Warnf("Missing response in item #%d of response to %s", i+1, reqID)
+		} else if err := proto.Unmarshal(resp.GetWebMessageInfoBytes(), &webMsg); err != nil {
+			cli.Log.Warnf("Failed to unmarshal protobuf web message in item #%d of response to %s: %v", i+1, reqID, err)
+		} else if msgEvt, err := cli.ParseWebMessage(types.EmptyJID, &webMsg); err != nil {
+			cli.Log.Warnf("Failed to parse web message info in item #%d of response to %s: %v", i+1, reqID, err)
+		} else {
+			msgEvt.UnavailableRequestID = reqID
+			cli.dispatchEvent(msgEvt)
+		}
+	}
+}
+
 func (cli *Client) handleProtocolMessage(info *types.MessageInfo, msg *waProto.Message) {
 	protoMsg := msg.GetProtocolMessage()
 
@@ -366,6 +395,10 @@ func (cli *Client) handleProtocolMessage(info *types.MessageInfo, msg *waProto.M
 			go cli.handleHistorySyncNotificationLoop()
 		}
 		go cli.sendProtocolMessageReceipt(info.ID, "hist_sync")
+	}
+
+	if protoMsg.GetPeerDataOperationRequestResponseMessage().GetPeerDataOperationRequestType() == waProto.PeerDataOperationRequestType_PLACEHOLDER_MESSAGE_RESEND {
+		go cli.handlePlaceholderResendResponse(protoMsg.GetPeerDataOperationRequestResponseMessage())
 	}
 
 	if protoMsg.GetAppStateSyncKeyShare() != nil && info.IsFromMe {
@@ -472,9 +505,9 @@ func (cli *Client) storeHistoricalMessageSecrets(conversations []*waProto.Conver
 	}
 }
 
-func (cli *Client) handleDecryptedMessage(info *types.MessageInfo, msg *waProto.Message) {
+func (cli *Client) handleDecryptedMessage(info *types.MessageInfo, msg *waProto.Message, retryCount int) {
 	cli.processProtocolParts(info, msg)
-	evt := &events.Message{Info: *info, RawMessage: msg}
+	evt := &events.Message{Info: *info, RawMessage: msg, RetryCount: retryCount}
 	cli.dispatchEvent(evt.UnwrapRaw())
 }
 

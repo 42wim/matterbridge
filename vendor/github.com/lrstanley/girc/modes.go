@@ -118,13 +118,14 @@ func (c *CModes) Get(mode string) (args string, ok bool) {
 }
 
 // hasArg checks to see if the mode supports arguments. What ones support this?:
-//   A = Mode that adds or removes a nick or address to a list. Always has a parameter.
-//   B = Mode that changes a setting and always has a parameter.
-//   C = Mode that changes a setting and only has a parameter when set.
-//   D = Mode that changes a setting and never has a parameter.
-//   Note: Modes of type A return the list when there is no parameter present.
-//   Note: Some clients assumes that any mode not listed is of type D.
-//   Note: Modes in PREFIX are not listed but could be considered type B.
+//
+//	A = Mode that adds or removes a nick or address to a list. Always has a parameter.
+//	B = Mode that changes a setting and always has a parameter.
+//	C = Mode that changes a setting and only has a parameter when set.
+//	D = Mode that changes a setting and never has a parameter.
+//	Note: Modes of type A return the list when there is no parameter present.
+//	Note: Some clients assumes that any mode not listed is of type D.
+//	Note: Modes in PREFIX are not listed but could be considered type B.
 func (c *CModes) hasArg(set bool, mode byte) (hasArgs, isSetting bool) {
 	if len(c.raw) < 1 {
 		return false, true

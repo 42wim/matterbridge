@@ -7,7 +7,6 @@
 package sqlstore
 
 import (
-	"crypto/rand"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -18,6 +17,7 @@ import (
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/util/keys"
 	waLog "go.mau.fi/whatsmeow/util/log"
+	"go.mau.fi/whatsmeow/util/randbytes"
 )
 
 // Container is a wrapper for a SQL database that can contain multiple whatsmeow sessions.
@@ -65,7 +65,12 @@ func New(dialect, address string, log waLog.Logger) (*Container, error) {
 //	if err != nil {
 //	    panic(err)
 //	}
-//	container, err := sqlstore.NewWithDB(db, "sqlite3", nil)
+//	container := sqlstore.NewWithDB(db, "sqlite3", nil)
+//
+// This method does not call Upgrade automatically like New does, so you must call it yourself:
+//
+//	container := sqlstore.NewWithDB(...)
+//	err := container.Upgrade()
 func NewWithDB(db *sql.DB, dialect string, log waLog.Logger) *Container {
 	if log == nil {
 		log = waLog.Noop
@@ -205,11 +210,7 @@ func (c *Container) NewDevice() *store.Device {
 		NoiseKey:       keys.NewKeyPair(),
 		IdentityKey:    keys.NewKeyPair(),
 		RegistrationID: mathRand.Uint32(),
-		AdvSecretKey:   make([]byte, 32),
-	}
-	_, err := rand.Read(device.AdvSecretKey)
-	if err != nil {
-		panic(err)
+		AdvSecretKey:   randbytes.Make(32),
 	}
 	device.SignedPreKey = device.IdentityKey.CreateSignedPreKey(1)
 	return device

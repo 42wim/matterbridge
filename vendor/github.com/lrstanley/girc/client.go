@@ -155,6 +155,10 @@ type Config struct {
 	// and the client. If this is set to -1, the client will not attempt to
 	// send client -> server PING requests.
 	PingDelay time.Duration
+	// PingTimeout specifies the duration at which girc will assume
+	// that the connection to the server has been lost if no PONG
+	// message has been received in reply to an outstanding PING.
+	PingTimeout time.Duration
 
 	// disableTracking disables all channel and user-level tracking. Useful
 	// for highly embedded scripts with single purposes. This has an exported
@@ -179,13 +183,13 @@ type Config struct {
 // server.
 //
 // Client expectations:
-//  - Perform any proxy resolution.
-//  - Check the reverse DNS and forward DNS match.
-//  - Check the IP against suitable access controls (ipaccess, dnsbl, etc).
+//   - Perform any proxy resolution.
+//   - Check the reverse DNS and forward DNS match.
+//   - Check the IP against suitable access controls (ipaccess, dnsbl, etc).
 //
 // More information:
-//  - https://ircv3.net/specs/extensions/webirc.html
-//  - https://kiwiirc.com/docs/webirc
+//   - https://ircv3.net/specs/extensions/webirc.html
+//   - https://kiwiirc.com/docs/webirc
 type WebIRC struct {
 	// Password that authenticates the WEBIRC command from this client.
 	Password string
@@ -262,6 +266,10 @@ func New(config Config) *Client {
 		c.Config.PingDelay = 600 * time.Second
 	}
 
+	if c.Config.PingTimeout == 0 {
+		c.Config.PingTimeout = 60 * time.Second
+	}
+
 	envDebug, _ := strconv.ParseBool(os.Getenv("GIRC_DEBUG"))
 	if c.Config.Debug == nil {
 		if envDebug {
@@ -298,6 +306,23 @@ func New(config Config) *Client {
 	c.CTCP.addDefaultHandlers()
 
 	return c
+}
+
+// receive is a wrapper for sending to the Client.rx channel. It will timeout if
+// the event can't be sent within 30s.
+func (c *Client) receive(e *Event) {
+	t := time.NewTimer(30 * time.Second)
+	defer func() {
+		if !t.Stop() {
+			<-t.C
+		}
+	}()
+
+	select {
+	case c.rx <- e:
+	case <-t.C:
+		c.debugLogEvent(e, true)
+	}
 }
 
 // String returns a brief description of the current client state.
@@ -380,7 +405,7 @@ func (e *ErrEvent) Error() string {
 	return e.Event.Last()
 }
 
-func (c *Client) execLoop(ctx context.Context, errs chan error, wg *sync.WaitGroup) {
+func (c *Client) execLoop(ctx context.Context) error {
 	c.debug.Print("starting execLoop")
 	defer c.debug.Print("closing execLoop")
 
@@ -403,9 +428,10 @@ func (c *Client) execLoop(ctx context.Context, errs chan error, wg *sync.WaitGro
 			}
 
 		done:
-			wg.Done()
-			return
+			return nil
 		case event = <-c.rx:
+			c.RunHandlers(event)
+
 			if event != nil && event.Command == ERROR {
 				// Handles incoming ERROR responses. These are only ever sent
 				// by the server (with the exception that this library may use
@@ -415,13 +441,9 @@ func (c *Client) execLoop(ctx context.Context, errs chan error, wg *sync.WaitGro
 				// some reason the server doesn't disconnect the client, or
 				// if this library is the source of the error, this should
 				// signal back up to the main connect loop, to disconnect.
-				errs <- &ErrEvent{Event: event}
 
-				// Make sure to not actually exit, so we can let any handlers
-				// actually handle the ERROR event.
+				return &ErrEvent{Event: event}
 			}
-
-			c.RunHandlers(event)
 		}
 	}
 }
@@ -669,8 +691,7 @@ func (c *Client) IsInChannel(channel string) (in bool) {
 // during client connection. This is also known as ISUPPORT (or RPL_PROTOCTL).
 // Will panic if used when tracking has been disabled. Examples of usage:
 //
-//   nickLen, success := GetServerOption("MAXNICKLEN")
-//
+//	nickLen, success := GetServerOption("MAXNICKLEN")
 func (c *Client) GetServerOption(key string) (result string, ok bool) {
 	c.panicIfNotTracking()
 
@@ -678,6 +699,42 @@ func (c *Client) GetServerOption(key string) (result string, ok bool) {
 	result, ok = c.state.serverOptions[key]
 	c.state.RUnlock()
 	return result, ok
+}
+
+// GetServerOptionInt retrieves a server capability setting (as an integer) that was
+// retrieved during client connection. This is also known as ISUPPORT (or RPL_PROTOCTL).
+// Will panic if used when tracking has been disabled. Examples of usage:
+//
+//	nickLen, success := GetServerOption("MAXNICKLEN")
+func (c *Client) GetServerOptionInt(key string) (result int, ok bool) {
+	var data string
+	var err error
+
+	data, ok = c.GetServerOption(key)
+	if !ok {
+		return result, ok
+	}
+	result, err = strconv.Atoi(data)
+	if err != nil {
+		ok = false
+	}
+
+	return result, ok
+}
+
+// MaxEventLength returns the maximum supported server length of an event. This is the
+// maximum length of the command and arguments, excluding the source/prefix supported
+// by the protocol. If state tracking is enabled, this will utilize ISUPPORT/IRCv3
+// information to more accurately calculate the maximum supported length (i.e. extended
+// length events).
+func (c *Client) MaxEventLength() (max int) {
+	if !c.Config.disableTracking {
+		c.state.RLock()
+		max = c.state.maxLineLength - c.state.maxPrefixLength
+		c.state.RUnlock()
+		return max
+	}
+	return DefaultMaxLineLength - DefaultMaxPrefixLength
 }
 
 // NetworkName returns the network identifier. E.g. "EsperNet", "ByteIRC".
@@ -773,7 +830,7 @@ func (c *Client) debugLogEvent(e *Event, dropped bool) {
 	var prefix string
 
 	if dropped {
-		prefix = "dropping event (disconnected):"
+		prefix = "dropping event (disconnected or timeout):"
 	} else {
 		prefix = ">"
 	}

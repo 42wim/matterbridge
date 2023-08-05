@@ -29,6 +29,8 @@ var (
 	ErrNoPushName = errors.New("can't send presence without PushName set")
 
 	ErrNoPrivacyToken = errors.New("no privacy token stored")
+
+	ErrAppStateUpdate = errors.New("server returned error updating app state")
 )
 
 // Errors that happen while confirming device pairing
@@ -107,6 +109,7 @@ var (
 
 // Some errors that Client.Download can return
 var (
+	ErrMediaDownloadFailedWith403 = errors.New("download failed with status code 403")
 	ErrMediaDownloadFailedWith404 = errors.New("download failed with status code 404")
 	ErrMediaDownloadFailedWith410 = errors.New("download failed with status code 410")
 	ErrNoURLPresent               = errors.New("no url present")

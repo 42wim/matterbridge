@@ -170,6 +170,7 @@ var (
 		"-DSQLITE_CORE",
 		"-DSQLITE_DEFAULT_MEMSTATUS=0",
 		"-DSQLITE_ENABLE_COLUMN_METADATA",
+		"-DSQLITE_ENABLE_DBSTAT_VTAB",
 		"-DSQLITE_ENABLE_FTS5",
 		"-DSQLITE_ENABLE_GEOPOLY",
 		"-DSQLITE_ENABLE_MATH_FUNCTIONS",
@@ -269,12 +270,12 @@ var (
 		sz       int
 		dev      bool
 	}{
-		{sqliteDir, "https://www.sqlite.org/2023/sqlite-amalgamation-3410000.zip", 2457, false},
-		{sqliteSrcDir, "https://www.sqlite.org/2023/sqlite-src-3410000.zip", 12814, false},
+		{sqliteDir, "https://www.sqlite.org/2023/sqlite-amalgamation-3410200.zip", 2457, false},
+		{sqliteSrcDir, "https://www.sqlite.org/2023/sqlite-src-3410200.zip", 12814, false},
 	}
 
-	sqliteDir    = filepath.FromSlash("testdata/sqlite-amalgamation-3410000")
-	sqliteSrcDir = filepath.FromSlash("testdata/sqlite-src-3410000")
+	sqliteDir    = filepath.FromSlash("testdata/sqlite-amalgamation-3410200")
+	sqliteSrcDir = filepath.FromSlash("testdata/sqlite-src-3410200")
 )
 
 func download() {

@@ -527,7 +527,7 @@ type ThreadMember struct {
 	// The time the current user last joined the thread
 	JoinTimestamp time.Time `json:"join_timestamp"`
 	// Any user-thread settings, currently only used for notifications
-	Flags int
+	Flags int `json:"flags"`
 }
 
 // ThreadsList represents a list of threads alongisde with thread member objects for the current user.
@@ -622,6 +622,7 @@ const (
 	StickerFormatTypePNG    StickerFormat = 1
 	StickerFormatTypeAPNG   StickerFormat = 2
 	StickerFormatTypeLottie StickerFormat = 3
+	StickerFormatTypeGIF    StickerFormat = 4
 )
 
 // StickerType is the type of sticker.

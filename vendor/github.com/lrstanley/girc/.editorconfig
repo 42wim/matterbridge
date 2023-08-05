@@ -1,6 +1,9 @@
 # THIS FILE IS GENERATED! DO NOT EDIT! Maintained by Terraform.
 #
-# editorconfig.org
+# editorconfig:  https://editorconfig.org/
+# actual source: https://github.com/lrstanley/.github/blob/master/terraform/github-common-files/templates/.editorconfig
+#
+
 root = true
 
 [*]

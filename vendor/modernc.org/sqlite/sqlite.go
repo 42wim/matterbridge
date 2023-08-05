@@ -10,11 +10,14 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"io"
 	"math"
+	"math/bits"
 	"net/url"
 	"reflect"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -437,7 +440,7 @@ func (r *rows) ColumnTypeScanType(index int) reflect.Type {
 	case sqlite3.SQLITE_TEXT:
 		return reflect.TypeOf("")
 	case sqlite3.SQLITE_BLOB:
-		return reflect.SliceOf(reflect.TypeOf([]byte{}))
+		return reflect.TypeOf([]byte(nil))
 	case sqlite3.SQLITE_NULL:
 		return reflect.TypeOf(nil)
 	default:
@@ -470,7 +473,6 @@ func (s *stmt) Close() (err error) {
 }
 
 // Exec executes a query that doesn't return rows, such as an INSERT or UPDATE.
-//
 //
 // Deprecated: Drivers should implement StmtExecContext instead (or
 // additionally).
@@ -579,6 +581,13 @@ func (s *stmt) query(ctx context.Context, args []driver.NamedValue) (r driver.Ro
 	}
 
 	var allocs []uintptr
+
+	defer func() {
+		if r == nil && err == nil {
+			r, err = newRows(s.c, pstmt, allocs, true)
+		}
+	}()
+
 	for psql := s.psql; *(*byte)(unsafe.Pointer(psql)) != 0 && atomic.LoadInt32(&done) == 0; {
 		if pstmt, err = s.c.prepareV2(&psql); err != nil {
 			return nil, err
@@ -847,7 +856,9 @@ func applyQueryParams(c *conn, query string) error {
 	return nil
 }
 
-// const void *sqlite3_column_blob(sqlite3_stmt*, int iCol);
+// C documentation
+//
+//	const void *sqlite3_column_blob(sqlite3_stmt*, int iCol);
 func (c *conn) columnBlob(pstmt uintptr, iCol int) (v []byte, err error) {
 	p := sqlite3.Xsqlite3_column_blob(c.tls, pstmt, int32(iCol))
 	len, err := c.columnBytes(pstmt, iCol)
@@ -864,13 +875,17 @@ func (c *conn) columnBlob(pstmt uintptr, iCol int) (v []byte, err error) {
 	return v, nil
 }
 
-// int sqlite3_column_bytes(sqlite3_stmt*, int iCol);
+// C documentation
+//
+//	int sqlite3_column_bytes(sqlite3_stmt*, int iCol);
 func (c *conn) columnBytes(pstmt uintptr, iCol int) (_ int, err error) {
 	v := sqlite3.Xsqlite3_column_bytes(c.tls, pstmt, int32(iCol))
 	return int(v), nil
 }
 
-// const unsigned char *sqlite3_column_text(sqlite3_stmt*, int iCol);
+// C documentation
+//
+//	const unsigned char *sqlite3_column_text(sqlite3_stmt*, int iCol);
 func (c *conn) columnText(pstmt uintptr, iCol int) (v string, err error) {
 	p := sqlite3.Xsqlite3_column_text(c.tls, pstmt, int32(iCol))
 	len, err := c.columnBytes(pstmt, iCol)
@@ -887,53 +902,71 @@ func (c *conn) columnText(pstmt uintptr, iCol int) (v string, err error) {
 	return string(b), nil
 }
 
-// double sqlite3_column_double(sqlite3_stmt*, int iCol);
+// C documentation
+//
+//	double sqlite3_column_double(sqlite3_stmt*, int iCol);
 func (c *conn) columnDouble(pstmt uintptr, iCol int) (v float64, err error) {
 	v = sqlite3.Xsqlite3_column_double(c.tls, pstmt, int32(iCol))
 	return v, nil
 }
 
-// sqlite3_int64 sqlite3_column_int64(sqlite3_stmt*, int iCol);
+// C documentation
+//
+//	sqlite3_int64 sqlite3_column_int64(sqlite3_stmt*, int iCol);
 func (c *conn) columnInt64(pstmt uintptr, iCol int) (v int64, err error) {
 	v = sqlite3.Xsqlite3_column_int64(c.tls, pstmt, int32(iCol))
 	return v, nil
 }
 
-// int sqlite3_column_type(sqlite3_stmt*, int iCol);
+// C documentation
+//
+//	int sqlite3_column_type(sqlite3_stmt*, int iCol);
 func (c *conn) columnType(pstmt uintptr, iCol int) (_ int, err error) {
 	v := sqlite3.Xsqlite3_column_type(c.tls, pstmt, int32(iCol))
 	return int(v), nil
 }
 
-// const char *sqlite3_column_decltype(sqlite3_stmt*,int);
+// C documentation
+//
+//	const char *sqlite3_column_decltype(sqlite3_stmt*,int);
 func (c *conn) columnDeclType(pstmt uintptr, iCol int) string {
 	return libc.GoString(sqlite3.Xsqlite3_column_decltype(c.tls, pstmt, int32(iCol)))
 }
 
-// const char *sqlite3_column_name(sqlite3_stmt*, int N);
+// C documentation
+//
+//	const char *sqlite3_column_name(sqlite3_stmt*, int N);
 func (c *conn) columnName(pstmt uintptr, n int) (string, error) {
 	p := sqlite3.Xsqlite3_column_name(c.tls, pstmt, int32(n))
 	return libc.GoString(p), nil
 }
 
-// int sqlite3_column_count(sqlite3_stmt *pStmt);
+// C documentation
+//
+//	int sqlite3_column_count(sqlite3_stmt *pStmt);
 func (c *conn) columnCount(pstmt uintptr) (_ int, err error) {
 	v := sqlite3.Xsqlite3_column_count(c.tls, pstmt)
 	return int(v), nil
 }
 
-// sqlite3_int64 sqlite3_last_insert_rowid(sqlite3*);
+// C documentation
+//
+//	sqlite3_int64 sqlite3_last_insert_rowid(sqlite3*);
 func (c *conn) lastInsertRowID() (v int64, _ error) {
 	return sqlite3.Xsqlite3_last_insert_rowid(c.tls, c.db), nil
 }
 
-// int sqlite3_changes(sqlite3*);
+// C documentation
+//
+//	int sqlite3_changes(sqlite3*);
 func (c *conn) changes() (int, error) {
 	v := sqlite3.Xsqlite3_changes(c.tls, c.db)
 	return int(v), nil
 }
 
-// int sqlite3_step(sqlite3_stmt*);
+// C documentation
+//
+//	int sqlite3_step(sqlite3_stmt*);
 func (c *conn) step(pstmt uintptr) (int, error) {
 	for {
 		switch rc := sqlite3.Xsqlite3_step(c.tls, pstmt); rc {
@@ -1087,7 +1120,9 @@ func (c *conn) bind(pstmt uintptr, n int, args []driver.NamedValue) (allocs []ui
 	return allocs, nil
 }
 
-// int sqlite3_bind_null(sqlite3_stmt*, int);
+// C documentation
+//
+//	int sqlite3_bind_null(sqlite3_stmt*, int);
 func (c *conn) bindNull(pstmt uintptr, idx1 int) (uintptr, error) {
 	if rc := sqlite3.Xsqlite3_bind_null(c.tls, pstmt, int32(idx1)); rc != sqlite3.SQLITE_OK {
 		return 0, c.errstr(rc)
@@ -1096,7 +1131,9 @@ func (c *conn) bindNull(pstmt uintptr, idx1 int) (uintptr, error) {
 	return 0, nil
 }
 
-// int sqlite3_bind_text(sqlite3_stmt*,int,const char*,int,void(*)(void*));
+// C documentation
+//
+//	int sqlite3_bind_text(sqlite3_stmt*,int,const char*,int,void(*)(void*));
 func (c *conn) bindText(pstmt uintptr, idx1 int, value string) (uintptr, error) {
 	p, err := libc.CString(value)
 	if err != nil {
@@ -1111,7 +1148,9 @@ func (c *conn) bindText(pstmt uintptr, idx1 int, value string) (uintptr, error) 
 	return p, nil
 }
 
-// int sqlite3_bind_blob(sqlite3_stmt*, int, const void*, int n, void(*)(void*));
+// C documentation
+//
+//	int sqlite3_bind_blob(sqlite3_stmt*, int, const void*, int n, void(*)(void*));
 func (c *conn) bindBlob(pstmt uintptr, idx1 int, value []byte) (uintptr, error) {
 	if value != nil && len(value) == 0 {
 		if rc := sqlite3.Xsqlite3_bind_zeroblob(c.tls, pstmt, int32(idx1), 0); rc != sqlite3.SQLITE_OK {
@@ -1135,7 +1174,9 @@ func (c *conn) bindBlob(pstmt uintptr, idx1 int, value []byte) (uintptr, error) 
 	return p, nil
 }
 
-// int sqlite3_bind_int(sqlite3_stmt*, int, int);
+// C documentation
+//
+//	int sqlite3_bind_int(sqlite3_stmt*, int, int);
 func (c *conn) bindInt(pstmt uintptr, idx1, value int) (err error) {
 	if rc := sqlite3.Xsqlite3_bind_int(c.tls, pstmt, int32(idx1), int32(value)); rc != sqlite3.SQLITE_OK {
 		return c.errstr(rc)
@@ -1144,7 +1185,9 @@ func (c *conn) bindInt(pstmt uintptr, idx1, value int) (err error) {
 	return nil
 }
 
-// int sqlite3_bind_double(sqlite3_stmt*, int, double);
+// C documentation
+//
+//	int sqlite3_bind_double(sqlite3_stmt*, int, double);
 func (c *conn) bindDouble(pstmt uintptr, idx1 int, value float64) (err error) {
 	if rc := sqlite3.Xsqlite3_bind_double(c.tls, pstmt, int32(idx1), value); rc != 0 {
 		return c.errstr(rc)
@@ -1153,7 +1196,9 @@ func (c *conn) bindDouble(pstmt uintptr, idx1 int, value float64) (err error) {
 	return nil
 }
 
-// int sqlite3_bind_int64(sqlite3_stmt*, int, sqlite3_int64);
+// C documentation
+//
+//	int sqlite3_bind_int64(sqlite3_stmt*, int, sqlite3_int64);
 func (c *conn) bindInt64(pstmt uintptr, idx1 int, value int64) (err error) {
 	if rc := sqlite3.Xsqlite3_bind_int64(c.tls, pstmt, int32(idx1), value); rc != sqlite3.SQLITE_OK {
 		return c.errstr(rc)
@@ -1162,19 +1207,25 @@ func (c *conn) bindInt64(pstmt uintptr, idx1 int, value int64) (err error) {
 	return nil
 }
 
-// const char *sqlite3_bind_parameter_name(sqlite3_stmt*, int);
+// C documentation
+//
+//	const char *sqlite3_bind_parameter_name(sqlite3_stmt*, int);
 func (c *conn) bindParameterName(pstmt uintptr, i int) (string, error) {
 	p := sqlite3.Xsqlite3_bind_parameter_name(c.tls, pstmt, int32(i))
 	return libc.GoString(p), nil
 }
 
-// int sqlite3_bind_parameter_count(sqlite3_stmt*);
+// C documentation
+//
+//	int sqlite3_bind_parameter_count(sqlite3_stmt*);
 func (c *conn) bindParameterCount(pstmt uintptr) (_ int, err error) {
 	r := sqlite3.Xsqlite3_bind_parameter_count(c.tls, pstmt)
 	return int(r), nil
 }
 
-// int sqlite3_finalize(sqlite3_stmt *pStmt);
+// C documentation
+//
+//	int sqlite3_finalize(sqlite3_stmt *pStmt);
 func (c *conn) finalize(pstmt uintptr) error {
 	if rc := sqlite3.Xsqlite3_finalize(c.tls, pstmt); rc != sqlite3.SQLITE_OK {
 		return c.errstr(rc)
@@ -1183,13 +1234,15 @@ func (c *conn) finalize(pstmt uintptr) error {
 	return nil
 }
 
-// int sqlite3_prepare_v2(
-//   sqlite3 *db,            /* Database handle */
-//   const char *zSql,       /* SQL statement, UTF-8 encoded */
-//   int nByte,              /* Maximum length of zSql in bytes. */
-//   sqlite3_stmt **ppStmt,  /* OUT: Statement handle */
-//   const char **pzTail     /* OUT: Pointer to unused portion of zSql */
-// );
+// C documentation
+//
+//	int sqlite3_prepare_v2(
+//	sqlite3 *db,            /* Database handle */
+//	const char *zSql,       /* SQL statement, UTF-8 encoded */
+//	int nByte,              /* Maximum length of zSql in bytes. */
+//	sqlite3_stmt **ppStmt,  /* OUT: Statement handle */
+//	const char **pzTail     /* OUT: Pointer to unused portion of zSql */
+//	);
 func (c *conn) prepareV2(zSQL *uintptr) (pstmt uintptr, err error) {
 	var ppstmt, pptail uintptr
 
@@ -1221,7 +1274,9 @@ func (c *conn) prepareV2(zSQL *uintptr) (pstmt uintptr, err error) {
 	}
 }
 
-// void sqlite3_interrupt(sqlite3*);
+// C documentation
+//
+//	void sqlite3_interrupt(sqlite3*);
 func (c *conn) interrupt(pdb uintptr) (err error) {
 	c.Lock() // Defend against race with .Close invoked by context handling.
 
@@ -1233,7 +1288,9 @@ func (c *conn) interrupt(pdb uintptr) (err error) {
 	return nil
 }
 
-// int sqlite3_extended_result_codes(sqlite3*, int onoff);
+// C documentation
+//
+//	int sqlite3_extended_result_codes(sqlite3*, int onoff);
 func (c *conn) extendedResultCodes(on bool) error {
 	if rc := sqlite3.Xsqlite3_extended_result_codes(c.tls, c.db, libc.Bool32(on)); rc != sqlite3.SQLITE_OK {
 		return c.errstr(rc)
@@ -1242,12 +1299,14 @@ func (c *conn) extendedResultCodes(on bool) error {
 	return nil
 }
 
-// int sqlite3_open_v2(
-//   const char *filename,   /* Database filename (UTF-8) */
-//   sqlite3 **ppDb,         /* OUT: SQLite db handle */
-//   int flags,              /* Flags */
-//   const char *zVfs        /* Name of VFS module to use */
-// );
+// C documentation
+//
+//	int sqlite3_open_v2(
+//	const char *filename,   /* Database filename (UTF-8) */
+//	sqlite3 **ppDb,         /* OUT: SQLite db handle */
+//	int flags,              /* Flags */
+//	const char *zVfs        /* Name of VFS module to use */
+//	);
 func (c *conn) openV2(name, vfsName string, flags int32) (uintptr, error) {
 	var p, s, vfs uintptr
 
@@ -1299,7 +1358,9 @@ func (c *conn) free(p uintptr) {
 	}
 }
 
-// const char *sqlite3_errstr(int);
+// C documentation
+//
+//	const char *sqlite3_errstr(int);
 func (c *conn) errstr(rc int32) error {
 	p := sqlite3.Xsqlite3_errstr(c.tls, rc)
 	str := libc.GoString(p)
@@ -1319,7 +1380,12 @@ func (c *conn) errstr(rc int32) error {
 // Begin starts a transaction.
 //
 // Deprecated: Drivers should implement ConnBeginTx instead (or additionally).
-func (c *conn) Begin() (driver.Tx, error) {
+func (c *conn) Begin() (dt driver.Tx, err error) {
+	if dmesgs {
+		defer func() {
+			dmesg("conn %p: (driver.Tx %p, err %v)", c, dt, err)
+		}()
+	}
 	return c.begin(context.Background(), driver.TxOptions{})
 }
 
@@ -1333,7 +1399,12 @@ func (c *conn) begin(ctx context.Context, opts driver.TxOptions) (t driver.Tx, e
 // Because the sql package maintains a free pool of connections and only calls
 // Close when there's a surplus of idle connections, it shouldn't be necessary
 // for drivers to do their own connection caching.
-func (c *conn) Close() error {
+func (c *conn) Close() (err error) {
+	if dmesgs {
+		defer func() {
+			dmesg("conn %p: err %v", c, err)
+		}()
+	}
 	c.Lock() // Defend against race with .interrupt invoked by context handling.
 
 	defer c.Unlock()
@@ -1353,7 +1424,9 @@ func (c *conn) Close() error {
 	return nil
 }
 
-// int sqlite3_close_v2(sqlite3*);
+// C documentation
+//
+//	int sqlite3_close_v2(sqlite3*);
 func (c *conn) closeV2(db uintptr) error {
 	if rc := sqlite3.Xsqlite3_close_v2(c.tls, db); rc != sqlite3.SQLITE_OK {
 		return c.errstr(rc)
@@ -1362,27 +1435,106 @@ func (c *conn) closeV2(db uintptr) error {
 	return nil
 }
 
+// FunctionImpl describes an [application-defined SQL function]. If Scalar is
+// set, it is treated as a scalar function; otherwise, it is treated as an
+// aggregate function using MakeAggregate.
+//
+// [application-defined SQL function]: https://sqlite.org/appfunc.html
+type FunctionImpl struct {
+	// NArgs is the required number of arguments that the function accepts.
+	// If NArgs is negative, then the function is variadic.
+	NArgs int32
+
+	// If Deterministic is true, the function must always give the same
+	// output when the input parameters are the same. This enables functions
+	// to be used in additional contexts like the WHERE clause of partial
+	// indexes and enables additional optimizations.
+	//
+	// See https://sqlite.org/c3ref/c_deterministic.html#sqlitedeterministic
+	// for more details.
+	Deterministic bool
+
+	// Scalar is called when a scalar function is invoked in SQL. The
+	// argument Values are not valid past the return of the function.
+	Scalar func(ctx *FunctionContext, args []driver.Value) (driver.Value, error)
+
+	// MakeAggregate is called at the beginning of each evaluation of an
+	// aggregate function.
+	MakeAggregate func(ctx FunctionContext) (AggregateFunction, error)
+}
+
+// An AggregateFunction is an invocation of an aggregate or window function. See
+// the documentation for [aggregate function callbacks] and [application-defined
+// window functions] for an overview.
+//
+// [aggregate function callbacks]: https://www.sqlite.org/appfunc.html#the_aggregate_function_callbacks
+// [application-defined window functions]: https://www.sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions
+type AggregateFunction interface {
+	// Step is called for each row of an aggregate function's SQL
+	// invocation. The argument Values are not valid past the return of the
+	// function.
+	Step(ctx *FunctionContext, rowArgs []driver.Value) error
+
+	// WindowInverse is called to remove the oldest presently aggregated
+	// result of Step from the current window. The arguments are those
+	// passed to Step for the row being removed. The argument Values are not
+	// valid past the return of the function.
+	WindowInverse(ctx *FunctionContext, rowArgs []driver.Value) error
+
+	// WindowValue is called to get the current value of an aggregate
+	// function. This is used to return the final value of the function,
+	// whether it is used as a window function or not.
+	WindowValue(ctx *FunctionContext) (driver.Value, error)
+
+	// Final is called after all of the aggregate function's input rows have
+	// been stepped through. No other methods will be called on the
+	// AggregateFunction after calling Final. WindowValue returns the value
+	// from the function.
+	Final(ctx *FunctionContext)
+}
+
 type userDefinedFunction struct {
 	zFuncName uintptr
 	nArg      int32
 	eTextRep  int32
-	xFunc     func(*libc.TLS, uintptr, int32, uintptr)
+	pApp      uintptr
 
+	scalar   bool
 	freeOnce sync.Once
 }
 
 func (c *conn) createFunctionInternal(fun *userDefinedFunction) error {
-	if rc := sqlite3.Xsqlite3_create_function(
-		c.tls,
-		c.db,
-		fun.zFuncName,
-		fun.nArg,
-		fun.eTextRep,
-		0,
-		*(*uintptr)(unsafe.Pointer(&fun.xFunc)),
-		0,
-		0,
-	); rc != sqlite3.SQLITE_OK {
+	var rc int32
+
+	if fun.scalar {
+		rc = sqlite3.Xsqlite3_create_function(
+			c.tls,
+			c.db,
+			fun.zFuncName,
+			fun.nArg,
+			fun.eTextRep,
+			fun.pApp,
+			cFuncPointer(funcTrampoline),
+			0,
+			0,
+		)
+	} else {
+		rc = sqlite3.Xsqlite3_create_window_function(
+			c.tls,
+			c.db,
+			fun.zFuncName,
+			fun.nArg,
+			fun.eTextRep,
+			fun.pApp,
+			cFuncPointer(stepTrampoline),
+			cFuncPointer(finalTrampoline),
+			cFuncPointer(valueTrampoline),
+			cFuncPointer(inverseTrampoline),
+			0,
+		)
+	}
+
+	if rc != sqlite3.SQLITE_OK {
 		return c.errstr(rc)
 	}
 	return nil
@@ -1396,7 +1548,12 @@ func (c *conn) createFunctionInternal(fun *userDefinedFunction) error {
 // Exec may return ErrSkip.
 //
 // Deprecated: Drivers should implement ExecerContext instead.
-func (c *conn) Exec(query string, args []driver.Value) (driver.Result, error) {
+func (c *conn) Exec(query string, args []driver.Value) (dr driver.Result, err error) {
+	if dmesgs {
+		defer func() {
+			dmesg("conn %p, query %q, args %v: (driver.Result %p, err %v)", c, query, args, dr, err)
+		}()
+	}
 	return c.exec(context.Background(), query, toNamedValues(args))
 }
 
@@ -1416,7 +1573,12 @@ func (c *conn) exec(ctx context.Context, query string, args []driver.NamedValue)
 }
 
 // Prepare returns a prepared statement, bound to this connection.
-func (c *conn) Prepare(query string) (driver.Stmt, error) {
+func (c *conn) Prepare(query string) (ds driver.Stmt, err error) {
+	if dmesgs {
+		defer func() {
+			dmesg("conn %p, query %q: (driver.Stmt %p, err %v)", c, query, ds, err)
+		}()
+	}
 	return c.prepare(context.Background(), query)
 }
 
@@ -1433,7 +1595,12 @@ func (c *conn) prepare(ctx context.Context, query string) (s driver.Stmt, err er
 // Query may return ErrSkip.
 //
 // Deprecated: Drivers should implement QueryerContext instead.
-func (c *conn) Query(query string, args []driver.Value) (driver.Rows, error) {
+func (c *conn) Query(query string, args []driver.Value) (dr driver.Rows, err error) {
+	if dmesgs {
+		defer func() {
+			dmesg("conn %p, query %q, args %v: (driver.Rows %p, err %v)", c, query, args, dr, err)
+		}()
+	}
 	return c.query(context.Background(), query, toNamedValues(args))
 }
 
@@ -1450,6 +1617,146 @@ func (c *conn) query(ctx context.Context, query string, args []driver.NamedValue
 	}()
 
 	return s.(*stmt).query(ctx, args)
+}
+
+// Serialize returns a serialization of the main database. For an ordinary on-disk
+// database file, the serialization is just a copy of the disk file. For an in-memory
+// database or a "TEMP" database, the serialization is the same sequence of bytes
+// which would be written to disk if that database where backed up to disk.
+func (c *conn) Serialize() (v []byte, err error) {
+	pLen := c.tls.Alloc(8)
+	defer c.tls.Free(8)
+
+	zSchema := sqlite3.Xsqlite3_db_name(c.tls, c.db, 0)
+	if zSchema == 0 {
+		return nil, fmt.Errorf("failed to get main db name")
+	}
+
+	pBuf := sqlite3.Xsqlite3_serialize(c.tls, c.db, zSchema, pLen, 0)
+	bufLen := *(*sqlite3.Sqlite3_int64)(unsafe.Pointer(pLen))
+	if pBuf != 0 {
+		defer sqlite3.Xsqlite3_free(c.tls, pBuf)
+	}
+	if bufLen <= 0 {
+		return nil, fmt.Errorf("invalid length returned: %d", bufLen)
+	} else if pBuf == 0 || bufLen == 0 {
+		return nil, nil
+	}
+
+	v = make([]byte, bufLen)
+	copy(v, (*libc.RawMem)(unsafe.Pointer(pBuf))[:bufLen:bufLen])
+	return v, nil
+}
+
+// Deserialize restore a database from the content returned by Serialize.
+func (c *conn) Deserialize(buf []byte) (err error) {
+	bufLen := len(buf)
+	pBuf := c.tls.Alloc(bufLen) // free will be done if it fails or on close, must not be freed here
+
+	copy((*libc.RawMem)(unsafe.Pointer(pBuf))[:bufLen:bufLen], buf)
+
+	zSchema := sqlite3.Xsqlite3_db_name(c.tls, c.db, 0)
+	if zSchema == 0 {
+		return fmt.Errorf("failed to get main db name")
+	}
+
+	rc := sqlite3.Xsqlite3_deserialize(c.tls, c.db, zSchema, pBuf, int64(bufLen), int64(bufLen), sqlite3.SQLITE_DESERIALIZE_RESIZEABLE|sqlite3.SQLITE_DESERIALIZE_FREEONCLOSE)
+	if rc != sqlite3.SQLITE_OK {
+		return c.errstr(rc)
+	}
+	return nil
+}
+
+// Backup object is used to manage progress and cleanup an online backup. It
+// is returned by NewBackup or NewRestore.
+type Backup struct {
+	srcConn *conn   // source database connection
+	dstConn *conn   // destination database connection
+	pBackup uintptr // sqlite3_backup object pointer
+}
+
+// NewBackup returns a Backup object that will create an online backup of
+// current database to the databased pointed by the passed URI.
+func (c *conn) NewBackup(dstUri string) (*Backup, error) {
+	dstConn, err := newConn(dstUri)
+	if err != nil {
+		return nil, err
+	}
+	backup, err := c.backup(dstConn, false)
+	if err != nil {
+		dstConn.Close()
+	}
+	return backup, err
+}
+
+// NewRestore returns a Backup object that will restore a backup to current
+// database from the databased pointed by the passed URI.
+func (c *conn) NewRestore(srcUri string) (*Backup, error) {
+	srcConn, err := newConn(srcUri)
+	if err != nil {
+		return nil, err
+	}
+	backup, err := c.backup(srcConn, true)
+	if err != nil {
+		srcConn.Close()
+	}
+	return backup, err
+}
+
+func (c *conn) backup(remoteConn *conn, restore bool) (_ *Backup, finalErr error) {
+	srcSchema := sqlite3.Xsqlite3_db_name(c.tls, c.db, 0)
+	if srcSchema == 0 {
+		return nil, fmt.Errorf("failed to get main source db name")
+	}
+
+	dstSchema := sqlite3.Xsqlite3_db_name(remoteConn.tls, remoteConn.db, 0)
+	if dstSchema == 0 {
+		return nil, fmt.Errorf("failed to get main destination db name")
+	}
+
+	var pBackup uintptr
+	if restore {
+		pBackup = sqlite3.Xsqlite3_backup_init(c.tls, c.db, srcSchema, remoteConn.db, dstSchema)
+	} else {
+		pBackup = sqlite3.Xsqlite3_backup_init(c.tls, remoteConn.db, dstSchema, c.db, srcSchema)
+	}
+	if pBackup <= 0 {
+		rc := sqlite3.Xsqlite3_errcode(c.tls, remoteConn.db)
+		return nil, c.errstr(rc)
+	}
+
+	return &Backup{srcConn: c, dstConn: remoteConn, pBackup: pBackup}, nil
+}
+
+// Step will copy up to n pages between the source and destination databases
+// specified by the backup object. If n is negative, all remaining source
+// pages are copied.
+// If it successfully copies n pages and there are still more pages to be
+// copied, then the function returns true with no error. If it successfully
+// finishes copying all pages from source to destination, then it returns
+// false with no error. If an error occurs while running, then an error is
+// returned.
+func (b *Backup) Step(n int32) (bool, error) {
+	rc := sqlite3.Xsqlite3_backup_step(b.srcConn.tls, b.pBackup, n)
+	if rc == sqlite3.SQLITE_OK {
+		return true, nil
+	} else if rc == sqlite3.SQLITE_DONE {
+		return false, nil
+	} else {
+		return false, b.srcConn.errstr(rc)
+	}
+}
+
+// Finish releases all resources associated with the Backup object. The Backup
+// object is invalid and may not be used following a call to Finish.
+func (b *Backup) Finish() error {
+	rc := sqlite3.Xsqlite3_backup_finish(b.srcConn.tls, b.pBackup)
+	b.dstConn.Close()
+	if rc == sqlite3.SQLITE_OK {
+		return nil
+	} else {
+		return b.srcConn.errstr(rc)
+	}
 }
 
 // Driver implements database/sql/driver.Driver.
@@ -1491,7 +1798,12 @@ func newDriver() *Driver { return d }
 // not specify one, which SQLite maps to "deferred". More information is
 // available at
 // https://www.sqlite.org/lang_transaction.html#deferred_immediate_and_exclusive_transactions
-func (d *Driver) Open(name string) (driver.Conn, error) {
+func (d *Driver) Open(name string) (conn driver.Conn, err error) {
+	if dmesgs {
+		defer func() {
+			dmesg("name %q: (driver.Conn %p, err %v)", name, conn, err)
+		}()
+	}
 	c, err := newConn(name)
 	if err != nil {
 		return nil, err
@@ -1508,9 +1820,37 @@ func (d *Driver) Open(name string) (driver.Conn, error) {
 
 // FunctionContext represents the context user defined functions execute in.
 // Fields and/or methods of this type may get addedd in the future.
-type FunctionContext struct{}
+type FunctionContext struct {
+	tls *libc.TLS
+	ctx uintptr
+}
 
 const sqliteValPtrSize = unsafe.Sizeof(&sqlite3.Sqlite3_value{})
+
+// RegisterFunction registers a function named zFuncName with nArg arguments.
+// Passing -1 for nArg indicates the function is variadic. The FunctionImpl
+// determines whether the function is deterministic or not, and whether it is a
+// scalar function (when Scalar is defined) or an aggregate function (when
+// Scalar is not defined and MakeAggregate is defined).
+//
+// The new function will be available to all new connections opened after
+// executing RegisterFunction.
+func RegisterFunction(
+	zFuncName string,
+	impl *FunctionImpl,
+) error {
+	return registerFunction(zFuncName, impl)
+}
+
+// MustRegisterFunction is like RegisterFunction but panics on error.
+func MustRegisterFunction(
+	zFuncName string,
+	impl *FunctionImpl,
+) {
+	if err := RegisterFunction(zFuncName, impl); err != nil {
+		panic(err)
+	}
+}
 
 // RegisterScalarFunction registers a scalar function named zFuncName with nArg
 // arguments. Passing -1 for nArg indicates the function is variadic.
@@ -1521,8 +1861,13 @@ func RegisterScalarFunction(
 	zFuncName string,
 	nArg int32,
 	xFunc func(ctx *FunctionContext, args []driver.Value) (driver.Value, error),
-) error {
-	return registerScalarFunction(zFuncName, nArg, sqlite3.SQLITE_UTF8, xFunc)
+) (err error) {
+	if dmesgs {
+		defer func() {
+			dmesg("zFuncName %q, nArg %v, xFunc %p: err %v", zFuncName, nArg, xFunc, err)
+		}()
+	}
+	return registerFunction(zFuncName, &FunctionImpl{NArgs: nArg, Scalar: xFunc, Deterministic: false})
 }
 
 // MustRegisterScalarFunction is like RegisterScalarFunction but panics on
@@ -1532,6 +1877,9 @@ func MustRegisterScalarFunction(
 	nArg int32,
 	xFunc func(ctx *FunctionContext, args []driver.Value) (driver.Value, error),
 ) {
+	if dmesgs {
+		dmesg("zFuncName %q, nArg %v, xFunc %p", zFuncName, nArg, xFunc)
+	}
 	if err := RegisterScalarFunction(zFuncName, nArg, xFunc); err != nil {
 		panic(err)
 	}
@@ -1544,6 +1892,9 @@ func MustRegisterDeterministicScalarFunction(
 	nArg int32,
 	xFunc func(ctx *FunctionContext, args []driver.Value) (driver.Value, error),
 ) {
+	if dmesgs {
+		dmesg("zFuncName %q, nArg %v, xFunc %p", zFuncName, nArg, xFunc)
+	}
 	if err := RegisterDeterministicScalarFunction(zFuncName, nArg, xFunc); err != nil {
 		panic(err)
 	}
@@ -1560,15 +1911,18 @@ func RegisterDeterministicScalarFunction(
 	zFuncName string,
 	nArg int32,
 	xFunc func(ctx *FunctionContext, args []driver.Value) (driver.Value, error),
-) error {
-	return registerScalarFunction(zFuncName, nArg, sqlite3.SQLITE_UTF8|sqlite3.SQLITE_DETERMINISTIC, xFunc)
+) (err error) {
+	if dmesgs {
+		defer func() {
+			dmesg("zFuncName %q, nArg %v, xFunc %p: err %v", zFuncName, nArg, xFunc, err)
+		}()
+	}
+	return registerFunction(zFuncName, &FunctionImpl{NArgs: nArg, Scalar: xFunc, Deterministic: true})
 }
 
-func registerScalarFunction(
+func registerFunction(
 	zFuncName string,
-	nArg int32,
-	eTextRep int32,
-	xFunc func(ctx *FunctionContext, args []driver.Value) (driver.Value, error),
+	impl *FunctionImpl,
 ) error {
 
 	if _, ok := d.udfs[zFuncName]; ok {
@@ -1581,91 +1935,362 @@ func registerScalarFunction(
 		return err
 	}
 
+	var textrep int32 = sqlite3.SQLITE_UTF8
+
+	if impl.Deterministic {
+		textrep |= sqlite3.SQLITE_DETERMINISTIC
+	}
+
 	udf := &userDefinedFunction{
 		zFuncName: name,
-		nArg:      nArg,
-		eTextRep:  eTextRep,
-		xFunc: func(tls *libc.TLS, ctx uintptr, argc int32, argv uintptr) {
-			setErrorResult := func(res error) {
-				errmsg, cerr := libc.CString(res.Error())
-				if cerr != nil {
-					panic(cerr)
-				}
-				defer libc.Xfree(tls, errmsg)
-				sqlite3.Xsqlite3_result_error(tls, ctx, errmsg, -1)
-				sqlite3.Xsqlite3_result_error_code(tls, ctx, sqlite3.SQLITE_ERROR)
-			}
-
-			args := make([]driver.Value, argc)
-			for i := int32(0); i < argc; i++ {
-				valPtr := *(*uintptr)(unsafe.Pointer(argv + uintptr(i)*sqliteValPtrSize))
-
-				switch valType := sqlite3.Xsqlite3_value_type(tls, valPtr); valType {
-				case sqlite3.SQLITE_TEXT:
-					args[i] = libc.GoString(sqlite3.Xsqlite3_value_text(tls, valPtr))
-				case sqlite3.SQLITE_INTEGER:
-					args[i] = sqlite3.Xsqlite3_value_int64(tls, valPtr)
-				case sqlite3.SQLITE_FLOAT:
-					args[i] = sqlite3.Xsqlite3_value_double(tls, valPtr)
-				case sqlite3.SQLITE_NULL:
-					args[i] = nil
-				case sqlite3.SQLITE_BLOB:
-					size := sqlite3.Xsqlite3_value_bytes(tls, valPtr)
-					blobPtr := sqlite3.Xsqlite3_value_blob(tls, valPtr)
-					v := make([]byte, size)
-					copy(v, (*libc.RawMem)(unsafe.Pointer(blobPtr))[:size:size])
-					args[i] = v
-				default:
-					panic(fmt.Sprintf("unexpected argument type %q passed by sqlite", valType))
-				}
-			}
-
-			res, err := xFunc(&FunctionContext{}, args)
-			if err != nil {
-				setErrorResult(err)
-				return
-			}
-
-			switch resTyped := res.(type) {
-			case nil:
-				sqlite3.Xsqlite3_result_null(tls, ctx)
-			case int64:
-				sqlite3.Xsqlite3_result_int64(tls, ctx, resTyped)
-			case float64:
-				sqlite3.Xsqlite3_result_double(tls, ctx, resTyped)
-			case bool:
-				sqlite3.Xsqlite3_result_int(tls, ctx, libc.Bool32(resTyped))
-			case time.Time:
-				sqlite3.Xsqlite3_result_int64(tls, ctx, resTyped.Unix())
-			case string:
-				size := int32(len(resTyped))
-				cstr, err := libc.CString(resTyped)
-				if err != nil {
-					panic(err)
-				}
-				defer libc.Xfree(tls, cstr)
-				sqlite3.Xsqlite3_result_text(tls, ctx, cstr, size, sqlite3.SQLITE_TRANSIENT)
-			case []byte:
-				size := int32(len(resTyped))
-				if size == 0 {
-					sqlite3.Xsqlite3_result_zeroblob(tls, ctx, 0)
-					return
-				}
-				p := libc.Xmalloc(tls, types.Size_t(size))
-				if p == 0 {
-					panic(fmt.Sprintf("unable to allocate space for blob: %d", size))
-				}
-				defer libc.Xfree(tls, p)
-				copy((*libc.RawMem)(unsafe.Pointer(p))[:size:size], resTyped)
-
-				sqlite3.Xsqlite3_result_blob(tls, ctx, p, size, sqlite3.SQLITE_TRANSIENT)
-			default:
-				setErrorResult(fmt.Errorf("function did not return a valid driver.Value: %T", resTyped))
-				return
-			}
-		},
+		nArg:      impl.NArgs,
+		eTextRep:  textrep,
 	}
+
+	if impl.Scalar != nil {
+		xFuncs.mu.Lock()
+		id := xFuncs.ids.next()
+		xFuncs.m[id] = impl.Scalar
+		xFuncs.mu.Unlock()
+
+		udf.scalar = true
+		udf.pApp = id
+	} else {
+		xAggregateFactories.mu.Lock()
+		id := xAggregateFactories.ids.next()
+		xAggregateFactories.m[id] = impl.MakeAggregate
+		xAggregateFactories.mu.Unlock()
+
+		udf.pApp = id
+	}
+
 	d.udfs[zFuncName] = udf
 
 	return nil
+}
+
+func origin(skip int) string {
+	pc, fn, fl, _ := runtime.Caller(skip)
+	f := runtime.FuncForPC(pc)
+	var fns string
+	if f != nil {
+		fns = f.Name()
+		if x := strings.LastIndex(fns, "."); x > 0 {
+			fns = fns[x+1:]
+		}
+	}
+	return fmt.Sprintf("%s:%d:%s", fn, fl, fns)
+}
+
+func errorResultFunction(tls *libc.TLS, ctx uintptr) func(error) {
+	return func(res error) {
+		errmsg, cerr := libc.CString(res.Error())
+		if cerr != nil {
+			panic(cerr)
+		}
+		defer libc.Xfree(tls, errmsg)
+		sqlite3.Xsqlite3_result_error(tls, ctx, errmsg, -1)
+		sqlite3.Xsqlite3_result_error_code(tls, ctx, sqlite3.SQLITE_ERROR)
+	}
+}
+
+func functionArgs(tls *libc.TLS, argc int32, argv uintptr) []driver.Value {
+	args := make([]driver.Value, argc)
+	for i := int32(0); i < argc; i++ {
+		valPtr := *(*uintptr)(unsafe.Pointer(argv + uintptr(i)*sqliteValPtrSize))
+
+		switch valType := sqlite3.Xsqlite3_value_type(tls, valPtr); valType {
+		case sqlite3.SQLITE_TEXT:
+			args[i] = libc.GoString(sqlite3.Xsqlite3_value_text(tls, valPtr))
+		case sqlite3.SQLITE_INTEGER:
+			args[i] = sqlite3.Xsqlite3_value_int64(tls, valPtr)
+		case sqlite3.SQLITE_FLOAT:
+			args[i] = sqlite3.Xsqlite3_value_double(tls, valPtr)
+		case sqlite3.SQLITE_NULL:
+			args[i] = nil
+		case sqlite3.SQLITE_BLOB:
+			size := sqlite3.Xsqlite3_value_bytes(tls, valPtr)
+			blobPtr := sqlite3.Xsqlite3_value_blob(tls, valPtr)
+			v := make([]byte, size)
+			copy(v, (*libc.RawMem)(unsafe.Pointer(blobPtr))[:size:size])
+			args[i] = v
+		default:
+			panic(fmt.Sprintf("unexpected argument type %q passed by sqlite", valType))
+		}
+	}
+
+	return args
+}
+
+func functionReturnValue(tls *libc.TLS, ctx uintptr, res driver.Value) error {
+	switch resTyped := res.(type) {
+	case nil:
+		sqlite3.Xsqlite3_result_null(tls, ctx)
+	case int64:
+		sqlite3.Xsqlite3_result_int64(tls, ctx, resTyped)
+	case float64:
+		sqlite3.Xsqlite3_result_double(tls, ctx, resTyped)
+	case bool:
+		sqlite3.Xsqlite3_result_int(tls, ctx, libc.Bool32(resTyped))
+	case time.Time:
+		sqlite3.Xsqlite3_result_int64(tls, ctx, resTyped.Unix())
+	case string:
+		size := int32(len(resTyped))
+		cstr, err := libc.CString(resTyped)
+		if err != nil {
+			panic(err)
+		}
+		defer libc.Xfree(tls, cstr)
+		sqlite3.Xsqlite3_result_text(tls, ctx, cstr, size, sqlite3.SQLITE_TRANSIENT)
+	case []byte:
+		size := int32(len(resTyped))
+		if size == 0 {
+			sqlite3.Xsqlite3_result_zeroblob(tls, ctx, 0)
+			return nil
+		}
+		p := libc.Xmalloc(tls, types.Size_t(size))
+		if p == 0 {
+			panic(fmt.Sprintf("unable to allocate space for blob: %d", size))
+		}
+		defer libc.Xfree(tls, p)
+		copy((*libc.RawMem)(unsafe.Pointer(p))[:size:size], resTyped)
+
+		sqlite3.Xsqlite3_result_blob(tls, ctx, p, size, sqlite3.SQLITE_TRANSIENT)
+	default:
+		return fmt.Errorf("function did not return a valid driver.Value: %T", resTyped)
+	}
+
+	return nil
+}
+
+// The below is all taken from zombiezen.com/go/sqlite. Aggregate functions need
+// to maintain state (for instance, the count of values seen so far). We give
+// each aggregate function an ID, generated by idGen, and put that in the pApp
+// argument to sqlite3_create_function. We track this on the Go side in
+// xAggregateFactories.
+//
+// When (if) the function is called is called by a query, we call the
+// MakeAggregate factory function to set it up, and track that in
+// xAggregateContext, retrieving it via sqlite3_aggregate_context.
+//
+// We also need to ensure that, for both aggregate and scalar functions, the
+// function pointer we pass to SQLite meets certain rules on the Go side, so
+// that the pointer remains valid.
+var (
+	xFuncs = struct {
+		mu  sync.RWMutex
+		m   map[uintptr]func(*FunctionContext, []driver.Value) (driver.Value, error)
+		ids idGen
+	}{
+		m: make(map[uintptr]func(*FunctionContext, []driver.Value) (driver.Value, error)),
+	}
+
+	xAggregateFactories = struct {
+		mu  sync.RWMutex
+		m   map[uintptr]func(FunctionContext) (AggregateFunction, error)
+		ids idGen
+	}{
+		m: make(map[uintptr]func(FunctionContext) (AggregateFunction, error)),
+	}
+
+	xAggregateContext = struct {
+		mu  sync.RWMutex
+		m   map[uintptr]AggregateFunction
+		ids idGen
+	}{
+		m: make(map[uintptr]AggregateFunction),
+	}
+)
+
+type idGen struct {
+	bitset []uint64
+}
+
+func (gen *idGen) next() uintptr {
+	base := uintptr(1)
+	for i := 0; i < len(gen.bitset); i, base = i+1, base+64 {
+		b := gen.bitset[i]
+		if b != 1<<64-1 {
+			n := uintptr(bits.TrailingZeros64(^b))
+			gen.bitset[i] |= 1 << n
+			return base + n
+		}
+	}
+	gen.bitset = append(gen.bitset, 1)
+	return base
+}
+
+func (gen *idGen) reclaim(id uintptr) {
+	bit := id - 1
+	gen.bitset[bit/64] &^= 1 << (bit % 64)
+}
+
+func makeAggregate(tls *libc.TLS, ctx uintptr) (AggregateFunction, uintptr) {
+	goCtx := FunctionContext{tls: tls, ctx: ctx}
+	aggCtx := (*uintptr)(unsafe.Pointer(sqlite3.Xsqlite3_aggregate_context(tls, ctx, int32(ptrSize))))
+	setErrorResult := errorResultFunction(tls, ctx)
+	if aggCtx == nil {
+		setErrorResult(errors.New("insufficient memory for aggregate"))
+		return nil, 0
+	}
+	if *aggCtx != 0 {
+		// Already created.
+		xAggregateContext.mu.RLock()
+		f := xAggregateContext.m[*aggCtx]
+		xAggregateContext.mu.RUnlock()
+		return f, *aggCtx
+	}
+
+	factoryID := sqlite3.Xsqlite3_user_data(tls, ctx)
+	xAggregateFactories.mu.RLock()
+	factory := xAggregateFactories.m[factoryID]
+	xAggregateFactories.mu.RUnlock()
+
+	f, err := factory(goCtx)
+	if err != nil {
+		setErrorResult(err)
+		return nil, 0
+	}
+	if f == nil {
+		setErrorResult(errors.New("MakeAggregate function returned nil"))
+		return nil, 0
+	}
+
+	xAggregateContext.mu.Lock()
+	*aggCtx = xAggregateContext.ids.next()
+	xAggregateContext.m[*aggCtx] = f
+	xAggregateContext.mu.Unlock()
+	return f, *aggCtx
+}
+
+// cFuncPointer converts a function defined by a function declaration to a C pointer.
+// The result of using cFuncPointer on closures is undefined.
+func cFuncPointer[T any](f T) uintptr {
+	// This assumes the memory representation described in https://golang.org/s/go11func.
+	//
+	// cFuncPointer does its conversion by doing the following in order:
+	// 1) Create a Go struct containing a pointer to a pointer to
+	//    the function. It is assumed that the pointer to the function will be
+	//    stored in the read-only data section and thus will not move.
+	// 2) Convert the pointer to the Go struct to a pointer to uintptr through
+	//    unsafe.Pointer. This is permitted via Rule #1 of unsafe.Pointer.
+	// 3) Dereference the pointer to uintptr to obtain the function value as a
+	//    uintptr. This is safe as long as function values are passed as pointers.
+	return *(*uintptr)(unsafe.Pointer(&struct{ f T }{f}))
+}
+
+func funcTrampoline(tls *libc.TLS, ctx uintptr, argc int32, argv uintptr) {
+	id := sqlite3.Xsqlite3_user_data(tls, ctx)
+	xFuncs.mu.RLock()
+	xFunc := xFuncs.m[id]
+	xFuncs.mu.RUnlock()
+
+	setErrorResult := errorResultFunction(tls, ctx)
+	res, err := xFunc(&FunctionContext{}, functionArgs(tls, argc, argv))
+
+	if err != nil {
+		setErrorResult(err)
+		return
+	}
+
+	err = functionReturnValue(tls, ctx, res)
+	if err != nil {
+		setErrorResult(err)
+	}
+}
+
+func stepTrampoline(tls *libc.TLS, ctx uintptr, argc int32, argv uintptr) {
+	impl, _ := makeAggregate(tls, ctx)
+	if impl == nil {
+		return
+	}
+
+	setErrorResult := errorResultFunction(tls, ctx)
+	err := impl.Step(&FunctionContext{}, functionArgs(tls, argc, argv))
+	if err != nil {
+		setErrorResult(err)
+	}
+}
+
+func inverseTrampoline(tls *libc.TLS, ctx uintptr, argc int32, argv uintptr) {
+	impl, _ := makeAggregate(tls, ctx)
+	if impl == nil {
+		return
+	}
+
+	setErrorResult := errorResultFunction(tls, ctx)
+	err := impl.WindowInverse(&FunctionContext{}, functionArgs(tls, argc, argv))
+	if err != nil {
+		setErrorResult(err)
+	}
+}
+
+func valueTrampoline(tls *libc.TLS, ctx uintptr) {
+	impl, _ := makeAggregate(tls, ctx)
+	if impl == nil {
+		return
+	}
+
+	setErrorResult := errorResultFunction(tls, ctx)
+	res, err := impl.WindowValue(&FunctionContext{})
+	if err != nil {
+		setErrorResult(err)
+	} else {
+		err = functionReturnValue(tls, ctx, res)
+		if err != nil {
+			setErrorResult(err)
+		}
+	}
+}
+
+func finalTrampoline(tls *libc.TLS, ctx uintptr) {
+	impl, id := makeAggregate(tls, ctx)
+	if impl == nil {
+		return
+	}
+
+	setErrorResult := errorResultFunction(tls, ctx)
+	res, err := impl.WindowValue(&FunctionContext{})
+	if err != nil {
+		setErrorResult(err)
+	} else {
+		err = functionReturnValue(tls, ctx, res)
+		if err != nil {
+			setErrorResult(err)
+		}
+	}
+	impl.Final(&FunctionContext{})
+
+	xAggregateContext.mu.Lock()
+	defer xAggregateContext.mu.Unlock()
+	delete(xAggregateContext.m, id)
+	xAggregateContext.ids.reclaim(id)
+}
+
+// C documentation
+//
+//	int sqlite3_limit(sqlite3*, int id, int newVal);
+func (c *conn) limit(id int, newVal int) int {
+	return int(sqlite3.Xsqlite3_limit(c.tls, c.db, int32(id), int32(newVal)))
+}
+
+// Limit calls sqlite3_limit, see the docs at
+// https://www.sqlite.org/c3ref/limit.html for details.
+//
+// To get a sql.Conn from a *sql.DB, use (*sql.DB).Conn().  Limits are bound to
+// the particular instance of 'c', so getting a new connection only to pass it
+// to Limit is possibly not useful above querying what are the various
+// configured default values.
+func Limit(c *sql.Conn, id int, newVal int) (r int, err error) {
+	err = c.Raw(func(driverConn any) error {
+		switch dc := driverConn.(type) {
+		case *conn:
+			r = dc.limit(id, newVal)
+			return nil
+		default:
+			return fmt.Errorf("unexpected driverConn type: %T", driverConn)
+		}
+	})
+	return r, err
+
 }

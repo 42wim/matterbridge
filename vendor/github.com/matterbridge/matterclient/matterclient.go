@@ -144,10 +144,6 @@ func (m *Client) Login() error {
 		return err
 	}
 
-	if err := m.initUserChannels(); err != nil {
-		return err
-	}
-
 	if m.Team == nil {
 		validTeamNames := make([]string, len(m.OtherTeams))
 		for i, t := range m.OtherTeams {
@@ -155,6 +151,10 @@ func (m *Client) Login() error {
 		}
 
 		return fmt.Errorf("Team '%s' not found in %v", m.Credentials.Team, validTeamNames)
+	}
+
+	if err := m.initUserChannels(); err != nil {
+		return err
 	}
 
 	// connect websocket
@@ -532,7 +532,7 @@ func (m *Client) wsConnect() {
 }
 
 func (m *Client) doCheckAlive() error {
-	if _, _, err := m.Client.GetMe(""); err != nil {
+	if _, _, err := m.Client.GetPing(); err != nil {
 		return err
 	}
 

@@ -176,8 +176,9 @@ func (cfr ConnectFailureReason) String() string {
 //
 // Known reasons are handled internally and emitted as different events (e.g. LoggedOut and TemporaryBan).
 type ConnectFailure struct {
-	Reason ConnectFailureReason
-	Raw    *waBinary.Node
+	Reason  ConnectFailureReason
+	Message string
+	Raw     *waBinary.Node
 }
 
 // ClientOutdated is emitted when the WhatsApp server rejects the connection with the ConnectFailureClientOutdated code.
@@ -199,6 +200,13 @@ type HistorySync struct {
 	Data *waProto.HistorySync
 }
 
+type DecryptFailMode string
+
+const (
+	DecryptFailShow DecryptFailMode = ""
+	DecryptFailHide DecryptFailMode = "hide"
+)
+
 // UndecryptableMessage is emitted when receiving a new message that failed to decrypt.
 //
 // The library will automatically ask the sender to retry. If the sender resends the message,
@@ -211,6 +219,8 @@ type UndecryptableMessage struct {
 	// IsUnavailable is true if the recipient device didn't send a ciphertext to this device at all
 	// (as opposed to sending a ciphertext, but the ciphertext not being decryptable).
 	IsUnavailable bool
+
+	DecryptFailMode DecryptFailMode
 }
 
 // Message is emitted when receiving a new message.
@@ -223,6 +233,13 @@ type Message struct {
 	IsViewOnceV2          bool // True if the message was unwrapped from a ViewOnceMessage
 	IsDocumentWithCaption bool // True if the message was unwrapped from a DocumentWithCaptionMessage
 	IsEdit                bool // True if the message was unwrapped from an EditedMessage
+
+	// If this event was parsed from a WebMessageInfo (i.e. from a history sync or unavailable message request), the source data is here.
+	SourceWebMsg *waProto.WebMessageInfo
+	// If this event is a response to an unavailable message request, the request ID is here.
+	UnavailableRequestID types.MessageID
+	// If the message was re-requested from the sender, this is the number of retries it took.
+	RetryCount int
 
 	// The raw message struct. This is the raw unmodified data, which means the actual message might
 	// be wrapped in DeviceSentMessage, EphemeralMessage or ViewOnceMessage.

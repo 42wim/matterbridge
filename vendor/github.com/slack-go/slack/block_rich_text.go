@@ -294,7 +294,7 @@ func NewRichTextSectionLinkElement(url, text string, style *RichTextSectionTextS
 type RichTextSectionTeamElement struct {
 	Type   RichTextSectionElementType `json:"type"`
 	TeamID string                     `json:"team_id"`
-	Style  *RichTextSectionTextStyle  `json:"style.omitempty"`
+	Style  *RichTextSectionTextStyle  `json:"style,omitempty"`
 }
 
 func (r RichTextSectionTeamElement) RichTextSectionElementType() RichTextSectionElementType {

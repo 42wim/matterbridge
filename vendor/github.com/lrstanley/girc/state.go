@@ -28,10 +28,21 @@ type state struct {
 	// last capability check. These will get sent once we have received the
 	// last capability list command from the server.
 	tmpCap map[string]map[string]string
+
 	// serverOptions are the standard capabilities and configurations
 	// supported by the server at connection time. This also includes
 	// RPL_ISUPPORT entries.
 	serverOptions map[string]string
+
+	// maxLineLength defines how long before we truncate (or split) messages.
+	// DefaultMaxLineLength is what is used by default, as this is going to be a common
+	// standard. However, protocols like IRCv3, or ISUPPORT can override this.
+	maxLineLength int
+
+	// maxPrefixLength defines the estimated prefix length (":nick!user@host ") that
+	// we can use to calculate line splits.
+	maxPrefixLength int
+
 	// motd is the servers message of the day.
 	motd string
 
@@ -51,9 +62,11 @@ func (s *state) reset(initial bool) {
 	s.host = ""
 	s.channels = make(map[string]*Channel)
 	s.users = make(map[string]*User)
-	s.serverOptions = make(map[string]string)
 	s.enabledCap = make(map[string]map[string]string)
 	s.tmpCap = make(map[string]map[string]string)
+	s.serverOptions = make(map[string]string)
+	s.maxLineLength = DefaultMaxLineLength
+	s.maxPrefixLength = DefaultMaxPrefixLength
 	s.motd = ""
 
 	if initial {

@@ -92,6 +92,12 @@ type Container struct {
 	*Attribute // Block level attribute
 }
 
+// return true if can contain children of a given node type
+// used by custom nodes to over-ride logic in canNodeContain
+type CanContain interface {
+	CanContain(Node) bool
+}
+
 // AsContainer returns itself as *Container
 func (c *Container) AsContainer() *Container {
 	return c

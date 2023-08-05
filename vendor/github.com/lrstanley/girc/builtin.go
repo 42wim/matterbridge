@@ -408,6 +408,48 @@ func handleISUPPORT(c *Client, e Event) {
 		c.state.serverOptions[name] = val
 	}
 	c.state.Unlock()
+
+	// Check for max line/nick/user/host lengths here.
+	c.state.RLock()
+	maxLineLength := c.state.maxLineLength
+	c.state.RUnlock()
+	maxNickLength := defaultNickLength
+	maxUserLength := defaultUserLength
+	maxHostLength := defaultHostLength
+
+	var ok bool
+	var tmp int
+
+	if tmp, ok = c.GetServerOptionInt("LINELEN"); ok {
+		maxLineLength = tmp
+		c.state.Lock()
+		c.state.maxLineLength = maxTagLength - 2 // -2 for CR-LF.
+		c.state.Unlock()
+	}
+
+	if tmp, ok = c.GetServerOptionInt("NICKLEN"); ok {
+		maxNickLength = tmp
+	}
+	if tmp, ok = c.GetServerOptionInt("MAXNICKLEN"); ok && tmp > maxNickLength {
+		maxNickLength = tmp
+	}
+	if tmp, ok = c.GetServerOptionInt("USERLEN"); ok && tmp > maxUserLength {
+		maxUserLength = tmp
+	}
+	if tmp, ok = c.GetServerOptionInt("HOSTLEN"); ok && tmp > maxHostLength {
+		maxHostLength = tmp
+	}
+
+	prefixLen := defaultPrefixPadding + maxNickLength + maxUserLength + maxHostLength
+	if prefixLen >= maxLineLength {
+		// Give up and go with defaults.
+		c.state.notify(c, UPDATE_GENERAL)
+		return
+	}
+	c.state.Lock()
+	c.state.maxPrefixLength = prefixLen
+	c.state.Unlock()
+
 	c.state.notify(c, UPDATE_GENERAL)
 }
 
