@@ -192,6 +192,14 @@ RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 #OPTIONAL (default false)
 ShowJoinPart=false
 
+#Only show join/part/quit information for users who have been active recently.
+#OPTIONAL (default false)
+ShowActiveUserEvents=false
+
+#A user is considered active for ShowActiveUserEvents if they've spoken within this number of seconds.
+#OPTIONAL (default 1800, which is 30 minutes)
+ActivityTimeout=1800
+
 #Enable to show verbose users joins/parts (ident@host) from other bridges
 #Currently works for messages from the following bridges: irc
 #OPTIONAL (default false)

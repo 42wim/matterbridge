@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/42wim/matterbridge/bridge"
@@ -27,13 +28,22 @@ type Birc struct {
 	i                                         *girc.Client
 	Nick                                      string
 	names                                     map[string][]string
+	activeUsers                               map[string]map[string]int64
+	activeUsersLastCleaned                    int64
+	activeUsersMutex                          sync.RWMutex
 	connected                                 chan error
 	Local                                     chan config.Message // local queue for flood control
 	FirstConnection, authDone                 bool
 	MessageDelay, MessageQueue, MessageLength int
+	ActivityTimeout                           int64
 	channels                                  map[string]bool
 
 	*bridge.Config
+}
+
+type ActivityInfo struct {
+	channel    string
+	activeTime int64
 }
 
 func New(cfg *bridge.Config) bridge.Bridger {
@@ -41,6 +51,7 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	b.Config = cfg
 	b.Nick = b.GetString("Nick")
 	b.names = make(map[string][]string)
+	b.activeUsers = make(map[string]map[string]int64)
 	b.connected = make(chan error)
 	b.channels = make(map[string]bool)
 
@@ -59,6 +70,16 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	} else {
 		b.MessageLength = b.GetInt("MessageLength")
 	}
+	if b.GetBool("ShowActiveUserEvents") {
+		if b.GetInt("ActivityTimeout") == 0 {
+			b.ActivityTimeout = 1800 // 30 minutes
+		} else {
+			b.ActivityTimeout = int64(b.GetInt("ActivityTimeout"))
+		}
+		b.activeUsersLastCleaned = time.Now().Unix()
+	} else {
+		b.ActivityTimeout = 0 // Disable
+	}
 	b.FirstConnection = true
 	return b
 }
@@ -75,6 +96,10 @@ func (b *Birc) Command(msg *config.Message) string {
 func (b *Birc) Connect() error {
 	if b.GetBool("UseSASL") && b.GetString("TLSClientCertificate") != "" {
 		return errors.New("you can't enable SASL and TLSClientCertificate at the same time")
+	}
+
+	if b.GetBool("NoSendJoinPart") && b.GetBool("ShowActiveUserEvents") {
+		return errors.New("you must disable NoSendJoinPart to use ShowActiveUserEvents")
 	}
 
 	b.Local = make(chan config.Message, b.MessageQueue+10)
@@ -412,4 +437,77 @@ func (b *Birc) getTLSConfig() (*tls.Config, error) {
 	}
 
 	return tlsConfig, nil
+}
+
+func (b *Birc) isActive(activityTime int64, nowTime int64) bool {
+	return (nowTime - activityTime) < b.ActivityTimeout
+}
+
+func (b *Birc) isUserActive(nick string, channel string) (bool, int64) {
+	b.Log.Debugf("checking activity for %s", nick)
+	if b.ActivityTimeout == 0 {
+		return true, 0
+	}
+	b.activeUsersMutex.RLock()
+	defer b.activeUsersMutex.RUnlock()
+	if activeTime, ok := b.activeUsers[nick][channel]; ok {
+		now := time.Now().Unix()
+		b.Log.Debugf("last activity for %s was %d, currently %d", nick, activeTime, now)
+		if now < activeTime {
+			b.Log.Errorf("User %s has active time in the future: %d", nick, activeTime)
+			return true, now // err on the side of caution
+		}
+		return b.isActive(activeTime, now), activeTime
+	}
+	return false, 0
+}
+
+func (b *Birc) getActiveChannels(nick string) []ActivityInfo {
+	retval := make([]ActivityInfo, 0)
+	if channels, found := b.activeUsers[nick]; found {
+		now := time.Now().Unix()
+		for channel, activeTime := range channels {
+			if now < activeTime {
+				b.Log.Errorf("User %s has active time for channel %s in the future: %d",
+					nick,
+					channel,
+					activeTime)
+			} else if (now - activeTime) < b.ActivityTimeout {
+				retval = append(retval, ActivityInfo{channel, activeTime})
+			}
+		}
+	}
+	return retval
+}
+
+func (b *Birc) cleanActiveMap() {
+	now := time.Now().Unix()
+	if b.ActivityTimeout == 0 || (b.activeUsersLastCleaned-now < b.ActivityTimeout) {
+		return
+	}
+	b.activeUsersMutex.Lock()
+	defer b.activeUsersMutex.Unlock()
+	for nick, activeChannels := range b.activeUsers {
+		for channel, activeTime := range activeChannels {
+			if now-activeTime > b.ActivityTimeout {
+				b.Log.Debugf("last activity for %s was %d, currently %d. Deleting.", nick, activeTime, now)
+				delete(activeChannels, channel)
+			}
+		}
+		if 0 == len(activeChannels) {
+			delete(b.activeUsers, nick)
+		}
+	}
+}
+
+func (b *Birc) markUserActive(nick string, channel string, activeTime int64) {
+	b.Log.Debugf("<= Updating last-active time for user %s in channel %s to %d", nick, channel, activeTime)
+	b.activeUsersMutex.Lock()
+	defer b.activeUsersMutex.Unlock()
+	nickActivity, found := b.activeUsers[nick]
+	if !found {
+		b.activeUsers[nick] = make(map[string]int64)
+		nickActivity = b.activeUsers[nick]
+	}
+	nickActivity[channel] = activeTime
 }
