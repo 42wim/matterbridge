@@ -466,7 +466,8 @@ func (gw *Gateway) SendMessage(
 
 	// exclude file delete event as the msg ID here is the native file ID that needs to be deleted
 	if msg.Event != config.EventFileDelete {
-		msg.ID = gw.getDestMsgID(rmsg.Protocol+" "+rmsg.ID, dest, channel)
+		canonicalMsgID := gw.FindCanonicalMsgID(rmsg.Protocol, rmsg.ID)
+		msg.ID = gw.getDestMsgID(canonicalMsgID, dest, channel)
 	}
 
 	// for api we need originchannel as channel
