@@ -80,10 +80,6 @@ func DownloadFileAuthRocket(url, token, userID string) (*[]byte, error) {
 // word boundaries when splitting but this is hard to solve without potentially
 // breaking formatting and other stylistic effects.
 func GetSubLines(message string, maxLineLength int, clippingMessage string) []string {
-	if clippingMessage == "" {
-		clippingMessage = " <clipped message>"
-	}
-
 	var lines []string
 	for _, line := range strings.Split(strings.TrimSpace(message), "\n") {
 		if line == "" {
@@ -104,8 +100,8 @@ func GetSubLines(message string, maxLineLength int, clippingMessage string) []st
 		var splitStart int
 		var startOfPreviousRune int
 		for i := range line {
-			if i-splitStart > maxLineLength-len([]byte(clippingMessage)) {
-				lines = append(lines, line[splitStart:startOfPreviousRune]+clippingMessage)
+			if i-splitStart > maxLineLength {
+				lines = append(lines, line[splitStart:startOfPreviousRune])
 				splitStart = startOfPreviousRune
 			}
 			startOfPreviousRune = i

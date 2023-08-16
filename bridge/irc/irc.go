@@ -25,7 +25,7 @@ import (
 
 type Birc struct {
 	i                                         *girc.Client
-	Nick                                      string
+	Nick, MessageClipped                      string
 	names                                     map[string][]string
 	connected                                 chan error
 	Local                                     chan config.Message // local queue for flood control
@@ -172,10 +172,11 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 	}
 
 	if b.GetBool("MessageSplit") {
-		msgLines = helper.GetSubLines(msg.Text, b.MessageLength, b.GetString("MessageClipped"))
+		msgLines = helper.GetSubLines(msg.Text, b.MessageLength, "")
 	} else {
-		msgLines = helper.GetSubLines(msg.Text, 0, b.GetString("MessageClipped"))
+		msgLines = []string{helper.GetSubLines(msg.Text, b.MessageLength, "")[0] + b.getMessageClipped()}
 	}
+
 	for i := range msgLines {
 		if len(b.Local) >= b.MessageQueue {
 			b.Log.Debugf("flooding, dropping message (queue at %d)", len(b.Local))
@@ -412,4 +413,12 @@ func (b *Birc) getTLSConfig() (*tls.Config, error) {
 	}
 
 	return tlsConfig, nil
+}
+
+func (b *Birc) getMessageClipped() string {
+	if b.GetString("MessageClipped") == "" {
+		return " <clipped message>"
+	}
+
+	return " " + b.GetString("MessageClipped")
 }
