@@ -231,6 +231,7 @@ type BridgeValues struct {
 	Zulip              map[string]Protocol
 	Keybase            map[string]Protocol
 	Mumble             map[string]Protocol
+	Signald            map[string]Protocol
 	General            Protocol
 	Tengo              Tengo
 	Gateway            []Gateway
