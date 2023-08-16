@@ -1,7 +1,10 @@
 package bdiscord
 
 import (
+	"path"
+
 	"github.com/42wim/matterbridge/bridge/config"
+	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/bwmarrin/discordgo"
 	"github.com/davecgh/go-spew/spew"
 )
@@ -98,14 +101,13 @@ func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 		return
 	}
 
-	// add the url of the attachments to content
-	if len(m.Attachments) > 0 {
-		for _, attach := range m.Attachments {
-			m.Content = m.Content + "\n" + attach.URL
-		}
+	rmsg := config.Message{
+		Account: b.Account,
+		Avatar:  "https://cdn.discordapp.com/avatars/" + m.Author.ID + "/" + m.Author.Avatar + ".jpg",
+		UserID:  m.Author.ID,
+		ID:      m.ID,
+		Extra:   make(map[string][]interface{}),
 	}
-
-	rmsg := config.Message{Account: b.Account, Avatar: "https://cdn.discordapp.com/avatars/" + m.Author.ID + "/" + m.Author.Avatar + ".jpg", UserID: m.Author.ID, ID: m.ID}
 
 	b.Log.Debugf("== Receiving event %#v", m.Message)
 
@@ -138,8 +140,14 @@ func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 		}
 	}
 
-	// no empty messages
-	if rmsg.Text == "" {
+	if len(m.Attachments) > 0 {
+		b.handleDownloadFile(&rmsg, m)
+	}
+
+	hasAttachment := len(rmsg.Extra["file"]) > 0
+
+	// no empty messages unless has attachment
+	if rmsg.Text == "" && !hasAttachment {
 		return
 	}
 
@@ -278,4 +286,15 @@ func handleEmbed(embed *discordgo.MessageEmbed) string {
 	}
 
 	return result
+}
+
+func (b *Bdiscord) handleDownloadFile(rmsg *config.Message, m *discordgo.MessageCreate) {
+	for _, attach := range m.Attachments {
+		data, err := helper.DownloadFile(attach.URL)
+		if err != nil {
+			b.Log.Errorf("download %s failed %#v", attach.URL, err)
+		}
+
+		helper.HandleDownloadData(b.Log, rmsg, path.Base(attach.URL), rmsg.Text, attach.URL, data, b.General)
+	}
 }
