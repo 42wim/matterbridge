@@ -68,7 +68,7 @@ func (b *Bdiscord) getGuildMemberByNick(nick string) (*discordgo.Member, error) 
 	b.membersMutex.RLock()
 	defer b.membersMutex.RUnlock()
 
-	if member, ok := b.nickMemberMap[nick]; ok {
+	if member, ok := b.nickMemberMap[strings.TrimSpace(nick)]; ok {
 		return member, nil
 	}
 	return nil, errors.New("Couldn't find guild member with nick " + nick) // This will most likely get ignored by the caller
