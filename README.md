@@ -14,11 +14,13 @@ Letting people be where they want to be.<br />
 [IRC][mb-irc] |
 [Keybase][mb-keybase] |
 [Matrix][mb-matrix] |
+  
 [Mattermost][mb-mattermost] |
 [MSTeams][mb-msteams] |
 [Rocket.Chat][mb-rocketchat] |
 [Slack][mb-slack] |
 [Telegram][mb-telegram] |
+  
 [Twitch][mb-twitch] |
 [WhatsApp][mb-whatsapp] |
 [XMPP][mb-xmpp] |
