@@ -123,7 +123,6 @@ func (b *Birc) handleNewConnection(client *girc.Client, event girc.Event) {
 	b.Nick = event.Params[0]
 
 	i.Handlers.AddBg("PRIVMSG", b.handlePrivMsg)
-	i.Handlers.AddBg("CTCP_ACTION", b.handlePrivMsg)
 	i.Handlers.Add(girc.RPL_TOPICWHOTIME, b.handleTopicWhoTime)
 	i.Handlers.AddBg(girc.NOTICE, b.handleNotice)
 	i.Handlers.AddBg("JOIN", b.handleJoinPart)
@@ -195,7 +194,11 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 	b.Log.Debugf("== Receiving PRIVMSG: %s %s %#v", event.Source.Name, event.Last(), event)
 
 	// set action event
-	if event.IsAction() {
+	if ok, ctcp := event.IsCTCP(); ok {
+		if ctcp.Command != girc.CTCP_ACTION {
+			b.Log.Debugf("dropping user ctcp, command: %s", ctcp.Command)
+			return
+		}
 		rmsg.Event = config.EventUserAction
 	}
 
