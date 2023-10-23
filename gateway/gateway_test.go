@@ -170,15 +170,15 @@ func maketestRouter(input []byte) *Router {
 
 func TestNewRouter(t *testing.T) {
 	r := maketestRouter(testconfig)
-	assert.Equal(t, 1, len(r.Gateways))
-	assert.Equal(t, 3, len(r.Gateways["bridge1"].Bridges))
-	assert.Equal(t, 3, len(r.Gateways["bridge1"].Channels))
+	assert.Len(t, r.Gateways, 1)
+	assert.Len(t, r.Gateways["bridge1"].Bridges, 3)
+	assert.Len(t, r.Gateways["bridge1"].Channels, 3)
 	r = maketestRouter(testconfig2)
-	assert.Equal(t, 2, len(r.Gateways))
-	assert.Equal(t, 3, len(r.Gateways["bridge1"].Bridges))
-	assert.Equal(t, 2, len(r.Gateways["bridge2"].Bridges))
-	assert.Equal(t, 3, len(r.Gateways["bridge1"].Channels))
-	assert.Equal(t, 2, len(r.Gateways["bridge2"].Channels))
+	assert.Len(t, r.Gateways, 2)
+	assert.Len(t, r.Gateways["bridge1"].Bridges, 3)
+	assert.Len(t, r.Gateways["bridge2"].Bridges, 2)
+	assert.Len(t, r.Gateways["bridge1"].Channels, 3)
+	assert.Len(t, r.Gateways["bridge2"].Channels, 2)
 	assert.Equal(t, &config.ChannelInfo{
 		Name:        "general",
 		Direction:   "inout",
