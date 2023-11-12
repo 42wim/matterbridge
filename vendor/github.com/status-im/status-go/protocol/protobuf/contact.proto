@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+option go_package = "./;protobuf";
+package protobuf;
+
+message ContactRequestPropagatedState {
+  uint64 local_clock = 1;
+  uint64 local_state = 2;
+  uint64 remote_clock = 3;
+  uint64 remote_state = 4;
+}
+
+message ContactUpdate {
+  uint64 clock = 1;
+  string ens_name = 2;
+  string profile_image = 3;
+  string display_name = 4;
+  uint64 contact_request_clock = 5;
+  ContactRequestPropagatedState contact_request_propagated_state = 6;
+  string public_key = 7;
+}
+
+message AcceptContactRequest {
+  string id = 1;
+  uint64 clock = 2;
+}
+
+message RetractContactRequest {
+  string id = 1;
+  uint64 clock = 2;
+}

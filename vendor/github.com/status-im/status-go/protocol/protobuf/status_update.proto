@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+option go_package = "./;protobuf";
+package protobuf;
+
+/* Specs:
+:AUTOMATIC
+	To Send - "AUTOMATIC" status ping every 5 minutes
+	Display - Online for up to 5 minutes from the last clock, after that Offline
+:ALWAYS_ONLINE
+	To Send - "ALWAYS_ONLINE" status ping every 5 minutes
+	Display - Online for up to 2 weeks from the last clock, after that Offline
+:INACTIVE
+	To Send - A single "INACTIVE" status ping
+	Display - Offline forever
+Note: Only send pings if the user interacted with the app in the last x minutes. */
+message StatusUpdate {
+  
+  uint64 clock = 1;
+  
+  StatusType status_type = 2;
+    
+  string custom_text = 3;
+  
+  enum StatusType {
+    UNKNOWN_STATUS_TYPE = 0;
+    AUTOMATIC = 1;
+    DO_NOT_DISTURB = 2;
+    ALWAYS_ONLINE = 3;
+    INACTIVE = 4;
+  };
+
+}

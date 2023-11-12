@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+option go_package = "./;protobuf";
+package protobuf;
+
+import "enums.proto";
+import "profile_showcase.proto";
+
+// ChatIdentity represents the user defined identity associated with their public chat key
+message ChatIdentity {
+  // Lamport timestamp of the message
+  uint64 clock = 1;
+
+  // ens_name is the valid ENS name associated with the chat key
+  string ens_name = 2;
+
+  // images is a string indexed mapping of images associated with an identity
+  map<string, IdentityImage> images = 3;
+
+  // display name is the user set identity
+  string display_name = 4;
+
+  // description is the user set description
+  string description = 5;
+
+  string color = 6;
+
+  string emoji = 7;
+
+  repeated SocialLink social_links = 8;
+
+  // first known message timestamp in seconds (valid only for community chats for now)
+  // 0 - unknown
+  // 1 - no messages
+  uint32 first_message_timestamp = 9;
+
+  ProfileShowcase profile_showcase = 10;
+}
+
+// ProfileImage represents data associated with a user's profile image
+message IdentityImage {
+
+  // payload is a context based payload for the profile image data,
+  // context is determined by the `source_type`
+  bytes payload = 1;
+
+  // source_type signals the image payload source
+  SourceType source_type = 2;
+
+  // image_format signals the image format and method of parsing the payload
+  ImageFormat image_format = 3;
+
+  // encryption_keys is a list of encrypted keys that can be used to decrypted an encrypted payload
+  repeated bytes encryption_keys = 4;
+
+  // encrypted signals the encryption state of the payload, default is false.
+  bool encrypted = 5;
+
+  // SourceType are the predefined types of image source allowed
+  enum SourceType {
+    UNKNOWN_SOURCE_TYPE = 0;
+
+    // RAW_PAYLOAD image byte data
+    RAW_PAYLOAD = 1;
+
+    // ENS_AVATAR uses the ENS record's resolver get-text-data.avatar data
+    // The `payload` field will be ignored if ENS_AVATAR is selected
+    // The application will read and parse the ENS avatar data as image payload data, URLs will be ignored
+    // The parent `ChatMessageIdentity` must have a valid `ens_name` set
+    ENS_AVATAR = 2;
+  }
+}
+
+// SocialLinks represents social link assosiated with given chat identity (personal/community)
+message SocialLink {
+  string text = 1;
+  string url = 2;
+}

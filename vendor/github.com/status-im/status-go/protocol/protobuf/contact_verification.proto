@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option go_package = "./;protobuf";
+package protobuf;
+
+message RequestContactVerification {
+  uint64 clock = 1;
+  string challenge = 3;
+}
+
+message AcceptContactVerification {
+  uint64 clock = 1;
+  string id = 2;
+  string response = 3;
+}
+
+message DeclineContactVerification {
+  uint64 clock = 1;
+  string id = 2;
+}
+
+message CancelContactVerification {
+  uint64 clock = 1;
+  string id = 2;
+}

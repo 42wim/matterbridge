@@ -1,0 +1,19 @@
+# Thank you to everyone that made Pion possible. If you are interested in contributing
+# we would love to have you https://github.com/pion/webrtc/wiki/Contributing
+#
+# This file is auto generated, using git to list all individuals contributors.
+# see `.github/generate-authors.sh` for the scripting
+Atsushi Watanabe <atsushi.w@ieee.org>
+backkem <mail@backkem.me>
+Hugo Arregui <hugo.arregui@gmail.com>
+Jozef Kralik <jojo.lwin@gmail.com>
+Juliusz Chroboczek <jch@irif.fr>
+Luke Curley <kixelated@gmail.com>
+Mathis Engelbart <mathis.engelbart@gmail.com>
+OrlandoCo <luisorlando.co@gmail.com>
+Sean DuBois <seaduboi@amazon.com>
+Sean DuBois <sean@siobud.com>
+Winlin <winlin@vip.126.com>
+Woodrow Douglass <wdouglass@carnegierobotics.com>
+Yutaka Takeda <yt0916@gmail.com>
+ZHENK <chengzhenyang@gmail.com>

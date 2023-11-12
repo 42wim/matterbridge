@@ -1,0 +1,21 @@
+image:
+  - Visual Studio 2017
+
+environment:
+  GOPATH: c:\gopath
+
+install:
+  - set PATH=%GOPATH%\bin;%PATH%
+  - set PATH=C:\msys64\mingw64\bin;%PATH%
+  - go get github.com/anacrolix/envpprof
+  - go get github.com/anacrolix/tagflag
+  - go get github.com/stretchr/testify/assert
+  - go get github.com/anacrolix/mmsg
+  - go get golang.org/x/net/nettest
+  - go get github.com/anacrolix/sync
+
+build_script:
+  - go build -v -x -a
+
+before_test:
+  - go test -v

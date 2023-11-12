@@ -1,0 +1,13 @@
+GO_FILES=$(shell find . -name '*.go' | grep -vE 'vendor')
+
+lint-fix:
+	go get github.com/golangci/golangci-lint
+	goimports -w $(GO_FILES)
+	go fmt ./...
+	golangci-lint -v run ./...
+
+test:
+	go test -count 1 -v -race ./...
+
+bench:
+	go test -bench=. -benchmem -v -run Benchmark ./...

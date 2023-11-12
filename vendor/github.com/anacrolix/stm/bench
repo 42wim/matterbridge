@@ -1,0 +1,8 @@
+benchout="benches/$(./describe)"
+echo
+echo writing "$benchout"
+echo
+go test -bench . -benchtime 3s -benchmem | tee "$benchout"
+echo
+echo wrote "$benchout"
+echo

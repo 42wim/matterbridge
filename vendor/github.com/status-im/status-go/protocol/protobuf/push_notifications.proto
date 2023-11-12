@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+option go_package = "./;protobuf";
+package protobuf;
+
+import "chat_identity.proto";
+
+message PushNotificationRegistration {
+  enum TokenType {
+    UNKNOWN_TOKEN_TYPE = 0;
+    APN_TOKEN = 1;
+    FIREBASE_TOKEN = 2;
+  }
+  TokenType token_type = 1;
+  string device_token = 2;
+  string installation_id = 3;
+  string access_token = 4;
+  bool enabled = 5;
+  uint64 version = 6;
+  repeated bytes allowed_key_list = 7;
+  repeated bytes blocked_chat_list = 8;
+  bool unregister = 9;
+  bytes grant = 10;
+  bool allow_from_contacts_only = 11;
+  string apn_topic = 12;
+  bool block_mentions = 13;
+  repeated bytes allowed_mentions_chat_list = 14;
+  repeated bytes muted_chat_list = 15;
+}
+
+message PushNotificationRegistrationResponse {
+  bool success = 1;
+  ErrorType error = 2;
+  bytes request_id = 3;
+
+  enum ErrorType {
+    UNKNOWN_ERROR_TYPE = 0;
+    MALFORMED_MESSAGE = 1;
+    VERSION_MISMATCH = 2;
+    UNSUPPORTED_TOKEN_TYPE = 3;
+    INTERNAL_ERROR = 4;
+  }
+}
+
+message ContactCodeAdvertisement {
+  repeated PushNotificationQueryInfo push_notification_info = 1;
+  ChatIdentity chat_identity = 2;
+}
+
+message PushNotificationQuery {
+  repeated bytes public_keys = 1;
+}
+
+message PushNotificationQueryInfo {
+  string access_token = 1;
+  string installation_id = 2;
+  bytes public_key = 3;
+  repeated bytes allowed_key_list = 4;
+  bytes grant = 5;
+  uint64 version = 6;
+  bytes server_public_key = 7;
+}
+
+message PushNotificationQueryResponse {
+  repeated PushNotificationQueryInfo info = 1;
+  bytes message_id = 2;
+  bool success = 3;
+}
+
+message PushNotification {
+  string access_token = 1;
+  bytes chat_id = 2;
+  bytes public_key = 3;
+  string installation_id = 4;
+  bytes message = 5;
+  PushNotificationType type = 6;
+  enum PushNotificationType {
+    UNKNOWN_PUSH_NOTIFICATION_TYPE = 0;
+    MESSAGE = 1;
+    MENTION = 2;
+    REQUEST_TO_JOIN_COMMUNITY = 3;
+  }
+  bytes author = 7;
+}
+
+message PushNotificationRequest {
+  repeated PushNotification requests = 1;
+  bytes message_id = 2;
+}
+
+message PushNotificationReport {
+  bool success = 1;
+  ErrorType error = 2;
+  enum ErrorType {
+    UNKNOWN_ERROR_TYPE = 0;
+    WRONG_TOKEN = 1;
+    INTERNAL_ERROR = 2;
+    NOT_REGISTERED = 3;
+  }
+  bytes public_key = 3;
+  string installation_id = 4;
+}
+
+message PushNotificationResponse {
+  bytes message_id = 1;
+  repeated PushNotificationReport reports = 2;
+}

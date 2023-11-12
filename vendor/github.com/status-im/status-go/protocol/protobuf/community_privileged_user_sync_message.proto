@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option go_package = "./;protobuf";
+package protobuf;
+
+import "communities.proto";
+import "pairing.proto";
+
+message CommunityPrivilegedUserSyncMessage {
+  uint64 clock = 1;
+  EventType type = 2;
+  bytes community_id = 3;
+  map<string,CommunityRequestToJoin> request_to_join = 4;
+  repeated SyncCommunityRequestsToJoin sync_requests_to_join = 5;
+
+  enum EventType {
+    UNKNOWN = 0;
+    CONTROL_NODE_ACCEPT_REQUEST_TO_JOIN = 1;
+    CONTROL_NODE_REJECT_REQUEST_TO_JOIN = 2;
+    CONTROL_NODE_ALL_SYNC_REQUESTS_TO_JOIN = 3;
+  }
+}

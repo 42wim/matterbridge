@@ -1,0 +1,11 @@
+{
+    "repoLeadMaintainer": {
+      "name": "Dimitris Vyzovitis",
+      "email": "vyzo@protocol.ai",
+      "username": "@vyzo"
+    },
+    "workingGroup": {
+      "name": "libp2p",
+      "entryPoint": "https://github.com/libp2p/libp2p"
+    }
+}

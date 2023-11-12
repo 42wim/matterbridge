@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option go_package = "./;protobuf";
+
+package protobuf;
+
+import "shard.proto";
+
+message CommunityShardKey {
+  bytes community_id = 1;
+  bytes private_key = 2;
+  uint64 clock = 3;
+  Shard shard = 4;
+}

@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+option go_package = "./;protobuf";
+package protobuf;
+
+message ProfileShowcaseCommunity {
+  string community_id = 1;
+  uint32 order = 2;
+}
+
+message ProfileShowcaseAccount {
+  string address = 1;
+  string name = 2;
+  string color_id = 3;
+  string emoji = 4;
+  uint32 order = 5;
+}
+
+message ProfileShowcaseCollectible {
+  string uid = 1 [deprecated = true];
+  uint32 order = 2;
+  string contract_address = 3;
+  string community_id = 4;
+  uint64 chain_id = 5;
+  string token_id = 6;
+  string account_address = 7;
+}
+
+message ProfileShowcaseVerifiedToken {
+  string symbol = 1;
+  uint32 order = 2;
+}
+
+message ProfileShowcaseUnverifiedToken {
+  string contract_address = 1;
+  uint32 order = 2;
+  uint64 chain_id = 3;
+  string community_id = 4;
+}
+
+message ProfileShowcaseEntries {
+  repeated ProfileShowcaseCommunity communities = 1;
+  repeated ProfileShowcaseAccount accounts = 2;
+  repeated ProfileShowcaseCollectible collectibles = 3;
+  repeated ProfileShowcaseVerifiedToken verifiedTokens = 4;
+  repeated ProfileShowcaseUnverifiedToken unverifiedTokens = 5;
+}
+
+message ProfileShowcaseEntriesEncrypted {
+  bytes encrypted_entries = 1;
+  repeated bytes encryption_keys = 2;
+}
+
+message ProfileShowcase {
+  ProfileShowcaseEntries for_everyone = 1;
+  ProfileShowcaseEntriesEncrypted for_contacts = 2;
+  ProfileShowcaseEntriesEncrypted for_id_verified_contacts = 3;
+}

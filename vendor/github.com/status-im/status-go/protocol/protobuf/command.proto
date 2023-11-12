@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+option go_package = "./;protobuf";
+package protobuf;
+
+message RequestAddressForTransaction {
+  uint64 clock = 1;
+  string value = 2;
+  string contract = 3;
+  string chat_id = 4;
+}
+
+message AcceptRequestAddressForTransaction {
+  uint64 clock = 1;
+  string id = 2;
+  string address = 3;
+  string chat_id = 4;
+}
+
+message DeclineRequestAddressForTransaction {
+  uint64 clock = 1;
+  string id = 2;
+  string chat_id = 3;
+}
+
+message DeclineRequestTransaction {
+  uint64 clock = 1;
+  string id = 2;
+  string chat_id = 3;
+}
+
+message RequestTransaction {
+  uint64 clock = 1;
+  string address = 2;
+  string value = 3;
+  string contract = 4;
+  string chat_id = 5;
+}
+
+message SendTransaction {
+  uint64 clock = 1;
+  string id = 2;
+  string transaction_hash = 3;
+  bytes signature = 4;
+  string chat_id = 5;
+}

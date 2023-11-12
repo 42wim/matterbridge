@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option go_package = "./;protobuf";
+package protobuf;
+
+message Shard {
+    int32 cluster = 1;
+    int32 index = 2;
+}
+
+message PublicShardInfo {
+    // clock
+    uint64 clock = 1;
+    // community ID
+    bytes community_id = 2;
+    // shard information
+    Shard shard = 3;
+    // if chainID > 0, the signer must be verified through the community contract
+    uint64 chainId = 4;
+}
+
+message CommunityPublicShardInfo {
+    // Signature of the payload field
+    bytes signature = 1;
+    // Marshaled PublicShardInfo
+    bytes payload = 2;
+}

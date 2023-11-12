@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+option go_package = "./;protobuf";
+package protobuf;
+
+import "chat_identity.proto";
+import "communities.proto";
+
+message CommunityEvent {
+  uint64 community_event_clock = 1;
+  EventType type = 2;
+  CommunityConfig community_config = 3;
+  CommunityTokenPermission token_permission = 4;
+  CategoryData category_data = 5;
+  ChannelData channel_data = 6;
+  string member_to_action = 7;
+  map<string,CommunityMember> membersAdded = 8;
+  map<string,CommunityRequestToJoin> rejectedRequestsToJoin = 9;
+  map<string,CommunityRequestToJoin> acceptedRequestsToJoin = 10;
+  CommunityTokenMetadata token_metadata = 11;
+
+  enum EventType {
+    UNKNOWN = 0;
+    COMMUNITY_EDIT = 1;
+    COMMUNITY_MEMBER_TOKEN_PERMISSION_CHANGE = 2;
+    COMMUNITY_MEMBER_TOKEN_PERMISSION_DELETE = 3;
+    COMMUNITY_CATEGORY_CREATE = 4;
+    COMMUNITY_CATEGORY_DELETE = 5;
+    COMMUNITY_CATEGORY_EDIT = 6;
+    COMMUNITY_CHANNEL_CREATE = 7;
+    COMMUNITY_CHANNEL_DELETE = 8;
+    COMMUNITY_CHANNEL_EDIT = 9;
+    COMMUNITY_CATEGORY_REORDER = 10;
+    COMMUNITY_CHANNEL_REORDER = 11;
+    COMMUNITY_REQUEST_TO_JOIN_ACCEPT = 12;
+    COMMUNITY_REQUEST_TO_JOIN_REJECT = 13;
+    COMMUNITY_MEMBER_KICK = 14;
+    COMMUNITY_MEMBER_BAN = 15;
+    COMMUNITY_MEMBER_UNBAN = 16;
+    COMMUNITY_TOKEN_ADD = 17;
+  }
+}
+
+message CommunityConfig {
+  ChatIdentity identity = 1;
+  CommunityPermissions permissions = 2;
+  CommunityAdminSettings admin_settings = 3;
+  string intro_message = 4;
+  string outro_message = 5;
+  repeated string tags = 6;
+}
+
+message CategoryData {
+  string category_id = 1;
+  string name = 2;
+  repeated string channels_ids = 3;
+  int32 position = 4;
+}
+
+message ChannelData {
+  string category_id = 1;
+  string channel_id = 2;
+  int32 position = 3;
+  CommunityChat channel = 4;
+}
+
+message SignedCommunityEvent {
+  // Signature of the payload field
+  bytes signature = 1;
+  // Marshaled CommunityEvent
+  bytes payload = 2;
+}
+
+// CommunityEventsMessage is a message used to propagate information
+// about community changes.
+message CommunityEventsMessage {
+  bytes community_id = 1;
+
+  // Events base CommunityDescription with owner signature on top of which events were generated
+  bytes events_base_community_description = 2;
+
+  // A list of admins events for the channel in bytes
+  // Deprecated: use signed_events instead.
+  repeated bytes events = 3 [deprecated=true];
+
+  // A list of signed community events
+  repeated SignedCommunityEvent signed_events = 4;
+}
+
+message CommunityEventsMessageRejected {
+  CommunityEventsMessage msg = 1;
+}

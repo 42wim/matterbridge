@@ -1,0 +1,18 @@
+language: go
+
+go:
+  - 1.8.1
+  - tip
+
+install:
+  - go get github.com/stretchr/testify/require
+  - go get golang.org/x/tools/cmd/cover
+  - go get github.com/mattn/goveralls
+  - go get ./...
+
+script:
+  - go test -v -covermode=count -coverprofile=coverage.out
+  - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
+
+env:
+  secure: FOIA329dOVl+h897c764Zy7JJuW+BGD1ZqiQnVg6ejIpJoxQCyo/NuW+Pq2ZF8XPndit72pOcvvIuTpgubvyg439nJX7dOdnBfGtkBzeBxUp8IlpR+hK1xFqiXHvEGYuyti8cwfuykD6Umi5AENn60YMroWVaWSqE7iRHQE4rGp3bPbcdilqqkceZAbgzvf7vU3eUs0UGrJM87a7OjgK69tMCPS9Rcfa8HTADgdR3jKNv07lXQieCnomjzuAxFohoNPbP1bL/H5pjImwyHu1Bqsp+jZWXOV7TN2+EdMfaxoSBUjm4F4wPYmzPtyDOLVCfKVyszYtgG7e7R8gsTQALtuYtJed5JD7WLiU+ttJXYraKoerbjsngxT0dcj2YuTIqCWTpgwm30O2eMIeRBhVhY7TVQurrNZevXF83TYAdDM+amchtRFqbtmogUQUV5miG3aMgel7t/Ty209Yx/iRPgyLuvZTN7uzMdGXwk/tNHgdGula7HJoONpypPWRqonvjIZWx6nnHeJ4Ape5zMN6rbVyXjtBl5eUVrapUiEKFwVZadjBj/qCBxFTNiwmzHbBInuowlpPcS+Y/ZYsz3d915UmkPhfKNywVmA1sqGCKecSf9pdh4syAo86zoPy8WyHhsW8ziVOj9Oaq9pUmdzHrRUy1TageDwNIe61pIEQQQI=

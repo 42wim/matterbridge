@@ -1,0 +1,32 @@
+#WARNING: as this file contains credentials, be sure to set correct file permissions
+[api]
+    [api.myapi]
+    BindAddress="127.0.0.1:4242"
+    Buffer=1000
+    RemoteNickFormat="{NICK}: "
+
+[status]
+    [status.mystatus]
+    # status private key
+    Token=""
+    RemoteNickFormat="{NICK}"
+    DataDir="path to status data dir"
+
+[discord]
+    [discord.mydiscord]
+    Token=""
+    Server=""
+    AutoWebhooks=true
+    RemoteNickFormat="{NICK}"
+
+[[gateway]]
+name="gateway3"
+enable=true
+    [[gateway.inout]]
+    account="status.mystatus"
+    channel=""
+
+    [[gateway.inout]]
+    account="discord.mydiscord"
+    channel="general"
+    

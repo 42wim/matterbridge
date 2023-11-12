@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+option go_package = "./;protobuf";
+package protobuf;
+
+enum MessageType {
+  UNKNOWN_MESSAGE_TYPE = 0;
+  ONE_TO_ONE = 1;
+  PUBLIC_GROUP = 2;
+  PRIVATE_GROUP = 3;
+  // Only local
+  SYSTEM_MESSAGE_PRIVATE_GROUP = 4;
+  COMMUNITY_CHAT = 5;
+  // Only local
+  SYSTEM_MESSAGE_GAP = 6;
+}
+
+enum ImageFormat {
+  UNKNOWN_IMAGE_FORMAT = 0;
+
+  // Raster image files is payload data that can be read as a raster image
+  PNG = 1;
+  JPEG = 2;
+  WEBP = 3;
+  GIF = 4;
+}
+
+enum CommunityTokenType {
+  UNKNOWN_TOKEN_TYPE = 0;
+  ERC20 = 1;
+  ERC721 = 2;
+  ENS = 3;
+}

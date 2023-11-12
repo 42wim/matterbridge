@@ -1,0 +1,112 @@
+{
+  "System": {
+    "Streams": 18432,
+    "StreamsInbound": 9216,
+    "StreamsOutbound": 18432,
+    "Conns": 1152,
+    "ConnsInbound": 576,
+    "ConnsOutbound": 1152,
+    "FD": 16384,
+    "Memory": "8724152320"
+  },
+  "Transient": {
+    "Streams": 2304,
+    "StreamsInbound": 1152,
+    "StreamsOutbound": 2304,
+    "Conns": 320,
+    "ConnsInbound": 160,
+    "ConnsOutbound": 320,
+    "FD": 4096,
+    "Memory": "1107296256"
+  },
+  "AllowlistedSystem": {
+    "Streams": 18432,
+    "StreamsInbound": 9216,
+    "StreamsOutbound": 18432,
+    "Conns": 1152,
+    "ConnsInbound": 576,
+    "ConnsOutbound": 1152,
+    "FD": 16384,
+    "Memory": "8724152320"
+  },
+  "AllowlistedTransient": {
+    "Streams": 2304,
+    "StreamsInbound": 1152,
+    "StreamsOutbound": 2304,
+    "Conns": 320,
+    "ConnsInbound": 160,
+    "ConnsOutbound": 320,
+    "FD": 4096,
+    "Memory": "1107296256"
+  },
+  "ServiceDefault": {
+    "Streams": 20480,
+    "StreamsInbound": 5120,
+    "StreamsOutbound": 20480,
+    "Conns": "blockAll",
+    "ConnsInbound": "blockAll",
+    "ConnsOutbound": "blockAll",
+    "FD": "blockAll",
+    "Memory": "1140850688"
+  },
+  "ServicePeerDefault": {
+    "Streams": 320,
+    "StreamsInbound": 160,
+    "StreamsOutbound": 320,
+    "Conns": "blockAll",
+    "ConnsInbound": "blockAll",
+    "ConnsOutbound": "blockAll",
+    "FD": "blockAll",
+    "Memory": "50331648"
+  },
+  "ProtocolDefault": {
+    "Streams": 6144,
+    "StreamsInbound": 2560,
+    "StreamsOutbound": 6144,
+    "Conns": "blockAll",
+    "ConnsInbound": "blockAll",
+    "ConnsOutbound": "blockAll",
+    "FD": "blockAll",
+    "Memory": "1442840576"
+  },
+  "ProtocolPeerDefault": {
+    "Streams": 384,
+    "StreamsInbound": 96,
+    "StreamsOutbound": 192,
+    "Conns": "blockAll",
+    "ConnsInbound": "blockAll",
+    "ConnsOutbound": "blockAll",
+    "FD": "blockAll",
+    "Memory": "16777248"
+  },
+  "PeerDefault": {
+    "Streams": 2560,
+    "StreamsInbound": 1280,
+    "StreamsOutbound": 2560,
+    "Conns": 8,
+    "ConnsInbound": 8,
+    "ConnsOutbound": 8,
+    "FD": 256,
+    "Memory": "1140850688"
+  },
+  "Conn": {
+    "Streams": "blockAll",
+    "StreamsInbound": "blockAll",
+    "StreamsOutbound": "blockAll",
+    "Conns": 1,
+    "ConnsInbound": 1,
+    "ConnsOutbound": 1,
+    "FD": 1,
+    "Memory": "33554432"
+  },
+  "Stream": {
+    "Streams": 1,
+    "StreamsInbound": 1,
+    "StreamsOutbound": 1,
+    "Conns": "blockAll",
+    "ConnsInbound": "blockAll",
+    "ConnsOutbound": "blockAll",
+    "FD": "blockAll",
+    "Memory": "16777216"
+  }
+}

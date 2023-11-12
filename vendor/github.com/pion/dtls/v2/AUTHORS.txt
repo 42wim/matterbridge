@@ -1,0 +1,45 @@
+# Thank you to everyone that made Pion possible. If you are interested in contributing
+# we would love to have you https://github.com/pion/webrtc/wiki/Contributing
+#
+# This file is auto generated, using git to list all individuals contributors.
+# see `.github/generate-authors.sh` for the scripting
+Aleksandr Razumov <ar@gortc.io>
+alvarowolfx <alvarowolfx@gmail.com>
+Arlo Breault <arlolra@gmail.com>
+Atsushi Watanabe <atsushi.w@ieee.org>
+backkem <mail@backkem.me>
+bjdgyc <bjdgyc@163.com>
+boks1971 <raja.gobi@tutanota.com>
+Bragadeesh <bragboy@gmail.com>
+Carson Hoffman <c@rsonhoffman.com>
+Cecylia Bocovich <cohosh@torproject.org>
+Chris Hiszpanski <thinkski@users.noreply.github.com>
+Daniele Sluijters <daenney@users.noreply.github.com>
+folbrich <frank.olbricht@gmail.com>
+Hayden James <hayden.james@gmail.com>
+Hugo Arregui <hugo.arregui@gmail.com>
+Hugo Arregui <hugo@decentraland.org>
+igolaizola <11333576+igolaizola@users.noreply.github.com>
+Jeffrey Stoke <me@arhat.dev>
+Jeroen de Bruijn <vidavidorra+jdbruijn@gmail.com>
+Jeroen de Bruijn <vidavidorra@gmail.com>
+Jim Wert <jimwert@gmail.com>
+jinleileiking <jinleileiking@gmail.com>
+Jozef Kralik <jojo.lwin@gmail.com>
+Julien Salleyron <julien.salleyron@gmail.com>
+Kegan Dougal <kegan@matrix.org>
+Lander Noterman <lander.noterman@basalte.be>
+Len <len@hpcnt.com>
+Lukas Lihotzki <lukas@lihotzki.de>
+Michael Zabka <zabka.michael@gmail.com>
+Michiel De Backker <mail@backkem.me>
+Robert Eperjesi <eperjesi@uber.com>
+Ryan Gordon <ryan.gordon@getcruise.com>
+Sean DuBois <seaduboi@amazon.com>
+Sean DuBois <sean@siobud.com>
+Stefan Tatschner <stefan@rumpelsepp.org>
+Vadim <fffilimonov@yandex.ru>
+Vadim Filimonov <fffilimonov@yandex.ru>
+wmiao <wu.miao@viasat.com>
+ZHENK <chengzhenyang@gmail.com>
+吕海涛 <hi@taoshu.in>

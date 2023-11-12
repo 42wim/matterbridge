@@ -1,0 +1,439 @@
+syntax = "proto3";
+
+import "chat_identity.proto";
+import "sync_settings.proto";
+import 'application_metadata_message.proto';
+import 'communities.proto';
+
+option go_package = "./;protobuf";
+package protobuf;
+
+/* `FetchingBackedUpDataDetails` is used to describe how many messages a single backup data structure consists of */
+message FetchingBackedUpDataDetails {
+  uint32 data_number = 1;
+  uint32 total_number = 2;
+}
+
+message Backup {
+  uint64 clock = 1;
+  string id = 2;
+
+/* this is what we already had */
+  repeated SyncInstallationContactV2 contacts = 3;
+  repeated SyncInstallationCommunity communities = 4;
+/* newly added details to be backed up to and fetched from waku */
+  FetchingBackedUpDataDetails contactsDetails = 5;
+  FetchingBackedUpDataDetails communitiesDetails = 6;
+  BackedUpProfile profile = 7;
+  FetchingBackedUpDataDetails profileDetails = 8;
+  SyncSetting setting = 9;
+  FetchingBackedUpDataDetails settingsDetails = 10;
+  SyncKeypair keypair = 11;
+  FetchingBackedUpDataDetails keypairDetails = 12;
+  SyncAccount watchOnlyAccount = 13;
+  FetchingBackedUpDataDetails watchOnlyAccountDetails = 14;
+  repeated SyncChat chats = 15;
+  FetchingBackedUpDataDetails chatsDetails = 16;
+}
+
+message MultiAccount {
+  string name = 1;
+  int64 timestamp = 2;
+  string identicon = 3;
+  repeated ColorHash color_hash = 4;
+  int64 color_id = 5;
+  string keycard_pairing = 6;
+  string key_uid = 7;
+  repeated IdentityImage images = 8;
+  string customization_color = 9;
+  uint64 customization_color_clock = 10;
+
+  message ColorHash {
+    repeated int64 index = 1;
+  }
+
+  message IdentityImage {
+    string key_uid = 1;
+    string name = 2;
+    bytes payload = 3;
+    int64 width = 4;
+    int64 height = 5;
+    int64 filesize = 6;
+    int64 resize_target = 7;
+    uint64 clock = 8;
+  }
+}
+
+message LocalPairingPayload {
+  repeated Key keys = 1;
+  MultiAccount multiaccount = 2;
+  string password = 3;
+  string chatKey = 4;
+  string keycardPairings = 5;
+
+  message Key {
+    string name = 1;
+    bytes data = 2;
+  }
+}
+
+message LocalPairingPeerHello {
+  int32 pairing_version = 1;
+  bytes peer_id = 2;
+  string device_name = 3;
+  string device_type = 4;
+  bytes signature = 5;
+}
+
+message SyncPairInstallation {
+  uint64 clock = 1;
+  string installation_id = 2;
+  string device_type = 3;
+  string name = 4;
+  // following fields used for local pairing
+  uint32 version = 5;
+}
+
+message SyncInstallationContactV2 {
+  uint64 last_updated_locally = 1;
+  string id = 2;
+  string profile_image = 3;
+  string ens_name = 4;
+  uint64 last_updated = 5;
+  repeated string system_tags = 6;
+  string local_nickname = 7;
+  bool added = 9;
+  bool blocked = 10;
+  bool muted = 11;
+  bool removed = 12;
+  bool has_added_us = 13;
+  int64 verification_status = 14;
+  int64 trust_status = 15;
+  int64 contact_request_local_state = 16;
+  int64 contact_request_local_clock = 17;
+  int64 contact_request_remote_state = 18;
+  int64 contact_request_remote_clock = 19;
+  string display_name = 20;
+}
+
+message SyncInstallationAccount {
+  uint64 clock = 1;
+  string profile_image = 2;
+  uint64 last_updated = 3;
+}
+
+message SyncInstallationCommunity {
+  uint64 clock = 1;
+  bytes id = 2;
+  // Don't sync private_key because we want to have only one control node
+  bytes private_key = 3 [deprecated = true];
+  bytes description = 4;
+  bool joined = 5;
+  bool verified = 6;
+  bool muted = 7;
+  repeated SyncCommunityRequestsToJoin requests_to_join = 8;
+  SyncCommunitySettings settings = 9;
+  bool encrypted = 10;
+  bool spectated = 11;
+  bytes encryption_keys = 12;
+  SyncCommunityControlNode control_node = 13;
+  int64 joined_at = 14;
+  int64 last_opened_at = 15;
+}
+
+message SyncCommunityRequestsToJoin {
+  bytes id = 1;
+  string public_key = 2;
+  uint64 clock = 3;
+  string ens_name = 4;
+  string chat_id = 5;
+  bytes community_id = 6;
+  uint64 state = 7;
+  repeated RevealedAccount revealed_accounts = 8;
+}
+
+message SyncCommunityControlNode {
+  // Lamport timestamp of control node change
+  uint64 clock = 1;
+
+  // The device id of the control node
+  // Empty if there is no control node
+  string installation_id = 2;
+}
+
+message SyncChat {
+  string id = 1;
+  uint32 chat_type = 2;
+  string name = 3;
+  repeated MembershipUpdateEvents membershipUpdateEvents = 4;
+  bool active = 5;
+  uint64 clock = 6;
+  bool muted = 7;
+}
+
+message MembershipUpdateEvents {
+  uint64 clock = 1;
+  uint32 type = 2;
+  repeated string members = 3;
+  string name = 4;
+  bytes signature = 5;
+  string chat_id = 6;
+  string from = 7;
+  bytes raw_payload = 8;
+  string color = 9;
+  bytes image = 10;
+}
+
+message SyncChatRemoved {
+  uint64 clock = 1;
+  string id = 2;
+}
+
+message SyncChatMessagesRead {
+  uint64 clock = 1;
+  string id = 2;
+}
+
+message SyncActivityCenterRead {
+  uint64 clock = 1;
+  repeated bytes ids = 2;
+}
+
+message SyncActivityCenterAccepted {
+  uint64 clock = 1;
+  repeated bytes ids = 2;
+}
+
+message SyncActivityCenterDismissed {
+  uint64 clock = 1;
+  repeated bytes ids = 2;
+}
+
+message SyncActivityCenterDeleted {
+  uint64 clock = 1;
+  repeated bytes ids = 2;
+}
+
+message SyncActivityCenterUnread {
+  uint64 clock = 1;
+  repeated bytes ids = 2;
+}
+
+message SyncActivityCenterCommunityRequestDecision {
+  uint64 clock = 1;
+  bytes id = 2;
+  uint32 membership_status = 3;
+  enum community_request_decision {
+    ACCEPTED = 0;
+    DECLINED = 1;
+  }
+  community_request_decision decision = 4;
+}
+
+message SyncBookmark {
+  uint64 clock = 1;
+  string url = 2;
+  string name = 3;
+  string image_url = 4;
+  bool   removed = 5;
+  uint64 deleted_at = 6;
+}
+
+message SyncEnsUsernameDetail {
+  uint64 clock = 1;
+  string username = 2;
+  uint64 chain_id = 3;
+  bool  removed = 4;
+}
+
+message SyncClearHistory {
+  string chat_id = 1;
+  uint64 cleared_at = 2;
+}
+
+message SyncProfilePicture {
+  string name = 1;
+  bytes  payload = 2;
+	uint32 width = 3;
+	uint32 height = 4;
+	uint32 file_size = 5;
+	uint32 resize_target = 6;
+  uint64 clock = 7;
+}
+
+message SyncProfilePictures {
+  string key_uid = 1;
+  repeated SyncProfilePicture pictures = 2;
+}
+
+message SyncAccount {
+  uint64 clock = 1;
+  bytes address = 2;
+  string key_uid = 3;
+  bytes public_key = 4;
+  string path = 5;
+  string name = 6;
+  string color_id = 7;
+  string emoji = 8;
+  bool wallet = 9;
+  bool chat = 10;
+  bool hidden = 11;
+  bool removed = 12;
+  int64 position = 13;
+  string prodPreferredChainIDs = 14;
+  string testPreferredChainIDs = 15;
+  string operable = 16;
+}
+
+message SyncKeypair {
+  uint64 clock = 1;
+  string key_uid = 2;
+  string name = 3;
+  string type = 4;
+  string derived_from = 5;
+  uint64 last_used_derivation_index = 6;
+  string synced_from = 7;
+  repeated SyncAccount accounts = 8;
+  repeated SyncKeycard keycards = 9;
+  bool removed = 10;
+  bytes keycard_pairings = 11;
+}
+
+// this message is used for syncing accounts positions only, for syncing any other info consider
+// `SyncAccount` or `SyncKeypair` message
+message SyncAccountsPositions {
+  uint64 clock = 1;
+  repeated SyncAccount accounts = 2;
+}
+
+message SyncSavedAddress {
+  reserved 3;
+  reserved 4;
+  bytes address = 1;
+  string name = 2;
+  bool removed = 5;
+  uint64 update_clock = 7;
+  string chain_short_names = 8;
+  string ens = 9;
+  bool is_test = 10;
+  string color = 11;
+}
+
+message SyncCommunitySettings {
+  uint64 clock = 1;
+  string community_id = 2;
+  bool history_archive_support_enabled = 3;
+}
+
+message SyncTrustedUser {
+  uint64 clock = 1;
+  string id = 2;
+  TrustStatus status = 3;
+
+  enum TrustStatus {
+    UNKNOWN = 0;
+    TRUSTED = 1;
+    UNTRUSTWORTHY = 2;
+  }
+}
+
+message SyncVerificationRequest {
+  uint64 clock = 1;
+  string from = 2;
+  string to = 3;
+  string challenge = 4;
+  uint64 requested_at = 5;
+  string response = 6;
+  uint64 replied_at = 7;
+  VerificationStatus verification_status = 8;
+  string id = 9;
+
+  enum VerificationStatus {
+    UNKNOWN = 0;
+    PENDING = 1;
+    ACCEPTED = 2;
+    DECLINED = 3;
+    CANCELED = 4;
+  }
+}
+
+message SyncContactRequestDecision {
+  uint64 clock = 1;
+  string requestId = 2;
+  DecisionStatus decision_status = 3;
+
+  enum DecisionStatus {
+    ACCEPTED = 0;
+    DECLINED = 1;
+  }
+}
+
+/* `BackedUpProfile` is used to describe profile of logged in user */
+message BackedUpProfile {
+  string key_uid = 1;
+  string display_name = 2;
+  uint64 display_name_clock = 3;
+  repeated SyncProfilePicture pictures = 4;
+  SyncSocialLinks social_links = 5;
+  repeated SyncEnsUsernameDetail ens_username_details = 6;
+}
+
+message RawMessage {
+  bytes payload = 1;
+  ApplicationMetadataMessage.Type messageType = 2;
+}
+
+message SyncRawMessage {
+  repeated RawMessage rawMessages = 1;
+
+  // we need these to be able to login
+  bytes subAccountsJsonBytes = 2;
+  bytes settingsJsonBytes = 3;
+}
+
+message SyncKeycard {
+  string uid = 1;
+  string name = 2;
+  bool locked = 3;
+  string key_uid = 4;
+  repeated bytes addresses = 5;
+  uint64 position = 6;
+}
+
+message SyncSocialLinks {
+  repeated SocialLink social_links = 1;
+  uint64 clock = 2;
+}
+
+message SyncAccountCustomizationColor {
+  uint64 updated_at = 1;
+  string customization_color = 2;
+  string key_uid = 3;
+}
+
+message TokenPreferences {
+  string key = 1;
+  int64 position = 2;
+  int64 groupPosition = 3;
+  bool visible = 4;
+  string communityId = 5;
+}
+
+message SyncTokenPreferences {
+  uint64 clock = 1;
+  bool testnet = 2;
+  repeated TokenPreferences preferences = 3;
+}
+
+message CollectiblePreferences {
+  int64 type = 1;
+  string key = 2;
+  int64 position = 3;
+  bool visible = 4;
+}
+
+message SyncCollectiblePreferences {
+  uint64 clock = 1;
+  bool testnet = 2;
+  repeated CollectiblePreferences preferences = 3;
+}

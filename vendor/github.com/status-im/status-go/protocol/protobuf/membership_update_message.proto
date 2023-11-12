@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+option go_package = "./;protobuf";
+package protobuf;
+
+import "chat_message.proto";
+import "emoji_reaction.proto";
+
+message MembershipUpdateEvent {
+  // Lamport timestamp of the event
+  uint64 clock = 1;
+  // List of public keys of objects of the action
+  repeated string members = 2;
+  // Name of the chat for the CHAT_CREATED/NAME_CHANGED event types
+  string name = 3;
+  // The type of the event
+  EventType type = 4;
+  // Color of the chat for the CHAT_CREATED/COLOR_CHANGED event types
+  string color = 5;
+  // Chat image
+  bytes image = 6;
+
+  enum EventType {
+    UNKNOWN = 0;
+    CHAT_CREATED = 1;
+    NAME_CHANGED = 2;
+    MEMBERS_ADDED = 3;
+    MEMBER_JOINED = 4;
+    MEMBER_REMOVED = 5;
+    ADMINS_ADDED = 6;
+    ADMIN_REMOVED = 7;
+    COLOR_CHANGED = 8;
+    IMAGE_CHANGED = 9;
+  }
+}
+
+// MembershipUpdateMessage is a message used to propagate information
+// about group membership changes.
+// For more information, see https://github.com/status-im/specs/blob/master/status-group-chats-spec.md.
+message MembershipUpdateMessage {
+  // The chat id of the private group chat
+  string chat_id = 1;
+  // A list of events for this group chat, first x bytes are the signature, then is a 
+  // protobuf encoded MembershipUpdateEvent
+  repeated bytes events = 2;
+
+  // An optional chat message
+  oneof chat_entity {
+    ChatMessage message = 3;
+    EmojiReaction emoji_reaction = 4;
+  }
+}

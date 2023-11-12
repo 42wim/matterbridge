@@ -1,0 +1,5 @@
+ * Make use of sparse file regions in download data for faster hashing. This is available as whence 3 and 4 on some OSs?
+ * When we're choked and interested, are we not interested if there's no longer anything that we want?
+ * dht: Randomize triedAddrs bloom filter to allow different Addr sets on each Announce.
+ * data/blob: Deleting incomplete data triggers io.ErrUnexpectedEOF that isn't recovered from.
+ * Handle wanted pieces more efficiently, it's slow in in fillRequests, since the prioritization system was changed.

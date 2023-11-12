@@ -1,0 +1,32 @@
+run:
+  deadline: 1m
+  tests: false
+  skip-files:
+    - "test/.*"
+    - "test/.*/.*"
+
+linters-settings:
+  golint:
+    min-confidence: 0
+  maligned:
+    suggest-new: true
+  goconst:
+    min-len: 5
+    min-occurrences: 4
+  misspell:
+    locale: US
+
+linters:
+  disable-all: true
+  enable:
+    - goconst
+    - misspell
+    - unused
+    - staticcheck
+    - unconvert
+    - gofmt
+    - goimports
+    # @TODO(gfanton): disable revive for now has it generate to many errors,
+    # it should be enable in a dedicated PR
+    # - revive
+    - ineffassign

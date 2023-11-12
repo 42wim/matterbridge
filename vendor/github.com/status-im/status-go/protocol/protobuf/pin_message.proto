@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option go_package = "./;protobuf";
+package protobuf;
+
+import "enums.proto";
+
+message PinMessage {
+  uint64 clock = 1;
+  string message_id = 2;
+  string chat_id = 3;
+  bool pinned = 4;
+  // The type of message (public/one-to-one/private-group-chat)
+  MessageType message_type = 5;
+}

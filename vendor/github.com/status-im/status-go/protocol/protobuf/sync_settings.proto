@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+option go_package = "./;protobuf";
+package protobuf;
+
+message SyncSetting {
+  Type type = 1;
+  uint64 clock = 2;
+
+  oneof value {
+    string value_string = 3;
+    bytes value_bytes = 4;
+    bool value_bool = 5;
+    int64 value_int64 = 6;
+  }
+
+  enum Type {
+    UNKNOWN = 0;
+    CURRENCY = 1;
+    GIF_RECENTS = 2;
+    GIF_FAVOURITES = 3;
+    MESSAGES_FROM_CONTACTS_ONLY = 4;
+    PREFERRED_NAME = 5;
+    PREVIEW_PRIVACY = 6;
+    PROFILE_PICTURES_SHOW_TO = 7;
+    PROFILE_PICTURES_VISIBILITY = 8;
+    SEND_STATUS_UPDATES = 9;
+    STICKERS_PACKS_INSTALLED = 10;
+    STICKERS_PACKS_PENDING = 11;
+    STICKERS_RECENT_STICKERS = 12;
+    DISPLAY_NAME = 13;
+    BIO = 14;
+    MNEMONIC_REMOVED = 15;
+    reserved 16;
+    reserved "ENS_USERNAMES";
+    reserved 17;
+    reserved "INCLUDE_WATCHONLY_ACCOUNT";
+    URL_UNFURLING_MODE = 18;
+    SHOW_COMMUNITY_ASSET_WHEN_SENDING_TOKENS = 19;
+    DISPLAY_ASSETS_BELOW_BALANCE = 20;
+    DISPLAY_ASSETS_BELOW_BALANCE_THRESHOLD = 21;
+  }
+}
+
+/* TODOs
+LastBackup uint64
+BackupEnabled bool
+ */

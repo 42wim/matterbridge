@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+option go_package = "./;protobuf";
+package protobuf;
+
+import "google/protobuf/timestamp.proto";
+
+// AnonymousMetric represents a single metric data point
+message AnonymousMetric {
+  // id is the unique id of the metric message
+  string id=1;
+
+  // event is the app metric event type
+  string event=2;
+
+  // value is a filtered and validated raw json payload attached to the event
+  bytes value=3;
+
+  // app_version is the version of the `status-mobile` app that the metric came from
+  string app_version=4;
+
+  // os is the operating system of the device the application is installed on
+  string os=5;
+
+  // session_id is the id of the session the metric was recorded in
+  string session_id=6;
+
+  // created_at is the datetime at which the metric was stored in the local db
+  google.protobuf.Timestamp created_at=7;
+}
+
+// AnonymousMetricBatch represents a batch of AnonymousMetrics allowing broadcast of AnonymousMetrics with fewer messages
+message AnonymousMetricBatch {
+  // metrics is an array of AnonymousMetric metrics
+  repeated AnonymousMetric metrics=1;
+}

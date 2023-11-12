@@ -1,0 +1,50 @@
+{
+  "Rendezvous": false,
+  "NoDiscovery": true,
+  "ClusterConfig": {
+    "ClusterID": 16,
+    "Enabled": true,
+    "Fleet": "shards.test",
+    "BootNodes": [
+       "/dns4/boot-01.ac-cn-hongkong-c.shards.test.statusim.net/tcp/30303/p2p/16Uiu2HAmGwcE8v7gmJNEWFtZtojYpPMTHy2jBLL6xRk33qgDxFWX",
+       "/dns4/boot-01.do-ams3.shards.test.statusim.net/tcp/30303/p2p/16Uiu2HAmAR24Mbb6VuzoyUiGx42UenDkshENVDj4qnmmbabLvo31",
+       "/dns4/boot-01.gc-us-central1-a.shards.test.statusim.net/tcp/30303/p2p/16Uiu2HAm8mUZ18tBWPXDQsaF7PbCKYA35z7WB2xNZH2EVq1qS8LJ"
+    ],
+    "TrustedMailServers": [
+       "/dns4/store-01.ac-cn-hongkong-c.shards.test.statusim.net/tcp/30303/p2p/16Uiu2HAm2M7xs7cLPc3jamawkEqbr7cUJX11uvY7LxQ6WFUdUKUT",
+       "/dns4/store-01.do-ams3.shards.test.statusim.net/tcp/30303/p2p/16Uiu2HAmAUdrQ3uwzuE4Gy4D56hX6uLKEeerJAnhKEHZ3DxF1EfT",
+       "/dns4/store-01.gc-us-central1-a.shards.test.statusim.net/tcp/30303/p2p/16Uiu2HAmMELCo218hncCtTvC2Dwbej3rbyHQcR8erXNnKGei7WPZ",
+       "/dns4/store-02.ac-cn-hongkong-c.shards.test.statusim.net/tcp/30303/p2p/16Uiu2HAm9CQhsuwPR54q27kNj9iaQVfyRzTGKrhFmr94oD8ujU6P",
+       "/dns4/store-02.do-ams3.shards.test.statusim.net/tcp/30303/p2p/16Uiu2HAm9aDJPkhGxc2SFcEACTFdZ91Q5TJjp76qZEhq9iF59x7R",
+       "/dns4/store-02.gc-us-central1-a.shards.test.statusim.net/tcp/30303/p2p/16Uiu2HAmJnVR7ZzFaYvciPVafUXuYGLHPzSUigqAmeNw9nJUVGeM"
+    ],
+    "PushNotificationsServers": [],
+    "StaticNodes": [],
+    "RendezvousNodes": [],
+    "WakuNodes": [
+      "enrtree://AMOJVZX4V6EXP7NTJPMAYJYST2QP6AJXYW76IU6VGJS7UVSNDYZG4@boot.test.shards.nodes.status.im",
+      "/dns4/boot-01.do-ams3.shards.test.statusim.net/tcp/30303/p2p/16Uiu2HAmAR24Mbb6VuzoyUiGx42UenDkshENVDj4qnmmbabLvo31",
+      "/dns4/boot-01.gc-us-central1-a.shards.test.statusim.net/tcp/30303/p2p/16Uiu2HAm8mUZ18tBWPXDQsaF7PbCKYA35z7WB2xNZH2EVq1qS8LJ",
+      "/dns4/boot-01.ac-cn-hongkong-c.shards.test.statusim.net/tcp/30303/p2p/16Uiu2HAmGwcE8v7gmJNEWFtZtojYpPMTHy2jBLL6xRk33qgDxFWX"
+    ],
+    "DiscV5BootstrapNodes": [
+       "enr:-Ni4QAG-O7ryJQg1P-CDwE7nBoSx-pScZsRRq6tvBF0tRsCGFtbs2ag1bqsv7GpTD_2rTvwIT7PsOVNG_ytFZdfwT3cBgmlkgnY0gmlwhKdjEy-KbXVsdGlhZGRyc68ALTYoYm9vdC0wMS5kby1hbXMzLnNoYXJkcy50ZXN0LnN0YXR1c2ltLm5ldAZ2X4Jyc4cAEAIAgAEAiXNlY3AyNTZrMaEC3rRtFQSgc24uWewzXaxTY8hDAHB8sgnxr9k8Rjb5GeSDdGNwgnZfg3VkcIIjKIV3YWt1Mg0",
+       "enr:-OK4QFH-vPVmsKjlEd3jjS8heib42DO5ZGNVUYM-lbJkPL2QSP0Ye8VZV-WycXk8jVjv9LcQpuwlaBJ3xN1ttPMy07wBgmlkgnY0gmlwhAjaF0yKbXVsdGlhZGRyc7g4ADY2MWJvb3QtMDEuYWMtY24taG9uZ2tvbmctYy5zaGFyZHMudGVzdC5zdGF0dXNpbS5uZXQGdl-CcnOHABACAIABAIlzZWNwMjU2azGhAz-wm0ZPmCicDhRTOGfZ3stBj3O1jyWgsBpKTUcpWu5gg3RjcIJ2X4N1ZHCCIyiFd2FrdTIN",
+       "enr:-OK4QFWlB2csVi4NhszuVmzOWd1q1Moy1DFTmq1Bt4_AWKh7U-eCRHTj3m9TOma53DLXN318cS7LapchI01ZxnEwLXEBgmlkgnY0gmlwhCKHDVeKbXVsdGlhZGRyc7g4ADY2MWJvb3QtMDEuZ2MtdXMtY2VudHJhbDEtYS5zaGFyZHMudGVzdC5zdGF0dXNpbS5uZXQGdl-CcnOHABACAIABAIlzZWNwMjU2azGhAsY6oA0NFskUjopWFN9gwOZP1zZQ4rN5tVXV5CvcTOpDg3RjcIJ2X4N1ZHCCIyiFd2FrdTIN",
+      "enrtree://AMOJVZX4V6EXP7NTJPMAYJYST2QP6AJXYW76IU6VGJS7UVSNDYZG4@boot.test.shards.nodes.status.im"
+    ]
+  },
+  "WakuV2Config": {
+    "Enabled": true,
+    "UseShardAsDefaultTopic": true,
+    "EnableDiscV5": true,
+    "DiscoveryLimit": 20,
+    "AutoUpdate": true,
+    "PeerExchange": true
+  },
+  "WakuConfig": {
+    "Enabled": false
+  },
+  "LogEnabled": true,
+  "LogLevel": "INFO"
+}

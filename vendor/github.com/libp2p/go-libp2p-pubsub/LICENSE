@@ -1,0 +1,8 @@
+This project is transitioning from an MIT-only license to a dual MIT/Apache-2.0 license. 
+Unless otherwise noted, all code contributed prior to 2019-05-06 and not contributed by 
+a user listed in [this signoff issue](https://github.com/ipfs/go-ipfs/issues/6302) is 
+licensed under MIT-only. All new contributions (and past contributions since 2019-05-06) 
+are licensed under a dual MIT/Apache-2.0 license.
+
+MIT: https://www.opensource.org/licenses/mit
+Apache-2.0: https://www.apache.org/licenses/license-2.0

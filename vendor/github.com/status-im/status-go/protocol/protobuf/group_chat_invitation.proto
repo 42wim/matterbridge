@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option go_package = "./;protobuf";
+package protobuf;
+
+message GroupChatInvitation {
+
+  // clock Lamport timestamp of the chat message
+  uint64 clock = 1;
+
+  // chat_id the ID of the private group chat the message belongs to, for query efficiency the chat_id is stored in the db even though the
+  // target message also stores the chat_id
+  string chat_id = 2;
+
+  string introduction_message = 3;
+
+  // state of invitation
+  State state = 4;
+
+  enum State {
+    UNKNOWN = 0;
+    REQUEST = 1;
+    REJECTED = 2;
+    APPROVED = 3;
+  }
+}

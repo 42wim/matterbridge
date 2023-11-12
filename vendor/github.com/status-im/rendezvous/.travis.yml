@@ -1,0 +1,15 @@
+notifications:
+  email: false
+language: go
+go:
+- 1.11.x
+- 1.12.x
+install: true
+env:
+- GO111MODULE=on
+sudo: false
+jobs:
+  include:
+  - stage: Unit tests
+    script:
+      - make test

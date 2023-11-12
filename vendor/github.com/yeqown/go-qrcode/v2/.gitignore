@@ -1,0 +1,16 @@
+vendor/
+draft/
+testdata/
+js/
+.idea/
+.vscode/
+
+# example/
+*.png
+default.jpeg
+# *.json
+*.log
+.DS_store
+tmp.png
+
+go.sum

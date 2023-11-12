@@ -1,0 +1,74 @@
+run:
+  concurrency: 4
+  deadline: 1m
+  issues-exit-code: 1
+  tests: true
+  # build-tags:
+  #   - mytag
+  skip-dirs:
+    - static
+  skip-files:
+    - .*_mock.go
+    - jail/doc.go
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+
+linters-settings:
+  errcheck:
+    check-type-assertions: false
+    check-blank: false
+  govet:
+    check-shadowing: false
+  golint:
+    min-confidence: 0.8
+  gofmt:
+    simplify: true
+  gocyclo:
+    min-complexity: 16
+  maligned:
+    suggest-new: true
+  dupl:
+    threshold: 50
+  goconst:
+    min-len: 3
+    min-occurrences: 2
+  # depguard:
+  #   list-type: blacklist
+  #   include-go-root: false
+  #   packages:
+  #     - github.com/davecgh/go-spew/spew
+
+linters:
+  disable-all: true
+  enable:
+    - deadcode
+    #- depguard
+    - errcheck
+    - gas
+    - goconst
+    - gocyclo
+    - gofmt
+    - golint
+    - govet
+    - ineffassign
+    - interfacer
+    - megacheck
+    - misspell
+    - structcheck
+    - typecheck
+    - unconvert
+    - varcheck
+  fast: false
+
+issues:
+  exclude:
+    - "composite literal uses unkeyed fields" # govet
+#   exclude-use-default: true
+#   max-per-linter: 0
+#   max-same: 0
+#   new: false
+#   new-from-rev: ""
+#   new-from-patch: ""

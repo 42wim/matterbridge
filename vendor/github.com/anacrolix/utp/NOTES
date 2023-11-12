@@ -1,0 +1,1 @@
+* Perhaps state packets should be sent when the wnd_size would change because user-code has made Reads from the read buffer. Otherwise if the receive window size was advertised as zero, we might never receive a packet or send a state packet again.

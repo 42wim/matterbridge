@@ -1,0 +1,13 @@
+syntax = "proto2";
+package pb;
+
+message NoiseExtensions {
+	repeated bytes webtransport_certhashes = 1;
+	repeated string stream_muxers = 2;
+}
+
+message NoiseHandshakePayload {
+	optional bytes identity_key = 1;
+	optional bytes identity_sig = 2;
+	optional NoiseExtensions extensions = 4;
+}

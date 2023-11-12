@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package mvds;
+option go_package = "./;protobuf";
+
+message Offer {
+  bytes group_id = 1;
+  repeated bytes message_ids = 2;
+}
+
+message Payload {
+  repeated bytes acks = 5001;
+  repeated bytes offers = 5002;
+  repeated bytes requests = 5003;
+  repeated Message messages = 5004;
+  repeated Offer group_offers = 5005;
+}
+
+message Message {
+  bytes group_id = 6001;
+  int64 timestamp = 6002;
+  bytes body = 6003;
+}

@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+option go_package = "./;protobuf";
+package protobuf;
+
+import "enums.proto";
+
+message EmojiReaction {
+  // clock Lamport timestamp of the chat message
+  uint64 clock = 1;
+
+  // chat_id the ID of the chat the message belongs to, for query efficiency the chat_id is stored in the db even though the
+  // target message also stores the chat_id
+  string chat_id = 2;
+
+  // message_id the ID of the target message that the user wishes to react to
+  string message_id = 3;
+
+  // message_type is (somewhat confusingly) the ID of the type of chat the message belongs to
+  MessageType message_type = 4;
+
+  // type the ID of the emoji the user wishes to react with
+  Type type = 5;
+
+  enum Type {
+    UNKNOWN_EMOJI_REACTION_TYPE = 0;
+    LOVE = 1;
+    THUMBS_UP = 2;
+    THUMBS_DOWN = 3;
+    LAUGH = 4;
+    SAD = 5;
+    ANGRY = 6;
+  }
+
+ // whether this is a rectraction of a previously sent emoji
+  bool retracted = 6;
+
+  // Grant for organisation chat messages
+  bytes grant = 7 [deprecated = true];
+}

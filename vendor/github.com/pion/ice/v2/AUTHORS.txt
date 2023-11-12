@@ -1,0 +1,49 @@
+# Thank you to everyone that made Pion possible. If you are interested in contributing
+# we would love to have you https://github.com/pion/webrtc/wiki/Contributing
+#
+# This file is auto generated, using git to list all individuals contributors.
+# see `.github/generate-authors.sh` for the scripting
+Aaron France <aaron.l.france@gmail.com>
+Adam Kiss <masterada@gmail.com>
+adwpc <adwpc@hotmail.com>
+Aleksandr Razumov <ar@gortc.io>
+Antoine Baché <antoine@tenten.app>
+Assad Obaid <assad@lap5cg901003r.se.axis.com>
+Atsushi Watanabe <atsushi.w@ieee.org>
+backkem <mail@backkem.me>
+buptczq <czq@qq.com>
+cgojin <gongjin21@hotmail.com>
+Chao Yuan <yuanchao0310@163.com>
+David Hamilton <davidhamiltron@gmail.com>
+David Zhao <david@davidzhao.com>
+Henry <cryptix@riseup.net>
+hexiang <hexiang.zhang@chukong-inc.com>
+hn8 <10730886+hn8@users.noreply.github.com>
+Hugo Arregui <hugo.arregui@gmail.com>
+Hugo Arregui <hugo@decentraland.org>
+Jason Maldonis <jason.maldonis@i3pd.com>
+Jerko Steiner <jerko.steiner@gmail.com>
+JooYoung <qkdlql@naver.com>
+Juliusz Chroboczek <jch@irif.fr>
+Konstantin Itskov <konstantin.itskov@kovits.com>
+korymiller1489 <kmiller@unwiredrevolution.com>
+Kyle Carberry <kyle@carberry.com>
+Lander Noterman <lander.noterman@basalte.be>
+Luke Curley <kixelated@gmail.com>
+Meelap Shah <meelapshah@gmail.com>
+Michael MacDonald <github@macdonald.cx>
+Michael MacDonald <mike.macdonald@savantsystems.com>
+Nevio Vesic <nevio@subspace.com>
+Ori Bernstein <ori@eigenstate.org>
+Robert Eperjesi <eperjesi@uber.com>
+Sam Lancia <sam@gpsm.co.uk>
+Sam Lancia <sam@vaion.com>
+Sean DuBois <seaduboi@amazon.com>
+Sean DuBois <sean@siobud.com>
+Sebastian Waisbrot <seppo0010@gmail.com>
+Sidney San Martín <sidney@s4y.us>
+Will Forcey <wsforc3y@gmail.com>
+Woodrow Douglass <wdouglass@carnegierobotics.com>
+Yutaka Takeda <yt0916@gmail.com>
+ZHENK <chengzhenyang@gmail.com>
+Zizheng Tai <me@zizheng.me>

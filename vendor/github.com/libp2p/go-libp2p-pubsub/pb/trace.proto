@@ -1,0 +1,150 @@
+syntax = "proto2";
+
+package pubsub.pb;
+
+message TraceEvent {
+  optional Type type = 1;
+  optional bytes peerID = 2;
+  optional int64 timestamp = 3;
+
+  optional PublishMessage publishMessage = 4;
+  optional RejectMessage rejectMessage = 5;
+  optional DuplicateMessage duplicateMessage = 6;
+  optional DeliverMessage deliverMessage = 7;
+  optional AddPeer addPeer = 8;
+  optional RemovePeer removePeer = 9;
+  optional RecvRPC recvRPC = 10;
+  optional SendRPC sendRPC = 11;
+  optional DropRPC dropRPC = 12;
+  optional Join join = 13;
+  optional Leave leave = 14;
+  optional Graft graft = 15;
+  optional Prune prune = 16;
+
+  enum Type {
+    PUBLISH_MESSAGE = 0;
+    REJECT_MESSAGE  = 1;
+    DUPLICATE_MESSAGE = 2;
+    DELIVER_MESSAGE = 3;
+    ADD_PEER = 4;
+    REMOVE_PEER = 5;
+    RECV_RPC = 6;
+    SEND_RPC = 7;
+    DROP_RPC = 8;
+    JOIN = 9;
+    LEAVE = 10;
+    GRAFT = 11;
+    PRUNE = 12;
+  }
+
+  message PublishMessage {
+    optional bytes messageID = 1;
+    optional string topic = 2;
+  }
+
+  message RejectMessage {
+    optional bytes messageID = 1;
+    optional bytes receivedFrom = 2;
+    optional string reason = 3;
+    optional string topic = 4;
+  }
+
+  message DuplicateMessage {
+    optional bytes messageID = 1;
+    optional bytes receivedFrom = 2;
+    optional string topic = 3;
+  }
+
+  message DeliverMessage {
+    optional bytes messageID = 1;
+    optional string topic = 2;
+    optional bytes receivedFrom = 3;
+  }
+
+  message AddPeer {
+    optional bytes peerID = 1;
+    optional string proto = 2;
+  }
+
+  message RemovePeer {
+    optional bytes peerID = 1;
+  }
+
+  message RecvRPC {
+    optional bytes receivedFrom = 1;
+    optional RPCMeta meta = 2;
+  }
+
+  message SendRPC {
+    optional bytes sendTo = 1;
+    optional RPCMeta meta = 2;
+  }
+
+  message DropRPC {
+    optional bytes sendTo = 1;
+    optional RPCMeta meta = 2;
+  }
+
+  message Join {
+    optional string topic = 1;
+  }
+
+  message Leave {
+    optional string topic = 2;
+  }
+
+  message Graft {
+    optional bytes peerID = 1;
+    optional string topic = 2;
+  }
+
+  message Prune {
+    optional bytes peerID = 1;
+    optional string topic = 2;
+  }
+
+  message RPCMeta {
+    repeated MessageMeta messages = 1;
+    repeated SubMeta subscription = 2;
+    optional ControlMeta control = 3;
+  }
+
+  message MessageMeta {
+    optional bytes messageID = 1;
+    optional string topic = 2;
+  }
+
+  message SubMeta {
+    optional bool subscribe = 1;
+    optional string topic = 2;
+  }
+
+  message ControlMeta {
+    repeated ControlIHaveMeta ihave = 1;
+    repeated ControlIWantMeta iwant = 2;
+    repeated ControlGraftMeta graft = 3;
+    repeated ControlPruneMeta prune = 4;
+  }
+
+  message ControlIHaveMeta {
+    optional string topic = 1;
+    repeated bytes messageIDs = 2;
+  }
+
+  message ControlIWantMeta {
+    repeated bytes messageIDs = 1;
+  }
+
+  message ControlGraftMeta {
+    optional string topic = 1;
+  }
+
+  message ControlPruneMeta {
+    optional string topic = 1;
+    repeated bytes peers = 2;
+  }
+}
+
+message TraceEventBatch {
+  repeated TraceEvent batch = 1;
+}

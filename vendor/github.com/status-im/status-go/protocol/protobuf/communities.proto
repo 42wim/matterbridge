@@ -1,0 +1,215 @@
+syntax = "proto3";
+
+option go_package = "./;protobuf";
+import "chat_identity.proto";
+import "enums.proto";
+import "shard.proto";
+
+package protobuf;
+
+message Grant {
+  bytes community_id = 1;
+  bytes member_id = 2;
+  string chat_id = 3;
+  uint64 clock = 4;
+}
+
+message CommunityMember {
+  enum Roles {
+    reserved 2, 3;
+    reserved "ROLE_MANAGE_USERS", "ROLE_MODERATE_CONTENT";
+    ROLE_NONE = 0;
+    ROLE_OWNER = 1;
+    ROLE_ADMIN = 4;
+    ROLE_TOKEN_MASTER = 5;
+  }
+  repeated Roles roles = 1;
+  repeated RevealedAccount revealed_accounts = 2 [deprecated = true];
+  uint64 last_update_clock = 3;
+}
+
+message CommunityTokenMetadata {
+  map<uint64, string> contract_addresses = 1;
+  string description = 2;
+  string image = 3;
+  CommunityTokenType tokenType = 4;
+  string symbol = 5;
+  string name = 6;
+  uint32 decimals = 7;
+}
+
+message CommunityPermissions {
+  enum Access {
+    UNKNOWN_ACCESS = 0;
+    AUTO_ACCEPT = 1;
+    INVITATION_ONLY = 2 [deprecated = true];
+    MANUAL_ACCEPT = 3;
+  }
+
+  bool ens_only = 1;
+  // https://gitlab.matrix.org/matrix-org/olm/blob/master/docs/megolm.md is a candidate for the algorithm to be used in case we want to have private communityal chats, lighter than pairwise encryption using the DR, less secure, but more efficient for large number of participants
+  bool private = 2;
+  Access access = 3;
+}
+
+message TokenCriteria {
+  map<uint64, string> contract_addresses = 1;
+  CommunityTokenType type = 2;
+  string symbol = 3;
+  string name = 4;
+  string amount = 5;
+  repeated uint64 token_ids = 6;
+  string ens_pattern = 7;
+  uint64 decimals = 8;
+}
+
+message CommunityTokenPermission {
+
+  enum Type {
+    UNKNOWN_TOKEN_PERMISSION = 0;
+    BECOME_ADMIN = 1;
+    BECOME_MEMBER = 2;
+    CAN_VIEW_CHANNEL = 3;
+    CAN_VIEW_AND_POST_CHANNEL = 4;
+    BECOME_TOKEN_MASTER = 5;
+    BECOME_TOKEN_OWNER = 6;
+  }
+
+  string id = 1;
+  Type type = 2;
+  repeated TokenCriteria token_criteria = 3;
+  repeated string chat_ids = 4;
+  bool is_private = 5;
+}
+
+message CommunityDescription {
+  uint64 clock = 1;
+  map<string,CommunityMember> members = 2;
+  CommunityPermissions permissions = 3;
+  ChatIdentity identity = 5;
+  map<string,CommunityChat> chats = 6;
+  repeated string ban_list = 7;
+  map<string,CommunityCategory> categories = 8;
+  uint64 archive_magnetlink_clock = 9;
+  CommunityAdminSettings admin_settings = 10;
+  string intro_message = 11;
+  string outro_message = 12;
+  bool encrypted = 13 [deprecated=true];
+  repeated string tags = 14;
+  map<string, CommunityTokenPermission> token_permissions = 15;
+  repeated CommunityTokenMetadata community_tokens_metadata = 16;
+  uint64 active_members_count = 17;
+  string ID = 18;
+
+  // key is hash ratchet key_id + seq_no
+  map<string, bytes> privateData = 100;
+}
+
+message CommunityAdminSettings {
+  bool pin_message_all_members_enabled = 1;
+}
+
+message CommunityChat {
+  map<string,CommunityMember> members = 1;
+  CommunityPermissions permissions = 2;
+  ChatIdentity identity = 3;
+  string category_id = 4;
+  int32 position = 5;
+}
+
+message CommunityCategory {
+  string category_id = 1;
+  string name = 2;
+  int32 position = 3;
+}
+
+message RevealedAccount {
+  string address = 1;
+  bytes signature = 2;
+  repeated uint64 chain_ids = 3;
+  bool isAirdropAddress = 4;
+}
+
+message CommunityRequestToJoin {
+  uint64 clock = 1;
+  string ens_name = 2;
+  string chat_id = 3;
+  bytes community_id = 4;
+  string display_name = 5;
+  repeated RevealedAccount revealed_accounts = 6;
+}
+
+message CommunityEditSharedAddresses {
+  uint64 clock = 1;
+  bytes community_id = 2;
+  repeated RevealedAccount revealed_accounts = 3;
+}
+
+message CommunityCancelRequestToJoin {
+  uint64 clock = 1;
+  string ens_name = 2;
+  string chat_id = 3;
+  bytes community_id = 4;
+  string display_name = 5;
+}
+
+message CommunityUserKicked {
+  uint64 clock = 1;
+  bytes community_id = 2;
+}
+
+message CommunityRequestToJoinResponse {
+  uint64 clock = 1;
+  CommunityDescription community = 2;
+  bool accepted = 3;
+  bytes grant = 4;
+  bytes community_id = 5;
+  string magnet_uri = 6;
+  bytes protected_topic_private_key = 7;
+  Shard shard = 8;
+}
+
+message CommunityRequestToLeave {
+  uint64 clock = 1;
+  bytes community_id = 2;
+}
+
+message CommunityMessageArchiveMagnetlink {
+  uint64 clock = 1;
+  string magnet_uri = 2;
+}
+
+message WakuMessage {
+  bytes sig = 1;
+  uint64 timestamp = 2;
+  bytes topic = 3;
+  bytes payload = 4;
+  bytes padding = 5;
+  bytes hash = 6;
+  string thirdPartyId = 7;
+}
+
+message WakuMessageArchiveMetadata {
+  uint32 version = 1;
+  uint64 from = 2;
+  uint64 to = 3;
+  repeated bytes contentTopic = 4;
+}
+
+message WakuMessageArchive {
+  uint32 version = 1;
+  WakuMessageArchiveMetadata metadata = 2;
+  repeated WakuMessage messages = 3;
+}
+
+message WakuMessageArchiveIndexMetadata {
+  uint32 version = 1;
+  WakuMessageArchiveMetadata metadata = 2;
+  uint64 offset = 3;
+  uint64 size = 4;
+  uint64 padding = 5;
+}
+
+message WakuMessageArchiveIndex {
+  map<string, WakuMessageArchiveIndexMetadata> archives = 1;
+}

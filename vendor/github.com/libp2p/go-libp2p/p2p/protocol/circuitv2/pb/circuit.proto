@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package circuit.pb;
+
+message HopMessage {
+  enum Type {
+    RESERVE = 0;
+    CONNECT = 1;
+    STATUS = 2;
+  }
+
+  // This field is marked optional for backwards compatibility with proto2.
+  // Users should make sure to always set this.
+  optional Type type = 1;
+
+  optional Peer peer = 2;
+  optional Reservation reservation = 3;
+  optional Limit limit = 4;
+
+  optional Status status = 5;
+}
+
+message StopMessage {
+  enum Type {
+    CONNECT = 0;
+    STATUS = 1;
+  }
+
+  // This field is marked optional for backwards compatibility with proto2.
+  // Users should make sure to always set this.
+  optional Type type = 1;
+
+  optional Peer peer = 2;
+  optional Limit limit = 3;
+
+  optional Status status = 4;
+}
+
+message Peer {
+  // This field is marked optional for backwards compatibility with proto2.
+  // Users should make sure to always set this.
+  optional bytes id = 1;
+  repeated bytes addrs = 2;
+}
+
+message Reservation {
+  // This field is marked optional for backwards compatibility with proto2.
+  // Users should make sure to always set this.
+  optional uint64 expire = 1; // Unix expiration time (UTC)
+  repeated bytes addrs = 2;   // relay addrs for reserving peer
+  optional bytes voucher = 3; // reservation voucher
+}
+
+message Limit {
+  optional uint32 duration = 1; // seconds
+  optional uint64 data = 2;     // bytes
+}
+
+enum Status {
+  // zero value field required for proto3 compatibility
+  UNUSED                  = 0;
+  OK                      = 100;
+  RESERVATION_REFUSED     = 200;
+  RESOURCE_LIMIT_EXCEEDED = 201;
+  PERMISSION_DENIED       = 202;
+  CONNECTION_FAILED       = 203;
+  NO_RESERVATION          = 204;
+  MALFORMED_MESSAGE       = 400;
+  UNEXPECTED_MESSAGE      = 401;
+}

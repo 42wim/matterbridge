@@ -1,0 +1,261 @@
+syntax = "proto3";
+
+option go_package = "./;protobuf";
+package protobuf;
+
+import "enums.proto";
+import "contact.proto";
+import "shard.proto";
+
+message StickerMessage {
+  string hash = 1;
+  int32 pack = 2;
+}
+
+message ImageMessage {
+  bytes payload = 1;
+  ImageFormat format = 2;
+  string album_id = 3;
+  uint32 width = 4;
+  uint32 height = 5;
+  uint32 album_images_count = 6;
+}
+
+message AudioMessage {
+  bytes payload = 1;
+  AudioType type = 2;
+  uint64 duration_ms = 3;
+  enum AudioType {
+    UNKNOWN_AUDIO_TYPE = 0;
+    AAC = 1;
+    AMR = 2;
+  }
+}
+
+message EditMessage {
+  uint64 clock = 1;
+  // Text of the message
+  string text = 2;
+
+  string chat_id = 3;
+  string message_id = 4;
+
+  // Grant for community edit messages
+  bytes grant = 5 [deprecated = true];
+
+  // The type of message (public/one-to-one/private-group-chat)
+  MessageType message_type = 6;
+
+  ChatMessage.ContentType content_type = 7;
+  repeated UnfurledLink unfurled_links = 8;
+  UnfurledStatusLinks unfurled_status_links = 9;
+}
+
+message DeleteMessage {
+  uint64 clock = 1;
+
+  string chat_id = 2;
+  string message_id = 3;
+
+  // Grant for community delete messages
+  bytes grant = 4 [deprecated = true];
+
+  // The type of message (public/one-to-one/private-group-chat)
+  MessageType message_type = 5;
+
+  string deleted_by = 6;
+}
+
+message SyncDeleteForMeMessage {
+  uint64 clock = 1;
+  string message_id = 2;
+}
+
+message DiscordMessage {
+  string id = 1;
+  string type = 2;
+  string timestamp = 3;
+  string timestampEdited = 4;
+  string content = 5;
+  DiscordMessageAuthor author = 6;
+  DiscordMessageReference reference = 7;
+  repeated DiscordMessageAttachment attachments = 8;
+}
+
+message DiscordMessageAuthor {
+  string id = 1;
+  string name = 2;
+  string discriminator = 3;
+  string nickname = 4;
+  string avatarUrl = 5;
+  bytes avatarImagePayload = 6;
+  string localUrl = 7;
+}
+
+message DiscordMessageReference {
+  string messageId = 1;
+  string channelId = 2;
+  string guildId = 3;
+}
+
+message DiscordMessageAttachment {
+  string id = 1;
+  string messageId = 2;
+  string url = 3;
+  string fileName = 4;
+  uint64 fileSizeBytes = 5;
+  string contentType = 6;
+  bytes payload = 7;
+  string localUrl = 8;
+}
+
+message BridgeMessage {
+  string bridgeName = 1;
+  string userName = 2;
+  string userAvatar = 3;
+  string userID = 4;
+  string content = 5;
+  string messageID = 6;
+  string parentMessageID = 7;
+}
+
+message UnfurledLinkThumbnail {
+  bytes payload = 1;
+  uint32 width = 2;
+  uint32 height = 3;
+}
+
+message UnfurledLink {
+  // A valid URL which uniquely identifies this link.
+  string url = 1;
+  // Website's title.
+  string title = 2;
+  // Description is sometimes available, but can be empty. Most mainstream
+  // websites provide this information.
+  string description = 3;
+  bytes thumbnail_payload = 4;
+  uint32 thumbnail_width = 5;
+  uint32 thumbnail_height = 6;
+  LinkType type = 7;
+
+  enum LinkType {
+    LINK = 0;
+    IMAGE = 1;
+  }
+}
+
+message UnfurledStatusContactLink {
+  bytes public_key = 1;
+  string display_name = 2;
+  string description = 3;
+  UnfurledLinkThumbnail icon = 4;
+}
+
+message UnfurledStatusCommunityLink {
+  bytes community_id = 1;
+  string display_name = 2;
+  string description = 3;
+  uint32 members_count = 4;
+  string color = 5;
+  UnfurledLinkThumbnail icon = 7;
+  UnfurledLinkThumbnail banner = 8;
+}
+
+message UnfurledStatusChannelLink {
+  string channel_uuid = 1;
+  string emoji = 2;
+  string display_name = 3;
+  string description = 4;
+  string color = 5;
+  UnfurledStatusCommunityLink community = 6;
+}
+
+message UnfurledStatusLink {
+  string url = 1;
+  oneof payload {
+    UnfurledStatusContactLink contact = 2;
+    UnfurledStatusCommunityLink community = 3;
+    UnfurledStatusChannelLink channel = 4;
+  }
+}
+
+// Create a wrapper around repeated property for proper unmarshalling
+message UnfurledStatusLinks {
+  repeated UnfurledStatusLink unfurled_status_links = 1;
+}
+
+message ChatMessage {
+  // Lamport timestamp of the chat message
+  uint64 clock = 1;
+  // Unix timestamps in milliseconds, currently not used as we use whisper as
+  // more reliable, but here so that we don't rely on it
+  uint64 timestamp = 2;
+  // Text of the message
+  string text = 3;
+  // Id of the message that we are replying to
+  string response_to = 4;
+  // Ens name of the sender
+  string ens_name = 5;
+  // Chat id, this field is symmetric for public-chats and private group chats,
+  // but asymmetric in case of one-to-ones, as the sender will use the chat-id
+  // of the received, while the receiver will use the chat-id of the sender.
+  // Probably should be the concatenation of sender-pk & receiver-pk in
+  // alphabetical order
+  string chat_id = 6;
+
+  // The type of message (public/one-to-one/private-group-chat)
+  MessageType message_type = 7;
+  // The type of the content of the message
+  ContentType content_type = 8;
+
+  oneof payload {
+    StickerMessage sticker = 9;
+    ImageMessage image = 10;
+    AudioMessage audio = 11;
+    bytes community = 12;
+    DiscordMessage discord_message = 99;
+    BridgeMessage bridge_message = 100;
+  }
+
+  // Grant for community chat messages
+  bytes grant = 13 [deprecated = true];
+
+  // Message author's display name, introduced in version 1
+  string display_name = 14;
+
+  ContactRequestPropagatedState contact_request_propagated_state = 15;
+
+  repeated UnfurledLink unfurled_links = 16;
+
+  Shard shard = 17;
+
+  UnfurledStatusLinks unfurled_status_links = 18;
+
+  enum ContentType {
+    UNKNOWN_CONTENT_TYPE = 0;
+    TEXT_PLAIN = 1;
+    STICKER = 2;
+    STATUS = 3;
+    EMOJI = 4;
+    TRANSACTION_COMMAND = 5;
+    // Only local
+    SYSTEM_MESSAGE_CONTENT_PRIVATE_GROUP = 6;
+    IMAGE = 7;
+    AUDIO = 8;
+    COMMUNITY = 9;
+    // Only local
+    SYSTEM_MESSAGE_GAP = 10;
+    CONTACT_REQUEST = 11;
+    DISCORD_MESSAGE = 12;
+    IDENTITY_VERIFICATION = 13;
+    // Only local
+    SYSTEM_MESSAGE_PINNED_MESSAGE = 14;
+    // Only local
+    SYSTEM_MESSAGE_MUTUAL_EVENT_SENT = 15;
+    // Only local
+    SYSTEM_MESSAGE_MUTUAL_EVENT_ACCEPTED = 16;
+    // Only local
+    SYSTEM_MESSAGE_MUTUAL_EVENT_REMOVED = 17;
+    BRIDGE_MESSAGE = 18;
+  }
+}

@@ -1,0 +1,111 @@
+syntax = "proto3";
+
+option go_package = "./;encryption";
+package encryption;
+
+message SignedPreKey {
+  bytes signed_pre_key = 1;
+  uint32 version = 2;
+  uint32 protocol_version = 3;
+}
+
+// X3DH prekey bundle
+message Bundle {
+  // Identity key
+  bytes identity = 1;
+  // Installation id
+  map<string,SignedPreKey> signed_pre_keys = 2;
+  // Prekey signature
+  bytes signature = 4;
+
+  // When the bundle was created locally
+  int64 timestamp = 5;
+}
+
+message BundleContainer {
+  reserved 3;
+  // X3DH prekey bundle
+  Bundle bundle = 1;
+  // Private signed prekey
+  bytes private_signed_pre_key = 2;
+}
+
+message DRHeader {
+  // Current ratchet public key
+  bytes key = 1;
+  // Number of the message in the sending chain
+  uint32 n = 2;
+  // Length of the previous sending chain
+  uint32 pn = 3;
+  // Bundle ID
+  bytes id = 4;
+}
+
+message DHHeader {
+  // Compressed ephemeral public key
+  bytes key = 1;
+}
+
+message X3DHHeader {
+  reserved 3;
+  // Ephemeral key used
+  bytes key = 1;
+  // Used bundle's signed prekey
+  bytes id = 4;
+}
+
+// Hash Ratchet Header
+message HRHeader {
+  // deprecated group key ID
+  uint32 deprecated_key_id = 1;
+  // group message number for this key_id
+  uint32 seq_no = 2;
+  // group ID
+  bytes group_id = 3;
+  // group key ID
+  bytes key_id = 4;
+  HRKeys keys = 5;
+}
+
+message RekeyGroup {
+  uint64 timestamp = 2;
+
+  map<uint32, bytes> keys = 4;
+}
+
+message HRKeys {
+  repeated HRKey keys = 1;
+  RekeyGroup rekey_group = 2;
+}
+
+message HRKey {
+  uint32 deprecated_key_id = 1;
+  bytes key = 2;
+  uint64 timestamp = 3;
+}
+
+// Direct message value
+message EncryptedMessageProtocol {
+  X3DHHeader X3DH_header = 1;
+  DRHeader DR_header = 2;
+  DHHeader DH_header = 101;
+  HRHeader HR_header = 102;
+  // Encrypted payload
+  bytes payload = 3;
+}
+
+// Top-level protocol message
+message ProtocolMessage {
+  // The device id of the sender
+  string installation_id = 2;
+
+  // List of bundles
+  repeated Bundle bundles = 3;
+
+  // One to one message, encrypted, indexed by installation_id
+  // TODO map here is redundant in case of community messages
+  map<string,EncryptedMessageProtocol> encrypted_message = 101;
+
+  // Public chats, not encrypted
+  bytes public_message = 102;
+}
