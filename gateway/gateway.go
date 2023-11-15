@@ -323,7 +323,7 @@ func (gw *Gateway) ignoreFilesComment(extra map[string][]interface{}, igMessages
 	return false
 }
 
-func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) string {
+func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) {
 	if dest.GetBool("StripNick") {
 		re := regexp.MustCompile("[^a-zA-Z0-9]+")
 		msg.Username = re.ReplaceAllString(msg.Username, "")
@@ -369,16 +369,15 @@ func (gw *Gateway) modifyUsername(msg *config.Message, dest *bridge.Bridge) stri
 		gw.logger.Errorf("modifyUsernameTengo error: %s", err)
 	}
 	nick = strings.ReplaceAll(nick, "{TENGO}", tengoNick)
-	return nick
+	msg.Username = nick
 }
 
-func (gw *Gateway) modifyAvatar(msg *config.Message, dest *bridge.Bridge) string {
+func (gw *Gateway) modifyAvatar(msg *config.Message, dest *bridge.Bridge) {
 	iconurl := dest.GetString("IconURL")
 	iconurl = strings.Replace(iconurl, "{NICK}", msg.Username, -1)
 	if msg.Avatar == "" {
 		msg.Avatar = iconurl
 	}
-	return msg.Avatar
 }
 
 func (gw *Gateway) modifyMessage(msg *config.Message) {
@@ -461,8 +460,8 @@ func (gw *Gateway) SendMessage(
 	}
 
 	msg.Channel = channel.Name
-	msg.Avatar = gw.modifyAvatar(rmsg, dest)
-	msg.Username = gw.modifyUsername(rmsg, dest)
+	gw.modifyAvatar(&msg, dest)
+	gw.modifyUsername(&msg, dest)
 
 	// exclude file delete event as the msg ID here is the native file ID that needs to be deleted
 	if msg.Event != config.EventFileDelete {
