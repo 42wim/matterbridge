@@ -1,6 +1,8 @@
 package bdiscord
 
 import (
+	"strings"
+
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/bwmarrin/discordgo"
 	"github.com/davecgh/go-spew/spew"
@@ -82,6 +84,45 @@ func (b *Bdiscord) messageUpdate(s *discordgo.Session, m *discordgo.MessageUpdat
 	}
 }
 
+func (b *Bdiscord) handleQuote(s *discordgo.Session, m *discordgo.Message, msg string) string {
+	if b.GetBool("QuoteDisable") {
+		return msg
+	}
+	if m.MessageReference == nil {
+		return msg
+	}
+	refMsgRef := m.MessageReference
+	refMsg, err := s.ChannelMessage(refMsgRef.ChannelID, refMsgRef.MessageID)
+	if err != nil {
+		b.Log.Errorf("Error getting quoted message %s:%s: %s", refMsgRef.ChannelID, refMsgRef.MessageID, err)
+		return msg
+	}
+
+	quoteMessage := refMsg.Content
+	quoteNick := refMsg.Author.Username
+	fromWebhook := m.WebhookID != ""
+	if !fromWebhook && b.GetBool("UseDiscriminator") {
+		quoteNick += "#" + refMsg.Author.Discriminator
+	}
+
+	format := b.GetString("quoteformat")
+	if format == "" {
+		format = "{MESSAGE} (re @{QUOTENICK}: {QUOTEMESSAGE})"
+	}
+	quoteMessagelength := len([]rune(quoteMessage))
+	if b.GetInt("QuoteLengthLimit") != 0 && quoteMessagelength >= b.GetInt("QuoteLengthLimit") {
+		runes := []rune(quoteMessage)
+		quoteMessage = string(runes[0:b.GetInt("QuoteLengthLimit")])
+		if quoteMessagelength > b.GetInt("QuoteLengthLimit") {
+			quoteMessage += "..."
+		}
+	}
+	format = strings.ReplaceAll(format, "{MESSAGE}", m.Content)
+	format = strings.ReplaceAll(format, "{QUOTENICK}", quoteNick)
+	format = strings.ReplaceAll(format, "{QUOTEMESSAGE}", quoteMessage)
+	return format
+}
+
 func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) { //nolint:unparam
 	if m.GuildID != b.guildID {
 		b.Log.Debugf("Ignoring messageCreate because it originates from a different guild")
@@ -152,6 +193,9 @@ func (b *Bdiscord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreat
 
 	// Replace emotes
 	rmsg.Text = replaceEmotes(rmsg.Text)
+
+	// Handle Reply thread
+	rmsg.Text = b.handleQuote(s, m.Message, rmsg.Text)
 
 	// Add our parent id if it exists, and if it's not referring to a message in another channel
 	if ref := m.MessageReference; ref != nil && ref.ChannelID == m.ChannelID {
