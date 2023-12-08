@@ -12,6 +12,22 @@ func (m *Client) GetNickName(userID string) string {
 	return ""
 }
 
+func (m *Client) GetFirstName(userID string) string {
+	if user := m.GetUser(userID); user != nil {
+		return user.FirstName
+	}
+
+	return ""
+}
+
+func (m *Client) GetLastName(userID string) string {
+	if user := m.GetUser(userID); user != nil {
+		return user.LastName
+	}
+
+	return ""
+}
+
 func (m *Client) GetStatus(userID string) string {
 	res, _, err := m.Client.GetUserStatus(userID, "")
 	if err != nil {
