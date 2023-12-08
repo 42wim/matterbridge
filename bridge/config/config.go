@@ -169,7 +169,9 @@ type Protocol struct {
 	UseSASL                bool       // IRC
 	UseTLS                 bool       // IRC
 	UseDiscriminator       bool       // discord
-	UseFirstName           bool       // telegram
+	UseFullName	       bool	  // mattermost
+	UseFirstName           bool       // telegram, mattermost
+	UseLastName	       bool	  // mattermost
 	UseUserName            bool       // discord, matrix, mattermost
 	UseInsecureURL         bool       // telegram
 	UserName               string     // IRC

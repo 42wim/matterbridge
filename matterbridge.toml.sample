@@ -409,9 +409,13 @@ SkipTLSVerify=true
 ## RELOADABLE SETTINGS
 ## Settings below can be reloaded by editing the file
 
-# UseUserName shows the username instead of the server nickname
+# Choose what use as user nick NickName/FullName/FirstName/LastName/UserName
 # OPTIONAL (default false)
-UseUserName=false
+UseNickName=false
+UseFullName=false
+UseFirstName=false
+UseLastName=false
+#if neither is set as true will use username
 
 #how to format the list of IRC nicks when displayed in mattermost.
 #Possible options are "table" and "plain"
