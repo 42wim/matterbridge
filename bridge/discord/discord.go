@@ -278,7 +278,7 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 
 	// Use webhook to send the message
 	useWebhooks := b.shouldMessageUseWebhooks(&msg)
-	if useWebhooks && msg.Event != config.EventMsgDelete && msg.ParentID == "" {
+	if useWebhooks && msg.ParentID == "" {
 		return b.handleEventWebhook(&msg, channelID)
 	}
 
