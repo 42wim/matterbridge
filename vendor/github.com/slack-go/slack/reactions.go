@@ -67,10 +67,11 @@ const (
 
 // ListReactionsParameters is the inputs to find all reactions by a user.
 type ListReactionsParameters struct {
-	User  string
-	Count int
-	Page  int
-	Full  bool
+	User   string
+	TeamID string
+	Count  int
+	Page   int
+	Full   bool
 }
 
 // NewListReactionsParameters initializes the inputs to find all reactions
@@ -245,6 +246,9 @@ func (api *Client) ListReactionsContext(ctx context.Context, params ListReaction
 	}
 	if params.User != DEFAULT_REACTIONS_USER {
 		values.Add("user", params.User)
+	}
+	if params.TeamID != "" {
+		values.Add("team_id", params.TeamID)
 	}
 	if params.Count != DEFAULT_REACTIONS_COUNT {
 		values.Add("count", strconv.Itoa(params.Count))

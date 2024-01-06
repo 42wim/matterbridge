@@ -1,25 +1,27 @@
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: © 2015 LabStack LLC and Echo contributors
+
 package echo
 
 import (
 	"bufio"
+	"errors"
 	"net"
 	"net/http"
 )
 
-type (
-	// Response wraps an http.ResponseWriter and implements its interface to be used
-	// by an HTTP handler to construct an HTTP response.
-	// See: https://golang.org/pkg/net/http/#ResponseWriter
-	Response struct {
-		echo        *Echo
-		beforeFuncs []func()
-		afterFuncs  []func()
-		Writer      http.ResponseWriter
-		Status      int
-		Size        int64
-		Committed   bool
-	}
-)
+// Response wraps an http.ResponseWriter and implements its interface to be used
+// by an HTTP handler to construct an HTTP response.
+// See: https://golang.org/pkg/net/http/#ResponseWriter
+type Response struct {
+	echo        *Echo
+	beforeFuncs []func()
+	afterFuncs  []func()
+	Writer      http.ResponseWriter
+	Status      int
+	Size        int64
+	Committed   bool
+}
 
 // NewResponse creates a new instance of Response.
 func NewResponse(w http.ResponseWriter, e *Echo) (r *Response) {
@@ -84,14 +86,17 @@ func (r *Response) Write(b []byte) (n int, err error) {
 // buffered data to the client.
 // See [http.Flusher](https://golang.org/pkg/net/http/#Flusher)
 func (r *Response) Flush() {
-	r.Writer.(http.Flusher).Flush()
+	err := responseControllerFlush(r.Writer)
+	if err != nil && errors.Is(err, http.ErrNotSupported) {
+		panic(errors.New("response writer flushing is not supported"))
+	}
 }
 
 // Hijack implements the http.Hijacker interface to allow an HTTP handler to
 // take over the connection.
 // See [http.Hijacker](https://golang.org/pkg/net/http/#Hijacker)
 func (r *Response) Hijack() (net.Conn, *bufio.ReadWriter, error) {
-	return r.Writer.(http.Hijacker).Hijack()
+	return responseControllerHijack(r.Writer)
 }
 
 // Unwrap returns the original http.ResponseWriter.

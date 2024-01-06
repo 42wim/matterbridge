@@ -106,10 +106,10 @@ var OpcodeOperands = [...][]int{
 	OpNotEqual:      {},
 	OpMinus:         {},
 	OpLNot:          {},
-	OpJumpFalsy:     {2},
-	OpAndJump:       {2},
-	OpOrJump:        {2},
-	OpJump:          {2},
+	OpJumpFalsy:     {4},
+	OpAndJump:       {4},
+	OpOrJump:        {4},
+	OpJump:          {4},
 	OpNull:          {},
 	OpGetGlobal:     {2},
 	OpSetGlobal:     {2},
@@ -149,6 +149,8 @@ func ReadOperands(numOperands []int, ins []byte) (operands []int, offset int) {
 			operands = append(operands, int(ins[offset]))
 		case 2:
 			operands = append(operands, int(ins[offset+1])|int(ins[offset])<<8)
+		case 4:
+			operands = append(operands, int(ins[offset+3])|int(ins[offset+2])<<8|int(ins[offset+1])<<16|int(ins[offset])<<24)
 		}
 		offset += width
 	}

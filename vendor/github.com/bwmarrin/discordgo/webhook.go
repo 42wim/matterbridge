@@ -34,10 +34,14 @@ type WebhookParams struct {
 	Files           []*File                 `json:"-"`
 	Components      []MessageComponent      `json:"components"`
 	Embeds          []*MessageEmbed         `json:"embeds,omitempty"`
+	Attachments     []*MessageAttachment    `json:"attachments,omitempty"`
 	AllowedMentions *MessageAllowedMentions `json:"allowed_mentions,omitempty"`
 	// Only MessageFlagsSuppressEmbeds and MessageFlagsEphemeral can be set.
 	// MessageFlagsEphemeral can only be set when using Followup Message Create endpoint.
 	Flags MessageFlags `json:"flags,omitempty"`
+	// Name of the thread to create.
+	// NOTE: can only be set if the webhook channel is a forum.
+	ThreadName string `json:"thread_name,omitempty"`
 }
 
 // WebhookEdit stores data for editing of a webhook message.
@@ -46,5 +50,6 @@ type WebhookEdit struct {
 	Components      *[]MessageComponent     `json:"components,omitempty"`
 	Embeds          *[]*MessageEmbed        `json:"embeds,omitempty"`
 	Files           []*File                 `json:"-"`
+	Attachments     *[]*MessageAttachment   `json:"attachments,omitempty"`
 	AllowedMentions *MessageAllowedMentions `json:"allowed_mentions,omitempty"`
 }
