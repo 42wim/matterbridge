@@ -94,6 +94,13 @@
 //
 // # Changelog
 //
+// 2023-12-14 v1.28.0: 
+//
+//	(*Driver).RegisterConnectionHook: added
+//	ConnectionHookFn: added
+//	ExecQuerierContext: added
+//	RegisterConnectionHook: added
+//
 // 2023-08-03 v1.25.0: enable SQLITE_ENABLE_DBSTAT_VTAB.
 //
 // 2023-07-11 v1.24.0:

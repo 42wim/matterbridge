@@ -12,12 +12,13 @@ import (
 	"fmt"
 	mathRand "math/rand"
 
+	"go.mau.fi/util/random"
+
 	waProto "go.mau.fi/whatsmeow/binary/proto"
 	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/util/keys"
 	waLog "go.mau.fi/whatsmeow/util/log"
-	"go.mau.fi/whatsmeow/util/randbytes"
 )
 
 // Container is a wrapper for a SQL database that can contain multiple whatsmeow sessions.
@@ -210,7 +211,7 @@ func (c *Container) NewDevice() *store.Device {
 		NoiseKey:       keys.NewKeyPair(),
 		IdentityKey:    keys.NewKeyPair(),
 		RegistrationID: mathRand.Uint32(),
-		AdvSecretKey:   randbytes.Make(32),
+		AdvSecretKey:   random.Bytes(32),
 	}
 	device.SignedPreKey = device.IdentityKey.CreateSignedPreKey(1)
 	return device
@@ -218,6 +219,14 @@ func (c *Container) NewDevice() *store.Device {
 
 // ErrDeviceIDMustBeSet is the error returned by PutDevice if you try to save a device before knowing its JID.
 var ErrDeviceIDMustBeSet = errors.New("device JID must be known before accessing database")
+
+// Close will close the container's database
+func (c *Container) Close() error {
+	if c != nil && c.db != nil {
+		return c.db.Close()
+	}
+	return nil
+}
 
 // PutDevice stores the given device in this database. This should be called through Device.Save()
 // (which usually doesn't need to be called manually, as the library does that automatically when relevant).

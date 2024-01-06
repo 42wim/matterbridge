@@ -35,7 +35,7 @@ github.com/Rhymen/go-whatsapp/binary/token
 github.com/Rhymen/go-whatsapp/crypto/cbc
 github.com/Rhymen/go-whatsapp/crypto/curve25519
 github.com/Rhymen/go-whatsapp/crypto/hkdf
-# github.com/SevereCloud/vksdk/v2 v2.16.0
+# github.com/SevereCloud/vksdk/v2 v2.16.1
 ## explicit; go 1.18
 github.com/SevereCloud/vksdk/v2
 github.com/SevereCloud/vksdk/v2/api
@@ -62,7 +62,7 @@ github.com/d5/tengo/v2/parser
 github.com/d5/tengo/v2/stdlib
 github.com/d5/tengo/v2/stdlib/json
 github.com/d5/tengo/v2/token
-# github.com/davecgh/go-spew v1.1.1
+# github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 ## explicit
 github.com/davecgh/go-spew/spew
 # github.com/dustin/go-humanize v1.0.1
@@ -74,8 +74,8 @@ github.com/dyatlov/go-opengraph/opengraph
 # github.com/francoispqt/gojay v1.2.13
 ## explicit; go 1.12
 github.com/francoispqt/gojay
-# github.com/fsnotify/fsnotify v1.6.0
-## explicit; go 1.16
+# github.com/fsnotify/fsnotify v1.7.0
+## explicit; go 1.17
 github.com/fsnotify/fsnotify
 # github.com/go-asn1-ber/asn1-ber v1.5.3
 ## explicit; go 1.13
@@ -87,7 +87,7 @@ github.com/golang-jwt/jwt
 ## explicit; go 1.9
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go/descriptor
-# github.com/gomarkdown/markdown v0.0.0-20230716120725-531d2d74bc12
+# github.com/gomarkdown/markdown v0.0.0-20231222211730-1d6d20845b47
 ## explicit; go 1.12
 github.com/gomarkdown/markdown
 github.com/gomarkdown/markdown/ast
@@ -98,14 +98,14 @@ github.com/gomarkdown/markdown/parser
 github.com/google/gops/agent
 github.com/google/gops/internal
 github.com/google/gops/signal
-# github.com/google/uuid v1.3.0
+# github.com/google/uuid v1.4.0
 ## explicit
 github.com/google/uuid
 # github.com/gopackage/ddp v0.0.3
 ## explicit; go 1.17
 github.com/gopackage/ddp
-# github.com/gorilla/schema v1.2.0
-## explicit
+# github.com/gorilla/schema v1.2.1
+## explicit; go 1.20
 github.com/gorilla/schema
 # github.com/gorilla/websocket v1.5.0
 ## explicit; go 1.12
@@ -170,7 +170,7 @@ github.com/keybase/go-keybase-chat-bot/kbchat/types/chat1
 github.com/keybase/go-keybase-chat-bot/kbchat/types/gregor1
 github.com/keybase/go-keybase-chat-bot/kbchat/types/keybase1
 github.com/keybase/go-keybase-chat-bot/kbchat/types/stellar1
-# github.com/klauspost/compress v1.16.0
+# github.com/klauspost/compress v1.17.0
 ## explicit; go 1.18
 github.com/klauspost/compress
 github.com/klauspost/compress/fse
@@ -186,17 +186,16 @@ github.com/klauspost/cpuid/v2
 # github.com/kyokomi/emoji/v2 v2.2.12
 ## explicit; go 1.14
 github.com/kyokomi/emoji/v2
-# github.com/labstack/echo/v4 v4.11.1
-## explicit; go 1.17
+# github.com/labstack/echo/v4 v4.11.4
+## explicit; go 1.18
 github.com/labstack/echo/v4
 github.com/labstack/echo/v4/middleware
-# github.com/labstack/gommon v0.4.0
-## explicit; go 1.12
+# github.com/labstack/gommon v0.4.2
+## explicit; go 1.18
 github.com/labstack/gommon/bytes
 github.com/labstack/gommon/color
 github.com/labstack/gommon/log
-github.com/labstack/gommon/random
-# github.com/lrstanley/girc v0.0.0-20230729130341-dd5853a5f1a6
+# github.com/lrstanley/girc v0.0.0-20230911164840-f47717952bf9
 ## explicit; go 1.18
 github.com/lrstanley/girc
 github.com/lrstanley/girc/internal/ctxgroup
@@ -253,7 +252,7 @@ github.com/mattermost/mattermost-server/v6/utils/jsonutils
 # github.com/mattn/go-colorable v0.1.13
 ## explicit; go 1.15
 github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.19
+# github.com/mattn/go-isatty v0.0.20
 ## explicit; go 1.15
 github.com/mattn/go-isatty
 # github.com/mattn/go-runewidth v0.0.13
@@ -323,7 +322,7 @@ github.com/pborman/uuid
 # github.com/pelletier/go-toml v1.9.5
 ## explicit; go 1.12
 github.com/pelletier/go-toml
-# github.com/pelletier/go-toml/v2 v2.0.8
+# github.com/pelletier/go-toml/v2 v2.1.0
 ## explicit; go 1.16
 github.com/pelletier/go-toml/v2
 github.com/pelletier/go-toml/v2/internal/characters
@@ -336,7 +335,7 @@ github.com/philhofer/fwd
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
-# github.com/pmezard/go-difflib v1.0.0
+# github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2
 ## explicit
 github.com/pmezard/go-difflib/difflib
 # github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec
@@ -357,6 +356,12 @@ github.com/rs/xid
 # github.com/russross/blackfriday v1.6.0
 ## explicit; go 1.13
 github.com/russross/blackfriday
+# github.com/sagikazarmark/locafero v0.4.0
+## explicit; go 1.20
+github.com/sagikazarmark/locafero
+# github.com/sagikazarmark/slog-shim v0.1.0
+## explicit; go 1.20
+github.com/sagikazarmark/slog-shim
 # github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d
 ## explicit
 github.com/saintfish/chardet
@@ -379,29 +384,32 @@ github.com/sizeofint/webpanimation
 github.com/skip2/go-qrcode
 github.com/skip2/go-qrcode/bitset
 github.com/skip2/go-qrcode/reedsolomon
-# github.com/slack-go/slack v0.12.2
+# github.com/slack-go/slack v0.12.3
 ## explicit; go 1.16
 github.com/slack-go/slack
 github.com/slack-go/slack/internal/backoff
 github.com/slack-go/slack/internal/errorsx
 github.com/slack-go/slack/internal/timex
 github.com/slack-go/slack/slackutilsx
-# github.com/spf13/afero v1.9.5
-## explicit; go 1.16
+# github.com/sourcegraph/conc v0.3.0
+## explicit; go 1.19
+github.com/sourcegraph/conc
+github.com/sourcegraph/conc/internal/multierror
+github.com/sourcegraph/conc/iter
+github.com/sourcegraph/conc/panics
+# github.com/spf13/afero v1.11.0
+## explicit; go 1.19
 github.com/spf13/afero
 github.com/spf13/afero/internal/common
 github.com/spf13/afero/mem
-# github.com/spf13/cast v1.5.1
-## explicit; go 1.18
+# github.com/spf13/cast v1.6.0
+## explicit; go 1.19
 github.com/spf13/cast
-# github.com/spf13/jwalterweatherman v1.1.0
-## explicit
-github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.5
 ## explicit; go 1.12
 github.com/spf13/pflag
-# github.com/spf13/viper v1.16.0
-## explicit; go 1.17
+# github.com/spf13/viper v1.18.2
+## explicit; go 1.18
 github.com/spf13/viper
 github.com/spf13/viper/internal/encoding
 github.com/spf13/viper/internal/encoding/dotenv
@@ -411,12 +419,13 @@ github.com/spf13/viper/internal/encoding/javaproperties
 github.com/spf13/viper/internal/encoding/json
 github.com/spf13/viper/internal/encoding/toml
 github.com/spf13/viper/internal/encoding/yaml
+github.com/spf13/viper/internal/features
 # github.com/stretchr/testify v1.8.4
 ## explicit; go 1.20
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 github.com/stretchr/testify/suite
-# github.com/subosito/gotenv v1.4.2
+# github.com/subosito/gotenv v1.6.0
 ## explicit; go 1.18
 github.com/subosito/gotenv
 # github.com/tinylib/msgp v1.1.6
@@ -431,8 +440,8 @@ github.com/valyala/fasttemplate
 # github.com/vincent-petithory/dataurl v1.0.0
 ## explicit
 github.com/vincent-petithory/dataurl
-# github.com/vmihailenco/msgpack/v5 v5.3.5
-## explicit; go 1.11
+# github.com/vmihailenco/msgpack/v5 v5.4.0
+## explicit; go 1.19
 github.com/vmihailenco/msgpack/v5
 github.com/vmihailenco/msgpack/v5/msgpcode
 # github.com/vmihailenco/tagparser/v2 v2.0.0
@@ -485,8 +494,13 @@ go.mau.fi/libsignal/util/errorhelper
 go.mau.fi/libsignal/util/keyhelper
 go.mau.fi/libsignal/util/medium
 go.mau.fi/libsignal/util/optional
-# go.mau.fi/whatsmeow v0.0.0-20230805111647-405414b9b5c0
-## explicit; go 1.19
+# go.mau.fi/util v0.2.0
+## explicit; go 1.20
+go.mau.fi/util/jsontime
+go.mau.fi/util/random
+go.mau.fi/util/retryafter
+# go.mau.fi/whatsmeow v0.0.0-20240106083317-757651400d8d
+## explicit; go 1.20
 go.mau.fi/whatsmeow
 go.mau.fi/whatsmeow/appstate
 go.mau.fi/whatsmeow/appstate/lthash
@@ -503,9 +517,14 @@ go.mau.fi/whatsmeow/util/gcmutil
 go.mau.fi/whatsmeow/util/hkdfutil
 go.mau.fi/whatsmeow/util/keys
 go.mau.fi/whatsmeow/util/log
-go.mau.fi/whatsmeow/util/randbytes
-# golang.org/x/crypto v0.12.0
-## explicit; go 1.17
+# go.uber.org/atomic v1.9.0
+## explicit; go 1.13
+go.uber.org/atomic
+# go.uber.org/multierr v1.9.0
+## explicit; go 1.19
+go.uber.org/multierr
+# golang.org/x/crypto v0.17.0
+## explicit; go 1.18
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/argon2
@@ -515,7 +534,6 @@ golang.org/x/crypto/blowfish
 golang.org/x/crypto/chacha20
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/curve25519/internal/field
-golang.org/x/crypto/ed25519
 golang.org/x/crypto/hkdf
 golang.org/x/crypto/internal/alias
 golang.org/x/crypto/internal/poly1305
@@ -526,17 +544,24 @@ golang.org/x/crypto/scrypt
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/image v0.11.0
-## explicit; go 1.12
+# golang.org/x/exp v0.0.0-20230905200255-921286631fa9
+## explicit; go 1.20
+golang.org/x/exp/constraints
+golang.org/x/exp/slices
+golang.org/x/exp/slog
+golang.org/x/exp/slog/internal
+golang.org/x/exp/slog/internal/buffer
+# golang.org/x/image v0.15.0
+## explicit; go 1.18
 golang.org/x/image/riff
 golang.org/x/image/vp8
 golang.org/x/image/vp8l
 golang.org/x/image/webp
-# golang.org/x/mod v0.8.0
+# golang.org/x/mod v0.12.0
 ## explicit; go 1.17
 golang.org/x/mod/semver
-# golang.org/x/net v0.14.0
-## explicit; go 1.17
+# golang.org/x/net v0.19.0
+## explicit; go 1.18
 golang.org/x/net/context
 golang.org/x/net/html
 golang.org/x/net/html/atom
@@ -547,25 +572,24 @@ golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/publicsuffix
 golang.org/x/net/websocket
-# golang.org/x/oauth2 v0.11.0
+# golang.org/x/oauth2 v0.15.0
 ## explicit; go 1.18
 golang.org/x/oauth2
 golang.org/x/oauth2/clientcredentials
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/microsoft
-# golang.org/x/sys v0.11.0
-## explicit; go 1.17
+# golang.org/x/sys v0.15.0
+## explicit; go 1.18
 golang.org/x/sys/cpu
 golang.org/x/sys/execabs
-golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/term v0.11.0
-## explicit; go 1.17
+# golang.org/x/term v0.15.0
+## explicit; go 1.18
 golang.org/x/term
-# golang.org/x/text v0.12.0
-## explicit; go 1.17
+# golang.org/x/text v0.14.0
+## explicit; go 1.18
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
 golang.org/x/text/encoding/internal
@@ -586,18 +610,20 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# golang.org/x/time v0.3.0
-## explicit
+# golang.org/x/time v0.5.0
+## explicit; go 1.18
 golang.org/x/time/rate
-# golang.org/x/tools v0.6.0
+# golang.org/x/tools v0.13.0
 ## explicit; go 1.18
 golang.org/x/tools/go/gcexportdata
 golang.org/x/tools/go/internal/packagesdriver
 golang.org/x/tools/go/packages
+golang.org/x/tools/go/types/objectpath
 golang.org/x/tools/internal/event
 golang.org/x/tools/internal/event/core
 golang.org/x/tools/internal/event/keys
 golang.org/x/tools/internal/event/label
+golang.org/x/tools/internal/event/tag
 golang.org/x/tools/internal/gcimporter
 golang.org/x/tools/internal/gocommand
 golang.org/x/tools/internal/packagesinternal
@@ -676,8 +702,8 @@ modernc.org/cc/v3
 # modernc.org/ccgo/v3 v3.16.13
 ## explicit; go 1.17
 modernc.org/ccgo/v3/lib
-# modernc.org/libc v1.24.1
-## explicit; go 1.18
+# modernc.org/libc v1.29.0
+## explicit; go 1.20
 modernc.org/libc
 modernc.org/libc/errno
 modernc.org/libc/fcntl
@@ -704,17 +730,17 @@ modernc.org/libc/utime
 modernc.org/libc/uuid
 modernc.org/libc/uuid/uuid
 modernc.org/libc/wctype
-# modernc.org/mathutil v1.5.0
-## explicit; go 1.13
+# modernc.org/mathutil v1.6.0
+## explicit; go 1.18
 modernc.org/mathutil
-# modernc.org/memory v1.6.0
+# modernc.org/memory v1.7.2
 ## explicit; go 1.18
 modernc.org/memory
 # modernc.org/opt v0.1.3
 ## explicit; go 1.13
 modernc.org/opt
-# modernc.org/sqlite v1.25.0
-## explicit; go 1.18
+# modernc.org/sqlite v1.28.0
+## explicit; go 1.19
 modernc.org/sqlite
 modernc.org/sqlite/lib
 # modernc.org/strutil v1.1.3

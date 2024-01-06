@@ -16,7 +16,7 @@ jobs:
   test-build-upload:
     strategy:
       matrix:
-        go-version: [1.20.x]
+        go-version: [1.21.x]
         platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     steps:
@@ -39,19 +39,19 @@ jobs:
         CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags "-s -X github.com/42wim/matterbridge/version.GitHash=$(git log --pretty=format:'%h' -n 1)" -o output/win/matterbridge-$VERSION-windows-amd64.exe
         CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags "-s -X github.com/42wim/matterbridge/version.GitHash=$(git log --pretty=format:'%h' -n 1)" -o output/mac/matterbridge-$VERSION-darwin-amd64
     - name: Upload linux 64-bit
-      if: startsWith(matrix.go-version,'1.20')
+      if: startsWith(matrix.go-version,'1.21')
       uses: actions/upload-artifact@v3
       with:
         name: matterbridge-linux-64bit
         path: output/lin
     - name: Upload windows 64-bit
-      if: startsWith(matrix.go-version,'1.20')
+      if: startsWith(matrix.go-version,'1.21')
       uses: actions/upload-artifact@v3
       with:
         name: matterbridge-windows-64bit
         path: output/win
     - name: Upload darwin 64-bit
-      if: startsWith(matrix.go-version,'1.20')
+      if: startsWith(matrix.go-version,'1.21')
       uses: actions/upload-artifact@v3
       with:
         name: matterbridge-darwin-64bit

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 
 	"github.com/slack-go/slack/slackutilsx"
@@ -29,9 +30,9 @@ const (
 
 type chatResponseFull struct {
 	Channel            string `json:"channel"`
-	Timestamp          string `json:"ts"`                             //Regular message timestamp
-	MessageTimeStamp   string `json:"message_ts"`                     //Ephemeral message timestamp
-	ScheduledMessageID string `json:"scheduled_message_id,omitempty"` //Scheduled message id
+	Timestamp          string `json:"ts"`                             // Regular message timestamp
+	MessageTimeStamp   string `json:"message_ts"`                     // Ephemeral message timestamp
+	ScheduledMessageID string `json:"scheduled_message_id,omitempty"` // Scheduled message id
 	Text               string `json:"text"`
 	SlackResponse
 }
@@ -224,7 +225,7 @@ func (api *Client) SendMessageContext(ctx context.Context, channelID string, opt
 			return "", "", "", err
 		}
 		req.Body = ioutil.NopCloser(bytes.NewBuffer(reqBody))
-		api.Debugf("Sending request: %s", string(reqBody))
+		api.Debugf("Sending request: %s", redactToken(reqBody))
 	}
 
 	if err = doPost(ctx, api.httpclient, req, parser(&response), api); err != nil {
@@ -232,6 +233,20 @@ func (api *Client) SendMessageContext(ctx context.Context, channelID string, opt
 	}
 
 	return response.Channel, response.getMessageTimestamp(), response.Text, response.Err()
+}
+
+func redactToken(b []byte) []byte {
+	// See https://api.slack.com/authentication/token-types
+	// and https://api.slack.com/authentication/rotation
+	re, err := regexp.Compile(`(token=x[a-z.]+)-[0-9A-Za-z-]+`)
+	if err != nil {
+		// The regular expression above should never result in errors,
+		// but just in case, do no harm.
+		return b
+	}
+	// Keep "token=" and the first element of the token, which identifies its type
+	// (this could be useful for debugging, e.g. when using a wrong token).
+	return re.ReplaceAll(b, []byte("$1-REDACTED"))
 }
 
 // UnsafeApplyMsgOptions utility function for debugging/testing chat requests.

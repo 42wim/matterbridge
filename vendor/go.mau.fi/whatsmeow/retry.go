@@ -94,6 +94,11 @@ func (cli *Client) shouldRecreateSession(retryCount int, jid types.JID) (reason 
 	return "", false
 }
 
+type incomingRetryKey struct {
+	jid       types.JID
+	messageID types.MessageID
+}
+
 // handleRetryReceipt handles an incoming retry receipt for an outgoing message.
 func (cli *Client) handleRetryReceipt(receipt *events.Receipt, node *waBinary.Node) error {
 	retryChild, ok := node.GetOptionalChildByTag("retry")
@@ -111,6 +116,17 @@ func (cli *Client) handleRetryReceipt(receipt *events.Receipt, node *waBinary.No
 	if err != nil {
 		return err
 	}
+
+	retryKey := incomingRetryKey{receipt.Sender, messageID}
+	cli.incomingRetryRequestCounterLock.Lock()
+	cli.incomingRetryRequestCounter[retryKey]++
+	internalCounter := cli.incomingRetryRequestCounter[retryKey]
+	cli.incomingRetryRequestCounterLock.Unlock()
+	if internalCounter >= 10 {
+		cli.Log.Warnf("Dropping retry request from %s for %s: internal retry counter is %d", messageID, receipt.Sender, internalCounter)
+		return nil
+	}
+
 	ownID := cli.getOwnID()
 	if ownID.IsEmpty() {
 		return ErrNotLoggedIn
@@ -160,13 +176,11 @@ func (cli *Client) handleRetryReceipt(receipt *events.Receipt, node *waBinary.No
 		if err != nil {
 			return err
 		}
-		senderAD := receipt.Sender
-		senderAD.AD = true
-		bundle, err = keys[senderAD].bundle, keys[senderAD].err
+		bundle, err = keys[receipt.Sender].bundle, keys[receipt.Sender].err
 		if err != nil {
 			return fmt.Errorf("failed to fetch prekeys: %w", err)
 		} else if bundle == nil {
-			return fmt.Errorf("didn't get prekey bundle for %s (response size: %d)", senderAD, len(keys))
+			return fmt.Errorf("didn't get prekey bundle for %s (response size: %d)", receipt.Sender, len(keys))
 		}
 	}
 	encAttrs := waBinary.Attrs{}
@@ -253,7 +267,7 @@ func (cli *Client) delayedRequestMessageFromPhone(info *types.MessageInfo) {
 	}
 	_, err := cli.SendMessage(
 		ctx,
-		cli.Store.ID.ToNonAD(),
+		cli.getOwnID().ToNonAD(),
 		cli.BuildUnavailableMessageRequest(info.Chat, info.Sender, info.ID),
 		SendRequestExtra{Peer: true},
 	)

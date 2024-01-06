@@ -181,6 +181,12 @@ func NewWithExtensions(extension Extensions) *Parser {
 	return &p
 }
 
+func (p *Parser) RegisterInline(n byte, fn inlineParser) inlineParser {
+	prev := p.inlineCallback[n]
+	p.inlineCallback[n] = fn
+	return prev
+}
+
 func (p *Parser) getRef(refid string) (ref *reference, found bool) {
 	if p.ReferenceOverride != nil {
 		r, overridden := p.ReferenceOverride(refid)

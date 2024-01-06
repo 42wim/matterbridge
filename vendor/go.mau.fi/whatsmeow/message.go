@@ -17,12 +17,12 @@ import (
 	"sync/atomic"
 	"time"
 
-	"go.mau.fi/libsignal/signalerror"
-	"google.golang.org/protobuf/proto"
-
 	"go.mau.fi/libsignal/groups"
 	"go.mau.fi/libsignal/protocol"
 	"go.mau.fi/libsignal/session"
+	"go.mau.fi/libsignal/signalerror"
+	"go.mau.fi/util/random"
+	"google.golang.org/protobuf/proto"
 
 	"go.mau.fi/whatsmeow/appstate"
 	waBinary "go.mau.fi/whatsmeow/binary"
@@ -30,7 +30,6 @@ import (
 	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
-	"go.mau.fi/whatsmeow/util/randbytes"
 )
 
 var pbSerializer = store.SignalProtobufSerializer
@@ -46,7 +45,12 @@ func (cli *Client) handleEncryptedMessage(node *waBinary.Node) {
 		if len(info.PushName) > 0 && info.PushName != "-" {
 			go cli.updatePushName(info.Sender, info, info.PushName)
 		}
-		cli.decryptMessages(info, node)
+		go cli.sendAck(node)
+		if info.Sender.Server == types.NewsletterServer {
+			cli.handlePlaintextMessage(info, node)
+		} else {
+			cli.decryptMessages(info, node)
+		}
 	}
 }
 
@@ -72,6 +76,10 @@ func (cli *Client) parseMessageSource(node *waBinary.Node, requireParticipant bo
 		if from.Server == types.BroadcastServer {
 			source.BroadcastListOwner = ag.OptionalJIDOrEmpty("recipient")
 		}
+	} else if from.Server == types.NewsletterServer {
+		source.Chat = from
+		source.Sender = from
+		// TODO IsFromMe?
 	} else if from.User == clientID.User {
 		source.IsFromMe = true
 		source.Sender = from
@@ -98,10 +106,12 @@ func (cli *Client) parseMessageInfo(node *waBinary.Node) (*types.MessageInfo, er
 	}
 	ag := node.AttrGetter()
 	info.ID = types.MessageID(ag.String("id"))
+	info.ServerID = types.MessageServerID(ag.OptionalInt("server_id"))
 	info.Timestamp = ag.UnixTime("t")
 	info.PushName = ag.OptionalString("notify")
 	info.Category = ag.OptionalString("category")
 	info.Type = ag.OptionalString("type")
+	info.Edit = types.EditAttribute(ag.OptionalString("edit"))
 	if !ag.OK() {
 		return nil, ag.Error()
 	}
@@ -122,14 +132,48 @@ func (cli *Client) parseMessageInfo(node *waBinary.Node) (*types.MessageInfo, er
 	return &info, nil
 }
 
+func (cli *Client) handlePlaintextMessage(info *types.MessageInfo, node *waBinary.Node) {
+	// TODO edits have an additional <meta msg_edit_t="1696321271735" original_msg_t="1696321248"/> node
+	plaintext, ok := node.GetOptionalChildByTag("plaintext")
+	if !ok {
+		// 3:
+		return
+	}
+	plaintextBody, ok := plaintext.Content.([]byte)
+	if !ok {
+		cli.Log.Warnf("Plaintext message from %s doesn't have byte content", info.SourceString())
+		return
+	}
+	var msg waProto.Message
+	err := proto.Unmarshal(plaintextBody, &msg)
+	if err != nil {
+		cli.Log.Warnf("Error unmarshaling plaintext message from %s: %v", info.SourceString(), err)
+		return
+	}
+	cli.storeMessageSecret(info, &msg)
+	evt := &events.Message{
+		Info:       *info,
+		RawMessage: &msg,
+	}
+	meta, ok := node.GetOptionalChildByTag("meta")
+	if ok {
+		evt.NewsletterMeta = &events.NewsletterMessageMeta{
+			EditTS:     meta.AttrGetter().UnixMilli("msg_edit_t"),
+			OriginalTS: meta.AttrGetter().UnixTime("original_msg_t"),
+		}
+	}
+	cli.dispatchEvent(evt.UnwrapRaw())
+	return
+}
+
 func (cli *Client) decryptMessages(info *types.MessageInfo, node *waBinary.Node) {
-	go cli.sendAck(node)
 	if len(node.GetChildrenByTag("unavailable")) > 0 && len(node.GetChildrenByTag("enc")) == 0 {
 		cli.Log.Warnf("Unavailable message %s from %s", info.ID, info.SourceString())
 		go cli.sendRetryReceipt(node, info, true)
 		cli.dispatchEvent(&events.UndecryptableMessage{Info: *info, IsUnavailable: true})
 		return
 	}
+
 	children := node.GetChildren()
 	cli.Log.Debugf("Decrypting %d messages from %s", len(children), info.SourceString())
 	handled := false
@@ -267,7 +311,7 @@ func unpadMessage(plaintext []byte) ([]byte, error) {
 }
 
 func padMessage(plaintext []byte) []byte {
-	pad := randbytes.Make(1)
+	pad := random.Bytes(1)
 	pad[0] &= 0xf
 	if pad[0] == 0 {
 		pad[0] = 0xf
@@ -394,7 +438,7 @@ func (cli *Client) handleProtocolMessage(info *types.MessageInfo, msg *waProto.M
 		if atomic.CompareAndSwapUint32(&cli.historySyncHandlerStarted, 0, 1) {
 			go cli.handleHistorySyncNotificationLoop()
 		}
-		go cli.sendProtocolMessageReceipt(info.ID, "hist_sync")
+		go cli.sendProtocolMessageReceipt(info.ID, types.ReceiptTypeHistorySync)
 	}
 
 	if protoMsg.GetPeerDataOperationRequestResponseMessage().GetPeerDataOperationRequestType() == waProto.PeerDataOperationRequestType_PLACEHOLDER_MESSAGE_RESEND {
@@ -406,7 +450,7 @@ func (cli *Client) handleProtocolMessage(info *types.MessageInfo, msg *waProto.M
 	}
 
 	if info.Category == "peer" {
-		go cli.sendProtocolMessageReceipt(info.ID, "peer_msg")
+		go cli.sendProtocolMessageReceipt(info.ID, types.ReceiptTypePeerMsg)
 	}
 }
 
@@ -427,6 +471,10 @@ func (cli *Client) processProtocolParts(info *types.MessageInfo, msg *waProto.Me
 	if msg.GetProtocolMessage() != nil {
 		cli.handleProtocolMessage(info, msg)
 	}
+	cli.storeMessageSecret(info, msg)
+}
+
+func (cli *Client) storeMessageSecret(info *types.MessageInfo, msg *waProto.Message) {
 	if msgSecret := msg.GetMessageContextInfo().GetMessageSecret(); len(msgSecret) > 0 {
 		err := cli.Store.MsgSecrets.PutMessageSecret(info.Chat, info.Sender, info.ID, msgSecret)
 		if err != nil {
@@ -511,7 +559,7 @@ func (cli *Client) handleDecryptedMessage(info *types.MessageInfo, msg *waProto.
 	cli.dispatchEvent(evt.UnwrapRaw())
 }
 
-func (cli *Client) sendProtocolMessageReceipt(id, msgType string) {
+func (cli *Client) sendProtocolMessageReceipt(id types.MessageID, msgType types.ReceiptType) {
 	clientID := cli.Store.ID
 	if len(id) == 0 || clientID == nil {
 		return
@@ -519,8 +567,8 @@ func (cli *Client) sendProtocolMessageReceipt(id, msgType string) {
 	err := cli.sendNode(waBinary.Node{
 		Tag: "receipt",
 		Attrs: waBinary.Attrs{
-			"id":   id,
-			"type": msgType,
+			"id":   string(id),
+			"type": string(msgType),
 			"to":   types.NewJID(clientID.User, types.LegacyUserServer),
 		},
 		Content: nil,

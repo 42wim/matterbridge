@@ -191,6 +191,11 @@ func (p *Parser) Block(data []byte) {
 		// <div>
 		//     ...
 		// </div>
+
+		if len(data) == 0 {
+			continue
+		}
+
 		if data[0] == '<' {
 			if i := p.html(data, true); i > 0 {
 				data = data[i:]
@@ -393,7 +398,7 @@ func (p *Parser) AddBlock(n ast.Node) ast.Node {
 }
 
 func (p *Parser) isPrefixHeading(data []byte) bool {
-	if data[0] != '#' {
+	if len(data) > 0 && data[0] != '#' {
 		return false
 	}
 

@@ -8,6 +8,7 @@ package sqlstore
 
 import (
 	"database/sql"
+	"fmt"
 )
 
 type upgradeFunc func(*sql.Tx, *Container) error
@@ -16,7 +17,7 @@ type upgradeFunc func(*sql.Tx, *Container) error
 //
 // This may be of use if you want to manage the database fully manually, but in most cases you
 // should just call Container.Upgrade to let the library handle everything.
-var Upgrades = [...]upgradeFunc{upgradeV1, upgradeV2, upgradeV3, upgradeV4}
+var Upgrades = [...]upgradeFunc{upgradeV1, upgradeV2, upgradeV3, upgradeV4, upgradeV5}
 
 func (c *Container) getVersion() (int, error) {
 	_, err := c.db.Exec("CREATE TABLE IF NOT EXISTS whatsmeow_version (version INTEGER)")
@@ -43,6 +44,16 @@ func (c *Container) setVersion(tx *sql.Tx, version int) error {
 
 // Upgrade upgrades the database from the current to the latest version available.
 func (c *Container) Upgrade() error {
+	if c.dialect == "sqlite" {
+		var foreignKeysEnabled bool
+		err := c.db.QueryRow("PRAGMA foreign_keys").Scan(&foreignKeysEnabled)
+		if err != nil {
+			return fmt.Errorf("failed to check if foreign keys are enabled: %w", err)
+		} else if !foreignKeysEnabled {
+			return fmt.Errorf("foreign keys are not enabled")
+		}
+	}
+
 	version, err := c.getVersion()
 	if err != nil {
 		return err
@@ -269,5 +280,10 @@ func upgradeV4(tx *sql.Tx, container *Container) error {
 		timestamp BIGINT NOT NULL,
 		PRIMARY KEY (our_jid, their_jid)
 	)`)
+	return err
+}
+
+func upgradeV5(tx *sql.Tx, container *Container) error {
+	_, err := tx.Exec("UPDATE whatsmeow_device SET jid=REPLACE(jid, '.0', '')")
 	return err
 }

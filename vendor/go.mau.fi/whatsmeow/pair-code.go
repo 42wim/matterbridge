@@ -15,16 +15,14 @@ import (
 	"regexp"
 	"strconv"
 
+	"go.mau.fi/util/random"
 	"golang.org/x/crypto/curve25519"
 	"golang.org/x/crypto/pbkdf2"
 
 	waBinary "go.mau.fi/whatsmeow/binary"
-	waProto "go.mau.fi/whatsmeow/binary/proto"
-	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/util/hkdfutil"
 	"go.mau.fi/whatsmeow/util/keys"
-	"go.mau.fi/whatsmeow/util/randbytes"
 )
 
 // PairClientType is the type of client to use with PairCode.
@@ -44,29 +42,6 @@ const (
 	PairClientOtherWebClient
 )
 
-func platformTypeToPairClientType(platformType waProto.DeviceProps_PlatformType) PairClientType {
-	switch platformType {
-	case waProto.DeviceProps_CHROME:
-		return PairClientChrome
-	case waProto.DeviceProps_EDGE:
-		return PairClientEdge
-	case waProto.DeviceProps_FIREFOX:
-		return PairClientFirefox
-	case waProto.DeviceProps_IE:
-		return PairClientIE
-	case waProto.DeviceProps_OPERA:
-		return PairClientOpera
-	case waProto.DeviceProps_SAFARI:
-		return PairClientSafari
-	case waProto.DeviceProps_DESKTOP:
-		return PairClientElectron
-	case waProto.DeviceProps_UWP:
-		return PairClientUWP
-	default:
-		return PairClientOtherWebClient
-	}
-}
-
 var notNumbers = regexp.MustCompile("[^0-9]")
 var linkingBase32 = base32.NewEncoding("123456789ABCDEFGHJKLMNPQRSTVWXYZ")
 
@@ -79,9 +54,9 @@ type phoneLinkingCache struct {
 
 func generateCompanionEphemeralKey() (ephemeralKeyPair *keys.KeyPair, ephemeralKey []byte, encodedLinkingCode string) {
 	ephemeralKeyPair = keys.NewKeyPair()
-	salt := randbytes.Make(32)
-	iv := randbytes.Make(16)
-	linkingCode := randbytes.Make(5)
+	salt := random.Bytes(32)
+	iv := random.Bytes(16)
+	linkingCode := random.Bytes(5)
 	encodedLinkingCode = linkingBase32.EncodeToString(linkingCode)
 	linkCodeKey := pbkdf2.Key([]byte(encodedLinkingCode), salt, 2<<16, 32, sha256.New)
 	linkCipherBlock, _ := aes.NewCipher(linkCodeKey)
@@ -96,15 +71,19 @@ func generateCompanionEphemeralKey() (ephemeralKeyPair *keys.KeyPair, ephemeralK
 
 // PairPhone generates a pairing code that can be used to link to a phone without scanning a QR code.
 //
+// You must connect the client normally before calling this (which means you'll also receive a QR code
+// event, but that can be ignored when doing code pairing).
+//
 // The exact expiry of pairing codes is unknown, but QR codes are always generated and the login websocket is closed
 // after the QR codes run out, which means there's a 160-second time limit. It is recommended to generate the pairing
 // code immediately after connecting to the websocket to have the maximum time.
 //
+// The clientType parameter must be one of the PairClient* constants, but which one doesn't matter.
+// The client display name must be formatted as `Browser (OS)`, and only common browsers/OSes are allowed
+// (the server will validate it and return 400 if it's wrong).
+//
 // See https://faq.whatsapp.com/1324084875126592 for more info
-func (cli *Client) PairPhone(phone string, showPushNotification bool) (string, error) {
-	clientType := platformTypeToPairClientType(store.DeviceProps.GetPlatformType())
-	clientDisplayName := store.DeviceProps.GetOs()
-
+func (cli *Client) PairPhone(phone string, showPushNotification bool, clientType PairClientType, clientDisplayName string) (string, error) {
 	ephemeralKeyPair, ephemeralKey, encodedLinkingCode := generateCompanionEphemeralKey()
 	phone = notNumbers.ReplaceAllString(phone, "")
 	jid := types.NewJID(phone, types.DefaultUserServer)
@@ -187,9 +166,9 @@ func (cli *Client) handleCodePairNotification(parentNode *waBinary.Node) error {
 		}
 	}
 
-	advSecretRandom := randbytes.Make(32)
-	keyBundleSalt := randbytes.Make(32)
-	keyBundleNonce := randbytes.Make(12)
+	advSecretRandom := random.Bytes(32)
+	keyBundleSalt := random.Bytes(32)
+	keyBundleNonce := random.Bytes(12)
 
 	// Decrypt the primary device's ephemeral public key, which was encrypted with the 8-character pairing code,
 	// then compute the DH shared secret using our ephemeral private key we generated earlier.

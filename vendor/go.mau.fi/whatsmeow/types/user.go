@@ -28,11 +28,11 @@ type UserInfo struct {
 
 // ProfilePictureInfo contains the ID and URL for a WhatsApp user's profile picture or group's photo.
 type ProfilePictureInfo struct {
-	URL  string // The full URL for the image, can be downloaded with a simple HTTP request.
-	ID   string // The ID of the image. This is the same as UserInfo.PictureID.
-	Type string // The type of image. Known types include "image" (full res) and "preview" (thumbnail).
+	URL  string `json:"url"`  // The full URL for the image, can be downloaded with a simple HTTP request.
+	ID   string `json:"id"`   // The ID of the image. This is the same as UserInfo.PictureID.
+	Type string `json:"type"` // The type of image. Known types include "image" (full res) and "preview" (thumbnail).
 
-	DirectPath string // The path to the image, probably not very useful
+	DirectPath string `json:"direct_path"` // The path to the image, probably not very useful
 }
 
 // ContactInfo contains the cached names of a WhatsApp user.
@@ -87,19 +87,37 @@ type PrivacySetting string
 
 // Possible privacy setting values.
 const (
-	PrivacySettingUndefined PrivacySetting = ""
-	PrivacySettingAll       PrivacySetting = "all"
-	PrivacySettingContacts  PrivacySetting = "contacts"
-	PrivacySettingNone      PrivacySetting = "none"
+	PrivacySettingUndefined        PrivacySetting = ""
+	PrivacySettingAll              PrivacySetting = "all"
+	PrivacySettingContacts         PrivacySetting = "contacts"
+	PrivacySettingContactBlacklist PrivacySetting = "contact_blacklist"
+	PrivacySettingMatchLastSeen    PrivacySetting = "match_last_seen"
+	PrivacySettingKnown            PrivacySetting = "known"
+	PrivacySettingNone             PrivacySetting = "none"
+)
+
+// PrivacySettingType is the type of privacy setting.
+type PrivacySettingType string
+
+const (
+	PrivacySettingTypeGroupAdd     PrivacySettingType = "groupadd"     // Valid values: PrivacySettingAll, PrivacySettingContacts, PrivacySettingContactBlacklist, PrivacySettingNone
+	PrivacySettingTypeLastSeen     PrivacySettingType = "last"         // Valid values: PrivacySettingAll, PrivacySettingContacts, PrivacySettingContactBlacklist, PrivacySettingNone
+	PrivacySettingTypeStatus       PrivacySettingType = "status"       // Valid values: PrivacySettingAll, PrivacySettingContacts, PrivacySettingContactBlacklist, PrivacySettingNone
+	PrivacySettingTypeProfile      PrivacySettingType = "profile"      // Valid values: PrivacySettingAll, PrivacySettingContacts, PrivacySettingContactBlacklist, PrivacySettingNone
+	PrivacySettingTypeReadReceipts PrivacySettingType = "readreceipts" // Valid values: PrivacySettingAll, PrivacySettingNone
+	PrivacySettingTypeOnline       PrivacySettingType = "online"       // Valid values: PrivacySettingAll, PrivacySettingMatchLastSeen
+	PrivacySettingTypeCallAdd      PrivacySettingType = "calladd"      // Valid values: PrivacySettingAll, PrivacySettingKnown
 )
 
 // PrivacySettings contains the user's privacy settings.
 type PrivacySettings struct {
-	GroupAdd     PrivacySetting
-	LastSeen     PrivacySetting
-	Status       PrivacySetting
-	Profile      PrivacySetting
-	ReadReceipts PrivacySetting
+	GroupAdd     PrivacySetting // Valid values: PrivacySettingAll, PrivacySettingContacts, PrivacySettingContactBlacklist, PrivacySettingNone
+	LastSeen     PrivacySetting // Valid values: PrivacySettingAll, PrivacySettingContacts, PrivacySettingContactBlacklist, PrivacySettingNone
+	Status       PrivacySetting // Valid values: PrivacySettingAll, PrivacySettingContacts, PrivacySettingContactBlacklist, PrivacySettingNone
+	Profile      PrivacySetting // Valid values: PrivacySettingAll, PrivacySettingContacts, PrivacySettingContactBlacklist, PrivacySettingNone
+	ReadReceipts PrivacySetting // Valid values: PrivacySettingAll, PrivacySettingNone
+	CallAdd      PrivacySetting // Valid values: PrivacySettingAll, PrivacySettingKnown
+	Online       PrivacySetting // Valid values: PrivacySettingAll, PrivacySettingMatchLastSeen
 }
 
 // StatusPrivacyType is the type of list in StatusPrivacy.
@@ -120,4 +138,10 @@ type StatusPrivacy struct {
 	List []JID
 
 	IsDefault bool
+}
+
+// Blocklist contains the user's current list of blocked users.
+type Blocklist struct {
+	DHash string // TODO is this just a timestamp?
+	JIDs  []JID
 }

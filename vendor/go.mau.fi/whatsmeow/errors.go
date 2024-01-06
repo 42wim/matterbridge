@@ -9,6 +9,7 @@ package whatsmeow
 import (
 	"errors"
 	"fmt"
+	"net/http"
 
 	waBinary "go.mau.fi/whatsmeow/binary"
 )
@@ -103,15 +104,28 @@ var (
 var (
 	ErrBroadcastListUnsupported = errors.New("sending to non-status broadcast lists is not yet supported")
 	ErrUnknownServer            = errors.New("can't send message to unknown server")
-	ErrRecipientADJID           = errors.New("message recipient must be normal (non-AD) JID")
+	ErrRecipientADJID           = errors.New("message recipient must be a user JID with no device part")
 	ErrServerReturnedError      = errors.New("server returned error")
 )
 
+type DownloadHTTPError struct {
+	*http.Response
+}
+
+func (dhe DownloadHTTPError) Error() string {
+	return fmt.Sprintf("download failed with status code %d", dhe.StatusCode)
+}
+
+func (dhe DownloadHTTPError) Is(other error) bool {
+	var otherDHE DownloadHTTPError
+	return errors.As(other, &otherDHE) && dhe.StatusCode == otherDHE.StatusCode
+}
+
 // Some errors that Client.Download can return
 var (
-	ErrMediaDownloadFailedWith403 = errors.New("download failed with status code 403")
-	ErrMediaDownloadFailedWith404 = errors.New("download failed with status code 404")
-	ErrMediaDownloadFailedWith410 = errors.New("download failed with status code 410")
+	ErrMediaDownloadFailedWith403 = DownloadHTTPError{Response: &http.Response{StatusCode: 403}}
+	ErrMediaDownloadFailedWith404 = DownloadHTTPError{Response: &http.Response{StatusCode: 404}}
+	ErrMediaDownloadFailedWith410 = DownloadHTTPError{Response: &http.Response{StatusCode: 410}}
 	ErrNoURLPresent               = errors.New("no url present")
 	ErrFileLengthMismatch         = errors.New("file length does not match")
 	ErrTooShortFile               = errors.New("file too short")

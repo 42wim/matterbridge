@@ -226,7 +226,7 @@ implements the following extensions:
 - **Hard line breaks**. With this extension enabled newlines in the input
   translates into line breaks in the output. This extension is off by default.
 
-- **Non blocking space**. With this extension enabled spaces preceeded by a backslash
+- **Non blocking space**. With this extension enabled spaces preceded by a backslash
   in the input translates non-blocking spaces in the output. This extension is off by default.
 
 - **Smart quotes**. Smartypants-style punctuation substitution is
