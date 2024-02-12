@@ -540,9 +540,18 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 
 		// Do we have attachments
 		if b.containsAttachment(ev.Content) {
-			err := b.handleDownloadFile(&rmsg, ev.Content)
-			if err != nil {
-				b.Log.Errorf("download failed: %#v", err)
+			if b.GetBool("SendUrlNotFile") {
+				// replace the text of the message (which is set to the filename above) with the url
+				var err error
+				rmsg.Text, err = b.getMessageFileUrl(ev.Content)
+				if err != nil {
+					b.Log.Errorf("get url for uploaded file failed: %#v", err)
+				}
+			} else {
+				err := b.handleDownloadFile(&rmsg, ev.Content)
+				if err != nil {
+					b.Log.Errorf("download failed: %#v", err)
+				}
 			}
 		}
 
