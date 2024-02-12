@@ -1330,7 +1330,8 @@ StripNick=false
 ShowTopicChange=false
 
 #Enable to send a URL rather than an image
-#(the default behavior in Matterbridge is to download and send a file)
+#The default behavior is to download and send/upload the file.
+#OPTIONAL (default false)
 #SendUrlNotFile=true
 
 ###################################################################
