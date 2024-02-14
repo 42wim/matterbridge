@@ -591,12 +591,6 @@ func (b *Bmatrix) handleDownloadFile(rmsg *config.Message, content map[string]in
 
 	rmsg.Extra = make(map[string][]interface{})
 
-	//// moved to getMessageFileUrl
-	//if url, ok = content["url"].(string); !ok {
-	//	return fmt.Errorf("url isn't a %T", url)
-	//}
-	//url = strings.Replace(url, "mxc://", b.GetString("Server")+"/_matrix/media/v1/download/", -1)
-
 	url, err := b.getMessageFileUrl(content)
 	if err != nil {
 		return err
