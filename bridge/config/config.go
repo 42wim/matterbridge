@@ -121,6 +121,7 @@ type Protocol struct {
 	MessageLength          int        // IRC, max length of a message allowed
 	MessageQueue           int        // IRC, size of message queue for flood control
 	MessageSplit           bool       // IRC, split long messages with newlines on MessageLength instead of clipping
+	MessageSplitMaxCount   int        // discord, split long messages into at most this many messages instead of clipping (MessageLength=1950 cannot be configured)
 	Muc                    string     // xmpp
 	MxID                   string     // matrix
 	Name                   string     // all protocols
