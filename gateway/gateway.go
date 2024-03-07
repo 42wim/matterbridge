@@ -464,6 +464,16 @@ func (gw *Gateway) SendMessage(
 	msg.Avatar = gw.modifyAvatar(rmsg, dest)
 	msg.Username = gw.modifyUsername(rmsg, dest)
 
+	// ID and ParentID are for some reason cleared by getDestMsgID
+	// We need them to send to Status
+	if msg.Extra == nil {
+		msg.Extra = make(map[string][]interface{})
+	}
+	msg.Extra["OriginalMessageIds"] = []interface{}{config.OriginalMessageIds{
+		ID:       msg.ID,
+		ParentID: msg.ParentID,
+	}}
+
 	// exclude file delete event as the msg ID here is the native file ID that needs to be deleted
 	if msg.Event != config.EventFileDelete {
 		msg.ID = gw.getDestMsgID(rmsg.Protocol+" "+rmsg.ID, dest, channel)

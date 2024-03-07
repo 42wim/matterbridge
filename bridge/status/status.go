@@ -228,6 +228,19 @@ func (b *Bstatus) toStatusMsg(msg config.Message) *common.Message {
 	message := common.NewMessage()
 	message.ChatId = msg.Channel
 	message.ContentType = protobuf.ChatMessage_BRIDGE_MESSAGE
+
+	var originalID, originalParentID string
+	if msg.Extra != nil {
+		originalMessageIdsList := msg.Extra["OriginalMessageIds"]
+		if len(originalMessageIdsList) == 1 {
+			originalMessageIds, ok := originalMessageIdsList[0].(config.OriginalMessageIds)
+			if ok {
+				originalID = originalMessageIds.ID
+				originalParentID = originalMessageIds.ParentID
+			}
+		}
+	}
+
 	message.Payload = &protobuf.ChatMessage_BridgeMessage{
 		BridgeMessage: &protobuf.BridgeMessage{
 			BridgeName:      msg.Protocol,
@@ -235,8 +248,8 @@ func (b *Bstatus) toStatusMsg(msg config.Message) *common.Message {
 			UserAvatar:      msg.Avatar,
 			UserID:          msg.UserID,
 			Content:         msg.Text,
-			MessageID:       msg.ID,
-			ParentMessageID: msg.ParentID,
+			MessageID:       originalID,
+			ParentMessageID: originalParentID,
 		},
 	}
 

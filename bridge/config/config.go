@@ -48,6 +48,11 @@ type Message struct {
 	Extra     map[string][]interface{}
 }
 
+type OriginalMessageIds struct {
+	ID       string `json:"id"`
+	ParentID string `json:"parent_id"`
+}
+
 func (m Message) ParentNotFound() bool {
 	return m.ParentID == ParentIDNotFound
 }
