@@ -211,8 +211,18 @@ func ClipMessage(text string, length int, clippingMessage string) string {
 
 	if len(text) > length {
 		text = text[:length-len(clippingMessage)]
-		if r, size := utf8.DecodeLastRuneInString(text); r == utf8.RuneError {
-			text = text[:len(text)-size]
+		for len(text) > 0 {
+			if r, _ := utf8.DecodeLastRuneInString(text); r == utf8.RuneError {
+				text = text[:len(text)-1]
+				// Note: DecodeLastRuneInString only returns the constant value "1" in
+				// case of an error. We do not yet know whether the last rune is now
+				// actually valid. Example: "€" is 0xE2 0x82 0xAC. If we happen to split
+				// the string just before 0xAC, and go back only one byte, that would
+				// leave us with a string that ends in the byte 0xE2, which is not a valid
+				// rune, so we need to try again.
+			} else {
+				break
+			}
 		}
 		text += clippingMessage
 	}
