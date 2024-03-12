@@ -1,14 +1,30 @@
-FROM alpine AS builder
+FROM golang:1.20-bullseye AS builder
 
-COPY . /go/src/matterbridge
-RUN apk --no-cache add go git \
-        && cd /go/src/matterbridge \
-        && CGO_ENABLED=0 go build -mod vendor -ldflags "-X github.com/42wim/matterbridge/version.GitHash=$(git log --pretty=format:'%h' -n 1)" -o /bin/matterbridge
+RUN apt update
+RUN apt install -y gcc g++ libc6-dev
 
-FROM alpine
-RUN apk --no-cache add ca-certificates mailcap
+COPY . /go/src/github.com/42wim/matterbridge
+
+WORKDIR /go/src/github.com/42wim/matterbridge
+
+ENV GOPATH=/go
+
+RUN go mod tidy
+RUN go mod vendor
+RUN go build -o /bin/matterbridge
+
+FROM gcr.io/distroless/static-debian11
+
+# Run ldd on binary in builder image to get a full list.
+COPY --from=builder /lib64/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2
+COPY --from=builder /lib/x86_64-linux-gnu/libc.so.6 /lib/x86_64-linux-gnu/libc.so.6
+COPY --from=builder /lib/x86_64-linux-gnu/libdl.so.2 /lib/x86_64-linux-gnu/libdl.so.2
+COPY --from=builder /lib/x86_64-linux-gnu/libgcc_s.so.1 /lib/x86_64-linux-gnu/libgcc_s.so.1
+COPY --from=builder /lib/x86_64-linux-gnu/libm.so.6 /lib/x86_64-linux-gnu/libm.so.6
+COPY --from=builder /lib/x86_64-linux-gnu/libpthread.so.0 /lib/x86_64-linux-gnu/libpthread.so.0
+COPY --from=builder /lib/x86_64-linux-gnu/libresolv.so.2 /lib/x86_64-linux-gnu/libresolv.so.2
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libstdc++.so.6 /usr/lib/x86_64-linux-gnu/libstdc++.so.6
+
 COPY --from=builder /bin/matterbridge /bin/matterbridge
-RUN mkdir /etc/matterbridge \
-  && touch /etc/matterbridge/matterbridge.toml \
-  && ln -sf /matterbridge.toml /etc/matterbridge/matterbridge.toml
-ENTRYPOINT ["/bin/matterbridge", "-conf", "/etc/matterbridge/matterbridge.toml"]
+
+ENTRYPOINT ["/bin/matterbridge"]
