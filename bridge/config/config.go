@@ -139,6 +139,7 @@ type Protocol struct {
 	NickServPassword       string     // IRC
 	NicksPerRow            int        // mattermost, slack
 	NoHomeServerSuffix     bool       // matrix
+	NodeConfigFile         string     // status
 	NoSendJoinPart         bool       // all protocols
 	NoTLS                  bool       // mattermost, xmpp
 	Password               string     // IRC,mattermost,XMPP,matrix

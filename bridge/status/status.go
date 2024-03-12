@@ -55,7 +55,8 @@ type Bstatus struct {
 	statusListenPort int
 	statusListenAddr string
 
-	statusDataDir string
+	statusDataDir        string
+	statusNodeConfigFile string
 
 	privateKey *ecdsa.PrivateKey
 	nodeConfig *params.NodeConfig
@@ -67,12 +68,13 @@ type Bstatus struct {
 
 func New(cfg *bridge.Config) bridge.Bridger {
 	return &Bstatus{
-		Config:           cfg,
-		fetchDone:        make(chan bool),
-		statusListenPort: 30303,
-		statusListenAddr: "0.0.0.0",
-		statusDataDir:    cfg.GetString("DataDir"),
-		fetchInterval:    500 * time.Millisecond,
+		Config:               cfg,
+		fetchDone:            make(chan bool),
+		statusListenPort:     30303,
+		statusListenAddr:     "0.0.0.0",
+		statusDataDir:        cfg.GetString("DataDir"),
+		statusNodeConfigFile: cfg.GetString("NodeConfigFile"),
+		fetchInterval:        500 * time.Millisecond,
 	}
 }
 
@@ -81,7 +83,7 @@ func (b *Bstatus) generateNodeConfig() (*params.NodeConfig, error) {
 	options := []params.Option{
 		b.withListenAddr(),
 	}
-	configFiles := []string{"./fleet.json"}
+	configFiles := []string{b.statusNodeConfigFile}
 	config, err := params.NewNodeConfigWithDefaultsAndFiles(
 		b.statusDataDir,
 		params.MainNetworkID,

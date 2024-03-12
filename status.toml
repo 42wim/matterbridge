@@ -11,6 +11,7 @@
     Token=""
     RemoteNickFormat="{NICK}"
     DataDir="path to status data dir"
+    NodeConfigFile="path to json with node config and fleets"
 
 [discord]
     [discord.mydiscord]
