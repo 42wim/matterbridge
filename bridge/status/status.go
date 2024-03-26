@@ -287,9 +287,31 @@ func (b *Bstatus) Send(msg config.Message) (string, error) {
 
 	b.Log.Debugf("=> Sending message %#v", msg)
 
-	_, err := b.messenger.SendChatMessage(context.Background(), b.toStatusMsg(msg))
+	statusMessageToSend := b.toStatusMsg(msg)
+	statusMessageID, err := b.messenger.FindStatusMessageIdForBridgeMessageId(statusMessageToSend.GetBridgeMessage().MessageID)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to send message")
+		return "", errors.Wrap(err, "failed to get status message for bridge message")
+	}
+
+	if statusMessageID != "" {
+		decodedStatusMessageID, err := types.DecodeHex(statusMessageID)
+		if err != nil {
+			return "", errors.Wrap(err, "failed to decode status message ID")
+		}
+		editedMessage := &requests.EditMessage{
+			ID:          decodedStatusMessageID,
+			Text:        msg.Text,
+			ContentType: protobuf.ChatMessage_BRIDGE_MESSAGE,
+		}
+		_, err = b.messenger.EditMessage(context.Background(), editedMessage)
+		if err != nil {
+			return "", errors.Wrap(err, "failed to edit message")
+		}
+	} else {
+		_, err := b.messenger.SendChatMessage(context.Background(), statusMessageToSend)
+		if err != nil {
+			return "", errors.Wrap(err, "failed to send message")
+		}
 	}
 
 	return "", nil
