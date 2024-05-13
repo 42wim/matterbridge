@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
 	"github.com/status-im/status-go/eth-node/types"
+	wallet_common "github.com/status-im/status-go/services/wallet/common"
 )
 
 var (
@@ -53,6 +54,10 @@ type SendTxArgs struct {
 	// see `vendor/github.com/ethereum/go-ethereum/internal/ethapi/api.go:1107`
 	Input types.HexBytes `json:"input"`
 	Data  types.HexBytes `json:"data"`
+
+	// additional data
+	MultiTransactionID wallet_common.MultiTransactionIDType
+	Symbol             string
 }
 
 // Valid checks whether this structure is filled in correctly.

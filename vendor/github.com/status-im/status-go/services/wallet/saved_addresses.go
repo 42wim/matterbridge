@@ -2,6 +2,7 @@ package wallet
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -29,6 +30,32 @@ type SavedAddress struct {
 
 func (s *SavedAddress) ID() string {
 	return fmt.Sprintf("%s-%t", s.Address.Hex(), s.IsTest)
+}
+
+func (s *SavedAddress) MarshalJSON() ([]byte, error) {
+	item := struct {
+		Address          common.Address                    `json:"address"`
+		MixedcaseAddress string                            `json:"mixedcaseAddress"`
+		Name             string                            `json:"name"`
+		ChainShortNames  string                            `json:"chainShortNames"`
+		ENSName          string                            `json:"ens"`
+		ColorID          multiAccCommon.CustomizationColor `json:"colorId"`
+		IsTest           bool                              `json:"isTest"`
+		CreatedAt        int64                             `json:"createdAt"`
+		Removed          bool                              `json:"removed"`
+	}{
+		Address:          s.Address,
+		MixedcaseAddress: s.Address.Hex(),
+		Name:             s.Name,
+		ChainShortNames:  s.ChainShortNames,
+		ENSName:          s.ENSName,
+		ColorID:          s.ColorID,
+		IsTest:           s.IsTest,
+		CreatedAt:        s.CreatedAt,
+		Removed:          s.Removed,
+	}
+
+	return json.Marshal(item)
 }
 
 type SavedAddressesManager struct {

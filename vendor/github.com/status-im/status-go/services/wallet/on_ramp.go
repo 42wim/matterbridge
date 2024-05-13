@@ -120,7 +120,7 @@ func (c *CryptoOnRampManager) getFromStaticDataSource() ([]byte, error) {
     "description": "Global crypto to fiat flow",
     "fees": "0.49%% - 2.9%%",
     "logoUrl": "%s",
-    "siteUrl": "https://buy.ramp.network/?hostApiKey=zrtf9u2uqebeyzcs37fu5857tktr3eg9w5tffove&swapAsset=DAI,ETH,USDC,USDT",
+    "siteUrl": "https://ramp.network/buy?hostApiKey=zrtf9u2uqebeyzcs37fu5857tktr3eg9w5tffove&swapAsset=DAI,ETH,USDC,USDT",
     "hostname": "ramp.network"
   },
   {

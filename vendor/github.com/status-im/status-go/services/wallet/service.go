@@ -121,7 +121,7 @@ func NewService(
 	raribleClient := rarible.NewClient(config.WalletConfig.RaribleMainnetAPIKey, config.WalletConfig.RaribleTestnetAPIKey)
 	alchemyClient := alchemy.NewClient(config.WalletConfig.AlchemyAPIKeys)
 
-	// Try OpenSea, Infura, Alchemy in that order
+	// Collectible providers in priority order (i.e. provider N+1 will be tried only if provider N fails)
 	contractOwnershipProviders := []thirdparty.CollectibleContractOwnershipProvider{
 		raribleClient,
 		alchemyClient,
@@ -145,7 +145,26 @@ func NewService(
 		openseaV2Client,
 	}
 
-	collectiblesManager := collectibles.NewManager(db, rpcClient, communityManager, contractOwnershipProviders, accountOwnershipProviders, collectibleDataProviders, collectionDataProviders, mediaServer, feed)
+	collectibleSearchProviders := []thirdparty.CollectibleSearchProvider{
+		raribleClient,
+	}
+
+	collectibleProviders := thirdparty.CollectibleProviders{
+		ContractOwnershipProviders: contractOwnershipProviders,
+		AccountOwnershipProviders:  accountOwnershipProviders,
+		CollectibleDataProviders:   collectibleDataProviders,
+		CollectionDataProviders:    collectionDataProviders,
+		SearchProviders:            collectibleSearchProviders,
+	}
+
+	collectiblesManager := collectibles.NewManager(
+		db,
+		rpcClient,
+		communityManager,
+		collectibleProviders,
+		mediaServer,
+		feed,
+	)
 	collectibles := collectibles.NewService(db, feed, accountsDB, accountFeed, settingsFeed, communityManager, rpcClient.NetworkManager, collectiblesManager)
 
 	activity := activity.NewService(db, tokenManager, collectiblesManager, feed, pendingTxManager)

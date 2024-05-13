@@ -869,20 +869,20 @@ func (m *Messenger) HandleAcceptContactVerification(state *ReceivedMessageState,
 		return err
 	}
 
-	if persistedVR != nil && persistedVR.RepliedAt > request.Clock {
-		return nil // older message, ignore it
-	}
-
-	if persistedVR.RequestStatus == verification.RequestStatusCANCELED {
-		return nil // Do nothing, We have already cancelled the verification request
-	}
-
 	if persistedVR == nil {
 		// This is a response for which we have not received its request before
 		persistedVR = &verification.Request{}
 		persistedVR.ID = request.Id
 		persistedVR.From = contactID
 		persistedVR.To = myPubKey
+	} else {
+		if persistedVR.RepliedAt > request.Clock {
+			return nil // older message, ignore it
+		}
+
+		if persistedVR.RequestStatus == verification.RequestStatusCANCELED {
+			return nil // Do nothing, We have already cancelled the verification request
+		}
 	}
 
 	persistedVR.RequestStatus = verification.RequestStatusACCEPTED

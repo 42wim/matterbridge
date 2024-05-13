@@ -14,45 +14,52 @@ import (
 )
 
 var coinGeckoMapping = map[string]string{
-	"STT":  "status",
-	"SNT":  "status",
-	"ETH":  "ethereum",
-	"AST":  "airswap",
-	"AMB":  "",
-	"ABT":  "arcblock",
-	"ATM":  "",
-	"BNB":  "binancecoin",
-	"BLT":  "bloom",
-	"CDT":  "",
-	"COMP": "compound-coin",
-	"EDG":  "edgeless",
-	"ELF":  "",
-	"ENG":  "enigma",
-	"EOS":  "eos",
-	"GEN":  "daostack",
-	"MANA": "decentraland-wormhole",
-	"LEND": "ethlend",
-	"LRC":  "loopring",
-	"MET":  "metronome",
-	"POLY": "polymath",
-	"PPT":  "populous",
-	"SAN":  "santiment-network-token",
-	"DNT":  "district0x",
-	"SPN":  "sapien",
-	"USDS": "stableusd",
-	"STX":  "stox",
-	"SUB":  "substratum",
-	"PAY":  "tenx",
-	"GRT":  "the-graph",
-	"TNT":  "tierion",
-	"TRX":  "tron",
-	"TGT":  "",
-	"RARE": "superrare",
-	"UNI":  "uniswap",
-	"USDC": "usd-coin",
-	"USDP": "paxos-standard",
-	"VRS":  "",
-	"TIME": "",
+	"STT":   "status",
+	"SNT":   "status",
+	"ETH":   "ethereum",
+	"AST":   "airswap",
+	"AMB":   "",
+	"ABT":   "arcblock",
+	"ATM":   "",
+	"BNB":   "binancecoin",
+	"BLT":   "bloom",
+	"CDT":   "",
+	"COMP":  "compound-coin",
+	"EDG":   "edgeless",
+	"ELF":   "",
+	"ENG":   "enigma",
+	"EOS":   "eos",
+	"GEN":   "daostack",
+	"MANA":  "decentraland-wormhole",
+	"LEND":  "ethlend",
+	"LRC":   "loopring",
+	"MET":   "metronome",
+	"POLY":  "polymath",
+	"PPT":   "populous",
+	"SAN":   "santiment-network-token",
+	"DNT":   "district0x",
+	"SPN":   "sapien",
+	"USDS":  "stableusd",
+	"STX":   "stox",
+	"SUB":   "substratum",
+	"PAY":   "tenx",
+	"GRT":   "the-graph",
+	"TNT":   "tierion",
+	"TRX":   "tron",
+	"TGT":   "",
+	"RARE":  "superrare",
+	"UNI":   "uniswap",
+	"USDC":  "usd-coin",
+	"USDP":  "paxos-standard",
+	"VRS":   "",
+	"TIME":  "",
+	"USDT":  "tether",
+	"SHIB":  "shiba-inu",
+	"LINK":  "chainlink",
+	"MATIC": "matic-network",
+	"DAI":   "dai",
+	"ARB":   "arbitrum",
+	"OP":    "optimism",
 }
 
 const baseURL = "https://api.coingecko.com/api/v3/"
@@ -150,6 +157,7 @@ func (c *Client) mapSymbolsToIds(symbols []string) ([]string, error) {
 			ids = append(ids, token.ID)
 		}
 	}
+	ids = utils.RemoveDuplicates(ids)
 	return ids, nil
 }
 
@@ -182,7 +190,7 @@ func (c *Client) FetchPrices(symbols []string, currencies []string) (map[string]
 	prices := make(map[string]map[string]float64)
 	err = json.Unmarshal(body, &prices)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s - %s", err, string(body))
 	}
 
 	result := make(map[string]map[string]float64)
@@ -240,7 +248,7 @@ func (c *Client) FetchTokenMarketValues(symbols []string, currency string) (map[
 	var marketValues []GeckoMarketValues
 	err = json.Unmarshal(body, &marketValues)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s - %s", err, string(body))
 	}
 
 	result := make(map[string]thirdparty.TokenMarketValues)

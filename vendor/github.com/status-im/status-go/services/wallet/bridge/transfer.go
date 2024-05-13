@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/status-im/status-go/account"
 	"github.com/status-im/status-go/contracts/ierc20"
@@ -82,6 +83,21 @@ func (s *TransferBridge) EstimateGas(fromNetwork *params.Network, toNetwork *par
 	}
 	increasedEstimation := float64(estimation) * IncreaseEstimatedGasFactor
 	return uint64(increasedEstimation), nil
+}
+
+func (s *TransferBridge) BuildTx(network, _ *params.Network, fromAddress common.Address, toAddress common.Address, token *token.Token, amountIn *big.Int, bonderFee *big.Int) (*ethTypes.Transaction, error) {
+	toAddr := types.Address(toAddress)
+	sendArgs := &TransactionBridge{
+		TransferTx: &transactions.SendTxArgs{
+			From:  types.Address(fromAddress),
+			To:    &toAddr,
+			Value: (*hexutil.Big)(amountIn),
+			Data:  types.HexBytes("0x0"),
+		},
+		ChainID: network.ChainID,
+	}
+
+	return s.BuildTransaction(sendArgs)
 }
 
 func (s *TransferBridge) Send(sendArgs *TransactionBridge, verifiedAccount *account.SelectedExtKey) (types.Hash, error) {

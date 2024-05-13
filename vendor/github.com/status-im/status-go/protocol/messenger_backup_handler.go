@@ -7,6 +7,7 @@ import (
 
 	"github.com/status-im/status-go/images"
 	"github.com/status-im/status-go/multiaccounts/errors"
+	"github.com/status-im/status-go/multiaccounts/settings"
 	"github.com/status-im/status-go/protocol/identity"
 	"github.com/status-im/status-go/protocol/protobuf"
 	v1protocol "github.com/status-im/status-go/protocol/v1"
@@ -177,6 +178,14 @@ func (m *Messenger) handleBackedUpProfile(message *protobuf.BackedUpProfile, bac
 		return err
 	}
 
+	profileShowcasePreferences, err := m.saveProfileShowcasePreferencesProto(message.ProfileShowcasePreferences, false)
+	if err != nil {
+		return err
+	}
+	if profileShowcasePreferences != nil {
+		response.SetProfileShowcasePreferences(profileShowcasePreferences)
+	}
+
 	var ensUsernameDetails []*ensservice.UsernameDetail
 	for _, d := range message.EnsUsernameDetails {
 		dd, err := m.saveEnsUsernameDetailProto(d)
@@ -212,11 +221,20 @@ func (m *Messenger) handleBackedUpSettings(message *protobuf.SyncSetting) error 
 
 	if settingField != nil {
 		if message.GetType() == protobuf.SyncSetting_PREFERRED_NAME && message.GetValueString() != "" {
-			m.account.Name = message.GetValueString()
-			err = m.multiAccounts.SaveAccount(*m.account)
+			displayNameClock, err := m.settings.GetSettingLastSynced(settings.DisplayName)
 			if err != nil {
-				m.logger.Warn("[handleBackedUpSettings] failed to save account", zap.Error(err))
+				m.logger.Warn("failed to get last synced clock for display name", zap.Error(err))
 				return nil
+			}
+			// there is a race condition between display name and preferred name on updating m.account.Name, so we need to check the clock
+			// there is also a similar check within SaveSyncDisplayName
+			if displayNameClock < message.GetClock() {
+				m.account.Name = message.GetValueString()
+				err = m.multiAccounts.SaveAccount(*m.account)
+				if err != nil {
+					m.logger.Warn("[handleBackedUpSettings] failed to save account", zap.Error(err))
+					return nil
+				}
 			}
 		}
 
@@ -242,7 +260,7 @@ func (m *Messenger) handleKeypair(message *protobuf.SyncKeypair) error {
 	}
 	// If user is recovering his account via seed phrase, but the backed up messages indicate that the profile keypair
 	// is a keycard related profile, then we need to remove related profile keycards (only profile, other keycards should remain).
-	if multiAcc != nil && multiAcc.KeyUID == message.KeyUid && multiAcc.KeycardPairing == "" && len(message.Keycards) > 0 {
+	if multiAcc != nil && multiAcc.KeyUID == message.KeyUid && !multiAcc.RefersToKeycard() && len(message.Keycards) > 0 {
 		message.Keycards = []*protobuf.SyncKeycard{}
 	}
 

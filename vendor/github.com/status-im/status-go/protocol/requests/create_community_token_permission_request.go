@@ -2,7 +2,8 @@ package requests
 
 import (
 	"errors"
-	"strconv"
+	"math"
+	"math/big"
 
 	"github.com/status-im/status-go/eth-node/types"
 	"github.com/status-im/status-go/protocol/protobuf"
@@ -43,13 +44,40 @@ func (p *CreateCommunityTokenPermission) Validate() error {
 			return ErrCreateCommunityTokenPermissionInvalidTokenCriteria
 		}
 
-		floatAmount, _ := strconv.ParseFloat(c.Amount, 32)
-		if len(c.ContractAddresses) > 0 && floatAmount == 0 {
+		var amountBig = new(big.Int)
+		amountBig.SetString(c.AmountInWei, 10)
+		if len(c.ContractAddresses) > 0 && amountBig.Cmp(big.NewInt(0)) == 0 {
 			return ErrCreateCommunityTokenPermissionInvalidTokenCriteria
 		}
 	}
 
 	return nil
+}
+
+func (p *CreateCommunityTokenPermission) FillDeprecatedAmount() {
+
+	computeErc20AmountFunc := func(amountInWeis string, decimals uint64) string {
+		bigfloat := new(big.Float)
+		bigfloat.SetString(amountInWeis)
+		multiplier := big.NewFloat(math.Pow(10, float64(decimals)))
+		bigfloat.Quo(bigfloat, multiplier)
+		return bigfloat.String()
+	}
+
+	for _, criteria := range p.TokenCriteria {
+		if criteria.AmountInWei == "" {
+			continue
+		}
+		// fill Amount to keep backward compatibility
+		// Amount format (deprecated): "0.123"
+		// AmountInWei format: "123000..000"
+		if criteria.Type == protobuf.CommunityTokenType_ERC20 {
+			criteria.Amount = computeErc20AmountFunc(criteria.AmountInWei, criteria.Decimals)
+		} else {
+			criteria.Amount = criteria.AmountInWei
+		}
+
+	}
 }
 
 func (p *CreateCommunityTokenPermission) ToCommunityTokenPermission() protobuf.CommunityTokenPermission {

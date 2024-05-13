@@ -3,8 +3,6 @@ package chain
 import (
 	"context"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum"
@@ -28,22 +26,17 @@ type TxExtraInfo struct {
 	From        *common.Address `json:"from,omitempty"`
 }
 
-func callFullTransactionByBlockNumberAndIndex(ctx context.Context, rpc *rpc.Client, number *big.Int, index uint) (*FullTransaction, error) {
+func callBlockHashByTransaction(ctx context.Context, rpc *rpc.Client, number *big.Int, index uint) (common.Hash, error) {
 	var json *FullTransaction
 	err := rpc.CallContext(ctx, &json, "eth_getTransactionByBlockNumberAndIndex", toBlockNumArg(number), hexutil.Uint64(index))
 
 	if err != nil {
-		return nil, err
+		return common.HexToHash(""), err
 	}
 	if json == nil {
-		return nil, ethereum.NotFound
-	} else if _, r, _ := json.Tx.RawSignatureValues(); r == nil {
-		return nil, fmt.Errorf("server returned transaction without signature")
+		return common.HexToHash(""), ethereum.NotFound
 	}
-	if json.From != nil && json.BlockHash != nil {
-		setSenderFromServer(json.Tx, *json.From, *json.BlockHash)
-	}
-	return json, nil
+	return *json.BlockHash, nil
 }
 
 func (tx *FullTransaction) UnmarshalJSON(msg []byte) error {
@@ -70,39 +63,4 @@ func toBlockNumArg(number *big.Int) string {
 		return "safe"
 	}
 	return hexutil.EncodeBig(number)
-}
-
-type senderFromServer struct {
-	addr      common.Address
-	blockhash common.Hash
-}
-
-var errNotCached = errors.New("sender not cached")
-
-//nolint:errcheck
-func setSenderFromServer(tx *types.Transaction, addr common.Address, block common.Hash) {
-	// Use types.Sender for side-effect to store our signer into the cache.
-	types.Sender(&senderFromServer{addr, block}, tx)
-}
-
-func (s *senderFromServer) Equal(other types.Signer) bool {
-	os, ok := other.(*senderFromServer)
-	return ok && os.blockhash == s.blockhash
-}
-
-func (s *senderFromServer) Sender(tx *types.Transaction) (common.Address, error) {
-	if s.addr == (common.Address{}) {
-		return common.Address{}, errNotCached
-	}
-	return s.addr, nil
-}
-
-func (s *senderFromServer) ChainID() *big.Int {
-	panic("can't sign with senderFromServer")
-}
-func (s *senderFromServer) Hash(tx *types.Transaction) common.Hash {
-	panic("can't sign with senderFromServer")
-}
-func (s *senderFromServer) SignatureValues(tx *types.Transaction, sig []byte) (R, S, V *big.Int, err error) {
-	panic("can't sign with senderFromServer")
 }

@@ -31,6 +31,8 @@ var chatColors = []string{
 
 type ChatType int
 
+type ChatContext string
+
 const (
 	ChatTypeOneToOne ChatType = iota + 1
 	ChatTypePublic
@@ -84,6 +86,9 @@ type Chat struct {
 	Emoji       string `json:"emoji"`
 	// Active indicates whether the chat has been soft deleted
 	Active bool `json:"active"`
+
+	// ViewersCanPostReactions indicates whether users can post reactions in view only mode
+	ViewersCanPostReactions bool `json:"viewersCanPostReactions"`
 
 	ChatType ChatType `json:"chatType"`
 
@@ -155,6 +160,9 @@ type Chat struct {
 
 	// Image of the chat in Base64 format
 	Base64Image string `json:"image,omitempty"`
+
+	// If true, the chat is invisible if permissions are not met
+	HideIfPermissionsNotMet bool `json:"hideIfPermissionsNotMet,omitempty"`
 }
 
 type ChatPreview struct {
@@ -487,6 +495,7 @@ func CreateCommunityChat(orgID, chatID string, orgChat *protobuf.CommunityChat, 
 	return &Chat{
 		CommunityID:              orgID,
 		CategoryID:               orgChat.CategoryId,
+		HideIfPermissionsNotMet:  orgChat.HideIfPermissionsNotMet,
 		Name:                     orgChat.Identity.DisplayName,
 		Description:              orgChat.Identity.Description,
 		Active:                   true,
@@ -498,6 +507,7 @@ func CreateCommunityChat(orgID, chatID string, orgChat *protobuf.CommunityChat, 
 		ReadMessagesAtClockValue: 0,
 		ChatType:                 ChatTypeCommunityChat,
 		FirstMessageTimestamp:    orgChat.Identity.FirstMessageTimestamp,
+		ViewersCanPostReactions:  orgChat.ViewersCanPostReactions,
 	}
 }
 
@@ -635,4 +645,13 @@ func stringSliceContains(slice []string, item string) bool {
 		}
 	}
 	return false
+}
+
+func GetChatContextFromChatType(chatType ChatType) ChatContext {
+	switch chatType {
+	case ChatTypeOneToOne, ChatTypePrivateGroupChat:
+		return privateChat
+	default:
+		return publicChat
+	}
 }

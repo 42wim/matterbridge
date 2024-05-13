@@ -14,19 +14,27 @@ import (
 	"github.com/status-im/status-go/protocol/protobuf"
 )
 
-func getThumbnailPayload(db *sql.DB, logger *zap.Logger, msgID string, thumbnailURL string) ([]byte, error) {
-	var payload []byte
-
+func getUnfurledLinksFromDB(db *sql.DB, msgID string) ([]*protobuf.UnfurledLink, error) {
 	var result []byte
 	err := db.QueryRow(`SELECT unfurled_links FROM user_messages WHERE id = ?`, msgID).Scan(&result)
 	if err != nil {
-		return payload, fmt.Errorf("could not find message with message-id '%s': %w", msgID, err)
+		return nil, fmt.Errorf("could not find message with message-id '%s': %w", msgID, err)
 	}
 
 	var links []*protobuf.UnfurledLink
 	err = json.Unmarshal(result, &links)
 	if err != nil {
-		return payload, fmt.Errorf("failed to unmarshal protobuf.UrlPreview: %w", err)
+		return nil, fmt.Errorf("failed to unmarshal protobuf.UrlPreview: %w", err)
+	}
+	return links, nil
+}
+
+func getThumbnailPayload(db *sql.DB, msgID string, thumbnailURL string) ([]byte, error) {
+	var payload []byte
+
+	var links, err = getUnfurledLinksFromDB(db, msgID)
+	if err != nil {
+		return nil, err
 	}
 
 	for _, p := range links {
@@ -39,40 +47,82 @@ func getThumbnailPayload(db *sql.DB, logger *zap.Logger, msgID string, thumbnail
 	return payload, nil
 }
 
+func getFaviconPayload(db *sql.DB, msgID string, faviconURL string) ([]byte, error) {
+	var payload []byte
+
+	var links, err = getUnfurledLinksFromDB(db, msgID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, p := range links {
+		if p.Url == faviconURL {
+			payload = p.FaviconPayload
+			break
+		}
+	}
+
+	return payload, nil
+}
+
+func validateAndReturnImageParams(r *http.Request, w http.ResponseWriter, logger *zap.Logger) ImageParams {
+	params := r.URL.Query()
+	parsed := ParseImageParams(logger, params)
+
+	if parsed.MessageID == "" {
+		http.Error(w, "missing query parameter 'message-id'", http.StatusBadRequest)
+		return ImageParams{}
+	}
+
+	if parsed.URL == "" {
+		http.Error(w, "missing query parameter 'url'", http.StatusBadRequest)
+		return ImageParams{}
+	}
+	return parsed
+}
+
+func getMimeTypeAndWriteImage(w http.ResponseWriter, logger *zap.Logger, imagePayload []byte) {
+	mimeType, err := images.GetMimeType(imagePayload)
+	if err != nil {
+		http.Error(w, "mime type not supported", http.StatusNotImplemented)
+		return
+	}
+
+	w.Header().Set("Content-Type", "image/"+mimeType)
+	w.Header().Set("Cache-Control", "no-store")
+
+	_, err = w.Write(imagePayload)
+	if err != nil {
+		logger.Error("failed to write response", zap.Error(err))
+	}
+}
+
+func checkForFetchImageError(err error, logger *zap.Logger, parsedImageParams ImageParams, w http.ResponseWriter, imageType string) {
+	if err != nil {
+		logger.Error("failed to get "+imageType, zap.String("msgID", parsedImageParams.MessageID))
+		http.Error(w, "failed to get "+imageType, http.StatusInternalServerError)
+		return
+	}
+}
+
 func handleLinkPreviewThumbnail(db *sql.DB, logger *zap.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		params := r.URL.Query()
-		parsed := ParseImageParams(logger, params)
-
-		if parsed.MessageID == "" {
-			http.Error(w, "missing query parameter 'message-id'", http.StatusBadRequest)
-			return
+		parsed := validateAndReturnImageParams(r, w, logger)
+		if parsed.URL != "" {
+			thumbnail, err := getThumbnailPayload(db, parsed.MessageID, parsed.URL)
+			checkForFetchImageError(err, logger, parsed, w, "thumbnail")
+			getMimeTypeAndWriteImage(w, logger, thumbnail)
 		}
+	}
+}
 
-		if parsed.URL == "" {
-			http.Error(w, "missing query parameter 'url'", http.StatusBadRequest)
-			return
-		}
-
-		thumbnail, err := getThumbnailPayload(db, logger, parsed.MessageID, parsed.URL)
-		if err != nil {
-			logger.Error("failed to get thumbnail", zap.String("msgID", parsed.MessageID))
-			http.Error(w, "failed to get thumbnail", http.StatusInternalServerError)
-			return
-		}
-
-		mimeType, err := images.GetMimeType(thumbnail)
-		if err != nil {
-			http.Error(w, "mime type not supported", http.StatusNotImplemented)
-			return
-		}
-
-		w.Header().Set("Content-Type", "image/"+mimeType)
-		w.Header().Set("Cache-Control", "no-store")
-
-		_, err = w.Write(thumbnail)
-		if err != nil {
-			logger.Error("failed to write response", zap.Error(err))
+func handleLinkPreviewFavicon(db *sql.DB, logger *zap.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		parsed := validateAndReturnImageParams(r, w, logger)
+		if parsed.URL != "" {
+			favicon, err := getFaviconPayload(db, parsed.MessageID, parsed.URL)
+			checkForFetchImageError(err, logger, parsed, w, "favicon")
+			getMimeTypeAndWriteImage(w, logger, favicon)
 		}
 	}
 }

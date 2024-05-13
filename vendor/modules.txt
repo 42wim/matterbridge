@@ -561,7 +561,7 @@ github.com/jackpal/go-nat-pmp
 # github.com/jbenet/go-temp-err-catcher v0.1.0
 ## explicit; go 1.13
 github.com/jbenet/go-temp-err-catcher
-# github.com/jellydator/ttlcache/v3 v3.1.0
+# github.com/jellydator/ttlcache/v3 v3.2.0
 ## explicit; go 1.18
 github.com/jellydator/ttlcache/v3
 # github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
@@ -1285,7 +1285,7 @@ github.com/status-im/mvds/transport
 ## explicit; go 1.18
 github.com/status-im/rendezvous
 github.com/status-im/rendezvous/protocol
-# github.com/status-im/status-go v0.174.7-0.20240222013825-0aeaf82915d8
+# github.com/status-im/status-go v0.177.1-0.20240502181839-d59ff96b54fa
 ## explicit; go 1.19
 github.com/status-im/status-go/account
 github.com/status-im/status-go/account/generator
@@ -1296,6 +1296,7 @@ github.com/status-im/status-go/appdatabase
 github.com/status-im/status-go/appdatabase/migrations
 github.com/status-im/status-go/appdatabase/migrationsprevnodecfg
 github.com/status-im/status-go/appmetrics
+github.com/status-im/status-go/circuitbreaker
 github.com/status-im/status-go/common
 github.com/status-im/status-go/common/dbsetup
 github.com/status-im/status-go/connection
@@ -1310,6 +1311,7 @@ github.com/status-im/status-go/contracts/community-tokens/ownertoken
 github.com/status-im/status-go/contracts/community-tokens/registry
 github.com/status-im/status-go/contracts/directory
 github.com/status-im/status-go/contracts/ethscan
+github.com/status-im/status-go/contracts/gas-price-oracle
 github.com/status-im/status-go/contracts/hop
 github.com/status-im/status-go/contracts/hop/bridge
 github.com/status-im/status-go/contracts/hop/swap
@@ -1384,6 +1386,7 @@ github.com/status-im/status-go/protocol/pushnotificationserver
 github.com/status-im/status-go/protocol/pushnotificationserver/migrations
 github.com/status-im/status-go/protocol/requests
 github.com/status-im/status-go/protocol/sqlite
+github.com/status-im/status-go/protocol/storenodes
 github.com/status-im/status-go/protocol/transport
 github.com/status-im/status-go/protocol/transport/migrations
 github.com/status-im/status-go/protocol/tt
@@ -1548,7 +1551,7 @@ github.com/waku-org/go-discover/discover/v5wire
 github.com/waku-org/go-libp2p-rendezvous
 github.com/waku-org/go-libp2p-rendezvous/db
 github.com/waku-org/go-libp2p-rendezvous/pb
-# github.com/waku-org/go-waku v0.8.1-0.20240220211751-9bb2c8e39680
+# github.com/waku-org/go-waku v0.8.1-0.20240322182925-dd81e1d46971
 ## explicit; go 1.19
 github.com/waku-org/go-waku/logging
 github.com/waku-org/go-waku/waku/persistence

@@ -10,8 +10,9 @@ var ErrBanUserFromCommunityInvalidCommunityID = errors.New("ban-user-from-commun
 var ErrBanUserFromCommunityInvalidUser = errors.New("ban-user-from-community: invalid user id")
 
 type BanUserFromCommunity struct {
-	CommunityID types.HexBytes `json:"communityId"`
-	User        types.HexBytes `json:"user"`
+	CommunityID       types.HexBytes `json:"communityId"`
+	User              types.HexBytes `json:"user"`
+	DeleteAllMessages bool           `json:"deleteAllMessages"`
 }
 
 func (b *BanUserFromCommunity) Validate() error {

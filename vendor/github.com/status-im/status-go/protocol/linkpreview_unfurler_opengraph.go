@@ -6,9 +6,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	neturl "net/url"
+	"strings"
 
 	"github.com/keighl/metabolize"
 	"go.uber.org/zap"
+	"golang.org/x/net/html"
 
 	"github.com/status-im/status-go/images"
 	"github.com/status-im/status-go/protocol/common"
@@ -38,6 +40,43 @@ func NewOpenGraphUnfurler(URL *neturl.URL, logger *zap.Logger, httpClient *http.
 	}
 }
 
+func GetFavicon(bodyBytes []byte) string {
+	htmlTokens := html.NewTokenizer(bytes.NewBuffer(bodyBytes))
+loop:
+	for {
+		tt := htmlTokens.Next()
+		switch tt {
+		case html.ErrorToken:
+			break loop
+		case html.StartTagToken:
+			t := htmlTokens.Token()
+			if t.Data != "link" {
+				continue
+			}
+
+			isIcon := false
+			href := ""
+			for _, attr := range t.Attr {
+				k := attr.Key
+				v := attr.Val
+				if k == "rel" && (v == "icon" || v == "shortcut icon") {
+					isIcon = true
+				} else if k == "href" &&
+					(strings.Contains(v, ".ico") ||
+						strings.Contains(v, ".png") ||
+						strings.Contains(v, ".svg")) {
+					href = v
+				}
+			}
+
+			if isIcon && href != "" {
+				return href
+			}
+		}
+	}
+	return ""
+}
+
 func (u *OpenGraphUnfurler) Unfurl() (*common.LinkPreview, error) {
 	preview := newDefaultLinkPreview(u.url)
 	preview.Type = protobuf.UnfurledLink_LINK
@@ -58,6 +97,13 @@ func (u *OpenGraphUnfurler) Unfurl() (*common.LinkPreview, error) {
 		return preview, fmt.Errorf("failed to parse OpenGraph data")
 	}
 
+	faviconPath := GetFavicon(bodyBytes)
+	t, err := fetchImage(u.logger, u.httpClient, faviconPath, false)
+	if err != nil {
+		u.logger.Info("failed to fetch favicon", zap.String("url", u.url.String()), zap.Error(err))
+	} else {
+		preview.Favicon.DataURI = t.DataURI
+	}
 	// There are URLs like https://wikipedia.org/ that don't have an OpenGraph
 	// title tag, but article pages do. In the future, we can fallback to the
 	// website's title by using the <title> tag.
@@ -66,7 +112,7 @@ func (u *OpenGraphUnfurler) Unfurl() (*common.LinkPreview, error) {
 	}
 
 	if ogMetadata.ThumbnailURL != "" {
-		t, err := fetchThumbnail(u.logger, u.httpClient, ogMetadata.ThumbnailURL)
+		t, err := fetchImage(u.logger, u.httpClient, ogMetadata.ThumbnailURL, true)
 		if err != nil {
 			// Given we want to fetch thumbnails on a best-effort basis, if an error
 			// happens we simply log it.
@@ -78,24 +124,25 @@ func (u *OpenGraphUnfurler) Unfurl() (*common.LinkPreview, error) {
 
 	preview.Title = ogMetadata.Title
 	preview.Description = ogMetadata.Description
+
 	return preview, nil
 }
 
-func fetchThumbnail(logger *zap.Logger, httpClient *http.Client, url string) (common.LinkPreviewThumbnail, error) {
+func fetchImage(logger *zap.Logger, httpClient *http.Client, url string, getDimensions bool) (common.LinkPreviewThumbnail, error) {
 	var thumbnail common.LinkPreviewThumbnail
 
 	imgBytes, err := fetchBody(logger, httpClient, url, nil)
 	if err != nil {
 		return thumbnail, fmt.Errorf("could not fetch thumbnail url='%s': %w", url, err)
 	}
-
-	width, height, err := images.GetImageDimensions(imgBytes)
-	if err != nil {
-		return thumbnail, fmt.Errorf("could not get image dimensions url='%s': %w", url, err)
+	if getDimensions {
+		width, height, err := images.GetImageDimensions(imgBytes)
+		if err != nil {
+			return thumbnail, fmt.Errorf("could not get image dimensions url='%s': %w", url, err)
+		}
+		thumbnail.Width = width
+		thumbnail.Height = height
 	}
-	thumbnail.Width = width
-	thumbnail.Height = height
-
 	dataURI, err := images.GetPayloadDataURI(imgBytes)
 	if err != nil {
 		return thumbnail, fmt.Errorf("could not build data URI url='%s': %w", url, err)

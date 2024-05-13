@@ -12,8 +12,7 @@ var registerOnce sync.Once
 
 // MustCreateTestLogger returns a logger based on the passed flags.
 func MustCreateTestLogger() *zap.Logger {
-	cfg := zap.NewDevelopmentConfig()
-	return MustCreateTestLoggerWithConfig(cfg)
+	return MustCreateTestLoggerWithConfig(loggerConfig())
 }
 
 func MustCreateTestLoggerWithConfig(cfg zap.Config) *zap.Logger {

@@ -1,6 +1,7 @@
 package walletevent
 
 import (
+	"encoding/json"
 	"math/big"
 	"strings"
 
@@ -30,4 +31,17 @@ type Event struct {
 	RequestID   *int             `json:"requestId,omitempty"`
 	// For Internal events only, not serialized
 	EventParams interface{}
+}
+
+func GetPayload[T any](e Event) (*T, error) {
+	var payload T
+	err := json.Unmarshal([]byte(e.Message), &payload)
+	if err != nil {
+		return nil, err
+	}
+	return &payload, nil
+}
+
+func ExtractPayload[T any](e Event, payload *T) error {
+	return json.Unmarshal([]byte(e.Message), payload)
 }

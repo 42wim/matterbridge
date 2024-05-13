@@ -231,7 +231,7 @@ func (nm *Manager) GetAll() ([]*params.Network, error) {
 }
 
 func (nm *Manager) Get(onlyEnabled bool) ([]*params.Network, error) {
-	isSepoliaEnabled, err := nm.accountsDB.GetIsSepoliaEnabled()
+	isGoerliEnabled, err := nm.accountsDB.GetIsGoerliEnabled()
 	if err != nil {
 		return nil, err
 	}
@@ -248,7 +248,7 @@ func (nm *Manager) Get(onlyEnabled bool) ([]*params.Network, error) {
 
 	var results []*params.Network
 	for _, network := range networks {
-		if !isSepoliaEnabled {
+		if isGoerliEnabled {
 			found := false
 			for _, chainID := range SepoliaChainIDs {
 				if network.ChainID == chainID {
@@ -261,7 +261,7 @@ func (nm *Manager) Get(onlyEnabled bool) ([]*params.Network, error) {
 			}
 		}
 
-		if isSepoliaEnabled {
+		if !isGoerliEnabled {
 			found := false
 
 			for _, chainID := range GoerliChainIDs {

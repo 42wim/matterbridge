@@ -49,6 +49,7 @@ type QuotedMessage struct {
 	DeletedForMe bool `json:"deletedForMe,omitempty"`
 
 	DiscordMessage *protobuf.DiscordMessage `json:"discordMessage,omitempty"`
+	BridgeMessage  *protobuf.BridgeMessage  `json:"bridgeMessage,omitempty"`
 }
 
 type CommandState int

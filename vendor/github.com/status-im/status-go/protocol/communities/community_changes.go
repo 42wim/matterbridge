@@ -3,6 +3,8 @@ package communities
 import (
 	"crypto/ecdsa"
 
+	slices "golang.org/x/exp/slices"
+
 	"github.com/status-im/status-go/protocol/protobuf"
 )
 
@@ -20,8 +22,10 @@ type CommunityChanges struct {
 
 	ControlNodeChanged *ecdsa.PublicKey `json:"controlNodeChanged"`
 
-	MembersAdded   map[string]*protobuf.CommunityMember `json:"membersAdded"`
-	MembersRemoved map[string]*protobuf.CommunityMember `json:"membersRemoved"`
+	MembersAdded    map[string]*protobuf.CommunityMember `json:"membersAdded"`
+	MembersRemoved  map[string]*protobuf.CommunityMember `json:"membersRemoved"`
+	MembersBanned   map[string]bool                      `json:"membersBanned"`
+	MembersUnbanned map[string]bool                      `json:"membersUnbanned"`
 
 	TokenPermissionsAdded    map[string]*CommunityTokenPermission `json:"tokenPermissionsAdded"`
 	TokenPermissionsModified map[string]*CommunityTokenPermission `json:"tokenPermissionsModified"`
@@ -48,8 +52,10 @@ type CommunityChanges struct {
 
 func EmptyCommunityChanges() *CommunityChanges {
 	return &CommunityChanges{
-		MembersAdded:   make(map[string]*protobuf.CommunityMember),
-		MembersRemoved: make(map[string]*protobuf.CommunityMember),
+		MembersAdded:    make(map[string]*protobuf.CommunityMember),
+		MembersRemoved:  make(map[string]*protobuf.CommunityMember),
+		MembersBanned:   make(map[string]bool),
+		MembersUnbanned: make(map[string]bool),
 
 		TokenPermissionsAdded:    make(map[string]*CommunityTokenPermission),
 		TokenPermissionsModified: make(map[string]*CommunityTokenPermission),
@@ -81,6 +87,22 @@ func (c *CommunityChanges) HasMemberLeft(identity string) bool {
 		return false
 	}
 	_, ok := c.MembersRemoved[identity]
+	return ok
+}
+
+func (c *CommunityChanges) IsMemberBanned(identity string) bool {
+	if len(c.MembersBanned) == 0 {
+		return false
+	}
+	_, ok := c.MembersBanned[identity]
+	return ok
+}
+
+func (c *CommunityChanges) IsMemberUnbanned(identity string) bool {
+	if len(c.MembersUnbanned) == 0 {
+		return false
+	}
+	_, ok := c.MembersUnbanned[identity]
 	return ok
 }
 
@@ -122,19 +144,23 @@ func evaluateCommunityChangesByDescription(origin, modified *protobuf.CommunityD
 	// Check for new members at the org level
 	for pk, member := range modified.Members {
 		if _, ok := origin.Members[pk]; !ok {
-			if changes.MembersAdded == nil {
-				changes.MembersAdded = make(map[string]*protobuf.CommunityMember)
-			}
 			changes.MembersAdded[pk] = member
 		}
 	}
 
+	// Check ban/unban
+	findDiffInBannedMembers(modified.BannedMembers, origin.BannedMembers, changes.MembersBanned)
+	findDiffInBannedMembers(origin.BannedMembers, modified.BannedMembers, changes.MembersUnbanned)
+
+	// Check for new banned members (from deprecated BanList)
+	findDiffInBanList(modified.BanList, origin.BanList, changes.MembersBanned)
+
+	// Check for new unbanned members (from deprecated BanList)
+	findDiffInBanList(origin.BanList, modified.BanList, changes.MembersUnbanned)
+
 	// Check for removed members at the org level
 	for pk, member := range origin.Members {
 		if _, ok := modified.Members[pk]; !ok {
-			if changes.MembersRemoved == nil {
-				changes.MembersRemoved = make(map[string]*protobuf.CommunityMember)
-			}
 			changes.MembersRemoved[pk] = member
 		}
 	}
@@ -145,10 +171,6 @@ func evaluateCommunityChangesByDescription(origin, modified *protobuf.CommunityD
 			modified.Chats = make(map[string]*protobuf.CommunityChat)
 		}
 		if _, ok := modified.Chats[chatID]; !ok {
-			if changes.ChatsRemoved == nil {
-				changes.ChatsRemoved = make(map[string]*protobuf.CommunityChat)
-			}
-
 			changes.ChatsRemoved[chatID] = chat
 		}
 	}
@@ -159,10 +181,6 @@ func evaluateCommunityChangesByDescription(origin, modified *protobuf.CommunityD
 		}
 
 		if _, ok := origin.Chats[chatID]; !ok {
-			if changes.ChatsAdded == nil {
-				changes.ChatsAdded = make(map[string]*protobuf.CommunityChat)
-			}
-
 			changes.ChatsAdded[chatID] = chat
 		} else {
 			// Check for members added
@@ -232,10 +250,6 @@ func evaluateCommunityChangesByDescription(origin, modified *protobuf.CommunityD
 			origin.Categories = make(map[string]*protobuf.CommunityCategory)
 		}
 		if _, ok := origin.Categories[categoryID]; !ok {
-			if changes.CategoriesAdded == nil {
-				changes.CategoriesAdded = make(map[string]*protobuf.CommunityCategory)
-			}
-
 			changes.CategoriesAdded[categoryID] = category
 		} else {
 			if origin.Categories[categoryID].Name != category.Name || origin.Categories[categoryID].Position != category.Position {
@@ -267,4 +281,34 @@ func evaluateCommunityChangesByDescription(origin, modified *protobuf.CommunityD
 	}
 
 	return changes
+}
+
+func findDiffInBanList(searchFrom []string, searchIn []string, storeTo map[string]bool) {
+	for _, memberToFind := range searchFrom {
+		if _, stored := storeTo[memberToFind]; stored {
+			continue
+		}
+
+		exists := slices.Contains(searchIn, memberToFind)
+
+		if !exists {
+			storeTo[memberToFind] = false
+		}
+	}
+}
+
+func findDiffInBannedMembers(searchFrom map[string]*protobuf.CommunityBanInfo, searchIn map[string]*protobuf.CommunityBanInfo, storeTo map[string]bool) {
+	if searchFrom == nil {
+		return
+	} else if searchIn == nil {
+		for memberToFind, value := range searchFrom {
+			storeTo[memberToFind] = value.DeleteAllMessages
+		}
+	} else {
+		for memberToFind, value := range searchFrom {
+			if _, exists := searchIn[memberToFind]; !exists {
+				storeTo[memberToFind] = value.DeleteAllMessages
+			}
+		}
+	}
 }

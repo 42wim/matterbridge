@@ -4,6 +4,7 @@ import "chat_identity.proto";
 import "sync_settings.proto";
 import 'application_metadata_message.proto';
 import 'communities.proto';
+import 'profile_showcase.proto';
 
 option go_package = "./;protobuf";
 package protobuf;
@@ -135,10 +136,12 @@ message SyncInstallationCommunity {
   SyncCommunitySettings settings = 9;
   bool encrypted = 10;
   bool spectated = 11;
-  bytes encryption_keys = 12;
+  // Kept for backward compatibility
+  bytes encryption_keys_v1 = 12 [deprecated = true];
   SyncCommunityControlNode control_node = 13;
   int64 joined_at = 14;
   int64 last_opened_at = 15;
+  repeated bytes encryption_keys_v2 = 16;
 }
 
 message SyncCommunityRequestsToJoin {
@@ -376,6 +379,7 @@ message BackedUpProfile {
   repeated SyncProfilePicture pictures = 4;
   SyncSocialLinks social_links = 5;
   repeated SyncEnsUsernameDetail ens_username_details = 6;
+  SyncProfileShowcasePreferences profile_showcase_preferences = 7;
 }
 
 message RawMessage {

@@ -30,6 +30,7 @@ import (
 	"github.com/status-im/status-go/services/communitytokens"
 	"github.com/status-im/status-go/services/utils"
 	"github.com/status-im/status-go/services/wallet/async"
+	"github.com/status-im/status-go/services/wallet/bigint"
 	"github.com/status-im/status-go/services/wallet/community"
 	"github.com/status-im/status-go/services/wallet/walletevent"
 )
@@ -62,14 +63,10 @@ type Token struct {
 }
 
 type ReceivedToken struct {
-	Address       common.Address  `json:"address"`
-	Name          string          `json:"name"`
-	Symbol        string          `json:"symbol"`
-	Image         string          `json:"image,omitempty"`
-	ChainID       uint64          `json:"chainId"`
-	CommunityData *community.Data `json:"community_data,omitempty"`
-	Balance       *big.Int        `json:"balance"`
-	TxHash        common.Hash     `json:"txHash"`
+	Token
+	Amount  float64     `json:"amount"`
+	TxHash  common.Hash `json:"txHash"`
+	IsFirst bool        `json:"isFirst"`
 }
 
 func (t *Token) IsNative() bool {
@@ -316,20 +313,20 @@ func (tm *Manager) FindOrCreateTokenByAddress(ctx context.Context, chainID uint6
 	return token
 }
 
-func (tm *Manager) MarkAsPreviouslyOwnedToken(token *Token, owner common.Address) error {
+func (tm *Manager) MarkAsPreviouslyOwnedToken(token *Token, owner common.Address) (bool, error) {
 	if token == nil {
-		return errors.New("token is nil")
+		return false, errors.New("token is nil")
 	}
 	if (owner == common.Address{}) {
-		return errors.New("owner is nil")
+		return false, errors.New("owner is nil")
 	}
 	count := 0
 	err := tm.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM token_balances WHERE user_address = ? AND token_address = ? AND chain_id = ?)`, owner.Hex(), token.Address.Hex(), token.ChainID).Scan(&count)
 	if err != nil || count > 0 {
-		return err
+		return false, err
 	}
 	_, err = tm.db.Exec(`INSERT INTO token_balances(user_address,token_name,token_symbol,token_address,token_decimals,chain_id,token_decimals,raw_balance,balance) VALUES (?,?,?,?,?,?,?,?,?)`, owner.Hex(), token.Name, token.Symbol, token.Address.Hex(), token.Decimals, token.ChainID, 0, "0", "0")
-	return err
+	return true, err
 }
 
 func (tm *Manager) discoverTokenCommunityID(ctx context.Context, token *Token, address common.Address) {
@@ -809,7 +806,7 @@ func (tm *Manager) GetBalancesAtByChain(parent context.Context, clients map[uint
 	return response, group.Error()
 }
 
-func (tm *Manager) SignalCommunityTokenReceived(address common.Address, txHash common.Hash, value *big.Int, t *Token) {
+func (tm *Manager) SignalCommunityTokenReceived(address common.Address, txHash common.Hash, value *big.Int, t *Token, isFirst bool) {
 	if tm.walletFeed == nil || t == nil || t.CommunityData == nil {
 		return
 	}
@@ -826,15 +823,14 @@ func (tm *Manager) SignalCommunityTokenReceived(address common.Address, txHash c
 		}
 	}
 
+	floatAmount, _ := new(big.Float).Quo(new(big.Float).SetInt(value), new(big.Float).SetInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(t.Decimals)), nil))).Float64()
+	t.Image = tm.mediaServer.MakeCommunityTokenImagesURL(t.CommunityData.ID, t.ChainID, t.Symbol)
+
 	receivedToken := ReceivedToken{
-		Address:       t.Address,
-		Name:          t.Name,
-		Symbol:        t.Symbol,
-		Image:         t.Image,
-		ChainID:       t.ChainID,
-		CommunityData: t.CommunityData,
-		Balance:       value,
-		TxHash:        txHash,
+		Token:   *t,
+		Amount:  floatAmount,
+		TxHash:  txHash,
+		IsFirst: isFirst,
 	}
 
 	encodedMessage, err := json.Marshal(receivedToken)
@@ -868,4 +864,15 @@ func (tm *Manager) fillCommunityData(token *Token) error {
 		token.CommunityData.Image = communityInfo.CommunityImage
 	}
 	return nil
+}
+
+func (tm *Manager) GetTokenHistoricalBalance(account common.Address, chainID uint64, symbol string, timestamp int64) (*big.Int, error) {
+	var balance big.Int
+	err := tm.db.QueryRow("SELECT balance FROM balance_history WHERE currency = ? AND chain_id = ? AND address = ? AND timestamp < ? order by timestamp DESC LIMIT 1", symbol, chainID, account, timestamp).Scan((*bigint.SQLBigIntBytes)(&balance))
+	if err == sql.ErrNoRows {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+	return &balance, nil
 }

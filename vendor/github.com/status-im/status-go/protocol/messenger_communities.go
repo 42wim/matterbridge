@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -148,36 +149,6 @@ func (m *Messenger) publishCommunityEvents(community *communities.Community, msg
 		// we don't want to wrap in an encryption layer message
 		SkipEncryptionLayer: true,
 		MessageType:         protobuf.ApplicationMetadataMessage_COMMUNITY_EVENTS_MESSAGE,
-		PubsubTopic:         community.PubsubTopic(), // TODO: confirm if it should be sent in community pubsub topic
-	}
-
-	// TODO: resend in case of failure?
-	_, err = m.sender.SendPublic(context.Background(), types.EncodeHex(msg.CommunityID), rawMessage)
-	return err
-}
-
-func (m *Messenger) publishCommunityEventsRejected(community *communities.Community, msg *communities.CommunityEventsMessage) error {
-	if !community.IsControlNode() {
-		return communities.ErrNotControlNode
-	}
-	m.logger.Debug("publishing community events rejected", zap.Any("event", msg))
-
-	communityEventsMessage := msg.ToProtobuf()
-	communityEventsMessageRejected := &protobuf.CommunityEventsMessageRejected{
-		Msg: communityEventsMessage,
-	}
-
-	payload, err := proto.Marshal(communityEventsMessageRejected)
-	if err != nil {
-		return err
-	}
-
-	rawMessage := common.RawMessage{
-		Payload: payload,
-		Sender:  community.PrivateKey(),
-		// we don't want to wrap in an encryption layer message
-		SkipEncryptionLayer: true,
-		MessageType:         protobuf.ApplicationMetadataMessage_COMMUNITY_EVENTS_MESSAGE_REJECTED,
 		PubsubTopic:         community.PubsubTopic(), // TODO: confirm if it should be sent in community pubsub topic
 	}
 
@@ -409,14 +380,6 @@ func (m *Messenger) handleCommunitiesSubscription(c chan *communities.Subscripti
 					}
 				}
 
-				if sub.CommunityEventsMessageInvalidClock != nil {
-					err := m.publishCommunityEventsRejected(sub.CommunityEventsMessageInvalidClock.Community,
-						sub.CommunityEventsMessageInvalidClock.CommunityEventsMessage)
-					if err != nil {
-						m.logger.Warn("failed to publish community events rejected", zap.Error(err))
-					}
-				}
-
 				if sub.AcceptedRequestsToJoin != nil {
 					for _, requestID := range sub.AcceptedRequestsToJoin {
 						accept := &requests.AcceptRequestToJoinCommunity{
@@ -635,6 +598,31 @@ func (m *Messenger) ControlledCommunities() ([]*communities.Community, error) {
 
 func (m *Messenger) JoinedCommunities() ([]*communities.Community, error) {
 	return m.communitiesManager.Joined()
+}
+
+func (m *Messenger) IsDisplayNameDupeOfCommunityMember(name string) (bool, error) {
+	controlled, err := m.communitiesManager.Controlled()
+	if err != nil {
+		return false, err
+	}
+
+	joined, err := m.communitiesManager.Joined()
+	if err != nil {
+		return false, err
+	}
+
+	for _, community := range append(controlled, joined...) {
+		for memberKey := range community.Members() {
+			contact := m.GetContactByID(memberKey)
+			if contact == nil {
+				continue
+			}
+			if strings.Compare(contact.DisplayName, name) == 0 {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
 }
 
 func (m *Messenger) CommunityUpdateLastOpenedAt(communityID string) (int64, error) {
@@ -1565,11 +1553,16 @@ func (m *Messenger) acceptRequestToJoinCommunity(requestToJoin *communities.Requ
 			}
 		}
 
+		encryptedDescription, err := community.EncryptedDescription()
+		if err != nil {
+			return nil, err
+		}
+
 		requestToJoinResponseProto := &protobuf.CommunityRequestToJoinResponse{
 			Clock:                    community.Clock(),
 			Accepted:                 true,
 			CommunityId:              community.ID(),
-			Community:                community.Description(),
+			Community:                encryptedDescription,
 			Grant:                    grant,
 			ProtectedTopicPrivateKey: crypto.FromECDSA(key),
 			Shard:                    community.Shard().Protobuffer(),
@@ -1831,17 +1824,19 @@ func (m *Messenger) leaveCommunity(communityID types.HexBytes) (*MessengerRespon
 	return response, nil
 }
 
-func (m *Messenger) kickedOutOfCommunity(communityID types.HexBytes) (*MessengerResponse, error) {
+func (m *Messenger) kickedOutOfCommunity(communityID types.HexBytes, spectateMode bool) (*MessengerResponse, error) {
 	response := &MessengerResponse{}
 
-	community, err := m.communitiesManager.KickedOutOfCommunity(communityID)
+	community, err := m.communitiesManager.KickedOutOfCommunity(communityID, spectateMode)
 	if err != nil {
 		return nil, err
 	}
 
-	err = m.DeleteProfileShowcaseCommunity(community)
-	if err != nil {
-		return nil, err
+	if !spectateMode {
+		err = m.DeleteProfileShowcaseCommunity(community)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	response.AddCommunity(community)
@@ -2216,6 +2211,51 @@ func (m *Messenger) RemovePubsubTopicPrivateKey(topic string) error {
 	return m.transport.RemovePubsubTopicKey(topic)
 }
 
+func (m *Messenger) SetCommunityStorenodes(request *requests.SetCommunityStorenodes) (*MessengerResponse, error) {
+	if err := request.Validate(); err != nil {
+		return nil, err
+	}
+	community, err := m.communitiesManager.GetByID(request.CommunityID)
+	if err != nil {
+		return nil, err
+	}
+	if !community.IsControlNode() {
+		return nil, errors.New("not admin or owner")
+	}
+
+	if err := m.communityStorenodes.UpdateStorenodesInDB(request.CommunityID, request.Storenodes, 0); err != nil {
+		return nil, err
+	}
+	err = m.sendCommunityPublicStorenodesInfo(community, request.Storenodes)
+	if err != nil {
+		return nil, err
+	}
+	response := &MessengerResponse{
+		CommunityStorenodes: request.Storenodes,
+	}
+	return response, nil
+}
+
+func (m *Messenger) GetCommunityStorenodes(communityID types.HexBytes) (*MessengerResponse, error) {
+	community, err := m.communitiesManager.GetByID(communityID)
+	if err != nil {
+		return nil, err
+	}
+	if community == nil {
+		return nil, communities.ErrOrgNotFound
+	}
+
+	snodes, err := m.communityStorenodes.GetStorenodesFromDB(communityID)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MessengerResponse{
+		CommunityStorenodes: snodes,
+	}
+	return response, nil
+}
+
 func (m *Messenger) UpdateCommunityFilters(community *communities.Community) error {
 	defaultFilters := m.DefaultFilters(community)
 	publicFiltersToInit := make([]transport.FiltersToInitialize, 0, len(defaultFilters)+len(community.Chats()))
@@ -2259,6 +2299,8 @@ func (m *Messenger) UpdateCommunityFilters(community *communities.Community) err
 }
 
 func (m *Messenger) CreateCommunityTokenPermission(request *requests.CreateCommunityTokenPermission) (*MessengerResponse, error) {
+	request.FillDeprecatedAmount()
+
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}
@@ -2279,6 +2321,12 @@ func (m *Messenger) CreateCommunityTokenPermission(request *requests.CreateCommu
 		}()
 	}
 
+	// ensure HRkeys are synced
+	err = m.syncCommunity(context.Background(), community, m.dispatchMessage)
+	if err != nil {
+		return nil, err
+	}
+
 	response := &MessengerResponse{}
 	response.AddCommunity(community)
 	response.CommunityChanges = []*communities.CommunityChanges{changes}
@@ -2287,6 +2335,8 @@ func (m *Messenger) CreateCommunityTokenPermission(request *requests.CreateCommu
 }
 
 func (m *Messenger) EditCommunityTokenPermission(request *requests.EditCommunityTokenPermission) (*MessengerResponse, error) {
+	request.FillDeprecatedAmount()
+
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}
@@ -2342,6 +2392,23 @@ func (m *Messenger) DeleteCommunityTokenPermission(request *requests.DeleteCommu
 	return response, nil
 }
 
+func (m *Messenger) HandleCommunityReevaluatePermissionsRequest(state *ReceivedMessageState, request *protobuf.CommunityReevaluatePermissionsRequest, statusMessage *v1protocol.StatusMessage) error {
+	community, err := m.communitiesManager.GetByID(request.CommunityId)
+	if err != nil {
+		return err
+	}
+
+	if !community.IsControlNode() {
+		return communities.ErrNotControlNode
+	}
+
+	if !community.IsMemberTokenMaster(statusMessage.SigPubKey()) {
+		return communities.ErrNotAuthorized
+	}
+
+	return m.communitiesManager.ScheduleMembersReevaluation(request.CommunityId)
+}
+
 func (m *Messenger) ReevaluateCommunityMembersPermissions(request *requests.ReevaluateCommunityMembersPermissions) (*MessengerResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
@@ -2352,14 +2419,37 @@ func (m *Messenger) ReevaluateCommunityMembersPermissions(request *requests.Reev
 		return nil, err
 	}
 
-	if err = m.communitiesManager.ReevaluateCommunityMembersPermissions(community); err != nil {
-		return nil, err
+	if community.IsControlNode() {
+		err = m.communitiesManager.ScheduleMembersReevaluation(request.CommunityID)
+		if err != nil {
+			return nil, err
+		}
+	} else if community.IsTokenMaster() {
+		reevaluateRequest := &protobuf.CommunityReevaluatePermissionsRequest{
+			CommunityId: request.CommunityID,
+		}
+
+		encodedMessage, err := proto.Marshal(reevaluateRequest)
+		if err != nil {
+			return nil, err
+		}
+
+		rawMessage := common.RawMessage{
+			Payload:             encodedMessage,
+			CommunityID:         request.CommunityID,
+			SkipEncryptionLayer: true,
+			MessageType:         protobuf.ApplicationMetadataMessage_COMMUNITY_REEVALUATE_PERMISSIONS_REQUEST,
+			PubsubTopic:         community.PubsubTopic(),
+		}
+		_, err = m.SendMessageToControlNode(community, rawMessage)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, communities.ErrNotAuthorized
 	}
 
-	response := &MessengerResponse{}
-	response.AddCommunity(community)
-
-	return response, nil
+	return &MessengerResponse{}, nil
 }
 
 func (m *Messenger) EditCommunity(request *requests.EditCommunity) (*MessengerResponse, error) {
@@ -2656,6 +2746,24 @@ func (m *Messenger) BanUserFromCommunity(ctx context.Context, request *requests.
 	}
 
 	response.AddCommunity(community)
+
+	if request.DeleteAllMessages && community.IsControlNode() {
+		deleteMessagesResponse, err := m.deleteCommunityMemberMessages(request.User.String(), request.CommunityID.String(), []*protobuf.DeleteCommunityMemberMessage{})
+		if err != nil {
+			return nil, err
+		}
+
+		err = response.Merge(deleteMessagesResponse)
+		if err != nil {
+			return nil, err
+		}
+
+		// signal client with community and messages changes
+		if m.config.messengerSignalsHandler != nil {
+			m.config.messengerSignalsHandler.MessengerResponse(deleteMessagesResponse)
+		}
+	}
+
 	return response, nil
 }
 
@@ -2791,6 +2899,21 @@ func (m *Messenger) handleCommunityDescription(state *ReceivedMessageState, sign
 func (m *Messenger) handleCommunityResponse(state *ReceivedMessageState, communityResponse *communities.CommunityResponse) error {
 	community := communityResponse.Community
 
+	if len(communityResponse.Changes.MembersBanned) > 0 {
+		for memberID, deleteAllMessages := range communityResponse.Changes.MembersBanned {
+			if deleteAllMessages {
+				response, err := m.deleteCommunityMemberMessages(memberID, community.IDString(), []*protobuf.DeleteCommunityMemberMessage{})
+				if err != nil {
+					return err
+				}
+
+				if err = state.Response.Merge(response); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
 	state.Response.AddCommunity(community)
 	state.Response.CommunityChanges = append(state.Response.CommunityChanges, communityResponse.Changes)
 	state.Response.AddRequestsToJoinCommunity(communityResponse.RequestsToJoin)
@@ -2835,11 +2958,13 @@ func (m *Messenger) handleCommunityResponse(state *ReceivedMessageState, communi
 			oldChat.Description != chat.Description ||
 			oldChat.Emoji != chat.Emoji ||
 			oldChat.Color != chat.Color ||
+			oldChat.HideIfPermissionsNotMet != chat.HideIfPermissionsNotMet ||
 			oldChat.UpdateFirstMessageTimestamp(chat.FirstMessageTimestamp) {
 			oldChat.Name = chat.Name
 			oldChat.Description = chat.Description
 			oldChat.Emoji = chat.Emoji
 			oldChat.Color = chat.Color
+			oldChat.HideIfPermissionsNotMet = chat.HideIfPermissionsNotMet
 			// TODO(samyoul) remove storing of an updated reference pointer?
 			state.AllChats.Store(chat.ID, oldChat)
 			state.Response.AddChat(chat)
@@ -2919,7 +3044,7 @@ func (m *Messenger) HandleCommunityUserKicked(state *ReceivedMessageState, messa
 		return nil
 	}
 
-	response, err := m.kickedOutOfCommunity(community.ID())
+	response, err := m.kickedOutOfCommunity(community.ID(), false)
 	if err != nil {
 		m.logger.Error("cannot leave community", zap.Error(err))
 		return err
@@ -3168,10 +3293,18 @@ func (m *Messenger) handleSyncInstallationCommunity(messageState *ReceivedMessag
 		return nil
 	}
 
-	// Handle community keys
-	if len(syncCommunity.EncryptionKeys) != 0 {
+	// Handle deprecated community keys
+	if len(syncCommunity.EncryptionKeysV1) != 0 {
 		//  We pass nil,nil as private key/public key as they won't be encrypted
-		_, err := m.encryptor.HandleHashRatchetKeysPayload(syncCommunity.Id, syncCommunity.EncryptionKeys, nil, nil)
+		_, err := m.encryptor.HandleHashRatchetKeysPayload(syncCommunity.Id, syncCommunity.EncryptionKeysV1, nil, nil)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Handle community and channel keys
+	if len(syncCommunity.EncryptionKeysV2) != 0 {
+		err := m.encryptor.HandleHashRatchetHeadersPayload(syncCommunity.EncryptionKeysV2)
 		if err != nil {
 			return err
 		}
@@ -3377,7 +3510,8 @@ func (m *Messenger) InitHistoryArchiveTasks(communities []*communities.Community
 			}
 
 			// Request possibly missed waku messages for community
-			_, err = m.syncFiltersFrom(filters, uint32(latestWakuMessageTimestamp))
+			ms := m.getActiveMailserver(c.ID().String())
+			_, err = m.syncFiltersFrom(*ms, filters, uint32(latestWakuMessageTimestamp))
 			if err != nil {
 				m.communitiesManager.LogStdout("failed to request missing messages", zap.Error(err))
 				continue
@@ -3933,26 +4067,51 @@ func (m *Messenger) CheckPermissionsToJoinCommunity(request *requests.CheckPermi
 	return m.communitiesManager.CheckPermissionToJoin(request.CommunityID, addresses)
 }
 
-func (m *Messenger) CheckCommunityChannelPermissions(request *requests.CheckCommunityChannelPermissions) (*communities.CheckChannelPermissionsResponse, error) {
-	if err := request.Validate(); err != nil {
-		return nil, err
+func (m *Messenger) getSharedAddresses(communityID types.HexBytes, requestAddresses []string) ([]gethcommon.Address, error) {
+	addressesMap := make(map[string]struct{})
+
+	for _, v := range requestAddresses {
+		addressesMap[v] = struct{}{}
 	}
 
-	var addresses []gethcommon.Address
+	if len(requestAddresses) == 0 {
+		sharedAddresses, err := m.GetRevealedAccounts(communityID, common.PubkeyToHex(&m.identity.PublicKey))
+		if err != nil {
+			return nil, err
+		}
 
-	if len(request.Addresses) == 0 {
+		for _, v := range sharedAddresses {
+			addressesMap[v.Address] = struct{}{}
+		}
+	}
+
+	if len(addressesMap) == 0 {
 		accounts, err := m.settings.GetActiveAccounts()
 		if err != nil {
 			return nil, err
 		}
 
 		for _, a := range accounts {
-			addresses = append(addresses, gethcommon.HexToAddress(a.Address.Hex()))
+			addressesMap[a.Address.Hex()] = struct{}{}
 		}
-	} else {
-		for _, v := range request.Addresses {
-			addresses = append(addresses, gethcommon.HexToAddress(v))
-		}
+	}
+
+	var addresses []gethcommon.Address
+	for addr := range addressesMap {
+		addresses = append(addresses, gethcommon.HexToAddress(addr))
+	}
+
+	return addresses, nil
+}
+
+func (m *Messenger) CheckCommunityChannelPermissions(request *requests.CheckCommunityChannelPermissions) (*communities.CheckChannelPermissionsResponse, error) {
+	if err := request.Validate(); err != nil {
+		return nil, err
+	}
+
+	addresses, err := m.getSharedAddresses(request.CommunityID, request.Addresses)
+	if err != nil {
+		return nil, err
 	}
 
 	return m.communitiesManager.CheckChannelPermissions(request.CommunityID, request.ChatID, addresses)
@@ -3963,21 +4122,9 @@ func (m *Messenger) CheckAllCommunityChannelsPermissions(request *requests.Check
 		return nil, err
 	}
 
-	var addresses []gethcommon.Address
-
-	if len(request.Addresses) == 0 {
-		accounts, err := m.settings.GetActiveAccounts()
-		if err != nil {
-			return nil, err
-		}
-
-		for _, a := range accounts {
-			addresses = append(addresses, gethcommon.HexToAddress(a.Address.Hex()))
-		}
-	} else {
-		for _, v := range request.Addresses {
-			addresses = append(addresses, gethcommon.HexToAddress(v))
-		}
+	addresses, err := m.getSharedAddresses(request.CommunityID, request.Addresses)
+	if err != nil {
+		return nil, err
 	}
 
 	return m.communitiesManager.CheckAllChannelsPermissions(request.CommunityID, addresses)
@@ -4145,6 +4292,7 @@ func (m *Messenger) GetCommunityMembersForWalletAddresses(communityID types.HexB
 
 func (m *Messenger) processCommunityChanges(messageState *ReceivedMessageState) {
 	// Process any community changes
+	pkString := common.PubkeyToHex(&m.identity.PublicKey)
 	for _, changes := range messageState.Response.CommunityChanges {
 		if changes.ShouldMemberJoin {
 			response, err := m.joinCommunity(context.TODO(), changes.Community.ID(), false)
@@ -4159,38 +4307,13 @@ func (m *Messenger) processCommunityChanges(messageState *ReceivedMessageState) 
 			}
 
 		} else if changes.MemberKicked {
-			response, err := m.kickedOutOfCommunity(changes.Community.ID())
-			if err != nil {
-				m.logger.Error("cannot leave community", zap.Error(err))
-				continue
+			notificationType := ActivityCenterNotificationTypeCommunityKicked
+			if changes.IsMemberBanned(pkString) {
+				notificationType = ActivityCenterNotificationTypeCommunityBanned
 			}
-
-			if err := messageState.Response.Merge(response); err != nil {
-				m.logger.Error("cannot merge join community response", zap.Error(err))
-				continue
-			}
-
-			// Activity Center notification
-			now := m.GetCurrentTimeInMillis()
-			notification := &ActivityCenterNotification{
-				ID:          types.FromHex(uuid.New().String()),
-				Type:        ActivityCenterNotificationTypeCommunityKicked,
-				Timestamp:   now,
-				CommunityID: changes.Community.IDString(),
-				Read:        false,
-				UpdatedAt:   now,
-			}
-
-			err = m.addActivityCenterNotification(response, notification, nil)
-			if err != nil {
-				m.logger.Error("failed to save notification", zap.Error(err))
-				continue
-			}
-
-			if err := messageState.Response.Merge(response); err != nil {
-				m.logger.Error("cannot merge notification response", zap.Error(err))
-				continue
-			}
+			m.leaveCommunityDueToKickOrBan(changes, notificationType, messageState.Response)
+		} else if changes.IsMemberUnbanned(pkString) {
+			m.AddActivityCenterNotificationToResponse(changes.Community.IDString(), ActivityCenterNotificationTypeCommunityUnbanned, messageState.Response)
 		}
 	}
 	// Clean up as not used by clients currently
@@ -4241,7 +4364,13 @@ func (m *Messenger) PromoteSelfToControlNode(communityID types.HexBytes) (*Messe
 	return &response, nil
 }
 
-func (m *Messenger) CreateResponseWithACNotification(communityID string, acType ActivityCenterType, isRead bool) (*MessengerResponse, error) {
+func (m *Messenger) CreateResponseWithACNotification(communityID string, acType ActivityCenterType, isRead bool, tokenDataJSON string) (*MessengerResponse, error) {
+	tokenData := ActivityTokenData{}
+	err := json.Unmarshal([]byte(tokenDataJSON), &tokenData)
+	if len(tokenDataJSON) > 0 && err != nil {
+		// Only return error when activityDataString is not empty
+		return nil, err
+	}
 	// Activity center notification
 	notification := &ActivityCenterNotification{
 		ID:          types.FromHex(uuid.New().String()),
@@ -4251,11 +4380,17 @@ func (m *Messenger) CreateResponseWithACNotification(communityID string, acType 
 		Read:        isRead,
 		Deleted:     false,
 		UpdatedAt:   m.GetCurrentTimeInMillis(),
+		TokenData:   &tokenData,
+	}
+
+	err = m.prepareTokenData(notification.TokenData, m.httpServer)
+	if err != nil {
+		return nil, err
 	}
 
 	response := &MessengerResponse{}
 
-	err := m.addActivityCenterNotification(response, notification, nil)
+	err = m.addActivityCenterNotification(response, notification, nil)
 	if err != nil {
 		m.logger.Error("failed to save notification", zap.Error(err))
 		return response, err
@@ -4288,4 +4423,138 @@ func (m *Messenger) AddActivityCenterNotificationToResponse(communityID string, 
 	if err != nil {
 		m.logger.Error("failed to save notification", zap.Error(err))
 	}
+}
+
+func (m *Messenger) leaveCommunityDueToKickOrBan(changes *communities.CommunityChanges, acType ActivityCenterType, stateResponse *MessengerResponse) {
+	// during the ownership change kicked user must stay in the spectate mode
+	ownerhipChange := changes.ControlNodeChanged != nil
+	response, err := m.kickedOutOfCommunity(changes.Community.ID(), ownerhipChange)
+	if err != nil {
+		m.logger.Error("cannot leave community", zap.Error(err))
+		return
+	}
+
+	if !ownerhipChange {
+		// Activity Center notification
+		notification := &ActivityCenterNotification{
+			ID:          types.FromHex(uuid.New().String()),
+			Type:        acType,
+			Timestamp:   m.getTimesource().GetCurrentTime(),
+			CommunityID: changes.Community.IDString(),
+			Read:        false,
+			UpdatedAt:   m.GetCurrentTimeInMillis(),
+		}
+
+		err = m.addActivityCenterNotification(response, notification, nil)
+		if err != nil {
+			m.logger.Error("failed to save notification", zap.Error(err))
+			return
+		}
+	}
+
+	if err := stateResponse.Merge(response); err != nil {
+		m.logger.Error("cannot merge leave and notification response", zap.Error(err))
+	}
+}
+
+func (m *Messenger) GetCommunityMemberAllMessages(request *requests.CommunityMemberMessages) ([]*common.Message, error) {
+	if err := request.Validate(); err != nil {
+		return nil, err
+	}
+
+	messages, err := m.persistence.GetCommunityMemberAllMessages(request.MemberPublicKey, request.CommunityID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, message := range messages {
+		updatedMessages, err := m.persistence.MessagesByResponseTo(message.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		messages = append(messages, updatedMessages...)
+	}
+
+	return messages, nil
+
+}
+
+func (m *Messenger) DeleteCommunityMemberMessages(request *requests.DeleteCommunityMemberMessages) (*MessengerResponse, error) {
+	if err := request.Validate(); err != nil {
+		return nil, err
+	}
+
+	community, err := m.GetCommunityByID(request.CommunityID)
+	if err != nil {
+		return nil, err
+	}
+
+	if community == nil {
+		return nil, communities.ErrOrgNotFound
+	}
+
+	if !community.IsControlNode() && !community.IsPrivilegedMember(m.IdentityPublicKey()) {
+		return nil, communities.ErrNotEnoughPermissions
+	}
+
+	memberPubKey, err := common.HexToPubkey(request.MemberPubKey)
+	if err != nil {
+		return nil, err
+	}
+
+	if community.IsMemberOwner(memberPubKey) && !m.IdentityPublicKey().Equal(memberPubKey) {
+		return nil, communities.ErrNotOwner
+	}
+
+	deleteMessagesResponse, err := m.deleteCommunityMemberMessages(request.MemberPubKey, request.CommunityID.String(), request.Messages)
+	if err != nil {
+		return nil, err
+	}
+
+	deletedMessages := &protobuf.DeleteCommunityMemberMessages{
+		Clock:       uint64(time.Now().Unix()),
+		CommunityId: community.ID(),
+		MemberId:    request.MemberPubKey,
+		Messages:    request.Messages,
+	}
+
+	payload, err := proto.Marshal(deletedMessages)
+	if err != nil {
+		return nil, err
+	}
+
+	rawMessage := common.RawMessage{
+		Payload:             payload,
+		Sender:              community.PrivateKey(),
+		SkipEncryptionLayer: true,
+		MessageType:         protobuf.ApplicationMetadataMessage_DELETE_COMMUNITY_MEMBER_MESSAGES,
+		PubsubTopic:         community.PubsubTopic(),
+	}
+
+	_, err = m.sender.SendPublic(context.Background(), community.IDString(), rawMessage)
+
+	return deleteMessagesResponse, err
+}
+
+func (m *Messenger) HandleDeleteCommunityMemberMessages(state *ReceivedMessageState, request *protobuf.DeleteCommunityMemberMessages, statusMessage *v1protocol.StatusMessage) error {
+	community, err := m.communitiesManager.GetByID(request.CommunityId)
+	if err != nil {
+		return err
+	}
+
+	if community == nil {
+		return communities.ErrOrgNotFound
+	}
+
+	if !community.ControlNode().Equal(state.CurrentMessageState.PublicKey) && !community.IsPrivilegedMember(state.CurrentMessageState.PublicKey) {
+		return communities.ErrNotAuthorized
+	}
+
+	deleteMessagesResponse, err := m.deleteCommunityMemberMessages(request.MemberId, community.IDString(), request.Messages)
+	if err != nil {
+		return err
+	}
+
+	return state.Response.Merge(deleteMessagesResponse)
 }

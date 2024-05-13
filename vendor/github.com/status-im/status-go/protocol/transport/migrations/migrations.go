@@ -5,7 +5,7 @@
 // 1616691080_add_wakuV2_keys.down.sql (24B)
 // 1616691080_add_wakuV2_keys.up.sql (111B)
 // 1634723014_add_wakuV2_keys.up.sql (125B)
-// doc.go (373B)
+// doc.go (393B)
 
 package sqlite
 
@@ -88,7 +88,7 @@ func _1561059284_add_waku_keysDownSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "1561059284_add_waku_keys.down.sql", size: 22, mode: os.FileMode(0644), modTime: time.Unix(1704739012, 0)}
+	info := bindataFileInfo{name: "1561059284_add_waku_keys.down.sql", size: 22, mode: os.FileMode(0644), modTime: time.Unix(1700000000, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xe5, 0x2a, 0x7e, 0x9, 0xa3, 0xdd, 0xc6, 0x3, 0xfa, 0xaa, 0x98, 0xa0, 0x26, 0x5e, 0x67, 0x43, 0xe6, 0x20, 0xfd, 0x10, 0xfd, 0x60, 0x89, 0x17, 0x13, 0x87, 0x1b, 0x44, 0x36, 0x79, 0xb6, 0x60}}
 	return a, nil
 }
@@ -108,7 +108,7 @@ func _1561059284_add_waku_keysUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "1561059284_add_waku_keys.up.sql", size: 109, mode: os.FileMode(0644), modTime: time.Unix(1704739012, 0)}
+	info := bindataFileInfo{name: "1561059284_add_waku_keys.up.sql", size: 109, mode: os.FileMode(0644), modTime: time.Unix(1700000000, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xa9, 0x5c, 0x8, 0x32, 0xef, 0x12, 0x88, 0x21, 0xd, 0x7a, 0x42, 0x4d, 0xe7, 0x2d, 0x6c, 0x99, 0xb6, 0x1, 0xf1, 0xba, 0x2c, 0x40, 0x8d, 0xa9, 0x4b, 0xe6, 0xc4, 0x21, 0xec, 0x47, 0x6b, 0xf7}}
 	return a, nil
 }
@@ -128,7 +128,7 @@ func _1616691080_add_wakuv2_keysDownSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "1616691080_add_wakuV2_keys.down.sql", size: 24, mode: os.FileMode(0644), modTime: time.Unix(1704739012, 0)}
+	info := bindataFileInfo{name: "1616691080_add_wakuV2_keys.down.sql", size: 24, mode: os.FileMode(0644), modTime: time.Unix(1700000000, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x42, 0xb6, 0x23, 0x70, 0xb8, 0x63, 0x18, 0x61, 0xea, 0x35, 0x6e, 0xae, 0xe9, 0x71, 0x89, 0xa, 0xa5, 0x72, 0xa2, 0x64, 0xaa, 0x45, 0x1, 0xf, 0xfc, 0xee, 0x1b, 0xd9, 0xd2, 0x27, 0xf4, 0xe2}}
 	return a, nil
 }
@@ -148,7 +148,7 @@ func _1616691080_add_wakuv2_keysUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "1616691080_add_wakuV2_keys.up.sql", size: 111, mode: os.FileMode(0644), modTime: time.Unix(1704739012, 0)}
+	info := bindataFileInfo{name: "1616691080_add_wakuV2_keys.up.sql", size: 111, mode: os.FileMode(0644), modTime: time.Unix(1700000000, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x10, 0xf0, 0x97, 0x25, 0xfe, 0x96, 0x2c, 0xa8, 0x62, 0x4a, 0x71, 0x75, 0xff, 0x5f, 0x43, 0x1e, 0x71, 0x53, 0xf1, 0xde, 0xf, 0xcf, 0xcd, 0x87, 0x15, 0x61, 0x9d, 0x25, 0x2e, 0xaf, 0x18, 0x99}}
 	return a, nil
 }
@@ -168,12 +168,12 @@ func _1634723014_add_wakuv2_keysUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "1634723014_add_wakuV2_keys.up.sql", size: 125, mode: os.FileMode(0644), modTime: time.Unix(1704739012, 0)}
+	info := bindataFileInfo{name: "1634723014_add_wakuV2_keys.up.sql", size: 125, mode: os.FileMode(0644), modTime: time.Unix(1700000000, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x7e, 0xe1, 0x7a, 0x1e, 0x6, 0xad, 0x1b, 0x37, 0xdb, 0xea, 0x94, 0xaf, 0xe0, 0x7d, 0xc9, 0xd6, 0xda, 0x52, 0x71, 0x8a, 0x44, 0xb3, 0xa6, 0x7b, 0x1e, 0x90, 0xdb, 0x1e, 0x5a, 0xa, 0x40, 0x26}}
 	return a, nil
 }
 
-var _docGo = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x84\x8f\x3d\x72\xeb\x30\x0c\x84\x7b\x9d\x62\xc7\x8d\x9b\x27\xb2\x79\x55\xba\x94\xe9\x73\x01\x98\x5a\x91\x18\x4b\xa4\x42\xc0\x7f\xb7\xcf\xc8\xe3\xc2\x5d\xda\x1d\x7c\x1f\x76\x63\xc4\x77\x51\xc3\xac\x0b\xa1\x86\xca\x44\x33\xe9\x0f\x9c\x98\xe4\x62\xc4\x21\xab\x97\xcb\x29\xa4\xb6\x46\x73\xf1\x8b\x8d\xba\xc6\x55\x73\x17\x67\xbc\xfe\x3f\x0c\x31\x22\x49\x3d\x3a\x8a\xd4\x69\xe1\xd3\x65\x30\x97\xee\x5a\x33\x6e\xea\x05\x82\xad\x73\xd6\x7b\xc0\xa7\x63\xa1\x98\xc3\x8b\xf8\xd1\xe0\x85\x48\x62\xdc\x35\x73\xeb\xc8\x6d\x3c\x69\x9d\xc4\x25\xec\xd1\xd7\xfc\x96\xec\x0d\x93\x2c\x0b\x27\xcc\xbd\xad\x4f\xd6\x64\x25\x26\xed\x4c\xde\xfa\xe3\x1f\xc4\x8c\x8e\x2a\x2b\x6d\xe7\x8b\x5c\x89\xda\x5e\xef\x21\x75\xfa\x7b\x11\x6e\xad\x9f\x0d\x62\xe0\x7d\x63\x72\x4e\x61\x18\x36\x49\x67\xc9\x84\xfd\x2c\xea\x1c\x86\x18\x73\xfb\xc8\xac\xdc\xa9\xf7\x8e\xe3\x76\xce\xaf\x2b\x8c\x0d\x21\xbc\xd4\xda\xaa\x85\xdc\x10\x86\xdf\x00\x00\x00\xff\xff\x21\xa5\x75\x05\x75\x01\x00\x00")
+var _docGo = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x84\x8f\xbd\x6a\xec\x30\x10\x85\x7b\x3f\xc5\x61\x9b\x6d\xae\xa5\x1b\x08\x04\x02\x29\x52\xa6\xcf\x0b\xcc\x4a\x63\x69\x58\x4b\x72\x34\xe3\xfd\x79\xfb\xe0\xc5\xc5\x76\x99\xf2\xc0\x77\xce\x37\xde\xe3\x3b\x8b\x62\x92\x99\x21\x8a\xca\x81\x55\xa9\xdf\x71\xe2\x40\xab\x32\x0e\x49\x2c\xaf\x27\x17\x5a\xf1\x6a\x64\xab\x8e\x52\x7c\x91\xd4\xc9\xd8\x5f\x5e\x0f\x83\xf7\x08\x54\x8f\x86\x4c\x35\xce\xfc\xe8\x52\xa8\x51\x37\xa9\x09\x57\xb1\x0c\xc2\xd2\x79\x92\x9b\xc3\xa7\x61\x66\x52\x83\x65\xb2\xa3\xc2\x32\x23\x90\xf2\x56\x33\xb5\x8e\xd4\xc6\x93\xd4\x48\x46\x6e\x8b\xbe\xa6\xa7\x64\x33\x0c\x34\xcf\x1c\x31\xf5\x56\x1e\xac\x52\x61\x44\xe9\x1c\xac\xf5\xfb\x3f\x90\x2a\x1b\x2a\x15\xd6\x8d\xcf\x74\x61\xd4\xb6\xcf\x83\x6a\xfc\xfb\x23\x5c\x5b\x3f\x2b\x48\xc1\xb7\x85\x83\x71\x74\xc3\xb0\x50\x38\x53\x62\xe8\xcf\x2c\xc6\xc3\xe0\x7d\x6a\xef\x89\x2b\x6f\xd4\xb3\xe3\x58\x5a\x34\x29\xfc\xf1\xf2\xf6\x7f\x3f\x8c\xcb\x39\xed\x24\xc6\x06\xe7\xf6\x39\x69\x55\x5d\x6a\x70\xc3\x6f\x00\x00\x00\xff\xff\xc5\xaf\x3c\xfb\x89\x01\x00\x00")
 
 func docGoBytes() ([]byte, error) {
 	return bindataRead(
@@ -188,8 +188,8 @@ func docGo() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "doc.go", size: 373, mode: os.FileMode(0644), modTime: time.Unix(1704739012, 0)}
-	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x23, 0x6a, 0xc1, 0xce, 0x94, 0xf6, 0xef, 0xf1, 0x97, 0x95, 0xb, 0x35, 0xaf, 0x5f, 0xe7, 0x5f, 0xac, 0x6e, 0xb8, 0xab, 0xba, 0xb5, 0x35, 0x97, 0x22, 0x36, 0x11, 0xce, 0x44, 0xfc, 0xfa, 0xac}}
+	info := bindataFileInfo{name: "doc.go", size: 393, mode: os.FileMode(0644), modTime: time.Unix(1700000000, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xa8, 0x22, 0x63, 0x1, 0xf1, 0xb5, 0xd4, 0x48, 0xa8, 0x75, 0x3f, 0xa8, 0x3, 0x83, 0x19, 0x1, 0x27, 0xa2, 0xe8, 0x9, 0x94, 0x46, 0x61, 0xf, 0xcb, 0xb5, 0x5e, 0xbd, 0x35, 0xd5, 0x6e, 0x51}}
 	return a, nil
 }
 

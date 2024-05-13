@@ -318,20 +318,29 @@ func (b *StatusNode) wakuV2Service(nodeConfig *params.NodeConfig, telemetryServe
 			KeepAliveInterval:       nodeConfig.WakuV2Config.KeepAliveInterval,
 			Rendezvous:              nodeConfig.Rendezvous,
 			WakuNodes:               nodeConfig.ClusterConfig.WakuNodes,
-			PeerExchange:            nodeConfig.WakuV2Config.PeerExchange,
 			EnableStore:             nodeConfig.WakuV2Config.EnableStore,
 			StoreCapacity:           nodeConfig.WakuV2Config.StoreCapacity,
 			StoreSeconds:            nodeConfig.WakuV2Config.StoreSeconds,
 			DiscoveryLimit:          nodeConfig.WakuV2Config.DiscoveryLimit,
 			DiscV5BootstrapNodes:    nodeConfig.ClusterConfig.DiscV5BootstrapNodes,
 			Nameserver:              nodeConfig.WakuV2Config.Nameserver,
-			EnableDiscV5:            nodeConfig.WakuV2Config.EnableDiscV5,
 			UDPPort:                 nodeConfig.WakuV2Config.UDPPort,
 			AutoUpdate:              nodeConfig.WakuV2Config.AutoUpdate,
 			DefaultShardPubsubTopic: shard.DefaultShardPubsubTopic(),
 			UseShardAsDefaultTopic:  nodeConfig.WakuV2Config.UseShardAsDefaultTopic,
 			TelemetryServerURL:      telemetryServerURL,
 			ClusterID:               nodeConfig.ClusterConfig.ClusterID,
+		}
+
+		// Configure peer exchange and discv5 settings based on node type
+		if cfg.LightClient {
+			cfg.EnablePeerExchangeServer = false
+			cfg.EnablePeerExchangeClient = true
+			cfg.EnableDiscV5 = false
+		} else {
+			cfg.EnablePeerExchangeServer = true
+			cfg.EnablePeerExchangeClient = false
+			cfg.EnableDiscV5 = true
 		}
 
 		if nodeConfig.WakuV2Config.MaxMessageSize > 0 {
@@ -443,6 +452,9 @@ func (b *StatusNode) ensService(timesource func() time.Time) *ens.Service {
 func (b *StatusNode) pendingTrackerService(walletFeed *event.Feed) *transactions.PendingTxTracker {
 	if b.pendingTracker == nil {
 		b.pendingTracker = transactions.NewPendingTxTracker(b.walletDB, b.rpcClient, b.rpcFiltersSrvc, walletFeed, transactions.PendingCheckInterval)
+		if b.transactor != nil {
+			b.transactor.SetPendingTracker(b.pendingTracker)
+		}
 	}
 	return b.pendingTracker
 }

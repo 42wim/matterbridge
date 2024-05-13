@@ -477,11 +477,11 @@ func (n *StatusNode) stop() error {
 	n.downloader = nil
 
 	if n.db != nil {
-		err := n.db.Close()
-
+		if err = n.db.Close(); err != nil {
+			n.log.Error("Error closing the leveldb of status node", "error", err)
+			return err
+		}
 		n.db = nil
-
-		return err
 	}
 
 	n.rpcFiltersSrvc = nil

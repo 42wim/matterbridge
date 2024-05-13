@@ -31,6 +31,7 @@ import (
 	"github.com/status-im/status-go/protocol/communities/token"
 	"github.com/status-im/status-go/protocol/discord"
 	"github.com/status-im/status-go/protocol/encryption/multidevice"
+	"github.com/status-im/status-go/protocol/identity"
 	"github.com/status-im/status-go/protocol/protobuf"
 	"github.com/status-im/status-go/protocol/pushnotificationclient"
 	"github.com/status-im/status-go/protocol/requests"
@@ -400,6 +401,11 @@ func (api *PublicAPI) JoinedCommunities(parent context.Context) ([]*communities.
 	return api.service.messenger.JoinedCommunities()
 }
 
+// IsDisplayNameDupeOfCommunityMember returns if any controlled or joined community has a member with provided display name
+func (api *PublicAPI) IsDisplayNameDupeOfCommunityMember(name string) (bool, error) {
+	return api.service.messenger.IsDisplayNameDupeOfCommunityMember(name)
+}
+
 // CommunityTags return the list of possible community tags
 func (api *PublicAPI) CommunityTags(parent context.Context) map[string]string {
 	return requests.TagsEmojies
@@ -446,6 +452,16 @@ func (api *PublicAPI) RemovePrivateKey(id types.HexBytes) (*protocol.MessengerRe
 // Sets the community shard for a community and updates all active filters for the community
 func (api *PublicAPI) SetCommunityShard(request *requests.SetCommunityShard) (*protocol.MessengerResponse, error) {
 	return api.service.messenger.SetCommunityShard(request)
+}
+
+// Sets the community storenodes for a community
+func (api *PublicAPI) SetCommunityStorenodes(request *requests.SetCommunityStorenodes) (*protocol.MessengerResponse, error) {
+	return api.service.messenger.SetCommunityStorenodes(request)
+}
+
+// Gets the community storenodes for a community
+func (api *PublicAPI) GetCommunityStorenodes(id types.HexBytes) (*protocol.MessengerResponse, error) {
+	return api.service.messenger.GetCommunityStorenodes(id)
 }
 
 // ExportCommunity exports the private key of the community with given ID
@@ -859,6 +875,10 @@ func (api *PublicAPI) AcceptLatestContactRequestForContact(ctx context.Context, 
 
 func (api *PublicAPI) DismissLatestContactRequestForContact(ctx context.Context, request *requests.DismissLatestContactRequestForContact) (*protocol.MessengerResponse, error) {
 	return api.service.messenger.DismissLatestContactRequestForContact(ctx, request)
+}
+
+func (api *PublicAPI) GetLatestContactRequestForContact(ctx context.Context, contactID string) (*protocol.MessengerResponse, error) {
+	return api.service.messenger.GetLatestContactRequestForContact(contactID)
 }
 
 func (api *PublicAPI) RetractContactRequest(ctx context.Context, request *requests.RetractContactRequest) (*protocol.MessengerResponse, error) {
@@ -1348,11 +1368,11 @@ func (api *PublicAPI) DeleteActivityCenterNotifications(ctx context.Context, ids
 }
 
 func (api *PublicAPI) RequestAllHistoricMessages(forceFetchingBackup bool) (*protocol.MessengerResponse, error) {
-	return api.service.messenger.RequestAllHistoricMessages(forceFetchingBackup)
+	return api.service.messenger.RequestAllHistoricMessages(forceFetchingBackup, false)
 }
 
 func (api *PublicAPI) RequestAllHistoricMessagesWithRetries(forceFetchingBackup bool) (*protocol.MessengerResponse, error) {
-	return api.service.messenger.RequestAllHistoricMessagesWithRetries(forceFetchingBackup)
+	return api.service.messenger.RequestAllHistoricMessages(forceFetchingBackup, true)
 }
 
 func (api *PublicAPI) DisconnectActiveMailserver() {
@@ -1477,6 +1497,10 @@ func (api *PublicAPI) ImageServerURL() string {
 
 func (api *PublicAPI) ToggleUseMailservers(value bool) error {
 	return api.service.messenger.ToggleUseMailservers(value)
+}
+
+func (api *PublicAPI) TogglePeerSyncing(request *requests.TogglePeerSyncingRequest) error {
+	return api.service.messenger.TogglePeerSyncing(request)
 }
 
 func (api *PublicAPI) SetPinnedMailservers(pinnedMailservers map[string]string) error {
@@ -1663,53 +1687,67 @@ func (api *PublicAPI) CreateTokenGatedCommunity() (*protocol.MessengerResponse, 
 }
 
 // Set profile showcase preference for current user
-func (api *PublicAPI) SetProfileShowcasePreferences(preferences *protocol.ProfileShowcasePreferences) error {
-	return api.service.messenger.SetProfileShowcasePreferences(preferences)
+func (api *PublicAPI) SetProfileShowcasePreferences(preferences *identity.ProfileShowcasePreferences) error {
+	return api.service.messenger.SetProfileShowcasePreferences(preferences, true)
 }
 
 // Get all profile showcase preferences for current user
-func (api *PublicAPI) GetProfileShowcasePreferences() (*protocol.ProfileShowcasePreferences, error) {
+func (api *PublicAPI) GetProfileShowcasePreferences() (*identity.ProfileShowcasePreferences, error) {
 	return api.service.messenger.GetProfileShowcasePreferences()
 }
 
 // Get profile showcase for a contact
-func (api *PublicAPI) GetProfileShowcaseForContact(contactID string) (*protocol.ProfileShowcase, error) {
-	return api.service.messenger.GetProfileShowcaseForContact(contactID)
+func (api *PublicAPI) GetProfileShowcaseForContact(contactID string, validate bool) (*identity.ProfileShowcase, error) {
+	return api.service.messenger.GetProfileShowcaseForContact(contactID, validate)
 }
 
 // Get profile showcase accounts by address
-func (api *PublicAPI) GetProfileShowcaseAccountsByAddress(address string) ([]*protocol.ProfileShowcaseAccount, error) {
+func (api *PublicAPI) GetProfileShowcaseAccountsByAddress(address string) ([]*identity.ProfileShowcaseAccount, error) {
 	return api.service.messenger.GetProfileShowcaseAccountsByAddress(address)
+}
+
+// Get profile showcase max social link entries count
+func (api *PublicAPI) GetProfileShowcaseSocialLinksLimit() (int, error) {
+	return api.service.messenger.GetProfileShowcaseSocialLinksLimit()
+}
+
+// Get profile showcase max entries count (excluding social links)
+func (api *PublicAPI) GetProfileShowcaseEntriesLimit() (int, error) {
+	return api.service.messenger.GetProfileShowcaseEntriesLimit()
 }
 
 // Returns response with AC notification when owner token is received
 func (api *PublicAPI) RegisterOwnerTokenReceivedNotification(communityID string) (*protocol.MessengerResponse, error) {
-	return api.service.messenger.CreateResponseWithACNotification(communityID, protocol.ActivityCenterNotificationTypeOwnerTokenReceived, false)
+	return api.service.messenger.CreateResponseWithACNotification(communityID, protocol.ActivityCenterNotificationTypeOwnerTokenReceived, false, "")
 }
 
 // Returns response with AC notification when setting signer is successful
 func (api *PublicAPI) RegisterReceivedOwnershipNotification(communityID string) (*protocol.MessengerResponse, error) {
-	return api.service.messenger.CreateResponseWithACNotification(communityID, protocol.ActivityCenterNotificationTypeOwnershipReceived, false)
+	return api.service.messenger.CreateResponseWithACNotification(communityID, protocol.ActivityCenterNotificationTypeOwnershipReceived, false, "")
 }
 
 // Returns response with AC notification when community token is received
-func (api *PublicAPI) RegisterReceivedCommunityTokenNotification(communityID string) (*protocol.MessengerResponse, error) {
-	return api.service.messenger.CreateResponseWithACNotification(communityID, protocol.ActivityCenterNotificationTypeCommunityTokenReceived, false)
+func (api *PublicAPI) RegisterReceivedCommunityTokenNotification(communityID string, isFirst bool, tokenData string) (*protocol.MessengerResponse, error) {
+	activityType := protocol.ActivityCenterNotificationTypeCommunityTokenReceived
+	if isFirst {
+		activityType = protocol.ActivityCenterNotificationTypeFirstCommunityTokenReceived
+	}
+	return api.service.messenger.CreateResponseWithACNotification(communityID, activityType, false, tokenData)
 }
 
 // Returns response with AC notification when setting signer is failed
 func (api *PublicAPI) RegisterSetSignerFailedNotification(communityID string) (*protocol.MessengerResponse, error) {
-	return api.service.messenger.CreateResponseWithACNotification(communityID, protocol.ActivityCenterNotificationTypeSetSignerFailed, false)
+	return api.service.messenger.CreateResponseWithACNotification(communityID, protocol.ActivityCenterNotificationTypeSetSignerFailed, false, "")
 }
 
 // Returns response with AC notification when setting signer is declined
 func (api *PublicAPI) RegisterSetSignerDeclinedNotification(communityID string) (*protocol.MessengerResponse, error) {
-	return api.service.messenger.CreateResponseWithACNotification(communityID, protocol.ActivityCenterNotificationTypeSetSignerDeclined, true)
+	return api.service.messenger.CreateResponseWithACNotification(communityID, protocol.ActivityCenterNotificationTypeSetSignerDeclined, true, "")
 }
 
 // Returns response with AC notification when ownership is lost
 func (api *PublicAPI) RegisterLostOwnershipNotification(communityID string) (*protocol.MessengerResponse, error) {
-	return api.service.messenger.CreateResponseWithACNotification(communityID, protocol.ActivityCenterNotificationTypeOwnershipLost, false)
+	return api.service.messenger.CreateResponseWithACNotification(communityID, protocol.ActivityCenterNotificationTypeOwnershipLost, false, "")
 }
 
 func (api *PublicAPI) PromoteSelfToControlMode(communityID string) error {
@@ -1735,6 +1773,15 @@ func (api *PublicAPI) SetCustomNodes(request *requests.SetCustomNodes) error {
 
 func (api *PublicAPI) SetCustomizationColor(ctx context.Context, request *requests.SetCustomizationColor) error {
 	return api.service.messenger.SetCustomizationColor(ctx, request)
+}
+
+func (api *PublicAPI) GetCommunityMemberAllMessages(request *requests.CommunityMemberMessages) ([]*common.Message, error) {
+	return api.service.messenger.GetCommunityMemberAllMessages(request)
+}
+
+// Delete a specific community member messages or all community member messages (based on provided parameters)
+func (api *PublicAPI) DeleteCommunityMemberMessages(request *requests.DeleteCommunityMemberMessages) (*protocol.MessengerResponse, error) {
+	return api.service.messenger.DeleteCommunityMemberMessages(request)
 }
 
 // -----

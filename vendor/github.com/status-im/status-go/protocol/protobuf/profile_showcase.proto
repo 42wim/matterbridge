@@ -3,9 +3,12 @@ syntax = "proto3";
 option go_package = "./;protobuf";
 package protobuf;
 
+// Profile showcase for a contact
+
 message ProfileShowcaseCommunity {
   string community_id = 1;
   uint32 order = 2;
+  bytes grant = 3;
 }
 
 message ProfileShowcaseAccount {
@@ -20,10 +23,10 @@ message ProfileShowcaseCollectible {
   string uid = 1 [deprecated = true];
   uint32 order = 2;
   string contract_address = 3;
-  string community_id = 4;
+  string community_id = 4 [deprecated = true];
   uint64 chain_id = 5;
   string token_id = 6;
-  string account_address = 7;
+  string account_address = 7 [deprecated = true];
 }
 
 message ProfileShowcaseVerifiedToken {
@@ -35,15 +38,22 @@ message ProfileShowcaseUnverifiedToken {
   string contract_address = 1;
   uint32 order = 2;
   uint64 chain_id = 3;
-  string community_id = 4;
+  string community_id = 4 [deprecated = true];
+}
+
+message ProfileShowcaseSocialLink {
+  string url = 1;
+  uint32 order = 2;
+  string text = 3;
 }
 
 message ProfileShowcaseEntries {
   repeated ProfileShowcaseCommunity communities = 1;
   repeated ProfileShowcaseAccount accounts = 2;
   repeated ProfileShowcaseCollectible collectibles = 3;
-  repeated ProfileShowcaseVerifiedToken verifiedTokens = 4;
-  repeated ProfileShowcaseUnverifiedToken unverifiedTokens = 5;
+  repeated ProfileShowcaseVerifiedToken verified_tokens = 4;
+  repeated ProfileShowcaseUnverifiedToken unverified_tokens = 5;
+  repeated ProfileShowcaseSocialLink social_links = 6;
 }
 
 message ProfileShowcaseEntriesEncrypted {
@@ -55,4 +65,69 @@ message ProfileShowcase {
   ProfileShowcaseEntries for_everyone = 1;
   ProfileShowcaseEntriesEncrypted for_contacts = 2;
   ProfileShowcaseEntriesEncrypted for_id_verified_contacts = 3;
+}
+
+// Profile showcase preferences
+
+enum ProfileShowcaseVisibility {
+  PROFILE_SHOWCASE_VISIBILITY_NO_ONE = 0;
+  PROFILE_SHOWCASE_VISIBILITY_IDVERIFIED_CONTACTS = 1;
+  PROFILE_SHOWCASE_VISIBILITY_CONTACTS = 2;
+  PROFILE_SHOWCASE_VISIBILITY_EVERYONE = 3;
+}
+
+message ProfileShowcaseCommunityPreference {
+  string community_id = 1;
+  ProfileShowcaseVisibility showcase_visibility = 2;
+  uint32 order = 3;
+}
+
+message ProfileShowcaseAccountPreference {
+  string address = 1;
+  string name = 2 [deprecated = true];
+  string color_id = 3 [deprecated = true];
+  string emoji = 4 [deprecated = true];
+  ProfileShowcaseVisibility showcase_visibility = 5;
+  uint32 order = 6;
+}
+
+message ProfileShowcaseCollectiblePreference {
+  string contract_address = 1;
+  uint64 chain_id = 2;
+  string token_id = 3;
+  string community_id = 4 [deprecated = true];
+  string account_address = 5  [deprecated = true];
+  ProfileShowcaseVisibility showcase_visibility = 6;
+  uint32 order = 7;
+}
+
+message ProfileShowcaseVerifiedTokenPreference {
+  string symbol = 1;
+  ProfileShowcaseVisibility showcase_visibility = 2;
+  uint32 order = 3;
+}
+
+message ProfileShowcaseUnverifiedTokenPreference {
+  string contract_address = 1;
+  uint64 chain_id = 2;
+  string community_id = 3 [deprecated = true];
+  ProfileShowcaseVisibility showcase_visibility = 4;
+  uint32 order = 5;
+}
+
+message ProfileShowcaseSocialLinkPreference {
+  string url = 1;
+  string text = 2;
+  uint32 order = 3;
+  ProfileShowcaseVisibility showcase_visibility = 4;
+}
+
+message SyncProfileShowcasePreferences {
+  uint64 clock = 1;
+  repeated ProfileShowcaseCommunityPreference communities = 2;
+  repeated ProfileShowcaseAccountPreference accounts = 3;
+  repeated ProfileShowcaseCollectiblePreference collectibles = 4;
+  repeated ProfileShowcaseVerifiedTokenPreference verified_tokens = 5;
+  repeated ProfileShowcaseUnverifiedTokenPreference unverified_tokens = 6;
+  repeated ProfileShowcaseSocialLinkPreference social_links = 7;
 }

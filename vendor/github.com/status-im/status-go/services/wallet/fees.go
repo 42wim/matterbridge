@@ -7,8 +7,11 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/consensus/misc"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
+	gaspriceoracle "github.com/status-im/status-go/contracts/gas-price-oracle"
 	"github.com/status-im/status-go/rpc"
 )
 
@@ -27,6 +30,7 @@ type SuggestedFees struct {
 	MaxFeePerGasLow      *big.Float `json:"maxFeePerGasLow"`
 	MaxFeePerGasMedium   *big.Float `json:"maxFeePerGasMedium"`
 	MaxFeePerGasHigh     *big.Float `json:"maxFeePerGasHigh"`
+	L1GasFee             *big.Float `json:"l1GasFee"`
 	EIP1559Enabled       bool       `json:"eip1559Enabled"`
 }
 
@@ -250,4 +254,36 @@ func (f *FeeManager) getFeeHistorySorted(chainID uint64) ([]*big.Int, error) {
 
 	sort.Slice(fees, func(i, j int) bool { return fees[i].Cmp(fees[j]) < 0 })
 	return fees, nil
+}
+
+func (f *FeeManager) getL1Fee(ctx context.Context, chainID uint64, tx *ethTypes.Transaction) (uint64, error) {
+
+	ethClient, err := f.RPCClient.EthClient(chainID)
+	if err != nil {
+		return 0, err
+	}
+
+	contractAddress, err := gaspriceoracle.ContractAddress(chainID)
+	if err != nil {
+		return 0, err
+	}
+
+	contract, err := gaspriceoracle.NewGaspriceoracleCaller(contractAddress, ethClient)
+	if err != nil {
+		return 0, err
+	}
+
+	callOpt := &bind.CallOpts{}
+
+	data, err := tx.MarshalBinary()
+	if err != nil {
+		return 0, err
+	}
+
+	result, err := contract.GetL1Fee(callOpt, data)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.Uint64(), nil
 }

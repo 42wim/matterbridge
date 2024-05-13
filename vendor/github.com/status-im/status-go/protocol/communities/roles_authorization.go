@@ -23,6 +23,7 @@ var adminAuthorizedEventTypes = []protobuf.CommunityEvent_EventType{
 	protobuf.CommunityEvent_COMMUNITY_MEMBER_KICK,
 	protobuf.CommunityEvent_COMMUNITY_MEMBER_BAN,
 	protobuf.CommunityEvent_COMMUNITY_MEMBER_UNBAN,
+	protobuf.CommunityEvent_COMMUNITY_DELETE_BANNED_MEMBER_MESSAGES,
 }
 
 var tokenMasterAuthorizedEventTypes = append(adminAuthorizedEventTypes, []protobuf.CommunityEvent_EventType{
@@ -112,7 +113,9 @@ func RolesAuthorizedToPerformEvent(senderRoles []protobuf.CommunityMember_Roles,
 	}
 
 	if event.Type == protobuf.CommunityEvent_COMMUNITY_MEMBER_BAN ||
-		event.Type == protobuf.CommunityEvent_COMMUNITY_MEMBER_KICK {
+		event.Type == protobuf.CommunityEvent_COMMUNITY_MEMBER_KICK ||
+		event.Type == protobuf.CommunityEvent_COMMUNITY_MEMBER_UNBAN ||
+		event.Type == protobuf.CommunityEvent_COMMUNITY_DELETE_BANNED_MEMBER_MESSAGES {
 		return canRolesKickOrBanMember(senderRoles, memberRoles)
 	}
 

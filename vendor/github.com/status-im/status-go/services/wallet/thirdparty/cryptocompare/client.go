@@ -71,7 +71,7 @@ func (c *Client) FetchPrices(symbols []string, currencies []string) (map[string]
 		prices := make(map[string]map[string]float64)
 		err = json.Unmarshal(body, &prices)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%s - %s", err, string(body))
 		}
 
 		for _, symbol := range smbls {
@@ -132,8 +132,12 @@ func (c *Client) FetchTokenMarketValues(symbols []string, currency string) (map[
 
 		container := MarketValuesContainer{}
 		err = json.Unmarshal(body, &container)
+
+		if len(container.Raw) == 0 {
+			return nil, fmt.Errorf("no data found - %s", string(body))
+		}
 		if err != nil {
-			return item, err
+			return nil, fmt.Errorf("%s - %s", err, string(body))
 		}
 
 		for _, symbol := range smbls {

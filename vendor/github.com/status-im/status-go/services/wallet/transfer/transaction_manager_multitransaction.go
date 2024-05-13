@@ -19,7 +19,6 @@ import (
 	"github.com/status-im/status-go/account"
 	"github.com/status-im/status-go/eth-node/crypto"
 	"github.com/status-im/status-go/eth-node/types"
-	"github.com/status-im/status-go/services/wallet/bigint"
 	"github.com/status-im/status-go/services/wallet/bridge"
 	wallet_common "github.com/status-im/status-go/services/wallet/common"
 	"github.com/status-im/status-go/services/wallet/walletevent"
@@ -90,11 +89,11 @@ func getMultiTransactionTimestamp(multiTransaction *MultiTransaction) uint64 {
 }
 
 // insertMultiTransaction inserts a multi transaction into the database and updates multi-transaction ID and timestamp
-func insertMultiTransaction(db *sql.DB, multiTransaction *MultiTransaction) (MultiTransactionIDType, error) {
+func insertMultiTransaction(db *sql.DB, multiTransaction *MultiTransaction) (wallet_common.MultiTransactionIDType, error) {
 	insert, err := db.Prepare(fmt.Sprintf(`INSERT INTO multi_transactions (%s)
 											VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, multiTransactionColumns))
 	if err != nil {
-		return NoMultiTransactionID, err
+		return wallet_common.NoMultiTransactionID, err
 	}
 	timestamp := getMultiTransactionTimestamp(multiTransaction)
 	result, err := insert.Exec(
@@ -113,22 +112,22 @@ func insertMultiTransaction(db *sql.DB, multiTransaction *MultiTransaction) (Mul
 		timestamp,
 	)
 	if err != nil {
-		return NoMultiTransactionID, err
+		return wallet_common.NoMultiTransactionID, err
 	}
 	defer insert.Close()
 	multiTransactionID, err := result.LastInsertId()
 
 	multiTransaction.Timestamp = timestamp
-	multiTransaction.ID = uint(multiTransactionID)
+	multiTransaction.ID = wallet_common.MultiTransactionIDType(multiTransactionID)
 
-	return MultiTransactionIDType(multiTransactionID), err
+	return wallet_common.MultiTransactionIDType(multiTransactionID), err
 }
 
-func (tm *TransactionManager) InsertMultiTransaction(multiTransaction *MultiTransaction) (MultiTransactionIDType, error) {
+func (tm *TransactionManager) InsertMultiTransaction(multiTransaction *MultiTransaction) (wallet_common.MultiTransactionIDType, error) {
 	return tm.insertMultiTransactionAndNotify(tm.db, multiTransaction, nil)
 }
 
-func (tm *TransactionManager) insertMultiTransactionAndNotify(db *sql.DB, multiTransaction *MultiTransaction, chainIDs []uint64) (MultiTransactionIDType, error) {
+func (tm *TransactionManager) insertMultiTransactionAndNotify(db *sql.DB, multiTransaction *MultiTransaction, chainIDs []uint64) (wallet_common.MultiTransactionIDType, error) {
 	id, err := insertMultiTransaction(db, multiTransaction)
 	if err != nil {
 		publishMultiTransactionUpdatedEvent(db, multiTransaction, tm.eventFeed, chainIDs)
@@ -156,7 +155,7 @@ func publishMultiTransactionUpdatedEvent(db *sql.DB, multiTransaction *MultiTran
 }
 
 func updateMultiTransaction(db *sql.DB, multiTransaction *MultiTransaction) error {
-	if MultiTransactionIDType(multiTransaction.ID) == NoMultiTransactionID {
+	if multiTransaction.ID == wallet_common.NoMultiTransactionID {
 		return fmt.Errorf("no multitransaction ID")
 	}
 
@@ -211,7 +210,7 @@ func (tm *TransactionManager) CreateMultiTransactionFromCommand(ctx context.Cont
 		return nil, err
 	}
 
-	multiTransaction.ID = uint(multiTransactionID)
+	multiTransaction.ID = multiTransactionID
 	if password == "" {
 		acc, err := tm.accountsDB.GetAccountByAddress(types.Address(multiTransaction.FromAddress))
 		if err != nil {
@@ -240,11 +239,6 @@ func (tm *TransactionManager) CreateMultiTransactionFromCommand(ctx context.Cont
 	}
 
 	hashes, err := tm.sendTransactions(multiTransaction, data, bridges, password)
-	if err != nil {
-		return nil, err
-	}
-
-	err = tm.storePendingTransactions(multiTransaction, hashes, data)
 	if err != nil {
 		return nil, err
 	}
@@ -292,62 +286,24 @@ func (tm *TransactionManager) ProceedWithTransactionsSignatures(ctx context.Cont
 	// send transactions
 	hashes := make(map[uint64][]types.Hash)
 	for _, desc := range tm.transactionsForKeycardSingning {
-		hash, err := tm.transactor.AddSignatureToTransactionAndSend(desc.chainID, desc.builtTx, desc.signature)
+		hash, err := tm.transactor.AddSignatureToTransactionAndSend(
+			desc.chainID,
+			desc.from,
+			tm.multiTransactionForKeycardSigning.FromAsset,
+			tm.multiTransactionForKeycardSigning.ID,
+			desc.builtTx,
+			desc.signature,
+		)
 		if err != nil {
 			return nil, err
 		}
 		hashes[desc.chainID] = append(hashes[desc.chainID], hash)
 	}
 
-	err := tm.storePendingTransactions(tm.multiTransactionForKeycardSigning, hashes, tm.transactionsBridgeData)
-	if err != nil {
-		return nil, err
-	}
-
 	return &MultiTransactionCommandResult{
 		ID:     int64(tm.multiTransactionForKeycardSigning.ID),
 		Hashes: hashes,
 	}, nil
-}
-
-func (tm *TransactionManager) storePendingTransactions(multiTransaction *MultiTransaction,
-	hashes map[uint64][]types.Hash, data []*bridge.TransactionBridge) error {
-
-	txs := createPendingTransactions(hashes, data, multiTransaction)
-	for _, tx := range txs {
-		err := tm.pendingTracker.StoreAndTrackPendingTx(tx)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func createPendingTransactions(hashes map[uint64][]types.Hash, data []*bridge.TransactionBridge,
-	multiTransaction *MultiTransaction) []*transactions.PendingTransaction {
-
-	txs := make([]*transactions.PendingTransaction, 0)
-	for _, tx := range data {
-		for _, hash := range hashes[tx.ChainID] {
-			pendingTransaction := &transactions.PendingTransaction{
-				Hash:               common.Hash(hash),
-				Timestamp:          uint64(time.Now().Unix()),
-				Value:              bigint.BigInt{Int: multiTransaction.FromAmount.ToInt()},
-				From:               common.Address(tx.From()),
-				To:                 common.Address(tx.To()),
-				Data:               tx.Data().String(),
-				Type:               transactions.WalletTransfer,
-				ChainID:            wallet_common.ChainID(tx.ChainID),
-				MultiTransactionID: int64(multiTransaction.ID),
-				Symbol:             multiTransaction.FromAsset,
-				AutoDelete:         new(bool),
-			}
-			// Transaction downloader will delete pending transaction as soon as it is confirmed
-			*pendingTransaction.AutoDelete = false
-			txs = append(txs, pendingTransaction)
-		}
-	}
-	return txs
 }
 
 func multiTransactionFromCommand(command *MultiTransactionCommand) *MultiTransaction {
@@ -380,6 +336,7 @@ func (tm *TransactionManager) buildTransactions(bridges map[string]bridge.Bridge
 		txHash := signer.Hash(builtTx)
 
 		tm.transactionsForKeycardSingning[txHash] = &TransactionDescription{
+			from:    common.Address(bridgeTx.From()),
 			chainID: bridgeTx.ChainID,
 			builtTx: builtTx,
 		}
@@ -403,6 +360,27 @@ func (tm *TransactionManager) sendTransactions(multiTransaction *MultiTransactio
 
 	hashes := make(map[uint64][]types.Hash)
 	for _, tx := range data {
+		if tx.TransferTx != nil {
+			tx.TransferTx.MultiTransactionID = multiTransaction.ID
+			tx.TransferTx.Symbol = multiTransaction.FromAsset
+		}
+		if tx.HopTx != nil {
+			tx.HopTx.MultiTransactionID = multiTransaction.ID
+			tx.HopTx.Symbol = multiTransaction.FromAsset
+		}
+		if tx.CbridgeTx != nil {
+			tx.CbridgeTx.MultiTransactionID = multiTransaction.ID
+			tx.CbridgeTx.Symbol = multiTransaction.FromAsset
+		}
+		if tx.ERC721TransferTx != nil {
+			tx.ERC721TransferTx.MultiTransactionID = multiTransaction.ID
+			tx.ERC721TransferTx.Symbol = multiTransaction.FromAsset
+		}
+		if tx.ERC1155TransferTx != nil {
+			tx.ERC1155TransferTx.MultiTransactionID = multiTransaction.ID
+			tx.ERC1155TransferTx.Symbol = multiTransaction.FromAsset
+		}
+
 		hash, err := bridges[tx.BridgeName].Send(tx, selectedAccount)
 		if err != nil {
 			return nil, err
@@ -412,7 +390,7 @@ func (tm *TransactionManager) sendTransactions(multiTransaction *MultiTransactio
 	return hashes, nil
 }
 
-func (tm *TransactionManager) GetMultiTransactions(ctx context.Context, ids []MultiTransactionIDType) ([]*MultiTransaction, error) {
+func (tm *TransactionManager) GetMultiTransactions(ctx context.Context, ids []wallet_common.MultiTransactionIDType) ([]*MultiTransaction, error) {
 	placeholders := make([]string, len(ids))
 	args := make([]interface{}, len(ids))
 	for i, v := range ids {

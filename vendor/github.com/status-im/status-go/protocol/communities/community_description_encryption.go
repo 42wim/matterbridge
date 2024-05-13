@@ -1,8 +1,6 @@
 package communities
 
 import (
-	"github.com/golang/protobuf/proto"
-
 	"go.uber.org/zap"
 
 	"github.com/status-im/status-go/eth-node/types"
@@ -26,7 +24,7 @@ func encryptDescription(encryptor DescriptionEncryptor, community *Community, de
 
 		descriptionToEncrypt := &protobuf.CommunityDescription{
 			Chats: map[string]*protobuf.CommunityChat{
-				channelID: proto.Clone(channel).(*protobuf.CommunityChat),
+				channelID: channel,
 			},
 		}
 
@@ -42,8 +40,10 @@ func encryptDescription(encryptor DescriptionEncryptor, community *Community, de
 
 	if community.Encrypted() {
 		descriptionToEncrypt := &protobuf.CommunityDescription{
-			Members: description.Members,
-			Chats:   description.Chats,
+			Members:            description.Members,
+			ActiveMembersCount: description.ActiveMembersCount,
+			Chats:              description.Chats,
+			Categories:         description.Categories,
 		}
 
 		keyIDSeqNo, encryptedDescription, err := encryptor.encryptCommunityDescription(community, descriptionToEncrypt)
@@ -51,10 +51,12 @@ func encryptDescription(encryptor DescriptionEncryptor, community *Community, de
 			return err
 		}
 
-		// Set private data and cleanup unencrypted members and chats
+		// Set private data and cleanup unencrypted members, chats and categories
 		description.PrivateData[keyIDSeqNo] = encryptedDescription
 		description.Members = make(map[string]*protobuf.CommunityMember)
+		description.ActiveMembersCount = 0
 		description.Chats = make(map[string]*protobuf.CommunityChat)
+		description.Categories = make(map[string]*protobuf.CommunityCategory)
 	}
 
 	return nil
@@ -85,11 +87,12 @@ func decryptDescription(id types.HexBytes, encryptor DescriptionEncryptor, descr
 		}
 		decryptedDescription := decryptedDescriptionResponse.Description
 
-		for pk, member := range decryptedDescription.Members {
-			if description.Members == nil {
-				description.Members = make(map[string]*protobuf.CommunityMember)
-			}
-			description.Members[pk] = member
+		if len(decryptedDescription.Members) > 0 {
+			description.Members = decryptedDescription.Members
+		}
+
+		if decryptedDescription.ActiveMembersCount > 0 {
+			description.ActiveMembersCount = decryptedDescription.ActiveMembersCount
 		}
 
 		for id, decryptedChannel := range decryptedDescription.Chats {
@@ -98,12 +101,16 @@ func decryptDescription(id types.HexBytes, encryptor DescriptionEncryptor, descr
 			}
 
 			if channel := description.Chats[id]; channel != nil {
-				if len(channel.Members) == 0 {
+				if len(decryptedChannel.Members) > 0 {
 					channel.Members = decryptedChannel.Members
 				}
 			} else {
 				description.Chats[id] = decryptedChannel
 			}
+		}
+
+		if len(decryptedDescription.Categories) > 0 {
+			description.Categories = decryptedDescription.Categories
 		}
 	}
 

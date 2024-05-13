@@ -77,8 +77,14 @@ type Chat struct {
 	FirstMessageTimestamp    uint32                             `json:"firstMessageTimestamp,omitempty"`
 	Highlight                bool                               `json:"highlight,omitempty"`
 	PinnedMessages           *PinnedMessages                    `json:"pinnedMessages,omitempty"`
-	CanPost                  bool                               `json:"canPost"`
-	Base64Image              string                             `json:"image,omitempty"`
+	// Deprecated: CanPost is deprecated in favor of CanPostMessages/CanPostReactions/etc.
+	// For now CanPost will equal to CanPostMessages.
+	CanPost                 bool   `json:"canPost"`
+	CanPostMessages         bool   `json:"canPostMessages"`
+	CanPostReactions        bool   `json:"canPostReactions"`
+	ViewersCanPostReactions bool   `json:"viewersCanPostReactions"`
+	Base64Image             string `json:"image,omitempty"`
+	HideIfPermissionsNotMet bool   `json:"hideIfPermissionsNotMet,omitempty"`
 }
 
 type ChannelGroup struct {
@@ -472,6 +478,9 @@ func (api *API) getCommunityByID(id string) (*communities.Community, error) {
 }
 
 func (chat *Chat) populateCommunityFields(community *communities.Community) error {
+	chat.CanPost = true
+	chat.CanPostMessages = true
+	chat.CanPostReactions = true
 	if community == nil {
 		return nil
 	}
@@ -482,18 +491,27 @@ func (chat *Chat) populateCommunityFields(community *communities.Community) erro
 		return nil
 	}
 
-	canPost, err := community.CanMemberIdentityPost(chat.ID)
+	canPostMessages, err := community.CanMemberIdentityPost(chat.ID, protobuf.ApplicationMetadataMessage_CHAT_MESSAGE)
+	if err != nil {
+		return err
+	}
+
+	canPostReactions, err := community.CanMemberIdentityPost(chat.ID, protobuf.ApplicationMetadataMessage_EMOJI_REACTION)
 	if err != nil {
 		return err
 	}
 
 	chat.CategoryID = commChat.CategoryId
+	chat.HideIfPermissionsNotMet = commChat.HideIfPermissionsNotMet
 	chat.Position = commChat.Position
 	chat.Permissions = commChat.Permissions
 	chat.Emoji = commChat.Identity.Emoji
 	chat.Name = commChat.Identity.DisplayName
 	chat.Description = commChat.Identity.Description
-	chat.CanPost = canPost
+	chat.CanPost = canPostMessages
+	chat.CanPostMessages = canPostMessages
+	chat.CanPostReactions = canPostReactions
+	chat.ViewersCanPostReactions = commChat.ViewersCanPostReactions
 
 	return nil
 }

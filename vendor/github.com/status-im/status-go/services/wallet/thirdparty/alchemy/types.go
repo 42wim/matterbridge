@@ -133,6 +133,7 @@ type Asset struct {
 	Image       Image          `json:"image"`
 	Raw         Raw            `json:"raw"`
 	TokenURI    string         `json:"tokenUri"`
+	Balance     *bigint.BigInt `json:"balance,omitempty"`
 }
 
 type OwnedNFTList struct {
@@ -216,6 +217,7 @@ func (c *Asset) toCommon(id thirdparty.CollectibleUniqueID) thirdparty.FullColle
 	return thirdparty.FullCollectibleData{
 		CollectibleData: c.toCollectiblesData(id),
 		CollectionData:  &contractData,
+		AccountBalance:  c.Balance,
 	}
 }
 

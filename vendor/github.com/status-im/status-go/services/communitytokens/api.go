@@ -330,9 +330,8 @@ func (api *API) DeployAssets(ctx context.Context, chainID uint64, deploymentPara
 }
 
 // Returns gas units + 10%
-func (api *API) DeployCollectiblesEstimate(ctx context.Context) (uint64, error) {
-	// TODO investigate why the code below does not return correct values
-	/*ethClient, err := api.s.manager.rpcClient.EthClient(420)
+func (api *API) DeployCollectiblesEstimate(ctx context.Context, chainID uint64, fromAddress string) (uint64, error) {
+	ethClient, err := api.s.manager.rpcClient.EthClient(chainID)
 	if err != nil {
 		log.Error(err.Error())
 		return 0, err
@@ -343,35 +342,63 @@ func (api *API) DeployCollectiblesEstimate(ctx context.Context) (uint64, error) 
 		return 0, err
 	}
 
-	data, err := collectiblesABI.Pack("", "name", "SYMBOL", big.NewInt(20), true, false, "tokenUriwhcih is very long asdkfjlsdkjflk",
+	// use random parameters, they will not have impact on deployment results
+	data, err := collectiblesABI.Pack("" /*constructor name is empty*/, "name", "SYMBOL", big.NewInt(20), true, false, "tokenUri",
 		common.HexToAddress("0x77b48394c650520012795a1a25696d7eb542d110"), common.HexToAddress("0x77b48394c650520012795a1a25696d7eb542d110"))
 	if err != nil {
 		return 0, err
 	}
 
 	callMsg := ethereum.CallMsg{
-		From:  common.HexToAddress("0x77b48394c650520012795a1a25696d7eb542d110"),
+		From:  common.HexToAddress(fromAddress),
 		To:    nil,
 		Value: big.NewInt(0),
-		Data:  data,
+		Data:  append(common.FromHex(collectibles.CollectiblesBin), data...),
 	}
 	estimate, err := ethClient.EstimateGas(ctx, callMsg)
 	if err != nil {
 		return 0, err
 	}
-	return estimate + uint64(float32(estimate)*0.1), nil*/
 
-	// TODO compute fee dynamically
-	// the code above returns too low fees, need to investigate
-	gasAmount := uint64(2500000)
-	return gasAmount + uint64(float32(gasAmount)*0.1), nil
+	finalEstimation := estimate + uint64(float32(estimate)*0.1)
+	log.Debug("Collectibles deployment gas estimation: ", finalEstimation)
+	return finalEstimation, nil
 }
 
 // Returns gas units + 10%
-func (api *API) DeployAssetsEstimate(ctx context.Context) (uint64, error) {
-	// TODO compute fee dynamically
-	gasAmount := uint64(1500000)
-	return gasAmount + uint64(float32(gasAmount)*0.1), nil
+func (api *API) DeployAssetsEstimate(ctx context.Context, chainID uint64, fromAddress string) (uint64, error) {
+	ethClient, err := api.s.manager.rpcClient.EthClient(chainID)
+	if err != nil {
+		log.Error(err.Error())
+		return 0, err
+	}
+
+	assetsABI, err := abi.JSON(strings.NewReader(assets.AssetsABI))
+	if err != nil {
+		return 0, err
+	}
+
+	// use random parameters, they will not have impact on deployment results
+	data, err := assetsABI.Pack("" /*constructor name is empty*/, "name", "SYMBOL", uint8(18), big.NewInt(20), "tokenUri",
+		common.HexToAddress("0x77b48394c650520012795a1a25696d7eb542d110"), common.HexToAddress("0x77b48394c650520012795a1a25696d7eb542d110"))
+	if err != nil {
+		return 0, err
+	}
+
+	callMsg := ethereum.CallMsg{
+		From:  common.HexToAddress(fromAddress),
+		To:    nil,
+		Value: big.NewInt(0),
+		Data:  append(common.FromHex(assets.AssetsBin), data...),
+	}
+	estimate, err := ethClient.EstimateGas(ctx, callMsg)
+	if err != nil {
+		return 0, err
+	}
+
+	finalEstimation := estimate + uint64(float32(estimate)*0.1)
+	log.Debug("Assets deployment gas estimation: ", finalEstimation)
+	return finalEstimation, nil
 }
 
 func (api *API) DeployOwnerTokenEstimate(ctx context.Context, chainID uint64, fromAddress string,

@@ -198,7 +198,10 @@ SELECT
 	END AS agg_status,
 	1 AS agg_count,
 	transfers.token_address AS token_address,
-	transfers.token_id AS token_id,
+	CASE
+		WHEN LENGTH(transfers.token_id) = 0 THEN X'00'
+		ELSE transfers.token_id
+	END AS tmp_token_id,
 	NULL AS token_code,
 	NULL AS from_token_code,
 	NULL AS to_token_code,
@@ -213,7 +216,12 @@ SELECT
 	CASE
 		WHEN transfers.tx_from_address = zeroAddress AND transfers.type = "erc20" THEN (SELECT 1 FROM json_each(transfers.receipt, '$.logs' ) WHERE json_extract( value, '$.topics[0]' ) = communityMintEvent)
 		ELSE NULL
-	END AS community_mint_event
+	END AS community_mint_event,
+	CASE 
+		WHEN transfers.type = 'erc20' THEN (SELECT community_id FROM tokens WHERE transfers.token_address = tokens.address AND transfers.network_id = tokens.network_id)
+		WHEN transfers.type = 'erc721' OR transfers.type = 'erc1155' THEN (SELECT community_id FROM collectible_data_cache WHERE transfers.token_address = collectible_data_cache.contract_address AND transfers.network_id = collectible_data_cache.chain_id)
+		ELSE NULL
+	END AS community_id
 FROM
 	transfers
 	CROSS JOIN filter_conditions
@@ -323,7 +331,7 @@ WHERE
 			AND (
 				(
 					transfers.network_id,
-					transfers.token_id,
+					tmp_token_id,
 					transfers.token_address
 				) IN assets_erc721
 			)
@@ -373,7 +381,7 @@ SELECT
 	statusPending AS agg_status,
 	1 AS agg_count,
 	NULL AS token_address,
-	NULL AS token_id,
+	NULL AS tmp_token_id,
 	pending_transactions.symbol AS token_code,
 	NULL AS from_token_code,
 	NULL AS to_token_code,
@@ -382,7 +390,8 @@ SELECT
 	pending_transactions.type AS type,
 	NULL as contract_address,
 	NULL AS method_hash,
-	NULL AS community_mint_event
+	NULL AS community_mint_event,
+	NULL AS community_id
 FROM
 	pending_transactions
 	CROSS JOIN filter_conditions
@@ -465,7 +474,7 @@ SELECT
 	END AS agg_status,
 	COALESCE(tr_status.count, 0) + COALESCE(pending_status.count, 0) AS agg_count,
 	NULL AS token_address,
-	NULL AS token_id,
+	NULL AS tmp_token_id,
 	NULL AS token_code,
 	multi_transactions.from_asset AS from_token_code,
 	multi_transactions.to_asset AS to_token_code,
@@ -474,7 +483,8 @@ SELECT
 	NULL AS type,
 	NULL as contract_address,
 	NULL AS method_hash,
-	NULL AS community_mint_event
+	NULL AS community_mint_event,
+	NULL AS community_id
 FROM
 	multi_transactions
 	CROSS JOIN filter_conditions

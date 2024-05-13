@@ -21,6 +21,7 @@ import (
 	"github.com/status-im/status-go/services/rpcfilters"
 	"github.com/status-im/status-go/services/wallet/bigint"
 	"github.com/status-im/status-go/services/wallet/common"
+	wallet_common "github.com/status-im/status-go/services/wallet/common"
 	"github.com/status-im/status-go/services/wallet/walletevent"
 )
 
@@ -55,7 +56,6 @@ const (
 	Keep       AutoDeleteType = false
 )
 
-// TODO #12120: unify it with TransactionIdentity
 type TxIdentity struct {
 	ChainID common.ChainID `json:"chainId"`
 	Hash    eth.Hash       `json:"hash"`
@@ -406,19 +406,20 @@ const (
 )
 
 type PendingTransaction struct {
-	Hash               eth.Hash       `json:"hash"`
-	Timestamp          uint64         `json:"timestamp"`
-	Value              bigint.BigInt  `json:"value"`
-	From               eth.Address    `json:"from"`
-	To                 eth.Address    `json:"to"`
-	Data               string         `json:"data"`
-	Symbol             string         `json:"symbol"`
-	GasPrice           bigint.BigInt  `json:"gasPrice"`
-	GasLimit           bigint.BigInt  `json:"gasLimit"`
-	Type               PendingTrxType `json:"type"`
-	AdditionalData     string         `json:"additionalData"`
-	ChainID            common.ChainID `json:"network_id"`
-	MultiTransactionID int64          `json:"multi_transaction_id"`
+	Hash               eth.Hash                             `json:"hash"`
+	Timestamp          uint64                               `json:"timestamp"`
+	Value              bigint.BigInt                        `json:"value"`
+	From               eth.Address                          `json:"from"`
+	To                 eth.Address                          `json:"to"`
+	Data               string                               `json:"data"`
+	Symbol             string                               `json:"symbol"`
+	GasPrice           bigint.BigInt                        `json:"gasPrice"`
+	GasLimit           bigint.BigInt                        `json:"gasLimit"`
+	Type               PendingTrxType                       `json:"type"`
+	AdditionalData     string                               `json:"additionalData"`
+	ChainID            common.ChainID                       `json:"network_id"`
+	MultiTransactionID wallet_common.MultiTransactionIDType `json:"multi_transaction_id"`
+	Nonce              uint64                               `json:"nonce"`
 
 	// nil will insert the default value (Pending) in DB
 	Status *TxStatus `json:"status,omitempty"`
@@ -428,7 +429,7 @@ type PendingTransaction struct {
 
 const selectFromPending = `SELECT hash, timestamp, value, from_address, to_address, data,
 								symbol, gas_price, gas_limit, type, additional_data,
-								network_id, COALESCE(multi_transaction_id, 0), status, auto_delete
+								network_id, COALESCE(multi_transaction_id, 0), status, auto_delete, nonce
 							FROM pending_transactions
 							`
 
@@ -457,6 +458,7 @@ func rowsToTransactions(rows *sql.Rows) (transactions []*PendingTransaction, err
 			&transaction.MultiTransactionID,
 			transaction.Status,
 			transaction.AutoDelete,
+			&transaction.Nonce,
 		)
 		if err != nil {
 			return nil, err
@@ -468,6 +470,9 @@ func rowsToTransactions(rows *sql.Rows) (transactions []*PendingTransaction, err
 }
 
 func (tm *PendingTxTracker) GetAllPending() ([]*PendingTransaction, error) {
+	if tm.db == nil {
+		return nil, errors.New("database is not initialized")
+	}
 	rows, err := tm.db.Query(selectFromPending+"WHERE status = ?", Pending)
 	if err != nil {
 		return nil, err
@@ -518,6 +523,23 @@ func (tm *PendingTxTracker) GetPendingEntry(chainID common.ChainID, hash eth.Has
 	return trs[0], nil
 }
 
+func (tm *PendingTxTracker) GetPendingTxForSuggestedNonce(chainID common.ChainID, address eth.Address, nonce uint64) (pendingTx uint64, err error) {
+	err = tm.db.QueryRow(`
+		SELECT
+			COUNT(nonce)
+		FROM
+			pending_transactions
+		WHERE
+			network_id = ?
+		AND
+			from_address = ?
+		AND
+			nonce >= ?`,
+		chainID, address, nonce).
+		Scan(&pendingTx)
+	return
+}
+
 // StoreAndTrackPendingTx store the details of a pending transaction and track it until it is mined
 func (tm *PendingTxTracker) StoreAndTrackPendingTx(transaction *PendingTransaction) error {
 	err := tm.addPending(transaction)
@@ -531,14 +553,67 @@ func (tm *PendingTxTracker) StoreAndTrackPendingTx(transaction *PendingTransacti
 }
 
 func (tm *PendingTxTracker) addPending(transaction *PendingTransaction) error {
-	insert, err := tm.db.Prepare(`INSERT OR REPLACE INTO pending_transactions
-                                      (network_id, hash, timestamp, value, from_address, to_address,
-                                       data, symbol, gas_price, gas_limit, type, additional_data, multi_transaction_id, status, auto_delete)
-                                      VALUES
-                                      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?)`)
+	var notifyFn func()
+	tx, err := tm.db.Begin()
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if err == nil {
+			err = tx.Commit()
+			if notifyFn != nil {
+				notifyFn()
+			}
+			return
+		}
+		_ = tx.Rollback()
+	}()
+
+	exists := true
+	var hash eth.Hash
+
+	err = tx.QueryRow(`
+		SELECT hash
+		FROM
+			pending_transactions
+		WHERE
+			network_id = ?
+		AND
+			from_address = ?
+		AND
+			nonce = ?
+		`,
+		transaction.ChainID,
+		transaction.From,
+		transaction.Nonce).
+		Scan(&hash)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			exists = false
+		} else {
+			return err
+		}
+	}
+
+	if exists {
+		notifyFn, err = tm.DeleteBySQLTx(tx, transaction.ChainID, hash)
+		if err != nil && err != ErrStillPending {
+			return err
+		}
+	}
+
+	// TODO: maybe we should think of making (network_id, from_address, nonce) as primary key instead (network_id, hash) ????
+	insert, err := tx.Prepare(`INSERT OR REPLACE INTO pending_transactions
+                                      (network_id, hash, timestamp, value, from_address, to_address,
+                                       data, symbol, gas_price, gas_limit, type, additional_data, multi_transaction_id, status,
+																			 auto_delete, nonce)
+                                      VALUES
+                                      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?)`)
+	if err != nil {
+		return err
+	}
+	defer insert.Close()
+
 	_, err = insert.Exec(
 		transaction.ChainID,
 		transaction.Hash,
@@ -555,6 +630,7 @@ func (tm *PendingTxTracker) addPending(transaction *PendingTransaction) error {
 		transaction.MultiTransactionID,
 		transaction.Status,
 		transaction.AutoDelete,
+		transaction.Nonce,
 	)
 	// Notify listeners of new pending transaction (used in activity history)
 	if err == nil {

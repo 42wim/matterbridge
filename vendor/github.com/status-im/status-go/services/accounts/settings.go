@@ -171,10 +171,12 @@ func (api *SettingsAPI) SetBio(bio string) error {
 	return (*api.messenger).SetBio(bio)
 }
 
+// Deprecated: use social links from ProfileShowcasePreferences
 func (api *SettingsAPI) GetSocialLinks() (identity.SocialLinks, error) {
 	return api.db.GetSocialLinks()
 }
 
+// Deprecated: use social links from ProfileShowcasePreferences
 func (api *SettingsAPI) AddOrReplaceSocialLinks(links identity.SocialLinks) error {
 	for _, link := range links {
 		if len(link.Text) == 0 {

@@ -15,6 +15,7 @@ import (
 	"github.com/status-im/status-go/eth-node/types"
 	"github.com/status-im/status-go/protocol/communities"
 	"github.com/status-im/status-go/protocol/transport"
+	"github.com/status-im/status-go/services/mailservers"
 )
 
 const (
@@ -30,6 +31,17 @@ type StoreNodeRequestStats struct {
 type storeNodeRequestID struct {
 	RequestType storeNodeRequestType `json:"requestType"`
 	DataID      string               `json:"dataID"`
+}
+
+func (r *storeNodeRequestID) getCommunityID() string {
+	switch r.RequestType {
+	case storeNodeCommunityRequest:
+		return r.DataID
+	case storeNodeShardRequest:
+		return strings.TrimSuffix(r.DataID, transport.CommunityShardInfoTopicPrefix())
+	default:
+		return ""
+	}
 }
 
 type StoreNodeRequestManager struct {
@@ -225,9 +237,7 @@ func (m *StoreNodeRequestManager) getFilter(requestType storeNodeRequestType, da
 	}
 
 	switch requestType {
-	case storeNodeShardRequest:
-		fallthrough
-	case storeNodeCommunityRequest:
+	case storeNodeShardRequest, storeNodeCommunityRequest:
 		// If filter wasn't installed we create it and
 		// remember for uninstalling after response is received
 		filters, err := m.messenger.transport.InitPublicFilters([]transport.FiltersToInitialize{{
@@ -503,23 +513,29 @@ func (r *storeNodeRequest) routine() {
 		r.finalize()
 	}()
 
-	if !r.manager.messenger.waitForAvailableStoreNode(storeNodeAvailableTimeout) {
-		r.result.err = fmt.Errorf("store node is not available")
-		return
+	communityID := r.requestID.getCommunityID()
+
+	if r.requestID.RequestType != storeNodeCommunityRequest || !r.manager.messenger.communityStorenodes.HasStorenodeSetup(communityID) {
+		if !r.manager.messenger.waitForAvailableStoreNode(storeNodeAvailableTimeout) {
+			r.result.err = fmt.Errorf("store node is not available")
+			return
+		}
 	}
 
+	storeNode := r.manager.messenger.getActiveMailserver(communityID)
+
 	// Check if community already exists locally and get Clock.
-
-	localCommunity, _ := r.manager.messenger.communitiesManager.GetByIDString(r.requestID.DataID)
-
-	if localCommunity != nil {
-		r.minimumDataClock = localCommunity.Clock()
+	if r.requestID.RequestType == storeNodeCommunityRequest {
+		localCommunity, _ := r.manager.messenger.communitiesManager.GetByIDString(communityID)
+		if localCommunity != nil {
+			r.minimumDataClock = localCommunity.Clock()
+		}
 	}
 
 	// Start store node request
 	from, to := r.manager.messenger.calculateMailserverTimeBounds(oneMonthDuration)
 
-	_, err := r.manager.messenger.performMailserverRequest(func() (*MessengerResponse, error) {
+	_, err := r.manager.messenger.performMailserverRequest(storeNode, func(ms mailservers.Mailserver) (*MessengerResponse, error) {
 		batch := MailserverBatch{
 			From:        from,
 			To:          to,
@@ -531,7 +547,7 @@ func (r *storeNodeRequest) routine() {
 			r.manager.onPerformingBatch(batch)
 		}
 
-		return nil, r.manager.messenger.processMailserverBatchWithOptions(batch, r.config.InitialPageSize, r.shouldFetchNextPage, true)
+		return nil, r.manager.messenger.processMailserverBatchWithOptions(ms, batch, r.config.InitialPageSize, r.shouldFetchNextPage, true)
 	})
 
 	r.result.err = err

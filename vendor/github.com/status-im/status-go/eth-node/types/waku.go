@@ -54,6 +54,16 @@ func (u *ConnStatusSubscription) Unsubscribe() {
 	u.active = false
 }
 
+func (u *ConnStatusSubscription) Send(s ConnStatus) bool {
+	u.RLock()
+	defer u.RUnlock()
+	if !u.active {
+		return false
+	}
+	u.C <- s
+	return true
+}
+
 type WakuKeyManager interface {
 	// GetPrivateKey retrieves the private key of the specified identity.
 	GetPrivateKey(id string) (*ecdsa.PrivateKey, error)

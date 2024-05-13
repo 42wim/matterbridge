@@ -2,7 +2,6 @@ package protocol
 
 import (
 	"context"
-	"crypto/ecdsa"
 	"errors"
 
 	"github.com/golang/protobuf/proto"
@@ -75,13 +74,7 @@ func (m *Messenger) HandleCommunityPublicShardInfo(state *ReceivedMessageState, 
 		m.logger.Error("HandleCommunityPublicShardInfo failed: ", zap.Error(err), zap.String("communityID", types.EncodeHex(publicShardInfo.CommunityId)))
 	}
 
-	signer, err := recoverCommunityShardInfoSignature(a)
-	if err != nil {
-		logError(err)
-		return err
-	}
-
-	err = m.verifyCommunityPublicShardInfo(publicShardInfo, signer)
+	err = m.verifyCommunitySignature(a.Payload, a.Signature, publicShardInfo.CommunityId, publicShardInfo.ChainId)
 	if err != nil {
 		logError(err)
 		return err
@@ -95,26 +88,25 @@ func (m *Messenger) HandleCommunityPublicShardInfo(state *ReceivedMessageState, 
 	return nil
 }
 
-func recoverCommunityShardInfoSignature(rawShardInfo *protobuf.CommunityPublicShardInfo) (*ecdsa.PublicKey, error) {
-	if rawShardInfo.Signature == nil || len(rawShardInfo.Signature) == 0 {
-		return nil, errors.New("missing shard info signature")
+func (m *Messenger) verifyCommunitySignature(payload, signature, communityID []byte, chainID uint64) error {
+	if len(signature) == 0 {
+		return errors.New("missing signature")
 	}
-
-	return crypto.SigToPub(crypto.Keccak256(rawShardInfo.Payload), rawShardInfo.Signature)
-}
-
-func (m *Messenger) verifyCommunityPublicShardInfo(publicShardInfo *protobuf.PublicShardInfo, signer *ecdsa.PublicKey) error {
-	pubKeyStr := common.PubkeyToHex(signer)
+	pubKey, err := crypto.SigToPub(crypto.Keccak256(payload), signature)
+	if err != nil {
+		return err
+	}
+	pubKeyStr := common.PubkeyToHex(pubKey)
 
 	var ownerPublicKey string
-	if publicShardInfo.ChainId > 0 {
-		owner, err := m.communitiesManager.SafeGetSignerPubKey(publicShardInfo.ChainId, types.EncodeHex(publicShardInfo.CommunityId))
+	if chainID > 0 {
+		owner, err := m.communitiesManager.SafeGetSignerPubKey(chainID, types.EncodeHex(communityID))
 		if err != nil {
 			return err
 		}
 		ownerPublicKey = owner
 	} else {
-		communityPubkey, err := crypto.DecompressPubkey(publicShardInfo.CommunityId)
+		communityPubkey, err := crypto.DecompressPubkey(communityID)
 		if err != nil {
 			return err
 		}

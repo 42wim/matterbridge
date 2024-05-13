@@ -31,24 +31,6 @@ func (m *Messenger) sendPinMessage(ctx context.Context, message *common.PinMessa
 		return nil, errors.New("chat not found")
 	}
 
-	if chat.CommunityChat() {
-		community, err := m.communitiesManager.GetByIDString(chat.CommunityID)
-		if err != nil {
-			return nil, err
-		}
-
-		hasPermission := community.IsPrivilegedMember(&m.identity.PublicKey)
-		pinMessageAllowed := community.AllowsAllMembersToPinMessage()
-		canPost, err := community.CanPost(&m.identity.PublicKey, chat.CommunityChatID())
-		if err != nil {
-			return nil, err
-		}
-
-		if !canPost && !pinMessageAllowed && !hasPermission {
-			return nil, errors.New("can't pin message")
-		}
-	}
-
 	err := m.handleStandaloneChatIdentity(chat)
 	if err != nil {
 		return nil, err

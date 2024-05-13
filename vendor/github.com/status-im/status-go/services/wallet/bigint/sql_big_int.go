@@ -58,3 +58,36 @@ func (i *SQLBigIntBytes) Value() (driver.Value, error) {
 	}
 	return (*big.Int)(i).Bytes(), nil
 }
+
+type NilableSQLBigInt struct {
+	big.Int
+	isNil bool
+}
+
+func (i *NilableSQLBigInt) IsNil() bool {
+	return i.isNil
+}
+
+func (i *NilableSQLBigInt) SetNil() {
+	i.isNil = true
+}
+
+// Scan implements interface.
+func (i *NilableSQLBigInt) Scan(value interface{}) error {
+	if value == nil {
+		i.SetNil()
+		return nil
+	}
+	val, ok := value.(int64)
+	if !ok {
+		return errors.New("not an integer")
+	}
+
+	i.SetInt64(val)
+	return nil
+}
+
+// Not implemented, used only for scanning
+func (i *NilableSQLBigInt) Value() (driver.Value, error) {
+	return nil, errors.New("NilableSQLBigInt.Value is not implemented")
+}

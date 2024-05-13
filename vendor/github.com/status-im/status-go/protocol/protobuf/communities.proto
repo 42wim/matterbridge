@@ -23,9 +23,16 @@ message CommunityMember {
     ROLE_ADMIN = 4;
     ROLE_TOKEN_MASTER = 5;
   }
+  enum ChannelRole {
+    // We make POSTER the first role to be the default one.
+    // This is for backwards compatibility. Older protobufs won't have this field and will default to 0.
+    CHANNEL_ROLE_POSTER = 0;
+    CHANNEL_ROLE_VIEWER = 1;
+  }
   repeated Roles roles = 1;
   repeated RevealedAccount revealed_accounts = 2 [deprecated = true];
   uint64 last_update_clock = 3;
+  ChannelRole channel_role = 4;
 }
 
 message CommunityTokenMetadata {
@@ -57,10 +64,11 @@ message TokenCriteria {
   CommunityTokenType type = 2;
   string symbol = 3;
   string name = 4;
-  string amount = 5;
+  string amount = 5 [deprecated = true];
   repeated uint64 token_ids = 6;
   string ens_pattern = 7;
   uint64 decimals = 8;
+  string amountInWei = 9;
 }
 
 message CommunityTokenPermission {
@@ -88,7 +96,7 @@ message CommunityDescription {
   CommunityPermissions permissions = 3;
   ChatIdentity identity = 5;
   map<string,CommunityChat> chats = 6;
-  repeated string ban_list = 7;
+  repeated string ban_list = 7 [deprecated = true];
   map<string,CommunityCategory> categories = 8;
   uint64 archive_magnetlink_clock = 9;
   CommunityAdminSettings admin_settings = 10;
@@ -100,9 +108,14 @@ message CommunityDescription {
   repeated CommunityTokenMetadata community_tokens_metadata = 16;
   uint64 active_members_count = 17;
   string ID = 18;
+  map<string,CommunityBanInfo>banned_members = 19;
 
   // key is hash ratchet key_id + seq_no
   map<string, bytes> privateData = 100;
+}
+
+message CommunityBanInfo {
+  bool delete_all_messages = 1;
 }
 
 message CommunityAdminSettings {
@@ -115,6 +128,8 @@ message CommunityChat {
   ChatIdentity identity = 3;
   string category_id = 4;
   int32 position = 5;
+  bool viewers_can_post_reactions = 6;
+  bool hide_if_permissions_not_met = 7;
 }
 
 message CommunityCategory {
@@ -212,4 +227,45 @@ message WakuMessageArchiveIndexMetadata {
 
 message WakuMessageArchiveIndex {
   map<string, WakuMessageArchiveIndexMetadata> archives = 1;
+}
+
+message CommunityPublicStorenodesInfo {
+  // Signature of the payload field
+  bytes signature = 1;
+  // Marshaled CommunityStorenodes
+  bytes payload = 2;
+}
+
+message CommunityStorenodes {
+  uint64 clock = 1;
+  bytes community_id = 2;
+  repeated Storenode storenodes = 3;
+  uint64 chain_id = 4;
+}
+
+message Storenode {
+  bytes community_id = 1;
+  string storenode_id = 2;
+  string name = 3;
+  string address = 4;
+  string fleet = 5;
+  uint32 version = 6;
+  bool removed = 7;
+  int64 deleted_at = 8;
+}
+
+message CommunityReevaluatePermissionsRequest {
+  bytes community_id = 1;
+}
+
+message DeleteCommunityMemberMessage {
+  string id = 1;
+  string chat_id = 2;
+}
+
+message DeleteCommunityMemberMessages {
+  uint64 clock = 1;
+  bytes community_id = 2;
+  string member_id = 3;
+  repeated DeleteCommunityMemberMessage messages = 4;
 }

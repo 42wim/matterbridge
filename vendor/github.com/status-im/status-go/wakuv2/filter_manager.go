@@ -60,11 +60,11 @@ type FilterManager struct {
 	getFilter        func(string) *common.Filter
 	onNewEnvelopes   func(env *protocol.Envelope) error
 	logger           *zap.Logger
-	settings         settings
+	config           *Config
 	node             *node.WakuNode
 }
 
-func newFilterManager(ctx context.Context, logger *zap.Logger, getFilterFn func(string) *common.Filter, settings settings, onNewEnvelopes func(env *protocol.Envelope) error, node *node.WakuNode) *FilterManager {
+func newFilterManager(ctx context.Context, logger *zap.Logger, getFilterFn func(string) *common.Filter, config *Config, onNewEnvelopes func(env *protocol.Envelope) error, node *node.WakuNode) *FilterManager {
 	// This fn is being mocked in test
 	mgr := new(FilterManager)
 	mgr.ctx = ctx
@@ -73,7 +73,7 @@ func newFilterManager(ctx context.Context, logger *zap.Logger, getFilterFn func(
 	mgr.onNewEnvelopes = onNewEnvelopes
 	mgr.filterSubs = make(FilterSubs)
 	mgr.eventChan = make(chan FilterEvent, 100)
-	mgr.settings = settings
+	mgr.config = config
 	mgr.node = node
 	mgr.isFilterSubAlive = func(sub *subscription.SubscriptionDetails) error {
 		ctx, cancel := context.WithTimeout(ctx, pingTimeout)
@@ -242,7 +242,7 @@ func (mgr *FilterManager) pingPeers() {
 			}
 		}
 		logger.Debug("filter ping peers", zap.Int("len", len(subs)), zap.Int("len(nilSubs)", nilSubsCnt))
-		if len(subs) < mgr.settings.MinPeersForFilter {
+		if len(subs) < mgr.config.MinPeersForFilter {
 			// Trigger full resubscribe
 			logger.Debug("filter ping peers not enough subs")
 			go func(filterID string) {
@@ -290,15 +290,15 @@ func (mgr *FilterManager) resubscribe(filterID string) {
 		mgr.logger.Error("resubscribe filter not found", zap.String("filterId", filterID))
 		return
 	}
-	if len(subs) > mgr.settings.MinPeersForFilter {
+	if len(subs) > mgr.config.MinPeersForFilter {
 		mgr.logger.Error("filter resubscribe too many subs", zap.String("filterId", filterID), zap.Int("len", len(subs)))
 	}
-	if len(subs) == mgr.settings.MinPeersForFilter {
+	if len(subs) == mgr.config.MinPeersForFilter {
 		// do nothing
 		return
 	}
 	mgr.logger.Debug("filter resubscribe subs count:", zap.String("filterId", filterID), zap.Int("len", len(subs)))
-	for i := len(subs); i < mgr.settings.MinPeersForFilter; i++ {
+	for i := len(subs); i < mgr.config.MinPeersForFilter; i++ {
 		mgr.logger.Debug("filter check not passed, try subscribing to peers", zap.String("filterId", filterID))
 
 		// Create sub placeholder in order to avoid potentially too many subs

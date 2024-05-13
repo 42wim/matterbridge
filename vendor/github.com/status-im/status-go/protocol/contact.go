@@ -109,6 +109,7 @@ type Contact struct {
 	// Bio - description of the contact (tell us about yourself)
 	Bio string `json:"bio"`
 
+	// Deprecated: use social links from ProfileShowcasePreferences
 	SocialLinks identity.SocialLinks `json:"socialLinks"`
 
 	Images map[string]images.IdentityImage `json:"images"`

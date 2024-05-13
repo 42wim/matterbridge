@@ -148,6 +148,10 @@ func (c *Cache[K, V]) set(key K, value V, ttl time.Duration) *Item[K, V] {
 		c.evict(EvictionReasonCapacityReached, c.items.lru.Back())
 	}
 
+	if ttl == PreviousOrDefaultTTL {
+		ttl = c.options.ttl
+	}
+
 	// create a new item
 	item := newItem(key, value, ttl, c.options.enableVersionTracking)
 	elem = c.items.lru.PushFront(item)
@@ -478,6 +482,13 @@ func (c *Cache[K, V]) Items() map[K]*Item[K, V] {
 // Range stops the iteration.
 func (c *Cache[K, V]) Range(fn func(item *Item[K, V]) bool) {
 	c.items.mu.RLock()
+
+	// Check if cache is empty
+	if c.items.lru.Len() == 0 {
+		c.items.mu.RUnlock()
+		return
+	}
+
 	for item := c.items.lru.Front(); item != c.items.lru.Back().Next(); item = item.Next() {
 		i := item.Value.(*Item[K, V])
 		c.items.mu.RUnlock()

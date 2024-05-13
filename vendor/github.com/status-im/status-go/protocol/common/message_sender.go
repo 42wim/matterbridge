@@ -82,7 +82,8 @@ type MessageSender struct {
 	ephemeralKeysMutex sync.Mutex
 
 	// messageEventsSubscriptions contains all the subscriptions for message events
-	messageEventsSubscriptions []chan<- *MessageEvent
+	messageEventsSubscriptions      []chan<- *MessageEvent
+	messageEventsSubscriptionsMutex sync.Mutex
 
 	featureFlags FeatureFlags
 
@@ -114,6 +115,9 @@ func NewMessageSender(
 }
 
 func (s *MessageSender) Stop() {
+	s.messageEventsSubscriptionsMutex.Lock()
+	defer s.messageEventsSubscriptionsMutex.Unlock()
+
 	for _, c := range s.messageEventsSubscriptions {
 		close(c)
 	}
@@ -1184,6 +1188,10 @@ func (s *MessageSender) notifyOnSentMessage(sentMessage *SentMessage) {
 		Type:        MessageSent,
 		SentMessage: sentMessage,
 	}
+
+	s.messageEventsSubscriptionsMutex.Lock()
+	defer s.messageEventsSubscriptionsMutex.Unlock()
+
 	// Publish on channels, drop if buffer is full
 	for _, c := range s.messageEventsSubscriptions {
 		select {
@@ -1201,6 +1209,9 @@ func (s *MessageSender) notifyOnScheduledMessage(recipient *ecdsa.PublicKey, mes
 		Type:       MessageScheduled,
 		RawMessage: message,
 	}
+
+	s.messageEventsSubscriptionsMutex.Lock()
+	defer s.messageEventsSubscriptionsMutex.Unlock()
 
 	// Publish on channels, drop if buffer is full
 	for _, c := range s.messageEventsSubscriptions {

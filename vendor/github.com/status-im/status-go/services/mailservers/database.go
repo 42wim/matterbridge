@@ -146,13 +146,16 @@ func (d *Database) Add(mailserver Mailserver) error {
 }
 
 func (d *Database) Mailservers() ([]Mailserver, error) {
-	var result []Mailserver
-
 	rows, err := d.db.Query(`SELECT id, name, address, password, fleet FROM mailservers`)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
+	return toMailservers(rows)
+}
+
+func toMailservers(rows *sql.Rows) ([]Mailserver, error) {
+	var result []Mailserver
 
 	for rows.Next() {
 		var (
@@ -198,7 +201,7 @@ func (d *Database) AddGaps(gaps []MailserverRequestGap) error {
 
 	for _, gap := range gaps {
 
-		_, err := tx.Exec(`INSERT OR REPLACE INTO mailserver_request_gaps(
+		_, err = tx.Exec(`INSERT OR REPLACE INTO mailserver_request_gaps(
 				id,
 				chat_id,
 				gap_from,

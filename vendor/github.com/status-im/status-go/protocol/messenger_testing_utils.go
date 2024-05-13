@@ -4,9 +4,17 @@ import (
 	"context"
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"math/big"
 	"sync"
 	"time"
+
+	"github.com/status-im/status-go/protocol/wakusync"
+
+	"github.com/status-im/status-go/protocol/identity"
+
+	"github.com/status-im/status-go/eth-node/types"
+	waku2 "github.com/status-im/status-go/wakuv2"
 
 	"golang.org/x/exp/maps"
 
@@ -46,8 +54,18 @@ func WaitOnMessengerResponse(m *Messenger, condition func(*MessengerResponse) bo
 type MessengerSignalsHandlerMock struct {
 	MessengerSignalsHandler
 
-	responseChan       chan *MessengerResponse
-	communityFoundChan chan *communities.Community
+	responseChan                 chan *MessengerResponse
+	communityFoundChan           chan *communities.Community
+	wakuBackedUpDataResponseChan chan *wakusync.WakuBackedUpDataResponse
+}
+
+func (m *MessengerSignalsHandlerMock) SendWakuFetchingBackupProgress(response *wakusync.WakuBackedUpDataResponse) {
+	m.wakuBackedUpDataResponseChan <- response
+}
+func (m *MessengerSignalsHandlerMock) SendWakuBackedUpProfile(*wakusync.WakuBackedUpDataResponse)  {}
+func (m *MessengerSignalsHandlerMock) SendWakuBackedUpSettings(*wakusync.WakuBackedUpDataResponse) {}
+func (m *MessengerSignalsHandlerMock) SendWakuBackedUpKeypair(*wakusync.WakuBackedUpDataResponse)  {}
+func (m *MessengerSignalsHandlerMock) SendWakuBackedUpWatchOnlyAccount(*wakusync.WakuBackedUpDataResponse) {
 }
 
 func (m *MessengerSignalsHandlerMock) MessengerResponse(response *MessengerResponse) {
@@ -67,6 +85,42 @@ func (m *MessengerSignalsHandlerMock) CommunityInfoFound(community *communities.
 	}
 }
 
+func WaitOnSignaledSendWakuFetchingBackupProgress(m *Messenger, condition func(*wakusync.WakuBackedUpDataResponse) bool, errorMessage string) (*wakusync.WakuBackedUpDataResponse, error) {
+	interval := 500 * time.Millisecond
+	timeoutChan := time.After(10 * time.Second)
+
+	if m.config.messengerSignalsHandler != nil {
+		return nil, errors.New("messengerSignalsHandler already provided/mocked")
+	}
+
+	responseChan := make(chan *wakusync.WakuBackedUpDataResponse, 1000)
+	m.config.messengerSignalsHandler = &MessengerSignalsHandlerMock{
+		wakuBackedUpDataResponseChan: responseChan,
+	}
+
+	defer func() {
+		m.config.messengerSignalsHandler = nil
+	}()
+
+	for {
+		_, err := m.RetrieveAll()
+		if err != nil {
+			return nil, err
+		}
+
+		select {
+		case r := <-responseChan:
+			if condition(r) {
+				return r, nil
+			}
+		case <-timeoutChan:
+			return nil, errors.New("timed out: " + errorMessage)
+		default: // No immediate response, rest & loop back to retrieve again
+			time.Sleep(interval)
+		}
+	}
+}
+
 func WaitOnSignaledMessengerResponse(m *Messenger, condition func(*MessengerResponse) bool, errorMessage string) (*MessengerResponse, error) {
 	interval := 500 * time.Millisecond
 	timeoutChan := time.After(10 * time.Second)
@@ -75,7 +129,7 @@ func WaitOnSignaledMessengerResponse(m *Messenger, condition func(*MessengerResp
 		return nil, errors.New("messengerSignalsHandler already provided/mocked")
 	}
 
-	responseChan := make(chan *MessengerResponse, 1)
+	responseChan := make(chan *MessengerResponse, 64)
 	m.config.messengerSignalsHandler = &MessengerSignalsHandlerMock{
 		responseChan: responseChan,
 	}
@@ -95,10 +149,9 @@ func WaitOnSignaledMessengerResponse(m *Messenger, condition func(*MessengerResp
 			if condition(r) {
 				return r, nil
 			}
-			return nil, errors.New(errorMessage)
 
 		case <-timeoutChan:
-			return nil, errors.New("timed out: " + errorMessage)
+			return nil, errors.New(errorMessage)
 
 		default: // No immediate response, rest & loop back to retrieve again
 			time.Sleep(interval)
@@ -134,6 +187,66 @@ func WaitOnSignaledCommunityFound(m *Messenger, action func(), condition func(co
 			}
 		case <-timeoutChan:
 			return errors.New("timed out: " + errorMessage)
+		}
+	}
+}
+
+func WaitForConnectionStatus(s *suite.Suite, waku *waku2.Waku, action func() bool) {
+	subscription := waku.SubscribeToConnStatusChanges()
+	defer subscription.Unsubscribe()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Action should return the desired online status
+	wantedOnline := action()
+
+	for {
+		select {
+		case status := <-subscription.C:
+			if status.IsOnline == wantedOnline {
+				return
+			}
+		case <-ctx.Done():
+			s.Require().Fail(fmt.Sprintf("timeout waiting for waku connection status '%t'", wantedOnline))
+			return
+		}
+	}
+}
+
+func hasAllPeers(m map[string]types.WakuV2Peer, checkSlice []string) bool {
+	for _, check := range checkSlice {
+		if _, ok := m[check]; !ok {
+			return false
+		}
+	}
+	return true
+}
+
+func WaitForPeersConnected(s *suite.Suite, waku *waku2.Waku, action func() []string) {
+	subscription := waku.SubscribeToConnStatusChanges()
+	defer subscription.Unsubscribe()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Action should return the desired peer ID
+	peerIDs := action()
+	if hasAllPeers(waku.Peers(), peerIDs) {
+		return
+	}
+
+	for {
+		select {
+		case status := <-subscription.C:
+			if hasAllPeers(status.Peers, peerIDs) {
+				// Give some time for p2p events, otherwise might look like peer is available, but fail to send a message.
+				time.Sleep(100 * time.Millisecond)
+				return
+			}
+		case <-ctx.Done():
+			s.Require().Fail(fmt.Sprintf("timeout waiting for peers connected '%+v'", peerIDs))
+			return
 		}
 	}
 }
@@ -301,4 +414,98 @@ func RandomBytes(length int) []byte {
 		panic(err)
 	}
 	return out
+}
+
+func DummyProfileShowcasePreferences(withCollectibles bool) *identity.ProfileShowcasePreferences {
+	preferences := &identity.ProfileShowcasePreferences{
+		Communities: []*identity.ProfileShowcaseCommunityPreference{
+			{
+				CommunityID:        "0x254254546768764565565",
+				ShowcaseVisibility: identity.ProfileShowcaseVisibilityEveryone,
+			},
+			{
+				CommunityID:        "0x865241434343432412343",
+				ShowcaseVisibility: identity.ProfileShowcaseVisibilityContacts,
+			},
+		},
+		Accounts: []*identity.ProfileShowcaseAccountPreference{
+			{
+				Address:            "0x0000000000000000000000000033433445133423",
+				ShowcaseVisibility: identity.ProfileShowcaseVisibilityEveryone,
+				Order:              0,
+			},
+			{
+				Address:            "0x0000000000000000000000000032433445133424",
+				ShowcaseVisibility: identity.ProfileShowcaseVisibilityContacts,
+				Order:              1,
+			},
+		},
+		VerifiedTokens: []*identity.ProfileShowcaseVerifiedTokenPreference{
+			{
+				Symbol:             "ETH",
+				ShowcaseVisibility: identity.ProfileShowcaseVisibilityEveryone,
+				Order:              1,
+			},
+			{
+				Symbol:             "DAI",
+				ShowcaseVisibility: identity.ProfileShowcaseVisibilityIDVerifiedContacts,
+				Order:              2,
+			},
+			{
+				Symbol:             "SNT",
+				ShowcaseVisibility: identity.ProfileShowcaseVisibilityNoOne,
+				Order:              3,
+			},
+		},
+		UnverifiedTokens: []*identity.ProfileShowcaseUnverifiedTokenPreference{
+			{
+				ContractAddress:    "0x454525452023452",
+				ChainID:            11155111,
+				ShowcaseVisibility: identity.ProfileShowcaseVisibilityEveryone,
+				Order:              0,
+			},
+			{
+				ContractAddress:    "0x12312323323233",
+				ChainID:            1,
+				ShowcaseVisibility: identity.ProfileShowcaseVisibilityContacts,
+				Order:              1,
+			},
+		},
+		SocialLinks: []*identity.ProfileShowcaseSocialLinkPreference{
+			&identity.ProfileShowcaseSocialLinkPreference{
+				Text:               identity.TwitterID,
+				URL:                "https://twitter.com/ethstatus",
+				ShowcaseVisibility: identity.ProfileShowcaseVisibilityEveryone,
+				Order:              1,
+			},
+			&identity.ProfileShowcaseSocialLinkPreference{
+				Text:               identity.TwitterID,
+				URL:                "https://twitter.com/StatusIMBlog",
+				ShowcaseVisibility: identity.ProfileShowcaseVisibilityIDVerifiedContacts,
+				Order:              2,
+			},
+			&identity.ProfileShowcaseSocialLinkPreference{
+				Text:               identity.GithubID,
+				URL:                "https://github.com/status-im",
+				ShowcaseVisibility: identity.ProfileShowcaseVisibilityContacts,
+				Order:              3,
+			},
+		},
+	}
+
+	if withCollectibles {
+		preferences.Collectibles = []*identity.ProfileShowcaseCollectiblePreference{
+			{
+				ContractAddress:    "0x12378534257568678487683576",
+				ChainID:            1,
+				TokenID:            "12321389592999903",
+				ShowcaseVisibility: identity.ProfileShowcaseVisibilityEveryone,
+				Order:              0,
+			},
+		}
+	} else {
+		preferences.Collectibles = []*identity.ProfileShowcaseCollectiblePreference{}
+	}
+
+	return preferences
 }

@@ -13,6 +13,18 @@ func RenameSymbols(symbols []string) (renames []string) {
 	return
 }
 
+func RemoveDuplicates(strings []string) []string {
+	uniqueStrings := make(map[string]bool)
+	var uniqueSlice []string
+	for _, str := range strings {
+		if !uniqueStrings[str] {
+			uniqueStrings[str] = true
+			uniqueSlice = append(uniqueSlice, str)
+		}
+	}
+	return uniqueSlice
+}
+
 func GetRealSymbol(symbol string) string {
 	if val, ok := renameMapping[strings.ToUpper(symbol)]; ok {
 		return val

@@ -137,6 +137,7 @@ message UnfurledLink {
   uint32 thumbnail_width = 5;
   uint32 thumbnail_height = 6;
   LinkType type = 7;
+  bytes favicon_payload = 8;
 
   enum LinkType {
     LINK = 0;

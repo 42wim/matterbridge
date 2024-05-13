@@ -24,6 +24,8 @@ import (
 const ownedNFTLimit = 100
 const collectionOwnershipLimit = 50
 const nftMetadataBatchLimit = 50
+const searchCollectiblesLimit = 1000
+const searchCollectionsLimit = 1000
 
 func (o *Client) ID() string {
 	return RaribleID
@@ -42,7 +44,7 @@ func getBaseURL(chainID walletCommon.ChainID) (string, error) {
 	switch uint64(chainID) {
 	case walletCommon.EthereumMainnet, walletCommon.ArbitrumMainnet:
 		return "https://api.rarible.org", nil
-	case walletCommon.EthereumGoerli, walletCommon.ArbitrumSepolia:
+	case walletCommon.ArbitrumSepolia:
 		return "https://testnet-api.rarible.org", nil
 	}
 
@@ -143,14 +145,13 @@ func (o *Client) doPostWithJSON(ctx context.Context, url string, payload any, ap
 }
 
 func (o *Client) doWithRetries(req *http.Request, apiKey string) (*http.Response, error) {
-	b := backoff.ExponentialBackOff{
-		InitialInterval:     time.Millisecond * 1000,
-		RandomizationFactor: 0.1,
-		Multiplier:          1.5,
-		MaxInterval:         time.Second * 32,
-		MaxElapsedTime:      time.Second * 128,
-		Clock:               backoff.SystemClock,
-	}
+	b := backoff.NewExponentialBackOff()
+	b.InitialInterval = time.Millisecond * 1000
+	b.RandomizationFactor = 0.1
+	b.Multiplier = 1.5
+	b.MaxInterval = time.Second * 32
+	b.MaxElapsedTime = time.Second * 70
+
 	b.Reset()
 
 	req.Header.Set("X-API-KEY", apiKey)
@@ -167,12 +168,13 @@ func (o *Client) doWithRetries(req *http.Request, apiKey string) (*http.Response
 
 		err = fmt.Errorf("unsuccessful request: %d %s", resp.StatusCode, http.StatusText(resp.StatusCode))
 		if resp.StatusCode == http.StatusTooManyRequests {
+			log.Error("doWithRetries failed with http.StatusTooManyRequests", "provider", o.ID(), "elapsed time", b.GetElapsedTime(), "next backoff", b.NextBackOff())
 			return nil, err
 		}
 		return nil, backoff.Permanent(err)
 	}
 
-	return backoff.RetryWithData(op, &b)
+	return backoff.RetryWithData(op, b)
 }
 
 func (o *Client) FetchCollectibleOwnersByContractAddress(ctx context.Context, chainID walletCommon.ChainID, contractAddress common.Address) (*thirdparty.CollectibleContractOwnership, error) {
@@ -197,7 +199,9 @@ func (o *Client) FetchCollectibleOwnersByContractAddress(ctx context.Context, ch
 
 		resp, err := o.doQuery(ctx, url, o.getAPIKey(chainID))
 		if err != nil {
-			o.connectionStatus.SetIsConnected(false)
+			if ctx.Err() == nil {
+				o.connectionStatus.SetIsConnected(false)
+			}
 			return nil, err
 		}
 		o.connectionStatus.SetIsConnected(true)
@@ -258,7 +262,9 @@ func (o *Client) FetchAllAssetsByOwner(ctx context.Context, chainID walletCommon
 
 		resp, err := o.doQuery(ctx, url, o.getAPIKey(chainID))
 		if err != nil {
-			o.connectionStatus.SetIsConnected(false)
+			if ctx.Err() == nil {
+				o.connectionStatus.SetIsConnected(false)
+			}
 			return nil, err
 		}
 		o.connectionStatus.SetIsConnected(true)
@@ -398,7 +404,9 @@ func (o *Client) FetchCollectionsDataByContractID(ctx context.Context, contractI
 
 		resp, err := o.doQuery(ctx, url, o.getAPIKey(contractID.ChainID))
 		if err != nil {
-			o.connectionStatus.SetIsConnected(false)
+			if ctx.Err() == nil {
+				o.connectionStatus.SetIsConnected(false)
+			}
 			return nil, err
 		}
 		o.connectionStatus.SetIsConnected(true)
@@ -425,4 +433,185 @@ func (o *Client) FetchCollectionsDataByContractID(ctx context.Context, contractI
 	}
 
 	return ret, nil
+}
+
+func (o *Client) searchCollectibles(ctx context.Context, chainID walletCommon.ChainID, collections []common.Address, fullText CollectibleFilterFullText, sort CollectibleFilterContainerSort, cursor string, limit int) (*thirdparty.FullCollectibleDataContainer, error) {
+	baseURL, err := getItemBaseURL(chainID)
+	if err != nil {
+		return nil, err
+	}
+
+	url := fmt.Sprintf("%s/search", baseURL)
+
+	ret := &thirdparty.FullCollectibleDataContainer{
+		Provider:       o.ID(),
+		Items:          make([]thirdparty.FullCollectibleData, 0),
+		PreviousCursor: cursor,
+		NextCursor:     "",
+	}
+
+	if fullText.Text == "" {
+		return ret, nil
+	}
+
+	tmpLimit := searchCollectiblesLimit
+	if limit > thirdparty.FetchNoLimit && limit < tmpLimit {
+		tmpLimit = limit
+	}
+
+	blockchainString := chainIDToChainString(chainID)
+
+	filterContainer := CollectibleFilterContainer{
+		Cursor: cursor,
+		Limit:  tmpLimit,
+		Filter: CollectibleFilter{
+			Blockchains: []string{blockchainString},
+			Deleted:     false,
+			FullText:    fullText,
+		},
+		Sort: sort,
+	}
+
+	for _, collection := range collections {
+		filterContainer.Filter.Collections = append(filterContainer.Filter.Collections, fmt.Sprintf("%s:%s", blockchainString, collection.String()))
+	}
+
+	for {
+		resp, err := o.doPostWithJSON(ctx, url, filterContainer, o.getAPIKey(chainID))
+		if err != nil {
+			if ctx.Err() == nil {
+				o.connectionStatus.SetIsConnected(false)
+			}
+			return nil, err
+		}
+		o.connectionStatus.SetIsConnected(true)
+
+		defer resp.Body.Close()
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		// if Json is not returned there must be an error
+		if !json.Valid(body) {
+			return nil, fmt.Errorf("invalid json: %s", string(body))
+		}
+
+		var collectibles CollectiblesContainer
+		err = json.Unmarshal(body, &collectibles)
+		if err != nil {
+			return nil, err
+		}
+
+		ret.Items = append(ret.Items, raribleToCollectiblesData(collectibles.Collectibles, chainID.IsMainnet())...)
+		ret.NextCursor = collectibles.Continuation
+
+		if len(ret.NextCursor) == 0 {
+			break
+		}
+
+		filterContainer.Cursor = ret.NextCursor
+
+		if limit != thirdparty.FetchNoLimit && len(ret.Items) >= limit {
+			break
+		}
+	}
+
+	return ret, nil
+}
+
+func (o *Client) searchCollections(ctx context.Context, chainID walletCommon.ChainID, text string, cursor string, limit int) (*thirdparty.CollectionDataContainer, error) {
+	baseURL, err := getCollectionBaseURL(chainID)
+	if err != nil {
+		return nil, err
+	}
+
+	url := fmt.Sprintf("%s/search", baseURL)
+
+	ret := &thirdparty.CollectionDataContainer{
+		Provider:       o.ID(),
+		Items:          make([]thirdparty.CollectionData, 0),
+		PreviousCursor: cursor,
+		NextCursor:     "",
+	}
+
+	if text == "" {
+		return ret, nil
+	}
+
+	tmpLimit := searchCollectionsLimit
+	if limit > thirdparty.FetchNoLimit && limit < tmpLimit {
+		tmpLimit = limit
+	}
+
+	filterContainer := CollectionFilterContainer{
+		Cursor: cursor,
+		Limit:  tmpLimit,
+		Filter: CollectionFilter{
+			Blockchains: []string{chainIDToChainString(chainID)},
+			Text:        text,
+		},
+	}
+
+	for {
+		resp, err := o.doPostWithJSON(ctx, url, filterContainer, o.getAPIKey(chainID))
+		if err != nil {
+			if ctx.Err() == nil {
+				o.connectionStatus.SetIsConnected(false)
+			}
+			return nil, err
+		}
+		o.connectionStatus.SetIsConnected(true)
+
+		defer resp.Body.Close()
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		// if Json is not returned there must be an error
+		if !json.Valid(body) {
+			return nil, fmt.Errorf("invalid json: %s", string(body))
+		}
+
+		var collections CollectionsContainer
+		err = json.Unmarshal(body, &collections)
+		if err != nil {
+			return nil, err
+		}
+
+		ret.Items = append(ret.Items, raribleToCollectionsData(collections.Collections, chainID.IsMainnet())...)
+		ret.NextCursor = collections.Continuation
+
+		if len(ret.NextCursor) == 0 {
+			break
+		}
+
+		filterContainer.Cursor = ret.NextCursor
+
+		if limit != thirdparty.FetchNoLimit && len(ret.Items) >= limit {
+			break
+		}
+	}
+
+	return ret, nil
+}
+
+func (o *Client) SearchCollections(ctx context.Context, chainID walletCommon.ChainID, text string, cursor string, limit int) (*thirdparty.CollectionDataContainer, error) {
+	return o.searchCollections(ctx, chainID, text, cursor, limit)
+}
+
+func (o *Client) SearchCollectibles(ctx context.Context, chainID walletCommon.ChainID, collections []common.Address, text string, cursor string, limit int) (*thirdparty.FullCollectibleDataContainer, error) {
+	fullText := CollectibleFilterFullText{
+		Text: text,
+		Fields: []string{
+			CollectibleFilterFullTextFieldName,
+		},
+	}
+
+	sort := CollectibleFilterContainerSortRelevance
+
+	return o.searchCollectibles(ctx, chainID, collections, fullText, sort, cursor, limit)
 }

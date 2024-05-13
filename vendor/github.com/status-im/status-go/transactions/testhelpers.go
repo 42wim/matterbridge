@@ -82,6 +82,27 @@ func GenerateTestPendingTransactions(start int, count int) []PendingTransaction 
 	return txs
 }
 
+// groupSliceInMap groups a slice of S into a map[K][]N using the getKeyValue function to extract the key and new value for each entry
+func groupSliceInMap[S any, K comparable, N any](s []S, getKeyValue func(entry S, i int) (K, N)) map[K][]N {
+	m := make(map[K][]N)
+	for i, x := range s {
+		k, v := getKeyValue(x, i)
+		m[k] = append(m[k], v)
+	}
+	return m
+}
+
+func keysInMap[K comparable, V any](m map[K]V) (res []K) {
+	if len(m) > 0 {
+		res = make([]K, 0, len(m))
+	}
+
+	for k := range m {
+		res = append(res, k)
+	}
+	return
+}
+
 type TestTxSummary struct {
 	failStatus  bool
 	DontConfirm bool
@@ -89,30 +110,53 @@ type TestTxSummary struct {
 	Timestamp int
 }
 
+type summaryTxPair struct {
+	summary  TestTxSummary
+	tx       PendingTransaction
+	answered bool
+}
+
 func MockTestTransactions(t *testing.T, chainClient *MockChainClient, testTxs []TestTxSummary) []PendingTransaction {
-	txs := GenerateTestPendingTransactions(0, len(testTxs))
-
-	for txIdx := range txs {
-		tx := &txs[txIdx]
-		if testTxs[txIdx].Timestamp > 0 {
-			tx.Timestamp = uint64(testTxs[txIdx].Timestamp)
+	genTxs := GenerateTestPendingTransactions(0, len(testTxs))
+	for i, tx := range testTxs {
+		if tx.Timestamp > 0 {
+			genTxs[i].Timestamp = uint64(tx.Timestamp)
 		}
+	}
 
-		// Mock the first call to getTransactionByHash
-		chainClient.SetAvailableClients([]common.ChainID{tx.ChainID})
-		cl := chainClient.Clients[tx.ChainID]
+	grouped := groupSliceInMap(genTxs, func(tx PendingTransaction, i int) (common.ChainID, summaryTxPair) {
+		return tx.ChainID, summaryTxPair{
+			summary: testTxs[i],
+			tx:      tx,
+		}
+	})
+
+	chains := keysInMap(grouped)
+	chainClient.SetAvailableClients(chains)
+
+	for chainID, chainSummaries := range grouped {
+		// Mock the one call to getTransactionReceipt
+		// It is expected that pending transactions manager will call out of order, therefore match based on hash
+		cl := chainClient.Clients[chainID]
 		call := cl.On("BatchCallContext", mock.Anything, mock.MatchedBy(func(b []rpc.BatchElem) bool {
-			ok := len(b) == len(testTxs)
-			for i := range b {
-				ok = ok && b[i].Method == GetTransactionReceiptRPCName && b[i].Args[0] == tx.Hash
+			if len(b) > len(chainSummaries) {
+				return false
 			}
-			return ok
+			for i := range b {
+				for _, sum := range chainSummaries {
+					tx := &sum.tx
+					if sum.answered {
+						continue
+					}
+					require.Equal(t, GetTransactionReceiptRPCName, b[i].Method)
+					if tx.Hash == b[i].Args[0].(eth.Hash) {
+						sum.answered = true
+						return true
+					}
+				}
+			}
+			return false
 		})).Return(nil)
-		if testTxs[txIdx].DontConfirm {
-			call = call.Times(0)
-		} else {
-			call = call.Once()
-		}
 
 		call.Run(func(args mock.Arguments) {
 			elems := args.Get(1).([]rpc.BatchElem)
@@ -121,19 +165,24 @@ func MockTestTransactions(t *testing.T, chainClient *MockChainClient, testTxs []
 				require.True(t, ok)
 				require.NotNil(t, receiptWrapper)
 				// Simulate parsing of eth_getTransactionReceipt response
-				if !testTxs[i].DontConfirm {
-					status := types.ReceiptStatusSuccessful
-					if testTxs[i].failStatus {
-						status = types.ReceiptStatusFailed
-					}
+				for _, sum := range chainSummaries {
+					tx := &sum.tx
+					if tx.Hash == elems[i].Args[0].(eth.Hash) {
+						if !sum.summary.DontConfirm {
+							status := types.ReceiptStatusSuccessful
+							if sum.summary.failStatus {
+								status = types.ReceiptStatusFailed
+							}
 
-					receiptWrapper.Receipt = &types.Receipt{
-						BlockNumber: new(big.Int).SetUint64(1),
-						Status:      status,
+							receiptWrapper.Receipt = &types.Receipt{
+								BlockNumber: new(big.Int).SetUint64(1),
+								Status:      status,
+							}
+						}
 					}
 				}
 			}
 		})
 	}
-	return txs
+	return genTxs
 }

@@ -21,11 +21,7 @@ import (
 	"github.com/status-im/status-go/transactions"
 )
 
-type MultiTransactionIDType int64
-
 const (
-	NoMultiTransactionID = MultiTransactionIDType(0)
-
 	// EventMTTransactionUpdate is emitted when a multi-transaction is updated (added or deleted)
 	EventMTTransactionUpdate walletevent.EventType = "multi-transaction-update"
 )
@@ -38,6 +34,7 @@ type SignatureDetails struct {
 
 type TransactionDescription struct {
 	chainID   uint64
+	from      common.Address
 	builtTx   *ethTypes.Transaction
 	signature []byte
 }
@@ -89,19 +86,19 @@ const (
 )
 
 type MultiTransaction struct {
-	ID            uint                 `json:"id"`
-	Timestamp     uint64               `json:"timestamp"`
-	FromNetworkID uint64               `json:"fromNetworkID"`
-	ToNetworkID   uint64               `json:"toNetworkID"`
-	FromTxHash    common.Hash          `json:"fromTxHash"`
-	ToTxHash      common.Hash          `json:"toTxHash"`
-	FromAddress   common.Address       `json:"fromAddress"`
-	ToAddress     common.Address       `json:"toAddress"`
-	FromAsset     string               `json:"fromAsset"`
-	ToAsset       string               `json:"toAsset"`
-	FromAmount    *hexutil.Big         `json:"fromAmount"`
-	ToAmount      *hexutil.Big         `json:"toAmount"`
-	Type          MultiTransactionType `json:"type"`
+	ID            wallet_common.MultiTransactionIDType `json:"id"`
+	Timestamp     uint64                               `json:"timestamp"`
+	FromNetworkID uint64                               `json:"fromNetworkID"`
+	ToNetworkID   uint64                               `json:"toNetworkID"`
+	FromTxHash    common.Hash                          `json:"fromTxHash"`
+	ToTxHash      common.Hash                          `json:"toTxHash"`
+	FromAddress   common.Address                       `json:"fromAddress"`
+	ToAddress     common.Address                       `json:"toAddress"`
+	FromAsset     string                               `json:"fromAsset"`
+	ToAsset       string                               `json:"toAsset"`
+	FromAmount    *hexutil.Big                         `json:"fromAmount"`
+	ToAmount      *hexutil.Big                         `json:"toAmount"`
+	Type          MultiTransactionType                 `json:"type"`
 	CrossTxID     string
 }
 
@@ -226,21 +223,5 @@ func (tm *TransactionManager) BuildRawTransaction(chainID uint64, sendArgs trans
 }
 
 func (tm *TransactionManager) SendTransactionWithSignature(chainID uint64, txType transactions.PendingTrxType, sendArgs transactions.SendTxArgs, signature []byte) (hash types.Hash, err error) {
-	hash, err = tm.transactor.BuildTransactionAndSendWithSignature(chainID, sendArgs, signature)
-	if err != nil {
-		return hash, err
-	}
-
-	err = tm.pendingTracker.TrackPendingTransaction(
-		wallet_common.ChainID(chainID),
-		common.Hash(hash),
-		common.Address(sendArgs.From),
-		txType,
-		transactions.AutoDelete,
-	)
-	if err != nil {
-		return hash, err
-	}
-
-	return hash, nil
+	return tm.transactor.BuildTransactionAndSendWithSignature(chainID, sendArgs, signature)
 }

@@ -72,3 +72,12 @@ func NodeConfigHandler(value interface{}) (interface{}, error) {
 
 	return nodeConfig, nil
 }
+
+func Float64ToInt64Handler(value interface{}) (interface{}, error) {
+	floatValue, ok := value.(float64)
+	if !ok {
+		// Ignore if not float64
+		return value, nil
+	}
+	return int64(floatValue), nil
+}

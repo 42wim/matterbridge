@@ -23,11 +23,13 @@ type HighestRoleResponse struct {
 	Criteria  []*PermissionTokenCriteriaResult       `json:"criteria"`
 }
 
-var joiningRoleOrders = map[protobuf.CommunityTokenPermission_Type]int{
-	protobuf.CommunityTokenPermission_BECOME_MEMBER:       1,
-	protobuf.CommunityTokenPermission_BECOME_ADMIN:        2,
-	protobuf.CommunityTokenPermission_BECOME_TOKEN_MASTER: 3,
-	protobuf.CommunityTokenPermission_BECOME_TOKEN_OWNER:  4,
+var roleOrders = map[protobuf.CommunityTokenPermission_Type]int{
+	protobuf.CommunityTokenPermission_BECOME_MEMBER:             1,
+	protobuf.CommunityTokenPermission_CAN_VIEW_CHANNEL:          2,
+	protobuf.CommunityTokenPermission_CAN_VIEW_AND_POST_CHANNEL: 3,
+	protobuf.CommunityTokenPermission_BECOME_ADMIN:              4,
+	protobuf.CommunityTokenPermission_BECOME_TOKEN_MASTER:       5,
+	protobuf.CommunityTokenPermission_BECOME_TOKEN_OWNER:        6,
 }
 
 type ByRoleDesc []*HighestRoleResponse
@@ -35,7 +37,7 @@ type ByRoleDesc []*HighestRoleResponse
 func (a ByRoleDesc) Len() int      { return len(a) }
 func (a ByRoleDesc) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a ByRoleDesc) Less(i, j int) bool {
-	return joiningRoleOrders[a[i].Role] > joiningRoleOrders[a[j].Role]
+	return roleOrders[a[i].Role] > roleOrders[a[j].Role]
 }
 
 type rolesAndHighestRole struct {
@@ -47,7 +49,7 @@ func calculateRolesAndHighestRole(permissions map[string]*PermissionTokenCriteri
 	item := &rolesAndHighestRole{}
 	byRoleMap := make(map[protobuf.CommunityTokenPermission_Type]*HighestRoleResponse)
 	for _, p := range permissions {
-		if joiningRoleOrders[p.Role] == 0 {
+		if roleOrders[p.Role] == 0 {
 			continue
 		}
 		if byRoleMap[p.Role] == nil {

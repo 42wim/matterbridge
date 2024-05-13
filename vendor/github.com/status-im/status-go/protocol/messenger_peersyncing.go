@@ -62,7 +62,15 @@ func (m *Messenger) handleDatasyncMetadata(response *common.HandleMessageRespons
 		return nil
 	}
 
-	err := m.OnDatasyncOffer(response)
+	isPeerSyncingEnabled, err := m.settings.GetPeerSyncingEnabled()
+	if err != nil {
+		return err
+	}
+	if !isPeerSyncingEnabled {
+		return nil
+	}
+
+	err = m.OnDatasyncOffer(response)
 	if err != nil {
 		return err
 	}
@@ -99,6 +107,14 @@ func (m *Messenger) startPeerSyncingLoop() {
 
 func (m *Messenger) sendDatasyncOffers() error {
 	if !m.featureFlags.Peersyncing {
+		return nil
+	}
+
+	isPeerSyncingEnabled, err := m.settings.GetPeerSyncingEnabled()
+	if err != nil {
+		return err
+	}
+	if !isPeerSyncingEnabled {
 		return nil
 	}
 

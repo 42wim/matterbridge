@@ -3,9 +3,8 @@ package communities
 import (
 	"context"
 	"errors"
-	"math"
+	"fmt"
 	"math/big"
-	"strconv"
 	"strings"
 
 	"go.uber.org/zap"
@@ -330,7 +329,7 @@ func (p *DefaultPermissionChecker) CheckPermissions(permissions []*CommunityToke
 					continue
 				}
 
-				accumulatedBalance := new(big.Float)
+				accumulatedBalance := new(big.Int)
 
 			chainIDLoopERC20:
 				for chainID, address := range tokenRequirement.ContractAddresses {
@@ -345,16 +344,11 @@ func (p *DefaultPermissionChecker) CheckPermissions(permissions []*CommunityToke
 
 						value := ownedERC20TokenBalances[chainID][account][contractAddress]
 
-						accountChainBalance := new(big.Float).Quo(
-							new(big.Float).SetInt(value.ToInt()),
-							big.NewFloat(math.Pow(10, float64(tokenRequirement.Decimals))),
-						)
-
 						if _, exists := accountsChainIDsCombinations[account]; !exists {
 							accountsChainIDsCombinations[account] = make(map[uint64]bool)
 						}
 
-						if accountChainBalance.Cmp(big.NewFloat(0)) > 0 {
+						if value.ToInt().Cmp(big.NewInt(0)) > 0 {
 							// account has balance > 0 on this chain for this token, so let's add it the chain IDs
 							accountsChainIDsCombinations[account][chainID] = true
 						}
@@ -362,14 +356,14 @@ func (p *DefaultPermissionChecker) CheckPermissions(permissions []*CommunityToke
 						// check if adding current chain account balance to accumulated balance
 						// satisfies required amount
 						prevBalance := accumulatedBalance
-						accumulatedBalance.Add(prevBalance, accountChainBalance)
+						accumulatedBalance.Add(prevBalance, value.ToInt())
 
-						requiredAmount, err := strconv.ParseFloat(tokenRequirement.Amount, 32)
-						if err != nil {
-							return nil, err
+						requiredAmount, success := new(big.Int).SetString(tokenRequirement.AmountInWei, 10)
+						if !success {
+							return nil, fmt.Errorf("amountInWeis value is incorrect")
 						}
 
-						if accumulatedBalance.Cmp(big.NewFloat(requiredAmount)) != -1 {
+						if accumulatedBalance.Cmp(requiredAmount) != -1 {
 							tokenRequirementMet = true
 							if shortcircuit {
 								break chainIDLoopERC20

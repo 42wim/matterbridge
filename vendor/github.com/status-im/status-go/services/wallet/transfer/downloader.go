@@ -63,7 +63,7 @@ type Transfer struct {
 	TokenValue  *big.Int `json:"tokenValue"`
 	BaseGasFees string
 	// Internal field that is used to track multi-transaction transfers.
-	MultiTransactionID MultiTransactionIDType `json:"multi_transaction_id"`
+	MultiTransactionID w_common.MultiTransactionIDType `json:"multi_transaction_id"`
 }
 
 // ETHDownloader downloads regular eth transfers and tokens transfers.
@@ -109,7 +109,7 @@ func getTransferByHash(ctx context.Context, client chain.ClientInterface, signer
 		return nil, err
 	}
 
-	baseGasFee, err := client.GetBaseFeeFromBlock(big.NewInt(int64(transactionLog.BlockNumber)))
+	baseGasFee, err := client.GetBaseFeeFromBlock(ctx, big.NewInt(int64(transactionLog.BlockNumber)))
 	if err != nil {
 		return nil, err
 	}
@@ -288,7 +288,7 @@ func (d *ETHDownloader) getTransfersInBlock(ctx context.Context, blk *types.Bloc
 						Receipt:            receipt,
 						Log:                nil,
 						BaseGasFees:        blk.BaseFee().String(),
-						MultiTransactionID: NoMultiTransactionID})
+						MultiTransactionID: w_common.NoMultiTransactionID})
 				}
 			}
 		}
@@ -416,7 +416,7 @@ func (d *ETHDownloader) subTransactionsFromPreloaded(preloadedTx *PreloadedTrans
 			Transaction:        tx,
 			Receipt:            receipt,
 			Timestamp:          blk.Time(),
-			MultiTransactionID: NoMultiTransactionID,
+			MultiTransactionID: w_common.NoMultiTransactionID,
 		}
 
 		rst = append(rst, transfer)
@@ -451,7 +451,7 @@ func (d *ETHDownloader) subTransactionsFromTransactionData(address, from common.
 				Transaction:        tx,
 				Receipt:            receipt,
 				Timestamp:          blk.Time(),
-				MultiTransactionID: NoMultiTransactionID,
+				MultiTransactionID: w_common.NoMultiTransactionID,
 			}
 
 			rst = append(rst, transfer)

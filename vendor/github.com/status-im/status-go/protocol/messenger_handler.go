@@ -393,7 +393,26 @@ func (m *Messenger) handleCommandMessage(state *ReceivedMessageState, message *c
 	if err := message.PrepareContent(common.PubkeyToHex(&m.identity.PublicKey)); err != nil {
 		return fmt.Errorf("failed to prepare content: %v", err)
 	}
-	chat, err := m.matchChatEntity(message)
+
+	// Get Application layer messageType from commandState
+	// Currently this is not really used in `matchChatEntity`, but I did want to pass UNKNOWN there.
+	var messageType protobuf.ApplicationMetadataMessage_Type
+	switch message.CommandParameters.CommandState {
+	case common.CommandStateRequestAddressForTransaction:
+		messageType = protobuf.ApplicationMetadataMessage_REQUEST_ADDRESS_FOR_TRANSACTION
+	case common.CommandStateRequestAddressForTransactionAccepted:
+		messageType = protobuf.ApplicationMetadataMessage_ACCEPT_REQUEST_ADDRESS_FOR_TRANSACTION
+	case common.CommandStateRequestAddressForTransactionDeclined:
+		messageType = protobuf.ApplicationMetadataMessage_DECLINE_REQUEST_ADDRESS_FOR_TRANSACTION
+	case common.CommandStateRequestTransaction:
+		messageType = protobuf.ApplicationMetadataMessage_REQUEST_TRANSACTION
+	case common.CommandStateRequestTransactionDeclined:
+		messageType = protobuf.ApplicationMetadataMessage_DECLINE_REQUEST_TRANSACTION
+	default:
+		messageType = protobuf.ApplicationMetadataMessage_UNKNOWN
+	}
+
+	chat, err := m.matchChatEntity(message, messageType)
 	if err != nil {
 		return err
 	}
@@ -862,7 +881,7 @@ func (m *Messenger) handlePinMessage(pinner *Contact, whisperTimestamp uint64, r
 		Alias:            pinner.Alias,
 	}
 
-	chat, err := m.matchChatEntity(pinMessage)
+	chat, err := m.matchChatEntity(pinMessage, protobuf.ApplicationMetadataMessage_PIN_MESSAGE)
 	if err != nil {
 		return err // matchChatEntity returns a descriptive error message
 	}
@@ -2092,6 +2111,7 @@ func (m *Messenger) handleChatMessage(state *ReceivedMessageState, forceSeen boo
 		logger.Warn("failed to validate message", zap.Error(err))
 		return err
 	}
+
 	receivedMessage := &common.Message{
 		ID:               state.CurrentMessageState.MessageID,
 		ChatMessage:      state.CurrentMessageState.Message,
@@ -2126,7 +2146,7 @@ func (m *Messenger) handleChatMessage(state *ReceivedMessageState, forceSeen boo
 		}
 	}
 
-	chat, err := m.matchChatEntity(receivedMessage)
+	chat, err := m.matchChatEntity(receivedMessage, protobuf.ApplicationMetadataMessage_CHAT_MESSAGE)
 	if err != nil {
 		return err // matchChatEntity returns a descriptive error message
 	}
@@ -2142,6 +2162,39 @@ func (m *Messenger) handleChatMessage(state *ReceivedMessageState, forceSeen boo
 
 	if !allowed {
 		return ErrMessageNotAllowed
+	}
+
+	if chat.ChatType == ChatTypeCommunityChat {
+		communityID, err := types.DecodeHex(chat.CommunityID)
+		if err != nil {
+			return err
+		}
+
+		community, err := m.GetCommunityByID(communityID)
+		if err != nil {
+			return err
+		}
+
+		if community == nil {
+			logger.Warn("community not found for msg",
+				zap.String("messageID", receivedMessage.ID),
+				zap.String("from", receivedMessage.From),
+				zap.String("communityID", chat.CommunityID))
+			return communities.ErrOrgNotFound
+		}
+
+		pk, err := common.HexToPubkey(state.CurrentMessageState.Contact.ID)
+		if err != nil {
+			return err
+		}
+
+		if community.IsBanned(pk) {
+			logger.Warn("skipping msg from banned user",
+				zap.String("messageID", receivedMessage.ID),
+				zap.String("from", receivedMessage.From),
+				zap.String("communityID", chat.CommunityID))
+			return errors.New("received a messaged from banned user")
+		}
 	}
 
 	// It looks like status-mobile created profile chats as public chats
@@ -2650,7 +2703,7 @@ func (m *Messenger) HandleDeclineRequestTransaction(messageState *ReceivedMessag
 	return m.handleCommandMessage(messageState, oldMessage)
 }
 
-func (m *Messenger) matchChatEntity(chatEntity common.ChatEntity) (*Chat, error) {
+func (m *Messenger) matchChatEntity(chatEntity common.ChatEntity, messageType protobuf.ApplicationMetadataMessage_Type) (*Chat, error) {
 	if chatEntity.GetSigPubKey() == nil {
 		m.logger.Error("public key can't be empty")
 		return nil, errors.New("received a chatEntity with empty public key")
@@ -2719,7 +2772,7 @@ func (m *Messenger) matchChatEntity(chatEntity common.ChatEntity) (*Chat, error)
 			return nil, errors.New("not an community chat")
 		}
 
-		canPost, err := m.communitiesManager.CanPost(chatEntity.GetSigPubKey(), chat.CommunityID, chat.CommunityChatID())
+		canPost, err := m.communitiesManager.CanPost(chatEntity.GetSigPubKey(), chat.CommunityID, chat.CommunityChatID(), messageType)
 		if err != nil {
 			return nil, err
 		}
@@ -2728,21 +2781,8 @@ func (m *Messenger) matchChatEntity(chatEntity common.ChatEntity) (*Chat, error)
 			return nil, errors.New("user can't post in community")
 		}
 
-		_, isPinMessage := chatEntity.(*common.PinMessage)
-		if isPinMessage {
-			community, err := m.communitiesManager.GetByIDString(chat.CommunityID)
-			if err != nil {
-				return nil, err
-			}
-
-			hasPermission := community.IsPrivilegedMember(chatEntity.GetSigPubKey())
-			pinMessageAllowed := community.AllowsAllMembersToPinMessage()
-			if !hasPermission && !pinMessageAllowed {
-				return nil, errors.New("user can't pin message")
-			}
-		}
-
 		return chat, nil
+
 	case chatEntity.GetMessageType() == protobuf.MessageType_PRIVATE_GROUP:
 		// In the case of a group chatEntity, ChatID is the same for all messages belonging to a group.
 		// It needs to be verified if the signature public key belongs to the chat.
@@ -2819,7 +2859,7 @@ func (m *Messenger) HandleEmojiReaction(state *ReceivedMessageState, pbEmojiR *p
 		return nil
 	}
 
-	chat, err := m.matchChatEntity(emojiReaction)
+	chat, err := m.matchChatEntity(emojiReaction, protobuf.ApplicationMetadataMessage_EMOJI_REACTION)
 	if err != nil {
 		return err // matchChatEntity returns a descriptive error message
 	}
@@ -3016,6 +3056,7 @@ func (m *Messenger) HandleChatIdentity(state *ReceivedMessageState, ci *protobuf
 			if err != nil {
 				return err
 			}
+			state.Response.AddUpdatedProfileShowcaseContactID(contact.ID)
 		}
 	}
 
@@ -3213,13 +3254,13 @@ func mapSyncAccountToAccount(message *protobuf.SyncAccount, accountOperability a
 	}
 }
 
-func (m *Messenger) resolveAccountOperability(syncAcc *protobuf.SyncAccount, syncKpMigratedToKeycard bool,
-	dbKpMigratedToKeycard bool, accountReceivedFromLocalPairing bool) (accounts.AccountOperable, error) {
+func (m *Messenger) resolveAccountOperability(syncAcc *protobuf.SyncAccount, recoverinrecoveringFromWakuInitiatedByKeycard bool,
+	syncKpMigratedToKeycard bool, dbKpMigratedToKeycard bool, accountReceivedFromLocalPairing bool) (accounts.AccountOperable, error) {
 	if accountReceivedFromLocalPairing {
 		return accounts.AccountOperable(syncAcc.Operable), nil
 	}
 
-	if syncKpMigratedToKeycard || m.account.KeyUID == syncAcc.KeyUid {
+	if syncKpMigratedToKeycard || recoverinrecoveringFromWakuInitiatedByKeycard && m.account.KeyUID == syncAcc.KeyUid {
 		return accounts.AccountFullyOperable, nil
 	}
 
@@ -3500,18 +3541,19 @@ func (m *Messenger) handleSyncKeypair(message *protobuf.SyncKeypair, fromLocalPa
 	}
 
 	syncKpMigratedToKeycard := len(message.Keycards) > 0
+	recoveringFromWaku := message.SyncedFrom == accounts.SyncedFromBackup
+
+	multiAcc, err := m.multiAccounts.GetAccount(kp.KeyUID)
+	if err != nil {
+		return nil, err
+	}
+	recoverinrecoveringFromWakuInitiatedByKeycard := recoveringFromWaku && multiAcc != nil && multiAcc.RefersToKeycard()
 	for _, sAcc := range message.Accounts {
-		if message.SyncedFrom == accounts.SyncedFromBackup && kp.Type == accounts.KeypairTypeProfile {
-			// if a profile keypair is coming from backup, we're handling within this block the case when a recovering
-			// was inititiated via keycard, while backed up profile keypair data refers to a regular profile
-			multiAcc, err := m.multiAccounts.GetAccount(kp.KeyUID)
-			if err != nil {
-				return nil, err
-			}
-			syncKpMigratedToKeycard = multiAcc != nil && multiAcc.KeycardPairing != ""
-		}
-		accountOperability, err := m.resolveAccountOperability(sAcc, syncKpMigratedToKeycard,
-			dbKeypair != nil && dbKeypair.MigratedToKeycard(), fromLocalPairing)
+		accountOperability, err := m.resolveAccountOperability(sAcc,
+			recoverinrecoveringFromWakuInitiatedByKeycard,
+			syncKpMigratedToKeycard,
+			dbKeypair != nil && dbKeypair.MigratedToKeycard(),
+			fromLocalPairing)
 		if err != nil {
 			return nil, err
 		}
@@ -3520,7 +3562,7 @@ func (m *Messenger) handleSyncKeypair(message *protobuf.SyncKeypair, fromLocalPa
 		kp.Accounts = append(kp.Accounts, acc)
 	}
 
-	if !fromLocalPairing {
+	if !fromLocalPairing && !recoverinrecoveringFromWakuInitiatedByKeycard {
 		if kp.Removed ||
 			dbKeypair != nil && !dbKeypair.MigratedToKeycard() && syncKpMigratedToKeycard {
 			// delete all keystore files
@@ -3894,4 +3936,9 @@ func (m *Messenger) addNewKeypairAddedOnPairedDeviceACNotification(keyUID string
 		return err
 	}
 	return nil
+}
+
+func (m *Messenger) HandleSyncProfileShowcasePreferences(state *ReceivedMessageState, p *protobuf.SyncProfileShowcasePreferences, statusMessage *v1protocol.StatusMessage) error {
+	_, err := m.saveProfileShowcasePreferencesProto(p, false)
+	return err
 }

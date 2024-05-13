@@ -341,6 +341,8 @@ func stickersRecentStickersProtobufFactoryStruct(s Settings, clock uint64, chatI
 	return buildRawStickersRecentStickersSyncMessage(srs, clock, chatID)
 }
 
+// Helpers
+
 func assertBytes(value interface{}) ([]byte, error) {
 	v, ok := value.([]byte)
 	if !ok {

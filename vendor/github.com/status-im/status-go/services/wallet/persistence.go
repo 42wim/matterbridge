@@ -33,7 +33,7 @@ func (p *Persistence) SaveTokens(tokens map[common.Address][]Token) (err error) 
 	for address, addressTokens := range tokens {
 		for _, t := range addressTokens {
 			for chainID, b := range t.BalancesPerChain {
-				if b.HasError || b.Balance.Cmp(big.NewFloat(0)) == 0 {
+				if b.HasError {
 					continue
 				}
 				_, err = tx.Exec(`INSERT INTO token_balances(user_address,token_name,token_symbol,token_address,token_decimals,token_description,token_url,balance,raw_balance,chain_id) VALUES (?,?,?,?,?,?,?,?,?,?)`, address.Hex(), t.Name, t.Symbol, b.Address.Hex(), t.Decimals, t.Description, t.AssetWebsiteURL, b.Balance.String(), b.RawBalance, chainID)

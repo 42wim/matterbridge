@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 
@@ -47,10 +49,12 @@ type Client struct {
 	upstreamURL     string
 	UpstreamChainID uint64
 
-	local           *gethrpc.Client
-	upstream        chain.ClientInterface
-	rpcClientsMutex sync.RWMutex
-	rpcClients      map[uint64]chain.ClientInterface
+	local              *gethrpc.Client
+	upstream           chain.ClientInterface
+	rpcClientsMutex    sync.RWMutex
+	rpcClients         map[uint64]chain.ClientInterface
+	rpcLimiterMutex    sync.RWMutex
+	limiterPerProvider map[string]*chain.RPCLimiter
 
 	router         *router
 	NetworkManager *network.Manager
@@ -81,11 +85,12 @@ func NewClient(client *gethrpc.Client, upstreamChainID uint64, upstream params.U
 	}
 
 	c := Client{
-		local:          client,
-		NetworkManager: networkManager,
-		handlers:       make(map[string]Handler),
-		rpcClients:     make(map[uint64]chain.ClientInterface),
-		log:            log,
+		local:              client,
+		NetworkManager:     networkManager,
+		handlers:           make(map[string]Handler),
+		rpcClients:         make(map[uint64]chain.ClientInterface),
+		limiterPerProvider: make(map[string]*chain.RPCLimiter),
+		log:                log,
 	}
 
 	if upstream.Enabled {
@@ -96,7 +101,11 @@ func NewClient(client *gethrpc.Client, upstreamChainID uint64, upstream params.U
 		if err != nil {
 			return nil, fmt.Errorf("dial upstream server: %s", err)
 		}
-		c.upstream = chain.NewSimpleClient(upstreamClient, upstreamChainID)
+		limiter, err := c.getRPCLimiter(c.upstreamURL)
+		if err != nil {
+			return nil, fmt.Errorf("get RPC limiter: %s", err)
+		}
+		c.upstream = chain.NewSimpleClient(limiter, upstreamClient, upstreamChainID)
 	}
 
 	c.router = newRouter(c.upstreamEnabled)
@@ -110,6 +119,33 @@ func NewClient(client *gethrpc.Client, upstreamChainID uint64, upstream params.U
 
 func (c *Client) SetWalletNotifier(notifier func(chainID uint64, message string)) {
 	c.walletNotifier = notifier
+}
+
+func extractLastParamFromURL(inputURL string) (string, error) {
+	parsedURL, err := url.Parse(inputURL)
+	if err != nil {
+		return "", err
+	}
+
+	pathSegments := strings.Split(parsedURL.Path, "/")
+	lastSegment := pathSegments[len(pathSegments)-1]
+
+	return lastSegment, nil
+}
+
+func (c *Client) getRPCLimiter(URL string) (*chain.RPCLimiter, error) {
+	apiKey, err := extractLastParamFromURL(URL)
+	if err != nil {
+		return nil, err
+	}
+	c.rpcLimiterMutex.Lock()
+	defer c.rpcLimiterMutex.Unlock()
+	if limiter, ok := c.limiterPerProvider[apiKey]; ok {
+		return limiter, nil
+	}
+	limiter := chain.NewRPCLimiter()
+	c.limiterPerProvider[apiKey] = limiter
+	return limiter, nil
 }
 
 func (c *Client) getClientUsingCache(chainID uint64) (chain.ClientInterface, error) {
@@ -135,15 +171,28 @@ func (c *Client) getClientUsingCache(chainID uint64) (chain.ClientInterface, err
 		return nil, fmt.Errorf("dial upstream server: %s", err)
 	}
 
-	var rpcFallbackClient *gethrpc.Client
+	rpcLimiter, err := c.getRPCLimiter(network.RPCURL)
+	if err != nil {
+		return nil, fmt.Errorf("get RPC limiter: %s", err)
+	}
+
+	var (
+		rpcFallbackClient  *gethrpc.Client
+		rpcFallbackLimiter *chain.RPCLimiter
+	)
 	if len(network.FallbackURL) > 0 {
 		rpcFallbackClient, err = gethrpc.Dial(network.FallbackURL)
 		if err != nil {
 			return nil, fmt.Errorf("dial upstream server: %s", err)
 		}
+
+		rpcFallbackLimiter, err = c.getRPCLimiter(network.FallbackURL)
+		if err != nil {
+			return nil, fmt.Errorf("get RPC fallback limiter: %s", err)
+		}
 	}
 
-	client := chain.NewClient(rpcClient, rpcFallbackClient, chainID)
+	client := chain.NewClient(rpcLimiter, rpcClient, rpcFallbackLimiter, rpcFallbackClient, chainID)
 	client.WalletNotifier = c.walletNotifier
 	c.rpcClients[chainID] = client
 	return client, nil
@@ -199,8 +248,12 @@ func (c *Client) UpdateUpstreamURL(url string) error {
 	if err != nil {
 		return err
 	}
+	rpcLimiter, err := c.getRPCLimiter(url)
+	if err != nil {
+		return err
+	}
 	c.Lock()
-	c.upstream = chain.NewSimpleClient(rpcClient, c.UpstreamChainID)
+	c.upstream = chain.NewSimpleClient(rpcLimiter, rpcClient, c.UpstreamChainID)
 	c.upstreamURL = url
 	c.Unlock()
 

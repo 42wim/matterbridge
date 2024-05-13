@@ -36,7 +36,7 @@ type DatabaseSettingsManager interface {
 	GetEIP1581Address() (rst types.Address, err error)
 	GetMasterAddress() (rst types.Address, err error)
 	GetTestNetworksEnabled() (result bool, err error)
-	GetIsSepoliaEnabled() (result bool, err error)
+	GetIsGoerliEnabled() (result bool, err error)
 	GetTokenGroupByCommunity() (result bool, err error)
 	GetCollectibleGroupByCommunity() (result bool, err error)
 	GetCollectibleGroupByCollection() (result bool, err error)
@@ -49,6 +49,7 @@ type DatabaseSettingsManager interface {
 	SetPinnedMailservers(mailservers map[string]string) error
 	SetUseMailservers(value bool) error
 	SetTokenGroupByCommunity(value bool) error
+	SetPeerSyncingEnabled(value bool) error
 
 	CreateSettings(s Settings, n params.NodeConfig) error
 	SaveSetting(setting string, value interface{}) error
@@ -76,4 +77,5 @@ type DatabaseSettingsManager interface {
 	URLUnfurlingMode() (result int64, err error)
 	SubscribeToChanges() chan *SyncSettingField
 	MnemonicWasShown() error
+	GetPeerSyncingEnabled() (result bool, err error)
 }

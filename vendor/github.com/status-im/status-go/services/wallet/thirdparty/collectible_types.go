@@ -97,6 +97,45 @@ func GroupContractIDsByChainID(ids []ContractID) map[w_common.ChainID][]Contract
 	return ret
 }
 
+func GroupCollectiblesByChainID(collectibles []*FullCollectibleData) map[w_common.ChainID][]*FullCollectibleData {
+	ret := make(map[w_common.ChainID][]*FullCollectibleData)
+
+	for i, collectible := range collectibles {
+		chainID := collectible.CollectibleData.ID.ContractID.ChainID
+		if _, ok := ret[chainID]; !ok {
+			ret[chainID] = make([]*FullCollectibleData, 0, len(collectibles))
+		}
+		ret[chainID] = append(ret[chainID], collectibles[i])
+	}
+
+	return ret
+}
+
+func GroupCollectiblesByContractAddress(collectibles []*FullCollectibleData) map[common.Address][]*FullCollectibleData {
+	ret := make(map[common.Address][]*FullCollectibleData)
+
+	for i, collectible := range collectibles {
+		contractAddress := collectible.CollectibleData.ID.ContractID.Address
+		if _, ok := ret[contractAddress]; !ok {
+			ret[contractAddress] = make([]*FullCollectibleData, 0, len(collectibles))
+		}
+		ret[contractAddress] = append(ret[contractAddress], collectibles[i])
+	}
+
+	return ret
+}
+
+func GroupCollectiblesByChainIDAndContractAddress(collectibles []*FullCollectibleData) map[w_common.ChainID]map[common.Address][]*FullCollectibleData {
+	ret := make(map[w_common.ChainID]map[common.Address][]*FullCollectibleData)
+
+	collectiblesByChainID := GroupCollectiblesByChainID(collectibles)
+	for chainID, chainCollectibles := range collectiblesByChainID {
+		ret[chainID] = GroupCollectiblesByContractAddress(chainCollectibles)
+	}
+
+	return ret
+}
+
 type CollectionTrait struct {
 	Min float64 `json:"min"`
 	Max float64 `json:"max"`
@@ -138,6 +177,7 @@ type CollectibleData struct {
 	Traits             []CollectibleTrait `json:"traits"`
 	BackgroundColor    string             `json:"background_color"`
 	TokenURI           string             `json:"token_uri"`
+	IsFirst            bool               `json:"is_first"`
 }
 
 // Community-related collectible info. Present only for collectibles minted in a community.
@@ -152,7 +192,8 @@ type FullCollectibleData struct {
 	CollectionData           *CollectionData
 	CommunityInfo            *CommunityInfo
 	CollectibleCommunityInfo *CollectibleCommunityInfo
-	Ownership                []AccountBalance
+	Ownership                []AccountBalance // This is a list of all the owners of the collectible
+	AccountBalance           *bigint.BigInt   // This is the balance of the collectible for the requested account
 }
 
 type CollectiblesContainer[T any] struct {
@@ -162,27 +203,36 @@ type CollectiblesContainer[T any] struct {
 	Provider       string
 }
 
-type CollectibleOwnershipContainer CollectiblesContainer[CollectibleUniqueID]
+type CollectibleOwnershipContainer CollectiblesContainer[CollectibleIDBalance]
 type CollectionDataContainer CollectiblesContainer[CollectionData]
 type CollectibleDataContainer CollectiblesContainer[CollectibleData]
 type FullCollectibleDataContainer CollectiblesContainer[FullCollectibleData]
 
 // Tried to find a way to make this generic, but couldn't, so the code below is duplicated somewhere else
-func collectibleItemsToIDs(items []FullCollectibleData) []CollectibleUniqueID {
-	ret := make([]CollectibleUniqueID, 0, len(items))
+func collectibleItemsToBalances(items []FullCollectibleData) []CollectibleIDBalance {
+	ret := make([]CollectibleIDBalance, 0, len(items))
 	for _, item := range items {
-		ret = append(ret, item.CollectibleData.ID)
+		balance := CollectibleIDBalance{
+			ID:      item.CollectibleData.ID,
+			Balance: item.AccountBalance,
+		}
+		ret = append(ret, balance)
 	}
 	return ret
 }
 
 func (c *FullCollectibleDataContainer) ToOwnershipContainer() CollectibleOwnershipContainer {
 	return CollectibleOwnershipContainer{
-		Items:          collectibleItemsToIDs(c.Items),
+		Items:          collectibleItemsToBalances(c.Items),
 		NextCursor:     c.NextCursor,
 		PreviousCursor: c.PreviousCursor,
 		Provider:       c.Provider,
 	}
+}
+
+type CollectibleIDBalance struct {
+	ID      CollectibleUniqueID `json:"id"`
+	Balance *bigint.BigInt      `json:"balance"`
 }
 
 type TokenBalance struct {
@@ -227,4 +277,45 @@ type CollectibleDataProvider interface {
 type CollectionDataProvider interface {
 	CollectibleProvider
 	FetchCollectionsDataByContractID(ctx context.Context, ids []ContractID) ([]CollectionData, error)
+}
+
+type CollectibleSearchProvider interface {
+	CollectibleProvider
+	SearchCollections(ctx context.Context, chainID w_common.ChainID, text string, cursor string, limit int) (*CollectionDataContainer, error)
+	SearchCollectibles(ctx context.Context, chainID w_common.ChainID, collections []common.Address, text string, cursor string, limit int) (*FullCollectibleDataContainer, error)
+}
+
+type CollectibleProviders struct {
+	ContractOwnershipProviders []CollectibleContractOwnershipProvider
+	AccountOwnershipProviders  []CollectibleAccountOwnershipProvider
+	CollectibleDataProviders   []CollectibleDataProvider
+	CollectionDataProviders    []CollectionDataProvider
+	SearchProviders            []CollectibleSearchProvider
+}
+
+func (p *CollectibleProviders) GetProviderList() []CollectibleProvider {
+	ret := make([]CollectibleProvider, 0)
+
+	uniqueProviders := make(map[string]CollectibleProvider)
+	for _, provider := range p.ContractOwnershipProviders {
+		uniqueProviders[provider.ID()] = provider
+	}
+	for _, provider := range p.AccountOwnershipProviders {
+		uniqueProviders[provider.ID()] = provider
+	}
+	for _, provider := range p.CollectibleDataProviders {
+		uniqueProviders[provider.ID()] = provider
+	}
+	for _, provider := range p.CollectionDataProviders {
+		uniqueProviders[provider.ID()] = provider
+	}
+	for _, provider := range p.SearchProviders {
+		uniqueProviders[provider.ID()] = provider
+	}
+
+	for _, provider := range uniqueProviders {
+		ret = append(ret, provider)
+	}
+
+	return ret
 }

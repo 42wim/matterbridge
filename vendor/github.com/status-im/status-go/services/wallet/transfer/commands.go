@@ -322,6 +322,20 @@ func (c *transfersCommand) saveAndConfirmPending(allTransfers []Transfer, blockN
 	return resErr
 }
 
+func externalTransactionOrError(err error, mTID int64) bool {
+	if err == sql.ErrNoRows {
+		// External transaction downloaded, ignore it
+		return true
+	} else if err != nil {
+		log.Warn("GetOwnedMultiTransactionID", "error", err)
+		return true
+	} else if mTID <= 0 {
+		// Existing external transaction, ignore it
+		return true
+	}
+	return false
+}
+
 func (c *transfersCommand) confirmPendingTransactions(tx *sql.Tx, allTransfers []Transfer) (notifyFunctions []func()) {
 	notifyFunctions = make([]func(), 0)
 
@@ -335,16 +349,11 @@ func (c *transfersCommand) confirmPendingTransactions(tx *sql.Tx, allTransfers [
 				continue
 			} else {
 				// Outside transaction, already confirmed by another duplicate or not yet downloaded
-				existingMTID, err := GetOwnedMultiTransactionID(tx, chainID, tr.ID, tr.Address)
-				if err == sql.ErrNoRows || existingMTID == 0 {
-					// Outside transaction, ignore it
-					continue
-				} else if err != nil {
-					log.Warn("GetOwnedMultiTransactionID", "error", err)
+				existingMTID, err := GetOwnedMultiTransactionID(tx, chainID, txHash, tr.Address)
+				if externalTransactionOrError(err, existingMTID) {
 					continue
 				}
 				mTID = w_common.NewAndSet(existingMTID)
-
 			}
 		} else if err != nil {
 			log.Warn("GetOwnedPendingStatus", "error", err)
@@ -352,7 +361,7 @@ func (c *transfersCommand) confirmPendingTransactions(tx *sql.Tx, allTransfers [
 		}
 
 		if mTID != nil {
-			allTransfers[i].MultiTransactionID = MultiTransactionIDType(*mTID)
+			allTransfers[i].MultiTransactionID = w_common.MultiTransactionIDType(*mTID)
 		}
 		if txType != nil && *txType == transactions.WalletTransfer {
 			notify, err := c.pendingTxManager.DeleteBySQLTx(tx, chainID, txHash)
@@ -366,7 +375,7 @@ func (c *transfersCommand) confirmPendingTransactions(tx *sql.Tx, allTransfers [
 }
 
 // Mark all subTxs of a given Tx with the same multiTxID
-func setMultiTxID(tx Transaction, multiTxID MultiTransactionIDType) {
+func setMultiTxID(tx Transaction, multiTxID w_common.MultiTransactionIDType) {
 	for _, subTx := range tx {
 		subTx.MultiTransactionID = multiTxID
 	}
@@ -378,11 +387,11 @@ func (c *transfersCommand) markMultiTxTokensAsPreviouslyOwned(ctx context.Contex
 	}
 	if len(multiTransaction.ToAsset) > 0 && multiTransaction.ToNetworkID > 0 {
 		token := c.tokenManager.GetToken(multiTransaction.ToNetworkID, multiTransaction.ToAsset)
-		_ = c.tokenManager.MarkAsPreviouslyOwnedToken(token, ownerAddress)
+		_, _ = c.tokenManager.MarkAsPreviouslyOwnedToken(token, ownerAddress)
 	}
 	if len(multiTransaction.FromAsset) > 0 && multiTransaction.FromNetworkID > 0 {
 		token := c.tokenManager.GetToken(multiTransaction.FromNetworkID, multiTransaction.FromAsset)
-		_ = c.tokenManager.MarkAsPreviouslyOwnedToken(token, ownerAddress)
+		_, _ = c.tokenManager.MarkAsPreviouslyOwnedToken(token, ownerAddress)
 	}
 }
 
@@ -422,7 +431,7 @@ func (c *transfersCommand) checkAndProcessBridgeMultiTx(ctx context.Context, tx 
 			}
 
 			if multiTransaction != nil {
-				setMultiTxID(tx, MultiTransactionIDType(multiTransaction.ID))
+				setMultiTxID(tx, multiTransaction.ID)
 				c.markMultiTxTokensAsPreviouslyOwned(ctx, multiTransaction, subTx.Address)
 				return true, nil
 			}
@@ -439,11 +448,12 @@ func (c *transfersCommand) processUnknownErc20CommunityTransactions(ctx context.
 			// Find token in db or if this is a community token, find its metadata
 			token := c.tokenManager.FindOrCreateTokenByAddress(ctx, tx.NetworkID, *tx.Transaction.To())
 			if token != nil {
+				isFirst := false
 				if token.Verified || token.CommunityData != nil {
-					_ = c.tokenManager.MarkAsPreviouslyOwnedToken(token, tx.Address)
+					isFirst, _ = c.tokenManager.MarkAsPreviouslyOwnedToken(token, tx.Address)
 				}
 				if token.CommunityData != nil {
-					go c.tokenManager.SignalCommunityTokenReceived(tx.Address, tx.ID, tx.Transaction.Value(), token)
+					go c.tokenManager.SignalCommunityTokenReceived(tx.Address, tx.ID, tx.TokenValue, token, isFirst)
 				}
 			}
 		}

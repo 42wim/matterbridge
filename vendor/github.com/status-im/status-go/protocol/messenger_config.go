@@ -3,6 +3,7 @@ package protocol
 import (
 	"database/sql"
 	"encoding/json"
+	"time"
 
 	"github.com/status-im/status-go/account"
 	"github.com/status-im/status-go/rpc"
@@ -75,7 +76,8 @@ type config struct {
 	// Config for the envelopes monitor
 	envelopesMonitorConfig *transport.EnvelopesMonitorConfig
 
-	featureFlags common.FeatureFlags
+	featureFlags     common.FeatureFlags
+	codeControlFlags common.CodeControlFlags
 
 	appDb                  *sql.DB
 	walletDb               *sql.DB
@@ -92,6 +94,7 @@ type config struct {
 	httpServer             *server.MediaServer
 	rpcClient              *rpc.Client
 	tokenManager           communities.TokenManager
+	collectiblesManager    communities.CollectiblesManager
 	accountsManager        account.Manager
 
 	verifyTransactionClient  EthClient
@@ -113,17 +116,18 @@ type config struct {
 	telemetryServerURL string
 	wakuService        *wakuv2.Waku
 
-	messageResendMinDelay int
+	messageResendMinDelay time.Duration
 	messageResendMaxCount int
 }
 
 func messengerDefaultConfig() config {
 	c := config{
-		messageResendMinDelay: 30,
+		messageResendMinDelay: 30 * time.Second,
 		messageResendMaxCount: 3,
 	}
 
-	c.featureFlags.AutoRequestHistoricMessages = true
+	c.codeControlFlags.AutoRequestHistoricMessages = true
+	c.codeControlFlags.CuratedCommunitiesUpdateLoopEnabled = true
 	return c
 }
 
@@ -152,7 +156,7 @@ func WithVerifyTransactionClient(client EthClient) Option {
 	}
 }
 
-func WithResendParams(minDelay int, maxCount int) Option {
+func WithResendParams(minDelay time.Duration, maxCount int) Option {
 	return func(c *config) error {
 		c.messageResendMinDelay = minDelay
 		c.messageResendMaxCount = maxCount
@@ -394,16 +398,16 @@ func WithTokenManager(tokenManager communities.TokenManager) Option {
 	}
 }
 
-func WithAccountManager(accountManager account.Manager) Option {
+func WithCollectiblesManager(collectiblesManager communities.CollectiblesManager) Option {
 	return func(c *config) error {
-		c.accountsManager = accountManager
+		c.collectiblesManager = collectiblesManager
 		return nil
 	}
 }
 
-func WithAutoRequestHistoricMessages(enabled bool) Option {
+func WithAccountManager(accountManager account.Manager) Option {
 	return func(c *config) error {
-		c.featureFlags.AutoRequestHistoricMessages = enabled
+		c.accountsManager = accountManager
 		return nil
 	}
 }

@@ -26,6 +26,7 @@ const (
 	sharedSecretNegotiationVersion = 1
 	partitionedTopicMinVersion     = 1
 	defaultMinVersion              = 0
+	maxKeysChannelSize             = 10000
 )
 
 type PartitionTopicMode int
@@ -121,9 +122,10 @@ func NewWithEncryptorConfig(
 }
 
 type Subscriptions struct {
-	SharedSecrets   []*sharedsecret.Secret
-	SendContactCode <-chan struct{}
-	Quit            chan struct{}
+	SharedSecrets      []*sharedsecret.Secret
+	SendContactCode    <-chan struct{}
+	NewHashRatchetKeys chan []*HashRatchetInfo
+	Quit               chan struct{}
 }
 
 func (p *Protocol) Start(myIdentity *ecdsa.PrivateKey) (*Subscriptions, error) {
@@ -133,9 +135,10 @@ func (p *Protocol) Start(myIdentity *ecdsa.PrivateKey) (*Subscriptions, error) {
 		return nil, errors.Wrap(err, "failed to get all secrets")
 	}
 	p.subscriptions = &Subscriptions{
-		SharedSecrets:   secrets,
-		SendContactCode: p.publisher.Start(),
-		Quit:            make(chan struct{}),
+		SharedSecrets:      secrets,
+		SendContactCode:    p.publisher.Start(),
+		NewHashRatchetKeys: make(chan []*HashRatchetInfo, maxKeysChannelSize),
+		Quit:               make(chan struct{}),
 	}
 	return p.subscriptions, nil
 }
@@ -234,16 +237,45 @@ func (p *Protocol) GenerateHashRatchetKey(groupID []byte) (*HashRatchetKeyCompat
 	return p.encryptor.GenerateHashRatchetKey(groupID)
 }
 
-func (p *Protocol) GetAllHREncodedKeys(groupID []byte) ([]byte, error) {
-	keys, err := p.encryptor.persistence.GetKeysForGroup(groupID)
+// Deprecated: This function is deprecated as it does not marshal groupID. Kept for backward compatibility.
+func (p *Protocol) GetAllHRKeysMarshaledV1(groupID []byte) ([]byte, error) {
+	keys, err := p.GetAllHRKeys(groupID)
 	if err != nil {
 		return nil, err
 	}
-	if len(keys) == 0 {
+	if keys == nil {
 		return nil, nil
 	}
 
-	return p.GetMarshaledHREncodedKeys(groupID, keys)
+	return proto.Marshal(keys)
+}
+
+func (p *Protocol) GetAllHRKeysMarshaledV2(groupID []byte) ([]byte, error) {
+	keys, err := p.GetAllHRKeys(groupID)
+	if err != nil {
+		return nil, err
+	}
+	if keys == nil {
+		return nil, nil
+	}
+
+	header := &HRHeader{
+		SeqNo:   0,
+		GroupId: groupID,
+		Keys:    keys,
+	}
+	return proto.Marshal(header)
+}
+
+func (p *Protocol) GetAllHRKeys(groupID []byte) (*HRKeys, error) {
+	ratchets, err := p.encryptor.persistence.GetKeysForGroup(groupID)
+	if err != nil {
+		return nil, err
+	}
+	if len(ratchets) == 0 {
+		return nil, nil
+	}
+	return p.GetHRKeys(ratchets), nil
 }
 
 // GetKeyIDsForGroup returns a slice of key IDs belonging to a given group ID
@@ -251,7 +283,7 @@ func (p *Protocol) GetKeysForGroup(groupID []byte) ([]*HashRatchetKeyCompatibili
 	return p.encryptor.persistence.GetKeysForGroup(groupID)
 }
 
-func (p *Protocol) GetHREncodedKeys(groupID []byte, ratchets []*HashRatchetKeyCompatibility) *HRKeys {
+func (p *Protocol) GetHRKeys(ratchets []*HashRatchetKeyCompatibility) *HRKeys {
 	keys := &HRKeys{}
 	for _, ratchet := range ratchets {
 		key := &HRKey{
@@ -263,11 +295,6 @@ func (p *Protocol) GetHREncodedKeys(groupID []byte, ratchets []*HashRatchetKeyCo
 	}
 
 	return keys
-}
-
-func (p *Protocol) GetMarshaledHREncodedKeys(groupID []byte, ratchets []*HashRatchetKeyCompatibility) ([]byte, error) {
-	keys := p.GetHREncodedKeys(groupID, ratchets)
-	return proto.Marshal(keys)
 }
 
 // BuildHashRatchetRekeyGroup builds a public message
@@ -313,7 +340,7 @@ func (p *Protocol) BuildHashRatchetReKeyGroupMessage(myIdentityKey *ecdsa.Privat
 // containing newly generated hash ratchet key
 func (p *Protocol) BuildHashRatchetKeyExchangeMessage(myIdentityKey *ecdsa.PrivateKey, publicKey *ecdsa.PublicKey, groupID []byte, ratchets []*HashRatchetKeyCompatibility) (*ProtocolMessageSpec, error) {
 
-	keys := p.GetHREncodedKeys(groupID, ratchets)
+	keys := p.GetHRKeys(ratchets)
 
 	encodedKeys, err := proto.Marshal(keys)
 	if err != nil {
@@ -342,7 +369,7 @@ func (p *Protocol) BuildHashRatchetKeyExchangeMessage(myIdentityKey *ecdsa.Priva
 
 func (p *Protocol) BuildHashRatchetKeyExchangeMessageWithPayload(myIdentityKey *ecdsa.PrivateKey, publicKey *ecdsa.PublicKey, groupID []byte, ratchets []*HashRatchetKeyCompatibility, payload []byte) (*ProtocolMessageSpec, error) {
 
-	keys := p.GetHREncodedKeys(groupID, ratchets)
+	keys := p.GetHRKeys(ratchets)
 
 	response, err := p.BuildEncryptedMessage(myIdentityKey, publicKey, payload)
 	if err != nil {
@@ -578,13 +605,27 @@ type DecryptMessageResponse struct {
 }
 
 func (p *Protocol) HandleHashRatchetKeysPayload(groupID, encodedKeys []byte, myIdentityKey *ecdsa.PrivateKey, theirIdentityKey *ecdsa.PublicKey) ([]*HashRatchetInfo, error) {
-
 	keys := &HRKeys{}
 	err := proto.Unmarshal(encodedKeys, keys)
 	if err != nil {
 		return nil, err
 	}
 	return p.HandleHashRatchetKeys(groupID, keys, myIdentityKey, theirIdentityKey)
+}
+
+func (p *Protocol) HandleHashRatchetHeadersPayload(encodedHeaders [][]byte) error {
+	for _, encodedHeader := range encodedHeaders {
+		header := &HRHeader{}
+		err := proto.Unmarshal(encodedHeader, header)
+		if err != nil {
+			return err
+		}
+		_, err = p.HandleHashRatchetKeys(header.GroupId, header.Keys, nil, nil)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (p *Protocol) HandleHashRatchetKeys(groupID []byte, keys *HRKeys, myIdentityKey *ecdsa.PrivateKey, theirIdentityKey *ecdsa.PublicKey) ([]*HashRatchetInfo, error) {
@@ -651,6 +692,10 @@ func (p *Protocol) HandleHashRatchetKeys(groupID []byte, keys *HRKeys, myIdentit
 			info = append(info, &HashRatchetInfo{GroupID: groupID, KeyID: keyID})
 
 		}
+	}
+
+	if p.subscriptions != nil {
+		p.subscriptions.NewHashRatchetKeys <- info
 	}
 
 	return info, nil

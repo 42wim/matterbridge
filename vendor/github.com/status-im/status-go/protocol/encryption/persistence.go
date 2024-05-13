@@ -1,6 +1,7 @@
 package encryption
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"database/sql"
 	"errors"
@@ -742,52 +743,53 @@ type HRCache struct {
 // If cache data with given seqNo (e.g. 0) is not found,
 // then the query will return the cache data with the latest seqNo
 func (s *sqlitePersistence) GetHashRatchetCache(ratchet *HashRatchetKeyCompatibility, seqNo uint32) (*HRCache, error) {
-	stmt, err := s.DB.Prepare(`WITH input AS (
-       select ? AS group_id, ? AS key_id, ? as seq_no, ? AS old_key_id
-     ),
-     cec AS (
-       SELECT e.key, c.seq_no, c.hash FROM hash_ratchet_encryption e, input i
-			 LEFT JOIN hash_ratchet_encryption_cache c ON e.group_id=c.group_id AND (e.key_id=c.key_id OR e.deprecated_key_id=c.key_id)
-       WHERE (e.key_id=i.key_id OR e.deprecated_key_id=i.old_key_id) AND e.group_id=i.group_id),
-    seq_nos AS (
-    select CASE
-		  	WHEN EXISTS (SELECT c.seq_no from cec c, input i where c.seq_no=i.seq_no)
-				THEN i.seq_no
-			  ELSE (select max(seq_no) from cec)
-			END as seq_no from input i
-    )
-		 SELECT c.key, c.seq_no, c.hash FROM cec c, input i, seq_nos s
-    where case when not exists(select seq_no from seq_nos where seq_no is not null)
-    then 1 else c.seq_no = s.seq_no end`)
+	tx, err := s.DB.BeginTx(context.Background(), &sql.TxOptions{})
 	if err != nil {
 		return nil, err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err == nil {
+			err = tx.Commit()
+			return
+		}
+		// don't shadow original error
+		_ = tx.Rollback()
+	}()
 
-	var key, hash []byte
-	var seqNoPtr *uint32
-
-	oldFormat := ratchet.IsOldFormat()
-	if oldFormat {
-		// Query using the deprecated format
-		err = stmt.QueryRow(ratchet.GroupID, nil, seqNo, ratchet.DeprecatedKeyID()).Scan(&key, &seqNoPtr, &hash) //nolint: ineffassign
-
-	} else {
-		keyID, err := ratchet.GetKeyID()
+	var key, keyID []byte
+	if !ratchet.IsOldFormat() {
+		keyID, err = ratchet.GetKeyID()
 		if err != nil {
 			return nil, err
 		}
-
-		err = stmt.QueryRow(ratchet.GroupID, keyID, seqNo, ratchet.DeprecatedKeyID()).Scan(&key, &seqNoPtr, &hash) //nolint: ineffassign,staticcheck
 	}
-	if len(hash) == 0 && len(key) == 0 {
+
+	err = tx.QueryRow("SELECT key FROM hash_ratchet_encryption WHERE key_id = ? OR deprecated_key_id = ?", keyID, ratchet.DeprecatedKeyID()).Scan(&key)
+	if err == sql.ErrNoRows {
 		return nil, nil
 	}
+	if err != nil {
+		return nil, err
+	}
 
+	args := make([]interface{}, 0)
+	args = append(args, ratchet.GroupID)
+	args = append(args, keyID)
+	args = append(args, ratchet.DeprecatedKeyID())
+	var query string
+	if seqNo == 0 {
+		query = "SELECT seq_no, hash FROM hash_ratchet_encryption_cache WHERE group_id = ? AND (key_id = ? OR key_id = ?) ORDER BY seq_no DESC limit 1"
+	} else {
+		query = "SELECT seq_no, hash FROM hash_ratchet_encryption_cache WHERE group_id = ? AND (key_id = ? OR key_id = ?) AND seq_no == ? ORDER BY seq_no DESC limit 1"
+		args = append(args, seqNo)
+	}
+
+	var hash []byte
+	var seqNoPtr *uint32
+
+	err = tx.QueryRow(query, args...).Scan(&seqNoPtr, &hash) //nolint: ineffassign,staticcheck
 	switch err {
-	case sql.ErrNoRows:
-		return nil, nil
-	case nil:
+	case sql.ErrNoRows, nil:
 		var seqNoResult uint32
 		if seqNoPtr == nil {
 			seqNoResult = 0

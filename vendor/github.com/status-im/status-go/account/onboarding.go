@@ -89,10 +89,8 @@ func (o *Onboarding) generateAccount(mnemonicPhraseLength int) (*OnboardingAccou
 		ChatPubKey:    walletPubKey,
 	}
 
-	uuid := uuid.NewRandom().String()
-
 	account := &OnboardingAccount{
-		ID:       uuid,
+		ID:       uuid.NewRandom().String(),
 		mnemonic: mnemonicPhrase,
 		Info:     info,
 	}

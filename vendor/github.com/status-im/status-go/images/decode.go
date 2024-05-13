@@ -11,12 +11,34 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"regexp"
 	"time"
+	"unicode/utf8"
 
 	"golang.org/x/image/webp"
 
 	"github.com/ethereum/go-ethereum/log"
 )
+
+var (
+	htmlCommentRegex = regexp.MustCompile(`(?i)<!--([\\s\\S]*?)-->`)
+	svgRegex         = regexp.MustCompile(`(?i)^\s*(?:<\?xml[^>]*>\s*)?(?:<!doctype svg[^>]*>\s*)?<svg[^>]*>[^*]*<\/svg>\s*$`)
+)
+
+// IsSVG returns true if the given buffer is a valid SVG image.
+func IsSVG(buf []byte) bool {
+	var isBinary bool
+	if len(buf) < 24 {
+		isBinary = false
+	}
+	for i := 0; i < 14; i++ {
+		charCode, _ := utf8.DecodeRuneInString(string(buf[i]))
+		if charCode == 65533 || charCode <= 8 {
+			isBinary = true
+		}
+	}
+	return !isBinary && svgRegex.Match(htmlCommentRegex.ReplaceAll(buf, []byte{}))
+}
 
 func Decode(fileName string) (image.Image, error) {
 	file, err := os.Open(fileName)
@@ -109,6 +131,8 @@ func GetType(buf []byte) ImageType {
 		return GIF
 	case IsWebp(buf):
 		return WEBP
+	case IsIco(buf):
+		return ICO
 	default:
 		return UNKNOWN
 	}
@@ -124,6 +148,10 @@ func GetMimeType(buf []byte) (string, error) {
 		return "gif", nil
 	case IsWebp(buf):
 		return "webp", nil
+	case IsIco(buf):
+		return "ico", nil
+	case IsSVG(buf):
+		return "svg", nil
 	default:
 		return "", errors.New("image format not supported")
 	}
@@ -151,6 +179,12 @@ func IsWebp(buf []byte) bool {
 	return len(buf) > 11 &&
 		buf[8] == 0x57 && buf[9] == 0x45 &&
 		buf[10] == 0x42 && buf[11] == 0x50
+}
+
+func IsIco(buf []byte) bool {
+	return len(buf) > 4 &&
+		buf[0] == 0 && buf[1] == 0 && buf[2] == 1 || buf[2] == 2 &&
+		buf[4] > 0
 }
 
 func GetImageDimensions(imgBytes []byte) (int, int, error) {

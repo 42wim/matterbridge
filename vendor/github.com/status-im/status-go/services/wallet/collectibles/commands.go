@@ -164,7 +164,7 @@ type loadOwnedCollectiblesCommand struct {
 	ownedCollectiblesChangeCh chan<- OwnedCollectiblesChange
 
 	// Not to be set by the caller
-	partialOwnership []thirdparty.CollectibleUniqueID
+	partialOwnership []thirdparty.CollectibleIDBalance
 	err              error
 }
 
@@ -200,14 +200,18 @@ func (c *loadOwnedCollectiblesCommand) triggerEvent(eventType walletevent.EventT
 	})
 }
 
-func ownedTokensToTokenBalancesPerContractAddress(ownership []thirdparty.CollectibleUniqueID) thirdparty.TokenBalancesPerContractAddress {
+func ownedTokensToTokenBalancesPerContractAddress(ownership []thirdparty.CollectibleIDBalance) thirdparty.TokenBalancesPerContractAddress {
 	ret := make(thirdparty.TokenBalancesPerContractAddress)
-	for _, id := range ownership {
-		balance := thirdparty.TokenBalance{
-			TokenID: id.TokenID,
-			Balance: &bigint.BigInt{Int: big.NewInt(1)},
+	for _, idBalance := range ownership {
+		balanceBigInt := idBalance.Balance
+		if balanceBigInt == nil {
+			balanceBigInt = &bigint.BigInt{Int: big.NewInt(1)}
 		}
-		ret[id.ContractID.Address] = append(ret[id.ContractID.Address], balance)
+		balance := thirdparty.TokenBalance{
+			TokenID: idBalance.ID.TokenID,
+			Balance: balanceBigInt,
+		}
+		ret[idBalance.ID.ContractID.Address] = append(ret[idBalance.ID.ContractID.Address], balance)
 	}
 	return ret
 }
@@ -295,9 +299,6 @@ func (c *loadOwnedCollectiblesCommand) Run(parent context.Context) (err error) {
 			// Normally, update the DB once we've finished fetching
 			// If this is the first fetch, make partial updates to the client to get a better UX
 			if initialFetch || finished {
-				// Token balances should come from the providers. For now we assume all balances are 1, which
-				// is only valid for ERC721.
-				// TODO (#13025): Fetch balances from the providers.
 				balances := ownedTokensToTokenBalancesPerContractAddress(c.partialOwnership)
 
 				updateMessage.Removed, updateMessage.Updated, updateMessage.Added, err = c.ownershipDB.Update(c.chainID, c.account, balances, start.Unix())

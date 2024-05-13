@@ -20,7 +20,12 @@ const (
 
 // Regularly gets list of curated communities and signals them to client
 func (m *Messenger) startCuratedCommunitiesUpdateLoop() {
-	logger := m.logger.Named("startCuratedCommunitiesUpdateLoop")
+	logger := m.logger.Named("curatedCommunitiesUpdateLoop")
+
+	if m.contractMaker == nil {
+		logger.Warn("not starting curated communities loop: contract maker not initialized")
+		return
+	}
 
 	go func() {
 		// Initialize interval to 0 for immediate execution
@@ -76,7 +81,6 @@ func (m *Messenger) startCuratedCommunitiesUpdateLoop() {
 
 func (m *Messenger) getCuratedCommunitiesFromContract() (*communities.CuratedCommunities, error) {
 	if m.contractMaker == nil {
-		m.logger.Warn("contract maker not initialized")
 		return nil, errors.New("contract maker not initialized")
 	}
 

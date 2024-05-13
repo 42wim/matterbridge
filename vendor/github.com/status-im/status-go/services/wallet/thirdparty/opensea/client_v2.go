@@ -157,7 +157,9 @@ func (o *ClientV2) fetchAssets(ctx context.Context, chainID walletCommon.ChainID
 
 		body, err := o.client.doGetRequest(ctx, url, o.apiKey)
 		if err != nil {
-			o.connectionStatus.SetIsConnected(false)
+			if ctx.Err() == nil {
+				o.connectionStatus.SetIsConnected(false)
+			}
 			return nil, err
 		}
 		o.connectionStatus.SetIsConnected(true)
@@ -274,7 +276,9 @@ func (o *ClientV2) fetchCollectionDataBySlug(ctx context.Context, chainID wallet
 
 	body, err := o.client.doGetRequest(ctx, url, o.apiKey)
 	if err != nil {
-		o.connectionStatus.SetIsConnected(false)
+		if ctx.Err() == nil {
+			o.connectionStatus.SetIsConnected(false)
+		}
 		return nil, err
 	}
 	o.connectionStatus.SetIsConnected(true)

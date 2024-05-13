@@ -26,6 +26,7 @@ var ErrInvalidDisplayNameEthSuffix = errors.New(`usernames ending with "eth" are
 var ErrInvalidDisplayNameNotAllowed = errors.New("name is not allowed")
 var ErrInvalidBioLength = errors.New("invalid bio length")
 var ErrInvalidSocialLinkTextLength = errors.New("invalid social link text length")
+var ErrDisplayNameDupeOfCommunityMember = errors.New("display name duplicates on of community members")
 
 func ValidateDisplayName(displayName *string) error {
 	name := strings.TrimSpace(*displayName)
@@ -66,6 +67,15 @@ func (m *Messenger) SetDisplayName(displayName string) error {
 		return err
 	}
 
+	isDupe, err := m.IsDisplayNameDupeOfCommunityMember(displayName)
+	if err != nil {
+		return err
+	}
+
+	if isDupe {
+		return ErrDisplayNameDupeOfCommunityMember
+	}
+
 	m.account.Name = displayName
 	err = m.multiAccounts.UpdateDisplayName(m.account.KeyUID, displayName)
 	if err != nil {
@@ -95,11 +105,15 @@ func (m *Messenger) SaveSyncDisplayName(displayName string, clock uint64) error 
 	if err != nil {
 		return err
 	}
+
 	preferredNameClock, err := m.settings.GetSettingLastSynced(settings.PreferredName)
 	if err != nil {
 		return err
 	}
-	// check clock of preferred name to avoid override account name
+	// When either the display name or preferred name changes, m.account.Name should be updated.
+	// However, a race condition can occur during BackupData, where m.account.Name could be incorrectly updated.
+	// The final value of m.account.Name depending on which backup message(BackedUpProfile/BackedUpSettings) arrives later.
+	// So we should check the clock of the preferred name and only update m.account.Name if it's older than the display name.
 	if preferredNameClock < clock {
 		m.account.Name = displayName
 		return m.multiAccounts.SaveAccount(*m.account)

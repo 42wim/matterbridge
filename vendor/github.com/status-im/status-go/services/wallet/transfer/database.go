@@ -444,7 +444,7 @@ type transferDBFields struct {
 	log                *types.Log
 	transferType       w_common.Type
 	baseGasFees        string
-	multiTransactionID MultiTransactionIDType
+	multiTransactionID w_common.MultiTransactionIDType
 	receiptStatus      *uint64
 	receiptType        *uint8
 	txHash             *common.Hash
@@ -492,7 +492,9 @@ func updateOrInsertTransfersDBFields(creator statementCreator, transfers []trans
 			log.Error("can't save transfer", "b-hash", t.blockHash, "b-n", t.blockNumber, "a", t.address, "h", t.id)
 			return err
 		}
+	}
 
+	for _, t := range transfers {
 		err = removeGasOnlyEthTransfer(creator, t)
 		if err != nil {
 			log.Error("can't remove gas only eth transfer", "b-hash", t.blockHash, "b-n", t.blockNumber, "a", t.address, "h", t.id, "err", err)
@@ -503,18 +505,40 @@ func updateOrInsertTransfersDBFields(creator statementCreator, transfers []trans
 }
 
 func removeGasOnlyEthTransfer(creator statementCreator, t transferDBFields) error {
-	if t.transferType != w_common.EthTransfer {
-		query, err := creator.Prepare(`DELETE FROM transfers WHERE tx_hash = ? AND address = ? AND network_id = ?
-		 AND account_nonce = ? AND type = 'eth' AND amount_padded128hex = '00000000000000000000000000000000'`)
+	if t.transferType == w_common.EthTransfer {
+		countQuery, err := creator.Prepare(`SELECT COUNT(*) FROM transfers WHERE tx_hash = ?`)
+		if err != nil {
+			return err
+		}
+		defer countQuery.Close()
+
+		var count int
+		err = countQuery.QueryRow(t.txHash).Scan(&count)
 		if err != nil {
 			return err
 		}
 
-		_, err = query.Exec(t.txHash, t.address, t.chainID, t.txNonce)
-		if err != nil {
-			return err
+		// If there's only one (or none), return without deleting
+		if count <= 1 {
+			log.Debug("Only one or no transfer found with the same tx_hash, skipping deletion.")
+			return nil
 		}
 	}
+	query, err := creator.Prepare(`DELETE FROM transfers WHERE tx_hash = ? AND address = ? AND network_id = ? AND account_nonce = ? AND type = 'eth' AND amount_padded128hex = '00000000000000000000000000000000'`)
+	if err != nil {
+		return err
+	}
+	defer query.Close()
+
+	res, err := query.Exec(t.txHash, t.address, t.chainID, t.txNonce)
+	if err != nil {
+		return err
+	}
+	count, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	log.Debug("removeGasOnlyEthTransfer row deleted ", count)
 	return nil
 }
 
@@ -538,8 +562,8 @@ func markBlocksAsLoaded(chainID uint64, creator statementCreator, address common
 }
 
 // GetOwnedMultiTransactionID returns sql.ErrNoRows if no transaction is found for the given identity
-func GetOwnedMultiTransactionID(tx *sql.Tx, chainID w_common.ChainID, id common.Hash, address common.Address) (mTID int64, err error) {
-	row := tx.QueryRow(`SELECT COALESCE(multi_transaction_id, 0) FROM transfers WHERE network_id = ? AND hash = ? AND address = ?`, chainID, id, address)
+func GetOwnedMultiTransactionID(tx *sql.Tx, chainID w_common.ChainID, hash common.Hash, address common.Address) (mTID int64, err error) {
+	row := tx.QueryRow(`SELECT COALESCE(multi_transaction_id, 0) FROM transfers WHERE network_id = ? AND tx_hash = ? AND address = ?`, chainID, hash, address)
 	err = row.Scan(&mTID)
 	if err != nil {
 		return 0, err

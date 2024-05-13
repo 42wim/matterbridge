@@ -571,6 +571,7 @@ func (db sqlitePersistence) Contacts() ([]*Contact, error) {
 			c.last_updated_locally,
 			c.blocked,
 			c.removed,
+			c.bio,
 			c.local_nickname,
 			c.contact_request_state,
                         c.contact_request_local_clock,
@@ -606,6 +607,7 @@ func (db sqlitePersistence) Contacts() ([]*Contact, error) {
 			ensVerified               sql.NullBool
 			blocked                   sql.NullBool
 			removed                   sql.NullBool
+			bio                       sql.NullString
 			lastUpdatedLocally        sql.NullInt64
 			identityImageClock        sql.NullInt64
 			imagePayload              []byte
@@ -625,6 +627,7 @@ func (db sqlitePersistence) Contacts() ([]*Contact, error) {
 			&lastUpdatedLocally,
 			&blocked,
 			&removed,
+			&bio,
 			&nickname,
 			&contactRequestLocalState,
 			&contactRequestLocalClock,
@@ -642,6 +645,10 @@ func (db sqlitePersistence) Contacts() ([]*Contact, error) {
 
 		if nickname.Valid {
 			contact.LocalNickname = nickname.String
+		}
+
+		if bio.Valid {
+			contact.Bio = bio.String
 		}
 
 		if contactRequestLocalState.Valid {
@@ -966,10 +973,11 @@ func (db sqlitePersistence) SaveContact(contact *Contact, tx *sql.Tx) (err error
 			blocked,
 			removed,
 			verification_status,
+			bio,
 			name,
 			photo,
 			tribute_to_talk
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`)
 	if err != nil {
 		return
@@ -992,6 +1000,7 @@ func (db sqlitePersistence) SaveContact(contact *Contact, tx *sql.Tx) (err error
 		contact.Blocked,
 		contact.Removed,
 		contact.VerificationStatus,
+		contact.Bio,
 		//TODO we need to drop these columns
 		"",
 		"",

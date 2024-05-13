@@ -150,8 +150,8 @@ func (c *Controller) startAccountWatcher(chainIDs []uint64) {
 		c.accWatcher = accountsevent.NewWatcher(c.accountsDB, c.accountFeed, func(changedAddresses []common.Address, eventType accountsevent.EventType, currentAddresses []common.Address) {
 			c.onAccountsChanged(changedAddresses, eventType, currentAddresses, chainIDs)
 		})
-		c.accWatcher.Start()
 	}
+	c.accWatcher.Start()
 }
 
 func (c *Controller) onAccountsChanged(changedAddresses []common.Address, eventType accountsevent.EventType, currentAddresses []common.Address, chainIDs []uint64) {

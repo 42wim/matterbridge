@@ -961,7 +961,7 @@ func (db *Database) updateKeypairClock(tx *sql.Tx, keyUID string, clock uint64) 
 	return err
 }
 
-func (db *Database) saveOrUpdateAccounts(tx *sql.Tx, accounts []*Account, updateKeypairClock, isSepoliaEnabled bool) (err error) {
+func (db *Database) saveOrUpdateAccounts(tx *sql.Tx, accounts []*Account, updateKeypairClock, isGoerliEnabled bool) (err error) {
 	if tx == nil {
 		return errDbTransactionIsNil
 	}
@@ -994,10 +994,10 @@ func (db *Database) saveOrUpdateAccounts(tx *sql.Tx, accounts []*Account, update
 			}
 
 			if acc.TestPreferredChainIDs == "" {
-				if isSepoliaEnabled {
-					acc.TestPreferredChainIDs = TestSepoliaPreferredChainIDsDefault
-				} else {
+				if isGoerliEnabled {
 					acc.TestPreferredChainIDs = TestPreferredChainIDsDefault
+				} else {
+					acc.TestPreferredChainIDs = TestSepoliaPreferredChainIDsDefault
 				}
 			}
 		}
@@ -1090,7 +1090,7 @@ func (db *Database) SaveOrUpdateAccounts(accounts []*Account, updateKeypairClock
 	if len(accounts) == 0 {
 		return errors.New("no provided accounts to save/update")
 	}
-	isSepoliaEnabled, err := db.GetIsSepoliaEnabled()
+	isGoerliEnabled, err := db.GetIsGoerliEnabled()
 	if err != nil {
 		return err
 	}
@@ -1106,7 +1106,7 @@ func (db *Database) SaveOrUpdateAccounts(accounts []*Account, updateKeypairClock
 		}
 		_ = tx.Rollback()
 	}()
-	err = db.saveOrUpdateAccounts(tx, accounts, updateKeypairClock, isSepoliaEnabled)
+	err = db.saveOrUpdateAccounts(tx, accounts, updateKeypairClock, isGoerliEnabled)
 	return err
 }
 
@@ -1119,7 +1119,7 @@ func (db *Database) SaveOrUpdateKeypair(keypair *Keypair) error {
 		return errDbPassedParameterIsNil
 	}
 
-	isSepoliaEnabled, err := db.GetIsSepoliaEnabled()
+	isGoerliEnabled, err := db.GetIsGoerliEnabled()
 	if err != nil {
 		return err
 	}
@@ -1173,7 +1173,7 @@ func (db *Database) SaveOrUpdateKeypair(keypair *Keypair) error {
 	if err != nil {
 		return err
 	}
-	return db.saveOrUpdateAccounts(tx, keypair.Accounts, false, isSepoliaEnabled)
+	return db.saveOrUpdateAccounts(tx, keypair.Accounts, false, isGoerliEnabled)
 }
 
 func (db *Database) UpdateKeypairName(keyUID string, name string, clock uint64, updateChatAccountName bool) error {

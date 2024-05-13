@@ -15,8 +15,8 @@ type MakeMediaServerURLType func(msgID string, previewURL string, imageID MediaS
 type MakeMediaServerURLMessageWrapperType func(previewURL string, imageID MediaServerImageID) string
 
 type LinkPreviewThumbnail struct {
-	Width  int `json:"width"`
-	Height int `json:"height"`
+	Width  int `json:"width,omitempty"`
+	Height int `json:"height,omitempty"`
 	// Non-empty when the thumbnail is available via the media server, i.e. after
 	// the chat message is sent.
 	URL string `json:"url,omitempty"`
@@ -31,6 +31,7 @@ type LinkPreview struct {
 	Hostname    string                         `json:"hostname"`
 	Title       string                         `json:"title,omitempty"`
 	Description string                         `json:"description,omitempty"`
+	Favicon     LinkPreviewThumbnail           `json:"favicon,omitempty"`
 	Thumbnail   LinkPreviewThumbnail           `json:"thumbnail,omitempty"`
 }
 
@@ -288,12 +289,19 @@ func (m *Message) ConvertLinkPreviewsToProto() ([]*protobuf.UnfurledLink, error)
 			return nil, fmt.Errorf("invalid link preview, url='%s': %w", preview.URL, err)
 		}
 
-		var payload []byte
+		var thumbnailPayload []byte
+		var faviconPayload []byte
 		var err error
 		if preview.Thumbnail.DataURI != "" {
-			payload, err = images.GetPayloadFromURI(preview.Thumbnail.DataURI)
+			thumbnailPayload, err = images.GetPayloadFromURI(preview.Thumbnail.DataURI)
 			if err != nil {
-				return nil, fmt.Errorf("could not get data URI payload, url='%s': %w", preview.URL, err)
+				return nil, fmt.Errorf("could not get data URI payload for link preview thumbnail, url='%s': %w", preview.URL, err)
+			}
+		}
+		if preview.Favicon.DataURI != "" {
+			faviconPayload, err = images.GetPayloadFromURI(preview.Favicon.DataURI)
+			if err != nil {
+				return nil, fmt.Errorf("could not get data URI payload for link preview favicon, url='%s': %w", preview.URL, err)
 			}
 		}
 
@@ -304,7 +312,8 @@ func (m *Message) ConvertLinkPreviewsToProto() ([]*protobuf.UnfurledLink, error)
 			Description:      preview.Description,
 			ThumbnailWidth:   uint32(preview.Thumbnail.Width),
 			ThumbnailHeight:  uint32(preview.Thumbnail.Height),
-			ThumbnailPayload: payload,
+			ThumbnailPayload: thumbnailPayload,
+			FaviconPayload:   faviconPayload,
 		}
 		unfurledLinks = append(unfurledLinks, ul)
 	}
@@ -312,7 +321,8 @@ func (m *Message) ConvertLinkPreviewsToProto() ([]*protobuf.UnfurledLink, error)
 	return unfurledLinks, nil
 }
 
-func (m *Message) ConvertFromProtoToLinkPreviews(makeMediaServerURL func(msgID string, previewURL string) string) []LinkPreview {
+func (m *Message) ConvertFromProtoToLinkPreviews(makeThumbnailMediaServerURL func(msgID string, previewURL string) string,
+	makeFaviconMediaServerURL func(msgID string, previewURL string) string) []LinkPreview {
 	var links []*protobuf.UnfurledLink
 
 	if links = m.GetUnfurledLinks(); links == nil {
@@ -340,12 +350,19 @@ func (m *Message) ConvertFromProtoToLinkPreviews(makeMediaServerURL func(msgID s
 		}
 		mediaURL := ""
 		if len(link.ThumbnailPayload) > 0 {
-			mediaURL = makeMediaServerURL(m.ID, link.Url)
+			mediaURL = makeThumbnailMediaServerURL(m.ID, link.Url)
 		}
 		if link.GetThumbnailPayload() != nil {
 			lp.Thumbnail.Width = int(link.ThumbnailWidth)
 			lp.Thumbnail.Height = int(link.ThumbnailHeight)
 			lp.Thumbnail.URL = mediaURL
+		}
+		faviconMediaURL := ""
+		if len(link.FaviconPayload) > 0 {
+			faviconMediaURL = makeFaviconMediaServerURL(m.ID, link.Url)
+		}
+		if link.GetFaviconPayload() != nil {
+			lp.Favicon.URL = faviconMediaURL
 		}
 		previews = append(previews, lp)
 	}

@@ -18,6 +18,7 @@ var contractAddressByChainID = map[uint64]common.Address{
 	421613:   common.HexToAddress("0x7Ff554af5b6624db2135E4364F416d1D397f43e6"), // Arbitrum Goerli
 	11155111: common.HexToAddress("0xCDE984e57cdb88c70b53437cc694345B646371f9"), // Sepolia
 	421614:   common.HexToAddress("0x7Ff554af5b6624db2135E4364F416d1D397f43e6"), // Arbitrum Sepolia
+	11155420: common.HexToAddress("0xcE2A896eEA2F585BC0C3753DC8116BbE2AbaE541"), // Optimism Sepolia
 }
 
 func ContractAddress(chainID uint64) (common.Address, error) {

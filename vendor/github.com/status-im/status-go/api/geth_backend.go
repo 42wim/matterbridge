@@ -18,7 +18,6 @@ import (
 
 	"github.com/imdario/mergo"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/log"
@@ -49,7 +48,6 @@ import (
 	"github.com/status-im/status-go/services/ext"
 	"github.com/status-im/status-go/services/personal"
 	"github.com/status-im/status-go/services/typeddata"
-	wcommon "github.com/status-im/status-go/services/wallet/common"
 	"github.com/status-im/status-go/signal"
 	"github.com/status-im/status-go/transactions"
 	"github.com/status-im/status-go/walletdatabase"
@@ -624,20 +622,7 @@ func (b *GethStatusBackend) loginAccount(request *requests.Login) error {
 
 	defaultCfg.WalletConfig = buildWalletConfig(&request.WalletSecretsConfig)
 
-	settings, err := b.GetSettings()
-	if err != nil {
-		return err
-	}
-
-	var fleet string
-	fleetPtr := settings.Fleet
-	if fleetPtr == nil || *fleetPtr == "" {
-		fleet = DefaultFleet
-	} else {
-		fleet = *fleetPtr
-	}
-
-	err = SetFleet(fleet, defaultCfg)
+	err = b.UpdateNodeConfigFleet(acc, password, defaultCfg)
 	if err != nil {
 		return err
 	}
@@ -705,7 +690,41 @@ func (b *GethStatusBackend) loginAccount(request *requests.Login) error {
 	}
 
 	return nil
+}
 
+// UpdateNodeConfigFleet loads the fleet from the settings and updates the node configuration
+// If the fleet in settings is empty, or not supported anymore, it will be overridden with the default fleet.
+// In that case settings fleet value remain the same, only runtime node configuration is updated.
+func (b *GethStatusBackend) UpdateNodeConfigFleet(acc multiaccounts.Account, password string, config *params.NodeConfig) error {
+	if config == nil {
+		return nil
+	}
+
+	err := b.ensureDBsOpened(acc, password)
+	if err != nil {
+		return err
+	}
+
+	accountSettings, err := b.GetSettings()
+	if err != nil {
+		return err
+	}
+
+	fleet := accountSettings.GetFleet()
+
+	if !params.IsFleetSupported(fleet) {
+		b.log.Warn("fleet is not supported, overriding with default value",
+			"fleet", fleet,
+			"defaultFleet", DefaultFleet)
+		fleet = DefaultFleet
+	}
+
+	err = SetFleet(fleet, config)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (b *GethStatusBackend) startNodeWithAccount(acc multiaccounts.Account, password string, inputNodeCfg *params.NodeConfig) error {
@@ -1279,7 +1298,7 @@ func (b *GethStatusBackend) GetKeyUIDByMnemonic(mnemonic string) (string, error)
 	return info.KeyUID, nil
 }
 
-func (b *GethStatusBackend) generateOrImportAccount(mnemonic string, customizationColorClock uint64, request *requests.CreateAccount) (*multiaccounts.Account, error) {
+func (b *GethStatusBackend) generateOrImportAccount(mnemonic string, customizationColorClock uint64, request *requests.CreateAccount, opts ...params.Option) (*multiaccounts.Account, error) {
 	keystoreDir := keystoreRelativePath
 
 	b.UpdateRootDataDir(request.BackupDisabledDataDir)
@@ -1363,7 +1382,7 @@ func (b *GethStatusBackend) generateOrImportAccount(mnemonic string, customizati
 		//settings.MnemonicWasNotShown = true
 	}
 
-	nodeConfig, err := defaultNodeConfig(settings.InstallationID, request)
+	nodeConfig, err := defaultNodeConfig(settings.InstallationID, request, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1411,12 +1430,12 @@ func (b *GethStatusBackend) generateOrImportAccount(mnemonic string, customizati
 	return &account, nil
 }
 
-func (b *GethStatusBackend) CreateAccountAndLogin(request *requests.CreateAccount) (*multiaccounts.Account, error) {
+func (b *GethStatusBackend) CreateAccountAndLogin(request *requests.CreateAccount, opts ...params.Option) (*multiaccounts.Account, error) {
 
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}
-	return b.generateOrImportAccount("", 1, request)
+	return b.generateOrImportAccount("", 1, request, opts...)
 }
 
 func (b *GethStatusBackend) ConvertToRegularAccount(mnemonic string, currPassword string, newPassword string) error {
@@ -1890,24 +1909,7 @@ func (b *GethStatusBackend) SendTransaction(sendArgs transactions.SendTxArgs, pa
 		return hash, err
 	}
 
-	hash, err = b.transactor.SendTransaction(sendArgs, verifiedAccount)
-	if err != nil {
-		return
-	}
-
-	err = b.statusNode.PendingTracker().TrackPendingTransaction(
-		wcommon.ChainID(b.transactor.NetworkID()),
-		common.Hash(hash),
-		common.Address(sendArgs.From),
-		transactions.WalletTransfer,
-		transactions.AutoDelete,
-	)
-	if err != nil {
-		log.Error("TrackPendingTransaction error", "error", err)
-		return
-	}
-
-	return
+	return b.transactor.SendTransaction(sendArgs, verifiedAccount)
 }
 
 func (b *GethStatusBackend) SendTransactionWithChainID(chainID uint64, sendArgs transactions.SendTxArgs, password string) (hash types.Hash, err error) {
@@ -1916,45 +1918,11 @@ func (b *GethStatusBackend) SendTransactionWithChainID(chainID uint64, sendArgs 
 		return hash, err
 	}
 
-	hash, err = b.transactor.SendTransactionWithChainID(chainID, sendArgs, verifiedAccount)
-	if err != nil {
-		return
-	}
-
-	err = b.statusNode.PendingTracker().TrackPendingTransaction(
-		wcommon.ChainID(b.transactor.NetworkID()),
-		common.Hash(hash),
-		common.Address(sendArgs.From),
-		transactions.WalletTransfer,
-		transactions.AutoDelete,
-	)
-	if err != nil {
-		log.Error("TrackPendingTransaction error", "error", err)
-		return
-	}
-
-	return
+	return b.transactor.SendTransactionWithChainID(chainID, sendArgs, verifiedAccount)
 }
 
 func (b *GethStatusBackend) SendTransactionWithSignature(sendArgs transactions.SendTxArgs, sig []byte) (hash types.Hash, err error) {
-	hash, err = b.transactor.BuildTransactionAndSendWithSignature(b.transactor.NetworkID(), sendArgs, sig)
-	if err != nil {
-		return
-	}
-
-	err = b.statusNode.PendingTracker().TrackPendingTransaction(
-		wcommon.ChainID(b.transactor.NetworkID()),
-		common.Hash(hash),
-		common.Address(sendArgs.From),
-		transactions.WalletTransfer,
-		transactions.AutoDelete,
-	)
-	if err != nil {
-		log.Error("TrackPendingTransaction error", "error", err)
-		return
-	}
-
-	return
+	return b.transactor.BuildTransactionAndSendWithSignature(b.transactor.NetworkID(), sendArgs, sig)
 }
 
 // HashTransaction validate the transaction and returns new sendArgs and the transaction hash.

@@ -2,7 +2,7 @@
 // sources:
 // 1557732988_initialize_db.down.sql (72B)
 // 1557732988_initialize_db.up.sql (278B)
-// static.go (178B)
+// static.go (198B)
 
 package migrations
 
@@ -85,7 +85,7 @@ func _1557732988_initialize_dbDownSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "1557732988_initialize_db.down.sql", size: 72, mode: os.FileMode(0644), modTime: time.Unix(1704726859, 0)}
+	info := bindataFileInfo{name: "1557732988_initialize_db.down.sql", size: 72, mode: os.FileMode(0644), modTime: time.Unix(1700000000, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x77, 0x40, 0x78, 0xb7, 0x71, 0x3c, 0x20, 0x3b, 0xc9, 0xb, 0x2f, 0x49, 0xe4, 0xff, 0x1c, 0x84, 0x54, 0xa1, 0x30, 0xe3, 0x90, 0xf8, 0x73, 0xda, 0xb0, 0x2a, 0xea, 0x8e, 0xf1, 0x82, 0xe7, 0xd2}}
 	return a, nil
 }
@@ -105,12 +105,12 @@ func _1557732988_initialize_dbUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "1557732988_initialize_db.up.sql", size: 278, mode: os.FileMode(0644), modTime: time.Unix(1704726859, 0)}
+	info := bindataFileInfo{name: "1557732988_initialize_db.up.sql", size: 278, mode: os.FileMode(0644), modTime: time.Unix(1700000000, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xf5, 0x85, 0x41, 0x7a, 0xba, 0x4f, 0xa3, 0x43, 0xc0, 0x63, 0xfa, 0x2c, 0xd1, 0xc5, 0xbb, 0x20, 0xa0, 0x64, 0xa8, 0x3b, 0x65, 0x82, 0xa2, 0x14, 0x28, 0x18, 0x7c, 0x8b, 0x3a, 0x7a, 0xfd, 0xe0}}
 	return a, nil
 }
 
-var _staticGo = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x54\x8c\x41\x6a\xc3\x40\x0c\x45\xf7\x73\x8a\xbf\x6c\xa1\x1e\xed\x7b\x82\x52\x12\x08\x24\x17\x90\x6d\x21\x0b\xc7\x33\x46\x52\x72\xfe\x6c\x12\x42\x96\x8f\xc7\x7b\x44\x38\xf1\xb4\xb2\x0a\x22\x39\x6d\x82\x6c\xa3\xcc\xf1\xa2\xaf\xff\xf3\x0f\xfe\x2e\xc7\xc3\x37\x5c\xa2\xdf\x7c\x92\x80\x9b\x2e\x09\x6b\xd9\x91\x8b\x60\xb4\xc6\x6e\x12\x65\xff\x38\x95\x42\xa4\xfd\x57\xa5\x89\x73\x0a\xb4\x0f\xa3\xb5\x99\x93\x31\xec\xab\x62\x33\x75\x4e\xeb\x2d\x30\x74\xd4\x4a\xb5\xd2\xc6\x76\x0d\xf1\xbb\x38\xbd\x35\x3d\xb3\xaa\x1d\xb5\x3c\x02\x00\x00\xff\xff\xf4\xe4\x35\xe2\xb2\x00\x00\x00")
+var _staticGo = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x54\xcc\x31\x4a\x06\x41\x0c\xc5\xf1\x7e\x4e\xf1\x4a\x05\x67\xa2\x95\x20\xd8\x8b\x28\x08\x7a\x81\xec\x6e\xc8\x17\xd6\x99\x2c\x99\xe8\xf9\x6d\x56\xc4\xd7\x3d\xfe\xf0\x23\xc2\x1b\xaf\x3b\xab\x60\x26\xa7\xad\x90\xbe\xc8\x36\x7f\xdf\xd5\xf3\xfb\x0d\x9e\x3e\x5e\x5f\xae\x11\x32\xfd\x2b\x56\x99\x08\xd3\x4b\xc2\x46\x3a\xf2\x22\x58\x6c\x70\x98\xcc\x72\xfc\x93\x4a\x21\x52\x7f\x50\x19\x12\x9c\x02\xf5\xba\xd8\xd8\x38\x19\xb5\xfb\x96\xd6\xe5\xf1\xee\xfe\xf6\x1c\xea\xb1\x2b\xba\x69\x70\x9a\x8f\x89\xea\x68\x8d\x5a\xa3\xce\xf6\x39\x25\xbe\x25\xe8\x2f\xd3\x49\x35\x75\xb4\xf2\x13\x00\x00\xff\xff\x9a\xab\xca\x11\xc6\x00\x00\x00")
 
 func staticGoBytes() ([]byte, error) {
 	return bindataRead(
@@ -125,8 +125,8 @@ func staticGo() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "static.go", size: 178, mode: os.FileMode(0644), modTime: time.Unix(1704726859, 0)}
-	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xab, 0x8a, 0xf4, 0x27, 0x24, 0x9d, 0x2a, 0x1, 0x7b, 0x54, 0xea, 0xae, 0x4a, 0x35, 0x40, 0x92, 0xb5, 0xf9, 0xb3, 0x54, 0x3e, 0x3a, 0x1a, 0x2b, 0xae, 0xfb, 0x9e, 0x82, 0xeb, 0x4c, 0xf, 0x6}}
+	info := bindataFileInfo{name: "static.go", size: 198, mode: os.FileMode(0644), modTime: time.Unix(1700000000, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xb, 0xd2, 0xfd, 0xbf, 0xe5, 0xff, 0xcb, 0x54, 0xec, 0x41, 0x23, 0x7b, 0xc0, 0xeb, 0x55, 0xb8, 0x69, 0xd7, 0x57, 0xf1, 0x83, 0x13, 0x88, 0x55, 0xd9, 0x73, 0xdc, 0x93, 0xee, 0x23, 0xe3, 0xe9}}
 	return a, nil
 }
 

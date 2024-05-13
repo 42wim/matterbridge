@@ -31,6 +31,10 @@ type Account struct {
 	CustomizationColorClock uint64                    `json:"-"`
 }
 
+func (a *Account) RefersToKeycard() bool {
+	return a.KeycardPairing != ""
+}
+
 func (a *Account) ToProtobuf() *protobuf.MultiAccount {
 	var colorHashes []*protobuf.MultiAccount_ColorHash
 	for _, index := range a.ColorHash {

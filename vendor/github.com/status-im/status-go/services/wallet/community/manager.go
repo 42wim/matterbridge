@@ -58,16 +58,33 @@ func (cm *Manager) GetCommunityID(tokenURI string) string {
 	return cm.communityInfoProvider.GetCommunityID(tokenURI)
 }
 
-func (cm *Manager) FillCollectibleMetadata(c *thirdparty.FullCollectibleData) error {
-	return cm.communityInfoProvider.FillCollectibleMetadata(c)
+func (cm *Manager) FillCollectiblesMetadata(communityID string, cs []*thirdparty.FullCollectibleData) (bool, error) {
+	communityFound, err := cm.communityInfoProvider.FillCollectiblesMetadata(communityID, cs)
+	if err != nil {
+		return communityFound, err
+	}
+
+	if communityFound {
+		// Update local community data cache
+		community, err := cm.communityInfoProvider.GetCommunityInfoFromDB(communityID)
+		if err != nil {
+			log.Error("GetCommunityInfoFromDB failed", "communityID", communityID, "err", err)
+			return communityFound, err
+		}
+		err = cm.setCommunityInfo(communityID, community)
+		if err != nil {
+			log.Error("SetCommunityInfo failed", "communityID", community)
+		}
+	}
+	return communityFound, nil
 }
 
 func (cm *Manager) setCommunityInfo(id string, c *thirdparty.CommunityInfo) (err error) {
 	return cm.db.SetCommunityInfo(id, c)
 }
 
-func (cm *Manager) FetchCommunityInfo(communityID string) (*thirdparty.CommunityInfo, error) {
-	communityInfo, err := cm.communityInfoProvider.FetchCommunityInfo(communityID)
+func (cm *Manager) fetchCommunityInfo(communityID string, fetcher func() (*thirdparty.CommunityInfo, error)) (*thirdparty.CommunityInfo, error) {
+	communityInfo, err := fetcher()
 	if err != nil {
 		dbErr := cm.setCommunityInfo(communityID, nil)
 		if dbErr != nil {
@@ -77,6 +94,12 @@ func (cm *Manager) FetchCommunityInfo(communityID string) (*thirdparty.Community
 	}
 	err = cm.setCommunityInfo(communityID, communityInfo)
 	return communityInfo, err
+}
+
+func (cm *Manager) FetchCommunityInfo(communityID string) (*thirdparty.CommunityInfo, error) {
+	return cm.fetchCommunityInfo(communityID, func() (*thirdparty.CommunityInfo, error) {
+		return cm.communityInfoProvider.FetchCommunityInfo(communityID)
+	})
 }
 
 func (cm *Manager) FetchCommunityMetadataAsync(communityID string) {

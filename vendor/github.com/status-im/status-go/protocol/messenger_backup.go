@@ -315,11 +315,10 @@ func (m *Messenger) backupCommunities(ctx context.Context, clock uint64) ([]*pro
 				return nil, err
 			}
 
-			encodedKeys, err := m.encryptor.GetAllHREncodedKeys(c.ID())
+			err = m.propagateSyncInstallationCommunityWithHRKeys(syncMessage, c)
 			if err != nil {
 				return nil, err
 			}
-			syncMessage.EncryptionKeys = encodedKeys
 
 			backupMessage := &protobuf.Backup{
 				Communities: []*protobuf.SyncInstallationCommunity{syncMessage},
@@ -475,14 +474,20 @@ func (m *Messenger) backupProfile(ctx context.Context, clock uint64) ([]*protobu
 		}
 	}
 
+	profileShowcasePreferences, err := m.GetProfileShowcasePreferences()
+	if err != nil {
+		return nil, err
+	}
+
 	backupMessage := &protobuf.Backup{
 		Profile: &protobuf.BackedUpProfile{
-			KeyUid:             keyUID,
-			DisplayName:        displayName,
-			Pictures:           pictureProtos,
-			DisplayNameClock:   displayNameClock,
-			SocialLinks:        syncSocialLinks,
-			EnsUsernameDetails: ensUsernameDetailProtos,
+			KeyUid:                     keyUID,
+			DisplayName:                displayName,
+			Pictures:                   pictureProtos,
+			DisplayNameClock:           displayNameClock,
+			SocialLinks:                syncSocialLinks,
+			EnsUsernameDetails:         ensUsernameDetailProtos,
+			ProfileShowcasePreferences: ToProfileShowcasePreferencesProto(profileShowcasePreferences),
 		},
 	}
 
@@ -492,7 +497,7 @@ func (m *Messenger) backupProfile(ctx context.Context, clock uint64) ([]*protobu
 }
 
 func (m *Messenger) backupKeypairs() ([]*protobuf.Backup, error) {
-	keypairs, err := m.settings.GetActiveKeypairs()
+	keypairs, err := m.settings.GetAllKeypairs()
 	if err != nil {
 		return nil, err
 	}

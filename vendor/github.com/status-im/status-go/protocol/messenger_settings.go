@@ -57,3 +57,15 @@ func (m *Messenger) SetCustomizationColor(ctx context.Context, request *requests
 	}
 	return nil
 }
+
+func (m *Messenger) TogglePeerSyncing(request *requests.TogglePeerSyncingRequest) error {
+	if err := request.Validate(); err != nil {
+		return err
+	}
+
+	err := m.settings.SetPeerSyncingEnabled(request.Enabled)
+	if err != nil {
+		return err
+	}
+	return nil
+}

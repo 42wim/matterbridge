@@ -67,7 +67,7 @@ func (c *findNewBlocksCommand) detectTransfers(parent context.Context, accounts 
 			tokenAddresses = append(tokenAddresses, token.Address)
 		}
 	}
-	log.Info("findNewBlocksCommand detectTransfers", "cnt", len(tokenAddresses), "addresses", tokenAddresses)
+	log.Debug("findNewBlocksCommand detectTransfers", "cnt", len(tokenAddresses))
 
 	ctx, cancel := context.WithTimeout(parent, requestTimeout)
 	defer cancel()
@@ -79,22 +79,12 @@ func (c *findNewBlocksCommand) detectTransfers(parent context.Context, accounts 
 
 	addressesToCheck := []common.Address{}
 	for idx, account := range accounts {
-		blockRange, err := c.blockRangeDAO.getBlockRange(c.chainClient.NetworkID(), account)
+		blockRange, _, err := c.blockRangeDAO.getBlockRange(c.chainClient.NetworkID(), account)
 		if err != nil {
-			log.Error("findNewBlocksCommand can't block range", "error", err, "account", account, "chain", c.chainClient.NetworkID())
+			log.Error("findNewBlocksCommand can't get block range", "error", err, "account", account, "chain", c.chainClient.NetworkID())
 			return nil, nil, err
 		}
 
-		if blockRange.eth == nil {
-			blockRange.eth = NewBlockRange()
-			blockRange.tokens = NewBlockRange()
-		}
-		if blockRange.eth.FirstKnown == nil {
-			blockRange.eth.FirstKnown = blockNum
-		}
-		if blockRange.eth.LastKnown == nil {
-			blockRange.eth.LastKnown = blockNum
-		}
 		checkHash := common.BytesToHash(hashes[idx][:])
 		log.Debug("findNewBlocksCommand comparing hashes", "account", account, "network", c.chainClient.NetworkID(), "old hash", blockRange.balanceCheckHash, "new hash", checkHash.String())
 		if checkHash.String() != blockRange.balanceCheckHash {
@@ -118,7 +108,7 @@ func (c *findNewBlocksCommand) detectNonceChange(parent context.Context, to *big
 	for _, account := range accounts {
 		var oldNonce *int64
 
-		blockRange, err := c.blockRangeDAO.getBlockRange(c.chainClient.NetworkID(), account)
+		blockRange, _, err := c.blockRangeDAO.getBlockRange(c.chainClient.NetworkID(), account)
 		if err != nil {
 			log.Error("findNewBlocksCommand can't get block range", "error", err, "account", account, "chain", c.chainClient.NetworkID())
 			return nil, err
@@ -126,12 +116,16 @@ func (c *findNewBlocksCommand) detectNonceChange(parent context.Context, to *big
 
 		lastNonceInfo, ok := c.lastNonces[account]
 		if !ok || lastNonceInfo.blockNumber.Cmp(blockRange.eth.LastKnown) != 0 {
-			log.Info("Fetching old nonce", "at", blockRange.eth.LastKnown, "acc", account)
-
-			oldNonce, err = c.balanceCacher.NonceAt(parent, c.chainClient, account, blockRange.eth.LastKnown)
-			if err != nil {
-				log.Error("findNewBlocksCommand can't get nonce", "error", err, "account", account, "chain", c.chainClient.NetworkID())
-				return nil, err
+			log.Debug("Fetching old nonce", "at", blockRange.eth.LastKnown, "acc", account)
+			if blockRange.eth.LastKnown == nil {
+				blockRange.eth.LastKnown = big.NewInt(0)
+				oldNonce = new(int64) // At 0 block nonce is 0
+			} else {
+				oldNonce, err = c.balanceCacher.NonceAt(parent, c.chainClient, account, blockRange.eth.LastKnown)
+				if err != nil {
+					log.Error("findNewBlocksCommand can't get nonce", "error", err, "account", account, "chain", c.chainClient.NetworkID())
+					return nil, err
+				}
 			}
 		} else {
 			oldNonce = lastNonceInfo.nonce
@@ -143,7 +137,7 @@ func (c *findNewBlocksCommand) detectNonceChange(parent context.Context, to *big
 			return nil, err
 		}
 
-		log.Info("Comparing nonces", "oldNonce", *oldNonce, "newNonce", *newNonce, "to", to, "acc", account)
+		log.Debug("Comparing nonces", "oldNonce", *oldNonce, "newNonce", *newNonce, "to", to, "acc", account)
 
 		if *newNonce != *oldNonce {
 			addressesWithChange[account] = blockRange.eth.LastKnown
@@ -207,7 +201,7 @@ func (c *findNewBlocksCommand) Run(parent context.Context) error {
 	c.blockChainState.SetLastBlockNumber(c.chainClient.NetworkID(), headNum.Uint64())
 
 	if len(accountsWithDetectedChanges) != 0 {
-		log.Debug("findNewBlocksCommand detected accounts with changes, proceeding", "accounts", accountsWithDetectedChanges)
+		log.Debug("findNewBlocksCommand detected accounts with changes, proceeding", "accounts", accountsWithDetectedChanges, "from", c.fromBlockNumber)
 		err = c.findAndSaveEthBlocks(parent, c.fromBlockNumber, headNum, accountsToCheck)
 		if err != nil {
 			return err
@@ -241,10 +235,15 @@ func (c *findNewBlocksCommand) Run(parent context.Context) error {
 	}
 
 	if len(accountsWithDetectedChanges) != 0 || c.iteration%c.logsCheckIntervalIterations == 0 {
-		err = c.findAndSaveTokenBlocks(parent, c.fromBlockNumber, headNum)
+		from := c.fromBlockNumber
+		if c.logsCheckLastKnownBlock != nil {
+			from = c.logsCheckLastKnownBlock
+		}
+		err = c.findAndSaveTokenBlocks(parent, from, headNum)
 		if err != nil {
 			return err
 		}
+		c.logsCheckLastKnownBlock = headNum
 	}
 	c.fromBlockNumber = headNum
 	c.iteration++
@@ -335,11 +334,11 @@ func (c *findNewBlocksCommand) findAndSaveTokenBlocks(parent context.Context, fr
 	return c.markTokenBlockRangeChecked(c.accounts, fromNum, headNum)
 }
 
-func (c *findNewBlocksCommand) markTokenBlockRangeChecked(accounts []common.Address, from, to *big.Int) error {
+func (c *findBlocksCommand) markTokenBlockRangeChecked(accounts []common.Address, from, to *big.Int) error {
 	log.Debug("markTokenBlockRangeChecked", "chain", c.chainClient.NetworkID(), "from", from.Uint64(), "to", to.Uint64())
 
 	for _, account := range accounts {
-		err := c.blockRangeDAO.updateTokenRange(c.chainClient.NetworkID(), account, &BlockRange{LastKnown: to})
+		err := c.blockRangeDAO.updateTokenRange(c.chainClient.NetworkID(), account, &BlockRange{FirstKnown: from, LastKnown: to})
 		if err != nil {
 			log.Error("findNewBlocksCommand upsertTokenRange", "error", err)
 			return err
@@ -435,6 +434,7 @@ type findBlocksCommand struct {
 	transactionManager        *TransactionManager
 	tokenManager              *token.Manager
 	fromBlockNumber           *big.Int
+	logsCheckLastKnownBlock   *big.Int
 	toBlockNumber             *big.Int
 	blocksLoadedCh            chan<- []*DBHeader
 	defaultNodeBlockChunkSize int
@@ -529,7 +529,7 @@ func (c *findBlocksCommand) ERC20ScanByBalance(parent context.Context, account c
 }
 
 func (c *findBlocksCommand) checkERC20Tail(parent context.Context, account common.Address) ([]*DBHeader, error) {
-	log.Info("checkERC20Tail", "account", account, "to block", c.startBlockNumber, "from", c.resFromBlock.Number)
+	log.Debug("checkERC20Tail", "account", account, "to block", c.startBlockNumber, "from", c.resFromBlock.Number)
 	tokens, err := c.tokenManager.GetTokens(c.chainClient.NetworkID())
 	if err != nil {
 		return nil, err
@@ -650,11 +650,20 @@ func (c *findBlocksCommand) Run(parent context.Context) (err error) {
 		}
 
 		if c.reachedETHHistoryStart {
+			err = c.markTokenBlockRangeChecked([]common.Address{account}, big.NewInt(0), to)
+			if err != nil {
+				break
+			}
 			log.Debug("findBlocksCommand reached first ETH transfer and checked erc20 tail", "chain", c.chainClient.NetworkID(), "account", account)
 			break
 		}
 
 		err = c.markEthBlockRangeChecked(account, &BlockRange{c.startBlockNumber, c.resFromBlock.Number, to})
+		if err != nil {
+			break
+		}
+
+		err = c.markTokenBlockRangeChecked([]common.Address{account}, c.resFromBlock.Number, to)
 		if err != nil {
 			break
 		}
@@ -746,7 +755,7 @@ func (c *findBlocksCommand) checkRange(parent context.Context, from *big.Int, to
 func loadBlockRangeInfo(chainID uint64, account common.Address, blockDAO BlockRangeDAOer) (
 	*ethTokensBlockRanges, error) {
 
-	blockRange, err := blockDAO.getBlockRange(chainID, account)
+	blockRange, _, err := blockDAO.getBlockRange(chainID, account)
 	if err != nil {
 		log.Error("failed to load block ranges from database", "chain", chainID, "account", account,
 			"error", err)
@@ -759,8 +768,9 @@ func loadBlockRangeInfo(chainID uint64, account common.Address, blockDAO BlockRa
 // Returns if all blocks are loaded, which means that start block (beginning of account history)
 // has been found and all block headers saved to the DB
 func areAllHistoryBlocksLoaded(blockInfo *BlockRange) bool {
-	if blockInfo != nil && blockInfo.FirstKnown != nil && blockInfo.Start != nil &&
-		blockInfo.Start.Cmp(blockInfo.FirstKnown) >= 0 {
+	if blockInfo != nil && blockInfo.FirstKnown != nil &&
+		((blockInfo.Start != nil && blockInfo.Start.Cmp(blockInfo.FirstKnown) >= 0) ||
+			blockInfo.FirstKnown.Cmp(zero) == 0) {
 		return true
 	}
 
@@ -770,7 +780,7 @@ func areAllHistoryBlocksLoaded(blockInfo *BlockRange) bool {
 func areAllHistoryBlocksLoadedForAddress(blockRangeDAO BlockRangeDAOer, chainID uint64,
 	address common.Address) (bool, error) {
 
-	blockRange, err := blockRangeDAO.getBlockRange(chainID, address)
+	blockRange, _, err := blockRangeDAO.getBlockRange(chainID, address)
 	if err != nil {
 		log.Error("findBlocksCommand getBlockRange", "error", err)
 		return false, err
@@ -964,10 +974,31 @@ func (c *loadBlocksAndTransfersCommand) Run(parent context.Context) (err error) 
 		finiteGroup.Wait()
 	}()
 
-	fromNum := big.NewInt(0)
-	headNum, err := getHeadBlockNumber(ctx, c.chainClient)
+	blockRanges, err := c.blockRangeDAO.getBlockRanges(c.chainClient.NetworkID(), c.accounts)
 	if err != nil {
 		return err
+	}
+
+	firstScan := false
+	var headNum *big.Int
+	for _, address := range c.accounts {
+		blockRange, ok := blockRanges[address]
+		if !ok || blockRange.tokens.LastKnown == nil {
+			firstScan = true
+			break
+		}
+
+		if headNum == nil || blockRange.tokens.LastKnown.Cmp(headNum) < 0 {
+			headNum = blockRange.tokens.LastKnown
+		}
+	}
+
+	fromNum := big.NewInt(0)
+	if firstScan {
+		headNum, err = getHeadBlockNumber(ctx, c.chainClient)
+		if err != nil {
+			return err
+		}
 	}
 
 	// It will start loadTransfersCommand which will run until all transfers from DB are loaded or any one failed to load
@@ -1046,14 +1077,13 @@ func (c *loadBlocksAndTransfersCommand) fetchHistoryBlocksForAccount(group *asyn
 	}
 
 	ranges := [][]*big.Int{}
-
 	// There are 2 history intervals:
 	// 1) from 0 to FirstKnown
 	// 2) from LastKnown to `toNum`` (head)
 	// If we blockRange is nil, we need to load all blocks from `fromNum` to `toNum`
 	// As current implementation checks ETH first then tokens, tokens ranges maybe behind ETH ranges in
 	// cases when block searching was interrupted, so we use tokens ranges
-	if blockRange != nil && blockRange.tokens != nil {
+	if blockRange.tokens.LastKnown != nil || blockRange.tokens.FirstKnown != nil {
 		if blockRange.tokens.LastKnown != nil && toNum.Cmp(blockRange.tokens.LastKnown) > 0 {
 			ranges = append(ranges, []*big.Int{blockRange.tokens.LastKnown, toNum})
 		}
@@ -1083,6 +1113,7 @@ func (c *loadBlocksAndTransfersCommand) fetchHistoryBlocksForAccount(group *asyn
 	}
 
 	for _, rangeItem := range ranges {
+		log.Debug("range item", "r", rangeItem, "n", c.chainClient.NetworkID(), "a", account)
 		fbc := &findBlocksCommand{
 			accounts:                  []common.Address{account},
 			db:                        c.db,

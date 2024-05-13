@@ -16,7 +16,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/status-im/status-go/contracts"
-	"github.com/status-im/status-go/contracts/ierc1155"
+	gaspriceoracle "github.com/status-im/status-go/contracts/gas-price-oracle"
 	"github.com/status-im/status-go/contracts/ierc20"
 	"github.com/status-im/status-go/eth-node/types"
 	"github.com/status-im/status-go/params"
@@ -136,7 +136,7 @@ func (s SendType) isAvailableFor(network *params.Network) bool {
 		return true
 	}
 
-	if network.ChainID == 1 || network.ChainID == 5 {
+	if network.ChainID == 1 || network.ChainID == 5 || network.ChainID == 11155111 {
 		return true
 	}
 
@@ -451,27 +451,28 @@ type Router struct {
 	rpcClient *rpc.Client
 }
 
-func (r *Router) requireApproval(ctx context.Context, sendType SendType, bridge bridge.Bridge, account common.Address, network *params.Network, token *token.Token, amountIn *big.Int) (bool, *big.Int, uint64, *common.Address, error) {
-	if sendType == ERC721Transfer {
-		return false, nil, 0, nil, nil
+func (r *Router) requireApproval(ctx context.Context, sendType SendType, bridge bridge.Bridge, account common.Address, network *params.Network, token *token.Token, amountIn *big.Int) (
+	bool, *big.Int, uint64, uint64, *common.Address, error) {
+	if sendType.IsCollectiblesTransfer() {
+		return false, nil, 0, 0, nil, nil
 	}
 
 	if token.IsNative() {
-		return false, nil, 0, nil, nil
+		return false, nil, 0, 0, nil, nil
 	}
 	contractMaker, err := contracts.NewContractMaker(r.rpcClient)
 	if err != nil {
-		return false, nil, 0, nil, err
+		return false, nil, 0, 0, nil, err
 	}
 
 	bridgeAddress := bridge.GetContractAddress(network, token)
 	if bridgeAddress == nil {
-		return false, nil, 0, nil, nil
+		return false, nil, 0, 0, nil, nil
 	}
 
 	contract, err := contractMaker.NewERC20(network.ChainID, token.Address)
 	if err != nil {
-		return false, nil, 0, nil, err
+		return false, nil, 0, 0, nil, err
 	}
 
 	allowance, err := contract.Allowance(&bind.CallOpts{
@@ -479,26 +480,26 @@ func (r *Router) requireApproval(ctx context.Context, sendType SendType, bridge 
 	}, account, *bridgeAddress)
 
 	if err != nil {
-		return false, nil, 0, nil, err
+		return false, nil, 0, 0, nil, err
 	}
 
 	if allowance.Cmp(amountIn) >= 0 {
-		return false, nil, 0, nil, nil
+		return false, nil, 0, 0, nil, nil
 	}
 
 	ethClient, err := r.rpcClient.EthClient(network.ChainID)
 	if err != nil {
-		return false, nil, 0, nil, err
+		return false, nil, 0, 0, nil, err
 	}
 
 	erc20ABI, err := abi.JSON(strings.NewReader(ierc20.IERC20ABI))
 	if err != nil {
-		return false, nil, 0, nil, err
+		return false, nil, 0, 0, nil, err
 	}
 
 	data, err := erc20ABI.Pack("approve", bridgeAddress, amountIn)
 	if err != nil {
-		return false, nil, 0, nil, err
+		return false, nil, 0, 0, nil, err
 	}
 
 	estimate, err := ethClient.EstimateGas(context.Background(), ethereum.CallMsg{
@@ -508,11 +509,25 @@ func (r *Router) requireApproval(ctx context.Context, sendType SendType, bridge 
 		Data:  data,
 	})
 	if err != nil {
-		return false, nil, 0, nil, err
+		return false, nil, 0, 0, nil, err
 	}
 
-	return true, amountIn, estimate, bridgeAddress, nil
+	// fetching l1 fee
+	oracleContractAddress, err := gaspriceoracle.ContractAddress(network.ChainID)
+	if err != nil {
+		return false, nil, 0, 0, nil, err
+	}
 
+	oracleContract, err := gaspriceoracle.NewGaspriceoracleCaller(oracleContractAddress, ethClient)
+	if err != nil {
+		return false, nil, 0, 0, nil, err
+	}
+
+	callOpt := &bind.CallOpts{}
+
+	l1Fee, _ := oracleContract.GetL1Fee(callOpt, data)
+
+	return true, amountIn, estimate, l1Fee.Uint64(), bridgeAddress, nil
 }
 
 func (r *Router) getBalance(ctx context.Context, network *params.Network, token *token.Token, account common.Address) (*big.Int, error) {
@@ -525,24 +540,27 @@ func (r *Router) getBalance(ctx context.Context, network *params.Network, token 
 }
 
 func (r *Router) getERC1155Balance(ctx context.Context, network *params.Network, token *token.Token, account common.Address) (*big.Int, error) {
-	client, err := r.s.rpcClient.EthClient(network.ChainID)
-	if err != nil {
-		return nil, err
-	}
-
 	tokenID, success := new(big.Int).SetString(token.Symbol, 10)
 	if !success {
 		return nil, errors.New("failed to convert token symbol to big.Int")
 	}
 
-	caller, err := ierc1155.NewIerc1155Caller(token.Address, client)
+	balances, err := r.s.collectiblesManager.FetchERC1155Balances(
+		ctx,
+		account,
+		walletCommon.ChainID(network.ChainID),
+		token.Address,
+		[]*bigint.BigInt{&bigint.BigInt{Int: tokenID}},
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	return caller.BalanceOf(&bind.CallOpts{
-		Context: ctx,
-	}, account, tokenID)
+	if len(balances) != 1 || balances[0] == nil {
+		return nil, errors.New("invalid ERC1155 balance fetch response")
+	}
+
+	return balances[0].Int, nil
 }
 
 func (r *Router) suggestedRoutes(
@@ -572,7 +590,6 @@ func (r *Router) suggestedRoutes(
 	if err != nil {
 		return nil, err
 	}
-
 	var (
 		group      = async.NewAtomicGroup(ctx)
 		mu         sync.Mutex
@@ -658,7 +675,6 @@ func (r *Router) suggestedRoutes(
 					if len(preferedChainIDs) > 0 && !containsNetworkChainID(dest, preferedChainIDs) {
 						continue
 					}
-
 					if containsNetworkChainID(dest, disabledToChaindIDs) {
 						continue
 					}
@@ -692,31 +708,45 @@ func (r *Router) suggestedRoutes(
 						gasLimit = sendType.EstimateGas(r.s, network, addrFrom, tokenID)
 					}
 
+					approvalRequired, approvalAmountRequired, approvalGasLimit, l1ApprovalFee, approvalContractAddress, err := r.requireApproval(ctx, sendType, bridge, addrFrom, network, token, amountIn)
+					if err != nil {
+						continue
+					}
+
+					tx, err := bridge.BuildTx(network, dest, addrFrom, addrTo, token, amountIn, bonderFees)
+					if err != nil {
+						continue
+					}
+
+					l1GasFeeWei, _ := r.s.feesManager.getL1Fee(ctx, network.ChainID, tx)
+					l1GasFeeWei += l1ApprovalFee
+					gasFees.L1GasFee = weiToGwei(big.NewInt(int64(l1GasFeeWei)))
+
 					requiredNativeBalance := new(big.Int).Mul(gweiToWei(maxFees), big.NewInt(int64(gasLimit)))
+					requiredNativeBalance.Add(requiredNativeBalance, new(big.Int).Mul(gweiToWei(maxFees), big.NewInt(int64(approvalGasLimit))))
+					requiredNativeBalance.Add(requiredNativeBalance, big.NewInt(int64(l1GasFeeWei))) // add l1Fee to requiredNativeBalance, in case of L1 chain l1Fee is 0
+
+					if nativeBalance.Cmp(requiredNativeBalance) <= 0 {
+						continue
+					}
+
 					// Removed the required fees from maxAMount in case of native token tx
 					if token.IsNative() {
 						maxAmountIn = (*hexutil.Big)(new(big.Int).Sub(maxAmountIn.ToInt(), requiredNativeBalance))
 					}
-					if nativeBalance.Cmp(requiredNativeBalance) <= 0 {
-						continue
-					}
-					approvalRequired, approvalAmountRequired, approvalGasLimit, approvalContractAddress, err := r.requireApproval(ctx, sendType, bridge, addrFrom, network, token, amountIn)
-					if err != nil {
-						continue
-					}
+
+					ethPrice := big.NewFloat(prices["ETH"])
+
 					approvalGasFees := new(big.Float).Mul(gweiToEth(maxFees), big.NewFloat((float64(approvalGasLimit))))
 
 					approvalGasCost := new(big.Float)
-					approvalGasCost.Mul(
-						approvalGasFees,
-						big.NewFloat(prices["ETH"]),
-					)
+					approvalGasCost.Mul(approvalGasFees, ethPrice)
+
+					l1GasCost := new(big.Float)
+					l1GasCost.Mul(gasFees.L1GasFee, ethPrice)
 
 					gasCost := new(big.Float)
-					gasCost.Mul(
-						new(big.Float).Mul(gweiToEth(maxFees), big.NewFloat((float64(gasLimit)))),
-						big.NewFloat(prices["ETH"]),
-					)
+					gasCost.Mul(new(big.Float).Mul(gweiToEth(maxFees), big.NewFloat(float64(gasLimit))), ethPrice)
 
 					tokenFeesAsFloat := new(big.Float).Quo(
 						new(big.Float).SetInt(tokenFees),
@@ -728,6 +758,7 @@ func (r *Router) suggestedRoutes(
 					cost := new(big.Float)
 					cost.Add(tokenCost, gasCost)
 					cost.Add(cost, approvalGasCost)
+					cost.Add(cost, l1GasCost)
 					mu.Lock()
 					candidates = append(candidates, &Path{
 						BridgeName:              bridge.Name(),

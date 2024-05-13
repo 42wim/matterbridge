@@ -87,7 +87,7 @@ const ownedCollectiblesJSON = `{
 		},
 		"owners": null,
 		"timeLastUpdated": "2024-01-03T19:11:04.681Z",
-		"balance": "1",
+		"balance": "15",
 		"acquiredAt": {
 		  "blockTimestamp": null,
 		  "blockNumber": null

@@ -7,6 +7,7 @@ import (
 	"github.com/status-im/status-go/eth-node/types"
 	"github.com/status-im/status-go/protocol/common"
 	"github.com/status-im/status-go/protocol/verification"
+	"github.com/status-im/status-go/services/wallet/thirdparty"
 )
 
 // The activity center is a place where we store incoming notifications before
@@ -36,6 +37,9 @@ const (
 	ActivityCenterNotificationTypeSetSignerDeclined
 	ActivityCenterNotificationTypeShareAccounts
 	ActivityCenterNotificationTypeCommunityTokenReceived
+	ActivityCenterNotificationTypeFirstCommunityTokenReceived
+	ActivityCenterNotificationTypeCommunityBanned
+	ActivityCenterNotificationTypeCommunityUnbanned
 )
 
 type ActivityCenterMembershipStatus int
@@ -60,6 +64,22 @@ const (
 
 var ErrInvalidActivityCenterNotification = errors.New("invalid activity center notification")
 
+type ActivityTokenData struct {
+	ChainID       uint64                         `json:"chainId,omitempty"`
+	CollectibleID thirdparty.CollectibleUniqueID `json:"collectibleId,omitempty"`
+	TxHash        string                         `json:"txHash,omitempty"`
+	WalletAddress string                         `json:"walletAddress,omitempty"`
+	IsFirst       bool                           `json:"isFirst,omitempty"`
+	// Community data
+	CommunityID string `json:"communityId,omitempty"`
+	// Token data
+	Amount    string `json:"amount,omitempty"`
+	Name      string `json:"name,omitempty"`
+	Symbol    string `json:"symbol,omitempty"`
+	ImageURL  string `json:"imageUrl,omitempty"`
+	TokenType int    `json:"tokenType,omitempty"`
+}
+
 type ActivityCenterNotification struct {
 	ID                        types.HexBytes                 `json:"id"`
 	ChatID                    string                         `json:"chatId"`
@@ -77,6 +97,7 @@ type ActivityCenterNotification struct {
 	Deleted                   bool                           `json:"deleted"`
 	Accepted                  bool                           `json:"accepted"`
 	ContactVerificationStatus verification.RequestStatus     `json:"contactVerificationStatus"`
+	TokenData                 *ActivityTokenData             `json:"tokenData"`
 	//Used for synchronization. Each update should increment the UpdatedAt.
 	//The value should represent the time when the update occurred.
 	UpdatedAt     uint64            `json:"updatedAt"`

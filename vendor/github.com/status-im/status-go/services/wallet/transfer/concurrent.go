@@ -183,11 +183,11 @@ func checkRangesWithStartBlock(parent context.Context, client balance.Reader, ca
 					return err
 				}
 				// Obtain block hash from first transaction
-				firstTransaction, err := client.FullTransactionByBlockNumberAndIndex(ctx, to, 0)
+				blockHash, err := client.CallBlockHashByTransaction(ctx, to, 0)
 				if err != nil {
 					return err
 				}
-				c.PushHeader(toDBHeader(header, *firstTransaction.BlockHash, account))
+				c.PushHeader(toDBHeader(header, blockHash, account))
 				return nil
 			}
 			mid := new(big.Int).Add(from, to)

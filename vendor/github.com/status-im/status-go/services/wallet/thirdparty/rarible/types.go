@@ -110,6 +110,51 @@ type BatchTokenIDs struct {
 	IDs []string `json:"ids"`
 }
 
+type CollectibleFilterFullTextField = string
+
+const (
+	CollectibleFilterFullTextFieldName        = "NAME"
+	CollectibleFilterFullTextFieldDescription = "DESCRIPTION"
+)
+
+type CollectibleFilterFullText struct {
+	Text   string                           `json:"text"`
+	Fields []CollectibleFilterFullTextField `json:"fields"`
+}
+
+type CollectibleFilter struct {
+	Blockchains []string                  `json:"blockchains"`
+	Collections []string                  `json:"collections,omitempty"`
+	Deleted     bool                      `json:"deleted"`
+	FullText    CollectibleFilterFullText `json:"fullText"`
+}
+
+type CollectibleFilterContainerSort = string
+
+const (
+	CollectibleFilterContainerSortRelevance = "RELEVANCE"
+	CollectibleFilterContainerSortLatest    = "LATEST"
+	CollectibleFilterContainerSortEarliest  = "EARLIEST"
+)
+
+type CollectibleFilterContainer struct {
+	Limit  int                            `json:"size"`
+	Cursor string                         `json:"continuation"`
+	Filter CollectibleFilter              `json:"filter"`
+	Sort   CollectibleFilterContainerSort `json:"sort"`
+}
+
+type CollectionFilter struct {
+	Blockchains []string `json:"blockchains"`
+	Text        string   `json:"text"`
+}
+
+type CollectionFilterContainer struct {
+	Limit  int              `json:"size"`
+	Cursor string           `json:"continuation"`
+	Filter CollectionFilter `json:"filter"`
+}
+
 type CollectiblesContainer struct {
 	Continuation string        `json:"continuation"`
 	Collectibles []Collectible `json:"items"`
@@ -155,6 +200,11 @@ func (st *AttributeValue) UnmarshalJSON(b []byte) error {
 		*st = AttributeValue(v)
 	}
 	return nil
+}
+
+type CollectionsContainer struct {
+	Continuation string       `json:"continuation"`
+	Collections  []Collection `json:"collections"`
 }
 
 type Collection struct {
@@ -238,6 +288,19 @@ func raribleToCollectiblesData(l []Collectible, isMainnet bool) []thirdparty.Ful
 	ret := make([]thirdparty.FullCollectibleData, 0, len(l))
 	for _, c := range l {
 		id, err := raribleCollectibleIDToUniqueID(c.ID, isMainnet)
+		if err != nil {
+			continue
+		}
+		item := c.toCommon(id)
+		ret = append(ret, item)
+	}
+	return ret
+}
+
+func raribleToCollectionsData(l []Collection, isMainnet bool) []thirdparty.CollectionData {
+	ret := make([]thirdparty.CollectionData, 0, len(l))
+	for _, c := range l {
+		id, err := raribleContractIDToUniqueID(c.ID, isMainnet)
 		if err != nil {
 			continue
 		}

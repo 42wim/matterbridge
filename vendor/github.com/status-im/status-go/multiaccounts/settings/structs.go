@@ -6,11 +6,13 @@ import (
 
 	accountJson "github.com/status-im/status-go/account/json"
 	"github.com/status-im/status-go/eth-node/types"
+	"github.com/status-im/status-go/params"
 	"github.com/status-im/status-go/protocol/common"
 	"github.com/status-im/status-go/protocol/protobuf"
 )
 
 type ValueHandler func(interface{}) (interface{}, error)
+type ValueCastHandler func(interface{}) (interface{}, error)
 type SyncSettingProtobufFactoryInterface func(interface{}, uint64, string) (*common.RawMessage, *protobuf.SyncSetting, error)
 type SyncSettingProtobufFactoryStruct func(Settings, uint64, string) (*common.RawMessage, *protobuf.SyncSetting, error)
 type SyncSettingProtobufToValue func(setting *protobuf.SyncSetting) interface{}
@@ -69,6 +71,7 @@ type SettingField struct {
 	dBColumnName        string
 	valueHandler        ValueHandler
 	syncProtobufFactory *SyncProtobufFactory
+	valueCastHandler    ValueCastHandler
 }
 
 func (s SettingField) GetReactName() string {
@@ -81,6 +84,10 @@ func (s SettingField) GetDBName() string {
 
 func (s SettingField) ValueHandler() ValueHandler {
 	return s.valueHandler
+}
+
+func (s SettingField) ValueCastHandler() ValueCastHandler {
+	return s.valueCastHandler
 }
 
 func (s SettingField) SyncProtobufFactory() *SyncProtobufFactory {
@@ -153,9 +160,18 @@ type Settings struct {
 	NotificationsEnabled bool             `json:"notifications-enabled?,omitempty"`
 	PhotoPath            string           `json:"photo-path"`
 	PinnedMailserver     *json.RawMessage `json:"pinned-mailservers,omitempty"`
-	PreferredName        *string          `json:"preferred-name,omitempty"`
-	PreviewPrivacy       bool             `json:"preview-privacy?"`
-	PublicKey            string           `json:"public-key"`
+	// PreferredName represents the user's preferred Ethereum Name Service (ENS) name.
+	// If a user has multiple ENS names, they can select one as the PreferredName.
+	// When PreferredName is set, it takes precedence over the DisplayName for displaying the user's name.
+	// If PreferredName is empty or doesn't match any of the user's ENS names, the DisplayName is used instead.
+	//
+	// There is a race condition between updating DisplayName and PreferredName, where the account.Name field
+	// could be incorrectly updated based on the order in which the backup messages (BackedUpProfile/BackedUpSettings) arrive.
+	// To handle this race condition, the code checks the LastSynced clock value for both DisplayName and PreferredName,
+	// and updates account.Name with the value that has the latest clock
+	PreferredName  *string `json:"preferred-name,omitempty"`
+	PreviewPrivacy bool    `json:"preview-privacy?"`
+	PublicKey      string  `json:"public-key"`
 	// PushNotificationsServerEnabled indicates whether we should be running a push notification server
 	PushNotificationsServerEnabled bool `json:"push-notifications-server-enabled?,omitempty"`
 	// PushNotificationsFromContactsOnly indicates whether we should only receive push notifications from contacts
@@ -198,7 +214,7 @@ type Settings struct {
 	GifAPIKey                           string                        `json:"gifs/api-key"`
 	TestNetworksEnabled                 bool                          `json:"test-networks-enabled?,omitempty"`
 	ProfileMigrationNeeded              bool                          `json:"profile-migration-needed,omitempty"`
-	IsSepoliaEnabled                    bool                          `json:"is-sepolia-enabled?,omitempty"`
+	IsGoerliEnabled                     bool                          `json:"is-goerli-enabled?,omitempty"`
 	TokenGroupByCommunity               bool                          `json:"token-group-by-community?,omitempty"`
 	ShowCommunityAssetWhenSendingTokens bool                          `json:"show-community-asset-when-sending-tokens?,omitempty"`
 	DisplayAssetsBelowBalance           bool                          `json:"display-assets-below-balance?,omitempty"`
@@ -206,6 +222,7 @@ type Settings struct {
 	CollectibleGroupByCollection        bool                          `json:"collectible-group-by-collection?,omitempty"`
 	CollectibleGroupByCommunity         bool                          `json:"collectible-group-by-community?,omitempty"`
 	URLUnfurlingMode                    URLUnfurlingModeType          `json:"url-unfurling-mode,omitempty"`
+	PeerSyncingEnabled                  bool                          `json:"peer-syncing-enabled?,omitempty"`
 }
 
 func (s Settings) MarshalJSON() ([]byte, error) {
@@ -223,4 +240,11 @@ func (s Settings) MarshalJSON() ([]byte, error) {
 func (s Settings) IsEmpty() bool {
 	empty := reflect.Zero(reflect.TypeOf(s)).Interface()
 	return reflect.DeepEqual(s, empty)
+}
+
+func (s Settings) GetFleet() string {
+	if s.Fleet == nil {
+		return params.FleetUndefined
+	}
+	return *s.Fleet
 }

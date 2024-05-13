@@ -327,6 +327,16 @@ func (m *Messenger) HandleSyncRawMessages(rawMessages []*protobuf.RawMessage) er
 			if err != nil {
 				return err
 			}
+		case protobuf.ApplicationMetadataMessage_SYNC_PROFILE_SHOWCASE_PREFERENCES:
+			var message protobuf.SyncProfileShowcasePreferences
+			err := proto.Unmarshal(rawMessage.GetPayload(), &message)
+			if err != nil {
+				return err
+			}
+			_, err = m.saveProfileShowcasePreferencesProto(&message, false)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	response, err := m.saveDataAndPrepareResponse(state)

@@ -3,6 +3,7 @@ package bridge
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math"
 	"math/big"
 	"strings"
@@ -215,6 +216,28 @@ func (h *HopBridge) EstimateGas(fromNetwork *params.Network, toNetwork *params.N
 	return uint64(increasedEstimation), nil
 }
 
+func (h *HopBridge) BuildTx(fromNetwork, toNetwork *params.Network, fromAddress common.Address, toAddress common.Address, token *token.Token, amountIn *big.Int, bonderFee *big.Int) (*ethTypes.Transaction, error) {
+	toAddr := types.Address(toAddress)
+	sendArgs := &TransactionBridge{
+		HopTx: &HopTxArgs{
+			SendTxArgs: transactions.SendTxArgs{
+				From:  types.Address(fromAddress),
+				To:    &toAddr,
+				Value: (*hexutil.Big)(amountIn),
+				Data:  types.HexBytes("0x0"),
+			},
+			Symbol:    token.Symbol,
+			Recipient: toAddress,
+			Amount:    (*hexutil.Big)(amountIn),
+			BonderFee: (*hexutil.Big)(bonderFee),
+			ChainID:   toNetwork.ChainID,
+		},
+		ChainID: fromNetwork.ChainID,
+	}
+
+	return h.BuildTransaction(sendArgs)
+}
+
 func (h *HopBridge) GetContractAddress(network *params.Network, token *token.Token) *common.Address {
 	var address common.Address
 	if network.Layer == 1 {
@@ -229,10 +252,10 @@ func (h *HopBridge) GetContractAddress(network *params.Network, token *token.Tok
 func (h *HopBridge) sendOrBuild(sendArgs *TransactionBridge, signerFn bind.SignerFn) (tx *ethTypes.Transaction, err error) {
 	fromNetwork := h.contractMaker.RPCClient.NetworkManager.Find(sendArgs.ChainID)
 	if fromNetwork == nil {
-		return tx, err
+		return tx, fmt.Errorf("ChainID not supported %d", sendArgs.ChainID)
 	}
 
-	nonce, err := h.transactor.NextNonce(h.contractMaker.RPCClient, sendArgs.ChainID, sendArgs.HopTx.From)
+	nonce, err := h.transactor.NextNonce(h.contractMaker.RPCClient, fromNetwork.ChainID, sendArgs.HopTx.From)
 	if err != nil {
 		return tx, err
 	}
@@ -292,22 +315,35 @@ func (h *HopBridge) swapAndSend(chainID uint64, hopArgs *HopTxArgs, signerFn bin
 		return tx, err
 	}
 
+	toNetwork := h.contractMaker.RPCClient.NetworkManager.Find(hopArgs.ChainID)
+	if toNetwork == nil {
+		return tx, err
+	}
+
 	txOpts := hopArgs.ToTransactOpts(signerFn)
 	if token.IsNative() {
 		txOpts.Value = (*big.Int)(hopArgs.Amount)
 	}
 	now := time.Now()
 	deadline := big.NewInt(now.Unix() + 604800)
+	amountOutMin := big.NewInt(0)
+	destinationDeadline := big.NewInt(now.Unix() + 604800)
+	destinationAmountOutMin := big.NewInt(0)
+
+	if toNetwork.Layer == 1 {
+		destinationDeadline = big.NewInt(0)
+	}
+
 	tx, err = ammWrapper.SwapAndSend(
 		txOpts,
-		big.NewInt(int64(hopArgs.ChainID)),
+		new(big.Int).SetUint64(hopArgs.ChainID),
 		hopArgs.Recipient,
 		hopArgs.Amount.ToInt(),
 		hopArgs.BonderFee.ToInt(),
-		big.NewInt(0),
+		amountOutMin,
 		deadline,
-		big.NewInt(0),
-		deadline,
+		destinationAmountOutMin,
+		destinationDeadline,
 	)
 
 	return tx, err

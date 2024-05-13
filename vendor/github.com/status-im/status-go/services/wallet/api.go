@@ -316,6 +316,10 @@ func (api *API) FetchBalancesByOwnerAndContractAddress(ctx context.Context, chai
 	return api.s.collectiblesManager.FetchBalancesByOwnerAndContractAddress(ctx, chainID, ownerAddress, contractAddresses)
 }
 
+func (api *API) GetCollectibleOwnership(id thirdparty.CollectibleUniqueID) ([]thirdparty.AccountBalance, error) {
+	return api.s.collectiblesManager.GetCollectibleOwnership(id)
+}
+
 func (api *API) RefetchOwnedCollectibles() error {
 	log.Debug("wallet.api.RefetchOwnedCollectibles")
 
@@ -340,6 +344,16 @@ func (api *API) GetCollectiblesByUniqueIDAsync(requestID int32, uniqueIDs []thir
 func (api *API) GetCollectibleOwnersByContractAddress(ctx context.Context, chainID wcommon.ChainID, contractAddress common.Address) (*thirdparty.CollectibleContractOwnership, error) {
 	log.Debug("call to GetCollectibleOwnersByContractAddress")
 	return api.s.collectiblesManager.FetchCollectibleOwnersByContractAddress(ctx, chainID, contractAddress)
+}
+
+func (api *API) SearchCollectibles(ctx context.Context, chainID wcommon.ChainID, text string, cursor string, limit int, providerID string) (*thirdparty.FullCollectibleDataContainer, error) {
+	log.Debug("call to SearchCollectibles")
+	return api.s.collectiblesManager.SearchCollectibles(ctx, chainID, text, cursor, limit, providerID)
+}
+
+func (api *API) SearchCollections(ctx context.Context, chainID wcommon.ChainID, text string, cursor string, limit int, providerID string) (*thirdparty.CollectionDataContainer, error) {
+	log.Debug("call to SearchCollections")
+	return api.s.collectiblesManager.SearchCollections(ctx, chainID, text, cursor, limit, providerID)
 }
 
 /*
@@ -567,7 +581,7 @@ func (api *API) ProceedWithTransactionsSignatures(ctx context.Context, signature
 	return api.s.transactionManager.ProceedWithTransactionsSignatures(ctx, signatures)
 }
 
-func (api *API) GetMultiTransactions(ctx context.Context, transactionIDs []transfer.MultiTransactionIDType) ([]*transfer.MultiTransaction, error) {
+func (api *API) GetMultiTransactions(ctx context.Context, transactionIDs []wcommon.MultiTransactionIDType) ([]*transfer.MultiTransaction, error) {
 	log.Debug("wallet.api.GetMultiTransactions", "IDs.len", len(transactionIDs))
 	return api.s.transactionManager.GetMultiTransactions(ctx, transactionIDs)
 }
@@ -582,6 +596,7 @@ func (api *API) FetchAllCurrencyFormats() (currency.FormatPerSymbol, error) {
 	return api.s.currency.FetchAllCurrencyFormats()
 }
 
+// @deprecated replaced by session APIs; see #12120
 func (api *API) FilterActivityAsync(requestID int32, addresses []common.Address, allAddresses bool, chainIDs []wcommon.ChainID, filter activity.Filter, offset int, limit int) error {
 	log.Debug("wallet.api.FilterActivityAsync", "requestID", requestID, "addr.count", len(addresses), "allAddresses", allAddresses, "chainIDs.count", len(chainIDs), "offset", offset, "limit", limit)
 
@@ -589,6 +604,7 @@ func (api *API) FilterActivityAsync(requestID int32, addresses []common.Address,
 	return nil
 }
 
+// @deprecated replaced by session APIs; see #12120
 func (api *API) CancelActivityFilterTask(requestID int32) error {
 	log.Debug("wallet.api.CancelActivityFilterTask", "requestID", requestID)
 
@@ -600,6 +616,12 @@ func (api *API) StartActivityFilterSession(addresses []common.Address, allAddres
 	log.Debug("wallet.api.StartActivityFilterSession", "addr.count", len(addresses), "allAddresses", allAddresses, "chainIDs.count", len(chainIDs), "firstPageCount", firstPageCount)
 
 	return api.s.activity.StartFilterSession(addresses, allAddresses, chainIDs, filter, firstPageCount), nil
+}
+
+func (api *API) UpdateActivityFilterForSession(sessionID activity.SessionID, filter activity.Filter, firstPageCount int) error {
+	log.Debug("wallet.api.UpdateActivityFilterForSession", "sessionID", sessionID, "firstPageCount", firstPageCount)
+
+	return api.s.activity.UpdateFilterForSession(sessionID, filter, firstPageCount)
 }
 
 func (api *API) ResetActivityFilterSession(id activity.SessionID, firstPageCount int) error {

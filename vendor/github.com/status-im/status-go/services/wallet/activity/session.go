@@ -4,8 +4,7 @@ import (
 	"context"
 	"errors"
 	"strconv"
-
-	"golang.org/x/exp/slices"
+	"time"
 
 	eth "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/event"
@@ -22,14 +21,17 @@ const nilStr = "nil"
 type EntryIdentity struct {
 	payloadType PayloadType
 	transaction *transfer.TransactionIdentity
-	id          transfer.MultiTransactionIDType
+	id          common.MultiTransactionIDType
 }
 
-// func (e EntryIdentity) same(a EntryIdentity) bool {
-// 	return a.payloadType == e.payloadType && (a.transaction == e.transaction && (a.transaction == nil || (a.transaction.ChainID == e.transaction.ChainID &&
-// 		a.transaction.Hash == e.transaction.Hash &&
-// 		a.transaction.Address == e.transaction.Address))) && a.id == e.id
-// }
+func (e EntryIdentity) same(a EntryIdentity) bool {
+	return a.payloadType == e.payloadType &&
+		((a.transaction == nil && e.transaction == nil) ||
+			(a.transaction.ChainID == e.transaction.ChainID &&
+				a.transaction.Hash == e.transaction.Hash &&
+				a.transaction.Address == e.transaction.Address)) &&
+		a.id == e.id
+}
 
 func (e EntryIdentity) key() string {
 	txID := nilStr
@@ -41,6 +43,13 @@ func (e EntryIdentity) key() string {
 
 type SessionID int32
 
+// Session stores state related to a filter session
+// The user happy flow is:
+// 1. StartFilterSession to get a new SessionID and client be notified by the current state
+// 2. GetMoreForFilterSession anytime to get more entries after the first page
+// 3. UpdateFilterForSession to update the filter and get the new state or clean the filter and get the newer entries
+// 4. ResetFilterSession in case client receives SessionUpdate with HasNewOnTop = true to get the latest state
+// 5. StopFilterSession to stop the session when no used (user changed from activity screens or changed addresses and chains)
 type Session struct {
 	id SessionID
 
@@ -53,15 +62,22 @@ type Session struct {
 
 	// model is a mirror of the data model presentation has (sent by EventActivityFilteringDone)
 	model []EntryIdentity
+	// noFilterModel is a mirror of the data model presentation has when filter is empty
+	noFilterModel map[string]EntryIdentity
 	// new holds the new entries until user requests update by calling ResetFilterSession
 	new []EntryIdentity
 }
 
+type EntryUpdate struct {
+	Pos   int    `json:"pos"`
+	Entry *Entry `json:"entry"`
+}
+
 // SessionUpdate payload for EventActivitySessionUpdated
 type SessionUpdate struct {
-	HasNewEntries *bool           `json:"hasNewEntries,omitempty"`
-	Removed       []EntryIdentity `json:"removed,omitempty"`
-	Updated       []Entry         `json:"updated,omitempty"`
+	HasNewOnTop *bool           `json:"hasNewOnTop,omitempty"`
+	New         []*EntryUpdate  `json:"new,omitempty"`
+	Removed     []EntryIdentity `json:"removed,omitempty"`
 }
 
 type fullFilterParams struct {
@@ -99,21 +115,44 @@ func (s *Service) internalFilter(f fullFilterParams, offset int, count int, proc
 	})
 }
 
+// mirrorIdentities for update use
+func mirrorIdentities(entries []Entry) []EntryIdentity {
+	model := make([]EntryIdentity, 0, len(entries))
+	for _, a := range entries {
+		model = append(model, EntryIdentity{
+			payloadType: a.payloadType,
+			transaction: a.transaction,
+			id:          a.id,
+		})
+	}
+	return model
+}
+
+func (s *Service) internalFilterForSession(session *Session, firstPageCount int) {
+	s.internalFilter(
+		fullFilterParams{
+			sessionID:    session.id,
+			addresses:    session.addresses,
+			allAddresses: session.allAddresses,
+			chainIDs:     session.chainIDs,
+			filter:       session.filter,
+		},
+		0,
+		firstPageCount,
+		func(entries []Entry) (offset int) {
+			s.sessionsRWMutex.Lock()
+			defer s.sessionsRWMutex.Unlock()
+
+			session.model = mirrorIdentities(entries)
+
+			return 0
+		},
+	)
+}
+
 func (s *Service) StartFilterSession(addresses []eth.Address, allAddresses bool, chainIDs []common.ChainID, filter Filter, firstPageCount int) SessionID {
 	sessionID := s.nextSessionID()
 
-	// TODO #12120: sort rest of the filters
-	// TODO #12120: prettyfy this
-	slices.SortFunc(addresses, func(a eth.Address, b eth.Address) bool {
-		return a.Hex() < b.Hex()
-	})
-	slices.Sort(chainIDs)
-	slices.SortFunc(filter.CounterpartyAddresses, func(a eth.Address, b eth.Address) bool {
-		return a.Hex() < b.Hex()
-	})
-
-	s.sessionsRWMutex.Lock()
-	subscribeToEvents := len(s.sessions) == 0
 	session := &Session{
 		id: sessionID,
 
@@ -124,6 +163,10 @@ func (s *Service) StartFilterSession(addresses []eth.Address, allAddresses bool,
 
 		model: make([]EntryIdentity, 0, firstPageCount),
 	}
+
+	s.sessionsRWMutex.Lock()
+	subscribeToEvents := len(s.sessions) == 0
+
 	s.sessions[sessionID] = session
 
 	if subscribeToEvents {
@@ -131,36 +174,81 @@ func (s *Service) StartFilterSession(addresses []eth.Address, allAddresses bool,
 	}
 	s.sessionsRWMutex.Unlock()
 
-	s.internalFilter(
-		fullFilterParams{
-			sessionID:    sessionID,
-			addresses:    addresses,
-			allAddresses: allAddresses,
-			chainIDs:     chainIDs,
-			filter:       filter,
-		},
-		0,
-		firstPageCount,
-		func(entries []Entry) (offset int) {
-			// Mirror identities for update use
-			s.sessionsRWMutex.Lock()
-			defer s.sessionsRWMutex.Unlock()
-
-			session.model = make([]EntryIdentity, 0, len(entries))
-			for _, a := range entries {
-				session.model = append(session.model, EntryIdentity{
-					payloadType: a.payloadType,
-					transaction: a.transaction,
-					id:          a.id,
-				})
-			}
-			return 0
-		},
-	)
+	s.internalFilterForSession(session, firstPageCount)
 
 	return sessionID
 }
 
+// UpdateFilterForSession is to be called for updating the filter of a specific session
+// After calling this method to set a filter all the incoming changes will be reported with
+// Entry.isNew = true when filter is reset to empty
+func (s *Service) UpdateFilterForSession(id SessionID, filter Filter, firstPageCount int) error {
+	s.sessionsRWMutex.RLock()
+	session, found := s.sessions[id]
+	if !found {
+		s.sessionsRWMutex.RUnlock()
+		return errors.New("session not found")
+	}
+
+	prevFilterEmpty := session.filter.IsEmpty()
+	newFilerEmpty := filter.IsEmpty()
+	s.sessionsRWMutex.RUnlock()
+
+	s.sessionsRWMutex.Lock()
+
+	session.new = nil
+
+	session.filter = filter
+
+	if prevFilterEmpty && !newFilerEmpty {
+		// Session is moving from empty to non-empty filter
+		// Take a snapshot of the current model
+		session.noFilterModel = entryIdsToMap(session.model)
+
+		session.model = make([]EntryIdentity, 0, firstPageCount)
+
+		// In this case there is nothing to flag so we request the first page
+		s.internalFilterForSession(session, firstPageCount)
+	} else if !prevFilterEmpty && newFilerEmpty {
+		// Session is moving from non-empty to empty filter
+		// In this case we need to flag all the new entries that are not in the noFilterModel
+		s.internalFilter(
+			fullFilterParams{
+				sessionID:    session.id,
+				addresses:    session.addresses,
+				allAddresses: session.allAddresses,
+				chainIDs:     session.chainIDs,
+				filter:       session.filter,
+			},
+			0,
+			firstPageCount,
+			func(entries []Entry) (offset int) {
+				s.sessionsRWMutex.Lock()
+				defer s.sessionsRWMutex.Unlock()
+
+				// Mark new entries
+				for i, a := range entries {
+					_, found := session.noFilterModel[a.getIdentity().key()]
+					entries[i].isNew = !found
+				}
+
+				// Mirror identities for update use
+				session.model = mirrorIdentities(entries)
+				session.noFilterModel = nil
+				return 0
+			},
+		)
+	} else {
+		// Else act as a normal filter update
+		s.internalFilterForSession(session, firstPageCount)
+	}
+	s.sessionsRWMutex.Unlock()
+
+	return nil
+}
+
+// ResetFilterSession is to be called when SessionUpdate.HasNewOnTop == true to
+// update client with the latest state including new on top entries
 func (s *Service) ResetFilterSession(id SessionID, firstPageCount int) error {
 	session, found := s.sessions[id]
 	if !found {
@@ -189,15 +277,16 @@ func (s *Service) ResetFilterSession(id SessionID, firstPageCount int) error {
 			}
 			session.new = nil
 
-			// Mirror client identities for checking updates
-			session.model = make([]EntryIdentity, 0, len(entries))
-			for _, a := range entries {
-				session.model = append(session.model, EntryIdentity{
-					payloadType: a.payloadType,
-					transaction: a.transaction,
-					id:          a.id,
-				})
+			if session.noFilterModel != nil {
+				// Add reported new entries to mark them as seen
+				for _, a := range newMap {
+					session.noFilterModel[a.key()] = a
+				}
 			}
+
+			// Mirror client identities for checking updates
+			session.model = mirrorIdentities(entries)
+
 			return 0
 		},
 	)
@@ -248,55 +337,91 @@ func (s *Service) subscribeToEvents() {
 	go s.processEvents()
 }
 
-// TODO #12120: check that it exits on channel close
+// processEvents runs only if more than one session is active
 func (s *Service) processEvents() {
+	eventCount := 0
+	lastUpdate := time.Now().UnixMilli()
 	for event := range s.ch {
-		// TODO #12120: process rest of the events
-		// TODO #12120: debounce for 1s
-		if event.Type == transactions.EventPendingTransactionUpdate {
-			for sessionID := range s.sessions {
-				session := s.sessions[sessionID]
-				activities, err := getActivityEntries(context.Background(), s.getDeps(), session.addresses, session.allAddresses, session.chainIDs, session.filter, 0, len(session.model))
-				if err != nil {
-					log.Error("Error getting activity entries", "error", err)
-					continue
-				}
-
-				s.sessionsRWMutex.RLock()
-				allData := append(session.model, session.new...)
-				new, _ /*removed*/ := findUpdates(allData, activities)
-				s.sessionsRWMutex.RUnlock()
-
-				s.sessionsRWMutex.Lock()
-				lastProcessed := -1
-				for i, idRes := range new {
-					if i-lastProcessed > 1 {
-						// The events are not continuous, therefore these are not on top but mixed between existing entries
-						break
-					}
-					lastProcessed = idRes.newPos
-					// TODO #12120: make it more generic to follow the detection function
-					// TODO #12120: hold the first few and only send mixed and removed
-					if session.new == nil {
-						session.new = make([]EntryIdentity, 0, len(new))
-					}
-					session.new = append(session.new, idRes.id)
-				}
-
-				// TODO #12120: mixed
-
-				s.sessionsRWMutex.Unlock()
-
-				go notify(s.eventFeed, sessionID, len(session.new) > 0)
-			}
+		if event.Type == transactions.EventPendingTransactionUpdate ||
+			event.Type == transactions.EventPendingTransactionStatusChanged ||
+			event.Type == transfer.EventNewTransfers {
+			eventCount++
+		}
+		// debounce events updates
+		if eventCount > 0 &&
+			(time.Duration(time.Now().UnixMilli()-lastUpdate)*time.Millisecond) >= s.debounceDuration {
+			s.detectNew(eventCount)
+			eventCount = 0
+			lastUpdate = time.Now().UnixMilli()
 		}
 	}
 }
 
-func notify(eventFeed *event.Feed, id SessionID, hasNewEntries bool) {
-	payload := SessionUpdate{}
-	if hasNewEntries {
-		payload.HasNewEntries = &hasNewEntries
+func (s *Service) detectNew(changeCount int) {
+	for sessionID := range s.sessions {
+		session := s.sessions[sessionID]
+
+		fetchLen := len(session.model) + changeCount
+		activities, err := getActivityEntries(context.Background(), s.getDeps(), session.addresses, session.allAddresses, session.chainIDs, session.filter, 0, fetchLen)
+		if err != nil {
+			log.Error("Error getting activity entries", "error", err)
+			continue
+		}
+
+		s.sessionsRWMutex.RLock()
+		allData := append(session.new, session.model...)
+		new, _ /*removed*/ := findUpdates(allData, activities)
+		s.sessionsRWMutex.RUnlock()
+
+		s.sessionsRWMutex.Lock()
+		lastProcessed := -1
+		onTop := true
+		var mixed []*EntryUpdate
+		for i, idRes := range new {
+			// Detect on top
+			if onTop {
+				// mixedIdentityResult.newPos includes session.new, therefore compensate for it
+				if ((idRes.newPos - len(session.new)) - lastProcessed) > 1 {
+					// From now on the events are not on top and continuous but mixed between existing entries
+					onTop = false
+					mixed = make([]*EntryUpdate, 0, len(new)-i)
+				}
+				lastProcessed = idRes.newPos
+			}
+
+			if onTop {
+				if session.new == nil {
+					session.new = make([]EntryIdentity, 0, len(new))
+				}
+				session.new = append(session.new, idRes.id)
+			} else {
+				modelPos := idRes.newPos - len(session.new)
+				entry := activities[idRes.newPos]
+				entry.isNew = true
+				mixed = append(mixed, &EntryUpdate{
+					Pos:   modelPos,
+					Entry: &entry,
+				})
+				// Insert in session model at modelPos index
+				session.model = append(session.model[:modelPos], append([]EntryIdentity{{payloadType: entry.payloadType, transaction: entry.transaction, id: entry.id}}, session.model[modelPos:]...)...)
+			}
+		}
+
+		s.sessionsRWMutex.Unlock()
+
+		if len(session.new) > 0 || len(mixed) > 0 {
+			go notify(s.eventFeed, sessionID, len(session.new) > 0, mixed)
+		}
+	}
+}
+
+func notify(eventFeed *event.Feed, id SessionID, hasNewOnTop bool, mixed []*EntryUpdate) {
+	payload := SessionUpdate{
+		New: mixed,
+	}
+
+	if hasNewOnTop {
+		payload.HasNewOnTop = &hasNewOnTop
 	}
 
 	sendResponseEvent(eventFeed, (*int32)(&id), EventActivitySessionUpdated, payload, nil)
@@ -305,6 +430,8 @@ func notify(eventFeed *event.Feed, id SessionID, hasNewEntries bool) {
 // unsubscribeFromEvents should be called with sessionsRWMutex locked for writing
 func (s *Service) unsubscribeFromEvents() {
 	s.subscriptions.Unsubscribe()
+	close(s.ch)
+	s.ch = nil
 	s.subscriptions = nil
 }
 
@@ -369,6 +496,9 @@ func entriesToMap(entries []Entry) map[string]Entry {
 //
 // implementation assumes the order of each identity doesn't change from old state (identities) and new state (updated); we have either add or removed.
 func findUpdates(identities []EntryIdentity, updated []Entry) (new []mixedIdentityResult, removed []EntryIdentity) {
+	if len(updated) == 0 {
+		return
+	}
 
 	idsMap := entryIdsToMap(identities)
 	updatedMap := entriesToMap(updated)
@@ -380,6 +510,10 @@ func findUpdates(identities []EntryIdentity, updated []Entry) (new []mixedIdenti
 				newPos: newIndex,
 				id:     id,
 			})
+		}
+
+		if len(identities) > 0 && entry.getIdentity().same(identities[len(identities)-1]) {
+			break
 		}
 	}
 

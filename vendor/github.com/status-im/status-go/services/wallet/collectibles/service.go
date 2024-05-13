@@ -61,6 +61,11 @@ const (
 	FetchTypeFetchIfCacheOld
 )
 
+type TxHashData struct {
+	Hash common.Hash
+	TxID common.Hash
+}
+
 type FetchCriteria struct {
 	FetchType          FetchType `json:"fetch_type"`
 	MaxCacheAgeSeconds int64     `json:"max_cache_age_seconds"`
@@ -415,8 +420,8 @@ func (s *Service) onOwnedCollectiblesChange(ownedCollectiblesChange OwnedCollect
 	switch ownedCollectiblesChange.changeType {
 	case OwnedCollectiblesChangeTypeAdded, OwnedCollectiblesChangeTypeUpdated:
 		// For recently added/updated collectibles, try to find a matching transfer
-		s.lookupTransferForCollectibles(ownedCollectiblesChange.ownedCollectibles)
-		s.notifyCommunityCollectiblesReceived(ownedCollectiblesChange.ownedCollectibles)
+		hashMap := s.lookupTransferForCollectibles(ownedCollectiblesChange.ownedCollectibles)
+		s.notifyCommunityCollectiblesReceived(ownedCollectiblesChange.ownedCollectibles, hashMap)
 	}
 }
 
@@ -437,7 +442,7 @@ func (s *Service) onCollectiblesTransfer(account common.Address, chainID walletC
 	}
 }
 
-func (s *Service) lookupTransferForCollectibles(ownedCollectibles OwnedCollectibles) {
+func (s *Service) lookupTransferForCollectibles(ownedCollectibles OwnedCollectibles) map[thirdparty.CollectibleUniqueID]TxHashData {
 	// There are some limitations to this approach:
 	// - Collectibles ownership and transfers are not in sync and might represent the state at different moments.
 	// - We have no way of knowing if the latest collectible transfer we've detected is actually the latest one, so the timestamp we
@@ -445,6 +450,9 @@ func (s *Service) lookupTransferForCollectibles(ownedCollectibles OwnedCollectib
 	// - There might be detected transfers that are temporarily not reflected in the collectibles ownership.
 	// - For ERC721 tokens we should only look for incoming transfers. For ERC1155 tokens we should look for both incoming and outgoing transfers.
 	// We need to get the contract standard for each collectible to know which approach to take.
+
+	result := make(map[thirdparty.CollectibleUniqueID]TxHashData)
+
 	for _, id := range ownedCollectibles.ids {
 		transfer, err := s.transferDB.GetLatestCollectibleTransfer(ownedCollectibles.account, id)
 		if err != nil {
@@ -452,16 +460,26 @@ func (s *Service) lookupTransferForCollectibles(ownedCollectibles OwnedCollectib
 			continue
 		}
 		if transfer != nil {
+			result[id] = TxHashData{
+				Hash: transfer.Transaction.Hash(),
+				TxID: transfer.ID,
+			}
 			err = s.manager.SetCollectibleTransferID(ownedCollectibles.account, id, transfer.ID, false)
 			if err != nil {
 				log.Error("Error setting transfer ID for collectible", "error", err)
 			}
 		}
 	}
+	return result
 }
 
-func (s *Service) notifyCommunityCollectiblesReceived(ownedCollectibles OwnedCollectibles) {
+func (s *Service) notifyCommunityCollectiblesReceived(ownedCollectibles OwnedCollectibles, hashMap map[thirdparty.CollectibleUniqueID]TxHashData) {
 	ctx := context.Background()
+
+	firstCollectibles, err := s.ownershipDB.GetIsFirstOfCollection(ownedCollectibles.account, ownedCollectibles.ids)
+	if err != nil {
+		return
+	}
 
 	collectiblesData, err := s.manager.FetchAssetsByCollectibleUniqueID(ctx, ownedCollectibles.ids, false)
 	if err != nil {
@@ -475,7 +493,47 @@ func (s *Service) notifyCommunityCollectiblesReceived(ownedCollectibles OwnedCol
 		return
 	}
 
-	encodedMessage, err := json.Marshal(communityCollectibles)
+	type CollectibleGroup struct {
+		contractID thirdparty.ContractID
+		txHash     string
+	}
+
+	groups := make(map[CollectibleGroup]Collectible)
+	for _, collectible := range communityCollectibles {
+		txHash := ""
+		for key, value := range hashMap {
+			if key.Same(&collectible.ID) {
+				collectible.LatestTxHash = value.TxID.Hex()
+				txHash = value.Hash.Hex()
+				break
+			}
+		}
+
+		for id, value := range firstCollectibles {
+			if value && id.Same(&collectible.ID) {
+				collectible.IsFirst = true
+				break
+			}
+		}
+
+		group := CollectibleGroup{
+			contractID: collectible.ID.ContractID,
+			txHash:     txHash,
+		}
+		_, ok := groups[group]
+		if !ok {
+			collectible.ReceivedAmount = float64(0)
+		}
+		collectible.ReceivedAmount = collectible.ReceivedAmount + 1
+		groups[group] = collectible
+	}
+
+	groupedCommunityCollectibles := make([]Collectible, 0, len(groups))
+	for _, collectible := range groups {
+		groupedCommunityCollectibles = append(groupedCommunityCollectibles, collectible)
+	}
+
+	encodedMessage, err := json.Marshal(groupedCommunityCollectibles)
 	if err != nil {
 		return
 	}

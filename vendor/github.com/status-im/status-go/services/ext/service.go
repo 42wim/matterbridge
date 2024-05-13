@@ -39,7 +39,6 @@ import (
 	"github.com/status-im/status-go/protocol"
 	"github.com/status-im/status-go/protocol/anonmetrics"
 	"github.com/status-im/status-go/protocol/common"
-	"github.com/status-im/status-go/protocol/common/shard"
 	"github.com/status-im/status-go/protocol/communities"
 	"github.com/status-im/status-go/protocol/communities/token"
 	"github.com/status-im/status-go/protocol/protobuf"
@@ -53,6 +52,7 @@ import (
 	"github.com/status-im/status-go/services/ext/mailservers"
 	mailserversDB "github.com/status-im/status-go/services/mailservers"
 	"github.com/status-im/status-go/services/wallet"
+	"github.com/status-im/status-go/services/wallet/collectibles"
 	w_common "github.com/status-im/status-go/services/wallet/common"
 	"github.com/status-im/status-go/services/wallet/thirdparty"
 	"github.com/status-im/status-go/wakuv2"
@@ -534,7 +534,30 @@ func (s *Service) GetCommunityID(tokenURI string) string {
 	return ""
 }
 
-func (s *Service) FillCollectibleMetadata(collectible *thirdparty.FullCollectibleData) error {
+func (s *Service) FillCollectiblesMetadata(communityID string, cs []*thirdparty.FullCollectibleData) (bool, error) {
+	if s.messenger == nil {
+		return false, fmt.Errorf("messenger not ready")
+	}
+
+	community, err := s.fetchCommunityInfoForCollectibles(communityID, collectibles.IDsFromAssets(cs))
+	if err != nil {
+		return false, err
+	}
+	if community == nil {
+		return false, nil
+	}
+
+	for _, collectible := range cs {
+		err := s.FillCollectibleMetadata(community, collectible)
+		if err != nil {
+			return true, err
+		}
+	}
+
+	return true, nil
+}
+
+func (s *Service) FillCollectibleMetadata(community *communities.Community, collectible *thirdparty.FullCollectibleData) error {
 	if s.messenger == nil {
 		return fmt.Errorf("messenger not ready")
 	}
@@ -548,18 +571,6 @@ func (s *Service) FillCollectibleMetadata(collectible *thirdparty.FullCollectibl
 
 	if communityID == "" {
 		return fmt.Errorf("invalid communityID")
-	}
-
-	// FetchCommunityInfo should have been previously called once to ensure
-	// that the latest version of the CommunityDescription is available in the DB
-	community, err := s.fetchCommunity(communityID, false)
-
-	if err != nil {
-		return err
-	}
-
-	if community == nil {
-		return nil
 	}
 
 	tokenMetadata, err := s.fetchCommunityCollectibleMetadata(community, id.ContractID)
@@ -636,45 +647,82 @@ func communityToInfo(community *communities.Community) *thirdparty.CommunityInfo
 	}
 }
 
-func (s *Service) FetchCommunityInfo(communityID string) (*thirdparty.CommunityInfo, error) {
-	community, err := s.fetchCommunity(communityID, true)
+func (s *Service) fetchCommunityFromStoreNodes(communityID string) (*communities.Community, error) {
+	community, err := s.messenger.FetchCommunity(&protocol.FetchCommunityRequest{
+		CommunityKey:    communityID,
+		TryDatabase:     false,
+		WaitForResponse: true,
+	})
 	if err != nil {
 		return nil, err
 	}
-
-	return communityToInfo(community), nil
+	return community, nil
 }
 
-func (s *Service) fetchCommunity(communityID string, fetchLatest bool) (*communities.Community, error) {
+func (s *Service) GetCommunityInfoFromDB(communityID string) (*thirdparty.CommunityInfo, error) {
+	community, err := s.messenger.FindCommunityInfoFromDB(communityID)
+	return communityToInfo(community), err
+}
+
+// Fetch latest community from store nodes.
+func (s *Service) FetchCommunityInfo(communityID string) (*thirdparty.CommunityInfo, error) {
 	if s.messenger == nil {
 		return nil, fmt.Errorf("messenger not ready")
 	}
 
-	// Try to fetch metadata from Messenger communities
+	community, err := s.messenger.FindCommunityInfoFromDB(communityID)
+	if err != nil && err != communities.ErrOrgNotFound {
+		return nil, err
+	}
 
-	// TODO: we need the shard information in the collectible to be able to retrieve info for
-	// communities that have specific shards
-
-	if fetchLatest {
-		// Try to fetch the latest version of the Community
-		var shard *shard.Shard = nil // TODO: build this with info from token
-		// NOTE: The community returned by this function will be nil if
-		// the version we have in the DB is the latest available.
-		_, err := s.messenger.FetchCommunity(&protocol.FetchCommunityRequest{
-			CommunityKey:    communityID,
-			Shard:           shard,
-			TryDatabase:     false,
-			WaitForResponse: true,
-		})
+	// Fetch latest version from store nodes
+	if community == nil || !community.IsControlNode() {
+		community, err = s.fetchCommunityFromStoreNodes(communityID)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	// Get the latest successfully fetched version of the Community
+	return communityToInfo(community), nil
+}
+
+// Fetch latest community from store nodes only if any collectibles data is missing.
+func (s *Service) fetchCommunityInfoForCollectibles(communityID string, ids []thirdparty.CollectibleUniqueID) (*communities.Community, error) {
 	community, err := s.messenger.FindCommunityInfoFromDB(communityID)
-	if err != nil {
+	if err != nil && err != communities.ErrOrgNotFound {
 		return nil, err
+	}
+
+	if community == nil {
+		return s.fetchCommunityFromStoreNodes(communityID)
+	}
+
+	if community.IsControlNode() {
+		return community, nil
+	}
+
+	contractIDs := func() map[string]thirdparty.ContractID {
+		result := map[string]thirdparty.ContractID{}
+		for _, id := range ids {
+			result[id.HashKey()] = id.ContractID
+		}
+		return result
+	}()
+
+	hasAllMetadata := true
+	for _, contractID := range contractIDs {
+		tokenMetadata, err := s.fetchCommunityCollectibleMetadata(community, contractID)
+		if err != nil {
+			return nil, err
+		}
+		if tokenMetadata == nil {
+			hasAllMetadata = false
+			break
+		}
+	}
+
+	if !hasAllMetadata {
+		return s.fetchCommunityFromStoreNodes(communityID)
 	}
 
 	return community, nil

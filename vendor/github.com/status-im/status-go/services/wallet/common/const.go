@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+type MultiTransactionIDType int64
+
+const (
+	NoMultiTransactionID = MultiTransactionIDType(0)
+)
+
 type ChainID uint64
 
 const (

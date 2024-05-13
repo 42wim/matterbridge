@@ -203,6 +203,12 @@ func scanCollectiblesDataRow(row *sql.Row) (*thirdparty.CollectibleData, error) 
 
 func (o *CollectibleDataDB) GetIDsNotInDB(ids []thirdparty.CollectibleUniqueID) ([]thirdparty.CollectibleUniqueID, error) {
 	ret := make([]thirdparty.CollectibleUniqueID, 0, len(ids))
+	idMap := make(map[string]thirdparty.CollectibleUniqueID, len(ids))
+
+	// Ensure we don't have duplicates
+	for _, id := range ids {
+		idMap[id.HashKey()] = id
+	}
 
 	exists, err := o.db.Prepare(`SELECT EXISTS (
 			SELECT 1 FROM collectible_data_cache
@@ -212,7 +218,7 @@ func (o *CollectibleDataDB) GetIDsNotInDB(ids []thirdparty.CollectibleUniqueID) 
 		return nil, err
 	}
 
-	for _, id := range ids {
+	for _, id := range idMap {
 		row := exists.QueryRow(
 			id.ContractID.ChainID,
 			id.ContractID.Address,

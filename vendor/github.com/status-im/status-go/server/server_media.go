@@ -52,6 +52,7 @@ func NewMediaServer(db *sql.DB, downloader *ipfs.Downloader, multiaccountsDB *mu
 		imagesPath:                     handleImage(s.db, s.logger),
 		ipfsPath:                       handleIPFS(s.downloader, s.logger),
 		LinkPreviewThumbnailPath:       handleLinkPreviewThumbnail(s.db, s.logger),
+		LinkPreviewFaviconPath:         handleLinkPreviewFavicon(s.db, s.logger),
 		StatusLinkPreviewThumbnailPath: handleStatusLinkPreviewThumbnail(s.db, s.logger),
 		communityTokenImagesPath:       handleCommunityTokenImages(s.db, s.logger),
 		walletCommunityImagesPath:      handleWalletCommunityImages(s.walletDB, s.logger),
@@ -87,6 +88,13 @@ func (s *MediaServer) MakeStatusLinkPreviewThumbnailURL(msgID string, previewURL
 	u := s.MakeBaseURL()
 	u.Path = StatusLinkPreviewThumbnailPath
 	u.RawQuery = url.Values{"message-id": {msgID}, "url": {previewURL}, "image-id": {string(imageID)}}.Encode()
+	return u.String()
+}
+
+func (s *MediaServer) MakeLinkPreviewFaviconURL(msgID string, previewURL string) string {
+	u := s.MakeBaseURL()
+	u.Path = LinkPreviewFaviconPath
+	u.RawQuery = url.Values{"message-id": {msgID}, "url": {previewURL}}.Encode()
 	return u.String()
 }
 

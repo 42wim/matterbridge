@@ -19,6 +19,8 @@ import (
 	"github.com/status-im/status-go/eth-node/types"
 	"github.com/status-im/status-go/params"
 	"github.com/status-im/status-go/rpc"
+	"github.com/status-im/status-go/services/wallet/bigint"
+	wallet_common "github.com/status-im/status-go/services/wallet/common"
 )
 
 const (
@@ -46,6 +48,7 @@ func (e *ErrBadNonce) Error() string {
 // It uses upstream to propagate transactions to the Ethereum network.
 type Transactor struct {
 	rpcWrapper     *rpcWrapper
+	pendingTracker *PendingTxTracker
 	sendTxTimeout  time.Duration
 	rpcCallTimeout time.Duration
 	networkID      uint64
@@ -58,6 +61,11 @@ func NewTransactor() *Transactor {
 		sendTxTimeout: sendTxTimeout,
 		log:           log.New("package", "status-go/transactions.Manager"),
 	}
+}
+
+// SetPendingTracker sets a pending tracker.
+func (t *Transactor) SetPendingTracker(tracker *PendingTxTracker) {
+	t.pendingTracker = tracker
 }
 
 // SetNetworkID selects a correct network.
@@ -78,7 +86,26 @@ func (t *Transactor) SetRPC(rpcClient *rpc.Client, timeout time.Duration) {
 func (t *Transactor) NextNonce(rpcClient *rpc.Client, chainID uint64, from types.Address) (uint64, error) {
 	wrapper := newRPCWrapper(rpcClient, chainID)
 	ctx := context.Background()
-	return wrapper.PendingNonceAt(ctx, common.Address(from))
+	nonce, err := wrapper.PendingNonceAt(ctx, common.Address(from))
+	if err != nil {
+		return 0, err
+	}
+
+	// We need to take into consideration all pending transactions in case of Optimism, cause the network returns always
+	// the nonce of last executed tx + 1 for the next nonce value.
+	if chainID == wallet_common.OptimismMainnet ||
+		chainID == wallet_common.OptimismSepolia ||
+		chainID == wallet_common.OptimismGoerli {
+		if t.pendingTracker != nil {
+			countOfPendingTXs, err := t.pendingTracker.GetPendingTxForSuggestedNonce(wallet_common.ChainID(chainID), common.Address(from), nonce)
+			if err != nil {
+				return 0, err
+			}
+			return nonce + countOfPendingTXs, nil
+		}
+	}
+
+	return nonce, err
 }
 
 func (t *Transactor) EstimateGas(network *params.Network, from common.Address, to common.Address, value *big.Int, input []byte) (uint64, error) {
@@ -141,25 +168,64 @@ func (t *Transactor) SendRawTransaction(chainID uint64, rawTx string) error {
 	return rpcWrapper.SendRawTransaction(ctx, rawTx)
 }
 
-func (t *Transactor) SendTransactionWithSignature(tx *gethtypes.Transaction) (hash types.Hash, err error) {
-	rpcWrapper := newRPCWrapper(t.rpcWrapper.RPCClient, tx.ChainId().Uint64())
+func createPendingTransactions(from common.Address, symbol string, chainID uint64, multiTransactionID wallet_common.MultiTransactionIDType, tx *gethtypes.Transaction) (pTx *PendingTransaction) {
 
+	pTx = &PendingTransaction{
+		Hash:               tx.Hash(),
+		Timestamp:          uint64(time.Now().Unix()),
+		Value:              bigint.BigInt{Int: tx.Value()},
+		From:               from,
+		To:                 *tx.To(),
+		Nonce:              tx.Nonce(),
+		Data:               string(tx.Data()),
+		Type:               WalletTransfer,
+		ChainID:            wallet_common.ChainID(chainID),
+		MultiTransactionID: multiTransactionID,
+		Symbol:             symbol,
+		AutoDelete:         new(bool),
+	}
+	// Transaction downloader will delete pending transaction as soon as it is confirmed
+	*pTx.AutoDelete = false
+	return
+}
+
+func (t *Transactor) sendTransaction(rpcWrapper *rpcWrapper, from common.Address, symbol string,
+	multiTransactionID wallet_common.MultiTransactionIDType, tx *gethtypes.Transaction) (hash types.Hash, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), t.rpcCallTimeout)
 	defer cancel()
 
 	if err := rpcWrapper.SendTransaction(ctx, tx); err != nil {
 		return hash, err
 	}
+
+	if t.pendingTracker != nil {
+
+		tx := createPendingTransactions(from, symbol, rpcWrapper.chainID, multiTransactionID, tx)
+
+		err := t.pendingTracker.StoreAndTrackPendingTx(tx)
+		if err != nil {
+			return hash, err
+		}
+	}
+
 	return types.Hash(tx.Hash()), nil
 }
 
-func (t *Transactor) AddSignatureToTransactionAndSend(chainID uint64, tx *gethtypes.Transaction, sig []byte) (hash types.Hash, err error) {
+func (t *Transactor) SendTransactionWithSignature(from common.Address, symbol string,
+	multiTransactionID wallet_common.MultiTransactionIDType, tx *gethtypes.Transaction) (hash types.Hash, err error) {
+	rpcWrapper := newRPCWrapper(t.rpcWrapper.RPCClient, tx.ChainId().Uint64())
+
+	return t.sendTransaction(rpcWrapper, from, symbol, multiTransactionID, tx)
+}
+
+func (t *Transactor) AddSignatureToTransactionAndSend(chainID uint64, from common.Address, symbol string,
+	multiTransactionID wallet_common.MultiTransactionIDType, tx *gethtypes.Transaction, sig []byte) (hash types.Hash, err error) {
 	txWithSignature, err := t.AddSignatureToTransaction(chainID, tx, sig)
 	if err != nil {
 		return hash, err
 	}
 
-	return t.SendTransactionWithSignature(txWithSignature)
+	return t.SendTransactionWithSignature(from, symbol, multiTransactionID, txWithSignature)
 }
 
 // BuildTransactionAndSendWithSignature receive a transaction and a signature, serialize them together and propage it to the network.
@@ -171,7 +237,7 @@ func (t *Transactor) BuildTransactionAndSendWithSignature(chainID uint64, args S
 		return hash, err
 	}
 
-	hash, err = t.SendTransactionWithSignature(txWithSignature)
+	hash, err = t.SendTransactionWithSignature(common.Address(args.From), args.Symbol, args.MultiTransactionID, txWithSignature)
 	return hash, err
 }
 
@@ -378,13 +444,8 @@ func (t *Transactor) validateAndPropagate(rpcWrapper *rpcWrapper, selectedAccoun
 	if err != nil {
 		return hash, err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), t.rpcCallTimeout)
-	defer cancel()
 
-	if err := rpcWrapper.SendTransaction(ctx, signedTx); err != nil {
-		return hash, err
-	}
-	return types.Hash(signedTx.Hash()), nil
+	return t.sendTransaction(rpcWrapper, common.Address(args.From), args.Symbol, args.MultiTransactionID, signedTx)
 }
 
 func (t *Transactor) buildTransaction(args SendTxArgs) *gethtypes.Transaction {

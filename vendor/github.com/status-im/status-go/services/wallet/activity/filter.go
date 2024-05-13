@@ -99,6 +99,18 @@ type Filter struct {
 	FilterOutCollectibles bool    `json:"filterOutCollectibles"`
 }
 
+func (f *Filter) IsEmpty() bool {
+	return f.Period.StartTimestamp == NoLimitTimestampForPeriod &&
+		f.Period.EndTimestamp == NoLimitTimestampForPeriod &&
+		len(f.Types) == 0 &&
+		len(f.Statuses) == 0 &&
+		len(f.CounterpartyAddresses) == 0 &&
+		len(f.Assets) == 0 &&
+		len(f.Collectibles) == 0 &&
+		!f.FilterOutAssets &&
+		!f.FilterOutCollectibles
+}
+
 func GetRecipients(ctx context.Context, db *sql.DB, chainIDs []common.ChainID, addresses []eth.Address, offset int, limit int) (recipients []eth.Address, hasMore bool, err error) {
 	filterAllAddresses := len(addresses) == 0
 	involvedAddresses := noEntriesInTmpTableSQLValues

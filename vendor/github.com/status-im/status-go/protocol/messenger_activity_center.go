@@ -70,6 +70,14 @@ func (m *Messenger) ActivityCenterNotifications(request ActivityCenterNotificati
 					}
 				}
 			}
+			if notification.TokenData != nil {
+				if notification.Type == ActivityCenterNotificationTypeCommunityTokenReceived || notification.Type == ActivityCenterNotificationTypeFirstCommunityTokenReceived {
+					err = m.prepareTokenData(notification.TokenData, m.httpServer)
+					if err != nil {
+						return nil, err
+					}
+				}
+			}
 		}
 	}
 

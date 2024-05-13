@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"sync"
 
 	"github.com/ethereum/go-ethereum/common"
 
@@ -20,6 +21,7 @@ const InvalidTimestamp = int64(-1)
 
 type OwnershipDB struct {
 	db *sql.DB
+	mu sync.Mutex
 }
 
 func NewOwnershipDB(sqlDb *sql.DB) *OwnershipDB {
@@ -300,7 +302,6 @@ func updateAddressOwnershipTimestamp(creator sqlite.StatementCreator, ownerAddre
 // Returns the list of added/removed IDs when comparing the given list of IDs with the ones in the DB.
 // Call before Update for the result to be useful.
 func (o *OwnershipDB) GetIDsNotInDB(
-	chainID w_common.ChainID,
 	ownerAddress common.Address,
 	newIDs []thirdparty.CollectibleUniqueID) ([]thirdparty.CollectibleUniqueID, error) {
 	ret := make([]thirdparty.CollectibleUniqueID, 0, len(newIDs))
@@ -333,7 +334,36 @@ func (o *OwnershipDB) GetIDsNotInDB(
 	return ret, nil
 }
 
+func (o *OwnershipDB) GetIsFirstOfCollection(onwerAddress common.Address, newIDs []thirdparty.CollectibleUniqueID) (map[thirdparty.CollectibleUniqueID]bool, error) {
+	ret := make(map[thirdparty.CollectibleUniqueID]bool)
+
+	exists, err := o.db.Prepare(`SELECT count(*) FROM collectibles_ownership_cache
+			WHERE chain_id=? AND contract_address=? AND owner_address=?`)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, id := range newIDs {
+		row := exists.QueryRow(
+			id.ContractID.ChainID,
+			id.ContractID.Address,
+			onwerAddress,
+		)
+		var count int
+		err = row.Scan(&count)
+		if err != nil {
+			return nil, err
+		}
+		ret[id] = count <= 1
+	}
+	return ret, nil
+}
+
 func (o *OwnershipDB) Update(chainID w_common.ChainID, ownerAddress common.Address, balances thirdparty.TokenBalancesPerContractAddress, timestamp int64) (removedIDs, updatedIDs, insertedIDs []thirdparty.CollectibleUniqueID, err error) {
+	// Ensure all steps are done atomically
+	o.mu.Lock()
+	defer o.mu.Unlock()
+
 	err = insertTmpOwnership(o.db, chainID, ownerAddress, balances)
 	if err != nil {
 		return
@@ -367,7 +397,7 @@ func (o *OwnershipDB) Update(chainID w_common.ChainID, ownerAddress common.Addre
 }
 
 func (o *OwnershipDB) GetOwnedCollectibles(chainIDs []w_common.ChainID, ownerAddresses []common.Address, offset int, limit int) ([]thirdparty.CollectibleUniqueID, error) {
-	query, args, err := sqlx.In(fmt.Sprintf(`SELECT %s
+	query, args, err := sqlx.In(fmt.Sprintf(`SELECT DISTINCT %s
 		FROM collectibles_ownership_cache
 		WHERE chain_id IN (?) AND owner_address IN (?)
 		LIMIT ? OFFSET ?`, selectOwnershipColumns), chainIDs, ownerAddresses, limit, offset)

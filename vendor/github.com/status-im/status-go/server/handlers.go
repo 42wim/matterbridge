@@ -34,6 +34,7 @@ const (
 	discordAuthorsPath             = "/discord/authors"
 	discordAttachmentsPath         = basePath + "/discord/attachments"
 	LinkPreviewThumbnailPath       = "/link-preview/thumbnail"
+	LinkPreviewFaviconPath         = "/link-preview/favicon"
 	StatusLinkPreviewThumbnailPath = "/status-link-preview/thumbnail"
 	communityTokenImagesPath       = "/communityTokenImages"
 

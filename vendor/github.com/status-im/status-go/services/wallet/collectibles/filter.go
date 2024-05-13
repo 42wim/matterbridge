@@ -60,7 +60,7 @@ func filterOwnedCollectibles(ctx context.Context, db *sql.DB, chainIDs []wcommon
 		return nil, errors.New("no chainIDs provided")
 	}
 
-	q := sq.Select("ownership.chain_id,ownership.contract_address,ownership.token_id")
+	q := sq.Select("ownership.chain_id,ownership.contract_address,ownership.token_id").Distinct()
 	q = q.From("collectibles_ownership_cache ownership").
 		LeftJoin(`collectible_data_cache data ON 
 		ownership.chain_id = data.chain_id AND 

@@ -500,7 +500,8 @@ func createCommunityChannelForImport(request *requests.ImportDiscordChannel) *pr
 			Description: request.Description,
 			Color:       request.Color,
 		},
-		CategoryId: "",
+		CategoryId:              "",
+		HideIfPermissionsNotMet: false,
 	}
 }
 
@@ -1210,7 +1211,8 @@ func (m *Messenger) RequestImportDiscordCommunity(request *requests.ImportDiscor
 						Description: channel.Channel.Description,
 						Color:       discordCommunity.Color(),
 					},
-					CategoryId: processedCategoriesIds[channel.Channel.CategoryID],
+					CategoryId:              processedCategoriesIds[channel.Channel.CategoryID],
+					HideIfPermissionsNotMet: false,
 				}
 
 				// We call `CreateChat` on `communitiesManager` directly to get more control

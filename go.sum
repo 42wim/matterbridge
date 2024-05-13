@@ -1420,8 +1420,8 @@ github.com/jbenet/go-temp-err-catcher v0.1.0 h1:zpb3ZH6wIE8Shj2sKS+khgRvf7T7RABo
 github.com/jbenet/go-temp-err-catcher v0.1.0/go.mod h1:0kJRvmDZXNMIiJirNPEYfhpPwbGVtZVWC34vc5WLsDk=
 github.com/jedisct1/go-minisign v0.0.0-20190909160543-45766022959e/go.mod h1:G1CVv03EnqU1wYL2dFwXxW2An0az9JTl/ZsqXQeBlkU=
 github.com/jellevandenhooff/dkim v0.0.0-20150330215556-f50fe3d243e1/go.mod h1:E0B/fFc00Y+Rasa88328GlI/XbtyysCtTHZS8h7IrBU=
-github.com/jellydator/ttlcache/v3 v3.1.0 h1:0gPFG0IHHP6xyUyXq+JaD8fwkDCqgqwohXNJBcYE71g=
-github.com/jellydator/ttlcache/v3 v3.1.0/go.mod h1:hi7MGFdMAwZna5n2tuvh63DvFLzVKySzCVW6+0gA2n4=
+github.com/jellydator/ttlcache/v3 v3.2.0 h1:6lqVJ8X3ZaUwvzENqPAobDsXNExfUJd61u++uW8a3LE=
+github.com/jellydator/ttlcache/v3 v3.2.0/go.mod h1:hi7MGFdMAwZna5n2tuvh63DvFLzVKySzCVW6+0gA2n4=
 github.com/jessevdk/go-flags v0.0.0-20141203071132-1679536dcc89/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
 github.com/jessevdk/go-flags v1.5.0/go.mod h1:Fw0T6WPc1dYxT4mKEZRfG5kJhaTDP9pj1c2EWnYs/m4=
@@ -2418,8 +2418,8 @@ github.com/status-im/rendezvous v1.3.7 h1:rZGWsFCjPV3MWeUkLkZSOGTAvyRf+rxx5hnEGL
 github.com/status-im/rendezvous v1.3.7/go.mod h1:r0vCbQJByTteMajN0f+Mcet/Vd7uAXxFPfewNpI2iXQ=
 github.com/status-im/resize v0.0.0-20201215164250-7c6d9f0d3088 h1:ClCAP2FPCvl8hGMhbUx/tq/sOu2wibztAa5jAvQEe4Q=
 github.com/status-im/resize v0.0.0-20201215164250-7c6d9f0d3088/go.mod h1:+92j1tN27DypDeBFxkg0uzkqfh1bNHTZe3Bv2PjvxpM=
-github.com/status-im/status-go v0.174.7-0.20240222013825-0aeaf82915d8 h1:vjCXgZTfsIAibudrQyMVRzdKRrHKSptxFsP4Mjt5I/E=
-github.com/status-im/status-go v0.174.7-0.20240222013825-0aeaf82915d8/go.mod h1:8M6g7DyP9Y0zE/I9KY/v/v7ZqNIsF/3pBb8LSjE6Hl4=
+github.com/status-im/status-go v0.177.1-0.20240502181839-d59ff96b54fa h1:KgvJynkucsTM0XuQ4fIZ9tThEjkAlZtzMwX5yMCa86M=
+github.com/status-im/status-go v0.177.1-0.20240502181839-d59ff96b54fa/go.mod h1:UfDzdoAlPk2Kt+TM4opcsH/rdW/Zanh5FelcZyRbmRw=
 github.com/status-im/status-go/extkeys v1.1.2 h1:FSjARgDathJ3rIapJt851LsIXP9Oyuu2M2jPJKuzloU=
 github.com/status-im/status-go/extkeys v1.1.2/go.mod h1:hCmFzb2jiiVF2voZKYbzuhOQiHHCmyLJsZJXrFFg7BY=
 github.com/status-im/tcp-shaker v1.1.1-status h1:TnVeeWlq2SKCWotHc4Vi6qZQfY8TTe3VLmu1xpEFYhg=
@@ -2550,8 +2550,8 @@ github.com/waku-org/go-discover v0.0.0-20240129014929-85f2c00b96a3 h1:Kk0KYXZE/u
 github.com/waku-org/go-discover v0.0.0-20240129014929-85f2c00b96a3/go.mod h1:eBHgM6T4EG0RZzxpxKy+rGz/6Dw2Nd8DWxS0lm9ESDw=
 github.com/waku-org/go-libp2p-rendezvous v0.0.0-20230628220917-7b4e5ae4c0e7 h1:0e1h+p84yBp0IN7AqgbZlV7lgFBjm214lgSOE7CeJmE=
 github.com/waku-org/go-libp2p-rendezvous v0.0.0-20230628220917-7b4e5ae4c0e7/go.mod h1:pFvOZ9YTFsW0o5zJW7a0B5tr1owAijRWJctXJ2toL04=
-github.com/waku-org/go-waku v0.8.1-0.20240220211751-9bb2c8e39680 h1:WGPMcGDmW7q9ZPoD5V53T1ak36/qo1rYLE9bv4g5BVY=
-github.com/waku-org/go-waku v0.8.1-0.20240220211751-9bb2c8e39680/go.mod h1:RjTvkTrIwpoT1cM9HeQqwa2Q7t7WOkb3hpuB/zuZ6SM=
+github.com/waku-org/go-waku v0.8.1-0.20240322182925-dd81e1d46971 h1:HSR8JmscSmCtpIAzFO5sNZRyYZbO8nw7rGM3QcC9bak=
+github.com/waku-org/go-waku v0.8.1-0.20240322182925-dd81e1d46971/go.mod h1:RjTvkTrIwpoT1cM9HeQqwa2Q7t7WOkb3hpuB/zuZ6SM=
 github.com/waku-org/go-zerokit-rln v0.1.14-0.20240102145250-fa738c0bdf59 h1:jisj+OCI6QydLtFq3Pyhu49wl9ytPN7oAHjMfepHDrA=
 github.com/waku-org/go-zerokit-rln v0.1.14-0.20240102145250-fa738c0bdf59/go.mod h1:1PdBdPzyTaKt3VnpAHk3zj+r9dXPFOr3IHZP9nFle6E=
 github.com/waku-org/go-zerokit-rln-apple v0.0.0-20230916172309-ee0ee61dde2b h1:KgZVhsLkxsj5gb/FfndSCQu6VYwALrCOgYI3poR95yE=
