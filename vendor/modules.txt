@@ -485,8 +485,8 @@ go.mau.fi/libsignal/util/errorhelper
 go.mau.fi/libsignal/util/keyhelper
 go.mau.fi/libsignal/util/medium
 go.mau.fi/libsignal/util/optional
-# go.mau.fi/whatsmeow v0.0.0-20230805111647-405414b9b5c0
-## explicit; go 1.19
+# go.mau.fi/whatsmeow v0.0.0-20240520180327-81f8f07f1dfb
+## explicit; go 1.21
 go.mau.fi/whatsmeow
 go.mau.fi/whatsmeow/appstate
 go.mau.fi/whatsmeow/appstate/lthash
