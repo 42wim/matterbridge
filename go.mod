@@ -1,4 +1,4 @@
-module github.com/42wim/matterbridge
+module github.com/tzagim/matterbridge
 
 require (
 	github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f
@@ -46,7 +46,7 @@ require (
 	github.com/writeas/go-strip-markdown v2.0.1+incompatible
 	github.com/yaegashi/msgraph.go v0.1.4
 	github.com/zfjagann/golang-ring v0.0.0-20220330170733-19bcea1b6289
-	go.mau.fi/whatsmeow v0.0.0-20230805111647-405414b9b5c0
+	go.mau.fi/whatsmeow v0.0.0-20240520180327-81f8f07f1dfb
 	golang.org/x/image v0.11.0
 	golang.org/x/oauth2 v0.11.0
 	golang.org/x/text v0.12.0
