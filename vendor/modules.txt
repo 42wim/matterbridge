@@ -83,8 +83,8 @@ github.com/go-asn1-ber/asn1-ber
 # github.com/golang-jwt/jwt v3.2.2+incompatible
 ## explicit
 github.com/golang-jwt/jwt
-# github.com/golang/protobuf v1.5.3
-## explicit; go 1.9
+# github.com/golang/protobuf v1.5.4
+## explicit; go 1.17
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go/descriptor
 # github.com/gomarkdown/markdown v0.0.0-20230716120725-531d2d74bc12
@@ -98,7 +98,7 @@ github.com/gomarkdown/markdown/parser
 github.com/google/gops/agent
 github.com/google/gops/internal
 github.com/google/gops/signal
-# github.com/google/uuid v1.3.0
+# github.com/google/uuid v1.6.0
 ## explicit
 github.com/google/uuid
 # github.com/gopackage/ddp v0.0.3
@@ -354,6 +354,11 @@ github.com/rivo/uniseg
 # github.com/rs/xid v1.5.0
 ## explicit; go 1.12
 github.com/rs/xid
+# github.com/rs/zerolog v1.32.0
+## explicit; go 1.15
+github.com/rs/zerolog
+github.com/rs/zerolog/internal/cbor
+github.com/rs/zerolog/internal/json
 # github.com/russross/blackfriday v1.6.0
 ## explicit; go 1.13
 github.com/russross/blackfriday
@@ -411,8 +416,8 @@ github.com/spf13/viper/internal/encoding/javaproperties
 github.com/spf13/viper/internal/encoding/json
 github.com/spf13/viper/internal/encoding/toml
 github.com/spf13/viper/internal/encoding/yaml
-# github.com/stretchr/testify v1.8.4
-## explicit; go 1.20
+# github.com/stretchr/testify v1.9.0
+## explicit; go 1.17
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 github.com/stretchr/testify/suite
@@ -485,12 +490,27 @@ go.mau.fi/libsignal/util/errorhelper
 go.mau.fi/libsignal/util/keyhelper
 go.mau.fi/libsignal/util/medium
 go.mau.fi/libsignal/util/optional
-# go.mau.fi/whatsmeow v0.0.0-20230805111647-405414b9b5c0
-## explicit; go 1.19
+# go.mau.fi/util v0.4.1
+## explicit; go 1.21
+go.mau.fi/util/jsontime
+go.mau.fi/util/random
+go.mau.fi/util/retryafter
+# go.mau.fi/whatsmeow v0.0.0-20240520180327-81f8f07f1dfb
+## explicit; go 1.21
 go.mau.fi/whatsmeow
 go.mau.fi/whatsmeow/appstate
 go.mau.fi/whatsmeow/appstate/lthash
 go.mau.fi/whatsmeow/binary
+go.mau.fi/whatsmeow/binary/armadillo
+go.mau.fi/whatsmeow/binary/armadillo/armadilloutil
+go.mau.fi/whatsmeow/binary/armadillo/waArmadilloApplication
+go.mau.fi/whatsmeow/binary/armadillo/waArmadilloXMA
+go.mau.fi/whatsmeow/binary/armadillo/waCommon
+go.mau.fi/whatsmeow/binary/armadillo/waConsumerApplication
+go.mau.fi/whatsmeow/binary/armadillo/waMediaTransport
+go.mau.fi/whatsmeow/binary/armadillo/waMsgApplication
+go.mau.fi/whatsmeow/binary/armadillo/waMsgTransport
+go.mau.fi/whatsmeow/binary/armadillo/waMultiDevice
 go.mau.fi/whatsmeow/binary/proto
 go.mau.fi/whatsmeow/binary/token
 go.mau.fi/whatsmeow/socket
@@ -503,9 +523,8 @@ go.mau.fi/whatsmeow/util/gcmutil
 go.mau.fi/whatsmeow/util/hkdfutil
 go.mau.fi/whatsmeow/util/keys
 go.mau.fi/whatsmeow/util/log
-go.mau.fi/whatsmeow/util/randbytes
-# golang.org/x/crypto v0.12.0
-## explicit; go 1.17
+# golang.org/x/crypto v0.23.0
+## explicit; go 1.18
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/argon2
@@ -515,7 +534,6 @@ golang.org/x/crypto/blowfish
 golang.org/x/crypto/chacha20
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/curve25519/internal/field
-golang.org/x/crypto/ed25519
 golang.org/x/crypto/hkdf
 golang.org/x/crypto/internal/alias
 golang.org/x/crypto/internal/poly1305
@@ -535,8 +553,8 @@ golang.org/x/image/webp
 # golang.org/x/mod v0.8.0
 ## explicit; go 1.17
 golang.org/x/mod/semver
-# golang.org/x/net v0.14.0
-## explicit; go 1.17
+# golang.org/x/net v0.25.0
+## explicit; go 1.18
 golang.org/x/net/context
 golang.org/x/net/html
 golang.org/x/net/html/atom
@@ -545,6 +563,8 @@ golang.org/x/net/http2
 golang.org/x/net/http2/h2c
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
+golang.org/x/net/internal/socks
+golang.org/x/net/proxy
 golang.org/x/net/publicsuffix
 golang.org/x/net/websocket
 # golang.org/x/oauth2 v0.11.0
@@ -553,19 +573,18 @@ golang.org/x/oauth2
 golang.org/x/oauth2/clientcredentials
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/microsoft
-# golang.org/x/sys v0.11.0
-## explicit; go 1.17
+# golang.org/x/sys v0.20.0
+## explicit; go 1.18
 golang.org/x/sys/cpu
 golang.org/x/sys/execabs
-golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/term v0.11.0
-## explicit; go 1.17
+# golang.org/x/term v0.20.0
+## explicit; go 1.18
 golang.org/x/term
-# golang.org/x/text v0.12.0
-## explicit; go 1.17
+# golang.org/x/text v0.15.0
+## explicit; go 1.18
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
 golang.org/x/text/encoding/internal
@@ -620,13 +639,14 @@ google.golang.org/appengine/internal/log
 google.golang.org/appengine/internal/remote_api
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
-# google.golang.org/protobuf v1.31.0
-## explicit; go 1.11
+# google.golang.org/protobuf v1.33.0
+## explicit; go 1.17
 google.golang.org/protobuf/encoding/prototext
 google.golang.org/protobuf/encoding/protowire
 google.golang.org/protobuf/internal/descfmt
 google.golang.org/protobuf/internal/descopts
 google.golang.org/protobuf/internal/detrand
+google.golang.org/protobuf/internal/editiondefaults
 google.golang.org/protobuf/internal/encoding/defval
 google.golang.org/protobuf/internal/encoding/messageset
 google.golang.org/protobuf/internal/encoding/tag
@@ -649,6 +669,7 @@ google.golang.org/protobuf/reflect/protoregistry
 google.golang.org/protobuf/runtime/protoiface
 google.golang.org/protobuf/runtime/protoimpl
 google.golang.org/protobuf/types/descriptorpb
+google.golang.org/protobuf/types/gofeaturespb
 # gopkg.in/ini.v1 v1.67.0
 ## explicit
 gopkg.in/ini.v1
