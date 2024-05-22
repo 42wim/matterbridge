@@ -1,4 +1,4 @@
-module github.com/42wim/matterbridge
+module github.com/tzagim/matterbridge
 
 require (
 	github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f
@@ -148,4 +148,4 @@ require (
 
 //replace github.com/matrix-org/gomatrix => github.com/matterbridge/gomatrix v0.0.0-20220205235239-607eb9ee6419
 
-go 1.19
+go 1.21
