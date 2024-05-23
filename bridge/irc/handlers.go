@@ -122,6 +122,17 @@ func (b *Birc) handleNewConnection(client *girc.Client, event girc.Event) {
 	i := b.i
 	b.Nick = event.Params[0]
 
+	b.Log.Debug("Clearing handlers before adding in case of BNC reconnect")
+	i.Handlers.Clear("PRIVMSG")
+	i.Handlers.Clear("CTCP_ACTION")
+	i.Handlers.Clear(girc.RPL_TOPICWHOTIME)
+	i.Handlers.Clear(girc.NOTICE)
+	i.Handlers.Clear("JOIN")
+	i.Handlers.Clear("PART")
+	i.Handlers.Clear("QUIT")
+	i.Handlers.Clear("KICK")
+	i.Handlers.Clear("INVITE")
+
 	i.Handlers.AddBg("PRIVMSG", b.handlePrivMsg)
 	i.Handlers.AddBg("CTCP_ACTION", b.handlePrivMsg)
 	i.Handlers.Add(girc.RPL_TOPICWHOTIME, b.handleTopicWhoTime)
