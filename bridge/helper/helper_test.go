@@ -88,6 +88,15 @@ var lineSplittingTestCases = map[string]struct {
 		},
 		nonSplitOutput: []string{"不布人個我此而及單石業喜資富下我河下日沒一我臺空達的常景便物沒為……子大我別名解成？生賣的全直黑，我自我結毛分洲了世當，是政福那是東；斯說"},
 	},
+	"Long message, clip three-byte rune after two bytes": {
+		input: "x 人人生而自由，在尊嚴和權利上一律平等。 他們都具有理性和良知，應該以兄弟情誼的精神對待彼此。",
+		splitOutput: []string{
+			"x 人人生而自由，在尊嚴和權利上 <clipped message>",
+			"一律平等。 他們都具有理性和良知 <clipped message>",
+			"，應該以兄弟情誼的精神對待彼此。",
+		},
+		nonSplitOutput: []string{"x 人人生而自由，在尊嚴和權利上一律平等。 他們都具有理性和良知，應該以兄弟情誼的精神對待彼此。"},
+	},
 }
 
 func TestGetSubLines(t *testing.T) {
