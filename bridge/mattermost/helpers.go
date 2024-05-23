@@ -174,11 +174,10 @@ func (b *Bmattermost) sendWebhook(msg config.Message) (string, error) {
 //
 //nolint:gocyclo,cyclop
 func (b *Bmattermost) skipMessage(message *matterclient.Message) bool {
-
 	// Handle join/leave
 	skipJoinMessageTypes := map[string]struct{}{
-		"system_join_leave":          {}, //deprecated for system_add_to_channel
-		"system_leave_channel":       {}, //deprecated for system_remove_from_channel
+		"system_join_leave":          {}, // deprecated for system_add_to_channel
+		"system_leave_channel":       {}, // deprecated for system_remove_from_channel
 		"system_join_channel":        {},
 		"system_add_to_channel":      {},
 		"system_remove_from_channel": {},
