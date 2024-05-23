@@ -169,7 +169,7 @@ var clippingOrSplittingTestCases = map[string]struct {
 		clipSplitLength: 50,
 		clippingMessage: "?!?!",
 		splitMax:        10,
-		expectedOutput:  []string{
+		expectedOutput: []string{
 			"Lorem ipsum dolor sit amet, consectetur adipiscing",
 			" elit, sed do eiusmod tempor incididunt ut labore ",
 			"et dolore magna aliqua.",
@@ -180,7 +180,7 @@ var clippingOrSplittingTestCases = map[string]struct {
 		clipSplitLength: 50,
 		clippingMessage: "?!?!",
 		splitMax:        3,
-		expectedOutput:  []string{
+		expectedOutput: []string{
 			"Lorem ipsum dolor sit amet, consectetur adipiscing",
 			" elit, sed do eiusmod tempor incididunt ut labore ",
 			"et dolore magna aliqua.",
@@ -191,7 +191,7 @@ var clippingOrSplittingTestCases = map[string]struct {
 		clipSplitLength: 50,
 		clippingMessage: "?!?!",
 		splitMax:        2,
-		expectedOutput:  []string{
+		expectedOutput: []string{
 			"Lorem ipsum dolor sit amet, consectetur adipiscing",
 			" elit, sed do eiusmod tempor incididunt ut lab?!?!",
 		},
@@ -201,7 +201,7 @@ var clippingOrSplittingTestCases = map[string]struct {
 		clipSplitLength: 50,
 		clippingMessage: "",
 		splitMax:        2,
-		expectedOutput:  []string{
+		expectedOutput: []string{
 			"Lorem ipsum dolor sit amet, consectetur adipiscing",
 			" elit, sed do eiusmod tempor inc <clipped message>",
 		},
@@ -218,8 +218,8 @@ var clippingOrSplittingTestCases = map[string]struct {
 		clipSplitLength: 50,
 		clippingMessage: "",
 		splitMax:        10,
-		expectedOutput:  []string{
-			"人人生而自由，在尊嚴和權利上一律", // Note: only 48 bytes!
+		expectedOutput: []string{
+			"人人生而自由，在尊嚴和權利上一律",  // Note: only 48 bytes!
 			"平等。 他們都具有理性和良知，應該", // Note: only 49 bytes!
 			"以兄弟情誼的精神對待彼此。",
 		},

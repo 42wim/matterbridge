@@ -45,7 +45,7 @@ func (b *Bdiscord) maybeGetLocalAvatar(msg *config.Message) string {
 
 func (b *Bdiscord) webhookSendTextOnly(msg *config.Message, channelID string) (string, error) {
 	msgParts := helper.ClipOrSplitMessage(msg.Text, MessageLength, b.GetString("MessageClipped"), b.GetInt("MessageSplitMaxCount"))
-	var msgIds = []string{}
+	msgIds := []string{}
 	for _, msgPart := range msgParts {
 		res, err := b.transmitter.Send(
 			channelID,
@@ -68,7 +68,7 @@ func (b *Bdiscord) webhookSendTextOnly(msg *config.Message, channelID string) (s
 
 func (b *Bdiscord) webhookSendFilesOnly(msg *config.Message, channelID string) error {
 	for _, f := range msg.Extra["file"] {
-		fi := f.(config.FileInfo)
+		fi := f.(config.FileInfo) //nolint:forcetypeassert
 		file := discordgo.File{
 			Name:        fi.Name,
 			ContentType: "",
@@ -101,8 +101,8 @@ func (b *Bdiscord) webhookSendFilesOnly(msg *config.Message, channelID string) e
 // Returns messageID and error.
 func (b *Bdiscord) webhookSend(msg *config.Message, channelID string) (string, error) {
 	var (
-		res  string
-		err  error
+		res string
+		err error
 	)
 
 	// If avatar is unset, mutate the message to include the local avatar (but only if settings say we should do this)
@@ -143,29 +143,29 @@ func (b *Bdiscord) handleEventWebhook(msg *config.Message, channelID string) (st
 
 	if msg.ID != "" {
 		// Exploit that a discord message ID is actually just a large number, and we encode a list of IDs by separating them with ";".
-		var msgIds = strings.Split(msg.ID, ";")
+		msgIds := strings.Split(msg.ID, ";")
 		msgParts := helper.ClipOrSplitMessage(b.replaceUserMentions(msg.Text), MessageLength, b.GetString("MessageClipped"), len(msgIds))
 		for len(msgParts) < len(msgIds) {
 			msgParts = append(msgParts, "((obsoleted by edit))")
 		}
 		b.Log.Debugf("Editing webhook message")
-		var edit_err error = nil
+		var editErr error = nil
 		for i := range msgParts {
 			// In case of split-messages where some parts remain the same (i.e. only a typo-fix in a huge message), this causes some noop-updates.
 			// TODO: Optimize away noop-updates of un-edited messages
-			edit_err = b.transmitter.Edit(channelID, msgIds[i], &discordgo.WebhookParams{
+			editErr = b.transmitter.Edit(channelID, msgIds[i], &discordgo.WebhookParams{
 				Content:         msgParts[i],
 				Username:        msg.Username,
 				AllowedMentions: b.getAllowedMentions(),
 			})
-			if edit_err != nil {
+			if editErr != nil {
 				break
 			}
 		}
-		if edit_err == nil {
+		if editErr == nil {
 			return msg.ID, nil
 		}
-		b.Log.Errorf("Could not edit webhook message(s): %s; sending as new message(s) instead", edit_err)
+		b.Log.Errorf("Could not edit webhook message(s): %s; sending as new message(s) instead", editErr)
 	}
 
 	b.Log.Debugf("Processing webhook sending for message %#v", msg)

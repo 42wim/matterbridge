@@ -331,7 +331,7 @@ func (b *Bdiscord) handleEventBotUser(msg *config.Message, channelID string) (st
 	// Edit message
 	if msg.ID != "" {
 		// Exploit that a discord message ID is actually just a large number, and we encode a list of IDs by separating them with ";".
-		var msgIds = strings.Split(msg.ID, ";")
+		msgIds := strings.Split(msg.ID, ";")
 		msgParts := helper.ClipOrSplitMessage(b.replaceUserMentions(msg.Text), MessageLength, b.GetString("MessageClipped"), len(msgIds))
 		for len(msgParts) < len(msgIds) {
 			msgParts = append(msgParts, "((obsoleted by edit))")
@@ -349,7 +349,7 @@ func (b *Bdiscord) handleEventBotUser(msg *config.Message, channelID string) (st
 	}
 
 	msgParts := helper.ClipOrSplitMessage(b.replaceUserMentions(msg.Text), MessageLength, b.GetString("MessageClipped"), b.GetInt("MessageSplitMaxCount"))
-	var msgIds = []string{}
+	msgIds := []string{}
 
 	for _, msgPart := range msgParts {
 		m := discordgo.MessageSend{
