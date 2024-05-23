@@ -1,4 +1,4 @@
-[![GoDoc](https://godoc.org/github.com/go-ldap/ldap?status.svg)](https://godoc.org/github.com/go-ldap/ldap)
+[![Go Reference](https://pkg.go.dev/badge/github.com/mattermost/ldap.svg)](https://pkg.go.dev/github.com/mattermost/ldap)
 [![Build Status](https://travis-ci.org/go-ldap/ldap.svg)](https://travis-ci.org/go-ldap/ldap)
 
 # Basic LDAP v3 functionality for the GO programming language.

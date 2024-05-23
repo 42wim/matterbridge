@@ -1,10 +1,10 @@
-// The `fwd` package provides a buffered reader
+// Package fwd provides a buffered reader
 // and writer. Each has methods that help improve
 // the encoding/decoding performance of some binary
 // protocols.
 //
-// The `fwd.Writer` and `fwd.Reader` type provide similar
-// functionality to their counterparts in `bufio`, plus
+// The [Writer] and [Reader] type provide similar
+// functionality to their counterparts in [bufio], plus
 // a few extra utility methods that simplify read-ahead
 // and write-ahead. I wrote this package to improve serialization
 // performance for http://github.com/tinylib/msgp,
@@ -14,24 +14,23 @@
 // the user to access and manipulate the buffer memory
 // directly.
 //
-// The extra methods for `fwd.Reader` are `Peek`, `Skip`
-// and `Next`. `(*fwd.Reader).Peek`, unlike `(*bufio.Reader).Peek`,
+// The extra methods for [Reader] are [Reader.Peek], [Reader.Skip]
+// and [Reader.Next]. (*fwd.Reader).Peek, unlike (*bufio.Reader).Peek,
 // will re-allocate the read buffer in order to accommodate arbitrarily
-// large read-ahead. `(*fwd.Reader).Skip` skips the next `n` bytes
-// in the stream, and uses the `io.Seeker` interface if the underlying
-// stream implements it. `(*fwd.Reader).Next` returns a slice pointing
-// to the next `n` bytes in the read buffer (like `Peek`), but also
+// large read-ahead. (*fwd.Reader).Skip skips the next 'n' bytes
+// in the stream, and uses the [io.Seeker] interface if the underlying
+// stream implements it. (*fwd.Reader).Next returns a slice pointing
+// to the next 'n' bytes in the read buffer (like Reader.Peek), but also
 // increments the read position. This allows users to process streams
 // in arbitrary block sizes without having to manage appropriately-sized
 // slices. Additionally, obviating the need to copy the data from the
 // buffer to another location in memory can improve performance dramatically
 // in CPU-bound applications.
 //
-// `fwd.Writer` only has one extra method, which is `(*fwd.Writer).Next`, which
-// returns a slice pointing to the next `n` bytes of the writer, and increments
+// [Writer] only has one extra method, which is (*fwd.Writer).Next, which
+// returns a slice pointing to the next 'n' bytes of the writer, and increments
 // the write position by the length of the returned slice. This allows users
 // to write directly to the end of the buffer.
-//
 package fwd
 
 import (
@@ -129,6 +128,8 @@ func (r *Reader) more() {
 		// discard the io.EOF if we read more than 0 bytes.
 		// the next call to Read should return io.EOF again.
 		r.state = nil
+	} else if r.state != nil {
+		return
 	}
 	r.data = r.data[:len(r.data)+a]
 }
@@ -211,11 +212,11 @@ func (r *Reader) discard(n int) int {
 //
 // If the reader encounters
 // an EOF before skipping 'n' bytes, it
-// returns io.ErrUnexpectedEOF. If the
-// underlying reader implements io.Seeker, then
+// returns [io.ErrUnexpectedEOF]. If the
+// underlying reader implements [io.Seeker], then
 // those rules apply instead. (Many implementations
-// will not return `io.EOF` until the next call
-// to Read.)
+// will not return [io.EOF] until the next call
+// to Read).
 func (r *Reader) Skip(n int) (int, error) {
 	if n < 0 {
 		return 0, os.ErrInvalid
@@ -248,7 +249,6 @@ func (r *Reader) Skip(n int) (int, error) {
 // length asked for, an error will be returned,
 // and the reader position will not be incremented.
 func (r *Reader) Next(n int) ([]byte, error) {
-
 	// in case the buffer is too small
 	if cap(r.data) < n {
 		old := r.data[r.n:]
@@ -270,7 +270,7 @@ func (r *Reader) Next(n int) ([]byte, error) {
 	return out, nil
 }
 
-// Read implements `io.Reader`
+// Read implements [io.Reader].
 func (r *Reader) Read(b []byte) (int, error) {
 	// if we have data in the buffer, just
 	// return that.
@@ -325,7 +325,7 @@ func (r *Reader) ReadFull(b []byte) (int, error) {
 	return n, nil
 }
 
-// ReadByte implements `io.ByteReader`
+// ReadByte implements [io.ByteReader].
 func (r *Reader) ReadByte() (byte, error) {
 	for r.buffered() < 1 && r.state == nil {
 		r.more()
@@ -338,7 +338,7 @@ func (r *Reader) ReadByte() (byte, error) {
 	return b, nil
 }
 
-// WriteTo implements `io.WriterTo`
+// WriteTo implements [io.WriterTo].
 func (r *Reader) WriteTo(w io.Writer) (int64, error) {
 	var (
 		i   int64

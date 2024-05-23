@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"log"
 	"net"
 	"net/url"
 	"sync"
@@ -12,6 +11,7 @@ import (
 	"time"
 
 	ber "github.com/go-asn1-ber/asn1-ber"
+	"github.com/mattermost/mattermost/server/public/shared/mlog"
 )
 
 const (
@@ -210,14 +210,14 @@ func (l *Conn) Close() {
 	defer l.messageMutex.Unlock()
 
 	if l.setClosing() {
-		l.Debug.Printf("Sending quit message and waiting for confirmation")
+		l.Debug.Log("Sending quit message and waiting for confirmation")
 		l.chanMessage <- &messagePacket{Op: MessageQuit}
 		<-l.chanConfirm
 		close(l.chanMessage)
 
-		l.Debug.Printf("Closing network connection")
+		l.Debug.Log("Closing network connection")
 		if err := l.conn.Close(); err != nil {
-			log.Println(err)
+			l.Debug.Log("Error closing network connection", mlog.Err(err))
 		}
 
 		l.wgClose.Done()
@@ -251,7 +251,8 @@ func (l *Conn) StartTLS(config *tls.Config) error {
 	request := ber.Encode(ber.ClassApplication, ber.TypeConstructed, ApplicationExtendedRequest, nil, "Start TLS")
 	request.AppendChild(ber.NewString(ber.ClassContext, ber.TypePrimitive, 0, "1.3.6.1.4.1.1466.20037", "TLS Extended Command"))
 	packet.AppendChild(request)
-	l.Debug.PrintPacket(packet)
+
+	l.Debug.Log("Sending StartTLS packet", PacketToField(packet))
 
 	msgCtx, err := l.sendMessageWithFlags(packet, startTLS)
 	if err != nil {
@@ -259,24 +260,24 @@ func (l *Conn) StartTLS(config *tls.Config) error {
 	}
 	defer l.finishMessage(msgCtx)
 
-	l.Debug.Printf("%d: waiting for response", msgCtx.id)
+	l.Debug.Log("Waiting for StartTLS response", mlog.Int("id", msgCtx.id))
 
 	packetResponse, ok := <-msgCtx.responses
 	if !ok {
 		return NewError(ErrorNetwork, errors.New("ldap: response channel closed"))
 	}
 	packet, err = packetResponse.ReadPacket()
-	l.Debug.Printf("%d: got response %p", msgCtx.id, packet)
-	if err != nil {
-		return err
-	}
-
-	if l.Debug {
+	if l.Debug.Enabled() {
 		if err := addLDAPDescriptions(packet); err != nil {
 			l.Close()
 			return err
 		}
-		l.Debug.PrintPacket(packet)
+
+		l.Debug.Log("Got response %p", mlog.Err(err), mlog.Int("id", msgCtx.id), PacketToField(packet), mlog.Err(err))
+	}
+
+	if err != nil {
+		return err
 	}
 
 	if err := GetLDAPError(packet); err == nil {
@@ -317,7 +318,7 @@ func (l *Conn) sendMessageWithFlags(packet *ber.Packet, flags sendMessageFlags) 
 		return nil, NewError(ErrorNetwork, errors.New("ldap: connection closed"))
 	}
 	l.messageMutex.Lock()
-	l.Debug.Printf("flags&startTLS = %d", flags&startTLS)
+
 	if l.isStartingTLS {
 		l.messageMutex.Unlock()
 		return nil, NewError(ErrorNetwork, errors.New("ldap: connection is in startls phase"))
@@ -382,8 +383,8 @@ func (l *Conn) sendProcessMessage(message *messagePacket) bool {
 
 func (l *Conn) processMessages() {
 	defer func() {
-		if err := recover(); err != nil {
-			log.Printf("ldap: recovered panic in processMessages: %v", err)
+		if r := recover(); r != nil {
+			l.Debug.Log("Recovered panic in processMessages", mlog.Any("panic", r))
 		}
 		for messageID, msgCtx := range l.messageContexts {
 			// If we are closing due to an error, inform anyone who
@@ -391,7 +392,7 @@ func (l *Conn) processMessages() {
 			if l.IsClosing() && l.closeErr.Load() != nil {
 				msgCtx.sendResponse(&PacketResponse{Error: l.closeErr.Load().(error)})
 			}
-			l.Debug.Printf("Closing channel for MessageID %d", messageID)
+			l.Debug.Log("Closing channel for MessageID", mlog.Int("message_id", messageID))
 			close(msgCtx.responses)
 			delete(l.messageContexts, messageID)
 		}
@@ -407,16 +408,14 @@ func (l *Conn) processMessages() {
 		case message := <-l.chanMessage:
 			switch message.Op {
 			case MessageQuit:
-				l.Debug.Printf("Shutting down - quit message received")
+				l.Debug.Log("Quit message received: Shutting down")
 				return
 			case MessageRequest:
 				// Add to message list and write to network
-				l.Debug.Printf("Sending message %d", message.MessageID)
-
 				buf := message.Packet.Bytes()
 				_, err := l.conn.Write(buf)
 				if err != nil {
-					l.Debug.Printf("Error Sending Message: %s", err.Error())
+					l.Debug.Log("Error Sending Message", mlog.Err(err))
 					message.Context.sendResponse(&PacketResponse{Error: fmt.Errorf("unable to send request: %s", err)})
 					close(message.Context.responses)
 					break
@@ -431,8 +430,8 @@ func (l *Conn) processMessages() {
 				if requestTimeout > 0 {
 					go func() {
 						defer func() {
-							if err := recover(); err != nil {
-								log.Printf("ldap: recovered panic in RequestTimeout: %v", err)
+							if r := recover(); r != nil {
+								l.Debug.Log("Recovered panic in RequestTimeout", mlog.Any("panic", r))
 							}
 						}()
 						time.Sleep(requestTimeout)
@@ -444,24 +443,27 @@ func (l *Conn) processMessages() {
 					}()
 				}
 			case MessageResponse:
-				l.Debug.Printf("Receiving message %d", message.MessageID)
 				if msgCtx, ok := l.messageContexts[message.MessageID]; ok {
 					msgCtx.sendResponse(&PacketResponse{message.Packet, nil})
 				} else {
-					log.Printf("Received unexpected message %d, %v", message.MessageID, l.IsClosing())
-					l.Debug.PrintPacket(message.Packet)
+					l.Debug.Log(
+						"Received unexpected message",
+						mlog.Int("message_id", message.MessageID),
+						mlog.Bool("is_closing", l.IsClosing()),
+						PacketToField(message.Packet),
+					)
 				}
 			case MessageTimeout:
 				// Handle the timeout by closing the channel
 				// All reads will return immediately
 				if msgCtx, ok := l.messageContexts[message.MessageID]; ok {
-					l.Debug.Printf("Receiving message timeout for %d", message.MessageID)
+					l.Debug.Log("Receiving message timeout", mlog.Int("message_id", message.MessageID))
 					msgCtx.sendResponse(&PacketResponse{message.Packet, errors.New("ldap: connection timed out")})
 					delete(l.messageContexts, message.MessageID)
 					close(msgCtx.responses)
 				}
 			case MessageFinish:
-				l.Debug.Printf("Finished message %d", message.MessageID)
+				l.Debug.Log("Finished message", mlog.Int("message_id", message.MessageID))
 				if msgCtx, ok := l.messageContexts[message.MessageID]; ok {
 					delete(l.messageContexts, message.MessageID)
 					close(msgCtx.responses)
@@ -474,8 +476,8 @@ func (l *Conn) processMessages() {
 func (l *Conn) reader() {
 	cleanstop := false
 	defer func() {
-		if err := recover(); err != nil {
-			log.Printf("ldap: recovered panic in reader: %v", err)
+		if r := recover(); r != nil {
+			l.Debug.Log("Recovered panic in reader", mlog.Any("panic", r))
 		}
 		if !cleanstop {
 			l.Close()
@@ -484,7 +486,7 @@ func (l *Conn) reader() {
 
 	for {
 		if cleanstop {
-			l.Debug.Printf("reader clean stopping (without closing the connection)")
+			l.Debug.Log("Reader clean stopping (without closing the connection)")
 			return
 		}
 		packet, err := ber.ReadPacket(l.conn)
@@ -492,15 +494,15 @@ func (l *Conn) reader() {
 			// A read error is expected here if we are closing the connection...
 			if !l.IsClosing() {
 				l.closeErr.Store(fmt.Errorf("unable to read LDAP response packet: %s", err))
-				l.Debug.Printf("reader error: %s", err)
+				l.Debug.Log("Reader error", mlog.Err(err))
 			}
 			return
 		}
 		if err := addLDAPDescriptions(packet); err != nil {
-			l.Debug.Printf("descriptions error: %s", err)
+			l.Debug.Log("Descriptions error", mlog.Err(err))
 		}
 		if len(packet.Children) == 0 {
-			l.Debug.Printf("Received bad ldap packet")
+			l.Debug.Log("Received bad ldap packet")
 			continue
 		}
 		l.messageMutex.Lock()

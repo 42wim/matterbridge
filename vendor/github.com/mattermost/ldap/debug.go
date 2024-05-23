@@ -2,36 +2,48 @@ package ldap
 
 import (
 	"bytes"
-	"log"
 
 	ber "github.com/go-asn1-ber/asn1-ber"
+	"github.com/mattermost/mattermost/server/public/shared/mlog"
 )
 
-const LDAP_TRACE_PREFIX = "ldap-trace: "
-
-// debugging type
-//     - has a Printf method to write the debug output
-type debugging bool
+type debugging struct {
+	logger mlog.LoggerIFace
+	levels []mlog.Level
+}
 
 // Enable controls debugging mode.
-func (debug *debugging) Enable(b bool) {
-	*debug = debugging(b)
-}
-
-// Printf writes debug output.
-func (debug debugging) Printf(format string, args ...interface{}) {
-	if debug {
-		format = LDAP_TRACE_PREFIX + format
-		log.Printf(format, args...)
+func (debug *debugging) Enable(logger mlog.LoggerIFace, levels ...mlog.Level) {
+	*debug = debugging{
+		logger: logger,
+		levels: levels,
 	}
 }
 
-// PrintPacket dumps a packet.
-func (debug debugging) PrintPacket(packet *ber.Packet) {
-	if debug {
-		var b bytes.Buffer
-		ber.WritePacket(&b, packet)
-		textToPrint := LDAP_TRACE_PREFIX + b.String()
-		log.Printf(textToPrint)
+func (debug debugging) Enabled() bool {
+	return debug.logger != nil
+}
+
+// Log writes debug output.
+func (debug debugging) Log(msg string, fields ...mlog.Field) {
+	if debug.Enabled() {
+		debug.logger.LogM(debug.levels, msg, fields...)
 	}
+}
+
+type Packet ber.Packet
+
+func (p Packet) LogClone() any {
+	bp := ber.Packet(p)
+	var b bytes.Buffer
+	ber.WritePacket(&b, &bp)
+	return b.String()
+
+}
+
+func PacketToField(packet *ber.Packet) mlog.Field {
+	if packet == nil {
+		return mlog.Any("packet", nil)
+	}
+	return mlog.Any("packet", Packet(*packet))
 }

@@ -1,15 +1,19 @@
+![Logr_Logo](https://user-images.githubusercontent.com/7295363/200433587-ae9df127-9427-4753-a0a0-85723a216e0e.png)
+
+> A fully asynchronous, contextual logger for Go.
+
 # logr
 
 [![GoDoc](https://godoc.org/github.com/mattermost/logr?status.svg)](http://godoc.org/github.com/mattermost/logr)
 [![Report Card](https://goreportcard.com/badge/github.com/mattermost/logr)](https://goreportcard.com/report/github.com/mattermost/logr)
 
-Logr is a fully asynchronous, contextual logger for Go.
-
-It is very much inspired by [Logrus](https://github.com/sirupsen/logrus) but addresses two issues:
+Logr is inspired by [Logrus](https://github.com/sirupsen/logrus) and [Zap](https://github.com/uber-go/zap) but addresses a number of issues:
 
 1. Logr is fully asynchronous, meaning that all formatting and writing is done in the background. Latency sensitive applications benefit from not waiting for logging to complete.
 
 2. Logr provides custom filters which provide more flexibility than Trace, Debug, Info... levels. If you need to temporarily increase verbosity of logging while tracking down a problem you can avoid the fire-hose that typically comes from Debug or Trace by using custom filters.
+
+3. Logr generates much less allocations than Logrus, and is close to Zap in allocations.
 
 ## Concepts
 
@@ -17,7 +21,7 @@ It is very much inspired by [Logrus](https://github.com/sirupsen/logrus) but add
 | entity | description |
 | ------ | ----------- |
 | Logr   | Engine instance typically instantiated once; used to configure logging.<br>```lgr,_ := logr.New()```|
-| Logger | Provides contextual logging via fields; lightweight, can be created once and accessed globally or create on demand.<br>```logger := lgr.NewLogger()```<br>```logger2 := logger.WithField("user", "Sam")```|
+| Logger | Provides contextual logging via fields; lightweight, can be created once and accessed globally, or created on demand.<br>```logger := lgr.NewLogger()```<br>```logger2 := logger.With(logr.String("user", "Sam"))```|
 | Target | A destination for log items such as console, file, database or just about anything that can be written to. Each target has its own filter/level and formatter, and any number of targets can be added to a Logr. Targets for file, syslog and any io.Writer are built-in and it is easy to create your own. You can also use any [Logrus hooks](https://github.com/sirupsen/logrus/wiki/Hooks) via a simple [adapter](https://github.com/wiggin77/logrus4logr).|
 | Filter | Determines which logging calls get written versus filtered out. Also determines which logging calls generate a stack trace.<br>```filter := &logr.StdFilter{Lvl: logr.Warn, Stacktrace: logr.Fatal}```|
 | Formatter | Formats the output. Logr includes built-in formatters for JSON and plain text with delimiters. It is easy to create your own formatters or you can also use any [Logrus formatters](https://github.com/sirupsen/logrus#formatters) via a simple [adapter](https://github.com/wiggin77/logrus4logr).<br>```formatter := &format.Plain{Delim: " \| "}```|
@@ -39,7 +43,7 @@ lgr.AddTarget(t)
 
 // One or more Loggers can be created, shared, used concurrently,
 // or created on demand.
-logger := lgr.NewLogger().WithField("user", "Sarah")
+logger := lgr.NewLogger().With("user", "Sarah")
 
 // Now we can log to the target(s).
 logger.Debug("login attempt")
@@ -53,22 +57,22 @@ lgr.Shutdown()
 
 Fields allow for contextual logging, meaning information can be added to log statements without changing the statements themselves. Information can be shared across multiple logging statements thus allowing log analysis tools to group them.
 
-Fields are added via Loggers:
+Fields can be added to a Logger via `Logger.With` or included with each log record:
 
 ```go
 lgr,_ := logr.New()
 // ... add targets ...
-logger := lgr.NewLogger().WithFields(logr.Fields{
-  "user": user,
-  "role": role})
-logger.Info("login attempt")
+logger := lgr.NewLogger().With(
+    logr.Any("user": user), 
+    logr.String("role", role)
+)
+
+logger.Info("login attempt", logr.Int("attempt_count", count))
 // ... later ...
-logger.Info("login successful")
+logger.Info("login", logr.String("result", result))
 ```
 
-`Logger.WithFields` can be used to create additional Loggers that add more fields.
-
-Logr fields are inspired by and work the same as [Logrus fields](https://github.com/sirupsen/logrus#fields).
+Logr fields are inspired by and work the same as [Zap fields](https://pkg.go.dev/go.uber.org/zap#Field).
 
 ## Filters
 
@@ -97,21 +101,21 @@ Logr also supports custom filters (logr.CustomFilter) which allow fine grained i
   formatter := &formatters.Plain{Delim: " | "}
   tgr := targets.NewWriterTarget(filter, formatter, os.StdOut, 1000)
   lgr.AddTarget(tgr)
-  logger := lgr.NewLogger().WithFields(logr.Fields{"user": "Bob", "role": "admin"})
+  logger := lgr.NewLogger().With(logr.String("user": "Bob"), logr.String("role": "admin"))
 
   logger.Log(LoginLevel, "this item will get logged")
   logger.Debug("won't be logged since Debug wasn't added to custom filter")
 ```
 
-Both filter types allow you to determine which levels require a stack trace to be output. Note that generating stack traces cannot happen fully asynchronously and thus add latency to the calling goroutine.
+Both filter types allow you to determine which levels force a stack trace to be output. Note that generating stack traces cannot happen fully asynchronously and thus add some latency to the calling goroutine.
 
 ## Targets
 
-There are built-in targets for outputting to syslog, file, or any `io.Writer`. More will be added.
+There are built-in targets for outputting to syslog, file, TCP, or any `io.Writer`. More will be added.
 
 You can use any [Logrus hooks](https://github.com/sirupsen/logrus/wiki/Hooks) via a simple [adapter](https://github.com/wiggin77/logrus4logr).
 
-You can create your own target by implementing the [Target](./target.go) interface.
+You can create your own target by implementing the simple [Target](./target.go) interface.
 
 Example target that outputs to `io.Writer`:
 
@@ -130,7 +134,7 @@ func (w *Writer) Init() error {
   return nil
 }
 
-// Write will always be called by a single goroutine, so no locking needed.
+// Write will always be called by a single internal Logr goroutine, so no locking needed.
 func (w *Writer) Write(p []byte, rec *logr.LogRec) (int, error) {
   return w.out.Write(buf.Bytes())
 }
@@ -153,9 +157,18 @@ You can create your own formatter by implementing the [Formatter](./formatter.go
 Format(rec *LogRec, stacktrace bool, buf *bytes.Buffer) (*bytes.Buffer, error)
 ```
 
-## Handlers
+## Configuration options
 
-When creating the Logr instance, you can add several handlers that get called when exceptional events occur:
+When creating the Logr instance, you can set configuration options. For example:
+
+```go
+lgr, err := logr.New(
+    logr.MaxQueueSize(1000),
+    logr.StackFilter("mypackage1", "mypackage2"),
+)
+```
+
+Some options are documented below. See [options.go](./options.go) for all available configuration options.
 
 ### ```Logr.OnLoggerError(err error)```
 
@@ -168,7 +181,7 @@ It may be tempting to log this error, however there is a danger that logging thi
 Called on an attempt to add a log record to a full Logr queue. This generally means the Logr maximum queue size is too small, or at least one target is very slow.  Logr maximum queue size can be changed before adding any targets via:
 
 ```go
-lgr := logr.Logr{MaxQueueSize: 10000}
+lgr, err := logr.New(logr.MaxQueueSize(2000))
 ```
 
 Returning true will drop the log record. False will block until the log record can be added, which creates a natural throttle at the expense of latency for the calling goroutine. The default is to block.
@@ -186,3 +199,7 @@ OnExit and OnPanic are called when the Logger.FatalXXX and Logger.PanicXXX funct
 In both cases the default behavior is to shut down gracefully, draining all targets, and calling `os.Exit` or `panic` respectively.
 
 When adding your own handlers, be sure to call `Logr.Shutdown` before exiting the application to avoid losing log records.
+
+### ```Logr.StackFilter(pkg ...string)```
+
+StackFilter sets a list of package names to exclude from the top of stack traces.  The `Logr` packages are automatically filtered.

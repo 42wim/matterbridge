@@ -10,9 +10,8 @@
 package ldap
 
 import (
-	"log"
-
 	ber "github.com/go-asn1-ber/asn1-ber"
+	"github.com/mattermost/mattermost/server/public/shared/mlog"
 )
 
 // Attribute represents an LDAP attribute
@@ -88,13 +87,14 @@ func (l *Conn) Add(addRequest *AddRequest) error {
 		return err
 	}
 
-	if packet.Children[1].Tag == ApplicationAddResponse {
+	tag := packet.Children[1].Tag
+	if tag == ApplicationAddResponse {
 		err := GetLDAPError(packet)
 		if err != nil {
 			return err
 		}
 	} else {
-		log.Printf("Unexpected Response: %d", packet.Children[1].Tag)
+		l.Debug.Log("Unexpected Response", mlog.Uint("tag", tag))
 	}
 	return nil
 }
