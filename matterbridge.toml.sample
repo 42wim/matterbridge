@@ -163,7 +163,7 @@ IgnoreMessages="^~~ badword"
 ReplaceMessages=[ ["cat","dog"] ]
 
 #nicks you want to replace.
-#see replacemessages for syntaxa
+#see replacemessages for syntax
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
@@ -301,7 +301,7 @@ IgnoreMessages="^~~ badword"
 ReplaceMessages=[ ["cat","dog"] ]
 
 #Nicks you want to replace.
-#See ReplaceMessages for syntaxA
+#See ReplaceMessages for syntax
 #OPTIONAL (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
@@ -468,7 +468,7 @@ IgnoreMessages="^~~ badword"
 ReplaceMessages=[ ["cat","dog"] ]
 
 #nicks you want to replace.
-#see replacemessages for syntaxa
+#see replacemessages for syntax
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
@@ -586,7 +586,7 @@ IgnoreMessages="^~~ badword"
 ReplaceMessages=[ ["cat","dog"] ]
 
 #nicks you want to replace.
-#see replacemessages for syntaxa
+#see replacemessages for syntax
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
@@ -725,7 +725,7 @@ IgnoreMessages="^~~ badword"
 ReplaceMessages=[ ["cat","dog"] ]
 
 #nicks you want to replace.
-#see replacemessages for syntaxa
+#see replacemessages for syntax
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
@@ -1040,7 +1040,7 @@ IgnoreMessages="^~~ badword"
 ReplaceMessages=[ ["cat","dog"] ]
 
 #nicks you want to replace.
-#see replacemessages for syntaxa
+#see replacemessages for syntax
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
@@ -1181,7 +1181,7 @@ IgnoreMessages="^~~ badword"
 ReplaceMessages=[ ["cat","dog"] ]
 
 #nicks you want to replace.
-#see replacemessages for syntaxa
+#see replacemessages for syntax
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
@@ -1293,7 +1293,7 @@ IgnoreMessages="^~~ badword"
 ReplaceMessages=[ ["cat","dog"] ]
 
 #nicks you want to replace.
-#see replacemessages for syntaxa
+#see replacemessages for syntax
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
@@ -1390,7 +1390,7 @@ IgnoreMessages="^~~ badword"
 ReplaceMessages=[ ["cat","dog"] ]
 
 #nicks you want to replace.
-#see replacemessages for syntaxa
+#see replacemessages for syntax
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
@@ -1599,7 +1599,7 @@ IgnoreMessages="^~~ badword"
 ReplaceMessages=[ ["cat","dog"] ]
 
 #nicks you want to replace.
-#see replacemessages for syntaxa
+#see replacemessages for syntax
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
