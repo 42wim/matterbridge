@@ -65,6 +65,11 @@ func citation(p *Parser, data []byte, offset int) (int, ast.Node) {
 		}
 
 		citeType := ast.CitationTypeInformative
+
+		if len(citation) < 2 {
+			continue
+		}
+
 		j = 1
 		switch citation[j] {
 		case '!':

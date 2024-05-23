@@ -22,6 +22,7 @@ type Conversation struct {
 	IsIM               bool     `json:"is_im"`
 	IsExtShared        bool     `json:"is_ext_shared"`
 	IsOrgShared        bool     `json:"is_org_shared"`
+	IsGlobalShared     bool     `json:"is_global_shared"`
 	IsPendingExtShared bool     `json:"is_pending_ext_shared"`
 	IsPrivate          bool     `json:"is_private"`
 	IsMpIM             bool     `json:"is_mpim"`
@@ -30,6 +31,9 @@ type Conversation struct {
 	NumMembers         int      `json:"num_members"`
 	Priority           float64  `json:"priority"`
 	User               string   `json:"user"`
+	ConnectedTeamIDs   []string `json:"connected_team_ids,omitempty"`
+	SharedTeamIDs      []string `json:"shared_team_ids,omitempty"`
+	InternalTeamIDs    []string `json:"internal_team_ids,omitempty"`
 
 	// TODO support pending_shared
 	// TODO support previous_names
@@ -294,6 +298,53 @@ func (api *Client) InviteUsersToConversationContext(ctx context.Context, channel
 	}
 
 	return response.Channel, response.Err()
+}
+
+// InviteSharedEmailsToConversation invites users to a shared channels by email
+func (api *Client) InviteSharedEmailsToConversation(channelID string, emails ...string) (string, bool, error) {
+	return api.inviteSharedToConversationHelper(context.Background(), channelID, emails, nil)
+}
+
+// InviteSharedEmailsToConversationContext invites users to a shared channels by email using context
+func (api *Client) InviteSharedEmailsToConversationContext(ctx context.Context, channelID string, emails ...string) (string, bool, error) {
+	return api.inviteSharedToConversationHelper(ctx, channelID, emails, nil)
+}
+
+// InviteSharedUserIDsToConversation invites users to a shared channels by user id
+func (api *Client) InviteSharedUserIDsToConversation(channelID string, userIDs ...string) (string, bool, error) {
+	return api.inviteSharedToConversationHelper(context.Background(), channelID, nil, userIDs)
+}
+
+// InviteSharedUserIDsToConversationContext invites users to a shared channels by user id with context
+func (api *Client) InviteSharedUserIDsToConversationContext(ctx context.Context, channelID string, userIDs ...string) (string, bool, error) {
+	return api.inviteSharedToConversationHelper(ctx, channelID, nil, userIDs)
+}
+
+// inviteSharedToConversationHelper invites emails or userIDs to a channel with a custom context.
+// This is a helper function for InviteSharedEmailsToConversation and InviteSharedUserIDsToConversation.
+// It accepts either emails or userIDs, but not both.
+func (api *Client) inviteSharedToConversationHelper(ctx context.Context, channelID string, emails []string, userIDs []string) (string, bool, error) {
+	values := url.Values{
+		"token":   {api.token},
+		"channel": {channelID},
+	}
+	if len(emails) > 0 {
+		values.Add("emails", strings.Join(emails, ","))
+	} else if len(userIDs) > 0 {
+		values.Add("user_ids", strings.Join(userIDs, ","))
+	}
+	response := struct {
+		SlackResponse
+		InviteID              string `json:"invite_id"`
+		IsLegacySharedChannel bool   `json:"is_legacy_shared_channel"`
+	}{}
+
+	err := api.postMethod(ctx, "conversations.inviteShared", values, &response)
+	if err != nil {
+		return "", false, err
+	}
+
+	return response.InviteID, response.IsLegacySharedChannel, response.Err()
 }
 
 // KickUserFromConversation removes a user from a conversation

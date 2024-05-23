@@ -19,6 +19,7 @@ const (
 	connectEventType                             = "__CONNECT__"
 	disconnectEventType                          = "__DISCONNECT__"
 	eventEventType                               = "__EVENT__"
+	guildAuditLogEntryCreateEventType            = "GUILD_AUDIT_LOG_ENTRY_CREATE"
 	guildBanAddEventType                         = "GUILD_BAN_ADD"
 	guildBanRemoveEventType                      = "GUILD_BAN_REMOVE"
 	guildCreateEventType                         = "GUILD_CREATE"
@@ -290,6 +291,26 @@ func (eh eventEventHandler) Type() string {
 // Handle is the handler for Event events.
 func (eh eventEventHandler) Handle(s *Session, i interface{}) {
 	if t, ok := i.(*Event); ok {
+		eh(s, t)
+	}
+}
+
+// guildAuditLogEntryCreateEventHandler is an event handler for GuildAuditLogEntryCreate events.
+type guildAuditLogEntryCreateEventHandler func(*Session, *GuildAuditLogEntryCreate)
+
+// Type returns the event type for GuildAuditLogEntryCreate events.
+func (eh guildAuditLogEntryCreateEventHandler) Type() string {
+	return guildAuditLogEntryCreateEventType
+}
+
+// New returns a new instance of GuildAuditLogEntryCreate.
+func (eh guildAuditLogEntryCreateEventHandler) New() interface{} {
+	return &GuildAuditLogEntryCreate{}
+}
+
+// Handle is the handler for GuildAuditLogEntryCreate events.
+func (eh guildAuditLogEntryCreateEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*GuildAuditLogEntryCreate); ok {
 		eh(s, t)
 	}
 }
@@ -1277,6 +1298,8 @@ func handlerForInterface(handler interface{}) EventHandler {
 		return disconnectEventHandler(v)
 	case func(*Session, *Event):
 		return eventEventHandler(v)
+	case func(*Session, *GuildAuditLogEntryCreate):
+		return guildAuditLogEntryCreateEventHandler(v)
 	case func(*Session, *GuildBanAdd):
 		return guildBanAddEventHandler(v)
 	case func(*Session, *GuildBanRemove):
@@ -1388,6 +1411,7 @@ func init() {
 	registerInterfaceProvider(channelDeleteEventHandler(nil))
 	registerInterfaceProvider(channelPinsUpdateEventHandler(nil))
 	registerInterfaceProvider(channelUpdateEventHandler(nil))
+	registerInterfaceProvider(guildAuditLogEntryCreateEventHandler(nil))
 	registerInterfaceProvider(guildBanAddEventHandler(nil))
 	registerInterfaceProvider(guildBanRemoveEventHandler(nil))
 	registerInterfaceProvider(guildCreateEventHandler(nil))

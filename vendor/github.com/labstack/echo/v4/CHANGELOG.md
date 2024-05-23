@@ -1,5 +1,77 @@
 # Changelog
 
+## v4.12.0 - 2024-04-15
+
+**Security**
+
+* Update golang.org/x/net dep because of [GO-2024-2687](https://pkg.go.dev/vuln/GO-2024-2687) by @aldas in https://github.com/labstack/echo/pull/2625
+
+
+**Enhancements**
+
+* binder: make binding to Map work better with string destinations by @aldas in https://github.com/labstack/echo/pull/2554
+* README.md: add Encore as sponsor by @marcuskohlberg in https://github.com/labstack/echo/pull/2579
+* Reorder paragraphs in README.md by @aldas in https://github.com/labstack/echo/pull/2581
+* CI: upgrade actions/checkout to v4 by @aldas in https://github.com/labstack/echo/pull/2584
+* Remove default charset from 'application/json' Content-Type header by @doortts in https://github.com/labstack/echo/pull/2568
+* CI: Use Go 1.22 by @aldas in https://github.com/labstack/echo/pull/2588
+* binder: allow binding to a nil map by @georgmu in https://github.com/labstack/echo/pull/2574
+* Add Skipper Unit Test In BasicBasicAuthConfig and Add More Detail Explanation regarding BasicAuthValidator by @RyoKusnadi in https://github.com/labstack/echo/pull/2461
+* fix some typos by @teslaedison in https://github.com/labstack/echo/pull/2603
+* fix: some typos by @pomadev in https://github.com/labstack/echo/pull/2596
+* Allow ResponseWriters to unwrap writers when flushing/hijacking by @aldas in https://github.com/labstack/echo/pull/2595
+* Add SPDX licence comments to files.  by @aldas in https://github.com/labstack/echo/pull/2604
+* Upgrade deps by @aldas in https://github.com/labstack/echo/pull/2605
+* Change type definition blocks to single declarations. This helps copy… by @aldas in https://github.com/labstack/echo/pull/2606
+* Fix Real IP logic by @cl-bvl in https://github.com/labstack/echo/pull/2550
+* Default binder can use `UnmarshalParams(params []string) error` inter… by @aldas in https://github.com/labstack/echo/pull/2607
+* Default binder can bind pointer to slice as struct field. For example  `*[]string` by @aldas in https://github.com/labstack/echo/pull/2608
+* Remove maxparam dependence from Context by @aldas in https://github.com/labstack/echo/pull/2611
+* When route is registered with empty path it is normalized to `/`.  by @aldas in https://github.com/labstack/echo/pull/2616
+* proxy middleware should use httputil.ReverseProxy for SSE requests by @aldas in https://github.com/labstack/echo/pull/2624
+
+
+## v4.11.4 - 2023-12-20
+
+**Security**
+
+* Upgrade golang.org/x/crypto to v0.17.0 to fix vulnerability [issue](https://pkg.go.dev/vuln/GO-2023-2402) [#2562](https://github.com/labstack/echo/pull/2562)
+
+**Enhancements**
+
+* Update deps and mark Go version to 1.18 as this is what golang.org/x/* use [#2563](https://github.com/labstack/echo/pull/2563)
+* Request logger: add example for Slog https://pkg.go.dev/log/slog [#2543](https://github.com/labstack/echo/pull/2543)
+
+
+## v4.11.3 - 2023-11-07
+
+**Security**
+
+* 'c.Attachment' and 'c.Inline' should escape filename in 'Content-Disposition' header to avoid 'Reflect File Download' vulnerability. [#2541](https://github.com/labstack/echo/pull/2541)
+
+**Enhancements**
+
+* Tests: refactor context tests to be separate functions [#2540](https://github.com/labstack/echo/pull/2540)
+* Proxy middleware: reuse echo request context [#2537](https://github.com/labstack/echo/pull/2537)
+* Mark unmarshallable yaml struct tags as ignored [#2536](https://github.com/labstack/echo/pull/2536)
+
+
+## v4.11.2 - 2023-10-11
+
+**Security**
+
+* Bump golang.org/x/net to prevent CVE-2023-39325 / CVE-2023-44487 HTTP/2 Rapid Reset Attack [#2527](https://github.com/labstack/echo/pull/2527)
+* fix(sec): randomString bias introduced by #2490 [#2492](https://github.com/labstack/echo/pull/2492)
+* CSRF/RequestID mw: switch math/random usage to crypto/random [#2490](https://github.com/labstack/echo/pull/2490)
+
+**Enhancements**
+
+* Delete unused context in body_limit.go [#2483](https://github.com/labstack/echo/pull/2483)
+* Use Go 1.21 in CI [#2505](https://github.com/labstack/echo/pull/2505)
+* Fix some typos [#2511](https://github.com/labstack/echo/pull/2511)
+* Allow CORS middleware to send Access-Control-Max-Age: 0 [#2518](https://github.com/labstack/echo/pull/2518)
+* Bump dependancies [#2522](https://github.com/labstack/echo/pull/2522)
+
 ## v4.11.1 - 2023-07-16
 
 **Fixes**

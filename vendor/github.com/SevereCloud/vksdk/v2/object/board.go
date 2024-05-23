@@ -36,5 +36,5 @@ type BoardTopicPoll struct {
 	OwnerID  int           `json:"owner_id"`  // Poll owner's ID
 	PollID   int           `json:"poll_id"`   // Poll ID
 	Question string        `json:"question"`  // Poll question
-	Votes    string        `json:"votes"`     // Votes number
+	Votes    int           `json:"votes"`     // Votes number
 }

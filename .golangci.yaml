@@ -212,6 +212,8 @@ linters:
     - execinquery
     - nosnakecase
     - exhaustive
+    - testifylint
+    - mnd
 # rules to deal with reported isues
 issues:
   # List of regexps of issue texts to exclude, empty list by default.

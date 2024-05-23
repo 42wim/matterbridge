@@ -90,7 +90,7 @@ func (b *Bdiscord) Connect() error {
 	if err != nil {
 		return err
 	}
-	guilds, err := b.c.UserGuilds(100, "", "")
+	guilds, err := b.c.UserGuilds(100, "", "", false)
 	if err != nil {
 		return err
 	}

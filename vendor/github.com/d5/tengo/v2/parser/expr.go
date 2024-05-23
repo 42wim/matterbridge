@@ -351,7 +351,7 @@ func (e *ImportExpr) End() Pos {
 }
 
 func (e *ImportExpr) String() string {
-	return `import("` + e.ModuleName + `")"`
+	return `import("` + e.ModuleName + `")`
 }
 
 // IndexExpr represents an index expression.

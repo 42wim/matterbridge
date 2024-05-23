@@ -285,8 +285,8 @@ type BaseLinkProduct struct {
 
 // BaseLinkRating struct.
 type BaseLinkRating struct {
-	ReviewsCount int     `json:"reviews_count"`
-	Stars        float64 `json:"stars"`
+	ReviewsCount json.Number `json:"reviews_count"`
+	Stars        float64     `json:"stars"`
 }
 
 // BasePlace struct.

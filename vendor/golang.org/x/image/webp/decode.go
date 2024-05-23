@@ -39,6 +39,7 @@ func decode(r io.Reader, configOnly bool) (image.Image, image.Config, error) {
 		alpha          []byte
 		alphaStride    int
 		wantAlpha      bool
+		seenVP8X       bool
 		widthMinusOne  uint32
 		heightMinusOne uint32
 		buf            [10]byte
@@ -113,6 +114,10 @@ func decode(r io.Reader, configOnly bool) (image.Image, image.Config, error) {
 			return m, image.Config{}, err
 
 		case fccVP8X:
+			if seenVP8X {
+				return nil, image.Config{}, errInvalidFormat
+			}
+			seenVP8X = true
 			if chunkLen != 10 {
 				return nil, image.Config{}, errInvalidFormat
 			}
