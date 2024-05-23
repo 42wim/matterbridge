@@ -229,6 +229,33 @@ func ClipMessage(text string, length int, clippingMessage string) string {
 	return text
 }
 
+func ClipOrSplitMessage(text string, length int, clippingMessage string, splitMax int) []string {
+	var msgParts []string
+	var remainingText = text
+	// Invariant of this splitting loop: No text is lost (msgParts+remainingText is the original text),
+	// and all parts is guaranteed to satisfy the length requirement.
+	for len(msgParts) < splitMax - 1 && len(remainingText) > length {
+		// Decision: The text needs to be split (again).
+		var chunk string
+		var wasted = 0
+		// The longest UTF-8 encoding of a valid rune is 4 bytes (0xF4 0x8F 0xBF 0xBF, encoding U+10FFFF),
+		// so we should never need to waste 4 or more bytes at a time.
+		for wasted < 4 && wasted < length {
+			chunk = remainingText[:length - wasted]
+			if r, _ := utf8.DecodeLastRuneInString(chunk); r == utf8.RuneError {
+				wasted += 1
+			} else {
+				break
+			}
+		}
+		// Note: At this point, "chunk" might still be invalid, if "text" is very broken.
+		msgParts = append(msgParts, chunk)
+		remainingText = remainingText[len(chunk):]
+	}
+	msgParts = append(msgParts, ClipMessage(remainingText, length, clippingMessage))
+	return msgParts
+}
+
 // ParseMarkdown takes in an input string as markdown and parses it to html
 func ParseMarkdown(input string) string {
 	extensions := parser.HardLineBreak | parser.NoIntraEmphasis | parser.FencedCode
