@@ -968,8 +968,8 @@ github.com/markbates/safe v1.0.1/go.mod h1:nAqgmRi7cY2nqMc92/bSEeQA+R4OheNU2T1kN
 github.com/marstr/guid v1.1.0/go.mod h1:74gB1z2wpxxInTG6yaqA7KrtM0NZ+RbrcqDvYHefzho=
 github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20211016222428-79310a412696 h1:pmPKkN3RJM9wVMZidR99epzK0+gatQiqVtvP1FacZcQ=
 github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20211016222428-79310a412696/go.mod h1:c6MxwqHD+0HvtAJjsHMIdPCiAwGiQwPRPTp69ACMg8A=
-github.com/matterbridge/go-xmpp v0.0.0-20211030125215-791a06c5f1be h1:zlirT+LngOJ60G6FVzI87DljGZLUnfNzmXja61EjtYM=
-github.com/matterbridge/go-xmpp v0.0.0-20211030125215-791a06c5f1be/go.mod h1:ECDRehsR9TYTKCAsRS8/wLeOk6UUqDydw47ln7wG41Q=
+github.com/matterbridge/go-xmpp v0.0.0-20240523230155-7154bfeb76e8 h1:UkpezVlW6/j4qB2FSsz4na2FfZUbIDMAblpjw0Cgqcg=
+github.com/matterbridge/go-xmpp v0.0.0-20240523230155-7154bfeb76e8/go.mod h1:Vl95jJ8rOBCHUR++A1n6nM5sMk1oHcwInsaxRTR9NM4=
 github.com/matterbridge/gomatrix v0.0.0-20220411225302-271e5088ea27 h1:9XSppnbvvReVom+wphkeF4lbhuT6vCYIdyzpwFtW89c=
 github.com/matterbridge/gomatrix v0.0.0-20220411225302-271e5088ea27/go.mod h1:/x38AoZf70fK9yZ5gs3BNCaF7/J4QEo4ZpwtLjX95eQ=
 github.com/matterbridge/gozulipbot v0.0.0-20211023205727-a19d6c1f3b75 h1:GslZKF7lW7oSisycGLpxPO+TnKJuA4VZuTWIfYZrClc=

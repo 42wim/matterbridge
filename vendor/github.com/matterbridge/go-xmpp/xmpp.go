@@ -15,31 +15,48 @@ package xmpp
 import (
 	"bufio"
 	"bytes"
-	"crypto/md5"
+	"crypto/hmac"
 	"crypto/rand"
+	"crypto/sha1"
+	"crypto/sha256"
+	"crypto/sha512"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"hash"
 	"io"
 	"math/big"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
+	"slices"
+	"strconv"
 	"strings"
+	"sync"
 	"time"
+
+	"golang.org/x/crypto/pbkdf2"
+	"golang.org/x/net/proxy"
 )
 
 const (
-	nsStream  = "http://etherx.jabber.org/streams"
-	nsTLS     = "urn:ietf:params:xml:ns:xmpp-tls"
-	nsSASL    = "urn:ietf:params:xml:ns:xmpp-sasl"
-	nsBind    = "urn:ietf:params:xml:ns:xmpp-bind"
-	nsClient  = "jabber:client"
-	nsSession = "urn:ietf:params:xml:ns:xmpp-session"
+	nsStream       = "http://etherx.jabber.org/streams"
+	nsTLS          = "urn:ietf:params:xml:ns:xmpp-tls"
+	nsSASL         = "urn:ietf:params:xml:ns:xmpp-sasl"
+	nsSASL2        = "urn:xmpp:sasl:2"
+	nsBind         = "urn:ietf:params:xml:ns:xmpp-bind"
+	nsBind2        = "urn:xmpp:bind:0"
+	nsFast         = "urn:xmpp:fast:0"
+	nsSASLCB       = "urn:xmpp:sasl-cb:0"
+	nsClient       = "jabber:client"
+	nsSession      = "urn:ietf:params:xml:ns:xmpp-session"
+	nsStreamLimits = "urn:xmpp:stream-limits:0"
 )
 
 // Default TLS configuration options
@@ -59,12 +76,26 @@ func getCookie() Cookie {
 	return Cookie(binary.LittleEndian.Uint64(buf[:]))
 }
 
-// Client holds XMPP connection opitons
+// Fast holds the XEP-0484 fast token, mechanism and expiry date
+type Fast struct {
+	Token     string
+	Mechanism string
+	Expiry    time.Time
+}
+
+// Client holds XMPP connection options
 type Client struct {
-	conn   net.Conn // connection to server
-	jid    string   // Jabber ID for our connection
-	domain string
-	p      *xml.Decoder
+	conn             net.Conn // connection to server
+	jid              string   // Jabber ID for our connection
+	domain           string
+	nextMutex        sync.Mutex // Mutex to prevent multiple access to xml.Decoder
+	shutdown         bool       // Variable signalling that the stream will be closed
+	p                *xml.Decoder
+	stanzaWriter     io.Writer
+	LimitMaxBytes    int    // Maximum stanza size (XEP-0478: Stream Limits Advertisement)
+	LimitIdleSeconds int    // Maximum idle seconds (XEP-0478: Stream Limits Advertisement)
+	Mechanism        string // SCRAM mechanism used.
+	Fast             Fast   // XEP-0484 FAST Token, mechanism and expiry.
 }
 
 func (c *Client) JID() string {
@@ -90,12 +121,12 @@ func connect(host, user, passwd string, timeout time.Duration) (net.Conn, error)
 		addr += ":5222"
 	}
 
-	proxy := os.Getenv("HTTP_PROXY")
-	if proxy == "" {
-		proxy = os.Getenv("http_proxy")
+	http_proxy := os.Getenv("HTTP_PROXY")
+	if http_proxy == "" {
+		http_proxy = os.Getenv("http_proxy")
 	}
 	// test for no proxy, takes a comma separated list with substrings to match
-	if proxy != "" {
+	if http_proxy != "" {
 		noproxy := os.Getenv("NO_PROXY")
 		if noproxy == "" {
 			noproxy = os.Getenv("no_proxy")
@@ -104,25 +135,38 @@ func connect(host, user, passwd string, timeout time.Duration) (net.Conn, error)
 			nplist := strings.Split(noproxy, ",")
 			for _, s := range nplist {
 				if containsIgnoreCase(addr, s) {
-					proxy = ""
+					http_proxy = ""
 					break
 				}
 			}
 		}
 	}
-	if proxy != "" {
-		url, err := url.Parse(proxy)
+	socks5Target, socks5 := strings.CutPrefix(http_proxy, "socks5://")
+	if http_proxy != "" && !socks5 {
+		url, err := url.Parse(http_proxy)
 		if err == nil {
 			addr = url.Host
 		}
 	}
-
-	c, err := net.DialTimeout("tcp", addr, timeout)
-	if err != nil {
-		return nil, err
+	var c net.Conn
+	var err error
+	if socks5 {
+		dialer, err := proxy.SOCKS5("tcp", socks5Target, nil, nil)
+		if err != nil {
+			return nil, err
+		}
+		c, err = dialer.Dial("tcp", addr)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		c, err = net.DialTimeout("tcp", addr, timeout)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	if proxy != "" {
+	if http_proxy != "" && !socks5 {
 		fmt.Fprintf(c, "CONNECT %s HTTP/1.1\r\n", host)
 		fmt.Fprintf(c, "Host: %s\r\n", host)
 		fmt.Fprintf(c, "\r\n")
@@ -198,6 +242,40 @@ type Options struct {
 
 	// Status message
 	StatusMessage string
+
+	// Auth mechanism to use
+	Mechanism string
+
+	// XEP-0474: SASL SCRAM Downgrade Protection
+	SSDP bool
+
+	// XEP-0388: Extensible SASL Profile
+	// Value for software
+	UserAgentSW string
+
+	// XEP-0388: XEP-0388: Extensible SASL Profile
+	// Value for device
+	UserAgentDev string
+
+	// XEP-0388: Extensible SASL Profile
+	// Unique stable identifier for the client installation
+	// MUST be a valid UUIDv4
+	UserAgentID string
+
+	// Enable XEP-0484: Fast Authentication Streamlining Tokens
+	Fast bool
+
+	// XEP-0484: Fast Authentication Streamlining Tokens
+	// Fast Token
+	FastToken string
+
+	// XEP-0484: Fast Authentication Streamlining Tokens
+	// Fast Mechanism
+	FastMechanism string
+
+	// XEP-0484: Fast Authentication Streamlining Tokens
+	// Invalidate the current token
+	FastInvalidate bool
 }
 
 // NewClient establishes a new Client connection based on a set of Options.
@@ -299,29 +377,29 @@ func NewClientNoTLS(host, user, passwd string, debug bool) (*Client, error) {
 
 // Close closes the XMPP connection
 func (c *Client) Close() error {
+	c.shutdown = true
 	if c.conn != (*tls.Conn)(nil) {
-		return c.conn.Close()
+		fmt.Fprintf(c.stanzaWriter, "</stream:stream>\n")
+		go func() {
+			<-time.After(10 * time.Second)
+			c.conn.Close()
+		}()
+		// Wait for the server also closing the stream.
+		for {
+			ee, err := c.nextEnd()
+			// If the server already closed the stream it is
+			// likely to receive an error when trying to parse
+			// the stream. Therefore the connection is also closed
+			// if an error is received.
+			if err != nil {
+				return c.conn.Close()
+			}
+			if ee.Name.Local == "stream" {
+				return c.conn.Close()
+			}
+		}
 	}
 	return nil
-}
-
-func saslDigestResponse(username, realm, passwd, nonce, cnonceStr, authenticate, digestURI, nonceCountStr string) string {
-	h := func(text string) []byte {
-		h := md5.New()
-		h.Write([]byte(text))
-		return h.Sum(nil)
-	}
-	hex := func(bytes []byte) string {
-		return fmt.Sprintf("%x", bytes)
-	}
-	kd := func(secret, data string) []byte {
-		return h(secret + ":" + data)
-	}
-
-	a1 := string(h(username+":"+realm+":"+passwd)) + ":" + nonce + ":" + cnonceStr
-	a2 := authenticate + ":" + digestURI
-	response := hex(kd(hex(h(a1)), nonce+":"+nonceCountStr+":"+cnonceStr+":auth:"+hex(h(a2))))
-	return response
 }
 
 func cnonce() string {
@@ -357,17 +435,47 @@ func (c *Client) init(o *Options) error {
 	if err != nil {
 		return err
 	}
+	// Make the max. stanza size limit available.
+	if f.Limits.MaxBytes != "" {
+		c.LimitMaxBytes, err = strconv.Atoi(f.Limits.MaxBytes)
+		if err != nil {
+			c.LimitMaxBytes = 0
+		}
+	}
+	// Make the servers time limit after which it might consider the stream idle available.
+	if f.Limits.IdleSeconds != "" {
+		c.LimitIdleSeconds, err = strconv.Atoi(f.Limits.IdleSeconds)
+		if err != nil {
+			c.LimitIdleSeconds = 0
+		}
+	}
 
 	// If the server requires we STARTTLS, attempt to do so.
 	if f, err = c.startTLSIfRequired(f, o, domain); err != nil {
 		return err
 	}
-
+	var mechanism, channelBinding, clientFirstMessage, clientFinalMessageBare, authMessage string
+	var bind2Data, resource, userAgentSW, userAgentDev, userAgentID, fastAuth string
+	var serverSignature, keyingMaterial []byte
+	var scramPlus, ok, tlsConnOK, tls13, serverEndPoint, sasl2, bind2 bool
+	var cbsSlice, mechSlice []string
+	var tlsConn *tls.Conn
+	// Use SASL2 if available
+	if f.Authentication.Mechanism != nil && c.IsEncrypted() {
+		sasl2 = true
+		mechSlice = f.Authentication.Mechanism
+		// Detect whether bind2 is available
+		if f.Authentication.Inline.Bind.Xmlns != "" {
+			bind2 = true
+		}
+	} else {
+		mechSlice = f.Mechanisms.Mechanism
+	}
 	if o.User == "" && o.Password == "" {
 		foundAnonymous := false
-		for _, m := range f.Mechanisms.Mechanism {
+		for _, m := range mechSlice {
 			if m == "ANONYMOUS" {
-				fmt.Fprintf(c.conn, "<auth xmlns='%s' mechanism='ANONYMOUS' />\n", nsSASL)
+				fmt.Fprintf(c.stanzaWriter, "<auth xmlns='%s' mechanism='ANONYMOUS' />\n", nsSASL)
 				foundAnonymous = true
 				break
 			}
@@ -383,85 +491,530 @@ func (c *Client) init(o *Options) error {
 			return errors.New("refusing to authenticate over unencrypted TCP connection")
 		}
 
-		mechanism := ""
-		for _, m := range f.Mechanisms.Mechanism {
-			if m == "X-OAUTH2" && o.OAuthToken != "" && o.OAuthScope != "" {
-				mechanism = m
-				// Oauth authentication: send base64-encoded \x00 user \x00 token.
-				raw := "\x00" + user + "\x00" + o.OAuthToken
-				enc := make([]byte, base64.StdEncoding.EncodedLen(len(raw)))
-				base64.StdEncoding.Encode(enc, []byte(raw))
-				fmt.Fprintf(c.conn, "<auth xmlns='%s' mechanism='X-OAUTH2' auth:service='oauth2' "+
-					"xmlns:auth='%s'>%s</auth>\n", nsSASL, o.OAuthXmlNs, enc)
-				break
+		tlsConn, ok = c.conn.(*tls.Conn)
+		if ok {
+			tlsConnOK = true
+		}
+		mechanism = ""
+		if o.Mechanism != "" {
+			if slices.Contains(mechSlice, o.Mechanism) {
+				mechanism = o.Mechanism
 			}
-			if m == "PLAIN" {
-				mechanism = m
-				// Plain authentication: send base64-encoded \x00 user \x00 password.
-				raw := "\x00" + user + "\x00" + o.Password
-				enc := make([]byte, base64.StdEncoding.EncodedLen(len(raw)))
-				base64.StdEncoding.Encode(enc, []byte(raw))
-				fmt.Fprintf(c.conn, "<auth xmlns='%s' mechanism='PLAIN'>%s</auth>\n", nsSASL, enc)
-				break
+		} else {
+			switch {
+			case slices.Contains(mechSlice, "SCRAM-SHA-512-PLUS") && tlsConnOK:
+				mechanism = "SCRAM-SHA-512-PLUS"
+			case slices.Contains(mechSlice, "SCRAM-SHA-256-PLUS") && tlsConnOK:
+				mechanism = "SCRAM-SHA-256-PLUS"
+			case slices.Contains(mechSlice, "SCRAM-SHA-1-PLUS") && tlsConnOK:
+				mechanism = "SCRAM-SHA-1-PLUS"
+			case slices.Contains(mechSlice, "SCRAM-SHA-512"):
+				mechanism = "SCRAM-SHA-512"
+			case slices.Contains(mechSlice, "SCRAM-SHA-256"):
+				mechanism = "SCRAM-SHA-256"
+			case slices.Contains(mechSlice, "SCRAM-SHA-1"):
+				mechanism = "SCRAM-SHA-1"
+			case slices.Contains(mechSlice, "X-OAUTH2"):
+				mechanism = "X-OAUTH2"
+			case slices.Contains(mechSlice, "PLAIN") && tlsConnOK:
+				mechanism = "PLAIN"
 			}
-			if m == "DIGEST-MD5" {
-				mechanism = m
-				// Digest-MD5 authentication
-				fmt.Fprintf(c.conn, "<auth xmlns='%s' mechanism='DIGEST-MD5'/>\n", nsSASL)
-				var ch saslChallenge
-				if err = c.p.DecodeElement(&ch, nil); err != nil {
-					return errors.New("unmarshal <challenge>: " + err.Error())
+		}
+		if strings.HasPrefix(mechanism, "SCRAM-SHA") {
+			if strings.HasSuffix(mechanism, "PLUS") {
+				scramPlus = true
+			}
+			if scramPlus {
+				for _, cbs := range f.ChannelBindings.ChannelBinding {
+					cbsSlice = append(cbsSlice, cbs.Type)
 				}
-				b, err := base64.StdEncoding.DecodeString(string(ch))
-				if err != nil {
-					return err
-				}
-				tokens := map[string]string{}
-				for _, token := range strings.Split(string(b), ",") {
-					kv := strings.SplitN(strings.TrimSpace(token), "=", 2)
-					if len(kv) == 2 {
-						if kv[1][0] == '"' && kv[1][len(kv[1])-1] == '"' {
-							kv[1] = kv[1][1 : len(kv[1])-1]
+				tlsState := tlsConn.ConnectionState()
+				switch tlsState.Version {
+				case tls.VersionTLS13:
+					tls13 = true
+					if slices.Contains(cbsSlice, "tls-server-end-point") && !slices.Contains(cbsSlice, "tls-exporter") {
+						serverEndPoint = true
+					} else {
+						keyingMaterial, err = tlsState.ExportKeyingMaterial("EXPORTER-Channel-Binding", nil, 32)
+						if err != nil {
+							return err
 						}
-						tokens[kv[0]] = kv[1]
+					}
+				case tls.VersionTLS10, tls.VersionTLS11, tls.VersionTLS12:
+					if slices.Contains(cbsSlice, "tls-server-end-point") && !slices.Contains(cbsSlice, "tls-unique") {
+						serverEndPoint = true
+					} else {
+						keyingMaterial = tlsState.TLSUnique
+					}
+				default:
+					return errors.New(mechanism + ": unknown TLS version")
+				}
+				if serverEndPoint {
+					var h hash.Hash
+					// This material is not necessary for `tls-server-end-point` binding, but it is required to check that
+					// the TLS connection was not renegotiated. This function will fail if that's the case (see
+					// https://pkg.go.dev/crypto/tls#ConnectionState.ExportKeyingMaterial
+					_, err = tlsState.ExportKeyingMaterial("EXPORTER-Channel-Binding", nil, 32)
+					if err != nil {
+						return err
+					}
+					switch tlsState.PeerCertificates[0].SignatureAlgorithm {
+					case x509.SHA1WithRSA, x509.SHA256WithRSA, x509.ECDSAWithSHA1,
+						x509.ECDSAWithSHA256, x509.SHA256WithRSAPSS:
+						h = sha256.New()
+					case x509.SHA384WithRSA, x509.ECDSAWithSHA384, x509.SHA384WithRSAPSS:
+						h = sha512.New384()
+					case x509.SHA512WithRSA, x509.ECDSAWithSHA512, x509.SHA512WithRSAPSS:
+						h = sha512.New()
+					}
+					h.Write(tlsState.PeerCertificates[0].Raw)
+					keyingMaterial = h.Sum(nil)
+					h.Reset()
+				}
+				if len(keyingMaterial) == 0 {
+					return errors.New(mechanism + ": no keying material")
+				}
+				switch {
+				case tls13 && !serverEndPoint:
+					channelBinding = base64.StdEncoding.EncodeToString(append([]byte("p=tls-exporter,,"), keyingMaterial[:]...))
+				case serverEndPoint:
+					channelBinding = base64.StdEncoding.EncodeToString(append([]byte("p=tls-server-end-point,,"), keyingMaterial[:]...))
+				default:
+					channelBinding = base64.StdEncoding.EncodeToString(append([]byte("p=tls-unique,,"), keyingMaterial[:]...))
+				}
+			}
+			var shaNewFn func() hash.Hash
+			switch mechanism {
+			case "SCRAM-SHA-512", "SCRAM-SHA-512-PLUS":
+				shaNewFn = sha512.New
+			case "SCRAM-SHA-256", "SCRAM-SHA-256-PLUS":
+				shaNewFn = sha256.New
+			case "SCRAM-SHA-1", "SCRAM-SHA-1-PLUS":
+				shaNewFn = sha1.New
+			default:
+				return errors.New("unsupported auth mechanism")
+			}
+			clientNonce := cnonce()
+			if scramPlus {
+				switch {
+				case tls13 && !serverEndPoint:
+					clientFirstMessage = "p=tls-exporter,,n=" + user + ",r=" + clientNonce
+				case serverEndPoint:
+					clientFirstMessage = "p=tls-server-end-point,,n=" + user + ",r=" + clientNonce
+				default:
+					clientFirstMessage = "p=tls-unique,,n=" + user + ",r=" + clientNonce
+				}
+			} else {
+				clientFirstMessage = "n,,n=" + user + ",r=" + clientNonce
+			}
+			if sasl2 {
+				if bind2 {
+					if o.UserAgentSW != "" {
+						resource = o.UserAgentSW
+					} else {
+						resource = "go-xmpp"
+					}
+					bind2Data = fmt.Sprintf("<bind xmlns='%s'><tag>%s</tag></bind>",
+						nsBind2, resource)
+				}
+				if o.UserAgentSW != "" {
+					userAgentSW = fmt.Sprintf("<software>%s</software>", o.UserAgentSW)
+				} else {
+					userAgentSW = "<software>go-xmpp</software>"
+				}
+				if o.UserAgentDev != "" {
+					userAgentDev = fmt.Sprintf("<device>%s</device>", o.UserAgentDev)
+				}
+				if o.UserAgentID != "" {
+					userAgentID = fmt.Sprintf(" id='%s'", o.UserAgentID)
+				}
+				if o.Fast && f.Authentication.Inline.Fast.Mechanism != nil && o.UserAgentID != "" && c.IsEncrypted() {
+					var mech string
+					if o.FastToken == "" {
+						m := f.Authentication.Inline.Fast.Mechanism
+						switch {
+						case slices.Contains(m, "HT-SHA-256-EXPR") && tls13:
+							mech = "HT-SHA-256-EXPR"
+						case slices.Contains(m, "HT-SHA-256-UNIQ") && !tls13:
+							mech = "HT-SHA-256-UNIQ"
+						case slices.Contains(m, "HT-SHA-256-ENDP"):
+							mech = "HT-SHA-256-ENDP"
+						case slices.Contains(m, "HT-SHA-256-NONE"):
+							mech = "HT-SHA-256-NONE"
+						default:
+							return fmt.Errorf("fast: unsupported auth mechanism %s", m)
+						}
+						fastAuth = fmt.Sprintf("<request-token xmlns='%s' mechanism='%s'/>", nsFast, mech)
+					} else {
+						var fastInvalidate string
+						if o.FastInvalidate {
+							fastInvalidate = " invalidate='true'"
+						}
+						fastAuth = fmt.Sprintf("<fast xmlns='%s'%s/>", nsFast, fastInvalidate)
+						tlsState := tlsConn.ConnectionState()
+						mechanism = o.FastMechanism
+						switch mechanism {
+						case "HT-SHA-256-EXPR":
+							keyingMaterial, err = tlsState.ExportKeyingMaterial("EXPORTER-Channel-Binding", nil, 32)
+							if err != nil {
+								return err
+							}
+						case "HT-SHA-256-UNIQ":
+							keyingMaterial = tlsState.TLSUnique
+						case "HT-SHA-256-ENDP":
+							var h hash.Hash
+							switch tlsState.PeerCertificates[0].SignatureAlgorithm {
+							case x509.SHA1WithRSA, x509.SHA256WithRSA, x509.ECDSAWithSHA1,
+								x509.ECDSAWithSHA256, x509.SHA256WithRSAPSS:
+								h = sha256.New()
+							case x509.SHA384WithRSA, x509.ECDSAWithSHA384, x509.SHA384WithRSAPSS:
+								h = sha512.New384()
+							case x509.SHA512WithRSA, x509.ECDSAWithSHA512, x509.SHA512WithRSAPSS:
+								h = sha512.New()
+							}
+							h.Write(tlsState.PeerCertificates[0].Raw)
+							keyingMaterial = h.Sum(nil)
+							h.Reset()
+						case "HT-SHA-256-NONE":
+							keyingMaterial = []byte("")
+						default:
+							return fmt.Errorf("fast: unsupported auth mechanism %s", mechanism)
+						}
+						h := hmac.New(sha256.New, []byte(o.FastToken))
+						initiator := append([]byte("Initiator")[:], keyingMaterial[:]...)
+						_, err = h.Write(initiator)
+						if err != nil {
+							return err
+						}
+						initiatorHashedToken := h.Sum(nil)
+						user := strings.Split(o.User, "@")[0]
+						clientFirstMessage = user + "\x00" + string(initiatorHashedToken)
 					}
 				}
-				realm, _ := tokens["realm"]
-				nonce, _ := tokens["nonce"]
-				qop, _ := tokens["qop"]
-				charset, _ := tokens["charset"]
-				cnonceStr := cnonce()
-				digestURI := "xmpp/" + domain
-				nonceCount := fmt.Sprintf("%08x", 1)
-				digest := saslDigestResponse(user, realm, o.Password, nonce, cnonceStr, "AUTHENTICATE", digestURI, nonceCount)
-				message := "username=\"" + user + "\", realm=\"" + realm + "\", nonce=\"" + nonce + "\", cnonce=\"" + cnonceStr +
-					"\", nc=" + nonceCount + ", qop=" + qop + ", digest-uri=\"" + digestURI + "\", response=" + digest + ", charset=" + charset
-
-				fmt.Fprintf(c.conn, "<response xmlns='%s'>%s</response>\n", nsSASL, base64.StdEncoding.EncodeToString([]byte(message)))
-
-				var rspauth saslRspAuth
-				if err = c.p.DecodeElement(&rspauth, nil); err != nil {
-					return errors.New("unmarshal <challenge>: " + err.Error())
+				fmt.Fprintf(c.stanzaWriter,
+					"<authenticate xmlns='%s' mechanism='%s'><initial-response>%s</initial-response><user-agent%s>%s%s</user-agent>%s%s</authenticate>\n",
+					nsSASL2, mechanism, base64.StdEncoding.EncodeToString([]byte(clientFirstMessage)), userAgentID, userAgentSW, userAgentDev, bind2Data, fastAuth)
+			} else {
+				fmt.Fprintf(c.stanzaWriter, "<auth xmlns='%s' mechanism='%s'>%s</auth>\n",
+					nsSASL, mechanism, base64.StdEncoding.EncodeToString([]byte(clientFirstMessage)))
+			}
+			var sfm string
+			_, val, err := c.next()
+			if err != nil {
+				return err
+			}
+			switch v := val.(type) {
+			case *sasl2Failure:
+				errorMessage := v.Text
+				if errorMessage == "" {
+					// v.Any is type of sub-element in failure,
+					// which gives a description of what failed if there was no text element
+					errorMessage = v.Any.Local
 				}
-				b, err = base64.StdEncoding.DecodeString(string(rspauth))
-				if err != nil {
-					return err
+				return errors.New("auth failure: " + errorMessage)
+			case *saslFailure:
+				errorMessage := v.Text
+				if errorMessage == "" {
+					// v.Any is type of sub-element in failure,
+					// which gives a description of what failed if there was no text element
+					errorMessage = v.Any.Local
 				}
-				fmt.Fprintf(c.conn, "<response xmlns='%s'/>\n", nsSASL)
-				break
+				return errors.New("auth failure: " + errorMessage)
+			case *sasl2Success:
+				if strings.HasPrefix(mechanism, "SCRAM-SHA") {
+					successMsg, err := base64.StdEncoding.DecodeString(v.AdditionalData)
+					if err != nil {
+						return err
+					}
+					if !strings.HasPrefix(string(successMsg), "v=") {
+						return errors.New("server sent unexpected content in SCRAM success message")
+					}
+					c.Mechanism = mechanism
+				}
+				if strings.HasPrefix(mechanism, "HT-SHA") {
+					// TODO: Check whether server implementations already support
+					// https://www.ietf.org/archive/id/draft-schmaus-kitten-sasl-ht-09.html#section-3.3
+					h := hmac.New(sha256.New, []byte(o.FastToken))
+					responder := append([]byte("Responder")[:], keyingMaterial[:]...)
+					_, err = h.Write(responder)
+					if err != nil {
+						return err
+					}
+					responderMsgRcv, err := base64.StdEncoding.DecodeString(v.AdditionalData)
+					if err != nil {
+						return err
+					}
+					responderMsgCalc := h.Sum(nil)
+					if string(responderMsgCalc) != string(responderMsgRcv) {
+						return fmt.Errorf("server sent unexpected content in FAST success message")
+					}
+					c.Mechanism = mechanism
+				}
+				if bind2 {
+					c.jid = v.AuthorizationIdentifier
+				}
+				if v.Token.Token != "" && v.Token.Token != o.FastToken {
+					m := f.Authentication.Inline.Fast.Mechanism
+					switch {
+					case slices.Contains(m, "HT-SHA-256-EXPR") && tls13:
+						c.Fast.Mechanism = "HT-SHA-256-EXPR"
+					case slices.Contains(m, "HT-SHA-256-UNIQ") && !tls13:
+						c.Fast.Mechanism = "HT-SHA-256-UNIQ"
+					case slices.Contains(m, "HT-SHA-256-ENDP"):
+						c.Fast.Mechanism = "HT-SHA-256-ENDP"
+					case slices.Contains(m, "HT-SHA-256-NONE"):
+						c.Fast.Mechanism = "HT-SHA-256-NONE"
+					}
+					c.Fast.Token = v.Token.Token
+					c.Fast.Expiry, _ = time.Parse(time.RFC3339, v.Token.Expiry)
+				}
+				if o.Session {
+					// if server support session, open it
+					cookie := getCookie() // generate new id value for session
+					fmt.Fprintf(c.stanzaWriter, "<iq to='%s' type='set' id='%x'><session xmlns='%s'/></iq>\n", xmlEscape(domain), cookie, nsSession)
+				}
+
+				// We're connected and can now receive and send messages.
+				fmt.Fprintf(c.stanzaWriter, "<presence xml:lang='en'><show>%s</show><status>%s</status></presence>\n", o.Status, o.StatusMessage)
+				return nil
+			case *sasl2Challenge:
+				sfm = v.Text
+			case *saslChallenge:
+				sfm = v.Text
+			}
+			b, err := base64.StdEncoding.DecodeString(sfm)
+			if err != nil {
+				return err
+			}
+			var serverNonce, dgProtect string
+			var salt []byte
+			var iterations int
+			for _, serverReply := range strings.Split(string(b), ",") {
+				switch {
+				case strings.HasPrefix(serverReply, "r="):
+					serverNonce = strings.SplitN(serverReply, "=", 2)[1]
+					if !strings.HasPrefix(serverNonce, clientNonce) {
+						return errors.New("SCRAM: server nonce didn't start with client nonce")
+					}
+				case strings.HasPrefix(serverReply, "s="):
+					salt, err = base64.StdEncoding.DecodeString(strings.SplitN(serverReply, "=", 2)[1])
+					if err != nil {
+						return err
+					}
+					if string(salt) == "" {
+						return errors.New("SCRAM: server sent empty salt")
+					}
+				case strings.HasPrefix(serverReply, "i="):
+					iterations, err = strconv.Atoi(strings.SplitN(serverReply,
+						"=", 2)[1])
+					if err != nil {
+						return err
+					}
+				case strings.HasPrefix(serverReply, "d=") && o.SSDP:
+					serverDgProtectHash := strings.SplitN(serverReply, "=", 2)[1]
+					slices.Sort(f.Mechanisms.Mechanism)
+					for _, mech := range f.Mechanisms.Mechanism {
+						if dgProtect == "" {
+							dgProtect = mech
+						} else {
+							dgProtect = dgProtect + "," + mech
+						}
+					}
+					dgProtect = dgProtect + "|"
+					slices.Sort(cbsSlice)
+					for i, cb := range cbsSlice {
+						if i == 0 {
+							dgProtect = dgProtect + cb
+						} else {
+							dgProtect = dgProtect + "," + cb
+						}
+					}
+					dgh := shaNewFn()
+					dgh.Write([]byte(dgProtect))
+					dHash := dgh.Sum(nil)
+					dHashb64 := base64.StdEncoding.EncodeToString(dHash)
+					if dHashb64 != serverDgProtectHash {
+						return errors.New("SCRAM: downgrade protection hash mismatch")
+					}
+					dgh.Reset()
+				case strings.HasPrefix(serverReply, "m="):
+					return errors.New("SCRAM: server sent reserved 'm' attribute.")
+				}
+			}
+			if scramPlus {
+				clientFinalMessageBare = "c=" + channelBinding + ",r=" + serverNonce
+			} else {
+				clientFinalMessageBare = "c=biws,r=" + serverNonce
+			}
+			saltedPassword := pbkdf2.Key([]byte(o.Password), salt,
+				iterations, shaNewFn().Size(), shaNewFn)
+			h := hmac.New(shaNewFn, saltedPassword)
+			_, err = h.Write([]byte("Client Key"))
+			if err != nil {
+				return err
+			}
+			clientKey := h.Sum(nil)
+			h.Reset()
+			var storedKey []byte
+			switch mechanism {
+			case "SCRAM-SHA-512", "SCRAM-SHA-512-PLUS":
+				storedKey512 := sha512.Sum512(clientKey)
+				storedKey = storedKey512[:]
+			case "SCRAM-SHA-256", "SCRAM-SH-256-PLUS":
+				storedKey256 := sha256.Sum256(clientKey)
+				storedKey = storedKey256[:]
+			case "SCRAM-SHA-1", "SCRAM-SHA-1-PLUS":
+				storedKey1 := sha1.Sum(clientKey)
+				storedKey = storedKey1[:]
+			}
+			_, err = h.Write([]byte("Server Key"))
+			if err != nil {
+				return err
+			}
+			serverFirstMessage, err := base64.StdEncoding.DecodeString(sfm)
+			if err != nil {
+				return err
+			}
+			authMessage = strings.SplitAfter(clientFirstMessage, ",,")[1] + "," +
+				string(serverFirstMessage) + "," + clientFinalMessageBare
+			h = hmac.New(shaNewFn, storedKey[:])
+			_, err = h.Write([]byte(authMessage))
+			if err != nil {
+				return err
+			}
+			clientSignature := h.Sum(nil)
+			h.Reset()
+			if len(clientKey) != len(clientSignature) {
+				return errors.New("SCRAM: client key and signature length mismatch")
+			}
+			clientProof := make([]byte, len(clientKey))
+			for i := range clientKey {
+				clientProof[i] = clientKey[i] ^ clientSignature[i]
+			}
+			h = hmac.New(shaNewFn, saltedPassword)
+			_, err = h.Write([]byte("Server Key"))
+			if err != nil {
+				return err
+			}
+			serverKey := h.Sum(nil)
+			h.Reset()
+			h = hmac.New(shaNewFn, serverKey)
+			_, err = h.Write([]byte(authMessage))
+			if err != nil {
+				return err
+			}
+			serverSignature = h.Sum(nil)
+			if string(serverSignature) == "" {
+				return errors.New("SCRAM: calculated an empty server signature")
+			}
+			clientFinalMessage := base64.StdEncoding.EncodeToString([]byte(clientFinalMessageBare +
+				",p=" + base64.StdEncoding.EncodeToString(clientProof)))
+			if sasl2 {
+				fmt.Fprintf(c.stanzaWriter, "<response xmlns='%s'>%s</response>\n", nsSASL2,
+					clientFinalMessage)
+			} else {
+				fmt.Fprintf(c.stanzaWriter, "<response xmlns='%s'>%s</response>\n", nsSASL,
+					clientFinalMessage)
 			}
 		}
-		if mechanism == "" {
-			return fmt.Errorf("PLAIN authentication is not an option: %v", f.Mechanisms.Mechanism)
+		if mechanism == "X-OAUTH2" && o.OAuthToken != "" && o.OAuthScope != "" {
+			// Oauth authentication: send base64-encoded \x00 user \x00 token.
+			raw := "\x00" + user + "\x00" + o.OAuthToken
+			enc := make([]byte, base64.StdEncoding.EncodedLen(len(raw)))
+			base64.StdEncoding.Encode(enc, []byte(raw))
+			if sasl2 {
+				fmt.Fprintf(c.stanzaWriter, "<auth xmlns='%s' mechanism='X-OAUTH2' auth:service='oauth2' "+
+					"xmlns:auth='%s'>%s</auth>\n", nsSASL2, o.OAuthXmlNs, enc)
+			} else {
+				fmt.Fprintf(c.stanzaWriter, "<auth xmlns='%s' mechanism='X-OAUTH2' auth:service='oauth2' "+
+					"xmlns:auth='%s'>%s</auth>\n", nsSASL, o.OAuthXmlNs, enc)
+			}
+		}
+		if mechanism == "PLAIN" {
+			// Plain authentication: send base64-encoded \x00 user \x00 password.
+			raw := "\x00" + user + "\x00" + o.Password
+			enc := make([]byte, base64.StdEncoding.EncodedLen(len(raw)))
+			base64.StdEncoding.Encode(enc, []byte(raw))
+			if sasl2 {
+				fmt.Fprintf(c.conn, "<auth xmlns='%s' mechanism='PLAIN'>%s</auth>\n", nsSASL2, enc)
+			} else {
+				fmt.Fprintf(c.conn, "<auth xmlns='%s' mechanism='PLAIN'>%s</auth>\n", nsSASL, enc)
+			}
 		}
 	}
+	if mechanism == "" {
+		return fmt.Errorf("no viable authentication method available: %v", f.Mechanisms.Mechanism)
+	}
 	// Next message should be either success or failure.
-	name, val, err := next(c.p)
+	name, val, err := c.next()
 	if err != nil {
 		return err
 	}
 	switch v := val.(type) {
+	case *sasl2Success:
+		if strings.HasPrefix(mechanism, "SCRAM-SHA") {
+			successMsg, err := base64.StdEncoding.DecodeString(v.AdditionalData)
+			if err != nil {
+				return err
+			}
+			if !strings.HasPrefix(string(successMsg), "v=") {
+				return errors.New("server sent unexpected content in SCRAM success message")
+			}
+			serverSignatureReply := strings.SplitN(string(successMsg), "v=", 2)[1]
+			serverSignatureRemote, err := base64.StdEncoding.DecodeString(serverSignatureReply)
+			if err != nil {
+				return err
+			}
+			if string(serverSignature) != string(serverSignatureRemote) {
+				return errors.New("SCRAM: server signature mismatch")
+			}
+			c.Mechanism = mechanism
+		}
+		if bind2 {
+			c.jid = v.AuthorizationIdentifier
+		}
+		if v.Token.Token != "" {
+			m := f.Authentication.Inline.Fast.Mechanism
+			switch {
+			case slices.Contains(m, "HT-SHA-256-EXPR") && tls13:
+				c.Fast.Mechanism = "HT-SHA-256-EXPR"
+			case slices.Contains(m, "HT-SHA-256-UNIQ") && !tls13:
+				c.Fast.Mechanism = "HT-SHA-256-UNIQ"
+			case slices.Contains(m, "HT-SHA-256-ENDP"):
+				c.Fast.Mechanism = "HT-SHA-256-ENDP"
+			case slices.Contains(m, "HT-SHA-256-NONE"):
+				c.Fast.Mechanism = "HT-SHA-256-NONE"
+			}
+			c.Fast.Token = v.Token.Token
+			c.Fast.Expiry, _ = time.Parse(time.RFC3339, v.Token.Expiry)
+		}
 	case *saslSuccess:
+		if strings.HasPrefix(mechanism, "SCRAM-SHA") {
+			successMsg, err := base64.StdEncoding.DecodeString(v.Text)
+			if err != nil {
+				return err
+			}
+			if !strings.HasPrefix(string(successMsg), "v=") {
+				return errors.New("server sent unexpected content in SCRAM success message")
+			}
+			serverSignatureReply := strings.SplitN(string(successMsg), "v=", 2)[1]
+			serverSignatureRemote, err := base64.StdEncoding.DecodeString(serverSignatureReply)
+			if err != nil {
+				return err
+			}
+			if string(serverSignature) != string(serverSignatureRemote) {
+				return errors.New("SCRAM: server signature mismatch")
+			}
+			c.Mechanism = mechanism
+		}
+	case *sasl2Failure:
+		errorMessage := v.Text
+		if errorMessage == "" {
+			// v.Any is type of sub-element in failure,
+			// which gives a description of what failed if there was no text element
+			errorMessage = v.Any.Local
+		}
+		return errors.New("auth failure: " + errorMessage)
 	case *saslFailure:
 		errorMessage := v.Text
 		if errorMessage == "" {
@@ -474,38 +1027,68 @@ func (c *Client) init(o *Options) error {
 		return errors.New("expected <success> or <failure>, got <" + name.Local + "> in " + name.Space)
 	}
 
-	// Now that we're authenticated, we're supposed to start the stream over again.
-	// Declare intent to be a jabber client.
-	if f, err = c.startStream(o, domain); err != nil {
-		return err
+	if !sasl2 {
+		// Now that we're authenticated, we're supposed to start the stream over again.
+		// Declare intent to be a jabber client.
+		if f, err = c.startStream(o, domain); err != nil {
+			return err
+		}
+	}
+	// Make the max. stanza size limit available.
+	if f.Limits.MaxBytes != "" {
+		c.LimitMaxBytes, err = strconv.Atoi(f.Limits.MaxBytes)
+		if err != nil {
+			c.LimitMaxBytes = 0
+		}
+	}
+	// Make the servers time limit after which it might consider the stream idle available.
+	if f.Limits.IdleSeconds != "" {
+		c.LimitIdleSeconds, err = strconv.Atoi(f.Limits.IdleSeconds)
+		if err != nil {
+			c.LimitIdleSeconds = 0
+		}
 	}
 
-	// Generate a unique cookie
-	cookie := getCookie()
+	if !bind2 {
+		// Generate a unique cookie
+		cookie := getCookie()
 
-	// Send IQ message asking to bind to the local user name.
-	if o.Resource == "" {
-		fmt.Fprintf(c.conn, "<iq type='set' id='%x'><bind xmlns='%s'></bind></iq>\n", cookie, nsBind)
-	} else {
-		fmt.Fprintf(c.conn, "<iq type='set' id='%x'><bind xmlns='%s'><resource>%s</resource></bind></iq>\n", cookie, nsBind, o.Resource)
+		// Send IQ message asking to bind to the local user name.
+		if o.Resource == "" {
+			fmt.Fprintf(c.stanzaWriter, "<iq type='set' id='%x'><bind xmlns='%s'></bind></iq>\n", cookie, nsBind)
+		} else {
+			fmt.Fprintf(c.stanzaWriter, "<iq type='set' id='%x'><bind xmlns='%s'><resource>%s</resource></bind></iq>\n", cookie, nsBind, o.Resource)
+		}
+		_, val, err = c.next()
+		if err != nil {
+			return err
+		}
+		switch v := val.(type) {
+		case *streamError:
+			errorMessage := v.Text.Text
+			if errorMessage == "" {
+				// v.Any is type of sub-element in failure,
+				// which gives a description of what failed if there was no text element
+				errorMessage = v.Any.Space
+			}
+			return errors.New("stream error: " + errorMessage)
+		case *clientIQ:
+			if v.Bind.XMLName.Space == nsBind {
+				c.jid = v.Bind.Jid // our local id
+				c.domain = domain
+			} else {
+				return errors.New("bind: unexpected reply to xmpp-bind IQ")
+			}
+		}
 	}
-	var iq clientIQ
-	if err = c.p.DecodeElement(&iq, nil); err != nil {
-		return errors.New("unmarshal <iq>: " + err.Error())
-	}
-	if &iq.Bind == nil {
-		return errors.New("<iq> result missing <bind>")
-	}
-	c.jid = iq.Bind.Jid // our local id
-	c.domain = domain
-
 	if o.Session {
 		// if server support session, open it
-		fmt.Fprintf(c.conn, "<iq to='%s' type='set' id='%x'><session xmlns='%s'/></iq>", xmlEscape(domain), cookie, nsSession)
+		cookie := getCookie() // generate new id value for session
+		fmt.Fprintf(c.stanzaWriter, "<iq to='%s' type='set' id='%x'><session xmlns='%s'/></iq>\n", xmlEscape(domain), cookie, nsSession)
 	}
 
 	// We're connected and can now receive and send messages.
-	fmt.Fprintf(c.conn, "<presence xml:lang='en'><show>%s</show><status>%s</status></presence>", o.Status, o.StatusMessage)
+	fmt.Fprintf(c.stanzaWriter, "<presence xml:lang='en'><show>%s</show><status>%s</status></presence>\n", o.Status, o.StatusMessage)
 
 	return nil
 }
@@ -527,7 +1110,7 @@ func (c *Client) startTLSIfRequired(f *streamFeatures, o *Options, domain string
 	}
 	var err error
 
-	fmt.Fprintf(c.conn, "<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>\n")
+	fmt.Fprintf(c.stanzaWriter, "<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>\n")
 	var k tlsProceed
 	if err = c.p.DecodeElement(&k, nil); err != nil {
 		return f, errors.New("unmarshal <proceed>: " + err.Error())
@@ -560,20 +1143,31 @@ func (c *Client) startTLSIfRequired(f *streamFeatures, o *Options, domain string
 func (c *Client) startStream(o *Options, domain string) (*streamFeatures, error) {
 	if o.Debug {
 		c.p = xml.NewDecoder(tee{c.conn, DebugWriter})
+		c.stanzaWriter = io.MultiWriter(c.conn, DebugWriter)
 	} else {
 		c.p = xml.NewDecoder(c.conn)
+		c.stanzaWriter = c.conn
 	}
 
-	_, err := fmt.Fprintf(c.conn, "<?xml version='1.0'?>\n"+
-		"<stream:stream to='%s' xmlns='%s'\n"+
-		" xmlns:stream='%s' version='1.0'>\n",
-		xmlEscape(domain), nsClient, nsStream)
-	if err != nil {
-		return nil, err
+	if c.IsEncrypted() {
+		_, err := fmt.Fprintf(c.stanzaWriter, "<?xml version='1.0'?>"+
+			"<stream:stream from='%s' to='%s' xmlns='%s'"+
+			" xmlns:stream='%s' version='1.0'>\n",
+			xmlEscape(o.User), xmlEscape(domain), nsClient, nsStream)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		_, err := fmt.Fprintf(c.stanzaWriter, "<?xml version='1.0'?>"+
+			"<stream:stream to='%s' xmlns='%s' xmlns:stream='%s' version='1.0'>\n",
+			xmlEscape(domain), nsClient, nsStream)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// We expect the server to start a <stream>.
-	se, err := nextStart(c.p)
+	se, err := c.nextStart()
 	if err != nil {
 		return nil, err
 	}
@@ -607,6 +1201,7 @@ type Chat struct {
 	Thread    string
 	Ooburl    string
 	Oobdesc   string
+	Lang      string
 	ID        string
 	ReplaceID string
 	Roster    Roster
@@ -641,14 +1236,21 @@ type IQ struct {
 }
 
 // Recv waits to receive the next XMPP stanza.
-// Return type is either a presence notification or a chat message.
 func (c *Client) Recv() (stanza interface{}, err error) {
 	for {
-		_, val, err := next(c.p)
+		_, val, err := c.next()
 		if err != nil {
 			return Chat{}, err
 		}
 		switch v := val.(type) {
+		case *streamError:
+			errorMessage := v.Text.Text
+			if errorMessage == "" {
+				// v.Any is type of sub-element in failure,
+				// which gives a description of what failed if there was no text element
+				errorMessage = v.Any.Space
+			}
+			return Chat{}, errors.New("stream error: " + errorMessage)
 		case *clientMessage:
 			if v.Event.XMLNS == XMPPNS_PUBSUB_EVENT {
 				// Handle Pubsub notifications
@@ -687,6 +1289,7 @@ func (c *Client) Recv() (stanza interface{}, err error) {
 				Other:     v.OtherStrings(),
 				OtherElem: v.Other,
 				Stamp:     stamp,
+				Lang:      v.Lang,
 			}
 			return chat, nil
 		case *clientQuery:
@@ -723,6 +1326,16 @@ func (c *Client) Recv() (stanza interface{}, err error) {
 
 					return PubsubSubscription{
 						Errors: errsStr,
+					}, nil
+				default:
+					res, err := xml.Marshal(v.Query)
+					if err != nil {
+						return Chat{}, err
+					}
+
+					return IQ{
+						ID: v.ID, From: v.From, To: v.To, Type: v.Type,
+						Query: res,
 					}, nil
 				}
 			case v.Type == "result":
@@ -830,23 +1443,31 @@ func (c *Client) Recv() (stanza interface{}, err error) {
 					// can just use items1 and items3 to do the same
 					// as an Avatar node is just a PEP (PubSub) node.
 					/*case "retrieve1":
-					if v.Query.XMLName.Local == "pubsub" {
-						var p clientPubsubItems
-						err := xml.Unmarshal([]byte(v.Query.InnerXML), &p)
-						if err != nil {
-							return PubsubItems{}, err
-						}
+					var p clientPubsubItems
+					err := xml.Unmarshal([]byte(v.Query.InnerXML), &p)
+					if err != nil {
+						return PubsubItems{}, err
+					}
 
-						switch p.Node {
-						case XMPPNS_AVATAR_PEP_DATA:
-							return handleAvatarData(p.Items[0].Body,
-								v.From,
-								p.Items[0].ID)
-						case XMPPNS_AVATAR_PEP_METADATA:
-							return handleAvatarMetadata(p.Items[0].Body,
-								v.From)
-						}
+					switch p.Node {
+					case XMPPNS_AVATAR_PEP_DATA:
+						return handleAvatarData(p.Items[0].Body,
+							v.From,
+							p.Items[0].ID)
+					case XMPPNS_AVATAR_PEP_METADATA:
+						return handleAvatarMetadata(p.Items[0].Body,
+							v
 					}*/
+				default:
+					res, err := xml.Marshal(v.Query)
+					if err != nil {
+						return Chat{}, err
+					}
+
+					return IQ{
+						ID: v.ID, From: v.From, To: v.To, Type: v.Type,
+						Query: res,
+					}, nil
 				}
 			case v.Query.XMLName.Local == "":
 				return IQ{ID: v.ID, From: v.From, To: v.To, Type: v.Type}, nil
@@ -881,7 +1502,6 @@ func (c *Client) Send(chat Chat) (n int, err error) {
 		}
 		oobtext += `</x>`
 	}
-
 	if chat.ID != `` {
 		msgidtext = `id='` + xmlEscape(chat.ID) + `'`
 	} else {
@@ -892,9 +1512,17 @@ func (c *Client) Send(chat Chat) (n int, err error) {
 		msgcorrecttext = `<replace id='` + xmlEscape(chat.ReplaceID) + `' xmlns='urn:xmpp:message-correct:0'/>`
 	}
 
-	stanza := "<message to='%s' type='%s' " + msgidtext + " xml:lang='en'>" + subtext + "<body>%s</body>" + msgcorrecttext + oobtext + thdtext + "</message>"
+	chat.Text = validUTF8(chat.Text)
 
-	return fmt.Fprintf(c.conn, stanza, xmlEscape(chat.Remote), xmlEscape(chat.Type), xmlEscape(chat.Text))
+	stanza := fmt.Sprintf("<message to='%s' type='%s' "+msgidtext+" xml:lang='en'>"+subtext+"<body>%s</body>"+msgcorrecttext+oobtext+thdtext+"</message>",
+		xmlEscape(chat.Remote), xmlEscape(chat.Type), xmlEscape(chat.Text))
+
+	if c.LimitMaxBytes != 0 && len(stanza) > c.LimitMaxBytes {
+		return 0, fmt.Errorf("stanza size (%v bytes) exceeds server limit (%v bytes)",
+			len(stanza), c.LimitMaxBytes)
+	}
+
+	return fmt.Fprint(c.stanzaWriter, stanza)
 }
 
 // SendOOB sends OOB data wrapped inside an XMPP message stanza, without actual body.
@@ -910,17 +1538,72 @@ func (c *Client) SendOOB(chat Chat) (n int, err error) {
 		}
 		oobtext += `</x>`
 	}
-	return fmt.Fprintf(c.conn, "<message to='%s' type='%s' id='%s' xml:lang='en'>"+oobtext+thdtext+"</message>",
+	stanza := fmt.Sprintf("<message to='%s' type='%s' id='%s' xml:lang='en'>"+oobtext+thdtext+"</message>\n",
 		xmlEscape(chat.Remote), xmlEscape(chat.Type), cnonce())
+	if c.LimitMaxBytes != 0 && len(stanza) > c.LimitMaxBytes {
+		return 0, fmt.Errorf("stanza size (%v bytes) exceeds server limit (%v bytes)",
+			len(stanza), c.LimitMaxBytes)
+	}
+	return fmt.Fprint(c.stanzaWriter, stanza)
 }
 
 // SendOrg sends the original text without being wrapped in an XMPP message stanza.
 func (c *Client) SendOrg(org string) (n int, err error) {
-	return fmt.Fprint(c.conn, org)
+	stanza := fmt.Sprint(org + "\n")
+	if c.LimitMaxBytes != 0 && len(stanza) > c.LimitMaxBytes {
+		return 0, fmt.Errorf("stanza size (%v bytes) exceeds server limit (%v bytes)",
+			len(stanza), c.LimitMaxBytes)
+	}
+	return fmt.Fprint(c.stanzaWriter, stanza)
 }
 
+// SendPresence sends Presence wrapped inside XMPP presence stanza.
 func (c *Client) SendPresence(presence Presence) (n int, err error) {
-	return fmt.Fprintf(c.conn, "<presence from='%s' to='%s'/>", xmlEscape(presence.From), xmlEscape(presence.To))
+	// Forge opening presence tag
+	var buf string = "<presence"
+
+	if presence.From != "" {
+		buf = buf + fmt.Sprintf(" from='%s'", xmlEscape(presence.From))
+	}
+
+	if presence.To != "" {
+		buf = buf + fmt.Sprintf(" to='%s'", xmlEscape(presence.To))
+	}
+
+	if presence.Type != "" {
+		// https://www.ietf.org/rfc/rfc3921.txt, 2.2.1, types can only be
+		// unavailable, subscribe, subscribed, unsubscribe, unsubscribed, probe, error
+		switch presence.Type {
+		case "unavailable", "subscribe", "subscribed", "unsubscribe", "unsubscribed", "probe", "error":
+			buf = buf + fmt.Sprintf(" type='%s'", xmlEscape(presence.Type))
+		}
+	}
+
+	buf = buf + ">"
+
+	// TODO: there may be optional tag "priority", but former presence type does not take this into account
+	//       so either we must follow std, change type xmpp.Presence and break backward compatibility
+	//       or leave it as-is and potentially break client software
+
+	if presence.Show != "" {
+		// https://www.ietf.org/rfc/rfc3921.txt 2.2.2.1, show can be only
+		// away, chat, dnd, xa
+		switch presence.Show {
+		case "away", "chat", "dnd", "xa":
+			buf = buf + fmt.Sprintf("<show>%s</show>", xmlEscape(presence.Show))
+		}
+	}
+
+	if presence.Status != "" {
+		buf = buf + fmt.Sprintf("<status>%s</status>", xmlEscape(presence.Status))
+	}
+
+	stanza := fmt.Sprintf(buf + "</presence>\n")
+	if c.LimitMaxBytes != 0 && len(stanza) > c.LimitMaxBytes {
+		return 0, fmt.Errorf("stanza size (%v bytes) exceeds server limit (%v bytes)",
+			len(stanza), c.LimitMaxBytes)
+	}
+	return fmt.Fprint(c.stanzaWriter, stanza)
 }
 
 // SendKeepAlive sends a "whitespace keepalive" as described in chapter 4.6.1 of RFC6120.
@@ -930,31 +1613,42 @@ func (c *Client) SendKeepAlive() (n int, err error) {
 
 // SendHtml sends the message as HTML as defined by XEP-0071
 func (c *Client) SendHtml(chat Chat) (n int, err error) {
-	return fmt.Fprintf(c.conn, "<message to='%s' type='%s' xml:lang='en'>"+
-		"<body>%s</body>"+
-		"<html xmlns='http://jabber.org/protocol/xhtml-im'><body xmlns='http://www.w3.org/1999/xhtml'>%s</body></html></message>",
+	stanza := fmt.Sprintf("<message to='%s' type='%s' xml:lang='en'><body>%s</body>"+
+		"<html xmlns='http://jabber.org/protocol/xhtml-im'><body xmlns='http://www.w3.org/1999/xhtml'>%s</body></html></message>\n",
 		xmlEscape(chat.Remote), xmlEscape(chat.Type), xmlEscape(chat.Text), chat.Text)
+	if c.LimitMaxBytes != 0 && len(stanza) > c.LimitMaxBytes {
+		return 0, fmt.Errorf("stanza size (%v bytes) exceeds server limit (%v bytes)",
+			len(stanza), c.LimitMaxBytes)
+	}
+	return fmt.Fprint(c.stanzaWriter, stanza)
 }
 
 // Roster asks for the chat roster.
 func (c *Client) Roster() error {
-	fmt.Fprintf(c.conn, "<iq from='%s' type='get' id='roster1'><query xmlns='jabber:iq:roster'/></iq>\n", xmlEscape(c.jid))
+	fmt.Fprintf(c.stanzaWriter, "<iq from='%s' type='get' id='roster1'><query xmlns='jabber:iq:roster'/></iq>\n", xmlEscape(c.jid))
 	return nil
 }
 
 // RFC 3920  C.1  Streams name space
 type streamFeatures struct {
-	XMLName    xml.Name `xml:"http://etherx.jabber.org/streams features"`
-	StartTLS   *tlsStartTLS
-	Mechanisms saslMechanisms
-	Bind       bindBind
-	Session    bool
+	XMLName         xml.Name `xml:"http://etherx.jabber.org/streams features"`
+	Authentication  sasl2Authentication
+	StartTLS        *tlsStartTLS
+	Mechanisms      saslMechanisms
+	ChannelBindings saslChannelBindings
+	Bind            bindBind
+	Session         bool
+	Limits          streamLimits
 }
 
 type streamError struct {
 	XMLName xml.Name `xml:"http://etherx.jabber.org/streams error"`
 	Any     xml.Name
-	Text    string
+	Text    struct {
+		Text  string `xml:",chardata"`
+		Lang  string `xml:"lang,attr"`
+		Xmlns string `xml:"xmlns,attr"`
+	} `xml:"text"`
 }
 
 // RFC 3920  C.3  TLS name space
@@ -971,35 +1665,95 @@ type tlsFailure struct {
 	XMLName xml.Name `xml:"urn:ietf:params:xml:ns:xmpp-tls failure"`
 }
 
+type sasl2Authentication struct {
+	XMLName   xml.Name `xml:"urn:xmpp:sasl:2 authentication"`
+	Mechanism []string `xml:"mechanism"`
+	Inline    struct {
+		Text string `xml:",chardata"`
+		Bind struct {
+			XMLName xml.Name `xml:"urn:xmpp:bind:0 bind"`
+			Xmlns   string   `xml:"xmlns,attr"`
+			Text    string   `xml:",chardata"`
+		} `xml:"bind"`
+		Fast struct {
+			XMLName   xml.Name `xml:"urn:xmpp:fast:0 fast"`
+			Text      string   `xml:",chardata"`
+			Tls0rtt   string   `xml:"tls-0rtt,attr"`
+			Mechanism []string `xml:"mechanism"`
+		} `xml:"fast"`
+	} `xml:"inline"`
+}
+
 // RFC 3920  C.4  SASL name space
 type saslMechanisms struct {
 	XMLName   xml.Name `xml:"urn:ietf:params:xml:ns:xmpp-sasl mechanisms"`
 	Mechanism []string `xml:"mechanism"`
 }
 
-type saslAuth struct {
-	XMLName   xml.Name `xml:"urn:ietf:params:xml:ns:xmpp-sasl auth"`
-	Mechanism string   `xml:",attr"`
+type saslChannelBindings struct {
+	XMLName        xml.Name `xml:"sasl-channel-binding"`
+	Text           string   `xml:",chardata"`
+	Xmlns          string   `xml:"xmlns,attr"`
+	ChannelBinding []struct {
+		Text string `xml:",chardata"`
+		Type string `xml:"type,attr"`
+	} `xml:"channel-binding"`
 }
-
-type saslChallenge string
-
-type saslRspAuth string
-
-type saslResponse string
 
 type saslAbort struct {
 	XMLName xml.Name `xml:"urn:ietf:params:xml:ns:xmpp-sasl abort"`
 }
 
+type sasl2Success struct {
+	XMLName                 xml.Name `xml:"urn:xmpp:sasl:2 success"`
+	Text                    string   `xml:",chardata"`
+	AdditionalData          string   `xml:"additional-data"`
+	AuthorizationIdentifier string   `xml:"authorization-identifier"`
+	Bound                   struct {
+		Text  string `xml:",chardata"`
+		Xmlns string `xml:"urn:xmpp:bind:0,attr"`
+	} `xml:"bound"`
+	Token struct {
+		Text   string `xml:",chardata"`
+		Xmlns  string `xml:"urn:xmpp:fast:0,attr"`
+		Expiry string `xml:"expiry,attr"`
+		Token  string `xml:"token,attr"`
+	} `xml:"token"`
+}
+
 type saslSuccess struct {
 	XMLName xml.Name `xml:"urn:ietf:params:xml:ns:xmpp-sasl success"`
+	Text    string   `xml:",chardata"`
+}
+
+type sasl2Failure struct {
+	XMLName xml.Name `xml:"urn:xmpp:sasl:2 failure"`
+	Any     xml.Name `xml:",any"`
+	Text    string   `xml:"text"`
 }
 
 type saslFailure struct {
 	XMLName xml.Name `xml:"urn:ietf:params:xml:ns:xmpp-sasl failure"`
 	Any     xml.Name `xml:",any"`
 	Text    string   `xml:"text"`
+}
+
+type sasl2Challenge struct {
+	XMLName xml.Name `xml:"urn:xmpp:sasl:2 challenge"`
+	Text    string   `xml:",chardata"`
+}
+
+type saslChallenge struct {
+	XMLName xml.Name `xml:"urn:ietf:params:xml:ns:xmpp-sasl challenge"`
+	Text    string   `xml:",chardata"`
+}
+
+type streamLimits struct {
+	XMLName     xml.Name `xml:"limits"`
+	Text        string   `xml:",chardata"`
+	Xmlns       string   `xml:"xmlns,attr"`
+	MaxBytes    string   `xml:"max-bytes"`
+	IdleSeconds string   `xml:"idle-seconds"`
 }
 
 // RFC 3920  C.5  Resource binding name space
@@ -1021,6 +1775,7 @@ type clientMessage struct {
 	ID      string   `xml:"id,attr"`
 	To      string   `xml:"to,attr"`
 	Type    string   `xml:"type,attr"` // chat, error, groupchat, headline, or normal
+	Lang    string   `xml:"lang,attr"`
 
 	// These should technically be []clientText, but string is much more convenient.
 	Subject   string `xml:"subject"`
@@ -1047,7 +1802,8 @@ func (m *clientMessage) OtherStrings() []string {
 
 type XMLElement struct {
 	XMLName  xml.Name
-	InnerXML string `xml:",innerxml"`
+	Attr     []xml.Attr `xml:",any,attr"` // Save the attributes of the xml element
+	InnerXML string     `xml:",innerxml"`
 }
 
 func (e *XMLElement) String() string {
@@ -1074,11 +1830,6 @@ func (e *XMLElement) String() string {
 
 type Delay struct {
 	Stamp string `xml:"stamp,attr"`
-}
-
-type clientText struct {
-	Lang string `xml:",attr"`
-	Body string `xml:"chardata"`
 }
 
 type clientPresence struct {
@@ -1131,25 +1882,60 @@ type rosterItem struct {
 }
 
 // Scan XML token stream to find next StartElement.
-func nextStart(p *xml.Decoder) (xml.StartElement, error) {
+func (c *Client) nextStart() (xml.StartElement, error) {
 	for {
-		t, err := p.Token()
-		if err != nil || t == nil {
+		// Do not read from the stream if it's
+		// going to be closed.
+		if c.shutdown {
+			return xml.StartElement{}, io.EOF
+		}
+		c.nextMutex.Lock()
+		to, err := c.p.Token()
+		if err != nil || to == nil {
+			c.nextMutex.Unlock()
 			return xml.StartElement{}, err
 		}
+		t := xml.CopyToken(to)
 		switch t := t.(type) {
 		case xml.StartElement:
+			c.nextMutex.Unlock()
 			return t, nil
 		}
+		c.nextMutex.Unlock()
+	}
+}
+
+// Scan XML token stream to find next EndElement
+func (c *Client) nextEnd() (xml.EndElement, error) {
+	c.p.Strict = false
+	for {
+		c.nextMutex.Lock()
+		to, err := c.p.Token()
+		if err != nil || to == nil {
+			c.nextMutex.Unlock()
+			return xml.EndElement{}, err
+		}
+		t := xml.CopyToken(to)
+		switch t := t.(type) {
+		case xml.EndElement:
+			// Do not unlock mutex if the stream is closed to
+			// prevent further reading on the stream.
+			if t.Name.Local == "stream" {
+				return t, nil
+			}
+			c.nextMutex.Unlock()
+			return t, nil
+		}
+		c.nextMutex.Unlock()
 	}
 }
 
 // Scan XML token stream for next element and save into val.
 // If val == nil, allocate new element based on proto map.
 // Either way, return val.
-func next(p *xml.Decoder) (xml.Name, interface{}, error) {
+func (c *Client) next() (xml.Name, interface{}, error) {
 	// Read start element to find out what type we want.
-	se, err := nextStart(p)
+	se, err := c.nextStart()
 	if err != nil {
 		return xml.Name{}, nil, err
 	}
@@ -1169,16 +1955,24 @@ func next(p *xml.Decoder) (xml.Name, interface{}, error) {
 		nv = &tlsFailure{}
 	case nsSASL + " mechanisms":
 		nv = &saslMechanisms{}
+	case nsSASL2 + " challenge":
+		nv = &sasl2Challenge{}
 	case nsSASL + " challenge":
-		nv = ""
+		nv = &saslChallenge{}
 	case nsSASL + " response":
 		nv = ""
 	case nsSASL + " abort":
 		nv = &saslAbort{}
+	case nsSASL2 + " success":
+		nv = &sasl2Success{}
 	case nsSASL + " success":
 		nv = &saslSuccess{}
+	case nsSASL2 + " failure":
+		nv = &sasl2Failure{}
 	case nsSASL + " failure":
 		nv = &saslFailure{}
+	case nsSASLCB + " sasl-channel-binding":
+		nv = &saslChannelBindings{}
 	case nsBind + " bind":
 		nv = &bindBind{}
 	case nsClient + " message":
@@ -1195,9 +1989,11 @@ func next(p *xml.Decoder) (xml.Name, interface{}, error) {
 	}
 
 	// Unmarshal into that storage.
-	if err = p.DecodeElement(nv, &se); err != nil {
+	c.nextMutex.Lock()
+	if err = c.p.DecodeElement(nv, &se); err != nil {
 		return xml.Name{}, nil, err
 	}
+	c.nextMutex.Unlock()
 
 	return se.Name, nv, err
 }
@@ -1221,4 +2017,13 @@ func (t tee) Read(p []byte) (n int, err error) {
 		t.w.Write([]byte("\n"))
 	}
 	return
+}
+
+func validUTF8(s string) string {
+	// Remove invalid code points.
+	s = strings.ToValidUTF8(s, "�")
+	reg := regexp.MustCompile(`[\x{0000}-\x{0008}\x{000B}\x{000C}\x{000E}-\x{001F}]`)
+	s = reg.ReplaceAllString(s, "�")
+
+	return s
 }

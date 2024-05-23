@@ -12,7 +12,7 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           version: latest
-          args: "-v --new-from-rev HEAD~5"
+          args: "-v --new-from-rev HEAD~5 --timeout=5m"
   test-build-upload:
     strategy:
       matrix:

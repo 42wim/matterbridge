@@ -21,7 +21,7 @@ require (
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/lrstanley/girc v0.0.0-20240519163535-a518c5b87a79
 	github.com/matterbridge/Rocket.Chat.Go.SDK v0.0.0-20211016222428-79310a412696
-	github.com/matterbridge/go-xmpp v0.0.0-20211030125215-791a06c5f1be
+	github.com/matterbridge/go-xmpp v0.0.0-20240523230155-7154bfeb76e8
 	github.com/matterbridge/gomatrix v0.0.0-20220411225302-271e5088ea27
 	github.com/matterbridge/gozulipbot v0.0.0-20211023205727-a19d6c1f3b75
 	github.com/matterbridge/logrus-prefixed-formatter v0.5.3-0.20200523233437-d971309a77ba
@@ -150,6 +150,4 @@ require (
 
 //replace github.com/matrix-org/gomatrix => github.com/matterbridge/gomatrix v0.0.0-20220205235239-607eb9ee6419
 
-go 1.21
-
-toolchain go1.22.3
+go 1.22.0
