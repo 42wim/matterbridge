@@ -170,10 +170,10 @@ func (b *Bdiscord) handleEventWebhook(msg *config.Message, channelID string) (st
 
 	b.Log.Debugf("Processing webhook sending for message %#v", msg)
 	msg.Text = b.replaceUserMentions(msg.Text)
-	msgId, err := b.webhookSend(msg, channelID)
+	msgID, err := b.webhookSend(msg, channelID)
 	if err != nil {
-		b.Log.Errorf("Could not broadcast via webhook for message %#v: %s", msgId, err)
+		b.Log.Errorf("Could not broadcast via webhook for message %#v: %s", msgID, err)
 		return "", err
 	}
-	return msgId, nil
+	return msgID, nil
 }
