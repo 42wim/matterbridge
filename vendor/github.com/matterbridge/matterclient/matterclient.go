@@ -17,7 +17,7 @@ import (
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/jpillora/backoff"
 	prefixed "github.com/matterbridge/logrus-prefixed-formatter"
-	"github.com/mattermost/mattermost-server/v6/model"
+	"github.com/mattermost/mattermost/server/public/model"
 	"github.com/sirupsen/logrus"
 )
 
@@ -160,7 +160,7 @@ func (m *Client) Login() error {
 	// connect websocket
 	m.wsConnect()
 
-	ctx, loginCancel := context.WithCancel(context.Background())
+	ctx, loginCancel := context.WithCancel(context.TODO())
 	m.loginCancel = loginCancel
 
 	m.logger.Debug("starting wsreceiver")
@@ -284,7 +284,7 @@ func (m *Client) serverAlive(b *backoff.Backoff) error {
 	for {
 		d := b.Duration()
 		// bogus call to get the serverversion
-		resp, err := m.Client.Logout()
+		resp, err := m.Client.Logout(context.TODO())
 		if err != nil {
 			return err
 		}
@@ -303,11 +303,13 @@ func (m *Client) serverAlive(b *backoff.Backoff) error {
 // initialize user and teams
 // nolint:funlen
 func (m *Client) initUser() error {
+	ctx := context.TODO()
+
 	m.Lock()
 	defer m.Unlock()
 	// we only load all team data on initial login.
 	// all other updates are for channels from our (primary) team only.
-	teams, _, err := m.Client.GetTeamsForUser(m.User.Id, "")
+	teams, _, err := m.Client.GetTeamsForUser(ctx, m.User.Id, "")
 	if err != nil {
 		return err
 	}
@@ -317,7 +319,7 @@ func (m *Client) initUser() error {
 		max := 200
 		usermap := make(map[string]*model.User)
 
-		mmusers, _, err := m.Client.GetUsersInTeam(team.Id, idx, max, "")
+		mmusers, _, err := m.Client.GetUsersInTeam(ctx, team.Id, idx, max, "")
 		if err != nil {
 			return err
 		}
@@ -327,7 +329,7 @@ func (m *Client) initUser() error {
 				usermap[user.Id] = user
 			}
 
-			mmusers, _, err = m.Client.GetUsersInTeam(team.Id, idx, max, "")
+			mmusers, _, err = m.Client.GetUsersInTeam(ctx, team.Id, idx, max, "")
 			if err != nil {
 				return err
 			}
@@ -373,6 +375,7 @@ func (m *Client) initUserChannels() error {
 }
 
 func (m *Client) doLogin(firstConnection bool, b *backoff.Backoff) error {
+	ctx := context.TODO()
 	var (
 		logmsg = "trying login"
 		err    error
@@ -389,9 +392,9 @@ func (m *Client) doLogin(firstConnection bool, b *backoff.Backoff) error {
 				return err
 			}
 		case m.Credentials.MFAToken != "":
-			user, _, err = m.Client.LoginWithMFA(m.Credentials.Login, m.Credentials.Pass, m.Credentials.MFAToken)
+			user, _, err = m.Client.LoginWithMFA(ctx, m.Credentials.Login, m.Credentials.Pass, m.Credentials.MFAToken)
 		default:
-			user, _, err = m.Client.Login(m.Credentials.Login, m.Credentials.Pass)
+			user, _, err = m.Client.Login(ctx, m.Credentials.Login, m.Credentials.Pass)
 		}
 
 		if err != nil {
@@ -440,7 +443,7 @@ func (m *Client) doLoginToken() (*model.User, *model.Response, error) {
 		m.logger.Debugf(logmsg + " with personal token")
 	}
 
-	user, resp, err = m.Client.GetMe("")
+	user, resp, err = m.Client.GetMe(context.TODO(), "")
 	if err != nil {
 		return user, resp, err
 	}
@@ -532,7 +535,7 @@ func (m *Client) wsConnect() {
 }
 
 func (m *Client) doCheckAlive() error {
-	if _, _, err := m.Client.GetPing(); err != nil {
+	if _, _, err := m.Client.GetPing(context.TODO()); err != nil {
 		return err
 	}
 
@@ -695,7 +698,7 @@ func (m *Client) Logout() error {
 	// actually log out
 	m.logger.Debug("running m.Client.Logout")
 
-	if _, err := m.Client.Logout(); err != nil {
+	if _, err := m.Client.Logout(context.TODO()); err != nil {
 		return err
 	}
 

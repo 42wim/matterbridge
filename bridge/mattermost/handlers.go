@@ -1,10 +1,12 @@
 package bmattermost
 
 import (
+	"context"
+
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/matterbridge/matterclient"
-	"github.com/mattermost/mattermost-server/v6/model"
+	"github.com/mattermost/mattermost/server/public/model"
 )
 
 // handleDownloadAvatar downloads the avatar of userid from channel
@@ -25,7 +27,7 @@ func (b *Bmattermost) handleDownloadAvatar(userid string, channel string) {
 			data []byte
 			err  error
 		)
-		data, _, err = b.mc.Client.GetProfileImage(userid, "")
+		data, _, err = b.mc.Client.GetProfileImage(context.TODO(), userid, "")
 		if err != nil {
 			b.Log.Errorf("ProfileImage download failed for %#v %s", userid, err)
 			return
@@ -43,8 +45,8 @@ func (b *Bmattermost) handleDownloadAvatar(userid string, channel string) {
 
 //nolint:wrapcheck
 func (b *Bmattermost) handleDownloadFile(rmsg *config.Message, id string) error {
-	url, _, _ := b.mc.Client.GetFileLink(id)
-	finfo, _, err := b.mc.Client.GetFileInfo(id)
+	url, _, _ := b.mc.Client.GetFileLink(context.TODO(), id)
+	finfo, _, err := b.mc.Client.GetFileInfo(context.TODO(), id)
 	if err != nil {
 		return err
 	}
@@ -52,7 +54,7 @@ func (b *Bmattermost) handleDownloadFile(rmsg *config.Message, id string) error 
 	if err != nil {
 		return err
 	}
-	data, _, err := b.mc.Client.DownloadFile(id, true)
+	data, _, err := b.mc.Client.DownloadFile(context.TODO(), id, true)
 	if err != nil {
 		return err
 	}

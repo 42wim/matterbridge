@@ -157,7 +157,7 @@ func newTarget(targetType string, options json.RawMessage, factory TargetFactory
 			return t, nil
 		}
 	}
-	return nil, fmt.Errorf("target type '%s' is unrecogized", targetType)
+	return nil, fmt.Errorf("target type '%s' is unrecognized", targetType)
 }
 
 func newFormatter(format string, options json.RawMessage, factory FormatterFactory) (logr.Formatter, error) {
@@ -205,5 +205,5 @@ func newFormatter(format string, options json.RawMessage, factory FormatterFacto
 			return f, nil
 		}
 	}
-	return nil, fmt.Errorf("format '%s' is unrecogized", format)
+	return nil, fmt.Errorf("format '%s' is unrecognized", format)
 }

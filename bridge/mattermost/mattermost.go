@@ -1,6 +1,7 @@
 package bmattermost
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -157,7 +158,7 @@ func (b *Bmattermost) Send(msg config.Message) (string, error) {
 
 	// we only can reply to the root of the thread, not to a specific ID (like discord for example does)
 	if msg.ParentID != "" {
-		post, _, err := b.mc.Client.GetPost(msg.ParentID, "")
+		post, _, err := b.mc.Client.GetPost(context.TODO(), msg.ParentID, "")
 		if err != nil {
 			b.Log.Errorf("getting post %s failed: %s", msg.ParentID, err)
 		}
