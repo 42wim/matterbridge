@@ -147,6 +147,7 @@ type Protocol struct {
 	ReplaceNicks           [][]string // all protocols
 	RemoteNickFormat       string     // all protocols
 	RunCommands            []string   // IRC
+	SendUrlNotFile         bool       // matrix
 	Server                 string     // IRC,mattermost,XMPP,discord,matrix
 	SessionFile            string     // msteams,whatsapp
 	ShowJoinPart           bool       // all protocols
