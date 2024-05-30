@@ -36,6 +36,9 @@ type Bdiscord struct {
 	userMemberMap map[string]*discordgo.Member
 	nickMemberMap map[string]*discordgo.Member
 
+	noEmbedPartUrls bool
+	noEmbedUrls     bool
+
 	// Webhook specific logic
 	useAutoWebhooks bool
 	transmitter     *transmitter.Transmitter
@@ -56,6 +59,12 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	b.userMemberMap = make(map[string]*discordgo.Member)
 	b.nickMemberMap = make(map[string]*discordgo.Member)
 	b.channelInfoMap = make(map[string]*config.ChannelInfo)
+
+	b.noEmbedPartUrls = b.GetBool("NoEmbedPartUrls")
+	b.noEmbedUrls = b.GetBool("NoEmbedUrls")
+	if b.noEmbedPartUrls && b.noEmbedUrls {
+		b.Log.Info("NoEmbedUrls supersedes NoEmbedPartUrls when both are specified.")
+	}
 
 	b.useAutoWebhooks = b.GetBool("AutoWebhooks")
 	if b.useAutoWebhooks {
@@ -269,6 +278,10 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 	// Make a action /me of the message
 	if msg.Event == config.EventUserAction {
 		msg.Text = "_" + msg.Text + "_"
+	}
+
+	if b.noEmbedUrls || (msg.Event == config.EventJoinLeave && b.noEmbedPartUrls) {
+		disableEmbedUrls(&msg.Text)
 	}
 
 	// Handle prefix hint for unthreaded messages.
