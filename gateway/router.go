@@ -134,8 +134,9 @@ func (r *Router) handleReceive() {
 		r.handleEventFailure(&msg)
 		r.handleEventRejoinChannels(&msg)
 
+		srcBridge := r.getBridge(msg.Account)
 		// Set message protocol based on the account it came from
-		msg.Protocol = r.getBridge(msg.Account).Protocol
+		msg.Protocol = srcBridge.Protocol
 
 		filesHandled := false
 		for _, gw := range r.Gateways {
@@ -163,6 +164,11 @@ func (r *Router) handleReceive() {
 				// This is necessary as msgIDs will change if a bridge returns
 				// a different ID in response to edits.
 				if !exists {
+					// we're adding the original message as a "dest message"
+					// as when we get the dest messages for a delete the source message isnt in the list
+					// therefore the delete doesnt happen on the source platform.
+					msgIDs = append(msgIDs, &BrMsgID{srcBridge, srcBridge.Protocol + " " + msg.ID, msg.Channel + srcBridge.Account})
+
 					gw.Messages.Add(msg.Protocol+" "+msg.ID, msgIDs)
 				}
 			}
