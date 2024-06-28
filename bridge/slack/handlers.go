@@ -9,6 +9,9 @@ import (
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/slack-go/slack"
+	"github.com/slack-go/slack/socketmode"
+	"github.com/slack-go/slack/slackevents"
+	"encoding/json"
 )
 
 // ErrEventIgnored is for events that should be ignored
@@ -19,6 +22,9 @@ func (b *Bslack) handleSlack() {
 	if b.GetString(incomingWebhookConfig) != "" && b.GetString(tokenConfig) == "" {
 		b.Log.Debugf("Choosing webhooks based receiving")
 		go b.handleMatterHook(messages)
+	} else if b.GetString(appTokenConfig) != "" && b.GetString(tokenConfig) != "" {
+		b.Log.Debugf("Choosing socket mode based receiving")
+		go b.handleSlackClientSocketMode(messages)
 	} else {
 		b.Log.Debugf("Choosing token based receiving")
 		go b.handleSlackClient(messages)
@@ -44,6 +50,135 @@ func (b *Bslack) handleSlack() {
 
 		b.Log.Debugf("<= Message is %#v", message)
 		b.Remote <- *message
+	}
+}
+
+func (b *Bslack) handleSlackClientSocketMode(messages chan *config.Message) {
+
+	for evt := range b.smc.Events {
+		switch evt.Type {
+		case socketmode.EventTypeConnecting:
+			b.Log.Debug("Connecting to Slack with Socket Mode...")
+		case socketmode.EventTypeConnectionError:
+			b.Log.Debug("Connection failed. Retrying later...")
+		case socketmode.EventTypeConnected:
+			b.Log.Debug("Connected to Slack with Socket Mode.")
+			if info, err := b.rtm.AuthTest(); err == nil {
+				b.si = &slack.Info {
+					User: &slack.UserDetails{
+						ID: info.UserID,
+						Name: info.User,
+					},
+					Team: &slack.Team{
+						ID: info.TeamID,
+						Name: info.Team,
+					},
+				}
+				b.channels.populateChannels(true)
+				b.users.populateUsers(true)
+			} else {
+				b.Log.Fatalf("Get user info error %+v", err)
+			}
+		case socketmode.EventTypeEventsAPI:
+			eventsAPIEvent, ok := evt.Data.(slackevents.EventsAPIEvent)
+			if !ok {
+				b.Log.Printf("Ignored %+v\n", evt)
+				continue
+			}
+
+			b.smc.Ack(*evt.Request)
+
+			switch eventsAPIEvent.Type {
+			case slackevents.CallbackEvent:
+				innerEvent := eventsAPIEvent.InnerEvent
+				// b.Log.Debugf("Event received %+v", innerEvent)
+				switch ev := innerEvent.Data.(type) {
+				case *slackevents.MessageEvent:
+					// Workaround for handler compability
+					evString, _ := json.Marshal(ev)
+					b.Log.Debugf("Message event: %s", evString)
+					slackEvent := &slack.MessageEvent{}
+					if err := json.Unmarshal(evString, &slackEvent); err != nil {
+						b.Log.Errorf("Skipped message: %#v", err)
+						continue
+					}
+
+					if b.skipMessageEvent(slackEvent) {
+						b.Log.Debugf("Skipped message: %#v", slackEvent)
+						continue
+					}
+					rmsg, err := b.handleMessageEvent(slackEvent)
+					if err != nil {
+						b.Log.Errorf("%#v", err)
+						continue
+					}
+					messages <- rmsg
+				case *slackevents.FileDeletedEvent:
+					slackEvent := &slack.FileDeletedEvent{
+						Type: ev.Type,
+						EventTimestamp: ev.EventTimestamp,
+						FileID: ev.FileID,
+					}
+					rmsg, err := b.handleFileDeletedEvent(slackEvent)
+					if err != nil {
+						b.Log.Printf("%#v", err)
+						continue
+					}
+					messages <- rmsg
+				case *slackevents.MemberJoinedChannelEvent:
+					b.users.populateUser(ev.User)
+				case *slackevents.UserProfileChangedEvent:
+					b.users.invalidateUser(ev.User.ID)
+
+				// TODO not implemented
+				// case *slack.ChannelJoinedEvent:
+				// 	// When we join a channel we update the full list of users as
+				// 	// well as the information for the channel that we joined as this
+				// 	// should now tell that we are a member of it.
+				// 	b.channels.registerChannel(ev.Channel)
+
+				case *slackevents.AppMentionEvent:
+				default:
+					b.Log.Debugf("Unhandled incoming event: %T", ev)
+				}
+			default:
+				b.Log.Printf("Unsupported Events API event received: %+v", eventsAPIEvent.Type)
+			}
+		case socketmode.EventTypeInteractive:
+			callback, ok := evt.Data.(slack.InteractionCallback)
+			if !ok {
+				b.Log.Printf("Ignored %+v\n", evt)
+				continue
+			}
+
+			b.Log.Debugf("Interaction skipped:  %+v\n", callback)
+
+			var payload interface{}
+
+			switch callback.Type {
+			case slack.InteractionTypeBlockActions:
+			case slack.InteractionTypeShortcut:
+			case slack.InteractionTypeViewSubmission:
+			case slack.InteractionTypeDialogSubmission:
+			default:
+
+			}
+
+			b.smc.Ack(*evt.Request, payload)
+		case socketmode.EventTypeSlashCommand:
+			cmd, ok := evt.Data.(slack.SlashCommand)
+			if !ok {
+				b.Log.Printf("Ignored %+v\n", evt)
+			} else {
+				b.Log.Debugf("Slash command skipped: %+v", cmd)
+			}
+			var payload interface{}
+			b.smc.Ack(*evt.Request, payload)
+		case "hello":
+			continue
+		default:
+			b.Log.Errorf("Unexpected event type received: %s\n", evt.Type)
+		}
 	}
 }
 
