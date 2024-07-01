@@ -116,7 +116,7 @@ github.com/google/uuid
 # github.com/gopackage/ddp v0.0.3
 ## explicit; go 1.17
 github.com/gopackage/ddp
-# github.com/gorilla/schema v1.3.0
+# github.com/gorilla/schema v1.4.1
 ## explicit; go 1.20
 github.com/gorilla/schema
 # github.com/gorilla/websocket v1.5.1
