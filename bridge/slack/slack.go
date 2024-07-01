@@ -15,6 +15,7 @@ import (
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/rs/xid"
 	"github.com/slack-go/slack"
+	"github.com/slack-go/slack/socketmode"
 )
 
 type Bslack struct {
@@ -24,6 +25,7 @@ type Bslack struct {
 	mh  *matterhook.Client
 	sc  *slack.Client
 	rtm *slack.RTM
+	smc *socketmode.Client
 	si  *slack.Info
 
 	cache        *lru.Cache
@@ -57,6 +59,7 @@ const (
 	cfileDownloadChannel = "file_download_channel"
 
 	tokenConfig           = "Token"
+	appTokenConfig        = "AppToken"
 	incomingWebhookConfig = "WebhookBindAddress"
 	outgoingWebhookConfig = "WebhookURL"
 	skipTLSConfig         = "SkipTLSVerify"
@@ -109,14 +112,26 @@ func (b *Bslack) Connect() error {
 	if token := b.GetString(tokenConfig); token != "" {
 		b.Log.Info("Connecting using token")
 
-		b.sc = slack.New(token, slack.OptionDebug(b.GetBool("Debug")))
+		appToken := b.GetString(appTokenConfig)
+		b.sc = slack.New(token, slack.OptionDebug(b.GetBool("Debug")), slack.OptionAppLevelToken(appToken))
 
 		b.channels = newChannelManager(b.Log, b.sc)
 		b.users = newUserManager(b.Log, b.sc)
 
 		b.rtm = b.sc.NewRTM()
-		go b.rtm.ManageConnection()
+
+		if appToken != "" {
+			b.smc = socketmode.New(
+				b.sc,
+				socketmode.OptionDebug(b.GetBool("Debug")),
+			)
+		} else {
+			go b.rtm.ManageConnection()
+		}
 		go b.handleSlack()
+		if b.smc != nil {
+			go b.smc.Run()
+		}
 		return nil
 	}
 
@@ -457,35 +472,60 @@ func (b *Bslack) uploadFile(msg *config.Message, channelID string) (string, erro
 		// Because the result of the UploadFile is slower than the MessageEvent from slack
 		// we can't match on the file ID yet, so we have to match on the filename too.
 		ts := time.Now()
-		b.Log.Debugf("Adding file %s to cache at %s with timestamp", fi.Name, ts.String())
+		fSize := int(fi.Size)
+		if fSize == 0 {
+			fSize = len(*fi.Data)
+		}
+		b.Log.Debugf("Adding file %s to cache at %s with timestamp, size %d", fi.Name, ts.String(), fSize)
 		b.cache.Add("filename"+fi.Name, ts)
 		initialComment := fmt.Sprintf("File from %s", msg.Username)
 		if fi.Comment != "" {
 			initialComment += fmt.Sprintf(" with comment: %s", fi.Comment)
 		}
-		res, err := b.sc.UploadFile(slack.FileUploadParameters{
-			Reader:          bytes.NewReader(*fi.Data),
-			Filename:        fi.Name,
-			Channels:        []string{channelID},
-			InitialComment:  initialComment,
-			ThreadTimestamp: msg.ParentID,
-		})
-		if err != nil {
-			b.Log.Errorf("uploadfile %#v", err)
-			return "", err
-		}
-		if res.ID != "" {
-			b.Log.Debugf("Adding file ID %s to cache with timestamp %s", res.ID, ts.String())
-			b.cache.Add("file"+res.ID, ts)
 
-			// search for message id by uploaded file in private/public channels, get thread timestamp from uploaded file
-			if v, ok := res.Shares.Private[channelID]; ok && len(v) > 0 {
-				messageID = v[0].Ts
+		if b.smc != nil {
+			res, err := b.sc.UploadFileV2(slack.UploadFileV2Parameters{
+				Reader:          bytes.NewReader(*fi.Data),
+				Filename:        fi.Name,
+				FileSize:        fSize,
+				Channel:         channelID,
+				InitialComment:  initialComment,
+				ThreadTimestamp: msg.ParentID,
+			})
+			if err != nil {
+				b.Log.Errorf("uploadfile %#v", err)
+				return "", err
 			}
-			if v, ok := res.Shares.Public[channelID]; ok && len(v) > 0 {
-				messageID = v[0].Ts
+			if res.ID != "" {
+				b.Log.Debugf("Adding file ID %s to cache with timestamp %s", res.ID, ts.String())
+				b.cache.Add("file"+res.ID, ts)
+				messageID = res.ID // TODO
+			}
+		} else { // Deprecated version
+			res, err := b.sc.UploadFile(slack.FileUploadParameters{
+				Reader:          bytes.NewReader(*fi.Data),
+				Filename:        fi.Name,
+				Channels:        []string{channelID},
+				InitialComment:  initialComment,
+				ThreadTimestamp: msg.ParentID,
+			})
+			if err != nil {
+				b.Log.Errorf("uploadfile %#v", err)
+				return "", err
+			}
+			if res.ID != "" {
+				b.Log.Debugf("Adding file ID %s to cache with timestamp %s", res.ID, ts.String())
+				b.cache.Add("file"+res.ID, ts)
+				// search for message id by uploaded file in private/public channels, get thread timestamp from uploaded file
+				if v, ok := res.Shares.Private[channelID]; ok && len(v) > 0 {
+					messageID = v[0].Ts
+				}
+				if v, ok := res.Shares.Public[channelID]; ok && len(v) > 0 {
+					messageID = v[0].Ts
+				}
 			}
 		}
+
 	}
 	return messageID, nil
 }

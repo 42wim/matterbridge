@@ -644,6 +644,11 @@ PreserveThreading=false
 #Use https://api.slack.com/custom-integrations/legacy-tokens
 #REQUIRED (when not using webhooks)
 Token="yourslacktoken"
+#Socket mode token to use modern application API (Events API + socket mode)
+#See https://github.com/42wim/matterbridge/issues/2159
+#REQUIRED (when not using webhooks or legacy application)
+#AppToken="yourslackapptoken"
+
 
 #Extra slack specific debug info, warning this generates a lot of output.
 #OPTIONAL (default false)
