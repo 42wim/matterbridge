@@ -25,7 +25,7 @@ const (
 
 // Send sends room topic wrapped inside an XMPP message stanza body.
 func (c *Client) SendTopic(chat Chat) (n int, err error) {
-	return fmt.Fprintf(c.conn, "<message to='%s' type='%s' xml:lang='en'>"+"<subject>%s</subject></message>",
+	return fmt.Fprintf(c.stanzaWriter, "<message to='%s' type='%s' xml:lang='en'>"+"<subject>%s</subject></message>\n",
 		xmlEscape(chat.Remote), xmlEscape(chat.Type), xmlEscape(chat.Text))
 }
 
@@ -33,10 +33,10 @@ func (c *Client) JoinMUCNoHistory(jid, nick string) (n int, err error) {
 	if nick == "" {
 		nick = c.jid
 	}
-	return fmt.Fprintf(c.conn, "<presence to='%s/%s'>\n"+
+	return fmt.Fprintf(c.stanzaWriter, "<presence to='%s/%s'>"+
 		"<x xmlns='%s'>"+
-		"<history maxchars='0'/></x>\n"+
-		"</presence>",
+		"<history maxchars='0'/></x>"+
+		"</presence>\n",
 		xmlEscape(jid), xmlEscape(nick), nsMUC)
 }
 
@@ -47,34 +47,34 @@ func (c *Client) JoinMUC(jid, nick string, history_type, history int, history_da
 	}
 	switch history_type {
 	case NoHistory:
-		return fmt.Fprintf(c.conn, "<presence to='%s/%s'>\n"+
-			"<x xmlns='%s' />\n"+
-			"</presence>",
+		return fmt.Fprintf(c.stanzaWriter, "<presence to='%s/%s'>"+
+			"<x xmlns='%s' />"+
+			"</presence>\n",
 			xmlEscape(jid), xmlEscape(nick), nsMUC)
 	case CharHistory:
-		return fmt.Fprintf(c.conn, "<presence to='%s/%s'>\n"+
-			"<x xmlns='%s'>\n"+
-			"<history maxchars='%d'/></x>\n"+
-			"</presence>",
+		return fmt.Fprintf(c.stanzaWriter, "<presence to='%s/%s'>"+
+			"<x xmlns='%s'>"+
+			"<history maxchars='%d'/></x>"+
+			"</presence>\n",
 			xmlEscape(jid), xmlEscape(nick), nsMUC, history)
 	case StanzaHistory:
-		return fmt.Fprintf(c.conn, "<presence to='%s/%s'>\n"+
-			"<x xmlns='%s'>\n"+
-			"<history maxstanzas='%d'/></x>\n"+
-			"</presence>",
+		return fmt.Fprintf(c.stanzaWriter, "<presence to='%s/%s'>"+
+			"<x xmlns='%s'>"+
+			"<history maxstanzas='%d'/></x>"+
+			"</presence>\n",
 			xmlEscape(jid), xmlEscape(nick), nsMUC, history)
 	case SecondsHistory:
-		return fmt.Fprintf(c.conn, "<presence to='%s/%s'>\n"+
-			"<x xmlns='%s'>\n"+
-			"<history seconds='%d'/></x>\n"+
-			"</presence>",
+		return fmt.Fprintf(c.stanzaWriter, "<presence to='%s/%s'>"+
+			"<x xmlns='%s'>"+
+			"<history seconds='%d'/></x>"+
+			"</presence>\n",
 			xmlEscape(jid), xmlEscape(nick), nsMUC, history)
 	case SinceHistory:
 		if history_date != nil {
-			return fmt.Fprintf(c.conn, "<presence to='%s/%s'>\n"+
-				"<x xmlns='%s'>\n"+
-				"<history since='%s'/></x>\n"+
-				"</presence>",
+			return fmt.Fprintf(c.stanzaWriter, "<presence to='%s/%s'>"+
+				"<x xmlns='%s'>"+
+				"<history since='%s'/></x>"+
+				"</presence>\n",
 				xmlEscape(jid), xmlEscape(nick), nsMUC, history_date.Format(time.RFC3339))
 		}
 	}
@@ -88,40 +88,40 @@ func (c *Client) JoinProtectedMUC(jid, nick string, password string, history_typ
 	}
 	switch history_type {
 	case NoHistory:
-		return fmt.Fprintf(c.conn, "<presence to='%s/%s'>\n"+
-			"<x xmlns='%s'>\n"+
+		return fmt.Fprintf(c.stanzaWriter, "<presence to='%s/%s'>"+
+			"<x xmlns='%s'>"+
 			"<password>%s</password>"+
-			"</x>\n"+
-			"</presence>",
+			"</x>"+
+			"</presence>\n",
 			xmlEscape(jid), xmlEscape(nick), nsMUC, xmlEscape(password))
 	case CharHistory:
-		return fmt.Fprintf(c.conn, "<presence to='%s/%s'>\n"+
-			"<x xmlns='%s'>\n"+
-			"<password>%s</password>\n"+
-			"<history maxchars='%d'/></x>\n"+
-			"</presence>",
+		return fmt.Fprintf(c.stanzaWriter, "<presence to='%s/%s'>"+
+			"<x xmlns='%s'>"+
+			"<password>%s</password>"+
+			"<history maxchars='%d'/></x>"+
+			"</presence>\n",
 			xmlEscape(jid), xmlEscape(nick), nsMUC, xmlEscape(password), history)
 	case StanzaHistory:
-		return fmt.Fprintf(c.conn, "<presence to='%s/%s'>\n"+
-			"<x xmlns='%s'>\n"+
-			"<password>%s</password>\n"+
-			"<history maxstanzas='%d'/></x>\n"+
-			"</presence>",
+		return fmt.Fprintf(c.stanzaWriter, "<presence to='%s/%s'>"+
+			"<x xmlns='%s'>"+
+			"<password>%s</password>"+
+			"<history maxstanzas='%d'/></x>"+
+			"</presence>\n",
 			xmlEscape(jid), xmlEscape(nick), nsMUC, xmlEscape(password), history)
 	case SecondsHistory:
-		return fmt.Fprintf(c.conn, "<presence to='%s/%s'>\n"+
-			"<x xmlns='%s'>\n"+
-			"<password>%s</password>\n"+
-			"<history seconds='%d'/></x>\n"+
-			"</presence>",
+		return fmt.Fprintf(c.stanzaWriter, "<presence to='%s/%s'>"+
+			"<x xmlns='%s'>"+
+			"<password>%s</password>"+
+			"<history seconds='%d'/></x>"+
+			"</presence>\n",
 			xmlEscape(jid), xmlEscape(nick), nsMUC, xmlEscape(password), history)
 	case SinceHistory:
 		if history_date != nil {
-			return fmt.Fprintf(c.conn, "<presence to='%s/%s'>\n"+
-				"<x xmlns='%s'>\n"+
-				"<password>%s</password>\n"+
-				"<history since='%s'/></x>\n"+
-				"</presence>",
+			return fmt.Fprintf(c.stanzaWriter, "<presence to='%s/%s'>"+
+				"<x xmlns='%s'>"+
+				"<password>%s</password>"+
+				"<history since='%s'/></x>"+
+				"</presence>\n",
 				xmlEscape(jid), xmlEscape(nick), nsMUC, xmlEscape(password), history_date.Format(time.RFC3339))
 		}
 	}
@@ -130,6 +130,6 @@ func (c *Client) JoinProtectedMUC(jid, nick string, password string, history_typ
 
 // xep-0045 7.14
 func (c *Client) LeaveMUC(jid string) (n int, err error) {
-	return fmt.Fprintf(c.conn, "<presence from='%s' to='%s' type='unavailable' />",
+	return fmt.Fprintf(c.stanzaWriter, "<presence from='%s' to='%s' type='unavailable' />\n",
 		c.jid, xmlEscape(jid))
 }

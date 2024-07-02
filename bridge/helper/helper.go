@@ -211,12 +211,49 @@ func ClipMessage(text string, length int, clippingMessage string) string {
 
 	if len(text) > length {
 		text = text[:length-len(clippingMessage)]
-		if r, size := utf8.DecodeLastRuneInString(text); r == utf8.RuneError {
-			text = text[:len(text)-size]
+		for len(text) > 0 {
+			if r, _ := utf8.DecodeLastRuneInString(text); r == utf8.RuneError {
+				text = text[:len(text)-1]
+				// Note: DecodeLastRuneInString only returns the constant value "1" in
+				// case of an error. We do not yet know whether the last rune is now
+				// actually valid. Example: "€" is 0xE2 0x82 0xAC. If we happen to split
+				// the string just before 0xAC, and go back only one byte, that would
+				// leave us with a string that ends in the byte 0xE2, which is not a valid
+				// rune, so we need to try again.
+			} else {
+				break
+			}
 		}
 		text += clippingMessage
 	}
 	return text
+}
+
+func ClipOrSplitMessage(text string, length int, clippingMessage string, splitMax int) []string {
+	var msgParts []string
+	remainingText := text
+	// Invariant of this splitting loop: No text is lost (msgParts+remainingText is the original text),
+	// and all parts is guaranteed to satisfy the length requirement.
+	for len(msgParts) < splitMax-1 && len(remainingText) > length {
+		// Decision: The text needs to be split (again).
+		var chunk string
+		wasted := 0
+		// The longest UTF-8 encoding of a valid rune is 4 bytes (0xF4 0x8F 0xBF 0xBF, encoding U+10FFFF),
+		// so we should never need to waste 4 or more bytes at a time.
+		for wasted < 4 && wasted < length {
+			chunk = remainingText[:length-wasted]
+			if r, _ := utf8.DecodeLastRuneInString(chunk); r == utf8.RuneError {
+				wasted += 1
+			} else {
+				break
+			}
+		}
+		// Note: At this point, "chunk" might still be invalid, if "text" is very broken.
+		msgParts = append(msgParts, chunk)
+		remainingText = remainingText[len(chunk):]
+	}
+	msgParts = append(msgParts, ClipMessage(remainingText, length, clippingMessage))
+	return msgParts
 }
 
 // ParseMarkdown takes in an input string as markdown and parses it to html

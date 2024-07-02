@@ -2,6 +2,7 @@ package logr
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"runtime"
 	"strconv"
@@ -26,6 +27,31 @@ const (
 	// TimestampMillisFormat is the format for logging milliseconds UTC
 	TimestampMillisFormat = "Jan _2 15:04:05.000"
 )
+
+// LimitByteSlice discards the bytes from a slice that exceeds the limit
+func LimitByteSlice(b []byte, limit int) []byte {
+	if limit > 0 && limit < len(b) {
+		lb := make([]byte, limit, limit+3)
+		copy(lb, b[:limit])
+		return append(lb, []byte("...")...)
+	}
+
+	return b
+}
+
+// LimitString discards the runes from a slice that exceeds the limit
+func LimitString(b string, limit int) string {
+	return string(LimitByteSlice([]byte(b), limit))
+}
+
+type LimitedStringer struct {
+	fmt.Stringer
+	Limit int
+}
+
+func (ls *LimitedStringer) String() string {
+	return LimitString(ls.Stringer.String(), ls.Limit)
+}
 
 type Writer struct {
 	io.Writer

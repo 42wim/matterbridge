@@ -150,35 +150,24 @@ type decodedEvent struct {
 }
 
 func (c *ircConn) decode() <-chan decodedEvent {
-	ch := make(chan decodedEvent)
+	ch := make(chan decodedEvent, 1)
 
 	go func() {
 		defer close(ch)
 
 		line, err := c.io.ReadString(delim)
 		if err != nil {
-			select {
-			case ch <- decodedEvent{err: err}:
-			default:
-			}
-
+			ch <- decodedEvent{err: err}
 			return
 		}
 
 		event := ParseEvent(line)
 		if event == nil {
-			select {
-			case ch <- decodedEvent{err: ErrParseEvent{Line: line}}:
-			default:
-			}
-
+			ch <- decodedEvent{err: ErrParseEvent{Line: line}}
 			return
 		}
 
-		select {
-		case ch <- decodedEvent{event: event}:
-		default:
-		}
+		ch <- decodedEvent{event: event}
 	}()
 
 	return ch
@@ -497,11 +486,7 @@ func (c *Client) write(event *Event) {
 	}
 
 	t := time.NewTimer(30 * time.Second)
-	defer func() {
-		if !t.Stop() {
-			<-t.C
-		}
-	}()
+	defer t.Stop()
 
 	select {
 	case c.tx <- event:

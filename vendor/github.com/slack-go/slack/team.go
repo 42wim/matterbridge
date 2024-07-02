@@ -74,8 +74,9 @@ type BillingActive struct {
 
 // AccessLogParameters contains all the parameters necessary (including the optional ones) for a GetAccessLogs() request
 type AccessLogParameters struct {
-	Count int
-	Page  int
+	TeamID string
+	Count  int
+	Page   int
 }
 
 // NewAccessLogParameters provides an instance of AccessLogParameters with all the sane default values set
@@ -164,14 +165,17 @@ func (api *Client) GetTeamInfoContext(ctx context.Context) (*TeamInfo, error) {
 }
 
 // GetTeamProfile gets the Team Profile settings of the user
-func (api *Client) GetTeamProfile() (*TeamProfile, error) {
-	return api.GetTeamProfileContext(context.Background())
+func (api *Client) GetTeamProfile(teamID ...string) (*TeamProfile, error) {
+	return api.GetTeamProfileContext(context.Background(), teamID...)
 }
 
 // GetTeamProfileContext gets the Team Profile settings of the user with a custom context
-func (api *Client) GetTeamProfileContext(ctx context.Context) (*TeamProfile, error) {
+func (api *Client) GetTeamProfileContext(ctx context.Context, teamID ...string) (*TeamProfile, error) {
 	values := url.Values{
 		"token": {api.token},
+	}
+	if len(teamID) > 0 {
+		values["team_id"] = teamID
 	}
 
 	response, err := api.teamProfileRequest(ctx, api.httpclient, "team.profile.get", values)
@@ -179,7 +183,6 @@ func (api *Client) GetTeamProfileContext(ctx context.Context) (*TeamProfile, err
 		return nil, err
 	}
 	return &response.Profile, nil
-
 }
 
 // GetAccessLogs retrieves a page of logins according to the parameters given
@@ -191,6 +194,9 @@ func (api *Client) GetAccessLogs(params AccessLogParameters) ([]Login, *Paging, 
 func (api *Client) GetAccessLogsContext(ctx context.Context, params AccessLogParameters) ([]Login, *Paging, error) {
 	values := url.Values{
 		"token": {api.token},
+	}
+	if params.TeamID != "" {
+		values.Add("team_id", params.TeamID)
 	}
 	if params.Count != DEFAULT_LOGINS_COUNT {
 		values.Add("count", strconv.Itoa(params.Count))
@@ -206,30 +212,28 @@ func (api *Client) GetAccessLogsContext(ctx context.Context, params AccessLogPar
 	return response.Logins, &response.Paging, nil
 }
 
+type GetBillableInfoParams struct {
+	User   string
+	TeamID string
+}
+
 // GetBillableInfo ...
-func (api *Client) GetBillableInfo(user string) (map[string]BillingActive, error) {
-	return api.GetBillableInfoContext(context.Background(), user)
+func (api *Client) GetBillableInfo(params GetBillableInfoParams) (map[string]BillingActive, error) {
+	return api.GetBillableInfoContext(context.Background(), params)
 }
 
 // GetBillableInfoContext ...
-func (api *Client) GetBillableInfoContext(ctx context.Context, user string) (map[string]BillingActive, error) {
+func (api *Client) GetBillableInfoContext(ctx context.Context, params GetBillableInfoParams) (map[string]BillingActive, error) {
 	values := url.Values{
 		"token": {api.token},
-		"user":  {user},
 	}
 
-	return api.billableInfoRequest(ctx, "team.billableInfo", values)
-}
+	if params.TeamID != "" {
+		values.Add("team_id", params.TeamID)
+	}
 
-// GetBillableInfoForTeam returns the billing_active status of all users on the team.
-func (api *Client) GetBillableInfoForTeam() (map[string]BillingActive, error) {
-	return api.GetBillableInfoForTeamContext(context.Background())
-}
-
-// GetBillableInfoForTeamContext returns the billing_active status of all users on the team with a custom context
-func (api *Client) GetBillableInfoForTeamContext(ctx context.Context) (map[string]BillingActive, error) {
-	values := url.Values{
-		"token": {api.token},
+	if params.User != "" {
+		values.Add("user", params.User)
 	}
 
 	return api.billableInfoRequest(ctx, "team.billableInfo", values)

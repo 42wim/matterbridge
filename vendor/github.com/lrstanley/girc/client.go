@@ -312,11 +312,7 @@ func New(config Config) *Client {
 // the event can't be sent within 30s.
 func (c *Client) receive(e *Event) {
 	t := time.NewTimer(30 * time.Second)
-	defer func() {
-		if !t.Stop() {
-			<-t.C
-		}
-	}()
+	defer t.Stop()
 
 	select {
 	case c.rx <- e:

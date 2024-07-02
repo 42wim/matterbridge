@@ -18,6 +18,7 @@ const (
 	MBTInput    MessageBlockType = "input"
 	MBTHeader   MessageBlockType = "header"
 	MBTRichText MessageBlockType = "rich_text"
+	MBTVideo    MessageBlockType = "video"
 )
 
 // Block defines an interface all block types should implement
@@ -39,6 +40,7 @@ type BlockAction struct {
 	Type                  ActionType          `json:"type"`
 	Text                  TextBlockObject     `json:"text"`
 	Value                 string              `json:"value"`
+	Files                 []File              `json:"files"`
 	ActionTs              string              `json:"action_ts"`
 	SelectedOption        OptionBlockObject   `json:"selected_option"`
 	SelectedOptions       []OptionBlockObject `json:"selected_options"`

@@ -1,19 +1,17 @@
 // Package ldap - moddn.go contains ModifyDN functionality
 //
 // https://tools.ietf.org/html/rfc4511
-// ModifyDNRequest ::= [APPLICATION 12] SEQUENCE {
-//      entry           LDAPDN,
-//      newrdn          RelativeLDAPDN,
-//      deleteoldrdn    BOOLEAN,
-//      newSuperior     [0] LDAPDN OPTIONAL }
 //
-//
+//	ModifyDNRequest ::= [APPLICATION 12] SEQUENCE {
+//	     entry           LDAPDN,
+//	     newrdn          RelativeLDAPDN,
+//	     deleteoldrdn    BOOLEAN,
+//	     newSuperior     [0] LDAPDN OPTIONAL }
 package ldap
 
 import (
-	"log"
-
 	ber "github.com/go-asn1-ber/asn1-ber"
+	"github.com/mattermost/mattermost/server/public/shared/mlog"
 )
 
 // ModifyDNRequest holds the request to modify a DN
@@ -33,7 +31,9 @@ type ModifyDNRequest struct {
 // RDN of the given DN.
 //
 // A call like
-//   mdnReq := NewModifyDNRequest("uid=someone,dc=example,dc=org", "uid=newname", true, "")
+//
+//	mdnReq := NewModifyDNRequest("uid=someone,dc=example,dc=org", "uid=newname", true, "")
+//
 // will setup the request to just rename uid=someone,dc=example,dc=org to
 // uid=newname,dc=example,dc=org.
 func NewModifyDNRequest(dn string, rdn string, delOld bool, newSup string) *ModifyDNRequest {
@@ -73,13 +73,14 @@ func (l *Conn) ModifyDN(m *ModifyDNRequest) error {
 		return err
 	}
 
-	if packet.Children[1].Tag == ApplicationModifyDNResponse {
+	tag := packet.Children[1].Tag
+	if tag == ApplicationModifyDNResponse {
 		err := GetLDAPError(packet)
 		if err != nil {
 			return err
 		}
 	} else {
-		log.Printf("Unexpected Response: %d", packet.Children[1].Tag)
+		l.Debug.Log("Unexpected Response tag", mlog.Uint("tag", tag))
 	}
 	return nil
 }

@@ -300,10 +300,11 @@ func NewSearchRequest(
 // SearchWithPaging accepts a search request and desired page size in order to execute LDAP queries to fulfill the
 // search request. All paged LDAP query responses will be buffered and the final result will be returned atomically.
 // The following four cases are possible given the arguments:
-//  - given SearchRequest missing a control of type ControlTypePaging: we will add one with the desired paging size
-//  - given SearchRequest contains a control of type ControlTypePaging that isn't actually a ControlPaging: fail without issuing any queries
-//  - given SearchRequest contains a control of type ControlTypePaging with pagingSize equal to the size requested: no change to the search request
-//  - given SearchRequest contains a control of type ControlTypePaging with pagingSize not equal to the size requested: fail without issuing any queries
+//   - given SearchRequest missing a control of type ControlTypePaging: we will add one with the desired paging size
+//   - given SearchRequest contains a control of type ControlTypePaging that isn't actually a ControlPaging: fail without issuing any queries
+//   - given SearchRequest contains a control of type ControlTypePaging with pagingSize equal to the size requested: no change to the search request
+//   - given SearchRequest contains a control of type ControlTypePaging with pagingSize not equal to the size requested: fail without issuing any queries
+//
 // A requested pagingSize of 0 is interpreted as no limit by LDAP servers.
 func (l *Conn) SearchWithPaging(searchRequest *SearchRequest, pagingSize uint32) (*SearchResult, error) {
 	var pagingControl *ControlPaging
@@ -326,7 +327,6 @@ func (l *Conn) SearchWithPaging(searchRequest *SearchRequest, pagingSize uint32)
 	searchResult := new(SearchResult)
 	for {
 		result, err := l.Search(searchRequest)
-		l.Debug.Printf("Looking for Paging Control...")
 		if err != nil {
 			return searchResult, err
 		}
@@ -344,25 +344,21 @@ func (l *Conn) SearchWithPaging(searchRequest *SearchRequest, pagingSize uint32)
 			searchResult.Controls = append(searchResult.Controls, control)
 		}
 
-		l.Debug.Printf("Looking for Paging Control...")
 		pagingResult := FindControl(result.Controls, ControlTypePaging)
 		if pagingResult == nil {
 			pagingControl = nil
-			l.Debug.Printf("Could not find paging control.  Breaking...")
 			break
 		}
 
 		cookie := pagingResult.(*ControlPaging).Cookie
 		if len(cookie) == 0 {
 			pagingControl = nil
-			l.Debug.Printf("Could not find cookie.  Breaking...")
 			break
 		}
 		pagingControl.SetCookie(cookie)
 	}
 
 	if pagingControl != nil {
-		l.Debug.Printf("Abandoning Paging...")
 		pagingControl.PagingSize = 0
 		l.Search(searchRequest)
 	}

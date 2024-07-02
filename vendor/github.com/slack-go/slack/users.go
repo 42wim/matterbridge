@@ -17,31 +17,32 @@ const (
 
 // UserProfile contains all the information details of a given user
 type UserProfile struct {
-	FirstName              string                              `json:"first_name"`
-	LastName               string                              `json:"last_name"`
+	FirstName              string                              `json:"first_name,omitempty"`
+	LastName               string                              `json:"last_name,omitempty"`
 	RealName               string                              `json:"real_name"`
 	RealNameNormalized     string                              `json:"real_name_normalized"`
 	DisplayName            string                              `json:"display_name"`
 	DisplayNameNormalized  string                              `json:"display_name_normalized"`
-	Email                  string                              `json:"email"`
-	Skype                  string                              `json:"skype"`
-	Phone                  string                              `json:"phone"`
+	AvatarHash             string                              `json:"avatar_hash"`
+	Email                  string                              `json:"email,omitempty"`
+	Skype                  string                              `json:"skyp,omitempty"`
+	Phone                  string                              `json:"phone,omitempty"`
 	Image24                string                              `json:"image_24"`
 	Image32                string                              `json:"image_32"`
 	Image48                string                              `json:"image_48"`
 	Image72                string                              `json:"image_72"`
 	Image192               string                              `json:"image_192"`
 	Image512               string                              `json:"image_512"`
-	ImageOriginal          string                              `json:"image_original"`
-	Title                  string                              `json:"title"`
+	ImageOriginal          string                              `json:"image_original,omitempty"`
+	Title                  string                              `json:"title,omitempty"`
 	BotID                  string                              `json:"bot_id,omitempty"`
 	ApiAppID               string                              `json:"api_app_id,omitempty"`
 	StatusText             string                              `json:"status_text,omitempty"`
 	StatusEmoji            string                              `json:"status_emoji,omitempty"`
 	StatusEmojiDisplayInfo []UserProfileStatusEmojiDisplayInfo `json:"status_emoji_display_info,omitempty"`
-	StatusExpiration       int                                 `json:"status_expiration"`
+	StatusExpiration       int                                 `json:"status_expiration,omitempty"`
 	Team                   string                              `json:"team"`
-	Fields                 UserProfileCustomFields             `json:"fields"`
+	Fields                 UserProfileCustomFields             `json:"fields,omitempty"`
 }
 
 type UserProfileStatusEmojiDisplayInfo struct {

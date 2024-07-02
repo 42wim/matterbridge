@@ -8,7 +8,7 @@ import (
 	"github.com/42wim/matterbridge/bridge/helper"
 	"github.com/42wim/matterbridge/matterhook"
 	"github.com/matterbridge/matterclient"
-	"github.com/mattermost/mattermost-server/v6/model"
+	"github.com/mattermost/mattermost/server/public/model"
 )
 
 func (b *Bmattermost) doConnectWebhookBind() error {
@@ -171,12 +171,23 @@ func (b *Bmattermost) sendWebhook(msg config.Message) (string, error) {
 }
 
 // skipMessages returns true if this message should not be handled
+//
 //nolint:gocyclo,cyclop
 func (b *Bmattermost) skipMessage(message *matterclient.Message) bool {
 	// Handle join/leave
-	if message.Type == "system_join_leave" ||
-		message.Type == "system_join_channel" ||
-		message.Type == "system_leave_channel" {
+	skipJoinMessageTypes := map[string]struct{}{
+		"system_join_leave":          {}, // deprecated for system_add_to_channel
+		"system_leave_channel":       {}, // deprecated for system_remove_from_channel
+		"system_join_channel":        {},
+		"system_add_to_channel":      {},
+		"system_remove_from_channel": {},
+		"system_add_to_team":         {},
+		"system_remove_from_team":    {},
+	}
+
+	// dirty hack to efficiently check if this element is in the map without writing a contains func
+	// can be replaced with native slice.contains with go 1.21
+	if _, ok := skipJoinMessageTypes[message.Type]; ok {
 		if b.GetBool("nosendjoinpart") {
 			return true
 		}

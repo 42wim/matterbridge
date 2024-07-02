@@ -6,11 +6,14 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"runtime"
 
 	"github.com/d5/tengo/v2"
 )
 
 var osModule = map[string]tengo.Object{
+	"platform":            &tengo.String{Value: runtime.GOOS},
+	"arch":                &tengo.String{Value: runtime.GOARCH},
 	"o_rdonly":            &tengo.Int{Value: int64(os.O_RDONLY)},
 	"o_wronly":            &tengo.Int{Value: int64(os.O_WRONLY)},
 	"o_rdwr":              &tengo.Int{Value: int64(os.O_RDWR)},

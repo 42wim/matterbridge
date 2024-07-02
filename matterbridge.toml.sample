@@ -163,7 +163,7 @@ IgnoreMessages="^~~ badword"
 ReplaceMessages=[ ["cat","dog"] ]
 
 #nicks you want to replace.
-#see replacemessages for syntaxa
+#see replacemessages for syntax
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
@@ -301,7 +301,7 @@ IgnoreMessages="^~~ badword"
 ReplaceMessages=[ ["cat","dog"] ]
 
 #Nicks you want to replace.
-#See ReplaceMessages for syntaxA
+#See ReplaceMessages for syntax
 #OPTIONAL (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
@@ -468,7 +468,7 @@ IgnoreMessages="^~~ badword"
 ReplaceMessages=[ ["cat","dog"] ]
 
 #nicks you want to replace.
-#see replacemessages for syntaxa
+#see replacemessages for syntax
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
@@ -586,7 +586,7 @@ IgnoreMessages="^~~ badword"
 ReplaceMessages=[ ["cat","dog"] ]
 
 #nicks you want to replace.
-#see replacemessages for syntaxa
+#see replacemessages for syntax
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
@@ -725,7 +725,7 @@ IgnoreMessages="^~~ badword"
 ReplaceMessages=[ ["cat","dog"] ]
 
 #nicks you want to replace.
-#see replacemessages for syntaxa
+#see replacemessages for syntax
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
@@ -925,9 +925,16 @@ ShowTopicChange=false
 # Supported from the following bridges: slack
 SyncTopic=false
 
-#Message to show when a message is too big
-#Default "<clipped message>"
+# Message to show when a message is too big
+# Default "<clipped message>"
 MessageClipped="<clipped message>"
+
+# Before clipping, try to split messages into at most this many parts. 0 is treated like 1.
+# Be careful with large numbers, as this might cause flooding.
+# Example: A maximum telegram message of 4096 bytes is received. This requires 3 Discord
+# messages (each capped at a hardcoded 1950 bytes).
+# Default 1
+MessageSplitMaxCount=3
 
 ###################################################################
 #telegram section
@@ -1033,7 +1040,7 @@ IgnoreMessages="^~~ badword"
 ReplaceMessages=[ ["cat","dog"] ]
 
 #nicks you want to replace.
-#see replacemessages for syntaxa
+#see replacemessages for syntax
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
@@ -1174,7 +1181,7 @@ IgnoreMessages="^~~ badword"
 ReplaceMessages=[ ["cat","dog"] ]
 
 #nicks you want to replace.
-#see replacemessages for syntaxa
+#see replacemessages for syntax
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
@@ -1286,7 +1293,7 @@ IgnoreMessages="^~~ badword"
 ReplaceMessages=[ ["cat","dog"] ]
 
 #nicks you want to replace.
-#see replacemessages for syntaxa
+#see replacemessages for syntax
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
@@ -1388,7 +1395,7 @@ IgnoreMessages="^~~ badword"
 ReplaceMessages=[ ["cat","dog"] ]
 
 #nicks you want to replace.
-#see replacemessages for syntaxa
+#see replacemessages for syntax
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
@@ -1597,7 +1604,7 @@ IgnoreMessages="^~~ badword"
 ReplaceMessages=[ ["cat","dog"] ]
 
 #nicks you want to replace.
-#see replacemessages for syntaxa
+#see replacemessages for syntax
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 

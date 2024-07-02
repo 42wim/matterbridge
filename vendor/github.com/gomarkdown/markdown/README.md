@@ -9,11 +9,11 @@ It's very fast and supports common extensions.
 Tutorial: https://blog.kowalczyk.info/article/cxn3/advanced-markdown-processing-in-go.html
 
 Code examples:
-* https://onlinetool.io/goplayground/#txO7hJ-ibeU : basic markdown => HTML
-* https://onlinetool.io/goplayground/#yFRIWRiu-KL : customize HTML renderer
-* https://onlinetool.io/goplayground/#2yV5-HDKBUV : modify AST
-* https://onlinetool.io/goplayground/#9fqKwRbuJ04 : customize parser
-* https://onlinetool.io/goplayground/#Bk0zTvrzUDR : syntax highlight
+* https://tools.arslexis.io/goplayground/#txO7hJ-ibeU : basic markdown => HTML
+* https://tools.arslexis.io/goplayground/#yFRIWRiu-KL : customize HTML renderer
+* https://tools.arslexis.io/goplayground/#2yV5-HDKBUV : modify AST
+* https://tools.arslexis.io/goplayground/#9fqKwRbuJ04 : customize parser
+* https://tools.arslexis.io/goplayground/#Bk0zTvrzUDR : syntax highlight
 
 Those examples are also in [examples](./examples) directory.
 
@@ -226,7 +226,7 @@ implements the following extensions:
 - **Hard line breaks**. With this extension enabled newlines in the input
   translates into line breaks in the output. This extension is off by default.
 
-- **Non blocking space**. With this extension enabled spaces preceeded by a backslash
+- **Non blocking space**. With this extension enabled spaces preceded by a backslash
   in the input translates non-blocking spaces in the output. This extension is off by default.
 
 - **Smart quotes**. Smartypants-style punctuation substitution is

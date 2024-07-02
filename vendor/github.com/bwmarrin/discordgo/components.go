@@ -132,10 +132,10 @@ type ComponentEmoji struct {
 
 // Button represents button component.
 type Button struct {
-	Label    string         `json:"label"`
-	Style    ButtonStyle    `json:"style"`
-	Disabled bool           `json:"disabled"`
-	Emoji    ComponentEmoji `json:"emoji"`
+	Label    string          `json:"label"`
+	Style    ButtonStyle     `json:"style"`
+	Disabled bool            `json:"disabled"`
+	Emoji    *ComponentEmoji `json:"emoji,omitempty"`
 
 	// NOTE: Only button with LinkButton style can have link. Also, URL is mutually exclusive with CustomID.
 	URL      string `json:"url,omitempty"`
@@ -166,12 +166,30 @@ func (Button) Type() ComponentType {
 
 // SelectMenuOption represents an option for a select menu.
 type SelectMenuOption struct {
-	Label       string         `json:"label,omitempty"`
-	Value       string         `json:"value"`
-	Description string         `json:"description"`
-	Emoji       ComponentEmoji `json:"emoji"`
+	Label       string          `json:"label,omitempty"`
+	Value       string          `json:"value"`
+	Description string          `json:"description"`
+	Emoji       *ComponentEmoji `json:"emoji,omitempty"`
 	// Determines whenever option is selected by default or not.
 	Default bool `json:"default"`
+}
+
+// SelectMenuDefaultValueType represents the type of an entity selected by default in auto-populated select menus.
+type SelectMenuDefaultValueType string
+
+// SelectMenuDefaultValue types.
+const (
+	SelectMenuDefaultValueUser    SelectMenuDefaultValueType = "user"
+	SelectMenuDefaultValueRole    SelectMenuDefaultValueType = "role"
+	SelectMenuDefaultValueChannel SelectMenuDefaultValueType = "channel"
+)
+
+// SelectMenuDefaultValue represents an entity selected by default in auto-populated select menus.
+type SelectMenuDefaultValue struct {
+	// ID of the entity.
+	ID string `json:"id"`
+	// Type of the entity.
+	Type SelectMenuDefaultValueType `json:"type"`
 }
 
 // SelectMenuType represents select menu type.
@@ -198,9 +216,13 @@ type SelectMenu struct {
 	MinValues *int `json:"min_values,omitempty"`
 	// This value determines the maximal amount of selected items in the menu.
 	// If MaxValues or MinValues are greater than one then the user can select multiple items in the component.
-	MaxValues int                `json:"max_values,omitempty"`
-	Options   []SelectMenuOption `json:"options,omitempty"`
-	Disabled  bool               `json:"disabled"`
+	MaxValues int `json:"max_values,omitempty"`
+	// List of default values for auto-populated select menus.
+	// NOTE: Number of entries should be in the range defined by MinValues and MaxValues.
+	DefaultValues []SelectMenuDefaultValue `json:"default_values,omitempty"`
+
+	Options  []SelectMenuOption `json:"options,omitempty"`
+	Disabled bool               `json:"disabled"`
 
 	// NOTE: Can only be used in SelectMenu with Channel menu type.
 	ChannelTypes []ChannelType `json:"channel_types,omitempty"`

@@ -66,17 +66,17 @@ func regionalIndicator(i byte) string {
 	return string('\U0001F1E6' + rune(i) - 'a')
 }
 
-func replaseEmoji(input *bytes.Buffer) string {
+func replaceEmoji(input *bytes.Buffer) string {
 	emoji := bytes.NewBufferString(":")
 	for {
 		i, _, err := input.ReadRune()
 		if err != nil {
-			// not replase
+			// not replace
 			return emoji.String()
 		}
 
 		if i == ':' && emoji.Len() == 1 {
-			return emoji.String() + replaseEmoji(input)
+			return emoji.String() + replaceEmoji(input)
 		}
 
 		emoji.WriteRune(i)
@@ -106,7 +106,7 @@ func compile(x string) string {
 		default:
 			output.WriteRune(i)
 		case ':':
-			output.WriteString(replaseEmoji(input))
+			output.WriteString(replaceEmoji(input))
 		}
 	}
 	return output.String()
