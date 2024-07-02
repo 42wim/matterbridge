@@ -499,6 +499,7 @@ func (b *Bslack) prepareMessageOptions(msg *config.Message) []slack.MsgOption {
 	params.LinkNames = 1 // replace mentions
 	params.IconURL = config.GetIconURL(msg, b.GetString(iconURLConfig))
 	params.ThreadTimestamp = msg.ParentID
+	params.ReplyBroadcast = b.GetBool("ReplyBroadcast")
 	if msg.Avatar != "" {
 		params.IconURL = msg.Avatar
 	}
