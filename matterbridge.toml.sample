@@ -1088,6 +1088,10 @@ ShowTopicChange=false
 #OPTIONAL (default false)
 PreserveThreading=false
 
+#Send an extra message indicating the sender for files.
+#OPTIONAL (default false)
+AnnounceFileSender=false
+
 ###################################################################
 #rocketchat section
 ###################################################################
