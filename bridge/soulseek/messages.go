@@ -10,8 +10,9 @@ import (
 	"reflect"
 )
 
-type soulseekMessage interface {}
-type soulseekMessageResponse interface {}
+type soulseekMessage interface{}
+
+type soulseekMessageResponse interface{}
 
 const (
 	loginMessageCode          uint32 = 1
@@ -21,30 +22,29 @@ const (
 	userLeftRoomMessageCode   uint32 = 17
 	privateMessageCode        uint32 = 22
 	kickedMessageCode         uint32 = 41
-	changePasswordMessageCode  uint32 = 142
+	changePasswordMessageCode uint32 = 142
 )
 
-var ignoreMessageCodes = map[uint32]bool {
-	7:   true,
-	64:  true,
-	69:  true,
-	83:  true,
-	84:  true,
-	104: true,
-	113: true,
-	114: true,
-	115: true,
-	130: true,
-	133: true,
-	139: true,
-	140: true,
-	145: true,
-	146: true,
-	148: true,
-	160: true,
+var ignoreMessageCodes = map[uint32]bool{
+	7:    true,
+	64:   true,
+	69:   true,
+	83:   true,
+	84:   true,
+	104:  true,
+	113:  true,
+	114:  true,
+	115:  true,
+	130:  true,
+	133:  true,
+	139:  true,
+	140:  true,
+	145:  true,
+	146:  true,
+	148:  true,
+	160:  true,
 	1003: true,
 }
-
 
 // 1: Login
 type loginMessage struct {
@@ -67,20 +67,18 @@ type loginMessageResponseFailure struct {
 	Reason string
 }
 
-
 // 13: Say in chatroom
 type sayChatroomMessage struct {
 	Code    uint32
-	Room string
+	Room    string
 	Message string
 }
 
 type sayChatroomMessageReceive struct {
-	Room string
+	Room     string
 	Username string
-	Message string
+	Message  string
 }
-
 
 // 14: Join room
 type joinRoomMessage struct {
@@ -107,52 +105,46 @@ type joinRoomMessageResponse struct {
 	Operators []string
 }
 
-
 // 16: User joined room
 type userJoinedRoomMessage struct {
-	Room string
-	Username string
-	Status uint32
-	AvgSpeed uint32
-	UploadNum uint64
-	Files uint32
-	Dirs uint32
-	SlotsFree uint32
+	Room        string
+	Username    string
+	Status      uint32
+	AvgSpeed    uint32
+	UploadNum   uint64
+	Files       uint32
+	Dirs        uint32
+	SlotsFree   uint32
 	CountryCode string
 }
 
-
 // 16: User left room
 type userLeftRoomMessage struct {
-	Room string
+	Room     string
 	Username string
 }
-
 
 // 22: Private message (sometimes used by server to tell us errors)
 type privateMessageReceive struct {
-	ID uint32
-	Timestamp uint32
-	Username string
-	Message string
+	ID         uint32
+	Timestamp  uint32
+	Username   string
+	Message    string
 	NewMessage bool
 }
 
-
 // 41: Kicked from server (relogged)
-type kickedMessageResponse struct {}
-
+type kickedMessageResponse struct{}
 
 // 142: Change password
 type changePasswordMessage struct {
-	Code uint32
+	Code     uint32
 	Password string
 }
 
 type changePasswordMessageResponse struct {
 	Password string
 }
-
 
 func packMessage(message soulseekMessage) ([]byte, error) {
 	buf := &bytes.Buffer{}

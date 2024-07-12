@@ -10,14 +10,14 @@ import (
 )
 
 type Bsoulseek struct {
-	conn                                      net.Conn
-	messagesToSend                            chan soulseekMessage
-	local                                     chan config.Message
-	loginResponse                             chan soulseekMessageResponse
-	joinRoomResponse                          chan joinRoomMessageResponse
-	fatalErrors                               chan error
-	disconnect                                chan bool
-	firstConnectResponse                      chan error
+	conn                 net.Conn
+	messagesToSend       chan soulseekMessage
+	local                chan config.Message
+	loginResponse        chan soulseekMessageResponse
+	joinRoomResponse     chan joinRoomMessageResponse
+	fatalErrors          chan error
+	disconnect           chan bool
+	firstConnectResponse chan error
 
 	*bridge.Config
 }
@@ -51,7 +51,7 @@ func sliceEqual(s []string) bool {
 	if len(s) <= 1 {
 		return true
 	}
-	for _, x := range(s) {
+	for _, x := range s {
 		if x != s[0] {
 			return false
 		}
@@ -60,7 +60,7 @@ func sliceEqual(s []string) bool {
 }
 
 func (b *Bsoulseek) sendMessages() {
-	lastFourChatMessages := []string {"1", "2", "3", ""}
+	lastFourChatMessages := []string{"1", "2", "3", ""}
 	for {
 		message, more := <-b.messagesToSend
 		if !more {
@@ -69,7 +69,7 @@ func (b *Bsoulseek) sendMessages() {
 		msg, is_say := message.(sayChatroomMessage)
 		if is_say {
 			// can't send 5 of the same message in a row or we get banned
-			if (sliceEqual(append(lastFourChatMessages, msg.Message))) {
+			if sliceEqual(append(lastFourChatMessages, msg.Message)) {
 				b.Log.Warnf("Dropping message: %s", msg.Message)
 				continue
 			}
@@ -174,11 +174,11 @@ func (b *Bsoulseek) loginLoop() {
 
 		// Now we are connected
 		select {
-		case err = <- b.fatalErrors:
+		case err = <-b.fatalErrors:
 			b.Log.Errorf("%s", err)
 			// Retry connect
 			continue
-		case <- b.disconnect:
+		case <-b.disconnect:
 			// We are done
 			return
 		}
@@ -191,7 +191,6 @@ func (b *Bsoulseek) Connect() error {
 	return err
 }
 
-
 func (b *Bsoulseek) JoinChannel(channel config.ChannelInfo) error {
 	b.messagesToSend <- makeJoinRoomMessage(channel.Name)
 	select {
@@ -203,17 +202,15 @@ func (b *Bsoulseek) JoinChannel(channel config.ChannelInfo) error {
 	}
 }
 
-
 func (b *Bsoulseek) Send(msg config.Message) (string, error) {
 	// Only process text messages
 	b.Log.Debugf("=> Received local message %v", msg)
 	if msg.Event != "" && msg.Event != config.EventUserAction && msg.Event != config.EventJoinLeave {
 		return "", nil
 	}
-	b.messagesToSend <- makeSayChatroomMessage(msg.Channel, msg.Username + msg.Text)
+	b.messagesToSend <- makeSayChatroomMessage(msg.Channel, msg.Username+msg.Text)
 	return "", nil
 }
-
 
 func (b *Bsoulseek) doDisconnect() error {
 	b.disconnect <- true
@@ -223,7 +220,6 @@ func (b *Bsoulseek) doDisconnect() error {
 	close(b.local)
 	return nil
 }
-
 
 func (b *Bsoulseek) Disconnect() error {
 	b.doDisconnect()
