@@ -37,7 +37,7 @@ func New(cfg *bridge.Config) bridge.Bridger {
 
 func (b *Bsoulseek) receiveMessages() {
 	for {
-		msg, err := readMessage(b.conn)
+		msg, err := b.readMessage(b.conn)
 		if err != nil {
 			b.fatalErrors <- fmt.Errorf("Reading message failed: %s", err)
 			return

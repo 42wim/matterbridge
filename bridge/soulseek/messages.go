@@ -27,6 +27,7 @@ const (
 
 var ignoreMessageCodes = map[uint32]bool{
 	7:    true,
+	36:   true,
 	64:   true,
 	69:   true,
 	83:   true,
@@ -272,7 +273,7 @@ func unpackMessage[T soulseekMessage](reader io.Reader) (T, error) {
 	return data, nil
 }
 
-func readMessage(reader io.Reader) (soulseekMessage, error) {
+func (b* Bsoulseek) readMessage(reader io.Reader) (soulseekMessage, error) {
 	var length uint32
 	err := binary.Read(reader, binary.LittleEndian, &length)
 	if err != nil {
@@ -321,10 +322,10 @@ func readMessage(reader io.Reader) (soulseekMessage, error) {
 		return unpackMessage[privateMessageReceive](reader)
 	default:
 		_, ignore := ignoreMessageCodes[code]
-		if ignore {
-			return nil, nil
+		if !ignore {
+			b.Log.Errorf("Unknown message code: %d", code)
 		}
-		return nil, fmt.Errorf("Unknown message code: %d", code)
+		return nil, nil
 	}
 }
 
