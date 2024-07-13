@@ -108,6 +108,8 @@ func (b *Bsoulseek) loginLoop() {
 		if !firstConnect {
 			// Cleanup as we are making new sender/receiver routines
 			b.fatalErrors = make(chan error)
+			err := b.conn.Close()
+			b.Log.Errorf("Error closing conn: %s", err)
 			close(b.messagesToSend)
 		}
 		// Connect to slsk server
