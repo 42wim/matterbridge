@@ -211,7 +211,11 @@ func (b *Bsoulseek) Send(msg config.Message) (string, error) {
 	if msg.Event != "" && msg.Event != config.EventUserAction && msg.Event != config.EventJoinLeave {
 		return "", nil
 	}
-	b.messagesToSend <- makeSayChatroomMessage(msg.Channel, msg.Username+msg.Text)
+	text := msg.Username+msg.Text
+	if msg.Event == config.EventUserAction {
+		text = msg.Username + "/me " + msg.Text
+	}
+	b.messagesToSend <- makeSayChatroomMessage(msg.Channel, text)
 	return "", nil
 }
 

@@ -42,6 +42,11 @@ func (b *Bsoulseek) handleChatMessage(msg sayChatroomMessageReceive) {
 		Channel:  msg.Room,
 		Username: msg.Username,
 	}
+	if strings.HasPrefix(msg.Message, "/me ") {
+		// user action
+		bridgeMessage.Text = msg.Message[4:]
+		bridgeMessage.Event = config.EventUserAction
+	}
 	b.local <- bridgeMessage
 }
 
