@@ -120,6 +120,7 @@ func (b *Bsoulseek) loginLoop() {
 				b.firstConnectResponse <- err
 				return
 			}
+			continue
 		}
 
 		// Init sender and receiver
