@@ -176,6 +176,7 @@ func (b *Bsoulseek) loginLoop() {
 		}
 
 		// Now we are connected
+		firstConnect = false;
 		select {
 		case err = <-b.fatalErrors:
 			b.Log.Errorf("%s", err)
