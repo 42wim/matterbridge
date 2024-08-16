@@ -50,18 +50,26 @@ func (b *Birc) handleFiles(msg *config.Message) bool {
 	if len(msg.Extra["file"]) == 0 {
 		return false
 	}
+
+	if msg.Text != "" {
+		b.Local <- config.Message{
+			Text:     msg.Text,
+			Username: msg.Username,
+			Channel:  msg.Channel,
+			Event:    msg.Event,
+		}
+	}
+
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo)
+		var text = ""
 		if fi.Comment != "" {
-			msg.Text += fi.Comment + " : "
+			text += fi.Comment + " : "
 		}
 		if fi.URL != "" {
-			msg.Text = fi.URL
-			if fi.Comment != "" {
-				msg.Text = fi.Comment + " : " + fi.URL
-			}
+			text += fi.URL
 		}
-		b.Local <- config.Message{Text: msg.Text, Username: msg.Username, Channel: msg.Channel, Event: msg.Event}
+		b.Local <- config.Message{Text: text, Username: msg.Username, Channel: msg.Channel, Event: msg.Event}
 	}
 	return true
 }
