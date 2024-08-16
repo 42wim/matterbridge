@@ -69,31 +69,61 @@ func (b *Bdiscord) webhookSendTextOnly(msg *config.Message, channelID string) (s
 func (b *Bdiscord) webhookSendFilesOnly(msg *config.Message, channelID string) error {
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo) //nolint:forcetypeassert
-		file := discordgo.File{
-			Name:        fi.Name,
-			ContentType: "",
-			Reader:      bytes.NewReader(*fi.Data),
-		}
-		content := fi.Comment
+		var err error
 
-		// Cannot use the resulting ID for any edits anyway, so throw it away.
-		// This has to be re-enabled when we implement message deletion.
-		_, err := b.transmitter.Send(
-			channelID,
-			&discordgo.WebhookParams{
-				Username:        msg.Username,
-				AvatarURL:       msg.Avatar,
-				Files:           []*discordgo.File{&file},
-				Content:         content,
-				AllowedMentions: b.getAllowedMentions(),
-			},
-		)
+		if fi.URL != "" {
+			err = b.webhookSendFileFromURL(msg, channelID, &fi)
+		} else if fi.Data != nil {
+			err = b.webhookSendFileFromData(msg, channelID, &fi)
+		} else {
+			b.Log.Errorf("Attachment %#v for message %#v had neither Data nor URL", fi, msg)
+		}
+
 		if err != nil {
-			b.Log.Errorf("Could not send file %#v for message %#v: %s", file, msg, err)
+			b.Log.Errorf("Could not send attachment %#v for message %#v: %s", fi, msg, err)
 			return err
 		}
 	}
+
 	return nil
+}
+
+func (b *Bdiscord) webhookSendFileFromData(msg *config.Message, channelID string, fi *config.FileInfo) error {
+	file := discordgo.File{
+		Name:        fi.Name,
+		ContentType: "",
+		Reader:      bytes.NewReader(*fi.Data),
+	}
+	content := fi.Comment
+
+	// Cannot use the resulting ID for any edits anyway, so throw it away.
+	// This has to be re-enabled when we implement message deletion.
+	_, err := b.transmitter.Send(
+		channelID,
+		&discordgo.WebhookParams{
+			Username:        msg.Username,
+			AvatarURL:       msg.Avatar,
+			Files:           []*discordgo.File{&file},
+			Content:         content,
+			AllowedMentions: b.getAllowedMentions(),
+		},
+	)
+	return err
+}
+
+func (b *Bdiscord) webhookSendFileFromURL(msg *config.Message, channelID string, fi *config.FileInfo) error {
+	// discord client will display any file url as an inline embed,
+	// without us having to do anything special.
+	_, err := b.transmitter.Send(
+		channelID,
+		&discordgo.WebhookParams{
+			Content:             fi.URL,
+			Username:            msg.Username,
+			AvatarURL:           msg.Avatar,
+			AllowedMentions:     b.getAllowedMentions(),
+		},
+	)
+	return err
 }
 
 // webhookSend send one or more message via webhook, taking care of file
