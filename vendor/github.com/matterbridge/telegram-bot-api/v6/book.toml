@@ -1,9 +1,0 @@
-[book]
-authors = ["Syfaro"]
-language = "en"
-multilingual = false
-src = "docs"
-title = "Go Telegram Bot API"
-
-[output.html]
-git-repository-url = "https://github.com/go-telegram-bot-api/telegram-bot-api"

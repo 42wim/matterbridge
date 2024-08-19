@@ -1,5 +1,0 @@
-_vendor/
-vendor/
-*.out
-coverage.txt
-*.test

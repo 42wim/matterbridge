@@ -1,6 +1,0 @@
-[submodule "generator/SteamKit"]
-	path = generator/SteamKit
-	url = https://github.com/SteamRE/SteamKit.git
-[submodule "generator/Protobufs"]
-	path = generator/Protobufs
-	url = https://github.com/SteamDatabase/Protobufs.git
