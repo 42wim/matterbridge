@@ -41,11 +41,11 @@ func (b *Bwhatsapp) handleGroupInfo(event *events.GroupInfo) {
 }
 
 func (b *Bwhatsapp) handleUserJoin(event *events.GroupInfo) {
-	for _, joinedJid := range event.Join {
-		senderName := b.getSenderNameFromJID(joinedJid)
+	for _, joinedJID := range event.Join {
+		senderName := b.getSenderNameFromJID(joinedJID)
 
 		rmsg := config.Message{
-			UserID:   joinedJid.String(),
+			UserID:   joinedJID.String(),
 			Username: senderName,
 			Channel:  event.JID.String(),
 			Account:  b.Account,
@@ -58,11 +58,11 @@ func (b *Bwhatsapp) handleUserJoin(event *events.GroupInfo) {
 	}
 }
 func (b *Bwhatsapp) handleUserLeave(event *events.GroupInfo) {
-	for _, leftJid := range event.Leave {
-		senderName := b.getSenderNameFromJID(leftJid)
+	for _, leftJID := range event.Leave {
+		senderName := b.getSenderNameFromJID(leftJID)
 
 		rmsg := config.Message{
-			UserID:   leftJid.String(),
+			UserID:   leftJID.String(),
 			Username: senderName,
 			Channel:  event.JID.String(),
 			Account:  b.Account,
@@ -76,8 +76,8 @@ func (b *Bwhatsapp) handleUserLeave(event *events.GroupInfo) {
 }
 func (b *Bwhatsapp) handleTopicChange(event *events.GroupInfo) {
 	msg := event.Topic
-	senderJid := msg.TopicSetBy
-	senderName := b.getSenderNameFromJID(senderJid)
+	senderJID := msg.TopicSetBy
+	senderName := b.getSenderNameFromJID(senderJID)
 
 	text := msg.Topic
 	if text == "" {
@@ -85,7 +85,7 @@ func (b *Bwhatsapp) handleTopicChange(event *events.GroupInfo) {
 	}
 
 	rmsg := config.Message{
-		UserID:   senderJid.String(),
+		UserID:   senderJID.String(),
 		Username: senderName,
 		Channel:  event.JID.String(),
 		Account:  b.Account,
@@ -151,9 +151,9 @@ func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.
 			senderJID = types.NewJID(ci.GetParticipant(), types.DefaultUserServer)
 		}
 
-		if ci.MentionedJid != nil {
+		if ci.MentionedJID != nil {
 			// handle user mentions
-			for _, mentionedJID := range ci.MentionedJid {
+			for _, mentionedJID := range ci.MentionedJID {
 				numberAndSuffix := strings.SplitN(mentionedJID, "@", 2)
 
 				// mentions comes as telephone numbers and we don't want to expose it to other bridges
@@ -441,10 +441,10 @@ func (b *Bwhatsapp) handleDelete(messageInfo *proto.ProtocolMessage) {
 	rmsg := config.Message{
 		Account:  b.Account,
 		Protocol: b.Protocol,
-		ID:       getMessageIdFormat(sender, *messageInfo.Key.Id),
+		ID:       getMessageIdFormat(sender, *messageInfo.Key.ID),
 		Event:    config.EventMsgDelete,
 		Text:     config.EventMsgDelete,
-		Channel:  *messageInfo.Key.RemoteJid,
+		Channel:  *messageInfo.Key.RemoteJID,
 	}
 
 	b.Log.Debugf("<= Sending message from %s to gateway", b.Account)
