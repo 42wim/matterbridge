@@ -244,7 +244,7 @@ type GroupsGroupLikeFriends struct {
 type GroupsLiveCovers struct {
 	IsEnabled  BaseBoolInt `json:"is_enabled"`
 	IsScalable BaseBoolInt `json:"is_scalable"`
-	StoryIds   []string    `json:"story_ids"`
+	StoryIds   []string    `json:"story_ids"` //nolint:revive
 }
 
 // GroupsBanInfo reason type.
@@ -607,7 +607,7 @@ type GroupsYoulaSettings struct {
 	ModerationStatus      int         `json:"moderation_status"`
 	DeclineReason         string      `json:"decline_reason"`
 	GroupMode             int         `json:"group_mode"`
-	SelectedCategoryIDS   []int       `json:"selected_category_ids"`
+	SelectedCategoryIDS   []int       `json:"selected_category_ids"` //nolint:revive
 	Lat                   float64     `json:"lat"`
 	Long                  float64     `json:"long"`
 	Radius                float64     `json:"radius"`

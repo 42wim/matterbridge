@@ -80,12 +80,13 @@ var _ Logger = &intLogger{}
 // intLogger is an internal logger implementation. Internal in that it is
 // defined entirely by this package.
 type intLogger struct {
-	json         bool
-	callerOffset int
-	name         string
-	timeFormat   string
-	timeFn       TimeFunction
-	disableTime  bool
+	json              bool
+	jsonEscapeEnabled bool
+	callerOffset      int
+	name              string
+	timeFormat        string
+	timeFn            TimeFunction
+	disableTime       bool
 
 	// This is an interface so that it's shared by any derived loggers, since
 	// those derived loggers share the bufio.Writer as well.
@@ -173,6 +174,7 @@ func newLogger(opts *LoggerOptions) *intLogger {
 
 	l := &intLogger{
 		json:              opts.JSONFormat,
+		jsonEscapeEnabled: !opts.JSONEscapeDisabled,
 		name:              opts.Name,
 		timeFormat:        TimeFormat,
 		timeFn:            time.Now,
@@ -667,13 +669,17 @@ func (l *intLogger) logJSON(t time.Time, name string, level Level, msg string, a
 		}
 	}
 
-	err := json.NewEncoder(l.writer).Encode(vals)
+	encoder := json.NewEncoder(l.writer)
+	encoder.SetEscapeHTML(l.jsonEscapeEnabled)
+	err := encoder.Encode(vals)
 	if err != nil {
 		if _, ok := err.(*json.UnsupportedTypeError); ok {
 			plainVal := l.jsonMapEntry(t, name, level, msg)
 			plainVal["@warn"] = errJsonUnsupportedTypeMsg
 
-			json.NewEncoder(l.writer).Encode(plainVal)
+			errEncoder := json.NewEncoder(l.writer)
+			errEncoder.SetEscapeHTML(l.jsonEscapeEnabled)
+			errEncoder.Encode(plainVal)
 		}
 	}
 }

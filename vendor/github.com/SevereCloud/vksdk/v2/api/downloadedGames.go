@@ -11,7 +11,7 @@ type DownloadedGamesGetPaidStatusResponse struct {
 
 // DownloadedGamesGetPaidStatus method.
 //
-// https://vk.com/dev/downloadedGames.getPaidStatus
+// https://dev.vk.com/method/downloadedGames.getPaidStatus
 func (vk *VK) DownloadedGamesGetPaidStatus(params Params) (response DownloadedGamesGetPaidStatusResponse, err error) {
 	err = vk.RequestUnmarshal("downloadedGames.getPaidStatus", &response, params, Params{"extended": false})
 

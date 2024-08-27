@@ -10,12 +10,14 @@ type emojiResponseFull struct {
 	SlackResponse
 }
 
-// GetEmoji retrieves all the emojis
+// GetEmoji retrieves all the emojis.
+// For more details see GetEmojiContext documentation.
 func (api *Client) GetEmoji() (map[string]string, error) {
 	return api.GetEmojiContext(context.Background())
 }
 
-// GetEmojiContext retrieves all the emojis with a custom context
+// GetEmojiContext retrieves all the emojis with a custom context.
+// Slack API docs: https://api.slack.com/methods/emoji.list
 func (api *Client) GetEmojiContext(ctx context.Context) (map[string]string, error) {
 	values := url.Values{
 		"token": {api.token},

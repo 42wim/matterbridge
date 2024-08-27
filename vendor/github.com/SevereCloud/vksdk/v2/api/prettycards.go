@@ -10,7 +10,7 @@ type PrettyCardsCreateResponse struct {
 
 // PrettyCardsCreate method.
 //
-// https://vk.com/dev/prettyCards.create
+// https://dev.vk.com/method/prettyCards.create
 func (vk *VK) PrettyCardsCreate(params Params) (response PrettyCardsCreateResponse, err error) {
 	err = vk.RequestUnmarshal("prettyCards.create", &response, params)
 	return
@@ -25,7 +25,7 @@ type PrettyCardsDeleteResponse struct {
 
 // PrettyCardsDelete method.
 //
-// https://vk.com/dev/prettyCards.delete
+// https://dev.vk.com/method/prettyCards.delete
 func (vk *VK) PrettyCardsDelete(params Params) (response PrettyCardsDeleteResponse, err error) {
 	err = vk.RequestUnmarshal("prettyCards.delete", &response, params)
 	return
@@ -39,7 +39,7 @@ type PrettyCardsEditResponse struct {
 
 // PrettyCardsEdit method.
 //
-// https://vk.com/dev/prettyCards.edit
+// https://dev.vk.com/method/prettyCards.edit
 func (vk *VK) PrettyCardsEdit(params Params) (response PrettyCardsEditResponse, err error) {
 	err = vk.RequestUnmarshal("prettyCards.edit", &response, params)
 	return
@@ -53,7 +53,7 @@ type PrettyCardsGetResponse struct {
 
 // PrettyCardsGet method.
 //
-// https://vk.com/dev/prettyCards.get
+// https://dev.vk.com/method/prettyCards.get
 func (vk *VK) PrettyCardsGet(params Params) (response PrettyCardsGetResponse, err error) {
 	err = vk.RequestUnmarshal("prettyCards.get", &response, params)
 	return
@@ -64,7 +64,7 @@ type PrettyCardsGetByIDResponse []object.PrettyCardsPrettyCard
 
 // PrettyCardsGetByID method.
 //
-// https://vk.com/dev/prettyCards.getById
+// https://dev.vk.com/method/prettyCards.getById
 func (vk *VK) PrettyCardsGetByID(params Params) (response PrettyCardsGetByIDResponse, err error) {
 	err = vk.RequestUnmarshal("prettyCards.getById", &response, params)
 	return
@@ -72,7 +72,7 @@ func (vk *VK) PrettyCardsGetByID(params Params) (response PrettyCardsGetByIDResp
 
 // PrettyCardsGetUploadURL method.
 //
-// https://vk.com/dev/prettyCards.getUploadURL
+// https://dev.vk.com/method/prettyCards.getUploadURL
 func (vk *VK) PrettyCardsGetUploadURL(params Params) (response string, err error) {
 	err = vk.RequestUnmarshal("prettyCards.getUploadURL", &response, params)
 	return

@@ -1,6 +1,7 @@
 package msgp
 
 import (
+	"errors"
 	"math"
 	"reflect"
 	"time"
@@ -342,10 +343,10 @@ func AppendMapStrIntf(b []byte, m map[string]interface{}) ([]byte, error) {
 // provided []byte. 'i' must be one of the following:
 //   - 'nil'
 //   - A bool, float, string, []byte, int, uint, or complex
-//   - A map[string]interface{} or map[string]string
+//   - A map[string]T where T is another supported type
 //   - A []T, where T is another supported type
 //   - A *T, where T is another supported type
-//   - A type that satisfieds the msgp.Marshaler interface
+//   - A type that satisfies the msgp.Marshaler interface
 //   - A type that satisfies the msgp.Extension interface
 func AppendIntf(b []byte, i interface{}) ([]byte, error) {
 	if i == nil {
@@ -395,6 +396,8 @@ func AppendIntf(b []byte, i interface{}) ([]byte, error) {
 		return AppendUint64(b, i), nil
 	case time.Time:
 		return AppendTime(b, i), nil
+	case time.Duration:
+		return AppendDuration(b, i), nil
 	case map[string]interface{}:
 		return AppendMapStrIntf(b, i)
 	case map[string]string:
@@ -414,6 +417,21 @@ func AppendIntf(b []byte, i interface{}) ([]byte, error) {
 	var err error
 	v := reflect.ValueOf(i)
 	switch v.Kind() {
+	case reflect.Map:
+		if v.Type().Key().Kind() != reflect.String {
+			return b, errors.New("msgp: map keys must be strings")
+		}
+		ks := v.MapKeys()
+		b = AppendMapHeader(b, uint32(len(ks)))
+		for _, key := range ks {
+			val := v.MapIndex(key)
+			b = AppendString(b, key.String())
+			b, err = AppendIntf(b, val.Interface())
+			if err != nil {
+				return nil, err
+			}
+		}
+		return b, nil
 	case reflect.Array, reflect.Slice:
 		l := v.Len()
 		b = AppendArrayHeader(b, uint32(l))

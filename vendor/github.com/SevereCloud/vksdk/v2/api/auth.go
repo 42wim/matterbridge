@@ -6,7 +6,7 @@ import (
 
 // AuthCheckPhone checks a user's phone number for correctness.
 //
-// https://vk.com/dev/auth.checkPhone
+// https://dev.vk.com/method/auth.checkPhone
 //
 // Deprecated: This method is deprecated and may be disabled soon, please avoid
 // using it.
@@ -23,7 +23,7 @@ type AuthRestoreResponse struct {
 
 // AuthRestore allows to restore account access using a code received via SMS.
 //
-// https://vk.com/dev/auth.restore
+// https://dev.vk.com/method/auth.restore
 func (vk *VK) AuthRestore(params Params) (response AuthRestoreResponse, err error) {
 	err = vk.RequestUnmarshal("auth.restore", &response, params)
 	return

@@ -45,7 +45,7 @@ type AdsAddOfficeUsersResponse []AdsAddOfficeUsersItem
 
 // AdsAddOfficeUsers adds managers and/or supervisors to advertising account.
 //
-// https://vk.com/dev/ads.addOfficeUsers
+// https://dev.vk.com/method/ads.addOfficeUsers
 func (vk *VK) AdsAddOfficeUsers(params Params) (response AdsAddOfficeUsersResponse, err error) {
 	err = vk.RequestUnmarshal("ads.addOfficeUsers", &response, params)
 	return
@@ -65,7 +65,7 @@ type AdsCheckLinkResponse struct {
 
 // AdsCheckLink allows to check the ad link.
 //
-// https://vk.com/dev/ads.checkLink
+// https://dev.vk.com/method/ads.checkLink
 func (vk *VK) AdsCheckLink(params Params) (response AdsCheckLinkResponse, err error) {
 	err = vk.RequestUnmarshal("ads.checkLink", &response, params)
 	return
@@ -82,7 +82,7 @@ type AdsCreateAdsResponse []struct {
 // Please note! Maximum allowed number of ads created in one request is 5.
 // Minimum size of ad audience is 50 people.
 //
-// https://vk.com/dev/ads.createAds
+// https://dev.vk.com/method/ads.createAds
 func (vk *VK) AdsCreateAds(params Params) (response AdsCreateAdsResponse, err error) {
 	err = vk.RequestUnmarshal("ads.createAds", &response, params)
 	return
@@ -98,7 +98,7 @@ type AdsCreateCampaignsResponse []struct {
 //
 // Please note! Allowed number of campaigns created in one request is 50.
 //
-// https://vk.com/dev/ads.createCampaigns
+// https://dev.vk.com/method/ads.createCampaigns
 func (vk *VK) AdsCreateCampaigns(params Params) (response AdsCreateCampaignsResponse, err error) {
 	err = vk.RequestUnmarshal("ads.createCampaigns", &response, params)
 	return
@@ -116,7 +116,7 @@ type AdsCreateClientsResponse []struct {
 //
 // Please note! Allowed number of clients created in one request is 50.
 //
-// https://vk.com/dev/ads.createClients
+// https://dev.vk.com/method/ads.createClients
 func (vk *VK) AdsCreateClients(params Params) (response AdsCreateClientsResponse, err error) {
 	err = vk.RequestUnmarshal("ads.createClients", &response, params)
 	return
@@ -129,7 +129,7 @@ type AdsCreateLookalikeRequestResponse struct {
 
 // AdsCreateLookalikeRequest creates a request to find a similar audience.
 //
-// https://vk.com/dev/ads.createLookalikeRequest
+// https://dev.vk.com/method/ads.createLookalikeRequest
 func (vk *VK) AdsCreateLookalikeRequest(params Params) (response AdsCreateLookalikeRequestResponse, err error) {
 	err = vk.RequestUnmarshal("ads.createLookalikeRequest", &response, params)
 	return
@@ -154,7 +154,7 @@ type AdsCreateTargetGroupResponse struct {
 // Please note! Maximum allowed number of groups for one advertising
 // account is 100.
 //
-// https://vk.com/dev/ads.createTargetGroup
+// https://dev.vk.com/method/ads.createTargetGroup
 func (vk *VK) AdsCreateTargetGroup(params Params) (response AdsCreateTargetGroupResponse, err error) {
 	err = vk.RequestUnmarshal("ads.createTargetGroup", &response, params)
 	return
@@ -175,7 +175,7 @@ type AdsCreateTargetPixelResponse struct {
 //
 // Maximum pixels number per advertising account is 25.
 //
-// https://vk.com/dev/ads.createTargetPixel
+// https://dev.vk.com/method/ads.createTargetPixel
 func (vk *VK) AdsCreateTargetPixel(params Params) (response AdsCreateTargetPixelResponse, err error) {
 	err = vk.RequestUnmarshal("ads.createTargetPixel", &response, params)
 	return
@@ -190,7 +190,7 @@ type AdsDeleteAdsResponse []ErrorType
 //
 // Warning! Maximum allowed number of ads archived in one request is 100.
 //
-// https://vk.com/dev/ads.deleteAds
+// https://dev.vk.com/method/ads.deleteAds
 func (vk *VK) AdsDeleteAds(params Params) (response AdsDeleteAdsResponse, err error) {
 	err = vk.RequestUnmarshal("ads.deleteAds", &response, params)
 	return
@@ -205,7 +205,7 @@ type AdsDeleteCampaignsResponse []ErrorType
 //
 // Warning! Maximum allowed number of campaigns archived in one request is 100.
 //
-// https://vk.com/dev/ads.deleteCampaigns
+// https://dev.vk.com/method/ads.deleteCampaigns
 func (vk *VK) AdsDeleteCampaigns(params Params) (response AdsDeleteCampaignsResponse, err error) {
 	err = vk.RequestUnmarshal("ads.deleteCampaigns", &response, params)
 	return
@@ -222,7 +222,7 @@ type AdsDeleteClientsResponse []ErrorType
 //
 // Please note! Maximum allowed number of clients edited in one request is 10.
 //
-// https://vk.com/dev/ads.deleteClients
+// https://dev.vk.com/method/ads.deleteClients
 func (vk *VK) AdsDeleteClients(params Params) (response AdsDeleteClientsResponse, err error) {
 	err = vk.RequestUnmarshal("ads.deleteClients", &response, params)
 	return
@@ -230,7 +230,7 @@ func (vk *VK) AdsDeleteClients(params Params) (response AdsDeleteClientsResponse
 
 // AdsDeleteTargetGroup deletes target group.
 //
-// https://vk.com/dev/ads.deleteTargetGroup
+// https://dev.vk.com/method/ads.deleteTargetGroup
 func (vk *VK) AdsDeleteTargetGroup(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("ads.deleteTargetGroup", &response, params)
 	return
@@ -238,7 +238,7 @@ func (vk *VK) AdsDeleteTargetGroup(params Params) (response int, err error) {
 
 // AdsDeleteTargetPixel deletes target pixel.
 //
-// https://vk.com/dev/ads.deleteTargetPixel
+// https://dev.vk.com/method/ads.deleteTargetPixel
 func (vk *VK) AdsDeleteTargetPixel(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("ads.deleteTargetPixel", &response, params)
 	return
@@ -249,7 +249,7 @@ type AdsGetAccountsResponse []object.AdsAccount
 
 // AdsGetAccounts returns a list of advertising accounts.
 //
-// https://vk.com/dev/ads.getAccounts
+// https://dev.vk.com/method/ads.getAccounts
 func (vk *VK) AdsGetAccounts(params Params) (response AdsGetAccountsResponse, err error) {
 	err = vk.RequestUnmarshal("ads.getAccounts", &response, params)
 	return
@@ -260,7 +260,7 @@ type AdsGetAdsResponse []object.AdsAd
 
 // AdsGetAds returns a list of ads.
 //
-// https://vk.com/dev/ads.getAds
+// https://dev.vk.com/method/ads.getAds
 func (vk *VK) AdsGetAds(params Params) (response AdsGetAdsResponse, err error) {
 	err = vk.RequestUnmarshal("ads.getAds", &response, params)
 	return
@@ -271,7 +271,7 @@ type AdsGetAdsLayoutResponse []object.AdsAdLayout
 
 // AdsGetAdsLayout returns descriptions of ad layouts.
 //
-// https://vk.com/dev/ads.getAdsLayout
+// https://dev.vk.com/method/ads.getAdsLayout
 func (vk *VK) AdsGetAdsLayout(params Params) (response AdsGetAdsLayoutResponse, err error) {
 	err = vk.RequestUnmarshal("ads.getAdsLayout", &response, params)
 	return
@@ -282,7 +282,7 @@ func (vk *VK) AdsGetAdsLayout(params Params) (response AdsGetAdsLayoutResponse, 
 
 // TODO: AdsGetAdsTargeting ...
 //
-// https://vk.com/dev/ads.getAdsTargeting
+// https://dev.vk.com/method/ads.getAdsTargeting
 // func (vk *VK) AdsGetAdsTargeting(params Params) (response AdsGetAdsTargetingResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.getAdsTargeting", &response, params)
 // 	return
@@ -293,7 +293,7 @@ func (vk *VK) AdsGetAdsLayout(params Params) (response AdsGetAdsLayoutResponse, 
 
 // TODO: AdsGetBudget ...
 //
-// https://vk.com/dev/ads.getBudget
+// https://dev.vk.com/method/ads.getBudget
 // func (vk *VK) AdsGetBudget(params Params) (response AdsGetBudgetResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.getBudget", &response, params)
 // 	return
@@ -304,7 +304,7 @@ func (vk *VK) AdsGetAdsLayout(params Params) (response AdsGetAdsLayoutResponse, 
 
 // TODO: AdsGetCampaigns ...
 //
-// https://vk.com/dev/ads.getCampaigns
+// https://dev.vk.com/method/ads.getCampaigns
 // func (vk *VK) AdsGetCampaigns(params Params) (response AdsGetCampaignsResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.getCampaigns", &response, params)
 // 	return
@@ -315,7 +315,7 @@ func (vk *VK) AdsGetAdsLayout(params Params) (response AdsGetAdsLayoutResponse, 
 
 // TODO: AdsGetCategories ...
 //
-// https://vk.com/dev/ads.getCategories
+// https://dev.vk.com/method/ads.getCategories
 // func (vk *VK) AdsGetCategories(params Params) (response AdsGetCategoriesResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.getCategories", &response, params)
 // 	return
@@ -326,7 +326,7 @@ func (vk *VK) AdsGetAdsLayout(params Params) (response AdsGetAdsLayoutResponse, 
 
 // TODO: AdsGetClients ...
 //
-// https://vk.com/dev/ads.getClients
+// https://dev.vk.com/method/ads.getClients
 // func (vk *VK) AdsGetClients(params Params) (response AdsGetClientsResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.getClients", &response, params)
 // 	return
@@ -337,7 +337,7 @@ func (vk *VK) AdsGetAdsLayout(params Params) (response AdsGetAdsLayoutResponse, 
 
 // TODO: AdsGetDemographics ...
 //
-// https://vk.com/dev/ads.getDemographics
+// https://dev.vk.com/method/ads.getDemographics
 // func (vk *VK) AdsGetDemographics(params Params) (response AdsGetDemographicsResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.getDemographics", &response, params)
 // 	return
@@ -348,7 +348,7 @@ func (vk *VK) AdsGetAdsLayout(params Params) (response AdsGetAdsLayoutResponse, 
 
 // TODO: AdsGetFloodStats ...
 //
-// https://vk.com/dev/ads.getFloodStats
+// https://dev.vk.com/method/ads.getFloodStats
 // func (vk *VK) AdsGetFloodStats(params Params) (response AdsGetFloodStatsResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.getFloodStats", &response, params)
 // 	return
@@ -359,7 +359,7 @@ func (vk *VK) AdsGetAdsLayout(params Params) (response AdsGetAdsLayoutResponse, 
 
 // TODO: AdsGetLookalikeRequests ...
 //
-// https://vk.com/dev/ads.getLookalikeRequests
+// https://dev.vk.com/method/ads.getLookalikeRequests
 // func (vk *VK) AdsGetLookalikeRequests(params Params) (response AdsGetLookalikeRequestsResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.getLookalikeRequests", &response, params)
 // 	return
@@ -372,7 +372,7 @@ type AdsGetMusiciansResponse struct {
 
 // AdsGetMusicians returns a list of musicians.
 //
-// https://vk.com/dev/ads.getMusicians
+// https://dev.vk.com/method/ads.getMusicians
 func (vk *VK) AdsGetMusicians(params Params) (response AdsGetMusiciansResponse, err error) {
 	err = vk.RequestUnmarshal("ads.getMusicians", &response, params)
 	return
@@ -383,7 +383,7 @@ func (vk *VK) AdsGetMusicians(params Params) (response AdsGetMusiciansResponse, 
 
 // TODO: AdsGetOfficeUsers ...
 //
-// https://vk.com/dev/ads.getOfficeUsers
+// https://dev.vk.com/method/ads.getOfficeUsers
 // func (vk *VK) AdsGetOfficeUsers(params Params) (response AdsGetOfficeUsersResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.getOfficeUsers", &response, params)
 // 	return
@@ -394,7 +394,7 @@ func (vk *VK) AdsGetMusicians(params Params) (response AdsGetMusiciansResponse, 
 
 // TODO: AdsGetPostsReach ...
 //
-// https://vk.com/dev/ads.getPostsReach
+// https://dev.vk.com/method/ads.getPostsReach
 // func (vk *VK) AdsGetPostsReach(params Params) (response AdsGetPostsReachResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.getPostsReach", &response, params)
 // 	return
@@ -405,7 +405,7 @@ func (vk *VK) AdsGetMusicians(params Params) (response AdsGetMusiciansResponse, 
 
 // TODO: AdsGetRejectionReason ...
 //
-// https://vk.com/dev/ads.getRejectionReason
+// https://dev.vk.com/method/ads.getRejectionReason
 // func (vk *VK) AdsGetRejectionReason(params Params) (response AdsGetRejectionReasonResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.getRejectionReason", &response, params)
 // 	return
@@ -416,7 +416,7 @@ func (vk *VK) AdsGetMusicians(params Params) (response AdsGetMusiciansResponse, 
 
 // TODO: AdsGetStatistics ...
 //
-// https://vk.com/dev/ads.getStatistics
+// https://dev.vk.com/method/ads.getStatistics
 // func (vk *VK) AdsGetStatistics(params Params) (response AdsGetStatisticsResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.getStatistics", &response, params)
 // 	return
@@ -427,7 +427,7 @@ func (vk *VK) AdsGetMusicians(params Params) (response AdsGetMusiciansResponse, 
 
 // TODO: AdsGetSuggestions ...
 //
-// https://vk.com/dev/ads.getSuggestions
+// https://dev.vk.com/method/ads.getSuggestions
 // func (vk *VK) AdsGetSuggestions(params Params) (response AdsGetSuggestionsResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.getSuggestions", &response, params)
 // 	return
@@ -438,7 +438,7 @@ type AdsGetTargetGroupsResponse []object.AdsTargetGroup
 
 // AdsGetTargetGroups returns a list of target groups.
 //
-// https://vk.com/dev/ads.getTargetGroups
+// https://dev.vk.com/method/ads.getTargetGroups
 func (vk *VK) AdsGetTargetGroups(params Params) (response AdsGetTargetGroupsResponse, err error) {
 	err = vk.RequestUnmarshal("ads.getTargetGroups", &response, params)
 	return
@@ -449,7 +449,7 @@ func (vk *VK) AdsGetTargetGroups(params Params) (response AdsGetTargetGroupsResp
 
 // TODO: AdsGetTargetPixels ...
 //
-// https://vk.com/dev/ads.getTargetPixels
+// https://dev.vk.com/method/ads.getTargetPixels
 // func (vk *VK) AdsGetTargetPixels(params Params) (response AdsGetTargetPixelsResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.getTargetPixels", &response, params)
 // 	return
@@ -460,7 +460,7 @@ func (vk *VK) AdsGetTargetGroups(params Params) (response AdsGetTargetGroupsResp
 
 // TODO: AdsGetTargetingStats ...
 //
-// https://vk.com/dev/ads.getTargetingStats
+// https://dev.vk.com/method/ads.getTargetingStats
 // func (vk *VK) AdsGetTargetingStats(params Params) (response AdsGetTargetingStatsResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.getTargetingStats", &response, params)
 // 	return
@@ -471,7 +471,7 @@ func (vk *VK) AdsGetTargetGroups(params Params) (response AdsGetTargetGroupsResp
 
 // TODO: AdsGetUploadURL ...
 //
-// https://vk.com/dev/ads.getUploadURL
+// https://dev.vk.com/method/ads.getUploadURL
 // func (vk *VK) AdsGetUploadURL(params Params) (response AdsGetUploadURLResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.getUploadURL", &response, params)
 // 	return
@@ -482,7 +482,7 @@ func (vk *VK) AdsGetTargetGroups(params Params) (response AdsGetTargetGroupsResp
 
 // TODO: AdsGetVideoUploadURL ...
 //
-// https://vk.com/dev/ads.getVideoUploadURL
+// https://dev.vk.com/method/ads.getVideoUploadURL
 // func (vk *VK) AdsGetVideoUploadURL(params Params) (response AdsGetVideoUploadURLResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.getVideoUploadURL", &response, params)
 // 	return
@@ -493,7 +493,7 @@ func (vk *VK) AdsGetTargetGroups(params Params) (response AdsGetTargetGroupsResp
 
 // TODO: AdsImportTargetContacts ...
 //
-// https://vk.com/dev/ads.importTargetContacts
+// https://dev.vk.com/method/ads.importTargetContacts
 // func (vk *VK) AdsImportTargetContacts(params Params) (response AdsImportTargetContactsResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.importTargetContacts", &response, params)
 // 	return
@@ -504,7 +504,7 @@ func (vk *VK) AdsGetTargetGroups(params Params) (response AdsGetTargetGroupsResp
 
 // TODO: AdsRemoveOfficeUsers ...
 //
-// https://vk.com/dev/ads.removeOfficeUsers
+// https://dev.vk.com/method/ads.removeOfficeUsers
 // func (vk *VK) AdsRemoveOfficeUsers(params Params) (response AdsRemoveOfficeUsersResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.removeOfficeUsers", &response, params)
 // 	return
@@ -518,7 +518,7 @@ func (vk *VK) AdsGetTargetGroups(params Params) (response AdsGetTargetGroupsResp
 //
 // Contacts are excluded within a few hours of the request.
 //
-// https://vk.com/dev/ads.removeTargetContacts
+// https://dev.vk.com/method/ads.removeTargetContacts
 func (vk *VK) AdsRemoveTargetContacts(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("ads.removeTargetContacts", &response, params)
 	return
@@ -529,7 +529,7 @@ func (vk *VK) AdsRemoveTargetContacts(params Params) (response int, err error) {
 
 // TODO: AdsSaveLookalikeRequestResult ...
 //
-// https://vk.com/dev/ads.saveLookalikeRequestResult
+// https://dev.vk.com/method/ads.saveLookalikeRequestResult
 // func (vk *VK) AdsSaveLookalikeRequestResult(params Params) (
 // 		response AdsSaveLookalikeRequestResultResponse,
 // 		err error,
@@ -543,7 +543,7 @@ func (vk *VK) AdsRemoveTargetContacts(params Params) (response int, err error) {
 
 // TODO: AdsShareTargetGroup ...
 //
-// https://vk.com/dev/ads.shareTargetGroup
+// https://dev.vk.com/method/ads.shareTargetGroup
 // func (vk *VK) AdsShareTargetGroup(params Params) (response AdsShareTargetGroupResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.shareTargetGroup", &response, params)
 // 	return
@@ -554,7 +554,7 @@ func (vk *VK) AdsRemoveTargetContacts(params Params) (response int, err error) {
 
 // TODO: AdsUpdateAds ...
 //
-// https://vk.com/dev/ads.updateAds
+// https://dev.vk.com/method/ads.updateAds
 // func (vk *VK) AdsUpdateAds(params Params) (response AdsUpdateAdsResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.updateAds", &response, params)
 // 	return
@@ -565,7 +565,7 @@ func (vk *VK) AdsRemoveTargetContacts(params Params) (response int, err error) {
 
 // TODO: AdsUpdateCampaigns ...
 //
-// https://vk.com/dev/ads.updateCampaigns
+// https://dev.vk.com/method/ads.updateCampaigns
 // func (vk *VK) AdsUpdateCampaigns(params Params) (response AdsUpdateCampaignsResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.updateCampaigns", &response, params)
 // 	return
@@ -576,7 +576,7 @@ func (vk *VK) AdsRemoveTargetContacts(params Params) (response int, err error) {
 
 // TODO: AdsUpdateClients ...
 //
-// https://vk.com/dev/ads.updateClients
+// https://dev.vk.com/method/ads.updateClients
 // func (vk *VK) AdsUpdateClients(params Params) (response AdsUpdateClientsResponse, err error) {
 // 	err = vk.RequestUnmarshal("ads.updateClients", &response, params)
 // 	return
@@ -584,7 +584,7 @@ func (vk *VK) AdsRemoveTargetContacts(params Params) (response int, err error) {
 
 // AdsUpdateTargetGroup edits target group.
 //
-// https://vk.com/dev/ads.updateTargetGroup
+// https://dev.vk.com/method/ads.updateTargetGroup
 func (vk *VK) AdsUpdateTargetGroup(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("ads.updateTargetGroup", &response, params)
 	return
@@ -592,7 +592,7 @@ func (vk *VK) AdsUpdateTargetGroup(params Params) (response int, err error) {
 
 // AdsUpdateTargetPixel edits target pixel.
 //
-// https://vk.com/dev/ads.updateTargetPixel
+// https://dev.vk.com/method/ads.updateTargetPixel
 func (vk *VK) AdsUpdateTargetPixel(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("ads. updateTargetPixel", &response, params)
 	return

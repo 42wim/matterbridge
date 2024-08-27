@@ -9,7 +9,7 @@ type UsersGetResponse []object.UsersUser
 
 // UsersGet returns detailed information on users.
 //
-// https://vk.com/dev/users.get
+// https://dev.vk.com/method/users.get
 func (vk *VK) UsersGet(params Params) (response UsersGetResponse, err error) {
 	err = vk.RequestUnmarshal("users.get", &response, params)
 	return
@@ -26,7 +26,7 @@ type UsersGetFollowersResponse struct {
 //
 //	fields="";
 //
-// https://vk.com/dev/users.getFollowers
+// https://dev.vk.com/method/users.getFollowers
 func (vk *VK) UsersGetFollowers(params Params) (response UsersGetFollowersResponse, err error) {
 	err = vk.RequestUnmarshal("users.getFollowers", &response, params, Params{"fields": ""})
 
@@ -44,7 +44,7 @@ type UsersGetFollowersFieldsResponse struct {
 //
 // fields not empty.
 //
-// https://vk.com/dev/users.getFollowers
+// https://dev.vk.com/method/users.getFollowers
 func (vk *VK) UsersGetFollowersFields(params Params) (response UsersGetFollowersFieldsResponse, err error) {
 	reqParams := make(Params)
 	if v, prs := params["fields"]; v == "" || !prs {
@@ -72,7 +72,7 @@ type UsersGetSubscriptionsResponse struct {
 //
 //	extended=0
 //
-// https://vk.com/dev/users.getSubscriptions
+// https://dev.vk.com/method/users.getSubscriptions
 //
 // BUG(SevereCloud): UsersGetSubscriptions bad response with extended=1.
 func (vk *VK) UsersGetSubscriptions(params Params) (response UsersGetSubscriptionsResponse, err error) {
@@ -83,7 +83,7 @@ func (vk *VK) UsersGetSubscriptions(params Params) (response UsersGetSubscriptio
 
 // UsersReport reports (submits a complain about) a user.
 //
-// https://vk.com/dev/users.report
+// https://dev.vk.com/method/users.report
 func (vk *VK) UsersReport(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("users.report", &response, params)
 	return
@@ -97,7 +97,7 @@ type UsersSearchResponse struct {
 
 // UsersSearch returns a list of users matching the search criteria.
 //
-// https://vk.com/dev/users.search
+// https://dev.vk.com/method/users.search
 func (vk *VK) UsersSearch(params Params) (response UsersSearchResponse, err error) {
 	err = vk.RequestUnmarshal("users.search", &response, params)
 	return

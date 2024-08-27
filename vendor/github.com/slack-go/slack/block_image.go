@@ -4,11 +4,21 @@ package slack
 //
 // More Information: https://api.slack.com/reference/messaging/blocks#image
 type ImageBlock struct {
-	Type     MessageBlockType `json:"type"`
-	ImageURL string           `json:"image_url"`
-	AltText  string           `json:"alt_text"`
-	BlockID  string           `json:"block_id,omitempty"`
-	Title    *TextBlockObject `json:"title,omitempty"`
+	Type      MessageBlockType `json:"type"`
+	ImageURL  string           `json:"image_url,omitempty"`
+	AltText   string           `json:"alt_text"`
+	BlockID   string           `json:"block_id,omitempty"`
+	Title     *TextBlockObject `json:"title,omitempty"`
+	SlackFile *SlackFileObject `json:"slack_file,omitempty"`
+}
+
+// SlackFileObject Defines an object containing Slack file information to be used in an
+// image block or image element.
+//
+// More Information: https://api.slack.com/reference/block-kit/composition-objects#slack_file
+type SlackFileObject struct {
+	ID  string `json:"id,omitempty"`
+	URL string `json:"url,omitempty"`
 }
 
 // BlockType returns the type of the block

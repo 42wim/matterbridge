@@ -8,7 +8,7 @@ type StreamingGetServerURLResponse struct {
 
 // StreamingGetServerURL allows to receive data for the connection to Streaming API.
 //
-// https://vk.com/dev/streaming.getServerUrl
+// https://dev.vk.com/method/streaming.getServerUrl
 func (vk *VK) StreamingGetServerURL(params Params) (response StreamingGetServerURLResponse, err error) {
 	err = vk.RequestUnmarshal("streaming.getServerUrl", &response, params)
 	return
@@ -21,7 +21,7 @@ type StreamingGetSettingsResponse struct {
 
 // StreamingGetSettings allows to receive monthly tier for Streaming API.
 //
-// https://vk.com/dev/streaming.getSettings
+// https://dev.vk.com/method/streaming.getSettings
 func (vk *VK) StreamingGetSettings(params Params) (response StreamingGetSettingsResponse, err error) {
 	err = vk.RequestUnmarshal("streaming.getSettings", &response, params)
 	return
@@ -38,7 +38,7 @@ type StreamingGetStatsResponse []struct {
 
 // StreamingGetStats allows to receive statistics for prepared and received events in Streaming API.
 //
-// https://vk.com/dev/streaming.getStats
+// https://dev.vk.com/method/streaming.getStats
 func (vk *VK) StreamingGetStats(params Params) (response StreamingGetStatsResponse, err error) {
 	err = vk.RequestUnmarshal("streaming.getStats", &response, params)
 	return
@@ -51,7 +51,7 @@ type StreamingGetStemResponse struct {
 
 // StreamingGetStem allows to receive the stem of the word.
 //
-// https://vk.com/dev/streaming.getStem
+// https://dev.vk.com/method/streaming.getStem
 func (vk *VK) StreamingGetStem(params Params) (response StreamingGetStemResponse, err error) {
 	err = vk.RequestUnmarshal("streaming.getStem", &response, params)
 	return
@@ -59,7 +59,7 @@ func (vk *VK) StreamingGetStem(params Params) (response StreamingGetStemResponse
 
 // StreamingSetSettings allows to set monthly tier for Streaming API.
 //
-// https://vk.com/dev/streaming.setSettings
+// https://dev.vk.com/method/streaming.setSettings
 func (vk *VK) StreamingSetSettings(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("streaming.setSettings", &response, params)
 

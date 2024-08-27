@@ -33,7 +33,7 @@ download:
 
 edit:
 	@touch log
-	@if [ -f "Session.vim" ]; then novim -S & else novim -p Makefile all_musl_test.go generator.go libc.go libc_musl.go & fi
+	@if [ -f "Session.vim" ]; then novim -S & else novim -p Makefile go.mod builder.json & fi
 
 editor:
 	gofmt -l -s -w *.go 2>&1 | tee log-editor

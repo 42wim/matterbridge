@@ -6,7 +6,7 @@ import (
 
 // AppsAddUsersToTestingGroup method.
 //
-// https://vk.com/dev/apps.addUsersToTestingGroup
+// https://dev.vk.com/method/apps.addUsersToTestingGroup
 func (vk *VK) AppsAddUsersToTestingGroup(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("apps.addUsersToTestingGroup", &response, params)
 	return
@@ -14,7 +14,7 @@ func (vk *VK) AppsAddUsersToTestingGroup(params Params) (response int, err error
 
 // AppsDeleteAppRequests deletes all request notifications from the current app.
 //
-// https://vk.com/dev/apps.deleteAppRequests
+// https://dev.vk.com/method/apps.deleteAppRequests
 func (vk *VK) AppsDeleteAppRequests(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("apps.deleteAppRequests", &response, params)
 	return
@@ -29,7 +29,7 @@ type AppsGetResponse struct {
 
 // AppsGet returns applications data.
 //
-// https://vk.com/dev/apps.get
+// https://dev.vk.com/method/apps.get
 func (vk *VK) AppsGet(params Params) (response AppsGetResponse, err error) {
 	err = vk.RequestUnmarshal("apps.get", &response, params)
 	return
@@ -44,7 +44,7 @@ type AppsGetCatalogResponse struct {
 
 // AppsGetCatalog returns a list of applications (apps) available to users in the App Catalog.
 //
-// https://vk.com/dev/apps.getCatalog
+// https://dev.vk.com/method/apps.getCatalog
 func (vk *VK) AppsGetCatalog(params Params) (response AppsGetCatalogResponse, err error) {
 	err = vk.RequestUnmarshal("apps.getCatalog", &response, params)
 	return
@@ -60,7 +60,7 @@ type AppsGetFriendsListResponse struct {
 //
 //	extended=0
 //
-// https://vk.com/dev/apps.getFriendsList
+// https://dev.vk.com/method/apps.getFriendsList
 func (vk *VK) AppsGetFriendsList(params Params) (response AppsGetFriendsListResponse, err error) {
 	err = vk.RequestUnmarshal("apps.getFriendsList", &response, params, Params{"extended": false})
 
@@ -77,7 +77,7 @@ type AppsGetFriendsListExtendedResponse struct {
 //
 //	extended=1
 //
-// https://vk.com/dev/apps.getFriendsList
+// https://dev.vk.com/method/apps.getFriendsList
 func (vk *VK) AppsGetFriendsListExtended(params Params) (response AppsGetFriendsListExtendedResponse, err error) {
 	err = vk.RequestUnmarshal("apps.getFriendsList", &response, params, Params{"extended": true})
 
@@ -94,7 +94,7 @@ type AppsGetLeaderboardResponse struct {
 //
 //	extended=0
 //
-// https://vk.com/dev/apps.getLeaderboard
+// https://dev.vk.com/method/apps.getLeaderboard
 func (vk *VK) AppsGetLeaderboard(params Params) (response AppsGetLeaderboardResponse, err error) {
 	err = vk.RequestUnmarshal("apps.getLeaderboard", &response, params, Params{"extended": false})
 
@@ -115,7 +115,7 @@ type AppsGetLeaderboardExtendedResponse struct {
 //
 //	extended=1
 //
-// https://vk.com/dev/apps.getLeaderboard
+// https://dev.vk.com/method/apps.getLeaderboard
 func (vk *VK) AppsGetLeaderboardExtended(params Params) (response AppsGetLeaderboardExtendedResponse, err error) {
 	err = vk.RequestUnmarshal("apps.getLeaderboard", &response, params, Params{"extended": true})
 
@@ -132,7 +132,7 @@ type AppsGetScopesResponse struct {
 //
 // TODO: write docs.
 //
-// https://vk.com/dev/apps.getScopes
+// https://dev.vk.com/method/apps.getScopes
 func (vk *VK) AppsGetScopes(params Params) (response AppsGetScopesResponse, err error) {
 	err = vk.RequestUnmarshal("apps.getScopes", &response, params)
 	return
@@ -142,7 +142,7 @@ func (vk *VK) AppsGetScopes(params Params) (response AppsGetScopesResponse, err 
 //
 // NOTE: vk wtf!?
 //
-// https://vk.com/dev/apps.getScore
+// https://dev.vk.com/method/apps.getScore
 func (vk *VK) AppsGetScore(params Params) (response string, err error) {
 	err = vk.RequestUnmarshal("apps.getScore", &response, params)
 	return
@@ -153,7 +153,7 @@ type AppsGetTestingGroupsResponse []object.AppsTestingGroup
 
 // AppsGetTestingGroups method.
 //
-// https://vk.com/dev/apps.getTestingGroups
+// https://dev.vk.com/method/apps.getTestingGroups
 func (vk *VK) AppsGetTestingGroups(params Params) (response AppsGetTestingGroupsResponse, err error) {
 	err = vk.RequestUnmarshal("apps.getTestingGroups", &response, params)
 	return
@@ -161,7 +161,7 @@ func (vk *VK) AppsGetTestingGroups(params Params) (response AppsGetTestingGroups
 
 // AppsRemoveTestingGroup method.
 //
-// https://vk.com/dev/apps.removeTestingGroup
+// https://dev.vk.com/method/apps.removeTestingGroup
 func (vk *VK) AppsRemoveTestingGroup(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("apps.removeTestingGroup", &response, params)
 	return
@@ -169,7 +169,7 @@ func (vk *VK) AppsRemoveTestingGroup(params Params) (response int, err error) {
 
 // AppsRemoveUsersFromTestingGroups method.
 //
-// https://vk.com/dev/apps.removeUsersFromTestingGroups
+// https://dev.vk.com/method/apps.removeUsersFromTestingGroups
 func (vk *VK) AppsRemoveUsersFromTestingGroups(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("apps.removeUsersFromTestingGroups", &response, params)
 	return
@@ -177,7 +177,7 @@ func (vk *VK) AppsRemoveUsersFromTestingGroups(params Params) (response int, err
 
 // AppsSendRequest sends a request to another user in an app that uses VK authorization.
 //
-// https://vk.com/dev/apps.sendRequest
+// https://dev.vk.com/method/apps.sendRequest
 func (vk *VK) AppsSendRequest(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("apps.sendRequest", &response, params)
 	return
@@ -190,7 +190,7 @@ type AppsUpdateMetaForTestingGroupResponse struct {
 
 // AppsUpdateMetaForTestingGroup method.
 //
-// https://vk.com/dev/apps.updateMetaForTestingGroup
+// https://dev.vk.com/method/apps.updateMetaForTestingGroup
 func (vk *VK) AppsUpdateMetaForTestingGroup(params Params) (response AppsUpdateMetaForTestingGroupResponse, err error) {
 	err = vk.RequestUnmarshal("apps.updateMetaForTestingGroup", &response, params)
 	return

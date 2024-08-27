@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build linux && (amd64 || loong64)
+//go:build linux && (amd64 || arm64 || loong64)
 
 package libc // import "modernc.org/libc"
 
@@ -30,6 +30,10 @@ func X__builtin_printf(tls *TLS, fmt uintptr, va uintptr) (r int32) {
 
 func X__builtin_round(tls *TLS, x float64) (r float64) {
 	return Xround(tls, x)
+}
+
+func X__builtin_roundf(tls *TLS, x float32) (r float32) {
+	return Xroundf(tls, x)
 }
 
 func X__builtin_expect(t *TLS, exp, c long) long {

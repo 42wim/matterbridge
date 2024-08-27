@@ -186,7 +186,7 @@ type StoriesFeedItem struct {
 // The sticker object is pasted by the developer on the client himself, only
 // coordinates are transmitted to the server.
 //
-// https://vk.com/dev/objects/clickable_stickers
+// https://dev.vk.com/ru/reference/objects/clickable-sticker
 type StoriesClickableStickers struct {
 	OriginalWidth     int                       `json:"original_width"`
 	OriginalHeight    int                       `json:"original_height"`

@@ -155,7 +155,7 @@ func (c *CTCP) call(client *Client, event *CTCPEvent) {
 		}
 
 		// Send a ERRMSG reply, if we know who sent it.
-		if event.Source != nil && IsValidNick(event.Source.ID()) {
+		if !event.Reply && event.Source != nil && IsValidNick(event.Source.ID()) {
 			client.Cmd.SendCTCPReply(event.Source.ID(), CTCP_ERRMSG, "that is an unknown CTCP query")
 		}
 		return
@@ -263,6 +263,10 @@ func handleCTCPPong(client *Client, ctcp CTCPEvent) {
 // as the os type (darwin, linux, windows, etc) and architecture type (x86,
 // arm, etc).
 func handleCTCPVersion(client *Client, ctcp CTCPEvent) {
+	if ctcp.Reply {
+		return
+	}
+
 	if client.Config.Version != "" {
 		client.Cmd.SendCTCPReply(ctcp.Source.ID(), CTCP_VERSION, client.Config.Version)
 		return
@@ -277,18 +281,30 @@ func handleCTCPVersion(client *Client, ctcp CTCPEvent) {
 
 // handleCTCPSource replies with the public git location of this library.
 func handleCTCPSource(client *Client, ctcp CTCPEvent) {
+	if ctcp.Reply {
+		return
+	}
+
 	client.Cmd.SendCTCPReply(ctcp.Source.ID(), CTCP_SOURCE, "https://github.com/lrstanley/girc")
 }
 
 // handleCTCPTime replies with a RFC 1123 (Z) formatted version of Go's
 // local time.
 func handleCTCPTime(client *Client, ctcp CTCPEvent) {
+	if ctcp.Reply {
+		return
+	}
+
 	client.Cmd.SendCTCPReply(ctcp.Source.ID(), CTCP_TIME, ":"+time.Now().Format(time.RFC1123Z))
 }
 
 // handleCTCPFinger replies with the realname and idle time of the user. This
 // is obsoleted by improvements to the IRC protocol, however still supported.
 func handleCTCPFinger(client *Client, ctcp CTCPEvent) {
+	if ctcp.Reply {
+		return
+	}
+
 	client.conn.mu.RLock()
 	active := client.conn.lastActive
 	client.conn.mu.RUnlock()
