@@ -6,7 +6,7 @@
 
 Требования:
 
-- [Go 1.18+](https://golang.org/doc/install)
+- [Go 1.21+](https://golang.org/doc/install)
 - [golangci-lint](https://github.com/golangci/golangci-lint)
 - [global .gitignore](https://help.github.com/en/articles/ignoring-files#create-a-global-gitignore)
 

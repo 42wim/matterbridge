@@ -9,7 +9,7 @@ type LeadsCheckUserResponse object.LeadsChecked
 
 // LeadsCheckUser checks if the user can start the lead.
 //
-// https://vk.com/dev/leads.checkUser
+// https://dev.vk.com/method/leads.checkUser
 func (vk *VK) LeadsCheckUser(params Params) (response LeadsCheckUserResponse, err error) {
 	err = vk.RequestUnmarshal("leads.checkUser", &response, params)
 	return
@@ -20,7 +20,7 @@ type LeadsCompleteResponse object.LeadsComplete
 
 // LeadsComplete completes the lead started by user.
 //
-// https://vk.com/dev/leads.complete
+// https://dev.vk.com/method/leads.complete
 func (vk *VK) LeadsComplete(params Params) (response LeadsCompleteResponse, err error) {
 	err = vk.RequestUnmarshal("leads.complete", &response, params)
 	return
@@ -31,7 +31,7 @@ type LeadsGetStatsResponse object.LeadsLead
 
 // LeadsGetStats returns lead stats data.
 //
-// https://vk.com/dev/leads.getStats
+// https://dev.vk.com/method/leads.getStats
 func (vk *VK) LeadsGetStats(params Params) (response LeadsGetStatsResponse, err error) {
 	err = vk.RequestUnmarshal("leads.getStats", &response, params)
 	return
@@ -42,7 +42,7 @@ type LeadsGetUsersResponse object.LeadsEntry
 
 // LeadsGetUsers returns a list of last user actions for the offer.
 //
-// https://vk.com/dev/leads.getUsers
+// https://dev.vk.com/method/leads.getUsers
 func (vk *VK) LeadsGetUsers(params Params) (response LeadsGetUsersResponse, err error) {
 	err = vk.RequestUnmarshal("leads.getUsers", &response, params)
 	return
@@ -56,7 +56,7 @@ type LeadsMetricHitResponse struct {
 
 // LeadsMetricHit counts the metric event.
 //
-// https://vk.com/dev/leads.metricHit
+// https://dev.vk.com/method/leads.metricHit
 func (vk *VK) LeadsMetricHit(params Params) (response LeadsMetricHitResponse, err error) {
 	err = vk.RequestUnmarshal("leads.metricHit", &response, params)
 	return
@@ -67,7 +67,7 @@ type LeadsStartResponse object.LeadsStart
 
 // LeadsStart creates new session for the user passing the offer.
 //
-// https://vk.com/dev/leads.start
+// https://dev.vk.com/method/leads.start
 func (vk *VK) LeadsStart(params Params) (response LeadsStartResponse, err error) {
 	err = vk.RequestUnmarshal("leads.start", &response, params)
 	return

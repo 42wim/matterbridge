@@ -7,15 +7,17 @@ import (
 	"github.com/SevereCloud/vksdk/v2/object"
 )
 
+const errorMessagePrefix = "api: "
+
 // ErrorType is the type of an error.
 type ErrorType int
 
 // Error returns the message of a ErrorType.
 func (e ErrorType) Error() string {
-	return fmt.Sprintf("api: error with code %d", e)
+	return fmt.Sprintf(errorMessagePrefix+"error with code %d", e)
 }
 
-// Error codes. See https://vk.com/dev/errors
+// Error codes. See https://dev.vk.com/ru/reference/errors
 const (
 	ErrNoType ErrorType = 0 // NoType error
 
@@ -46,7 +48,7 @@ const (
 	//
 	// Decrease the request frequency or use the execute method.
 	// More details on frequency limits here:
-	// https://vk.com/dev/api_requests
+	// https://dev.vk.com/ru/api/api-requests
 	ErrTooMany ErrorType = 6
 
 	// Permission to perform this action is denied
@@ -54,7 +56,7 @@ const (
 	// Make sure that your have received required permissions during the
 	// authorization.
 	// You can do it with the account.getAppPermissions method.
-	// https://vk.com/dev/permissions
+	// https://dev.vk.com/ru/reference/access-rights
 	ErrPermission ErrorType = 7
 
 	// Invalid request
@@ -90,7 +92,7 @@ const (
 
 	// Captcha needed.
 	//
-	// See https://vk.com/dev/captcha_error
+	// See https://dev.vk.com/ru/api/captcha-error
 	ErrCaptcha ErrorType = 14
 
 	// Access denied
@@ -111,7 +113,7 @@ const (
 	// http://vk.com/dev/auth_mobile for a request from the server.
 	// It's restricted.
 	//
-	// https://vk.com/dev/need_validation
+	// https://dev.vk.com/ru/api/validation-required-error
 	ErrAuthValidation ErrorType = 17
 	ErrUserDeleted    ErrorType = 18 // User was deleted or banned
 	ErrBlocked        ErrorType = 19 // Content blocked
@@ -147,7 +149,7 @@ const (
 	//
 	// 	confirm = 1.
 	//
-	// https://vk.com/dev/need_confirmation
+	// https://dev.vk.com/ru/api/confirmation-required-error
 	ErrNeedConfirmation      ErrorType = 24
 	ErrNeedTokenConfirmation ErrorType = 25 // Token confirmation required
 	ErrGroupAuth             ErrorType = 27 // Group authorization failed
@@ -155,7 +157,7 @@ const (
 
 	// Rate limit reached.
 	//
-	// More details on rate limits here: https://vk.com/dev/data_limits
+	// More details on rate limits here: https://dev.vk.com/ru/reference/roadmap
 	ErrRateLimit      ErrorType = 29
 	ErrPrivateProfile ErrorType = 30 // This profile is private
 
@@ -850,7 +852,7 @@ type ErrorSubtype int
 
 // Error returns the message of a ErrorSubtype.
 func (e ErrorSubtype) Error() string {
-	return fmt.Sprintf("api: error with subcode %d", e)
+	return fmt.Sprintf(errorMessagePrefix+"error with subcode %d", e)
 }
 
 // Error struct VK.
@@ -878,7 +880,7 @@ type Error struct {
 	// confirms the action repeat the request with an extra parameter:
 	// confirm = 1.
 	//
-	// See https://vk.com/dev/need_confirmation
+	// See https://dev.vk.com/ru/api/confirmation-required-error
 	ConfirmationText string `json:"confirmation_text"`
 
 	// In some cases VK requires a user validation procedure. . As a result
@@ -910,14 +912,14 @@ type Error struct {
 	//
 	// https://oauth.vk.com/blank.html#fail=1
 	//
-	// See https://vk.com/dev/need_validation
+	// See https://dev.vk.com/ru/api/validation-required-error
 	RedirectURI   string                    `json:"redirect_uri"`
 	RequestParams []object.BaseRequestParam `json:"request_params"`
 }
 
 // Error returns the message of a Error.
 func (e Error) Error() string {
-	return "api: " + e.Message
+	return errorMessagePrefix + e.Message
 }
 
 // Is unwraps its first argument sequentially looking for an error that matches
@@ -974,7 +976,7 @@ type UploadError struct {
 // Error returns the message of a UploadError.
 func (e UploadError) Error() string {
 	if e.Err != "" {
-		return "api: " + e.Err
+		return errorMessagePrefix + e.Err
 	}
 
 	return fmt.Sprintf("api: upload code %d", e.Code)
@@ -988,7 +990,7 @@ type AdsError struct {
 
 // Error returns the message of a AdsError.
 func (e AdsError) Error() string {
-	return "api: " + e.Desc
+	return errorMessagePrefix + e.Desc
 }
 
 // Is unwraps its first argument sequentially looking for an error that matches
@@ -1016,7 +1018,7 @@ type AuthSilentTokenError struct {
 
 // Error returns the description of a AuthSilentTokenError.
 func (e AuthSilentTokenError) Error() string {
-	return "api: " + e.Description
+	return errorMessagePrefix + e.Description
 }
 
 // Is unwraps its first argument sequentially looking for an error that matches

@@ -6,7 +6,7 @@ import (
 
 // FriendsAdd approves or creates a friend request.
 //
-// https://vk.com/dev/friends.add
+// https://dev.vk.com/method/friends.add
 func (vk *VK) FriendsAdd(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("friends.add", &response, params)
 	return
@@ -19,7 +19,7 @@ type FriendsAddListResponse struct {
 
 // FriendsAddList creates a new friend list for the current user.
 //
-// https://vk.com/dev/friends.addList
+// https://dev.vk.com/method/friends.addList
 func (vk *VK) FriendsAddList(params Params) (response FriendsAddListResponse, err error) {
 	err = vk.RequestUnmarshal("friends.addList", &response, params)
 	return
@@ -30,7 +30,7 @@ type FriendsAreFriendsResponse []object.FriendsFriendStatus
 
 // FriendsAreFriends checks the current user's friendship status with other specified users.
 //
-// https://vk.com/dev/friends.areFriends
+// https://dev.vk.com/method/friends.areFriends
 func (vk *VK) FriendsAreFriends(params Params) (response FriendsAreFriendsResponse, err error) {
 	err = vk.RequestUnmarshal("friends.areFriends", &response, params)
 	return
@@ -47,7 +47,7 @@ type FriendsDeleteResponse struct {
 
 // FriendsDelete declines a friend request or deletes a user from the current user's friend list.
 //
-// https://vk.com/dev/friends.delete
+// https://dev.vk.com/method/friends.delete
 func (vk *VK) FriendsDelete(params Params) (response FriendsDeleteResponse, err error) {
 	err = vk.RequestUnmarshal("friends.delete", &response, params)
 	return
@@ -55,7 +55,7 @@ func (vk *VK) FriendsDelete(params Params) (response FriendsDeleteResponse, err 
 
 // FriendsDeleteAllRequests marks all incoming friend requests as viewed.
 //
-// https://vk.com/dev/friends.deleteAllRequests
+// https://dev.vk.com/method/friends.deleteAllRequests
 func (vk *VK) FriendsDeleteAllRequests(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("friends.deleteAllRequests", &response, params)
 	return
@@ -63,7 +63,7 @@ func (vk *VK) FriendsDeleteAllRequests(params Params) (response int, err error) 
 
 // FriendsDeleteList deletes a friend list of the current user.
 //
-// https://vk.com/dev/friends.deleteList
+// https://dev.vk.com/method/friends.deleteList
 func (vk *VK) FriendsDeleteList(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("friends.deleteList", &response, params)
 	return
@@ -71,7 +71,7 @@ func (vk *VK) FriendsDeleteList(params Params) (response int, err error) {
 
 // FriendsEdit edits the friend lists of the selected user.
 //
-// https://vk.com/dev/friends.edit
+// https://dev.vk.com/method/friends.edit
 func (vk *VK) FriendsEdit(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("friends.edit", &response, params)
 	return
@@ -79,7 +79,7 @@ func (vk *VK) FriendsEdit(params Params) (response int, err error) {
 
 // FriendsEditList edits a friend list of the current user.
 //
-// https://vk.com/dev/friends.editList
+// https://dev.vk.com/method/friends.editList
 func (vk *VK) FriendsEditList(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("friends.editList", &response, params)
 	return
@@ -93,7 +93,7 @@ type FriendsGetResponse struct {
 
 // FriendsGet returns a list of user IDs or detailed information about a user's friends.
 //
-// https://vk.com/dev/friends.get
+// https://dev.vk.com/method/friends.get
 func (vk *VK) FriendsGet(params Params) (response FriendsGetResponse, err error) {
 	err = vk.RequestUnmarshal("friends.get", &response, params)
 	return
@@ -107,7 +107,7 @@ type FriendsGetFieldsResponse struct {
 
 // FriendsGetFields returns a list of user IDs or detailed information about a user's friends.
 //
-// https://vk.com/dev/friends.get
+// https://dev.vk.com/method/friends.get
 func (vk *VK) FriendsGetFields(params Params) (response FriendsGetFieldsResponse, err error) {
 	reqParams := make(Params)
 	if v, prs := params["fields"]; v == "" || !prs {
@@ -124,7 +124,7 @@ type FriendsGetAppUsersResponse []int
 
 // FriendsGetAppUsers returns a list of IDs of the current user's friends who installed the application.
 //
-// https://vk.com/dev/friends.getAppUsers
+// https://dev.vk.com/method/friends.getAppUsers
 func (vk *VK) FriendsGetAppUsers(params Params) (response FriendsGetAppUsersResponse, err error) {
 	err = vk.RequestUnmarshal("friends.getAppUsers", &response, params)
 	return
@@ -136,7 +136,7 @@ type FriendsGetByPhonesResponse []object.FriendsUserXtrPhone
 // FriendsGetByPhones returns a list of the current user's friends
 // whose phone numbers, validated or specified in a profile, are in a given list.
 //
-// https://vk.com/dev/friends.getByPhones
+// https://dev.vk.com/method/friends.getByPhones
 func (vk *VK) FriendsGetByPhones(params Params) (response FriendsGetByPhonesResponse, err error) {
 	err = vk.RequestUnmarshal("friends.getByPhones", &response, params)
 	return
@@ -150,7 +150,7 @@ type FriendsGetListsResponse struct {
 
 // FriendsGetLists returns a list of the user's friend lists.
 //
-// https://vk.com/dev/friends.getLists
+// https://dev.vk.com/method/friends.getLists
 func (vk *VK) FriendsGetLists(params Params) (response FriendsGetListsResponse, err error) {
 	err = vk.RequestUnmarshal("friends.getLists", &response, params)
 	return
@@ -161,7 +161,7 @@ type FriendsGetMutualResponse []int
 
 // FriendsGetMutual returns a list of user IDs of the mutual friends of two users.
 //
-// https://vk.com/dev/friends.getMutual
+// https://dev.vk.com/method/friends.getMutual
 func (vk *VK) FriendsGetMutual(params Params) (response FriendsGetMutualResponse, err error) {
 	err = vk.RequestUnmarshal("friends.getMutual", &response, params)
 	return
@@ -171,7 +171,7 @@ func (vk *VK) FriendsGetMutual(params Params) (response FriendsGetMutualResponse
 //
 //	online_mobile=0
 //
-// https://vk.com/dev/friends.getOnline
+// https://dev.vk.com/method/friends.getOnline
 func (vk *VK) FriendsGetOnline(params Params) (response []int, err error) {
 	err = vk.RequestUnmarshal("friends.getOnline", &response, params, Params{"online_mobile": false})
 
@@ -188,7 +188,7 @@ type FriendsGetOnlineOnlineMobileResponse struct {
 //
 //	online_mobile=1
 //
-// https://vk.com/dev/friends.getOnline
+// https://dev.vk.com/method/friends.getOnline
 func (vk *VK) FriendsGetOnlineOnlineMobile(params Params) (response FriendsGetOnlineOnlineMobileResponse, err error) {
 	err = vk.RequestUnmarshal("friends.getOnline", &response, params, Params{"online_mobile": true})
 
@@ -200,7 +200,7 @@ type FriendsGetRecentResponse []int
 
 // FriendsGetRecent returns a list of user IDs of the current user's recently added friends.
 //
-// https://vk.com/dev/friends.getRecent
+// https://dev.vk.com/method/friends.getRecent
 func (vk *VK) FriendsGetRecent(params Params) (response FriendsGetRecentResponse, err error) {
 	err = vk.RequestUnmarshal("friends.getRecent", &response, params)
 	return
@@ -214,7 +214,7 @@ type FriendsGetRequestsResponse struct {
 
 // FriendsGetRequests returns information about the current user's incoming and outgoing friend requests.
 //
-// https://vk.com/dev/friends.getRequests
+// https://dev.vk.com/method/friends.getRequests
 func (vk *VK) FriendsGetRequests(params Params) (response FriendsGetRequestsResponse, err error) {
 	reqParams := Params{
 		"need_mutual": false,
@@ -234,7 +234,7 @@ type FriendsGetRequestsNeedMutualResponse struct {
 
 // FriendsGetRequestsNeedMutual returns information about the current user's incoming and outgoing friend requests.
 //
-// https://vk.com/dev/friends.getRequests
+// https://dev.vk.com/method/friends.getRequests
 func (vk *VK) FriendsGetRequestsNeedMutual(params Params) (response FriendsGetRequestsNeedMutualResponse, err error) {
 	reqParams := Params{
 		"extended":    false,
@@ -254,7 +254,7 @@ type FriendsGetRequestsExtendedResponse struct {
 
 // FriendsGetRequestsExtended returns information about the current user's incoming and outgoing friend requests.
 //
-// https://vk.com/dev/friends.getRequests
+// https://dev.vk.com/method/friends.getRequests
 func (vk *VK) FriendsGetRequestsExtended(params Params) (response FriendsGetRequestsExtendedResponse, err error) {
 	reqParams := Params{
 		"need_mutual": false,
@@ -274,7 +274,7 @@ type FriendsGetSuggestionsResponse struct {
 
 // FriendsGetSuggestions returns a list of profiles of users whom the current user may know.
 //
-// https://vk.com/dev/friends.getSuggestions
+// https://dev.vk.com/method/friends.getSuggestions
 func (vk *VK) FriendsGetSuggestions(params Params) (response FriendsGetSuggestionsResponse, err error) {
 	err = vk.RequestUnmarshal("friends.getSuggestions", &response, params)
 	return
@@ -288,7 +288,7 @@ type FriendsSearchResponse struct {
 
 // FriendsSearch returns a list of friends matching the search criteria.
 //
-// https://vk.com/dev/friends.search
+// https://dev.vk.com/method/friends.search
 func (vk *VK) FriendsSearch(params Params) (response FriendsSearchResponse, err error) {
 	err = vk.RequestUnmarshal("friends.search", &response, params)
 	return

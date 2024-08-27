@@ -10,7 +10,7 @@ type GiftsGetResponse struct {
 
 // GiftsGet returns a list of user gifts.
 //
-// https://vk.com/dev/gifts.get
+// https://dev.vk.com/method/gifts.get
 func (vk *VK) GiftsGet(params Params) (response GiftsGetResponse, err error) {
 	err = vk.RequestUnmarshal("gifts.get", &response, params)
 	return
@@ -25,7 +25,7 @@ type GiftsGetCatalogResponse []struct {
 
 // GiftsGetCatalog returns catalog.
 //
-// https://vk.com/dev/gifts.get
+// https://dev.vk.com/method/gifts.get
 func (vk *VK) GiftsGetCatalog(params Params) (response GiftsGetCatalogResponse, err error) {
 	err = vk.RequestUnmarshal("gifts.getCatalog", &response, params)
 	return

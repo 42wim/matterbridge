@@ -11,7 +11,7 @@ type LikesAddResponse struct {
 
 // LikesAdd adds the specified object to the Likes list of the current user.
 //
-// https://vk.com/dev/likes.add
+// https://dev.vk.com/method/likes.add
 func (vk *VK) LikesAdd(params Params) (response LikesAddResponse, err error) {
 	err = vk.RequestUnmarshal("likes.add", &response, params)
 	return
@@ -24,7 +24,7 @@ type LikesDeleteResponse struct {
 
 // LikesDelete deletes the specified object from the Likes list of the current user.
 //
-// https://vk.com/dev/likes.delete
+// https://dev.vk.com/method/likes.delete
 func (vk *VK) LikesDelete(params Params) (response LikesDeleteResponse, err error) {
 	err = vk.RequestUnmarshal("likes.delete", &response, params)
 	return
@@ -40,7 +40,7 @@ type LikesGetListResponse struct {
 //
 //	extended=0
 //
-// https://vk.com/dev/likes.getList
+// https://dev.vk.com/method/likes.getList
 func (vk *VK) LikesGetList(params Params) (response LikesGetListResponse, err error) {
 	err = vk.RequestUnmarshal("likes.getList", &response, params, Params{"extended": false})
 
@@ -57,7 +57,7 @@ type LikesGetListExtendedResponse struct {
 //
 //	extended=1
 //
-// https://vk.com/dev/likes.getList
+// https://dev.vk.com/method/likes.getList
 func (vk *VK) LikesGetListExtended(params Params) (response LikesGetListExtendedResponse, err error) {
 	err = vk.RequestUnmarshal("likes.getList", &response, params, Params{"extended": true})
 
@@ -72,7 +72,7 @@ type LikesIsLikedResponse struct {
 
 // LikesIsLiked checks for the object in the Likes list of the specified user.
 //
-// https://vk.com/dev/likes.isLiked
+// https://dev.vk.com/method/likes.isLiked
 func (vk *VK) LikesIsLiked(params Params) (response LikesIsLikedResponse, err error) {
 	err = vk.RequestUnmarshal("likes.isLiked", &response, params)
 	return

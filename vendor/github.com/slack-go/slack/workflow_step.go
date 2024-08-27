@@ -44,12 +44,15 @@ func NewConfigurationModalRequest(blocks Blocks, privateMetaData string, externa
 	}
 }
 
+// SaveWorkflowStepConfiguration opens a configuration modal for a workflow step.
+// For more information see the SaveWorkflowStepConfigurationContext documentation.
 func (api *Client) SaveWorkflowStepConfiguration(workflowStepEditID string, inputs *WorkflowStepInputs, outputs *[]WorkflowStepOutput) error {
 	return api.SaveWorkflowStepConfigurationContext(context.Background(), workflowStepEditID, inputs, outputs)
 }
 
+// SaveWorkflowStepConfigurationContext saves the configuration of a workflow step with a custom context.
+// Slack API docs: https://api.slack.com/methods/workflows.updateStep
 func (api *Client) SaveWorkflowStepConfigurationContext(ctx context.Context, workflowStepEditID string, inputs *WorkflowStepInputs, outputs *[]WorkflowStepOutput) error {
-	// More information: https://api.slack.com/methods/workflows.updateStep
 	wscr := WorkflowStepCompleteResponse{
 		WorkflowStepEditID: workflowStepEditID,
 		Inputs:             inputs,

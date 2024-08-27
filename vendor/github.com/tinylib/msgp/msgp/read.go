@@ -1266,7 +1266,7 @@ func (m *Reader) ReadTime() (t time.Time, err error) {
 	return
 }
 
-// ReadIntf reads out the next object as a raw interface{}.
+// ReadIntf reads out the next object as a raw interface{}/any.
 // Arrays are decoded as []interface{}, and maps are decoded
 // as map[string]interface{}. Integers are decoded as int64
 // and unsigned integers are decoded as uint64.

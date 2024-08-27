@@ -67,6 +67,19 @@ linters:
     - gocheckcompilerdirectives
     - asasalint
 
+    - musttag
+
+    - gosmopolitan
+    - mirror
+    - tagalign
+
+    - gochecksumtype
+    - inamedparam
+    - perfsprint
+    - sloglint
+    - testifylint
+
+
 # - musttag # TODO: need update golangci-lint
 # - wrapcheck # TODO: v3 Fix
 # - testpackage # TODO: Fix testpackage
@@ -106,6 +119,10 @@ linters:
 
 # - ginkgolinter
 
+# - zerologlint
+# - protogetter
+# - spancheck
+
 # depricated
 # - maligned
 # - interfacer
@@ -138,3 +155,9 @@ issues:
       text: "G307:"
 
   exclude-use-default: false
+
+linters-settings:
+  testifylint:
+    enable-all: true
+    disable:
+    - require-error # f func false positive

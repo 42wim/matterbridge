@@ -1,7 +1,7 @@
 # Bots Long Poll API
 
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/SevereCloud/vksdk/v2/longpoll-bot)](https://pkg.go.dev/github.com/SevereCloud/vksdk/v2/longpoll-bot)
-[![VK](https://img.shields.io/badge/developers-%234a76a8.svg?logo=VK&logoColor=white)](https://vk.com/dev/bots_longpoll)
+[![VK](https://img.shields.io/badge/developers-%234a76a8.svg?logo=VK&logoColor=white)](https://dev.vk.com/ru/api/bots-long-poll/getting-started)
 
 ## Подключение Bots Long Poll API
 
@@ -71,7 +71,7 @@ lp.FullResponse(func(resp object.LongPollBotResponse) {
 })
 ```
 
-Полный список событий Вы найдёте [в документации](https://vk.com/dev/groups_events)
+Полный список событий Вы найдёте [в документации](https://dev.vk.com/ru/api/community-events/json-schema)
 
 ### Контекст
 

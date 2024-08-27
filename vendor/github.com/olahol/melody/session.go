@@ -12,16 +12,16 @@ import (
 // Session wrapper around websocket connections.
 type Session struct {
 	Request    *http.Request
-	Keys       map[string]interface{}
+	Keys       map[string]any
 	conn       *websocket.Conn
-	output     chan *envelope
+	output     chan envelope
 	outputDone chan struct{}
 	melody     *Melody
 	open       bool
 	rwmutex    *sync.RWMutex
 }
 
-func (s *Session) writeMessage(message *envelope) {
+func (s *Session) writeMessage(message envelope) {
 	if s.closed() {
 		s.melody.errorHandler(s, ErrWriteClosed)
 		return
@@ -34,7 +34,7 @@ func (s *Session) writeMessage(message *envelope) {
 	}
 }
 
-func (s *Session) writeRaw(message *envelope) error {
+func (s *Session) writeRaw(message envelope) error {
 	if s.closed() {
 		return ErrWriteClosed
 	}
@@ -68,7 +68,7 @@ func (s *Session) close() {
 }
 
 func (s *Session) ping() {
-	s.writeRaw(&envelope{t: websocket.PingMessage, msg: []byte{}})
+	s.writeRaw(envelope{t: websocket.PingMessage, msg: []byte{}})
 }
 
 func (s *Session) writePump() {
@@ -133,13 +133,20 @@ func (s *Session) readPump() {
 			break
 		}
 
-		if t == websocket.TextMessage {
-			s.melody.messageHandler(s, message)
+		if s.melody.Config.ConcurrentMessageHandling {
+			go s.handleMessage(t, message)
+		} else {
+			s.handleMessage(t, message)
 		}
+	}
+}
 
-		if t == websocket.BinaryMessage {
-			s.melody.messageHandlerBinary(s, message)
-		}
+func (s *Session) handleMessage(t int, message []byte) {
+	switch t {
+	case websocket.TextMessage:
+		s.melody.messageHandler(s, message)
+	case websocket.BinaryMessage:
+		s.melody.messageHandlerBinary(s, message)
 	}
 }
 
@@ -149,7 +156,7 @@ func (s *Session) Write(msg []byte) error {
 		return ErrSessionClosed
 	}
 
-	s.writeMessage(&envelope{t: websocket.TextMessage, msg: msg})
+	s.writeMessage(envelope{t: websocket.TextMessage, msg: msg})
 
 	return nil
 }
@@ -160,7 +167,7 @@ func (s *Session) WriteBinary(msg []byte) error {
 		return ErrSessionClosed
 	}
 
-	s.writeMessage(&envelope{t: websocket.BinaryMessage, msg: msg})
+	s.writeMessage(envelope{t: websocket.BinaryMessage, msg: msg})
 
 	return nil
 }
@@ -171,7 +178,7 @@ func (s *Session) Close() error {
 		return ErrSessionClosed
 	}
 
-	s.writeMessage(&envelope{t: websocket.CloseMessage, msg: []byte{}})
+	s.writeMessage(envelope{t: websocket.CloseMessage, msg: []byte{}})
 
 	return nil
 }
@@ -183,19 +190,19 @@ func (s *Session) CloseWithMsg(msg []byte) error {
 		return ErrSessionClosed
 	}
 
-	s.writeMessage(&envelope{t: websocket.CloseMessage, msg: msg})
+	s.writeMessage(envelope{t: websocket.CloseMessage, msg: msg})
 
 	return nil
 }
 
 // Set is used to store a new key/value pair exclusively for this session.
 // It also lazy initializes s.Keys if it was not used previously.
-func (s *Session) Set(key string, value interface{}) {
+func (s *Session) Set(key string, value any) {
 	s.rwmutex.Lock()
 	defer s.rwmutex.Unlock()
 
 	if s.Keys == nil {
-		s.Keys = make(map[string]interface{})
+		s.Keys = make(map[string]any)
 	}
 
 	s.Keys[key] = value
@@ -203,7 +210,7 @@ func (s *Session) Set(key string, value interface{}) {
 
 // Get returns the value for the given key, ie: (value, true).
 // If the value does not exists it returns (nil, false)
-func (s *Session) Get(key string) (value interface{}, exists bool) {
+func (s *Session) Get(key string) (value any, exists bool) {
 	s.rwmutex.RLock()
 	defer s.rwmutex.RUnlock()
 
@@ -215,7 +222,7 @@ func (s *Session) Get(key string) (value interface{}, exists bool) {
 }
 
 // MustGet returns the value for the given key if it exists, otherwise it panics.
-func (s *Session) MustGet(key string) interface{} {
+func (s *Session) MustGet(key string) any {
 	if value, exists := s.Get(key); exists {
 		return value
 	}
@@ -245,4 +252,10 @@ func (s *Session) LocalAddr() net.Addr {
 // RemoteAddr returns the remote addr of the connection.
 func (s *Session) RemoteAddr() net.Addr {
 	return s.conn.RemoteAddr()
+}
+
+// WebsocketConnection returns the underlying websocket connection.
+// This can be used to e.g. set/read additional websocket options or to write sychronous messages.
+func (s *Session) WebsocketConnection() *websocket.Conn {
+	return s.conn
 }

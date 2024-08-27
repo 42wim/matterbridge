@@ -24,10 +24,12 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	waBinary "go.mau.fi/whatsmeow/binary"
-	"go.mau.fi/whatsmeow/binary/armadillo/waCommon"
-	"go.mau.fi/whatsmeow/binary/armadillo/waConsumerApplication"
-	"go.mau.fi/whatsmeow/binary/armadillo/waMsgApplication"
-	"go.mau.fi/whatsmeow/binary/armadillo/waMsgTransport"
+	armadillo "go.mau.fi/whatsmeow/proto"
+	"go.mau.fi/whatsmeow/proto/waArmadilloApplication"
+	"go.mau.fi/whatsmeow/proto/waCommon"
+	"go.mau.fi/whatsmeow/proto/waConsumerApplication"
+	"go.mau.fi/whatsmeow/proto/waMsgApplication"
+	"go.mau.fi/whatsmeow/proto/waMsgTransport"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
 )
@@ -35,12 +37,13 @@ import (
 const FBMessageVersion = 3
 const FBMessageApplicationVersion = 2
 const FBConsumerMessageVersion = 1
+const FBArmadilloMessageVersion = 1
 
 // SendFBMessage sends the given v3 message to the given JID.
 func (cli *Client) SendFBMessage(
 	ctx context.Context,
 	to types.JID,
-	message *waConsumerApplication.ConsumerApplication,
+	message armadillo.RealMessageApplicationSub,
 	metadata *waMsgApplication.MessageApplication_Metadata,
 	extra ...SendRequestExtra,
 ) (resp SendResponse, err error) {
@@ -51,29 +54,49 @@ func (cli *Client) SendFBMessage(
 	} else if len(extra) == 1 {
 		req = extra[0]
 	}
-	consumerMessage, err := proto.Marshal(message)
-	if err != nil {
-		err = fmt.Errorf("failed to marshal consumer message: %w", err)
+	var subproto waMsgApplication.MessageApplication_SubProtocolPayload
+	subproto.FutureProof = waCommon.FutureProofBehavior_PLACEHOLDER.Enum()
+	switch typedMsg := message.(type) {
+	case *waConsumerApplication.ConsumerApplication:
+		var consumerMessage []byte
+		consumerMessage, err = proto.Marshal(typedMsg)
+		if err != nil {
+			err = fmt.Errorf("failed to marshal consumer message: %w", err)
+			return
+		}
+		subproto.SubProtocol = &waMsgApplication.MessageApplication_SubProtocolPayload_ConsumerMessage{
+			ConsumerMessage: &waCommon.SubProtocol{
+				Payload: consumerMessage,
+				Version: proto.Int32(FBConsumerMessageVersion),
+			},
+		}
+	case *waArmadilloApplication.Armadillo:
+		var armadilloMessage []byte
+		armadilloMessage, err = proto.Marshal(typedMsg)
+		if err != nil {
+			err = fmt.Errorf("failed to marshal armadillo message: %w", err)
+			return
+		}
+		subproto.SubProtocol = &waMsgApplication.MessageApplication_SubProtocolPayload_Armadillo{
+			Armadillo: &waCommon.SubProtocol{
+				Payload: armadilloMessage,
+				Version: proto.Int32(FBArmadilloMessageVersion),
+			},
+		}
+	default:
+		err = fmt.Errorf("unsupported message type %T", message)
 		return
 	}
 	if metadata == nil {
 		metadata = &waMsgApplication.MessageApplication_Metadata{}
 	}
-	metadata.FrankingVersion = 0
+	metadata.FrankingVersion = proto.Int32(0)
 	metadata.FrankingKey = random.Bytes(32)
 	msgAttrs := getAttrsFromFBMessage(message)
 	messageAppProto := &waMsgApplication.MessageApplication{
 		Payload: &waMsgApplication.MessageApplication_Payload{
 			Content: &waMsgApplication.MessageApplication_Payload_SubProtocol{
-				SubProtocol: &waMsgApplication.MessageApplication_SubProtocolPayload{
-					SubProtocol: &waMsgApplication.MessageApplication_SubProtocolPayload_ConsumerMessage{
-						ConsumerMessage: &waCommon.SubProtocol{
-							Payload: consumerMessage,
-							Version: FBConsumerMessageVersion,
-						},
-					},
-					FutureProof: waCommon.FutureProofBehavior_PLACEHOLDER,
-				},
+				SubProtocol: &subproto,
 			},
 		},
 		Metadata: metadata,
@@ -206,7 +229,7 @@ func (cli *Client) sendGroupV3(
 		return "", nil, fmt.Errorf("failed to create sender key distribution message to send %s to %s: %w", id, to, err)
 	}
 	skdm := &waMsgTransport.MessageTransport_Protocol_Ancillary_SenderKeyDistributionMessage{
-		GroupID:                             to.String(),
+		GroupID:                             proto.String(to.String()),
 		AxolotlSenderKeyDistributionMessage: signalSKDMessage.Serialize(),
 	}
 
@@ -215,9 +238,9 @@ func (cli *Client) sendGroupV3(
 		Payload: &waMsgTransport.MessageTransport_Payload{
 			ApplicationPayload: &waCommon.SubProtocol{
 				Payload: messageApp,
-				Version: FBMessageApplicationVersion,
+				Version: proto.Int32(FBMessageApplicationVersion),
 			},
-			FutureProof: waCommon.FutureProofBehavior_PLACEHOLDER,
+			FutureProof: waCommon.FutureProofBehavior_PLACEHOLDER.Enum(),
 		},
 		Protocol: &waMsgTransport.MessageTransport_Protocol{
 			Integral: &waMsgTransport.MessageTransport_Protocol_Integral{
@@ -229,8 +252,8 @@ func (cli *Client) sendGroupV3(
 				DeviceListMetadata: nil,
 				Icdc:               nil,
 				BackupDirective: &waMsgTransport.MessageTransport_Protocol_Ancillary_BackupDirective{
-					MessageID:  id,
-					ActionType: waMsgTransport.MessageTransport_Protocol_Ancillary_BackupDirective_UPSERT,
+					MessageID:  &id,
+					ActionType: waMsgTransport.MessageTransport_Protocol_Ancillary_BackupDirective_UPSERT.Enum(),
 				},
 			},
 		},
@@ -284,9 +307,9 @@ func (cli *Client) sendDMV3(
 	payload := &waMsgTransport.MessageTransport_Payload{
 		ApplicationPayload: &waCommon.SubProtocol{
 			Payload: messageApp,
-			Version: FBMessageApplicationVersion,
+			Version: proto.Int32(FBMessageApplicationVersion),
 		},
-		FutureProof: waCommon.FutureProofBehavior_PLACEHOLDER,
+		FutureProof: waCommon.FutureProofBehavior_PLACEHOLDER.Enum(),
 	}
 
 	node, allDevices, err := cli.prepareMessageNodeV3(ctx, to, ownID, id, payload, nil, msgAttrs, frankingTag, []types.JID{to, ownID.ToNonAD()}, timings)
@@ -310,7 +333,20 @@ type messageAttrs struct {
 	PollType    string
 }
 
-func getAttrsFromFBMessage(msg *waConsumerApplication.ConsumerApplication) (attrs messageAttrs) {
+func getAttrsFromFBMessage(msg armadillo.MessageApplicationSub) (attrs messageAttrs) {
+	switch typedMsg := msg.(type) {
+	case *waConsumerApplication.ConsumerApplication:
+		return getAttrsFromFBConsumerMessage(typedMsg)
+	case *waArmadilloApplication.Armadillo:
+		attrs.Type = "media"
+		attrs.MediaType = "document"
+	default:
+		attrs.Type = "text"
+	}
+	return
+}
+
+func getAttrsFromFBConsumerMessage(msg *waConsumerApplication.ConsumerApplication) (attrs messageAttrs) {
 	switch payload := msg.GetPayload().GetPayload().(type) {
 	case *waConsumerApplication.ConsumerApplication_Payload_Content:
 		switch content := payload.Content.GetContent().(type) {
@@ -420,8 +456,8 @@ func (cli *Client) prepareMessageNodeV3(
 	}
 
 	dsm := &waMsgTransport.MessageTransport_Protocol_Integral_DeviceSentMessage{
-		DestinationJID: to.String(),
-		Phash:          "",
+		DestinationJID: proto.String(to.String()),
+		Phash:          proto.String(""),
 	}
 
 	start = time.Now()

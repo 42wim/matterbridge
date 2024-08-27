@@ -9,7 +9,7 @@ import (
 
 // MessagesAddChatUser adds a new user to a chat.
 //
-// https://vk.com/dev/messages.addChatUser
+// https://dev.vk.com/method/messages.addChatUser
 func (vk *VK) MessagesAddChatUser(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("messages.addChatUser", &response, params)
 	return
@@ -17,7 +17,7 @@ func (vk *VK) MessagesAddChatUser(params Params) (response int, err error) {
 
 // MessagesAllowMessagesFromGroup allows sending messages from community to the current user.
 //
-// https://vk.com/dev/messages.allowMessagesFromGroup
+// https://dev.vk.com/method/messages.allowMessagesFromGroup
 func (vk *VK) MessagesAllowMessagesFromGroup(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("messages.allowMessagesFromGroup", &response, params)
 	return
@@ -25,7 +25,7 @@ func (vk *VK) MessagesAllowMessagesFromGroup(params Params) (response int, err e
 
 // MessagesCreateChat creates a chat with several participants.
 //
-// https://vk.com/dev/messages.createChat
+// https://dev.vk.com/method/messages.createChat
 func (vk *VK) MessagesCreateChat(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("messages.createChat", &response, params)
 	return
@@ -58,7 +58,7 @@ func (resp *MessagesDeleteResponse) DecodeMsgpack(dec *msgpack.Decoder) error {
 
 // MessagesDelete deletes one or more messages.
 //
-// https://vk.com/dev/messages.delete
+// https://dev.vk.com/method/messages.delete
 func (vk *VK) MessagesDelete(params Params) (response MessagesDeleteResponse, err error) {
 	err = vk.RequestUnmarshal("messages.delete", &response, params)
 
@@ -73,7 +73,7 @@ type MessagesDeleteChatPhotoResponse struct {
 
 // MessagesDeleteChatPhoto deletes a chat's cover picture.
 //
-// https://vk.com/dev/messages.deleteChatPhoto
+// https://dev.vk.com/method/messages.deleteChatPhoto
 func (vk *VK) MessagesDeleteChatPhoto(params Params) (response MessagesDeleteChatPhotoResponse, err error) {
 	err = vk.RequestUnmarshal("messages.deleteChatPhoto", &response, params)
 	return
@@ -86,7 +86,7 @@ type MessagesDeleteConversationResponse struct {
 
 // MessagesDeleteConversation deletes private messages in a conversation.
 //
-// https://vk.com/dev/messages.deleteConversation
+// https://dev.vk.com/method/messages.deleteConversation
 func (vk *VK) MessagesDeleteConversation(params Params) (response MessagesDeleteConversationResponse, err error) {
 	err = vk.RequestUnmarshal("messages.deleteConversation", &response, params)
 	return
@@ -94,7 +94,7 @@ func (vk *VK) MessagesDeleteConversation(params Params) (response MessagesDelete
 
 // MessagesDenyMessagesFromGroup denies sending message from community to the current user.
 //
-// https://vk.com/dev/messages.denyMessagesFromGroup
+// https://dev.vk.com/method/messages.denyMessagesFromGroup
 func (vk *VK) MessagesDenyMessagesFromGroup(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("messages.denyMessagesFromGroup", &response, params)
 	return
@@ -102,7 +102,7 @@ func (vk *VK) MessagesDenyMessagesFromGroup(params Params) (response int, err er
 
 // MessagesEdit edits the message.
 //
-// https://vk.com/dev/messages.edit
+// https://dev.vk.com/method/messages.edit
 func (vk *VK) MessagesEdit(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("messages.edit", &response, params)
 	return
@@ -110,7 +110,7 @@ func (vk *VK) MessagesEdit(params Params) (response int, err error) {
 
 // MessagesEditChat edits the title of a chat.
 //
-// https://vk.com/dev/messages.editChat
+// https://dev.vk.com/method/messages.editChat
 func (vk *VK) MessagesEditChat(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("messages.editChat", &response, params)
 	return
@@ -120,7 +120,7 @@ func (vk *VK) MessagesEditChat(params Params) (response int, err error) {
 //
 // Deprecated: Use CallsForceFinish
 //
-// https://vk.com/dev/messages.forceCallFinish
+// https://dev.vk.com/method/messages.forceCallFinish
 func (vk *VK) MessagesForceCallFinish(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("messages.forceCallFinish", &response, params)
 	return
@@ -135,7 +135,7 @@ type MessagesGetByConversationMessageIDResponse struct {
 
 // MessagesGetByConversationMessageID messages.getByConversationMessageId.
 //
-// https://vk.com/dev/messages.getByConversationMessageId
+// https://dev.vk.com/method/messages.getByConversationMessageId
 func (vk *VK) MessagesGetByConversationMessageID(params Params) (
 	response MessagesGetByConversationMessageIDResponse,
 	err error,
@@ -154,7 +154,7 @@ type MessagesGetByIDResponse struct {
 //
 //	extended=0
 //
-// https://vk.com/dev/messages.getById
+// https://dev.vk.com/method/messages.getById
 func (vk *VK) MessagesGetByID(params Params) (response MessagesGetByIDResponse, err error) {
 	err = vk.RequestUnmarshal("messages.getById", &response, params, Params{"extended": false})
 
@@ -172,7 +172,7 @@ type MessagesGetByIDExtendedResponse struct {
 //
 //	extended=1
 //
-// https://vk.com/dev/messages.getById
+// https://dev.vk.com/method/messages.getById
 func (vk *VK) MessagesGetByIDExtended(params Params) (response MessagesGetByIDExtendedResponse, err error) {
 	err = vk.RequestUnmarshal("messages.getById", &response, params, Params{"extended": true})
 
@@ -184,7 +184,7 @@ type MessagesGetChatResponse object.MessagesChat
 
 // MessagesGetChat returns information about a chat.
 //
-// https://vk.com/dev/messages.getChat
+// https://dev.vk.com/method/messages.getChat
 func (vk *VK) MessagesGetChat(params Params) (response MessagesGetChatResponse, err error) {
 	err = vk.RequestUnmarshal("messages.getChat", &response, params)
 	return
@@ -195,7 +195,7 @@ type MessagesGetChatChatIDsResponse []object.MessagesChat
 
 // MessagesGetChatChatIDs returns information about a chat.
 //
-// https://vk.com/dev/messages.getChat
+// https://dev.vk.com/method/messages.getChat
 func (vk *VK) MessagesGetChatChatIDs(params Params) (response MessagesGetChatChatIDsResponse, err error) {
 	err = vk.RequestUnmarshal("messages.getChat", &response, params)
 	return
@@ -209,7 +209,7 @@ type MessagesGetChatPreviewResponse struct {
 
 // MessagesGetChatPreview allows to receive chat preview by the invitation link.
 //
-// https://vk.com/dev/messages.getChatPreview
+// https://dev.vk.com/method/messages.getChatPreview
 func (vk *VK) MessagesGetChatPreview(params Params) (response MessagesGetChatPreviewResponse, err error) {
 	err = vk.RequestUnmarshal("messages.getChatPreview", &response, params)
 	return
@@ -237,7 +237,7 @@ type MessagesGetConversationMembersResponse struct {
 
 // MessagesGetConversationMembers returns a list of IDs of users participating in a conversation.
 //
-// https://vk.com/dev/messages.getConversationMembers
+// https://dev.vk.com/method/messages.getConversationMembers
 func (vk *VK) MessagesGetConversationMembers(params Params) (
 	response MessagesGetConversationMembersResponse,
 	err error,
@@ -256,7 +256,7 @@ type MessagesGetConversationsResponse struct {
 
 // MessagesGetConversations returns a list of conversations.
 //
-// https://vk.com/dev/messages.getConversations
+// https://dev.vk.com/method/messages.getConversations
 func (vk *VK) MessagesGetConversations(params Params) (response MessagesGetConversationsResponse, err error) {
 	err = vk.RequestUnmarshal("messages.getConversations", &response, params)
 	return
@@ -272,7 +272,7 @@ type MessagesGetConversationsByIDResponse struct {
 //
 //	extended=0
 //
-// https://vk.com/dev/messages.getConversationsById
+// https://dev.vk.com/method/messages.getConversationsById
 func (vk *VK) MessagesGetConversationsByID(params Params) (response MessagesGetConversationsByIDResponse, err error) {
 	err = vk.RequestUnmarshal("messages.getConversationsById", &response, params, Params{"extended": false})
 
@@ -290,7 +290,7 @@ type MessagesGetConversationsByIDExtendedResponse struct {
 //
 //	extended=1
 //
-// https://vk.com/dev/messages.getConversationsById
+// https://dev.vk.com/method/messages.getConversationsById
 func (vk *VK) MessagesGetConversationsByIDExtended(params Params) (
 	response MessagesGetConversationsByIDExtendedResponse,
 	err error,
@@ -319,7 +319,7 @@ type MessagesGetHistoryResponse struct {
 
 // MessagesGetHistory returns message history for the specified user or group chat.
 //
-// https://vk.com/dev/messages.getHistory
+// https://dev.vk.com/method/messages.getHistory
 func (vk *VK) MessagesGetHistory(params Params) (response MessagesGetHistoryResponse, err error) {
 	err = vk.RequestUnmarshal("messages.getHistory", &response, params)
 	return
@@ -334,7 +334,7 @@ type MessagesGetHistoryAttachmentsResponse struct {
 
 // MessagesGetHistoryAttachments returns media files from the dialog or group chat.
 //
-// https://vk.com/dev/messages.getHistoryAttachments
+// https://dev.vk.com/method/messages.getHistoryAttachments
 func (vk *VK) MessagesGetHistoryAttachments(params Params) (response MessagesGetHistoryAttachmentsResponse, err error) {
 	err = vk.RequestUnmarshal("messages.getHistoryAttachments", &response, params)
 	return
@@ -352,7 +352,7 @@ type MessagesGetImportantMessagesResponse struct {
 
 // MessagesGetImportantMessages messages.getImportantMessages.
 //
-// https://vk.com/dev/messages.getImportantMessages
+// https://dev.vk.com/method/messages.getImportantMessages
 func (vk *VK) MessagesGetImportantMessages(params Params) (response MessagesGetImportantMessagesResponse, err error) {
 	err = vk.RequestUnmarshal("messages.getImportantMessages", &response, params)
 	return
@@ -367,7 +367,7 @@ type MessagesGetIntentUsersResponse struct {
 
 // MessagesGetIntentUsers method.
 //
-// https://vk.com/dev/messages.getIntentUsers
+// https://dev.vk.com/method/messages.getIntentUsers
 func (vk *VK) MessagesGetIntentUsers(params Params) (response MessagesGetIntentUsersResponse, err error) {
 	err = vk.RequestUnmarshal("messages.getIntentUsers", &response, params)
 	return
@@ -380,7 +380,7 @@ type MessagesGetInviteLinkResponse struct {
 
 // MessagesGetInviteLink receives a link to invite a user to the chat.
 //
-// https://vk.com/dev/messages.getInviteLink
+// https://dev.vk.com/method/messages.getInviteLink
 func (vk *VK) MessagesGetInviteLink(params Params) (response MessagesGetInviteLinkResponse, err error) {
 	err = vk.RequestUnmarshal("messages.getInviteLink", &response, params)
 	return
@@ -391,7 +391,7 @@ type MessagesGetLastActivityResponse object.MessagesLastActivity
 
 // MessagesGetLastActivity returns a user's current status and date of last activity.
 //
-// https://vk.com/dev/messages.getLastActivity
+// https://dev.vk.com/method/messages.getLastActivity
 func (vk *VK) MessagesGetLastActivity(params Params) (response MessagesGetLastActivityResponse, err error) {
 	err = vk.RequestUnmarshal("messages.getLastActivity", &response, params)
 	return
@@ -415,7 +415,7 @@ type MessagesGetLongPollHistoryResponse struct {
 
 // MessagesGetLongPollHistory returns updates in user's private messages.
 //
-// https://vk.com/dev/messages.getLongPollHistory
+// https://dev.vk.com/method/messages.getLongPollHistory
 func (vk *VK) MessagesGetLongPollHistory(params Params) (response MessagesGetLongPollHistoryResponse, err error) {
 	err = vk.RequestUnmarshal("messages.getLongPollHistory", &response, params)
 	return
@@ -426,7 +426,7 @@ type MessagesGetLongPollServerResponse object.MessagesLongPollParams
 
 // MessagesGetLongPollServer returns data required for connection to a Long Poll server.
 //
-// https://vk.com/dev/messages.getLongPollServer
+// https://dev.vk.com/method/messages.getLongPollServer
 func (vk *VK) MessagesGetLongPollServer(params Params) (response MessagesGetLongPollServerResponse, err error) {
 	err = vk.RequestUnmarshal("messages.getLongPollServer", &response, params)
 	return
@@ -440,7 +440,7 @@ type MessagesIsMessagesFromGroupAllowedResponse struct {
 // MessagesIsMessagesFromGroupAllowed returns information whether
 // sending messages from the community to current user is allowed.
 //
-// https://vk.com/dev/messages.isMessagesFromGroupAllowed
+// https://dev.vk.com/method/messages.isMessagesFromGroupAllowed
 func (vk *VK) MessagesIsMessagesFromGroupAllowed(params Params) (
 	response MessagesIsMessagesFromGroupAllowedResponse,
 	err error,
@@ -456,7 +456,7 @@ type MessagesJoinChatByInviteLinkResponse struct {
 
 // MessagesJoinChatByInviteLink allows to enter the chat by the invitation link.
 //
-// https://vk.com/dev/messages.joinChatByInviteLink
+// https://dev.vk.com/method/messages.joinChatByInviteLink
 func (vk *VK) MessagesJoinChatByInviteLink(params Params) (response MessagesJoinChatByInviteLinkResponse, err error) {
 	err = vk.RequestUnmarshal("messages.joinChatByInviteLink", &response, params)
 	return
@@ -464,7 +464,7 @@ func (vk *VK) MessagesJoinChatByInviteLink(params Params) (response MessagesJoin
 
 // MessagesMarkAsAnsweredConversation messages.markAsAnsweredConversation.
 //
-// https://vk.com/dev/messages.markAsAnsweredConversation
+// https://dev.vk.com/method/messages.markAsAnsweredConversation
 func (vk *VK) MessagesMarkAsAnsweredConversation(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("messages.markAsAnsweredConversation", &response, params)
 	return
@@ -475,7 +475,7 @@ type MessagesMarkAsImportantResponse []int
 
 // MessagesMarkAsImportant marks and un marks messages as important (starred).
 //
-// https://vk.com/dev/messages.markAsImportant
+// https://dev.vk.com/method/messages.markAsImportant
 func (vk *VK) MessagesMarkAsImportant(params Params) (response MessagesMarkAsImportantResponse, err error) {
 	err = vk.RequestUnmarshal("messages.markAsImportant", &response, params)
 	return
@@ -483,7 +483,7 @@ func (vk *VK) MessagesMarkAsImportant(params Params) (response MessagesMarkAsImp
 
 // MessagesMarkAsImportantConversation messages.markAsImportantConversation.
 //
-// https://vk.com/dev/messages.markAsImportantConversation
+// https://dev.vk.com/method/messages.markAsImportantConversation
 func (vk *VK) MessagesMarkAsImportantConversation(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("messages.markAsImportantConversation", &response, params)
 	return
@@ -491,7 +491,7 @@ func (vk *VK) MessagesMarkAsImportantConversation(params Params) (response int, 
 
 // MessagesMarkAsRead marks messages as read.
 //
-// https://vk.com/dev/messages.markAsRead
+// https://dev.vk.com/method/messages.markAsRead
 func (vk *VK) MessagesMarkAsRead(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("messages.markAsRead", &response, params)
 	return
@@ -502,7 +502,7 @@ type MessagesPinResponse object.MessagesMessage
 
 // MessagesPin messages.pin.
 //
-// https://vk.com/dev/messages.pin
+// https://dev.vk.com/method/messages.pin
 func (vk *VK) MessagesPin(params Params) (response MessagesPinResponse, err error) {
 	err = vk.RequestUnmarshal("messages.pin", &response, params)
 	return
@@ -512,7 +512,7 @@ func (vk *VK) MessagesPin(params Params) (response MessagesPinResponse, err erro
 // current user started the chat, allows the user to remove another user from
 // the chat.
 //
-// https://vk.com/dev/messages.removeChatUser
+// https://dev.vk.com/method/messages.removeChatUser
 func (vk *VK) MessagesRemoveChatUser(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("messages.removeChatUser", &response, params)
 	return
@@ -520,7 +520,7 @@ func (vk *VK) MessagesRemoveChatUser(params Params) (response int, err error) {
 
 // MessagesRestore restores a deleted message.
 //
-// https://vk.com/dev/messages.restore
+// https://dev.vk.com/method/messages.restore
 func (vk *VK) MessagesRestore(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("messages.restore", &response, params)
 	return
@@ -536,7 +536,7 @@ type MessagesSearchResponse struct {
 
 // MessagesSearch returns a list of the current user's private messages that match search criteria.
 //
-// https://vk.com/dev/messages.search
+// https://dev.vk.com/method/messages.search
 func (vk *VK) MessagesSearch(params Params) (response MessagesSearchResponse, err error) {
 	err = vk.RequestUnmarshal("messages.search", &response, params)
 	return
@@ -551,7 +551,7 @@ type MessagesSearchConversationsResponse struct {
 
 // MessagesSearchConversations returns a list of conversations that match search criteria.
 //
-// https://vk.com/dev/messages.searchConversations
+// https://dev.vk.com/method/messages.searchConversations
 func (vk *VK) MessagesSearchConversations(params Params) (response MessagesSearchConversationsResponse, err error) {
 	err = vk.RequestUnmarshal("messages.searchConversations", &response, params)
 	return
@@ -561,7 +561,7 @@ func (vk *VK) MessagesSearchConversations(params Params) (response MessagesSearc
 //
 // For user_ids or peer_ids parameters, use MessagesSendUserIDs.
 //
-// https://vk.com/dev/messages.send
+// https://dev.vk.com/method/messages.send
 func (vk *VK) MessagesSend(params Params) (response int, err error) {
 	reqParams := Params{
 		"user_ids": "",
@@ -587,7 +587,7 @@ type MessagesSendUserIDsResponse []struct {
 //
 //	need peer_ids;
 //
-// https://vk.com/dev/messages.send
+// https://dev.vk.com/method/messages.send
 func (vk *VK) MessagesSendPeerIDs(params Params) (response MessagesSendUserIDsResponse, err error) {
 	err = vk.RequestUnmarshal("messages.send", &response, params)
 	return
@@ -597,7 +597,7 @@ func (vk *VK) MessagesSendPeerIDs(params Params) (response MessagesSendUserIDsRe
 //
 //	need user_ids or peer_ids;
 //
-// https://vk.com/dev/messages.send
+// https://dev.vk.com/method/messages.send
 //
 // Deprecated: user_ids outdated, use MessagesSendPeerIDs.
 func (vk *VK) MessagesSendUserIDs(params Params) (response MessagesSendUserIDsResponse, err error) {
@@ -606,7 +606,7 @@ func (vk *VK) MessagesSendUserIDs(params Params) (response MessagesSendUserIDsRe
 
 // MessagesSendMessageEventAnswer method.
 //
-// https://vk.com/dev/messages.sendMessageEventAnswer
+// https://dev.vk.com/method/messages.sendMessageEventAnswer
 func (vk *VK) MessagesSendMessageEventAnswer(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("messages.sendMessageEventAnswer", &response, params)
 	return
@@ -614,7 +614,7 @@ func (vk *VK) MessagesSendMessageEventAnswer(params Params) (response int, err e
 
 // MessagesSendSticker sends a message.
 //
-// https://vk.com/dev/messages.sendSticker
+// https://dev.vk.com/method/messages.sendSticker
 func (vk *VK) MessagesSendSticker(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("messages.sendSticker", &response, params, Params{"user_ids": ""})
 
@@ -623,7 +623,7 @@ func (vk *VK) MessagesSendSticker(params Params) (response int, err error) {
 
 // MessagesSetActivity changes the status of a user as typing in a conversation.
 //
-// https://vk.com/dev/messages.setActivity
+// https://dev.vk.com/method/messages.setActivity
 func (vk *VK) MessagesSetActivity(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("messages.setActivity", &response, params)
 	return
@@ -637,7 +637,7 @@ type MessagesSetChatPhotoResponse struct {
 
 // MessagesSetChatPhoto sets a previously-uploaded picture as the cover picture of a chat.
 //
-// https://vk.com/dev/messages.setChatPhoto
+// https://dev.vk.com/method/messages.setChatPhoto
 func (vk *VK) MessagesSetChatPhoto(params Params) (response MessagesSetChatPhotoResponse, err error) {
 	err = vk.RequestUnmarshal("messages.setChatPhoto", &response, params)
 	return
@@ -653,7 +653,7 @@ type MessagesStartCallResponse struct {
 //
 // Deprecated: Use CallsStart
 //
-// https://vk.com/dev/messages.startCall
+// https://dev.vk.com/method/messages.startCall
 func (vk *VK) MessagesStartCall(params Params) (response MessagesStartCallResponse, err error) {
 	err = vk.RequestUnmarshal("messages.startCall", &response, params)
 	return
@@ -661,7 +661,7 @@ func (vk *VK) MessagesStartCall(params Params) (response MessagesStartCallRespon
 
 // MessagesUnpin messages.unpin.
 //
-// https://vk.com/dev/messages.unpin
+// https://dev.vk.com/method/messages.unpin
 func (vk *VK) MessagesUnpin(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("messages.unpin", &response, params)
 	return

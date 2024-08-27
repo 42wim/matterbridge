@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build !(linux && (amd64 || loong64))
+//go:build !(linux && (amd64 || arm64 || loong64))
 
 package libc // import "modernc.org/libc"
 
@@ -40,6 +40,7 @@ type TLS struct {
 	allocaStack [][]uintptr
 	allocas     []uintptr
 	jumpBuffers []uintptr
+	lastError   uint32
 	pthreadData
 	stack stackHeader
 

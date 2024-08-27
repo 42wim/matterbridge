@@ -10,7 +10,7 @@ type UtilsCheckLinkResponse object.UtilsLinkChecked
 
 // UtilsCheckLink checks whether a link is blocked in VK.
 //
-// https://vk.com/dev/utils.checkLink
+// https://dev.vk.com/method/utils.checkLink
 func (vk *VK) UtilsCheckLink(params Params) (response UtilsCheckLinkResponse, err error) {
 	err = vk.RequestUnmarshal("utils.checkLink", &response, params)
 	return
@@ -18,7 +18,7 @@ func (vk *VK) UtilsCheckLink(params Params) (response UtilsCheckLinkResponse, er
 
 // UtilsDeleteFromLastShortened deletes shortened link from user's list.
 //
-// https://vk.com/dev/utils.deleteFromLastShortened
+// https://dev.vk.com/method/utils.deleteFromLastShortened
 func (vk *VK) UtilsDeleteFromLastShortened(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("utils.deleteFromLastShortened", &response, params)
 	return
@@ -32,7 +32,7 @@ type UtilsGetLastShortenedLinksResponse struct {
 
 // UtilsGetLastShortenedLinks returns a list of user's shortened links.
 //
-// https://vk.com/dev/utils.getLastShortenedLinks
+// https://dev.vk.com/method/utils.getLastShortenedLinks
 func (vk *VK) UtilsGetLastShortenedLinks(params Params) (response UtilsGetLastShortenedLinksResponse, err error) {
 	err = vk.RequestUnmarshal("utils.getLastShortenedLinks", &response, params)
 	return
@@ -45,7 +45,7 @@ type UtilsGetLinkStatsResponse object.UtilsLinkStats
 //
 //	extended=0
 //
-// https://vk.com/dev/utils.getLinkStats
+// https://dev.vk.com/method/utils.getLinkStats
 func (vk *VK) UtilsGetLinkStats(params Params) (response UtilsGetLinkStatsResponse, err error) {
 	err = vk.RequestUnmarshal("utils.getLinkStats", &response, params, Params{"extended": false})
 
@@ -59,7 +59,7 @@ type UtilsGetLinkStatsExtendedResponse object.UtilsLinkStatsExtended
 //
 //	extended=1
 //
-// https://vk.com/dev/utils.getLinkStats
+// https://dev.vk.com/method/utils.getLinkStats
 func (vk *VK) UtilsGetLinkStatsExtended(params Params) (response UtilsGetLinkStatsExtendedResponse, err error) {
 	err = vk.RequestUnmarshal("utils.getLinkStats", &response, params, Params{"extended": true})
 
@@ -68,7 +68,7 @@ func (vk *VK) UtilsGetLinkStatsExtended(params Params) (response UtilsGetLinkSta
 
 // UtilsGetServerTime returns the current time of the VK server.
 //
-// https://vk.com/dev/utils.getServerTime
+// https://dev.vk.com/method/utils.getServerTime
 func (vk *VK) UtilsGetServerTime(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("utils.getServerTime", &response, params)
 	return
@@ -79,7 +79,7 @@ type UtilsGetShortLinkResponse object.UtilsShortLink
 
 // UtilsGetShortLink allows to receive a link shortened via vk.cc.
 //
-// https://vk.com/dev/utils.getShortLink
+// https://dev.vk.com/method/utils.getShortLink
 func (vk *VK) UtilsGetShortLink(params Params) (response UtilsGetShortLinkResponse, err error) {
 	err = vk.RequestUnmarshal("utils.getShortLink", &response, params)
 	return
@@ -114,7 +114,7 @@ func (resp *UtilsResolveScreenNameResponse) DecodeMsgpack(dec *msgpack.Decoder) 
 
 // UtilsResolveScreenName detects a type of object (e.g., user, community, application) and its ID by screen name.
 //
-// https://vk.com/dev/utils.resolveScreenName
+// https://dev.vk.com/method/utils.resolveScreenName
 func (vk *VK) UtilsResolveScreenName(params Params) (response UtilsResolveScreenNameResponse, err error) {
 	err = vk.RequestUnmarshal("utils.resolveScreenName", &response, params)
 	return
