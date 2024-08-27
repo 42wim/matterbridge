@@ -27,7 +27,6 @@ func (b *Bwhatsapp) eventHandler(evt interface{}) {
 }
 
 func (b *Bwhatsapp) handleGroupInfo(event *events.GroupInfo) {
-
 	b.Log.Debugf("Receiving event %#v", event)
 
 	switch {
@@ -57,6 +56,7 @@ func (b *Bwhatsapp) handleUserJoin(event *events.GroupInfo) {
 		b.Remote <- rmsg
 	}
 }
+
 func (b *Bwhatsapp) handleUserLeave(event *events.GroupInfo) {
 	for _, leftJid := range event.Leave {
 		senderName := b.getSenderNameFromJID(leftJid)
@@ -74,6 +74,7 @@ func (b *Bwhatsapp) handleUserLeave(event *events.GroupInfo) {
 		b.Remote <- rmsg
 	}
 }
+
 func (b *Bwhatsapp) handleTopicChange(event *events.GroupInfo) {
 	msg := event.Topic
 	senderJid := msg.TopicSetBy
@@ -151,9 +152,9 @@ func (b *Bwhatsapp) handleTextMessage(messageInfo types.MessageInfo, msg *proto.
 			senderJID = types.NewJID(ci.GetParticipant(), types.DefaultUserServer)
 		}
 
-		if ci.MentionedJid != nil {
+		if ci.MentionedJID != nil {
 			// handle user mentions
-			for _, mentionedJID := range ci.MentionedJid {
+			for _, mentionedJID := range ci.MentionedJID {
 				numberAndSuffix := strings.SplitN(mentionedJID, "@", 2)
 
 				// mentions comes as telephone numbers and we don't want to expose it to other bridges
@@ -441,10 +442,10 @@ func (b *Bwhatsapp) handleDelete(messageInfo *proto.ProtocolMessage) {
 	rmsg := config.Message{
 		Account:  b.Account,
 		Protocol: b.Protocol,
-		ID:       getMessageIdFormat(sender, *messageInfo.Key.Id),
+		ID:       getMessageIdFormat(sender, *messageInfo.Key.ID),
 		Event:    config.EventMsgDelete,
 		Text:     config.EventMsgDelete,
-		Channel:  *messageInfo.Key.RemoteJid,
+		Channel:  *messageInfo.Key.RemoteJID,
 	}
 
 	b.Log.Debugf("<= Sending message from %s to gateway", b.Account)

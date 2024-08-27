@@ -50,12 +50,14 @@ func (api *Client) userGroupRequest(ctx context.Context, path string, values url
 	return response, response.Err()
 }
 
-// CreateUserGroup creates a new user group
+// CreateUserGroup creates a new user group.
+// For more information see the CreateUserGroupContext documentation.
 func (api *Client) CreateUserGroup(userGroup UserGroup) (UserGroup, error) {
 	return api.CreateUserGroupContext(context.Background(), userGroup)
 }
 
-// CreateUserGroupContext creates a new user group with a custom context
+// CreateUserGroupContext creates a new user group with a custom context.
+// Slack API docs: https://api.slack.com/methods/usergroups.create
 func (api *Client) CreateUserGroupContext(ctx context.Context, userGroup UserGroup) (UserGroup, error) {
 	values := url.Values{
 		"token": {api.token},
@@ -85,12 +87,14 @@ func (api *Client) CreateUserGroupContext(ctx context.Context, userGroup UserGro
 	return response.UserGroup, nil
 }
 
-// DisableUserGroup disables an existing user group
+// DisableUserGroup disables an existing user group.
+// For more information see the DisableUserGroupContext documentation.
 func (api *Client) DisableUserGroup(userGroup string) (UserGroup, error) {
 	return api.DisableUserGroupContext(context.Background(), userGroup)
 }
 
-// DisableUserGroupContext disables an existing user group with a custom context
+// DisableUserGroupContext disables an existing user group with a custom context.
+// Slack API docs: https://api.slack.com/methods/usergroups.disable
 func (api *Client) DisableUserGroupContext(ctx context.Context, userGroup string) (UserGroup, error) {
 	values := url.Values{
 		"token":     {api.token},
@@ -104,12 +108,14 @@ func (api *Client) DisableUserGroupContext(ctx context.Context, userGroup string
 	return response.UserGroup, nil
 }
 
-// EnableUserGroup enables an existing user group
+// EnableUserGroup enables an existing user group.
+// For more information see the EnableUserGroupContext documentation.
 func (api *Client) EnableUserGroup(userGroup string) (UserGroup, error) {
 	return api.EnableUserGroupContext(context.Background(), userGroup)
 }
 
-// EnableUserGroupContext enables an existing user group with a custom context
+// EnableUserGroupContext enables an existing user group with a custom context.
+// Slack API docs: https://api.slack.com/methods/usergroups.enable
 func (api *Client) EnableUserGroupContext(ctx context.Context, userGroup string) (UserGroup, error) {
 	values := url.Values{
 		"token":     {api.token},
@@ -161,12 +167,14 @@ type GetUserGroupsParams struct {
 	IncludeUsers    bool
 }
 
-// GetUserGroups returns a list of user groups for the team
+// GetUserGroups returns a list of user groups for the team.
+// For more information see the GetUserGroupsContext documentation.
 func (api *Client) GetUserGroups(options ...GetUserGroupsOption) ([]UserGroup, error) {
 	return api.GetUserGroupsContext(context.Background(), options...)
 }
 
-// GetUserGroupsContext returns a list of user groups for the team with a custom context
+// GetUserGroupsContext returns a list of user groups for the team with a custom context.
+// Slack API docs: https://api.slack.com/methods/usergroups.list
 func (api *Client) GetUserGroupsContext(ctx context.Context, options ...GetUserGroupsOption) ([]UserGroup, error) {
 	params := GetUserGroupsParams{}
 
@@ -236,12 +244,14 @@ type UpdateUserGroupsParams struct {
 	Channels    *[]string
 }
 
-// UpdateUserGroup will update an existing user group
+// UpdateUserGroup will update an existing user group.
+// For more information see the UpdateUserGroupContext documentation.
 func (api *Client) UpdateUserGroup(userGroupID string, options ...UpdateUserGroupsOption) (UserGroup, error) {
 	return api.UpdateUserGroupContext(context.Background(), userGroupID, options...)
 }
 
-// UpdateUserGroupContext will update an existing user group with a custom context
+// UpdateUserGroupContext will update an existing user group with a custom context.
+// Slack API docs: https://api.slack.com/methods/usergroups.update
 func (api *Client) UpdateUserGroupContext(ctx context.Context, userGroupID string, options ...UpdateUserGroupsOption) (UserGroup, error) {
 	params := UpdateUserGroupsParams{}
 
@@ -277,12 +287,14 @@ func (api *Client) UpdateUserGroupContext(ctx context.Context, userGroupID strin
 	return response.UserGroup, nil
 }
 
-// GetUserGroupMembers will retrieve the current list of users in a group
+// GetUserGroupMembers will retrieve the current list of users in a group.
+// For more information see the GetUserGroupMembersContext documentation.
 func (api *Client) GetUserGroupMembers(userGroup string) ([]string, error) {
 	return api.GetUserGroupMembersContext(context.Background(), userGroup)
 }
 
-// GetUserGroupMembersContext will retrieve the current list of users in a group with a custom context
+// GetUserGroupMembersContext will retrieve the current list of users in a group with a custom context.
+// Slack API docs: https://api.slack.com/methods/usergroups.users.list
 func (api *Client) GetUserGroupMembersContext(ctx context.Context, userGroup string) ([]string, error) {
 	values := url.Values{
 		"token":     {api.token},
@@ -296,12 +308,14 @@ func (api *Client) GetUserGroupMembersContext(ctx context.Context, userGroup str
 	return response.Users, nil
 }
 
-// UpdateUserGroupMembers will update the members of an existing user group
+// UpdateUserGroupMembers will update the members of an existing user group.
+// For more information see the UpdateUserGroupMembersContext documentation.
 func (api *Client) UpdateUserGroupMembers(userGroup string, members string) (UserGroup, error) {
 	return api.UpdateUserGroupMembersContext(context.Background(), userGroup, members)
 }
 
-// UpdateUserGroupMembersContext will update the members of an existing user group with a custom context
+// UpdateUserGroupMembersContext will update the members of an existing user group with a custom context.
+// Slack API docs: https://api.slack.com/methods/usergroups.update
 func (api *Client) UpdateUserGroupMembersContext(ctx context.Context, userGroup string, members string) (UserGroup, error) {
 	values := url.Values{
 		"token":     {api.token},

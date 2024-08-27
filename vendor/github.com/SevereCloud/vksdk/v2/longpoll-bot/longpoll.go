@@ -1,7 +1,7 @@
 /*
 Package longpoll implements Bots Long Poll API.
 
-See more https://vk.com/dev/bots_longpoll
+See more https://dev.vk.com/ru/api/bots-long-poll/getting-started
 */
 package longpoll // import "github.com/SevereCloud/vksdk/v2/longpoll-bot"
 

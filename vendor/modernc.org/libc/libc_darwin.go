@@ -55,6 +55,10 @@ type (
 	ulong = types.User_ulong_t
 )
 
+type pthreadAttr struct {
+	detachState int32
+}
+
 // // Keep these outside of the var block otherwise go generate will miss them.
 var X__stderrp = Xstdout
 var X__stdinp = Xstdin
@@ -452,9 +456,11 @@ func Xsysconf(t *TLS, name int32) long {
 		return long(unix.Getpagesize())
 	case unistd.X_SC_NPROCESSORS_ONLN:
 		return long(runtime.NumCPU())
+	case unistd.X_SC_GETPW_R_SIZE_MAX:
+		return 128
 	}
 
-	panic(todo(""))
+	panic(todo("", name))
 }
 
 // int close(int fd);
@@ -2158,7 +2164,7 @@ func X__ccgo_pthreadAttrGetDetachState(tls *TLS, a uintptr) int32 {
 	if __ccgo_strace {
 		trc("tls=%v a=%v, (%v:)", tls, a, origin(2))
 	}
-	panic(todo(""))
+	return (*pthreadAttr)(unsafe.Pointer(a)).detachState
 }
 
 func Xpthread_attr_getdetachstate(tls *TLS, a uintptr, state uintptr) int32 {
@@ -2498,3 +2504,9 @@ func Xsetrlimit(t *TLS, resource int32, rlim uintptr) int32 {
 
 	return 0
 }
+
+func X__fpclassifyd(tls *TLS, x float64) (r int32) {
+	return X__fpclassify(tls, x)
+}
+
+var Xin6addr_any = in6_addr{}

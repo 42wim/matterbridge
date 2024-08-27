@@ -264,6 +264,9 @@ type LoggerOptions struct {
 	// Control if the output should be in JSON.
 	JSONFormat bool
 
+	// Control the escape switch of json.Encoder
+	JSONEscapeDisabled bool
+
 	// Include file and line information in each log line
 	IncludeLocation bool
 

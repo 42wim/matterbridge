@@ -39,14 +39,15 @@ func main() {
 		{"linux", "ppc64le"},
 		{"linux", "riscv64"},
 		{"linux", "s390x"},
+		{"windows", "386"},
 		{"windows", "amd64"},
 	} {
-		fmt.Printf("%s/%s\n", v.goos, v.goarch)
 		base := fmt.Sprintf("ccgo_%s_%s.go", v.goos, v.goarch)
-		if v.goos == "windows" {
+		if v.goos == "windows" && v.goarch == "amd64" {
 			base = "ccgo_windows.go"
 		}
 		ifn := filepath.Join("..", "libsqlite3", base)
+		fmt.Printf("%s/%s\t%s\n", v.goos, v.goarch, ifn)
 		in, err := os.ReadFile(ifn)
 		if err != nil {
 			fail(1, "%s\n", err)

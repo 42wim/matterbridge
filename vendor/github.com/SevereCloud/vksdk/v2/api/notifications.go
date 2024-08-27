@@ -20,7 +20,7 @@ type NotificationsGetResponse struct {
 
 // NotificationsGet returns a list of notifications about other users' feedback to the current user's wall posts.
 //
-// https://vk.com/dev/notifications.get
+// https://dev.vk.com/method/notifications.get
 func (vk *VK) NotificationsGet(params Params) (response NotificationsGetResponse, err error) {
 	err = vk.RequestUnmarshal("notifications.get", &response, params)
 	return
@@ -29,7 +29,7 @@ func (vk *VK) NotificationsGet(params Params) (response NotificationsGetResponse
 // NotificationsMarkAsViewed resets the counter of new notifications
 // about other users' feedback to the current user's wall posts.
 //
-// https://vk.com/dev/notifications.markAsViewed
+// https://dev.vk.com/method/notifications.markAsViewed
 func (vk *VK) NotificationsMarkAsViewed(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("notifications.markAsViewed", &response, params)
 	return
@@ -47,7 +47,7 @@ type NotificationsSendMessageResponse []struct {
 
 // NotificationsSendMessage sends notification to the VK Apps user.
 //
-// https://vk.com/dev/notifications.sendMessage
+// https://dev.vk.com/method/notifications.sendMessage
 func (vk *VK) NotificationsSendMessage(params Params) (response NotificationsSendMessageResponse, err error) {
 	err = vk.RequestUnmarshal("notifications.sendMessage", &response, params)
 	return

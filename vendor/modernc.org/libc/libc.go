@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build !(linux && (amd64 || loong64))
+//go:build !(linux && (amd64 || arm64 || loong64))
 
 //go.generate echo package libc > ccgo.go
 //go:generate go fmt ./...
@@ -1002,11 +1002,25 @@ func Xacos(t *TLS, x float64) float64 {
 	return math.Acos(x)
 }
 
+func Xacosf(t *TLS, x float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v, (%v:)", t, x, origin(2))
+	}
+	return float32(math.Acos(float64(x)))
+}
+
 func Xacosh(t *TLS, x float64) float64 {
 	if __ccgo_strace {
 		trc("t=%v x=%v, (%v:)", t, x, origin(2))
 	}
 	return math.Acosh(x)
+}
+
+func Xacoshf(t *TLS, x float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v, (%v:)", t, x, origin(2))
+	}
+	return float32(math.Acosh(float64(x)))
 }
 
 func Xasin(t *TLS, x float64) float64 {
@@ -1016,11 +1030,25 @@ func Xasin(t *TLS, x float64) float64 {
 	return math.Asin(x)
 }
 
+func Xasinf(t *TLS, x float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v, (%v:)", t, x, origin(2))
+	}
+	return float32(math.Asin(float64(x)))
+}
+
 func Xasinh(t *TLS, x float64) float64 {
 	if __ccgo_strace {
 		trc("t=%v x=%v, (%v:)", t, x, origin(2))
 	}
 	return math.Asinh(x)
+}
+
+func Xasinhf(t *TLS, x float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v, (%v:)", t, x, origin(2))
+	}
+	return float32(math.Asinh(float64(x)))
 }
 
 func Xatan(t *TLS, x float64) float64 {
@@ -1030,6 +1058,13 @@ func Xatan(t *TLS, x float64) float64 {
 	return math.Atan(x)
 }
 
+func Xatanf(t *TLS, x float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v, (%v:)", t, x, origin(2))
+	}
+	return float32(math.Atan(float64(x)))
+}
+
 func Xatan2(t *TLS, x, y float64) float64 {
 	if __ccgo_strace {
 		trc("t=%v y=%v, (%v:)", t, y, origin(2))
@@ -1037,11 +1072,25 @@ func Xatan2(t *TLS, x, y float64) float64 {
 	return math.Atan2(x, y)
 }
 
+func Xatan2f(t *TLS, x, y float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v y=%v, (%v:)", t, y, origin(2))
+	}
+	return float32(math.Atan2(float64(x), float64(y)))
+}
+
 func Xatanh(t *TLS, x float64) float64 {
 	if __ccgo_strace {
 		trc("t=%v x=%v, (%v:)", t, x, origin(2))
 	}
 	return math.Atanh(x)
+}
+
+func Xatanhf(t *TLS, x float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v, (%v:)", t, x, origin(2))
+	}
+	return float32(math.Atanh(float64(x)))
 }
 
 func Xceil(t *TLS, x float64) float64 {
@@ -1093,11 +1142,25 @@ func Xcosh(t *TLS, x float64) float64 {
 	return math.Cosh(x)
 }
 
+func Xcoshf(t *TLS, x float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v, (%v:)", t, x, origin(2))
+	}
+	return float32(math.Cosh(float64(x)))
+}
+
 func Xexp(t *TLS, x float64) float64 {
 	if __ccgo_strace {
 		trc("t=%v x=%v, (%v:)", t, x, origin(2))
 	}
 	return math.Exp(x)
+}
+
+func Xexpf(t *TLS, x float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v, (%v:)", t, x, origin(2))
+	}
+	return float32(math.Exp(float64(x)))
 }
 
 func Xfabs(t *TLS, x float64) float64 {
@@ -1121,6 +1184,13 @@ func Xfloor(t *TLS, x float64) float64 {
 	return math.Floor(x)
 }
 
+func Xfloorf(t *TLS, x float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v, (%v:)", t, x, origin(2))
+	}
+	return float32(math.Floor(float64(x)))
+}
+
 func Xfmod(t *TLS, x, y float64) float64 {
 	if __ccgo_strace {
 		trc("t=%v y=%v, (%v:)", t, y, origin(2))
@@ -1128,11 +1198,29 @@ func Xfmod(t *TLS, x, y float64) float64 {
 	return math.Mod(x, y)
 }
 
+func Xfmodf(t *TLS, x, y float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v y=%v, (%v:)", t, y, origin(2))
+	}
+	return float32(math.Mod(float64(x), float64(y)))
+}
+
+func X__builtin_hypot(t *TLS, x float64, y float64) (r float64) {
+	return Xhypot(t, x, y)
+}
+
 func Xhypot(t *TLS, x, y float64) float64 {
 	if __ccgo_strace {
 		trc("t=%v y=%v, (%v:)", t, y, origin(2))
 	}
 	return math.Hypot(x, y)
+}
+
+func Xhypotf(t *TLS, x, y float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v y=%v, (%v:)", t, y, origin(2))
+	}
+	return float32(math.Hypot(float64(x), float64(y)))
 }
 
 func Xisnan(t *TLS, x float64) int32 {
@@ -1170,11 +1258,25 @@ func Xlog(t *TLS, x float64) float64 {
 	return math.Log(x)
 }
 
+func Xlogf(t *TLS, x float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v, (%v:)", t, x, origin(2))
+	}
+	return float32(math.Log(float64(x)))
+}
+
 func Xlog10(t *TLS, x float64) float64 {
 	if __ccgo_strace {
 		trc("t=%v x=%v, (%v:)", t, x, origin(2))
 	}
 	return math.Log10(x)
+}
+
+func Xlog10f(t *TLS, x float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v, (%v:)", t, x, origin(2))
+	}
+	return float32(math.Log10(float64(x)))
 }
 
 func X__builtin_log2(t *TLS, x float64) float64 {
@@ -1188,6 +1290,13 @@ func Xlog2(t *TLS, x float64) float64 {
 	return math.Log2(x)
 }
 
+func Xlog2f(t *TLS, x float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v, (%v:)", t, x, origin(2))
+	}
+	return float32(math.Log2(float64(x)))
+}
+
 func Xround(t *TLS, x float64) float64 {
 	if __ccgo_strace {
 		trc("t=%v x=%v, (%v:)", t, x, origin(2))
@@ -1195,11 +1304,25 @@ func Xround(t *TLS, x float64) float64 {
 	return math.Round(x)
 }
 
+func Xroundf(t *TLS, x float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v, (%v:)", t, x, origin(2))
+	}
+	return float32(math.Round(float64(x)))
+}
+
 func X__builtin_round(t *TLS, x float64) float64 {
 	if __ccgo_strace {
 		trc("t=%v x=%v, (%v:)", t, x, origin(2))
 	}
 	return math.Round(x)
+}
+
+func X__builtin_roundf(t *TLS, x float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v, (%v:)", t, x, origin(2))
+	}
+	return float32(math.Round(float64(x)))
 }
 
 func Xsin(t *TLS, x float64) float64 {
@@ -1223,11 +1346,25 @@ func Xsinh(t *TLS, x float64) float64 {
 	return math.Sinh(x)
 }
 
+func Xsinhf(t *TLS, x float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v, (%v:)", t, x, origin(2))
+	}
+	return float32(math.Sinh(float64(x)))
+}
+
 func Xsqrt(t *TLS, x float64) float64 {
 	if __ccgo_strace {
 		trc("t=%v x=%v, (%v:)", t, x, origin(2))
 	}
 	return math.Sqrt(x)
+}
+
+func Xsqrtf(t *TLS, x float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v, (%v:)", t, x, origin(2))
+	}
+	return float32(math.Sqrt(float64(x)))
 }
 
 func Xtan(t *TLS, x float64) float64 {
@@ -1237,6 +1374,13 @@ func Xtan(t *TLS, x float64) float64 {
 	return math.Tan(x)
 }
 
+func Xtanf(t *TLS, x float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v, (%v:)", t, x, origin(2))
+	}
+	return float32(math.Tan(float64(x)))
+}
+
 func Xtanh(t *TLS, x float64) float64 {
 	if __ccgo_strace {
 		trc("t=%v x=%v, (%v:)", t, x, origin(2))
@@ -1244,11 +1388,25 @@ func Xtanh(t *TLS, x float64) float64 {
 	return math.Tanh(x)
 }
 
+func Xtanhf(t *TLS, x float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v, (%v:)", t, x, origin(2))
+	}
+	return float32(math.Tanh(float64(x)))
+}
+
 func Xtrunc(t *TLS, x float64) float64 {
 	if __ccgo_strace {
 		trc("t=%v x=%v, (%v:)", t, x, origin(2))
 	}
 	return math.Trunc(x)
+}
+
+func Xtruncf(t *TLS, x float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v, (%v:)", t, x, origin(2))
+	}
+	return float32(math.Trunc(float64(x)))
 }
 
 var nextRand = uint64(1)
@@ -1273,6 +1431,13 @@ func Xpow(t *TLS, x, y float64) float64 {
 	return r
 }
 
+func Xpowf(t *TLS, x, y float32) float32 {
+	if __ccgo_strace {
+		trc("t=%v y=%v, (%v:)", t, y, origin(2))
+	}
+	return float32(math.Pow(float64(x), float64(y)))
+}
+
 func Xfrexp(t *TLS, x float64, exp uintptr) float64 {
 	if __ccgo_strace {
 		trc("t=%v x=%v exp=%v, (%v:)", t, x, exp, origin(2))
@@ -1282,6 +1447,15 @@ func Xfrexp(t *TLS, x float64, exp uintptr) float64 {
 	return f
 }
 
+func Xfrexpf(t *TLS, x float32, exp uintptr) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v exp=%v, (%v:)", t, x, exp, origin(2))
+	}
+	f, e := math.Frexp(float64(x))
+	*(*int32)(unsafe.Pointer(exp)) = int32(e)
+	return float32(f)
+}
+
 func Xmodf(t *TLS, x float64, iptr uintptr) float64 {
 	if __ccgo_strace {
 		trc("t=%v x=%v iptr=%v, (%v:)", t, x, iptr, origin(2))
@@ -1289,6 +1463,15 @@ func Xmodf(t *TLS, x float64, iptr uintptr) float64 {
 	i, f := math.Modf(x)
 	*(*float64)(unsafe.Pointer(iptr)) = i
 	return f
+}
+
+func Xmodff(t *TLS, x float32, iptr uintptr) float32 {
+	if __ccgo_strace {
+		trc("t=%v x=%v iptr=%v, (%v:)", t, x, iptr, origin(2))
+	}
+	i, f := math.Modf(float64(x))
+	*(*float32)(unsafe.Pointer(iptr)) = float32(i)
+	return float32(f)
 }
 
 // char *strncpy(char *dest, const char *src, size_t n)
@@ -1465,39 +1648,91 @@ func Xstrrchr(t *TLS, s uintptr, c int32) (r uintptr) {
 }
 
 // void *memset(void *s, int c, size_t n)
-func Xmemset(t *TLS, s uintptr, c int32, n types.Size_t) uintptr {
+func Xmemset(t *TLS, dest uintptr, c int32, n types.Size_t) uintptr {
 	if __ccgo_strace {
-		trc("t=%v s=%v c=%v n=%v, (%v:)", t, s, c, n, origin(2))
+		trc("t=%v s=%v c=%v n=%v, (%v:)", t, dest, c, n, origin(2))
 	}
-	if n != 0 {
-		c := byte(c & 0xff)
+	var c8 uint8
+	var c32 uint32
+	var c64 uint64
+	var k types.Size_t
+	var s uintptr
 
-		// This will make sure that on platforms where they are not equally aligned we
-		// clear out the first few bytes until allignment
-		bytesBeforeAllignment := s % unsafe.Alignof(uint64(0))
-		if bytesBeforeAllignment > uintptr(n) {
-			bytesBeforeAllignment = uintptr(n)
-		}
-		b := (*RawMem)(unsafe.Pointer(s))[:bytesBeforeAllignment:bytesBeforeAllignment]
-		n -= types.Size_t(bytesBeforeAllignment)
-		for i := range b {
-			b[i] = c
-		}
-		if n >= 8 {
-			i64 := uint64(c) + uint64(c)<<8 + uint64(c)<<16 + uint64(c)<<24 + uint64(c)<<32 + uint64(c)<<40 + uint64(c)<<48 + uint64(c)<<56
-			b8 := (*RawMem64)(unsafe.Pointer(s + bytesBeforeAllignment))[: n/8 : n/8]
-			for i := range b8 {
-				b8[i] = i64
-			}
-		}
-		if n%8 != 0 {
-			b = (*RawMem)(unsafe.Pointer(s + bytesBeforeAllignment + uintptr(n-n%8)))[: n%8 : n%8]
-			for i := range b {
-				b[i] = c
-			}
-		}
+	s = dest
+	/* Fill head and tail with minimal branching. Each
+	 * conditional ensures that all the subsequently used
+	 * offsets are well-defined and in the dest region. */
+	if n == 0 {
+		return dest
 	}
-	return s
+	c8 = uint8(c)
+	*(*uint8)(unsafe.Pointer(s)) = c8
+	*(*uint8)(unsafe.Pointer(s + uintptr(n-1))) = c8
+	if n <= types.Size_t(2) {
+		return dest
+	}
+	*(*uint8)(unsafe.Pointer(s + 1)) = c8
+	*(*uint8)(unsafe.Pointer(s + 2)) = c8
+	*(*uint8)(unsafe.Pointer(s + uintptr(n-2))) = c8
+	*(*uint8)(unsafe.Pointer(s + uintptr(n-3))) = c8
+	if n <= types.Size_t(6) {
+		return dest
+	}
+	*(*uint8)(unsafe.Pointer(s + 3)) = c8
+	*(*uint8)(unsafe.Pointer(s + uintptr(n-4))) = c8
+	if n <= types.Size_t(8) {
+		return dest
+	}
+	/* Advance pointer to align it at a 4-byte boundary,
+	 * and truncate n to a multiple of 4. The previous code
+	 * already took care of any head/tail that get cut off
+	 * by the alignment. */
+	k = -types.Size_t(s) & types.Size_t(3)
+	s += uintptr(k)
+	n -= k
+	n &= types.Size_t(-Int32FromInt32(4))
+	c32 = uint32(0x01010101) * uint32(c8)
+	/* In preparation to copy 32 bytes at a time, aligned on
+	 * an 8-byte bounary, fill head/tail up to 28 bytes each.
+	 * As in the initial byte-based head/tail fill, each
+	 * conditional below ensures that the subsequent offsets
+	 * are valid (e.g. !(n<=24) implies n>=28). */
+	*(*uint32)(unsafe.Pointer(s + uintptr(0))) = c32
+	*(*uint32)(unsafe.Pointer(s + uintptr(n-4))) = c32
+	if n <= types.Size_t(8) {
+		return dest
+	}
+	c64 = uint64(c32) | (uint64(c32) << 32)
+	*(*uint64)(unsafe.Pointer(s + uintptr(4))) = c64
+	*(*uint64)(unsafe.Pointer(s + uintptr(n-12))) = c64
+	if n <= types.Size_t(24) {
+		return dest
+	}
+	*(*uint64)(unsafe.Pointer(s + uintptr(12))) = c64
+	*(*uint64)(unsafe.Pointer(s + uintptr(20))) = c64
+	*(*uint64)(unsafe.Pointer(s + uintptr(n-28))) = c64
+	*(*uint64)(unsafe.Pointer(s + uintptr(n-20))) = c64
+	/* Align to a multiple of 8 so we can fill 64 bits at a time,
+	 * and avoid writing the same bytes twice as much as is
+	 * practical without introducing additional branching. */
+	k = types.Size_t(24) + types.Size_t(s)&types.Size_t(4)
+	s += uintptr(k)
+	n -= k
+	/* If this loop is reached, 28 tail bytes have already been
+	 * filled, so any remainder when n drops below 32 can be
+	 * safely ignored. */
+	for {
+		if !(n >= types.Size_t(32)) {
+			break
+		}
+		*(*uint64)(unsafe.Pointer(s + uintptr(0))) = c64
+		*(*uint64)(unsafe.Pointer(s + uintptr(8))) = c64
+		*(*uint64)(unsafe.Pointer(s + uintptr(16))) = c64
+		*(*uint64)(unsafe.Pointer(s + uintptr(24))) = c64
+		n -= types.Size_t(32)
+		s += uintptr(32)
+	}
+	return dest
 }
 
 // void *memcpy(void *dest, const void *src, size_t n);

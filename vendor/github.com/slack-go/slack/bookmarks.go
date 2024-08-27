@@ -55,12 +55,14 @@ type listBookmarksResponse struct {
 	SlackResponse
 }
 
-// AddBookmark adds a bookmark in a channel
+// AddBookmark adds a bookmark in a channel.
+// For more details, see AddBookmarkContext documentation.
 func (api *Client) AddBookmark(channelID string, params AddBookmarkParameters) (Bookmark, error) {
 	return api.AddBookmarkContext(context.Background(), channelID, params)
 }
 
-// AddBookmarkContext adds a bookmark in a channel with a custom context
+// AddBookmarkContext adds a bookmark in a channel with a custom context.
+// Slack API docs: https://api.slack.com/methods/bookmarks.add
 func (api *Client) AddBookmarkContext(ctx context.Context, channelID string, params AddBookmarkParameters) (Bookmark, error) {
 	values := url.Values{
 		"channel_id": {channelID},
@@ -89,12 +91,14 @@ func (api *Client) AddBookmarkContext(ctx context.Context, channelID string, par
 	return response.Bookmark, response.Err()
 }
 
-// RemoveBookmark removes a bookmark from a channel
+// RemoveBookmark removes a bookmark from a channel.
+// For more details, see RemoveBookmarkContext documentation.
 func (api *Client) RemoveBookmark(channelID, bookmarkID string) error {
 	return api.RemoveBookmarkContext(context.Background(), channelID, bookmarkID)
 }
 
-// RemoveBookmarkContext removes a bookmark from a channel with a custom context
+// RemoveBookmarkContext removes a bookmark from a channel with a custom context.
+// Slack API docs: https://api.slack.com/methods/bookmarks.remove
 func (api *Client) RemoveBookmarkContext(ctx context.Context, channelID, bookmarkID string) error {
 	values := url.Values{
 		"channel_id":  {channelID},
@@ -111,11 +115,13 @@ func (api *Client) RemoveBookmarkContext(ctx context.Context, channelID, bookmar
 }
 
 // ListBookmarks returns all bookmarks for a channel.
+// For more details, see ListBookmarksContext documentation.
 func (api *Client) ListBookmarks(channelID string) ([]Bookmark, error) {
 	return api.ListBookmarksContext(context.Background(), channelID)
 }
 
 // ListBookmarksContext returns all bookmarks for a channel with a custom context.
+// Slack API docs: https://api.slack.com/methods/bookmarks.edit
 func (api *Client) ListBookmarksContext(ctx context.Context, channelID string) ([]Bookmark, error) {
 	values := url.Values{
 		"channel_id": {channelID},
@@ -130,10 +136,14 @@ func (api *Client) ListBookmarksContext(ctx context.Context, channelID string) (
 	return response.Bookmarks, response.Err()
 }
 
+// EditBookmark edits a bookmark in a channel.
+// For more details, see EditBookmarkContext documentation.
 func (api *Client) EditBookmark(channelID, bookmarkID string, params EditBookmarkParameters) (Bookmark, error) {
 	return api.EditBookmarkContext(context.Background(), channelID, bookmarkID, params)
 }
 
+// EditBookmarkContext edits a bookmark in a channel with a custom context.
+// Slack API docs: https://api.slack.com/methods/bookmarks.edit
 func (api *Client) EditBookmarkContext(ctx context.Context, channelID, bookmarkID string, params EditBookmarkParameters) (Bookmark, error) {
 	values := url.Values{
 		"channel_id":  {channelID},

@@ -40,12 +40,14 @@ type GetBotInfoParameters struct {
 	TeamID string
 }
 
-// GetBotInfo will retrieve the complete bot information
+// GetBotInfo will retrieve the complete bot information.
+// For more details, see GetBotInfoContext documentation.
 func (api *Client) GetBotInfo(parameters GetBotInfoParameters) (*Bot, error) {
 	return api.GetBotInfoContext(context.Background(), parameters)
 }
 
-// GetBotInfoContext will retrieve the complete bot information using a custom context
+// GetBotInfoContext will retrieve the complete bot information using a custom context.
+// Slack API docs: https://api.slack.com/methods/bots.info
 func (api *Client) GetBotInfoContext(ctx context.Context, parameters GetBotInfoParameters) (*Bot, error) {
 	values := url.Values{
 		"token": {api.token},

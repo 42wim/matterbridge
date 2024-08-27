@@ -36,9 +36,9 @@ import (
 var X__imp__environ = EnvironP()
 var X__imp__wenviron = uintptr(unsafe.Pointer(&wenviron))
 var X_imp___environ = EnvironP()
+var X_imp___wenviron = uintptr(unsafe.Pointer(&wenviron))
 var X_iob [stdio.X_IOB_ENTRIES]stdio.FILE
 var Xin6addr_any [16]byte
-
 var Xtimezone long // extern long timezone;
 
 var (
@@ -146,6 +146,7 @@ var (
 	procMoveFileW                  = modkernel32.NewProc("MoveFileW")
 	procMultiByteToWideChar        = modkernel32.NewProc("MultiByteToWideChar")
 	procOpenEventA                 = modkernel32.NewProc("OpenEventA")
+	procOpenProcessToken           = modkernel32.NewProc("OpenProcessToken")
 	procPeekConsoleInputW          = modkernel32.NewProc("PeekConsoleInputW")
 	procPeekNamedPipe              = modkernel32.NewProc("PeekNamedPipe")
 	procQueryPerformanceCounter    = modkernel32.NewProc("QueryPerformanceCounter")
@@ -159,6 +160,7 @@ var (
 	procSetConsoleTextAttribute    = modkernel32.NewProc("SetConsoleTextAttribute")
 	procSetEvent                   = modkernel32.NewProc("SetEvent")
 	procSetFilePointer             = modkernel32.NewProc("SetFilePointer")
+	procSetFileTime                = modkernel32.NewProc("SetFileTime")
 	procSleepEx                    = modkernel32.NewProc("SleepEx")
 	procSystemTimeToFileTime       = modkernel32.NewProc("SystemTimeToFileTime")
 	procTerminateThread            = modkernel32.NewProc("TerminateThread")
@@ -178,15 +180,22 @@ var (
 	modadvapi = syscall.NewLazyDLL("advapi32.dll")
 	//--
 	procAccessCheck                = modadvapi.NewProc("AccessCheck")
+	procAddAce                     = modadvapi.NewProc("AddAce")
+	procEqualSid                   = modadvapi.NewProc("EqualSid")
+	procGetAce                     = modadvapi.NewProc("GetAce")
 	procGetAclInformation          = modadvapi.NewProc("GetAclInformation")
 	procGetFileSecurityA           = modadvapi.NewProc("GetFileSecurityA")
 	procGetFileSecurityW           = modadvapi.NewProc("GetFileSecurityW")
+	procGetLengthSid               = modadvapi.NewProc("GetLengthSid")
+	procGetNamedSecurityInfoW      = modadvapi.NewProc("GetNamedSecurityInfoW")
 	procGetSecurityDescriptorDacl  = modadvapi.NewProc("GetSecurityDescriptorDacl")
 	procGetSecurityDescriptorOwner = modadvapi.NewProc("GetSecurityDescriptorOwner")
 	procGetSidIdentifierAuthority  = modadvapi.NewProc("GetSidIdentifierAuthority")
 	procGetSidLengthRequired       = modadvapi.NewProc("GetSidLengthRequired")
 	procGetSidSubAuthority         = modadvapi.NewProc("GetSidSubAuthority")
+	procGetTokenInformation        = modadvapi.NewProc("GetTokenInformation")
 	procImpersonateSelf            = modadvapi.NewProc("ImpersonateSelf")
+	procInitializeAcl              = modadvapi.NewProc("InitializeAcl")
 	procInitializeSid              = modadvapi.NewProc("InitializeSid")
 	procOpenThreadToken            = modadvapi.NewProc("OpenThreadToken")
 	procRevertToSelf               = modadvapi.NewProc("RevertToSelf")
@@ -199,6 +208,7 @@ var (
 
 	moduser32 = syscall.NewLazyDLL("user32.dll")
 	//--
+	procCharLowerW                  = moduser32.NewProc("CharLowerW")
 	procCreateWindowExW             = moduser32.NewProc("CreateWindowExW")
 	procMsgWaitForMultipleObjectsEx = moduser32.NewProc("MsgWaitForMultipleObjectsEx")
 	procPeekMessageW                = moduser32.NewProc("PeekMessageW")
@@ -214,13 +224,20 @@ var (
 	userenvapi                = syscall.NewLazyDLL("userenv.dll")
 	procGetProfilesDirectoryW = userenvapi.NewProc("GetProfilesDirectoryW")
 
-	modcrt        = syscall.NewLazyDLL("msvcrt.dll")
-	procAccess    = modcrt.NewProc("_access")
-	procGmtime    = modcrt.NewProc("gmtime")
-	procGmtime64  = modcrt.NewProc("_gmtime64")
-	procStat64i32 = modcrt.NewProc("_stat64i32")
-	procStrftime  = modcrt.NewProc("strftime")
-	procStrtod    = modcrt.NewProc("strtod")
+	modcrt          = syscall.NewLazyDLL("msvcrt.dll")
+	procAccess      = modcrt.NewProc("_access")
+	procChmod       = modcrt.NewProc("_chmod")
+	procGmtime      = modcrt.NewProc("gmtime")
+	procGmtime32    = modcrt.NewProc("_gmtime32")
+	procGmtime64    = modcrt.NewProc("_gmtime64")
+	procStat64i32   = modcrt.NewProc("_stat64i32")
+	procStati64     = modcrt.NewProc("_stati64")
+	procStrftime    = modcrt.NewProc("strftime")
+	procStrtod      = modcrt.NewProc("strtod")
+
+	moducrt = syscall.NewLazyDLL("ucrtbase.dll")
+	procFindfirst32 = moducrt.NewProc("_findfirst32")
+	procFindnext32  = moducrt.NewProc("_findnext32")
 )
 
 var (
@@ -288,6 +305,22 @@ func (f *file) err() bool {
 
 func (f *file) setErr() {
 	f.hadErr = true
+}
+
+func (tls *TLS) SetLastError(_dwErrCode uint32) {
+	if tls != nil {
+		tls.lastError = _dwErrCode
+	}
+}
+
+// https://github.com/golang/go/issues/41220
+
+func (tls *TLS) GetLastError() (r uint32) {
+	if tls == nil {
+		return 0
+	}
+
+	return tls.lastError
 }
 
 // -----------------------------------
@@ -3062,16 +3095,20 @@ func XGetFullPathNameW(t *TLS, lpFileName uintptr, nBufferLength uint32, lpBuffe
 	return n
 }
 
-// LPWSTR CharLowerW(
-//
-//	LPWSTR lpsz
-//
-// );
-func XCharLowerW(t *TLS, lpsz uintptr) uintptr {
+// __attribute__((dllimport)) LPWSTR CharLowerW(LPWSTR lpsz);
+func XCharLowerW(tls *TLS, _lpsz uintptr) (r uintptr) {
 	if __ccgo_strace {
-		trc("t=%v lpsz=%v, (%v:)", t, lpsz, origin(2))
+		trc("lpsz=%+v", _lpsz)
+		defer func() { trc(`XCharLowerW->%+v`, r) }()
 	}
-	panic(todo(""))
+	r0, r1, err := syscall.SyscallN(procCharLowerW.Addr(), _lpsz)
+	if err != 0 {
+		if __ccgo_strace {
+			trc(`r0=%v r1=%v err=%v`, r0, r1, err)
+		}
+		tls.SetLastError(uint32(err))
+	}
+	return r0
 }
 
 // BOOL CreateDirectoryW(
@@ -5044,73 +5081,83 @@ func Xwcschr(t *TLS, str uintptr, c wchar_t) uintptr {
 //	const FILETIME *lpLastWriteTime
 //
 // );
-func XSetFileTime(t *TLS, hFile uintptr, lpCreationTime, lpLastAccessTime, lpLastWriteTime uintptr) int32 {
+func XSetFileTime(t *TLS, _hFile uintptr, _lpCreationTime, _lpLastAccessTime, _lpLastWriteTime uintptr) (r int32) {
 	if __ccgo_strace {
-		trc("t=%v hFile=%v lpLastWriteTime=%v, (%v:)", t, hFile, lpLastWriteTime, origin(2))
+		trc("hFile=%+v lpCreationTime=%+v lpLastAccessTime=%+v lpLastWriteTime=%+v", _hFile, _lpCreationTime, _lpLastAccessTime, _lpLastWriteTime)
+		defer func() { trc(`XSetFileTime->%+v`, r) }()
 	}
-	panic(todo(""))
+	r0, r1, err := syscall.SyscallN(procSetFileTime.Addr(), _hFile, _lpCreationTime, _lpLastAccessTime, _lpLastWriteTime)
+	if err != 0 {
+		if __ccgo_strace {
+			trc(`r0=%v r1=%v err=%v`, r0, r1, err)
+		}
+		t.SetLastError(uint32(err))
+	}
+	return int32(r0)
 }
 
-// DWORD GetNamedSecurityInfoW(
-//
-//	LPCWSTR              pObjectName,
-//	SE_OBJECT_TYPE       ObjectType,
-//	SECURITY_INFORMATION SecurityInfo,
-//	PSID                 *ppsidOwner,
-//	PSID                 *ppsidGroup,
-//	PACL                 *ppDacl,
-//	PACL                 *ppSacl,
-//	PSECURITY_DESCRIPTOR *ppSecurityDescriptor
-//
-// );
-func XGetNamedSecurityInfoW(t *TLS, pObjectName uintptr, ObjectType, SecurityInfo uint32, ppsidOwner, ppsidGroup, ppDacl, ppSacl, ppSecurityDescriptor uintptr) uint32 {
+// __attribute__((dllimport)) DWORD GetNamedSecurityInfoW (LPCWSTR pObjectName, SE_OBJECT_TYPE ObjectType, SECURITY_INFORMATION SecurityInfo, PSID *ppsidOwner, PSID *ppsidGroup, PACL *ppDacl, PACL *ppSacl, PSECURITY_DESCRIPTOR *ppSecurityDescriptor);
+func XGetNamedSecurityInfoW(tls *TLS, _pObjectName uintptr, _ObjectType int32, _SecurityInfo uint32, _ppsidOwner uintptr, _ppsidGroup uintptr, _ppDacl uintptr, _ppSacl uintptr, _ppSecurityDescriptor uintptr) (r uint32) {
 	if __ccgo_strace {
-		trc("t=%v pObjectName=%v SecurityInfo=%v ppSecurityDescriptor=%v, (%v:)", t, pObjectName, SecurityInfo, ppSecurityDescriptor, origin(2))
+		trc("pObjectName=%+v ObjectType=%+v SecurityInfo=%+v ppsidOwner=%+v ppsidGroup=%+v ppDacl=%+v ppSacl=%+v ppSecurityDescriptor=%+v", _pObjectName, _ObjectType, _SecurityInfo, _ppsidOwner, _ppsidGroup, _ppDacl, _ppSacl, _ppSecurityDescriptor)
+		defer func() { trc(`XGetNamedSecurityInfoW->%+v`, r) }()
 	}
-	panic(todo(""))
+	r0, r1, err := syscall.SyscallN(procGetNamedSecurityInfoW.Addr(), _pObjectName, uintptr(_ObjectType), uintptr(_SecurityInfo), _ppsidOwner, _ppsidGroup, _ppDacl, _ppSacl, _ppSecurityDescriptor)
+	if err != 0 {
+		if __ccgo_strace {
+			trc(`r0=%v r1=%v err=%v`, r0, r1, err)
+		}
+		tls.SetLastError(uint32(err))
+	}
+	return uint32(r0)
 }
 
-// BOOL OpenProcessToken(
-//
-//	HANDLE  ProcessHandle,
-//	DWORD   DesiredAccess,
-//	PHANDLE TokenHandle
-//
-// );
-func XOpenProcessToken(t *TLS, ProcessHandle uintptr, DesiredAccess uint32, TokenHandle uintptr) int32 {
+// __attribute__((dllimport)) WINBOOL OpenProcessToken (HANDLE ProcessHandle, DWORD DesiredAccess, PHANDLE TokenHandle);
+func XOpenProcessToken(tls *TLS, _ProcessHandle uintptr, _DesiredAccess uint32, _TokenHandle uintptr) (r int32) {
 	if __ccgo_strace {
-		trc("t=%v ProcessHandle=%v DesiredAccess=%v TokenHandle=%v, (%v:)", t, ProcessHandle, DesiredAccess, TokenHandle, origin(2))
+		trc("ProcessHandle=%+v DesiredAccess=%+v TokenHandle=%+v", _ProcessHandle, _DesiredAccess, _TokenHandle)
+		defer func() { trc(`XOpenProcessToken->%+v`, r) }()
 	}
-	panic(todo(""))
+	r0, r1, err := syscall.SyscallN(procOpenProcessToken.Addr(), _ProcessHandle, uintptr(_DesiredAccess), _TokenHandle)
+	if err != 0 {
+		if __ccgo_strace {
+			trc(`r0=%v r1=%v err=%v`, r0, r1, err)
+		}
+		tls.SetLastError(uint32(err))
+	}
+	return int32(r0)
 }
 
-// BOOL GetTokenInformation(
-//
-//	HANDLE                  TokenHandle,
-//	TOKEN_INFORMATION_CLASS TokenInformationClass,
-//	LPVOID                  TokenInformation,
-//	DWORD                   TokenInformationLength,
-//	PDWORD                  ReturnLength
-//
-// );
-func XGetTokenInformation(t *TLS, TokenHandle uintptr, TokenInformationClass uint32, TokenInformation uintptr, TokenInformationLength uint32, ReturnLength uintptr) int32 {
+// __attribute__((dllimport)) WINBOOL GetTokenInformation (HANDLE TokenHandle, TOKEN_INFORMATION_CLASS TokenInformationClass, LPVOID TokenInformation, DWORD TokenInformationLength, PDWORD ReturnLength);
+func XGetTokenInformation(tls *TLS, _TokenHandle uintptr, _TokenInformationClass int32, _TokenInformation uintptr, _TokenInformationLength uint32, _ReturnLength uintptr) (r int32) {
 	if __ccgo_strace {
-		trc("t=%v TokenHandle=%v TokenInformationClass=%v TokenInformation=%v TokenInformationLength=%v ReturnLength=%v, (%v:)", t, TokenHandle, TokenInformationClass, TokenInformation, TokenInformationLength, ReturnLength, origin(2))
+		trc("TokenHandle=%+v TokenInformationClass=%+v TokenInformation=%+v TokenInformationLength=%+v ReturnLength=%+v", _TokenHandle, _TokenInformationClass, _TokenInformation, _TokenInformationLength, _ReturnLength)
+		defer func() { trc(`XGetTokenInformation->%+v`, r) }()
 	}
-	panic(todo(""))
+	r0, r1, err := syscall.SyscallN(procGetTokenInformation.Addr(), _TokenHandle, uintptr(_TokenInformationClass), _TokenInformation, uintptr(_TokenInformationLength), _ReturnLength)
+	if err != 0 {
+		if __ccgo_strace {
+			trc(`r0=%v r1=%v err=%v`, r0, r1, err)
+		}
+		tls.SetLastError(uint32(err))
+	}
+	return int32(r0)
 }
 
-// BOOL EqualSid(
-//
-//	PSID pSid1,
-//	PSID pSid2
-//
-// );
-func XEqualSid(t *TLS, pSid1, pSid2 uintptr) int32 {
+// __attribute__((dllimport)) WINBOOL EqualSid (PSID pSid1, PSID pSid2);
+func XEqualSid(tls *TLS, _pSid1 uintptr, _pSid2 uintptr) (r int32) {
 	if __ccgo_strace {
-		trc("t=%v pSid2=%v, (%v:)", t, pSid2, origin(2))
+		trc("pSid1=%+v pSid2=%+v", _pSid1, _pSid2)
+		defer func() { trc(`XEqualSid->%+v`, r) }()
 	}
-	panic(todo(""))
+	r0, r1, err := syscall.SyscallN(procEqualSid.Addr(), _pSid1, _pSid2)
+	if err != 0 {
+		if __ccgo_strace {
+			trc(`r0=%v r1=%v err=%v`, r0, r1, err)
+		}
+		tls.SetLastError(uint32(err))
+	}
+	return int32(r0)
 }
 
 // int WSAStartup(
@@ -6388,34 +6435,36 @@ func XAddAccessDeniedAce(t *TLS, pAcl uintptr, dwAceRevision, AccessMask uint32,
 	panic(todo(""))
 }
 
-// BOOL AddAce(
-//
-//	PACL   pAcl,
-//	DWORD  dwAceRevision,
-//	DWORD  dwStartingAceIndex,
-//	LPVOID pAceList,
-//	DWORD  nAceListLength
-//
-// );
-func XAddAce(t *TLS, pAcl uintptr, dwAceRevision, dwStartingAceIndex uint32, pAceList uintptr, nAceListLength uint32) int32 {
+// __attribute__((dllimport)) WINBOOL AddAce (PACL pAcl, DWORD dwAceRevision, DWORD dwStartingAceIndex, LPVOID pAceList, DWORD nAceListLength);
+func XAddAce(tls *TLS, _pAcl uintptr, _dwAceRevision uint32, _dwStartingAceIndex uint32, _pAceList uintptr, _nAceListLength uint32) (r uint32) {
 	if __ccgo_strace {
-		trc("t=%v pAcl=%v dwStartingAceIndex=%v pAceList=%v nAceListLength=%v, (%v:)", t, pAcl, dwStartingAceIndex, pAceList, nAceListLength, origin(2))
+		trc("pAcl=%+v dwAceRevision=%+v dwStartingAceIndex=%+v pAceList=%+v nAceListLength=%+v", _pAcl, _dwAceRevision, _dwStartingAceIndex, _pAceList, _nAceListLength)
+		defer func() { trc(`XAddAce->%+v`, r) }()
 	}
-	panic(todo(""))
+	r0, r1, err := syscall.SyscallN(procAddAce.Addr(), _pAcl, uintptr(_dwAceRevision), uintptr(_dwStartingAceIndex), _pAceList, uintptr(_nAceListLength))
+	if err != 0 {
+		if __ccgo_strace {
+			trc(`r0=%v r1=%v err=%v`, r0, r1, err)
+		}
+		tls.SetLastError(uint32(err))
+	}
+	return uint32(r0)
 }
 
-// BOOL GetAce(
-//
-//	PACL   pAcl,
-//	DWORD  dwAceIndex,
-//	LPVOID *pAce
-//
-// );
-func XGetAce(t *TLS, pAcl uintptr, dwAceIndex uint32, pAce uintptr) int32 {
+// __attribute__((dllimport)) WINBOOL GetAce (PACL pAcl, DWORD dwAceIndex, LPVOID *pAce);
+func XGetAce(tls *TLS, _pAcl uintptr, _dwAceIndex uint32, _pAce uintptr) (r int32) {
 	if __ccgo_strace {
-		trc("t=%v pAcl=%v dwAceIndex=%v pAce=%v, (%v:)", t, pAcl, dwAceIndex, pAce, origin(2))
+		trc("pAcl=%+v dwAceIndex=%+v pAce=%+v", _pAcl, _dwAceIndex, _pAce)
+		defer func() { trc(`XGetAce->%+v`, r) }()
 	}
-	panic(todo(""))
+	r0, r1, err := syscall.SyscallN(procGetAce.Addr(), _pAcl, uintptr(_dwAceIndex), _pAce)
+	if err != 0 {
+		if __ccgo_strace {
+			trc(`r0=%v r1=%v err=%v`, r0, r1, err)
+		}
+		tls.SetLastError(uint32(err))
+	}
+	return int32(r0)
 }
 
 // BOOL GetAclInformation(
@@ -6471,16 +6520,20 @@ func XGetFileSecurityA(t *TLS, lpFileName uintptr, RequestedInformation uint32, 
 	return int32(r0)
 }
 
-// DWORD GetLengthSid(
-//
-//	PSID pSid
-//
-// );
-func XGetLengthSid(t *TLS, pSid uintptr) uint32 {
+// __attribute__((dllimport)) DWORD GetLengthSid (PSID pSid);
+func XGetLengthSid(tls *TLS, _pSid uintptr) (r uint32) {
 	if __ccgo_strace {
-		trc("t=%v pSid=%v, (%v:)", t, pSid, origin(2))
+		trc("pSid=%+v", _pSid)
+		defer func() { trc(`XGetLengthSid->%+v`, r) }()
 	}
-	panic(todo(""))
+	r0, r1, err := syscall.SyscallN(procGetLengthSid.Addr(), _pSid)
+	if err != 0 {
+		if __ccgo_strace {
+			trc(`r0=%v r1=%v err=%v`, r0, r1, err)
+		}
+		tls.SetLastError(uint32(err))
+	}
+	return uint32(r0)
 }
 
 // BOOL GetSecurityDescriptorDacl(
@@ -6542,18 +6595,20 @@ func XGetSidSubAuthority(t *TLS, pSid uintptr, nSubAuthority uint32) uintptr {
 	return r0
 }
 
-// BOOL InitializeAcl(
-//
-//	PACL  pAcl,
-//	DWORD nAclLength,
-//	DWORD dwAclRevision
-//
-// );
-func XInitializeAcl(t *TLS, pAcl uintptr, nAclLength, dwAclRevision uint32) int32 {
+// __attribute__((dllimport)) WINBOOL InitializeAcl (PACL pAcl, DWORD nAclLength, DWORD dwAclRevision);
+func XInitializeAcl(tls *TLS, _pAcl uintptr, _nAclLength uint32, _dwAclRevision uint32) (r int32) {
 	if __ccgo_strace {
-		trc("t=%v pAcl=%v dwAclRevision=%v, (%v:)", t, pAcl, dwAclRevision, origin(2))
+		trc("pAcl=%+v nAclLength=%+v dwAclRevision=%+v", _pAcl, _nAclLength, _dwAclRevision)
+		defer func() { trc(`XInitializeAcl->%+v`, r) }()
 	}
-	panic(todo(""))
+	r0, r1, err := syscall.SyscallN(procInitializeAcl.Addr(), _pAcl, uintptr(_nAclLength), uintptr(_dwAclRevision))
+	if err != 0 {
+		if __ccgo_strace {
+			trc(`r0=%v r1=%v err=%v`, r0, r1, err)
+		}
+		tls.SetLastError(uint32(err))
+	}
+	return int32(r0)
 }
 
 // BOOL InitializeSid(
@@ -6723,22 +6778,19 @@ func X_commit(t *TLS, fd int32) int32 {
 // );
 func X_stati64(t *TLS, path, buffer uintptr) int32 {
 	if __ccgo_strace {
-		trc("t=%v buffer=%v, (%v:)", t, buffer, origin(2))
+		trc("t=%v path=%v buffer=%v, (%v:)", t, path, buffer, origin(2))
 	}
-	panic(todo(""))
+	r0, _, err := syscall.SyscallN(procStati64.Addr(), uintptr(path), uintptr(buffer))
+	if err != 0 {
+		t.setErrno(err)
+	}
+	return int32(r0)
 }
 
-// int _fstati64(
-//
-//	int fd,
-//	struct _stati64 *buffer
-//
-// );
+
+// int _fstati64(int fd, struct _stati64 *buffer);
 func X_fstati64(t *TLS, fd int32, buffer uintptr) int32 {
-	if __ccgo_strace {
-		trc("t=%v fd=%v buffer=%v, (%v:)", t, fd, buffer, origin(2))
-	}
-	panic(todo(""))
+	return X_fstat64(t, fd, buffer)
 }
 
 // int _findnext32(
@@ -6751,7 +6803,11 @@ func X_findnext32(t *TLS, handle types.Intptr_t, buffer uintptr) int32 {
 	if __ccgo_strace {
 		trc("t=%v handle=%v buffer=%v, (%v:)", t, handle, buffer, origin(2))
 	}
-	panic(todo(""))
+	r0, _, err := syscall.SyscallN(procFindnext32.Addr(), uintptr(handle), buffer)
+	if err != 0 {
+		t.setErrno(err)
+	}
+	return int32(r0)
 }
 
 // intptr_t _findfirst32(
@@ -6764,7 +6820,11 @@ func X_findfirst32(t *TLS, filespec, fileinfo uintptr) types.Intptr_t {
 	if __ccgo_strace {
 		trc("t=%v fileinfo=%v, (%v:)", t, fileinfo, origin(2))
 	}
-	panic(todo(""))
+	r0, _, err := syscall.SyscallN(procFindfirst32.Addr(), filespec, fileinfo)
+	if err != 0 {
+		t.setErrno(err)
+	}
+	return types.Intptr_t(r0)
 }
 
 /*-
@@ -7171,10 +7231,11 @@ func X__ccgo_pthreadMutexattrGettype(tls *TLS, a uintptr) int32 { /* pthread_att
 }
 
 func Xchmod(t *TLS, pathname uintptr, mode int32) int32 {
-	if __ccgo_strace {
-		trc("t=%v pathname=%v mode=%v, (%v:)", t, pathname, mode, origin(2))
+	r0, _, err := syscall.SyscallN(procChmod.Addr(), pathname, uintptr(mode))
+	if err != 0 {
+		t.setErrno(err)
 	}
-	panic(todo("%q %#o", GoString(pathname), mode))
+	return int32(r0)
 }
 
 // typedef enum _COMPUTER_NAME_FORMAT {

@@ -5,12 +5,14 @@ import (
 	"net/url"
 )
 
-// RotateTokens exchanges a refresh token for a new app configuration token
+// RotateTokens exchanges a refresh token for a new app configuration token.
+// For more information see the RotateTokensContext documentation.
 func (api *Client) RotateTokens(configToken string, refreshToken string) (*TokenResponse, error) {
 	return api.RotateTokensContext(context.Background(), configToken, refreshToken)
 }
 
-// RotateTokensContext exchanges a refresh token for a new app configuration token with a custom context
+// RotateTokensContext exchanges a refresh token for a new app configuration token with a custom context.
+// Slack API docs: https://api.slack.com/methods/tooling.tokens.rotate
 func (api *Client) RotateTokensContext(ctx context.Context, configToken string, refreshToken string) (*TokenResponse, error) {
 	if configToken == "" {
 		configToken = api.configToken

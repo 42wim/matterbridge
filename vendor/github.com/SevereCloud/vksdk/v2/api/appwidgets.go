@@ -12,7 +12,7 @@ type AppWidgetsGetAppImageUploadServerResponse struct {
 // AppWidgetsGetAppImageUploadServer returns a URL for uploading a
 // photo to the app collection for community app widgets.
 //
-// https://vk.com/dev/appWidgets.getAppImageUploadServer
+// https://dev.vk.com/method/appWidgets.getAppImageUploadServer
 func (vk *VK) AppWidgetsGetAppImageUploadServer(params Params) (
 	response AppWidgetsGetAppImageUploadServerResponse,
 	err error,
@@ -29,7 +29,7 @@ type AppWidgetsGetAppImagesResponse struct {
 
 // AppWidgetsGetAppImages returns an app collection of images for community app widgets.
 //
-// https://vk.com/dev/appWidgets.getAppImages
+// https://dev.vk.com/method/appWidgets.getAppImages
 func (vk *VK) AppWidgetsGetAppImages(params Params) (response AppWidgetsGetAppImagesResponse, err error) {
 	err = vk.RequestUnmarshal("appWidgets.getAppImages", &response, params)
 	return
@@ -43,7 +43,7 @@ type AppWidgetsGetGroupImageUploadServerResponse struct {
 // AppWidgetsGetGroupImageUploadServer returns a URL for uploading
 // a photo to the community collection for community app widgets.
 //
-// https://vk.com/dev/appWidgets.getGroupImageUploadServer
+// https://dev.vk.com/method/appWidgets.getGroupImageUploadServer
 func (vk *VK) AppWidgetsGetGroupImageUploadServer(params Params) (
 	response AppWidgetsGetGroupImageUploadServerResponse,
 	err error,
@@ -60,7 +60,7 @@ type AppWidgetsGetGroupImagesResponse struct {
 
 // AppWidgetsGetGroupImages returns a community collection of images for community app widgets.
 //
-// https://vk.com/dev/appWidgets.getGroupImages
+// https://dev.vk.com/method/appWidgets.getGroupImages
 func (vk *VK) AppWidgetsGetGroupImages(params Params) (response AppWidgetsGetGroupImagesResponse, err error) {
 	err = vk.RequestUnmarshal("appWidgets.getGroupImages", &response, params)
 	return
@@ -68,7 +68,7 @@ func (vk *VK) AppWidgetsGetGroupImages(params Params) (response AppWidgetsGetGro
 
 // AppWidgetsGetImagesByID returns an image for community app widgets by its ID.
 //
-// https://vk.com/dev/appWidgets.getImagesById
+// https://dev.vk.com/method/appWidgets.getImagesById
 func (vk *VK) AppWidgetsGetImagesByID(params Params) (response object.AppWidgetsImage, err error) {
 	err = vk.RequestUnmarshal("appWidgets.getImagesById", &response, params)
 	return
@@ -76,7 +76,7 @@ func (vk *VK) AppWidgetsGetImagesByID(params Params) (response object.AppWidgets
 
 // AppWidgetsSaveAppImage allows to save image into app collection for community app widgets.
 //
-// https://vk.com/dev/appWidgets.saveAppImage
+// https://dev.vk.com/method/appWidgets.saveAppImage
 func (vk *VK) AppWidgetsSaveAppImage(params Params) (response object.AppWidgetsImage, err error) {
 	err = vk.RequestUnmarshal("appWidgets.saveAppImage", &response, params)
 	return
@@ -84,7 +84,7 @@ func (vk *VK) AppWidgetsSaveAppImage(params Params) (response object.AppWidgetsI
 
 // AppWidgetsSaveGroupImage allows to save image into community collection for community app widgets.
 //
-// https://vk.com/dev/appWidgets.saveGroupImage
+// https://dev.vk.com/method/appWidgets.saveGroupImage
 func (vk *VK) AppWidgetsSaveGroupImage(params Params) (response object.AppWidgetsImage, err error) {
 	err = vk.RequestUnmarshal("appWidgets.saveGroupImage", &response, params)
 	return
@@ -92,7 +92,7 @@ func (vk *VK) AppWidgetsSaveGroupImage(params Params) (response object.AppWidget
 
 // AppWidgetsUpdate allows to update community app widget.
 //
-// https://vk.com/dev/appWidgets.update
+// https://dev.vk.com/method/appWidgets.update
 func (vk *VK) AppWidgetsUpdate(params Params) (response int, err error) {
 	err = vk.RequestUnmarshal("appWidgets.update", &response, params)
 

@@ -75,7 +75,7 @@ type PagesWikipageFull struct {
 
 // PagesWikipageHistory struct.
 //
-// BUG(VK): https://vk.com/dev/pages.getHistory edited and date.
+// BUG(VK): https://dev.vk.com/method/pages.getHistory edited and date.
 type PagesWikipageHistory struct {
 	Date       int    `json:"date"`        // Date when the page has been edited in Unixtime
 	EditorID   int    `json:"editor_id"`   // Last editor ID

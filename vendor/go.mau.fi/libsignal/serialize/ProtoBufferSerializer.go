@@ -112,7 +112,7 @@ func (j *ProtoBufPreKeySignalMessageSerializer) Serialize(signalMessage *protoco
 		Message:        signalMessage.Message,
 	}
 
-	if !signalMessage.PreKeyID.IsEmpty {
+	if signalMessage.PreKeyID != nil && !signalMessage.PreKeyID.IsEmpty {
 		preKeyMessage.PreKeyId = &signalMessage.PreKeyID.Value
 	}
 

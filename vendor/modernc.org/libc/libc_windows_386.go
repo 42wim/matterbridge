@@ -8,11 +8,13 @@ import (
 	"os"
 	"strings"
 	"syscall"
+	gotime "time"
 	"unsafe"
 
 	"modernc.org/libc/errno"
 	"modernc.org/libc/sys/stat"
 	"modernc.org/libc/sys/types"
+	"modernc.org/libc/time"
 )
 
 // int sigaction(int signum, const struct sigaction *act, struct sigaction *oldact);
@@ -226,21 +228,26 @@ func Xlseek64(t *TLS, fd int32, offset types.Off_t, whence int32) types.Off_t {
 	if __ccgo_strace {
 		trc("t=%v fd=%v offset=%v whence=%v, (%v:)", t, fd, offset, whence, origin(2))
 	}
-	panic(todo(""))
-	// 	bp := t.Alloc(int(unsafe.Sizeof(types.X__loff_t(0))))
-	// 	defer t.Free(int(unsafe.Sizeof(types.X__loff_t(0))))
-	// 	if _, _, err := unix.Syscall6(unix.SYS__LLSEEK, uintptr(fd), uintptr(offset>>32), uintptr(offset), bp, uintptr(whence), 0); err != 0 {
-	// 		if dmesgs {
-	// 			dmesg("%v: fd %v, off %#x, whence %v: %v", origin(1), fd, offset, whenceStr(whence), err)
-	// 		}
-	// 		t.setErrno(err)
-	// 		return -1
-	// 	}
-	//
-	// 	if dmesgs {
-	// 		dmesg("%v: fd %v, off %#x, whence %v: %#x", origin(1), fd, offset, whenceStr(whence), *(*types.Off_t)(unsafe.Pointer(bp)))
-	// 	}
-	// 	return *(*types.Off_t)(unsafe.Pointer(bp))
+
+	f, ok := fdToFile(fd)
+	if !ok {
+		t.setErrno(errno.EBADF)
+		return -1
+	}
+
+	n, err := syscall.Seek(f.Handle, offset, int(whence))
+	if err != nil {
+		if dmesgs {
+			dmesg("%v: fd %v, off %#x, whence %v: %v", origin(1), f._fd, offset, whenceStr(whence), n)
+		}
+		t.setErrno(err)
+		return -1
+	}
+
+	if dmesgs {
+		dmesg("%v: fd %v, off %#x, whence %v: ok", origin(1), f._fd, offset, whenceStr(whence))
+	}
+	return n
 }
 
 // int utime(const char *filename, const struct utimbuf *times);
@@ -590,19 +597,29 @@ func Xaccept(t *TLS, sockfd uint32, addr uintptr, addrlen uintptr) uint32 {
 }
 
 // struct tm *_localtime32( const __time32_t *sourceTime );
-func X_localtime32(t *TLS, sourceTime uintptr) uintptr {
-	if __ccgo_strace {
-		trc("t=%v sourceTime=%v, (%v:)", t, sourceTime, origin(2))
-	}
-	panic(todo(""))
+func X_localtime32(_ *TLS, sourceTime uintptr) uintptr {
+	loc := getLocalLocation()
+	ut := *(*time.Time_t)(unsafe.Pointer(sourceTime))
+	t := gotime.Unix(int64(ut), 0).In(loc)
+	localtime.Ftm_sec = int32(t.Second())
+	localtime.Ftm_min = int32(t.Minute())
+	localtime.Ftm_hour = int32(t.Hour())
+	localtime.Ftm_mday = int32(t.Day())
+	localtime.Ftm_mon = int32(t.Month() - 1)
+	localtime.Ftm_year = int32(t.Year() - 1900)
+	localtime.Ftm_wday = int32(t.Weekday())
+	localtime.Ftm_yday = int32(t.YearDay())
+	localtime.Ftm_isdst = Bool32(isTimeDST(t))
+	return uintptr(unsafe.Pointer(&localtime))
 }
 
 // struct tm *_gmtime32( const __time32_t *sourceTime );
 func X_gmtime32(t *TLS, sourceTime uintptr) uintptr {
-	if __ccgo_strace {
-		trc("t=%v sourceTime=%v, (%v:)", t, sourceTime, origin(2))
+	r0, _, err := syscall.SyscallN(procGmtime32.Addr(), uintptr(sourceTime))
+	if err != 0 {
+		t.setErrno(err)
 	}
-	panic(todo(""))
+	return uintptr(r0)
 }
 
 // LONG SetWindowLongW(
