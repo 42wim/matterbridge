@@ -381,7 +381,9 @@ github.com/slack-go/slack
 github.com/slack-go/slack/internal/backoff
 github.com/slack-go/slack/internal/errorsx
 github.com/slack-go/slack/internal/timex
+github.com/slack-go/slack/slackevents
 github.com/slack-go/slack/slackutilsx
+github.com/slack-go/slack/socketmode
 # github.com/sourcegraph/conc v0.3.0
 ## explicit; go 1.19
 github.com/sourcegraph/conc
