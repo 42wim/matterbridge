@@ -145,6 +145,7 @@ type Protocol struct {
 	RejoinDelay            int        // IRC
 	ReplaceMessages        [][]string // all protocols
 	ReplaceNicks           [][]string // all protocols
+	ReplyBroadcast         bool       // slack
 	RemoteNickFormat       string     // all protocols
 	RunCommands            []string   // IRC
 	Server                 string     // IRC,mattermost,XMPP,discord,matrix

@@ -1297,6 +1297,11 @@ ReplaceMessages=[ ["cat","dog"] ]
 #optional (default empty)
 ReplaceNicks=[ ["user--","user"] ]
 
+# ReplyBroadcast indicates whether reply should be made visible to everyone in the channel or conversation.
+ู# Function [] Also sent to #channel 
+#optional (default false)
+ReplyBroadcast=false
+
 #Extractnicks is used to for example rewrite messages from other relaybots
 #See https://github.com/42wim/matterbridge/issues/713 and https://github.com/42wim/matterbridge/issues/466
 #some examples:
