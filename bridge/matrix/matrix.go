@@ -540,9 +540,18 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 
 		// Do we have attachments
 		if b.containsAttachment(ev.Content) {
-			err := b.handleDownloadFile(&rmsg, ev.Content)
-			if err != nil {
-				b.Log.Errorf("download failed: %#v", err)
+			if b.GetBool("SendUrlNotFile") {
+				// replace the text of the message (which is set to the filename above) with the url
+				var err error
+				rmsg.Text, err = b.getMessageFileUrl(ev.Content)
+				if err != nil {
+					b.Log.Errorf("get url for uploaded file failed: %#v", err)
+				}
+			} else {
+				err := b.handleDownloadFile(&rmsg, ev.Content)
+				if err != nil {
+					b.Log.Errorf("download failed: %#v", err)
+				}
 			}
 		}
 
@@ -556,6 +565,21 @@ func (b *Bmatrix) handleEvent(ev *matrix.Event) {
 	}
 }
 
+// getMessageFileUrl changes the Matrix mxc:// uploads and changes them to a regular url
+func (b *Bmatrix) getMessageFileUrl(content map[string]interface{}) (string, error) {
+	var (
+		ok  bool
+		url string
+	)
+
+	if url, ok = content["url"].(string); !ok {
+		return "", fmt.Errorf("url isn't a %T", url)
+	}
+	url = strings.Replace(url, "mxc://", b.GetString("Server")+"/_matrix/media/v1/download/", -1)
+
+	return url, nil
+}
+
 // handleDownloadFile handles file download
 func (b *Bmatrix) handleDownloadFile(rmsg *config.Message, content map[string]interface{}) error {
 	var (
@@ -566,10 +590,11 @@ func (b *Bmatrix) handleDownloadFile(rmsg *config.Message, content map[string]in
 	)
 
 	rmsg.Extra = make(map[string][]interface{})
-	if url, ok = content["url"].(string); !ok {
-		return fmt.Errorf("url isn't a %T", url)
+
+	url, err := b.getMessageFileUrl(content)
+	if err != nil {
+		return err
 	}
-	url = strings.Replace(url, "mxc://", b.GetString("Server")+"/_matrix/media/v1/download/", -1)
 
 	if info, ok = content["info"].(map[string]interface{}); !ok {
 		return fmt.Errorf("info isn't a %T", info)
@@ -601,7 +626,7 @@ func (b *Bmatrix) handleDownloadFile(rmsg *config.Message, content map[string]in
 	}
 
 	// check if the size is ok
-	err := helper.HandleDownloadSize(b.Log, rmsg, name, int64(size), b.General)
+	err = helper.HandleDownloadSize(b.Log, rmsg, name, int64(size), b.General)
 	if err != nil {
 		return err
 	}

@@ -1336,6 +1336,11 @@ StripNick=false
 #OPTIONAL (default false)
 ShowTopicChange=false
 
+#Enable to send a URL rather than a file
+#The default behavior is to download and send/upload the file.
+#OPTIONAL (default false)
+#SendUrlNotFile=true
+
 ###################################################################
 #steam section
 ###################################################################
