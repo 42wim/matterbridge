@@ -409,6 +409,10 @@ func (b *Btelegram) handleDownload(rmsg *config.Message, message *tgbotapi.Messa
 		text, name, url = b.getDownloadInfo(photos[len(photos)-1].FileID, "", true)
 	}
 
+	if message.Caption != "" {
+		text = message.Caption + "\n" + text
+	}
+
 	// if name is empty we didn't match a thing to download
 	if name == "" {
 		return nil
