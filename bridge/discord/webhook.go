@@ -125,6 +125,21 @@ func (b *Bdiscord) webhookSend(msg *config.Message, channelID string) (string, e
 }
 
 func (b *Bdiscord) handleEventWebhook(msg *config.Message, channelID string) (string, error) {
+	if msg.Event == config.EventMsgDelete {
+		if msg.ID == "" {
+			return "", nil
+		}
+
+		err := b.transmitter.Delete(channelID, msg.ID)
+		if err != nil {
+			b.Log.Errorf("Could not delete message: %s", err)
+			return "", err
+		}
+
+		b.Log.Infof("Message deleted successfully")
+		return "", nil
+	}
+
 	// skip events
 	if msg.Event != "" && msg.Event != config.EventUserAction && msg.Event != config.EventJoinLeave && msg.Event != config.EventTopicChange {
 		return "", nil
