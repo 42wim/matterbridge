@@ -188,7 +188,7 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord, soulseek
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -325,7 +325,7 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord, soulseek
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -492,12 +492,12 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord, soulseek
 #OPTIONAL (default false)
 ShowJoinPart=false
 
 #Do not send joins/parts to other bridges
-#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord, soulseek
 #OPTIONAL (default false)
 NoSendJoinPart=false
 
@@ -610,7 +610,7 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord, soulseek
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -749,12 +749,12 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord, soulseek
 #OPTIONAL (default false)
 ShowJoinPart=false
 
 #Do not send joins/parts to other bridges
-#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord, soulseek
 #OPTIONAL (default false)
 NoSendJoinPart=false
 
@@ -909,8 +909,9 @@ Label=""
 # See the [general] config section for default options
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
-# ShowJoinPart emits messages that show joins/parts from other bridges
-# Supported from the following bridges: irc, mattermost, slack, discord
+#Enable to show users joins/parts from other bridges
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord, soulseek
+#OPTIONAL (default false)
 ShowJoinPart=false
 
 # StripNick strips non-alphanumeric characters from nicknames.
@@ -1068,7 +1069,7 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord, soulseek
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -1205,7 +1206,7 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord, soulseek
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -1317,7 +1318,7 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord, soulseek
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -1414,7 +1415,7 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord, soulseek
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -1503,7 +1504,33 @@ SkipTLSVerify=false
 MessageClipped="<clipped message>"
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord, soulseek
+#OPTIONAL (default false)
+ShowJoinPart=false
+
+#Do not send joins/parts to other bridges
+#OPTIONAL (default false)
+NoSendJoinPart=false
+
+###################################################################
+# Soulseek
+###################################################################
+
+[soulseek.bridge]
+
+# Host and port of the Soulseek server
+# Probably will always be server.slsknet.org:2242
+Server = "server.slsknet.org:2242"
+
+# Nickname to log in as
+Nick = "matterbridge"
+
+# Password for Soulseek account
+# If no account with Nick exists, it will create a new account with this password
+Password = "userpasswordhere"
+
+#Enable to show users joins/parts from other bridges
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord, soulseek
 #OPTIONAL (default false)
 ShowJoinPart=false
 
@@ -1623,7 +1650,7 @@ Label=""
 RemoteNickFormat="[{PROTOCOL}] <{NICK}> "
 
 #Enable to show users joins/parts from other bridges
-#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord
+#Currently works for messages from the following bridges: irc, mattermost, mumble, slack, discord, soulseek
 #OPTIONAL (default false)
 ShowJoinPart=false
 
