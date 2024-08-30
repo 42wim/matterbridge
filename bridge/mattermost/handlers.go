@@ -144,12 +144,30 @@ func (b *Bmattermost) handleMatterClient(messages chan *config.Message) {
 			}
 		}
 
-		// Use nickname instead of username if defined
-		if !b.GetBool("useusername") {
-			if nick := b.mc.GetNickName(rmsg.UserID); nick != "" {
-				rmsg.Username = nick
-			}
-		}
+                // Choose what to use as user nick Nickname/FullName/FirstName/LastName (or Username if neither is set)
+                if b.GetBool("UseNickName") {
+                        if b.mc.GetNickName(rmsg.UserID) != "" {
+                                rmsg.Username = b.mc.GetNickName(rmsg.UserID)
+                        }
+                } else if b.GetBool("UseFirstName") {
+                        if b.mc.GetFirstName(rmsg.UserID) != "" {
+                                rmsg.Username = b.mc.GetFirstName(rmsg.UserID)
+                        }
+                } else if b.GetBool("UseLastName") {
+                        if b.mc.GetLastName(rmsg.UserID) != "" {
+                                rmsg.Username = b.mc.GetLastName(rmsg.UserID)
+                        }
+                } else if b.GetBool("UseFullName") {
+                        if b.mc.GetFirstName(rmsg.UserID) != "" && b.mc.GetLastName(rmsg.UserID) != "" {
+                                rmsg.Username = b.mc.GetFirstName(rmsg.UserID) + " " + b.mc.GetLastName(rmsg.UserID)
+                        } else if b.mc.GetFirstName(rmsg.UserID) != "" {
+                                rmsg.Username = b.mc.GetFirstName(rmsg.UserID)
+                        } else if b.mc.GetLastName(rmsg.UserID) != "" {
+                                rmsg.Username = b.mc.GetLastName(rmsg.UserID)
+                        } else {
+                                rmsg.Username = ""
+                        }
+                }
 
 		messages <- rmsg
 	}
