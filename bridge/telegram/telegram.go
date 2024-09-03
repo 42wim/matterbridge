@@ -159,6 +159,11 @@ func (b *Btelegram) Send(msg config.Message) (string, error) {
 		}
 		// check if we have files to upload (from slack, telegram or mattermost)
 		if len(msg.Extra["file"]) > 0 {
+			if b.GetBool("AnnounceFileSender") {
+				if _, msgErr := b.sendMessage(chatid, topicid, msg.Username, "", parentID); msgErr != nil {
+					b.Log.Errorf("sendMessage failed: %s", msgErr)
+				}
+			}
 			return b.handleUploadFile(&msg, chatid, topicid, parentID)
 		}
 	}
