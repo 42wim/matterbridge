@@ -383,7 +383,7 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 			return "", nil
 		}
 
-		_, err := b.wc.RevokeMessage(groupJID, msg.ID)
+		_, err := b.wc.SendMessage(context.Background(), groupJID, b.wc.BuildRevoke(groupJID, extendedMsgID.Sender, extendedMsgID.MessageID))
 
 		return "", err
 	}
