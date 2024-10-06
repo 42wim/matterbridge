@@ -415,7 +415,7 @@ Matterbridge wouldn't exist without these libraries:
 - mumble - <https://github.com/layeh/gumble>
 - nctalk - <https://github.com/gary-kim/go-nc-talk>
 - rocketchat - <https://github.com/RocketChat/Rocket.Chat.Go.SDK>
-- slack - <https://github.com/nlopes/slack>
+- slack - <https://github.com/slack-go/slack>
 - sshchat - <https://github.com/shazow/ssh-chat>
 - steam - <https://github.com/Philipp15b/go-steam>
 - telegram - <https://github.com/go-telegram-bot-api/telegram-bot-api>
