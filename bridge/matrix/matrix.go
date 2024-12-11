@@ -127,7 +127,7 @@ func (b *Bmatrix) Disconnect() error {
 
 func (b *Bmatrix) JoinChannel(channel config.ChannelInfo) error {
 	return b.retry(func() error {
-		resp, err := b.mc.JoinRoom(channel.Name, "", nil)
+		resp, err := b.mc.JoinRoom(channel.Name, "", struct{}{})
 		if err != nil {
 			return err
 		}
