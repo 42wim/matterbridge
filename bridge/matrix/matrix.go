@@ -432,8 +432,13 @@ func (b *Bmatrix) handleEdit(ev *matrix.Event, rmsg config.Message) bool {
 		return false
 	}
 
+	if b.GetBool("EditDisable") {
+		return true
+	}
+
 	rmsg.ID = relation.EventID
 	rmsg.Text = newContent.Body
+	rmsg.Text += b.GetString("EditSuffix")
 	b.Remote <- rmsg
 
 	return true

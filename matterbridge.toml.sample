@@ -1268,6 +1268,14 @@ UseUserName=false
 # - https://github.com/42wim/matterbridge/issues/1780
 KeepQuotedReply=false
 
+#Disable sending of edits to other bridges
+#OPTIONAL (default false)
+EditDisable=false
+
+#Message to be appended to every edited message
+#OPTIONAL (default empty)
+EditSuffix=" (edited)"
+
 #Nicks you want to ignore.
 #Regular expressions supported
 #Messages from those users will not be sent to other bridges.
