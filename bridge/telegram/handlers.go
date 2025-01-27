@@ -346,7 +346,7 @@ func (b *Btelegram) handleDownloadAvatar(userid int64, channel string) {
 			b.Log.Errorf("download %s failed %#v", url, err)
 			return
 		}
-		helper.HandleDownloadData(b.Log, &rmsg, name, rmsg.Text, "", data, b.General)
+		helper.HandleDownloadData(b.Log, &rmsg, name, rmsg.Text, url, data, b.General)
 		b.Remote <- rmsg
 	}
 }
@@ -440,7 +440,7 @@ func (b *Btelegram) handleDownload(rmsg *config.Message, message *tgbotapi.Messa
 		name = strings.Replace(name, ".oga", ".ogg", 1)
 	}
 
-	helper.HandleDownloadData(b.Log, rmsg, name, message.Caption, "", data, b.General)
+	helper.HandleDownloadData(b.Log, rmsg, name, message.Caption, url, data, b.General)
 	return nil
 }
 
@@ -513,9 +513,22 @@ func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64, threadid
 	var media []interface{}
 	for _, f := range msg.Extra["file"] {
 		fi := f.(config.FileInfo)
+
+		// If the file is only a URL, download it first
+		data := fi.Data
+
+		if data == nil {
+			data2, err := helper.DownloadFile(fi.URL)
+			if err != nil {
+				b.Log.Errorf("Failed to download file %s: %s", fi.URL, err)
+				continue
+			}
+			data = data2
+		}
+
 		file := tgbotapi.FileBytes{
 			Name:  fi.Name,
-			Bytes: *fi.Data,
+			Bytes: *data,
 		}
 
 		if b.GetString("MessageFormat") == HTMLFormat {
@@ -525,21 +538,15 @@ func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64, threadid
 		switch filepath.Ext(fi.Name) {
 		case ".jpg", ".jpe", ".png":
 			pc := tgbotapi.NewInputMediaPhoto(file)
-			if fi.Comment != "" {
-				pc.Caption, pc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
-			}
+			pc.Caption, pc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
 			media = append(media, pc)
 		case ".mp4", ".m4v":
 			vc := tgbotapi.NewInputMediaVideo(file)
-			if fi.Comment != "" {
-				vc.Caption, vc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
-			}
+			vc.Caption, vc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
 			media = append(media, vc)
 		case ".mp3", ".oga":
 			ac := tgbotapi.NewInputMediaAudio(file)
-			if fi.Comment != "" {
-				ac.Caption, ac.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
-			}
+			ac.Caption, ac.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
 			media = append(media, ac)
 		case ".ogg":
 			voc := tgbotapi.NewVoice(chatid, file)
@@ -552,9 +559,7 @@ func (b *Btelegram) handleUploadFile(msg *config.Message, chatid int64, threadid
 			return strconv.Itoa(res.MessageID), nil
 		default:
 			dc := tgbotapi.NewInputMediaDocument(file)
-			if fi.Comment != "" {
-				dc.Caption, dc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
-			}
+			dc.Caption, dc.ParseMode = TGGetParseMode(b, msg.Username, fi.Comment)
 			media = append(media, dc)
 		}
 	}

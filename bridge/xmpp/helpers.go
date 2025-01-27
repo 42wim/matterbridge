@@ -7,6 +7,7 @@ import (
 )
 
 var pathRegex = regexp.MustCompile("[^a-zA-Z0-9]+")
+var urlRegex = regexp.MustCompile("<url>(.*?)</url>")
 
 // GetAvatar constructs a URL for a given user-avatar if it is available in the cache.
 func getAvatar(av map[string]string, userid string, general *config.Protocol) string {
@@ -27,4 +28,12 @@ func (b *Bxmpp) cacheAvatar(msg *config.Message) string {
 		b.avatarMap[msg.UserID] = fi.SHA
 	}
 	return ""
+}
+
+func (b *Bxmpp) findOOBURL(innerXML string) string {
+	match := urlRegex.FindStringSubmatch(innerXML)
+	if match == nil {
+		return ""
+	}
+	return match[1]
 }

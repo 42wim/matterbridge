@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"path"
 	"strings"
 	"sync"
 	"time"
@@ -330,6 +331,7 @@ func (b *Bxmpp) handleXMPP() error {
 					UserID:   v.Remote,
 					ID:       msgID,
 					Event:    event,
+					Extra:    make(map[string][]interface{}),
 				}
 
 				// Check if we have an action event.
@@ -337,6 +339,32 @@ func (b *Bxmpp) handleXMPP() error {
 				rmsg.Text, ok = b.replaceAction(rmsg.Text)
 				if ok {
 					rmsg.Event = config.EventUserAction
+				}
+
+				// Check if maybe OOB file upload
+				for _, elem := range v.OtherElem {
+					if elem.XMLName.Space == "jabber:x:oob" {
+						// Extract the plaintext URL
+						url := b.findOOBURL(elem.InnerXML)
+						// Now the filename in the URL
+						r,_ := http.NewRequest("GET", url, nil)
+						fileName := path.Base(r.URL.Path)
+
+						if url != "" {
+							if rmsg.Extra["file"] == nil {
+								rmsg.Extra["file"] = make([]interface{}, 0)
+							}
+							rmsg.Extra["file"] = append(rmsg.Extra["file"], config.FileInfo{
+								Name:     fileName,
+								Data:     nil,
+								URL:      url,
+								Comment:  "",
+								Avatar:   false,
+								NativeID: url,
+							})
+
+						}
+					}
 				}
 
 				b.Log.Debugf("<= Sending message from %s on %s to gateway", rmsg.Username, b.Account)
@@ -361,38 +389,46 @@ func (b *Bxmpp) replaceAction(text string) (string, bool) {
 }
 
 // handleUploadFile handles native upload of files
+//
+// IMPORTANT NOTES:
+//
+// Some clients only display a preview when the body is exactly the URL, not only contains it.
+// https://docs.modernxmpp.org/client/protocol/#communicating-the-url
+//
+// This is the case with Gajim/Conversations for example.
+//
+// This means we cannot have an actual description of the uploaded file, nor can we add information about
+// who posted it... at least in the same message.
 func (b *Bxmpp) handleUploadFile(msg *config.Message) error {
-	var urlDesc string
-
 	for _, file := range msg.Extra["file"] {
 		fileInfo := file.(config.FileInfo)
-		if fileInfo.Comment != "" {
-			msg.Text += fileInfo.Comment + ": "
-		}
-		if fileInfo.URL != "" {
-			msg.Text = fileInfo.URL
-			if fileInfo.Comment != "" {
-				msg.Text = fileInfo.Comment + ": " + fileInfo.URL
-				urlDesc = fileInfo.Comment
-			}
-		}
-		if _, err := b.xc.Send(xmpp.Chat{
-			Type:   "groupchat",
-			Remote: msg.Channel + "@" + b.GetString("Muc"),
-			Text:   msg.Username + msg.Text,
-		}); err != nil {
-			return err
-		}
 
 		if fileInfo.URL != "" {
-			if _, err := b.xc.SendOOB(xmpp.Chat{
-				Type:    "groupchat",
-				Remote:  msg.Channel + "@" + b.GetString("Muc"),
-				Ooburl:  fileInfo.URL,
-				Oobdesc: urlDesc,
+			// We have a URL, no need to reupload the file
+
+			// Send separate message with the username and optional file comment
+			if _, err := b.xc.Send(xmpp.Chat{
+				Type: "groupchat",
+				Remote: msg.Channel + "@" + b.GetString("Muc"),
+				Text: msg.Username + fileInfo.Comment,
+			}); err != nil {
+				b.Log.WithError(err).Warn("Failed to announce file sharer, not sharing file.")
+			}
+
+			if _, err := b.xc.Send(xmpp.Chat{
+				Type:   "groupchat",
+				Remote: msg.Channel + "@" + b.GetString("Muc"),
+				// See NOTES above
+				Text: fileInfo.URL,
+				Ooburl: fileInfo.URL,
+				Oobdesc: msg.Username,
 			}); err != nil {
 				b.Log.WithError(err).Warn("Failed to send share URL.")
+				continue
 			}
+		} else {
+			// We have Bytes, need to reupload the file using HTTP upload from our XMPP server
+			b.Log.Warn("HTTP file upload on XMPP is not supported yet")
 		}
 	}
 	return nil
