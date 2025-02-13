@@ -206,21 +206,28 @@ func (b *Bdiscord) Connect() error {
 	// Obtaining guild members and initializing nickname mapping.
 	b.membersMutex.Lock()
 	defer b.membersMutex.Unlock()
-	members, err := b.c.GuildMembers(b.guildID, "", 1000)
-	if err != nil {
-		b.Log.Error("Error obtaining server members: ", err)
-		return err
-	}
-	for _, member := range members {
-		if member == nil {
-			b.Log.Warnf("Skipping missing information for a user.")
-			continue
+	after := ""
+	for {
+		members, err := b.c.GuildMembers(b.guildID, after, 1000)
+		if err != nil {
+			b.Log.Error("Error obtaining server members: ", err)
+			return err
 		}
-		b.userMemberMap[member.User.ID] = member
-		b.nickMemberMap[member.User.Username] = member
-		if member.Nick != "" {
-			b.nickMemberMap[member.Nick] = member
+		if len(members) == 0 {
+			break
 		}
+		for _, member := range members {
+			if member == nil {
+				b.Log.Warnf("Skipping missing information for a user.")
+				continue
+			}
+			b.userMemberMap[member.User.ID] = member
+			b.nickMemberMap[member.User.Username] = member
+			if member.Nick != "" {
+				b.nickMemberMap[member.Nick] = member
+			}
+		}
+		after = members[len(members) - 1].User.ID
 	}
 
 	b.c.AddHandler(b.messageCreate)
