@@ -22,6 +22,7 @@ type Gateway struct {
 	config.Config
 
 	Router         *Router
+	mediaServer    mediaServer
 	MyConfig       *config.Gateway
 	Bridges        map[string]*bridge.Bridge
 	Channels       map[string]*config.ChannelInfo
@@ -46,15 +47,25 @@ const apiProtocol = "api"
 func New(rootLogger *logrus.Logger, cfg *config.Gateway, r *Router) *Gateway {
 	logger := rootLogger.WithFields(logrus.Fields{"prefix": "gateway"})
 
+	mediaServer, err := createMediaServer(r.Config.BridgeValues(), rootLogger.WithField("prefix", "mediaserver"))
+	if err != nil {
+		logger.Errorf("Failed to configure media server for gateway: %#v", err)
+	}
+
+	if mediaServer == nil {
+		logger.Warn("Media server is disabled")
+	}
+
 	cache, _ := lru.New(5000)
 	gw := &Gateway{
-		Channels: make(map[string]*config.ChannelInfo),
-		Message:  r.Message,
-		Router:   r,
-		Bridges:  make(map[string]*bridge.Bridge),
-		Config:   r.Config,
-		Messages: cache,
-		logger:   logger,
+		Channels:    make(map[string]*config.ChannelInfo),
+		Message:     r.Message,
+		Router:      r,
+		Bridges:     make(map[string]*bridge.Bridge),
+		Config:      r.Config,
+		Messages:    cache,
+		logger:      logger,
+		mediaServer: mediaServer,
 	}
 	if err := gw.AddConfig(cfg); err != nil {
 		logger.Errorf("Failed to add configuration to gateway: %#v", err)
