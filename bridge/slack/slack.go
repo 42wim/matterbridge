@@ -155,18 +155,6 @@ func (b *Bslack) JoinChannel(channel config.ChannelInfo) error {
 		return nil
 	}
 
-	// try to join a channel when in legacy
-	if b.legacy {
-		_, _, _, err := b.sc.JoinConversation(channel.Name)
-		if err != nil {
-			switch err.Error() {
-			case "name_taken", "restricted_action":
-			case "default":
-				return err
-			}
-		}
-	}
-
 	b.channels.populateChannels(false)
 
 	channelInfo, err := b.channels.getChannel(channel.Name)
@@ -179,9 +167,16 @@ func (b *Bslack) JoinChannel(channel config.ChannelInfo) error {
 		channel.Name = channelInfo.Name
 	}
 
-	// we can't join a channel unless we are using legacy tokens #651
-	if !channelInfo.IsMember && !b.legacy {
-		return fmt.Errorf("slack integration that matterbridge is using is not member of channel '%s', please add it manually", channelInfo.Name)
+	if !channelInfo.IsMember {
+		// try to join a channel
+		_, _, _, err := b.sc.JoinConversation(channel.Name)
+		if err != nil {
+			switch err.Error() {
+			case "name_taken", "restricted_action":
+			case "default":
+				return fmt.Errorf("slack integration that matterbridge is using is not member of channel '%s', please add it manually: %#v", channelInfo.Name, err)
+			}
+		}
 	}
 	return nil
 }
