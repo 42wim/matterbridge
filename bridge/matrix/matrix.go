@@ -569,7 +569,8 @@ func (b *Bmatrix) handleDownloadFile(rmsg *config.Message, content map[string]in
 	if url, ok = content["url"].(string); !ok {
 		return fmt.Errorf("url isn't a %T", url)
 	}
-	url = strings.Replace(url, "mxc://", b.GetString("Server")+"/_matrix/media/v1/download/", -1)
+	// https://github.com/matrix-org/matrix-spec-proposals/blob/main/proposals/3916-authentication-for-media.md
+	url = strings.Replace(url, "mxc://", b.GetString("Server")+"/_matrix/client/v1/media/download/", -1)
 
 	if info, ok = content["info"].(map[string]interface{}); !ok {
 		return fmt.Errorf("info isn't a %T", info)
@@ -606,7 +607,7 @@ func (b *Bmatrix) handleDownloadFile(rmsg *config.Message, content map[string]in
 		return err
 	}
 	// actually download the file
-	data, err := helper.DownloadFile(url)
+	data, err := helper.DownloadFileAuth(url, "Bearer "+b.mc.AccessToken)
 	if err != nil {
 		return fmt.Errorf("download %s failed %#v", url, err)
 	}
