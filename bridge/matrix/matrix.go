@@ -9,6 +9,11 @@ import (
 	"sync"
 	"time"
 
+	"image"
+	_ "image/jpeg"
+	_ "image/png"
+	_ "image/gif"
+
 	"github.com/42wim/matterbridge/bridge"
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
@@ -669,9 +674,23 @@ func (b *Bmatrix) handleUploadFile(msg *config.Message, channel string, fi *conf
 		}
 	case strings.Contains(mtype, "image"):
 		b.Log.Debugf("sendImage %s", res.ContentURI)
-		err = b.retry(func() error {
-			_, err = b.mc.SendImage(channel, fi.Name, res.ContentURI)
+		cfg, format, _ := image.DecodeConfig(bytes.NewReader(*fi.Data)) // optional prüfen
 
+		b.Log.Debugf("Image format detected: %s (%dx%d)", format, cfg.Width, cfg.Height)
+
+		img := matrix.ImageMessage{
+			MsgType: "m.image",
+			Body:    fi.Name,
+			URL:     res.ContentURI,
+			Info: matrix.ImageInfo{
+				Mimetype: mtype,
+				Size:     uint(len(*fi.Data)),
+				Width:    uint(cfg.Width),
+				Height:   uint(cfg.Height),
+			},
+		}
+		err = b.retry(func() error {
+			_, err = b.mc.SendMessageEvent(channel, "m.room.message", img)
 			return err
 		})
 		if err != nil {
