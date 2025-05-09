@@ -43,6 +43,10 @@ func DownloadFileAuth(url string, auth string) (*[]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		peek, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("unexpected HTTP status: %s, body: %.100s", resp.Status, peek)
+	}
 	io.Copy(&buf, resp.Body)
 	data := buf.Bytes()
 	return &data, nil
