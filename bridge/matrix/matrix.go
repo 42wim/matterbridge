@@ -569,7 +569,20 @@ func (b *Bmatrix) handleDownloadFile(rmsg *config.Message, content map[string]in
 	if url, ok = content["url"].(string); !ok {
 		return fmt.Errorf("url isn't a %T", url)
 	}
-	url = strings.Replace(url, "mxc://", b.GetString("Server")+"/_matrix/media/v1/download/", -1)
+
+	mediaURL := strings.Replace(url, "mxc://", b.GetString("Server")+"/_matrix/client/v1/media/download/", 1)
+	logURL := mediaURL
+
+	token := b.GetString("Token")
+	if token == "" && b.mc != nil && b.mc.AccessToken != "" {
+		token = b.mc.AccessToken
+	}
+	if token != "" {
+		logURL = mediaURL + "?access_token=[REDACTED]"
+		mediaURL += "?access_token=" + token
+	}
+	url = mediaURL
+	b.Log.Debugf("Generated Matrix media download URL: %s", logURL)
 
 	if info, ok = content["info"].(map[string]interface{}); !ok {
 		return fmt.Errorf("info isn't a %T", info)
