@@ -399,11 +399,11 @@ func (b *Bxmpp) handleUploadFile(msg *config.Message) error {
 }
 
 func (b *Bxmpp) parseNick(remote string) string {
-	s := strings.Split(remote, "@")
-	if len(s) > 1 {
-		s = strings.Split(s[1], "/")
-		if len(s) == 2 {
-			return s[1] // nick
+	_, s, found := strings.Cut(remote, "@")
+	if found {
+		_, nick, found := strings.Cut(s, "/")
+		if found {
+			return nick
 		}
 	}
 	return ""
