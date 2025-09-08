@@ -1,5 +1,13 @@
 name: Development
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
 jobs:
   lint:
     name: golangci-lint
