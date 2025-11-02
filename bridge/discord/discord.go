@@ -380,26 +380,51 @@ func (b *Bdiscord) handleEventBotUser(msg *config.Message, channelID string) (st
 // handleUploadFile handles native upload of files
 func (b *Bdiscord) handleUploadFile(msg *config.Message, channelID string) (string, error) {
 	for _, f := range msg.Extra["file"] {
+		var err error
 		fi := f.(config.FileInfo)
-		file := discordgo.File{
-			Name:        fi.Name,
-			ContentType: "",
-			Reader:      bytes.NewReader(*fi.Data),
-		}
-		m := discordgo.MessageSend{
-			Content:         msg.Username + fi.Comment,
-			Files:           []*discordgo.File{&file},
-			AllowedMentions: b.getAllowedMentions(),
-		}
-		res, err := b.c.ChannelMessageSendComplex(channelID, &m)
-		if err != nil {
-			return "", fmt.Errorf("file upload failed: %s", err)
+
+		if fi.URL != "" {
+			err = b.handleUploadFileFromURL(msg, channelID, &fi)
+		} else if fi.Data != nil {
+			err = b.handleUploadFileFromData(msg, channelID, &fi)
+		} else {
+			b.Log.Errorf("Attachment %#v for message %#v had neither Data nor URL", fi, msg)
 		}
 
-		// link file_upload_nativeID (file ID from the original bridge) to our upload id
-		// so that we can remove this later when it eg needs to be deleted
-		b.cache.Add(cFileUpload+fi.NativeID, res.ID)
+		if err != nil {
+			b.Log.Errorf("Could not send attachment %#v for message %#v: %s", fi, msg, err)
+			return "", err
+		}
 	}
 
 	return "", nil
+}
+
+func (b *Bdiscord) handleUploadFileFromData(msg *config.Message, channelID string, fi *config.FileInfo) error {
+	file := discordgo.File{
+		Name:        fi.Name,
+		ContentType: "",
+		Reader:      bytes.NewReader(*fi.Data),
+	}
+	m := discordgo.MessageSend{
+		Content:         msg.Username + fi.Comment,
+		Files:           []*discordgo.File{&file},
+		AllowedMentions: b.getAllowedMentions(),
+	}
+	res, err := b.c.ChannelMessageSendComplex(channelID, &m)
+	if err != nil {
+		return fmt.Errorf("file upload failed: %s", err)
+	}
+	// link file_upload_nativeID (file ID from the original bridge) to our upload id
+	// so that we can remove this later when it eg needs to be deleted
+	b.cache.Add(cFileUpload+fi.NativeID, res.ID)
+	return nil
+}
+
+func (b *Bdiscord) handleUploadFileFromURL(msg *config.Message, channelID string, fi *config.FileInfo) error {
+	_, err := b.c.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{
+		Content:         fi.URL,
+		AllowedMentions: b.getAllowedMentions(),
+	})
+	return err
 }

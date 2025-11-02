@@ -362,20 +362,14 @@ func (b *Bxmpp) replaceAction(text string) (string, bool) {
 
 // handleUploadFile handles native upload of files
 func (b *Bxmpp) handleUploadFile(msg *config.Message) error {
-	var urlDesc string
-
 	for _, file := range msg.Extra["file"] {
 		fileInfo := file.(config.FileInfo)
 		if fileInfo.Comment != "" {
-			msg.Text += fileInfo.Comment + ": "
+			msg.Text += fileInfo.Comment
 		}
-		if fileInfo.URL != "" {
-			msg.Text = fileInfo.URL
-			if fileInfo.Comment != "" {
-				msg.Text = fileInfo.Comment + ": " + fileInfo.URL
-				urlDesc = fileInfo.Comment
-			}
-		}
+
+		// this is sent even if Text is empty,
+		// so that you can tell who sent the message
 		if _, err := b.xc.Send(xmpp.Chat{
 			Type:   "groupchat",
 			Remote: msg.Channel + "@" + b.GetString("Muc"),
@@ -385,13 +379,14 @@ func (b *Bxmpp) handleUploadFile(msg *config.Message) error {
 		}
 
 		if fileInfo.URL != "" {
-			if _, err := b.xc.SendOOB(xmpp.Chat{
+			if _, err := b.xc.Send(xmpp.Chat{
 				Type:    "groupchat",
 				Remote:  msg.Channel + "@" + b.GetString("Muc"),
+				Text:    fileInfo.URL,
 				Ooburl:  fileInfo.URL,
-				Oobdesc: urlDesc,
 			}); err != nil {
 				b.Log.WithError(err).Warn("Failed to send share URL.")
+				return err
 			}
 		}
 	}

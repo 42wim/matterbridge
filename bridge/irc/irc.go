@@ -324,7 +324,11 @@ func (b *Birc) getClient() (*girc.Client, error) {
 		// skip gIRC internal rate limiting, since we have our own throttling
 		AllowFlood:    true,
 		Debug:         debug,
-		SupportedCaps: map[string][]string{"overdrivenetworks.com/relaymsg": nil, "draft/relaymsg": nil},
+		SupportedCaps: map[string][]string{
+			"overdrivenetworks.com/relaymsg": nil,
+			"draft/relaymsg": nil,
+			"draft/chathistory": nil, // prevent UnrealIRCd from sending message history unprompted
+		},
 	})
 	return i, nil
 }
