@@ -88,7 +88,7 @@ And more...
 
 ### Natively supported
 
-- [Discord](https://discordapp.com)
+- [Discord](https://discord.com)
 - [Gitter](https://gitter.im)
 - [Harmony](https://harmonyapp.io)
 - [IRC](http://www.mirc.com/servers.html)
