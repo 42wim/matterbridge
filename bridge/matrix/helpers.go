@@ -149,10 +149,12 @@ func (b *Bmatrix) containsAttachment(content map[string]interface{}) bool {
 		return false
 	}
 
-	// Only allow image,video or file msgtypes
-	if !(content["msgtype"].(string) == "m.image" ||
-		content["msgtype"].(string) == "m.video" ||
-		content["msgtype"].(string) == "m.file") {
+	// Only allow image, video, audio or file msgtypes
+	msgtype := content["msgtype"].(string)
+	if !(msgtype == "m.image" ||
+		msgtype == "m.video" ||
+		msgtype == "m.audio" ||
+		msgtype == "m.file") {
 		return false
 	}
 
@@ -174,7 +176,8 @@ func (b *Bmatrix) getAvatarURL(sender string) string {
 		return ""
 	}
 
-	url := strings.ReplaceAll(s.AvatarURL, "mxc://", b.GetString("Server")+"/_matrix/media/r0/thumbnail/")
+	// Use Matrix v1.11 authenticated media endpoint for thumbnails (MSC3916)
+	url := strings.ReplaceAll(s.AvatarURL, "mxc://", b.GetString("Server")+"/_matrix/client/v1/media/thumbnail/")
 	if url != "" {
 		url += "?width=37&height=37&method=crop"
 	}

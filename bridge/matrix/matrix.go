@@ -569,7 +569,9 @@ func (b *Bmatrix) handleDownloadFile(rmsg *config.Message, content map[string]in
 	if url, ok = content["url"].(string); !ok {
 		return fmt.Errorf("url isn't a %T", url)
 	}
-	url = strings.Replace(url, "mxc://", b.GetString("Server")+"/_matrix/media/v1/download/", -1)
+	// Use Matrix v1.11 authenticated media endpoint (MSC3916)
+	// Falls back gracefully on older servers that still support unauthenticated endpoints
+	url = strings.Replace(url, "mxc://", b.GetString("Server")+"/_matrix/client/v1/media/download/", -1)
 
 	if info, ok = content["info"].(map[string]interface{}); !ok {
 		return fmt.Errorf("info isn't a %T", info)
@@ -605,8 +607,8 @@ func (b *Bmatrix) handleDownloadFile(rmsg *config.Message, content map[string]in
 	if err != nil {
 		return err
 	}
-	// actually download the file
-	data, err := helper.DownloadFile(url)
+	// actually download the file with authentication (required for Matrix v1.11+)
+	data, err := helper.DownloadFileAuth(url, "Bearer "+b.mc.AccessToken)
 	if err != nil {
 		return fmt.Errorf("download %s failed %#v", url, err)
 	}
