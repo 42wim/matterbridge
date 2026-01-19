@@ -1,0 +1,86 @@
+# Mautrix-Discord Bridge Configuration
+# Documentation: https://docs.mau.fi/bridges/go/discord/
+
+homeserver:
+  address: http://synapse:8008
+  domain: YOURDOMAIN.COM  # CHANGE THIS
+  software: standard
+
+appservice:
+  address: http://mautrix-discord:29334
+  hostname: 0.0.0.0
+  port: 29334
+
+  database:
+    type: postgres
+    uri: postgres://matrix:CHANGE_ME@postgres/mautrix_discord?sslmode=disable
+    max_open_conns: 20
+    max_idle_conns: 2
+
+  id: discord
+  bot:
+    username: discordbot
+    displayname: Discord Bridge Bot
+    avatar: mxc://maunium.net/nIdEykemnwdisvHbpxflpDlC
+
+  as_token: "GENERATE_RANDOM_TOKEN_5"  # Generate with: openssl rand -hex 32
+  hs_token: "GENERATE_RANDOM_TOKEN_6"  # Generate with: openssl rand -hex 32
+
+bridge:
+  username_template: "discord_{{.}}"
+  displayname_template: "{{.Username}}#{{.Discriminator}} (Discord)"
+  channel_name_template: "{{if .GuildName}}{{.GuildName}} - {{end}}{{.Name}}"
+  guild_name_template: "{{.Name}} (Discord)"
+
+  # User permissions
+  permissions:
+    "@*:YOURDOMAIN.COM": user
+    "@admin:YOURDOMAIN.COM": admin
+
+  # Relay mode
+  relay:
+    enabled: true
+    message_formats:
+      m.text: "<b>{{.Sender.Displayname}}</b>: {{.Message}}"
+      m.notice: "<b>{{.Sender.Displayname}}</b>: {{.Message}}"
+      m.emote: "* <b>{{.Sender.Displayname}}</b> {{.Message}}"
+
+  # Features
+  delivery_receipts: true
+  message_status_events: true
+  message_error_notices: true
+
+  # Backfill
+  backfill:
+    forward_limits:
+      initial:
+        dm: 50
+        channel: 50
+        thread: 50
+
+  # Double puppeting
+  double_puppet_server_map:
+    YOURDOMAIN.COM: http://synapse:8008
+
+  login_shared_secret_map:
+    YOURDOMAIN.COM: "SAME_AS_SYNAPSE_REGISTRATION_SHARED_SECRET"
+
+  # Encryption
+  encryption:
+    allow: true
+    default: false
+    require: false
+    appservice: false
+
+  # Discord-specific
+  autojoin_thread_on_open: true
+  embed_fields_as_tables: true
+  mute_channels_on_create: false
+  sync_direct_chat_list: true
+  resend_bridge_info: false
+
+logging:
+  min_level: info
+  writers:
+    - type: stdout
+      format: pretty-colored

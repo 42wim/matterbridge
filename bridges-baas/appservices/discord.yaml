@@ -1,0 +1,15 @@
+# Discord Bridge Appservice Registration
+id: discord
+url: http://mautrix-discord:29334
+as_token: "GENERATE_RANDOM_TOKEN_5"  # Must match bridge config
+hs_token: "GENERATE_RANDOM_TOKEN_6"  # Must match bridge config
+sender_localpart: discordbot
+rate_limited: false
+
+namespaces:
+  users:
+    - regex: "@discord_.*:YOURDOMAIN\\.COM"
+      exclusive: true
+  aliases:
+    - regex: "#discord_.*:YOURDOMAIN\\.COM"
+      exclusive: true

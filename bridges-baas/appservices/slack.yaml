@@ -1,0 +1,17 @@
+# Slack Bridge Appservice Registration
+# This file tells Synapse how to communicate with the Slack bridge
+
+id: slack
+url: http://mautrix-slack:29335
+as_token: "GENERATE_RANDOM_TOKEN_1"  # Must match bridge config
+hs_token: "GENERATE_RANDOM_TOKEN_2"  # Must match bridge config
+sender_localpart: slackbot
+rate_limited: false
+
+namespaces:
+  users:
+    - regex: "@slack_.*:YOURDOMAIN\\.COM"
+      exclusive: true
+  aliases:
+    - regex: "#slack_.*:YOURDOMAIN\\.COM"
+      exclusive: true

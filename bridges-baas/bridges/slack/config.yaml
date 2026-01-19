@@ -1,0 +1,79 @@
+# Mautrix-Slack Bridge Configuration
+# Documentation: https://docs.mau.fi/bridges/go/slack/
+
+homeserver:
+  address: http://synapse:8008
+  domain: YOURDOMAIN.COM  # CHANGE THIS
+  software: standard
+
+appservice:
+  address: http://mautrix-slack:29335
+  hostname: 0.0.0.0
+  port: 29335
+
+  database:
+    type: postgres
+    uri: postgres://matrix:CHANGE_ME@postgres/mautrix_slack?sslmode=disable
+    max_open_conns: 20
+    max_idle_conns: 2
+
+  id: slack
+  bot:
+    username: slackbot
+    displayname: Slack Bridge Bot
+    avatar: mxc://maunium.net/pVtzLmChZejGxLqmXtQjFxem
+
+  as_token: "GENERATE_RANDOM_TOKEN_1"  # Generate with: openssl rand -hex 32
+  hs_token: "GENERATE_RANDOM_TOKEN_2"  # Generate with: openssl rand -hex 32
+
+bridge:
+  username_template: "slack_{{.}}"
+  displayname_template: "{{.RealName}} (Slack)"
+  channel_name_template: "#{{.Name}}"
+
+  # IMPORTANT: User permissions
+  # This controls who can use the bridge
+  permissions:
+    # Allow all users on your domain
+    "@*:YOURDOMAIN.COM": user
+    # Admin users (can manage bridge)
+    "@admin:YOURDOMAIN.COM": admin
+
+  # Relay mode (for users without Slack accounts)
+  relay:
+    enabled: true
+    message_formats:
+      m.text: "<b>{{.Sender.Displayname}}</b>: {{.Message}}"
+      m.notice: "<b>{{.Sender.Displayname}}</b>: {{.Message}}"
+      m.emote: "* <b>{{.Sender.Displayname}}</b> {{.Message}}"
+
+  # Message handling
+  delivery_receipts: true
+  message_status_events: true
+  message_error_notices: true
+
+  # Backfill settings
+  backfill:
+    enabled: true
+    max_conversations: 100
+    max_messages: 100
+
+  # Double puppeting (recommended)
+  double_puppet_server_map:
+    YOURDOMAIN.COM: http://synapse:8008
+
+  login_shared_secret_map:
+    YOURDOMAIN.COM: "SAME_AS_SYNAPSE_REGISTRATION_SHARED_SECRET"
+
+  # Encryption (optional but recommended)
+  encryption:
+    allow: true
+    default: false
+    require: false
+    appservice: false
+
+logging:
+  min_level: info
+  writers:
+    - type: stdout
+      format: pretty-colored
