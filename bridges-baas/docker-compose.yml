@@ -1,0 +1,156 @@
+# Bridges-as-a-Service: Complete Docker Stack
+# Synapse + PostgreSQL + Redis + mautrix bridges (Slack, Telegram, Discord)
+
+version: "3.8"
+
+services:
+  # ============================================
+  # DATABASE
+  # ============================================
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: matrix
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: synapse
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U matrix"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - matrix
+
+  # ============================================
+  # REDIS (for Synapse workers & caching)
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - matrix
+
+  # ============================================
+  # SYNAPSE (Matrix Homeserver)
+  # ============================================
+  synapse:
+    image: matrixdotorg/synapse:latest
+    restart: unless-stopped
+    environment:
+      SYNAPSE_CONFIG_PATH: /data/homeserver.yaml
+    volumes:
+      - synapse_data:/data
+      - ./synapse/homeserver.yaml:/data/homeserver.yaml:ro
+      - ./synapse/log.config:/data/log.config:ro
+      - ./appservices:/appservices:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8008:8008"   # Client-Server API
+      - "8448:8448"   # Federation (if needed)
+    networks:
+      - matrix
+
+  # ============================================
+  # MAUTRIX-SLACK BRIDGE
+  # ============================================
+  mautrix-slack:
+    image: dock.mau.dev/mautrix/slack:latest
+    restart: unless-stopped
+    volumes:
+      - ./bridges/slack/config.yaml:/data/config.yaml
+      - slack_data:/data
+    depends_on:
+      - synapse
+      - postgres
+    networks:
+      - matrix
+
+  # ============================================
+  # MAUTRIX-TELEGRAM BRIDGE
+  # ============================================
+  mautrix-telegram:
+    image: dock.mau.dev/mautrix/telegram:latest
+    restart: unless-stopped
+    volumes:
+      - ./bridges/telegram/config.yaml:/data/config.yaml
+      - telegram_data:/data
+    depends_on:
+      - synapse
+      - postgres
+    networks:
+      - matrix
+
+  # ============================================
+  # MAUTRIX-DISCORD BRIDGE
+  # ============================================
+  mautrix-discord:
+    image: dock.mau.dev/mautrix/discord:latest
+    restart: unless-stopped
+    volumes:
+      - ./bridges/discord/config.yaml:/data/config.yaml
+      - discord_data:/data
+    depends_on:
+      - synapse
+      - postgres
+    networks:
+      - matrix
+
+  # ============================================
+  # YOUR API (Bridge Management)
+  # ============================================
+  api:
+    build: ./api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://matrix:${POSTGRES_PASSWORD:-changeme}@postgres:5432/baas
+      SYNAPSE_URL: http://synapse:8008
+      SYNAPSE_ADMIN_TOKEN: ${SYNAPSE_ADMIN_TOKEN}
+      JWT_SECRET: ${JWT_SECRET:-your-jwt-secret-change-me}
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3000:3000"
+    depends_on:
+      - synapse
+      - postgres
+      - redis
+    networks:
+      - matrix
+
+  # ============================================
+  # NGINX (Reverse Proxy)
+  # ============================================
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - synapse
+      - api
+    networks:
+      - matrix
+
+volumes:
+  postgres_data:
+  redis_data:
+  synapse_data:
+  slack_data:
+  telegram_data:
+  discord_data:
+
+networks:
+  matrix:
+    driver: bridge

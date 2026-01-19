@@ -1,0 +1,90 @@
+# Mautrix-Telegram Bridge Configuration
+# Documentation: https://docs.mau.fi/bridges/python/telegram/
+
+homeserver:
+  address: http://synapse:8008
+  domain: YOURDOMAIN.COM  # CHANGE THIS
+  software: standard
+
+appservice:
+  address: http://mautrix-telegram:29317
+  hostname: 0.0.0.0
+  port: 29317
+
+  database:
+    type: postgres
+    uri: postgres://matrix:CHANGE_ME@postgres/mautrix_telegram?sslmode=disable
+    max_open_conns: 20
+    max_idle_conns: 2
+
+  id: telegram
+  bot:
+    username: telegrambot
+    displayname: Telegram Bridge Bot
+    avatar: mxc://maunium.net/tJCRmAyJTsarUEYkqKBXnaHa
+
+  as_token: "GENERATE_RANDOM_TOKEN_3"  # Generate with: openssl rand -hex 32
+  hs_token: "GENERATE_RANDOM_TOKEN_4"  # Generate with: openssl rand -hex 32
+
+# IMPORTANT: Get these from https://my.telegram.org/apps
+telegram:
+  api_id: YOUR_API_ID        # REQUIRED - Integer
+  api_hash: YOUR_API_HASH    # REQUIRED - String
+  device_info:
+    device_model: mautrix-telegram
+    system_version: auto
+    app_version: auto
+
+bridge:
+  username_template: "telegram_{{.}}"
+  displayname_template: "{{.DisplayName}} (Telegram)"
+
+  # User permissions
+  permissions:
+    "@*:YOURDOMAIN.COM": user
+    "@admin:YOURDOMAIN.COM": admin
+
+  # Relay mode
+  relay:
+    enabled: true
+    message_formats:
+      m.text: "<b>{{.Sender.Displayname}}</b>: {{.Message}}"
+      m.notice: "<b>{{.Sender.Displayname}}</b>: {{.Message}}"
+      m.emote: "* <b>{{.Sender.Displayname}}</b> {{.Message}}"
+
+  # Features
+  max_initial_member_sync: 100
+  sync_channel_members: true
+  sync_direct_chats: true
+  delivery_receipts: true
+
+  # Backfill
+  backfill:
+    enable: true
+    normal_groups: 100
+    megagroups: 100
+    forwards: true
+
+  # Double puppeting
+  double_puppet_server_map:
+    YOURDOMAIN.COM: http://synapse:8008
+
+  login_shared_secret_map:
+    YOURDOMAIN.COM: "SAME_AS_SYNAPSE_REGISTRATION_SHARED_SECRET"
+
+  # Encryption
+  encryption:
+    allow: true
+    default: false
+    require: false
+
+  # Animated stickers (optional - requires extra setup)
+  animated_sticker:
+    target: webp
+    convert_from_webm: true
+
+logging:
+  min_level: info
+  writers:
+    - type: stdout
+      format: pretty-colored

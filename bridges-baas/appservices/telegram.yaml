@@ -1,0 +1,15 @@
+# Telegram Bridge Appservice Registration
+id: telegram
+url: http://mautrix-telegram:29317
+as_token: "GENERATE_RANDOM_TOKEN_3"  # Must match bridge config
+hs_token: "GENERATE_RANDOM_TOKEN_4"  # Must match bridge config
+sender_localpart: telegrambot
+rate_limited: false
+
+namespaces:
+  users:
+    - regex: "@telegram_.*:YOURDOMAIN\\.COM"
+      exclusive: true
+  aliases:
+    - regex: "#telegram_.*:YOURDOMAIN\\.COM"
+      exclusive: true

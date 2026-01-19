@@ -1,0 +1,99 @@
+# Synapse Homeserver Configuration
+# For Bridges-as-a-Service Platform
+
+server_name: "YOURDOMAIN.COM"  # CHANGE THIS
+pid_file: /data/homeserver.pid
+public_baseurl: "https://matrix.YOURDOMAIN.COM/"  # CHANGE THIS
+
+listeners:
+  - port: 8008
+    tls: false
+    type: http
+    x_forwarded: true
+    bind_addresses: ['0.0.0.0']
+    resources:
+      - names: [client, federation]
+        compress: false
+
+# Database
+database:
+  name: psycopg2
+  args:
+    user: matrix
+    password: "CHANGE_ME"  # Match POSTGRES_PASSWORD in .env
+    database: synapse
+    host: postgres
+    port: 5432
+    cp_min: 5
+    cp_max: 10
+
+# Logging
+log_config: "/data/log.config"
+
+# Media storage
+media_store_path: /data/media_store
+max_upload_size: 100M
+url_preview_enabled: true
+
+# Registration
+enable_registration: false  # We control registration via API
+enable_registration_without_verification: false
+
+# Allow our API to create users
+registration_shared_secret: "GENERATE_A_RANDOM_SECRET_HERE"
+
+# App services (bridges)
+app_service_config_files:
+  - /appservices/slack.yaml
+  - /appservices/telegram.yaml
+  - /appservices/discord.yaml
+
+# Security
+enable_metrics: true
+report_stats: false
+
+# Rate limiting (adjust for your scale)
+rc_message:
+  per_second: 10
+  burst_count: 50
+
+rc_registration:
+  per_second: 0.5
+  burst_count: 5
+
+rc_login:
+  address:
+    per_second: 1
+    burst_count: 5
+  account:
+    per_second: 1
+    burst_count: 5
+
+# Signing keys (will be auto-generated on first run)
+signing_key_path: "/data/YOURDOMAIN.COM.signing.key"
+
+# Trusted key servers
+trusted_key_servers:
+  - server_name: "matrix.org"
+
+# Suppress key share warnings
+suppress_key_server_warning: true
+
+# Retention policy
+retention:
+  enabled: true
+  default_policy:
+    min_lifetime: 1d
+    max_lifetime: 365d
+
+# Caching
+caches:
+  global_factor: 1.0
+  per_cache_factors:
+    get_users_in_room: 2.0
+
+# Redis for caching (optional but recommended)
+redis:
+  enabled: true
+  host: redis
+  port: 6379

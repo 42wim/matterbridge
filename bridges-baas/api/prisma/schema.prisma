@@ -1,0 +1,172 @@
+// Bridges-as-a-Service Database Schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USERS & AUTH
+// ============================================
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  passwordHash    String
+
+  // Matrix credentials
+  matrixUserId    String    @unique  // @username:yourdomain.com
+  matrixAccessToken String?           // Encrypted
+  matrixDeviceId  String?
+
+  // Profile
+  displayName     String?
+  avatarUrl       String?
+
+  // Subscription/Plan
+  plan            Plan      @default(FREE)
+
+  // Relations
+  bridgeConnections BridgeConnection[]
+  matrixServer      UserMatrixServer?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([email])
+  @@index([matrixUserId])
+}
+
+enum Plan {
+  FREE        // 1 bridge
+  STARTER     // 3 bridges
+  PRO         // All bridges + own server
+  ENTERPRISE  // Custom
+}
+
+// ============================================
+// BRIDGE CONNECTIONS
+// ============================================
+
+model BridgeConnection {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bridgeType      BridgeType
+  status          BridgeStatus @default(PENDING)
+
+  // Remote platform info (encrypted)
+  remoteUserId    String?     // e.g., Slack user ID, Telegram user ID
+  remoteUsername  String?     // Display name on remote platform
+
+  // Credentials (encrypted at rest)
+  credentials     Json?       // Platform-specific auth data
+
+  // Bridge-specific metadata
+  metadata        Json?
+
+  // Error tracking
+  lastError       String?
+  errorCount      Int         @default(0)
+
+  connectedAt     DateTime?
+  disconnectedAt  DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@unique([userId, bridgeType])
+  @@index([userId])
+  @@index([bridgeType])
+  @@index([status])
+}
+
+enum BridgeType {
+  SLACK
+  TELEGRAM
+  DISCORD
+  WHATSAPP
+  SIGNAL
+  INSTAGRAM
+  FACEBOOK
+}
+
+enum BridgeStatus {
+  PENDING       // User initiated, waiting for auth
+  CONNECTING    // Auth in progress
+  CONNECTED     // Working
+  DISCONNECTED  // User disconnected
+  ERROR         // Connection error
+  RATE_LIMITED  // Temporarily blocked
+}
+
+// ============================================
+// PER-USER MATRIX SERVERS (Premium Feature)
+// ============================================
+
+model UserMatrixServer {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Server details
+  serverName      String    @unique  // subdomain.yourdomain.com
+  status          ServerStatus @default(PROVISIONING)
+
+  // Kubernetes/Docker info
+  containerId     String?
+  podName         String?
+  namespace       String?
+
+  // Resources
+  cpuLimit        String    @default("500m")
+  memoryLimit     String    @default("512Mi")
+  storageLimit    String    @default("5Gi")
+
+  // Ports & URLs
+  internalUrl     String?
+  externalUrl     String?
+  federationPort  Int?
+
+  // Credentials (encrypted)
+  adminToken      String?
+  registrationSecret String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([status])
+}
+
+enum ServerStatus {
+  PROVISIONING
+  STARTING
+  RUNNING
+  STOPPING
+  STOPPED
+  ERROR
+  DELETED
+}
+
+// ============================================
+// AUDIT LOG
+// ============================================
+
+model AuditLog {
+  id          String    @id @default(cuid())
+  userId      String?
+  action      String
+  resource    String
+  resourceId  String?
+  metadata    Json?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
