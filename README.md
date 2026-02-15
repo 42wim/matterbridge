@@ -165,7 +165,7 @@ Questions or want to test on your favorite platform? Join below:
 - [Slack][mb-slack]
 - [Telegram][mb-telegram]
 - [Twitch][mb-twitch]
-- [XMPP][mb-xmpp] (matterbridge@conference.jabber.de)
+- [XMPP][mb-xmpp] (xmpp:matterbridge@conference.jabber.de)
 - [Zulip][mb-zulip]
 
 ## Screenshots
