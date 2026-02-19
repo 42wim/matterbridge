@@ -2,9 +2,10 @@ syntax = "proto2";
 package WAWebProtobufsHistorySync;
 option go_package = "go.mau.fi/whatsmeow/proto/waHistorySync";
 
-import "waSyncAction/WASyncAction.proto";
-import "waChatLockSettings/WAProtobufsChatLockSettings.proto";
+import "waSyncAction/WAWebProtobufSyncAction.proto";
+import "waChatLockSettings/WAWebProtobufsChatLockSettings.proto";
 import "waE2E/WAWebProtobufsE2E.proto";
+import "waCommon/WACommon.proto";
 import "waWeb/WAWebProtobufsWeb.proto";
 
 enum MediaVisibility {
@@ -46,10 +47,12 @@ message HistorySync {
 	optional uint32 threadDsTimeframeOffset = 10;
 	repeated StickerMetadata recentStickers = 11;
 	repeated PastParticipants pastParticipants = 12;
-	repeated WASyncAction.CallLogRecord callLogRecords = 13;
+	repeated WAWebProtobufSyncAction.CallLogRecord callLogRecords = 13;
 	optional BotAIWaitListState aiWaitListState = 14;
 	repeated PhoneNumberToLIDMapping phoneNumberToLidMappings = 15;
 	optional string companionMetaNonce = 16;
+	optional bytes shareableChatIdentifierEncryptionKey = 17;
+	repeated Account accounts = 18;
 }
 
 message Conversation {
@@ -57,6 +60,7 @@ message Conversation {
 		COMPLETE_BUT_MORE_MESSAGES_REMAIN_ON_PRIMARY = 0;
 		COMPLETE_AND_NO_MORE_MESSAGE_REMAIN_ON_PRIMARY = 1;
 		COMPLETE_ON_DEMAND_SYNC_BUT_MORE_MSG_REMAIN_ON_PRIMARY = 2;
+		COMPLETE_ON_DEMAND_SYNC_WITH_MORE_MSG_ON_PRIMARY_BUT_NO_ACCESS = 3;
 	}
 
 	required string ID = 1;
@@ -107,6 +111,12 @@ message Conversation {
 	optional bool locked = 46;
 	optional PrivacySystemMessage systemMessageToInsert = 47;
 	optional bool capiCreatedGroup = 48;
+	optional string accountLid = 49;
+	optional bool limitSharing = 50;
+	optional int64 limitSharingSettingTimestamp = 51;
+	optional WACommon.LimitSharing.Trigger limitSharingTrigger = 52;
+	optional bool limitSharingInitiatedByMe = 53;
+	optional bool maibaAiThreadEnabled = 54;
 }
 
 message GroupParticipant {
@@ -118,6 +128,7 @@ message GroupParticipant {
 
 	required string userJID = 1;
 	optional Rank rank = 2;
+	optional WAWebProtobufsE2E.MemberLabel memberLabel = 3;
 }
 
 message PastParticipant {
@@ -134,6 +145,13 @@ message PastParticipant {
 message PhoneNumberToLIDMapping {
 	optional string pnJID = 1;
 	optional string lidJID = 2;
+}
+
+message Account {
+	optional string lid = 1;
+	optional string username = 2;
+	optional string countryCode = 3;
+	optional bool isUsernameDeleted = 4;
 }
 
 message HistorySyncMsg {
@@ -170,7 +188,8 @@ message GlobalSettings {
 	optional int32 photoQualityMode = 16;
 	optional NotificationSettings individualNotificationSettings = 17;
 	optional NotificationSettings groupNotificationSettings = 18;
-	optional WAProtobufsChatLockSettings.ChatLockSettings chatLockSettings = 19;
+	optional WAWebProtobufsChatLockSettings.ChatLockSettings chatLockSettings = 19;
+	optional int64 chatDbLidMigrationTimestamp = 20;
 }
 
 message AutoDownloadSettings {
@@ -193,6 +212,8 @@ message StickerMetadata {
 	optional float weight = 10;
 	optional int64 lastStickerSentTS = 11;
 	optional bool isLottie = 12;
+	optional string imageHash = 13;
+	optional bool isAvatarSticker = 14;
 }
 
 message PastParticipants {

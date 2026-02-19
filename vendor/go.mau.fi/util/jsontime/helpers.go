@@ -10,12 +10,19 @@ import (
 	"time"
 )
 
+func zeroSafeUnixToTime(val int64, fn func(int64) time.Time) time.Time {
+	if val == 0 {
+		return time.Time{}
+	}
+	return fn(val)
+}
+
 func UM(time time.Time) UnixMilli {
 	return UnixMilli{Time: time}
 }
 
 func UMInt(ts int64) UnixMilli {
-	return UM(time.UnixMilli(ts))
+	return UM(zeroSafeUnixToTime(ts, time.UnixMilli))
 }
 
 func UnixMilliNow() UnixMilli {
@@ -26,8 +33,8 @@ func UMicro(time time.Time) UnixMicro {
 	return UnixMicro{Time: time}
 }
 
-func UMicroInto(ts int64) UnixMicro {
-	return UMicro(time.UnixMicro(ts))
+func UMicroInt(ts int64) UnixMicro {
+	return UMicro(zeroSafeUnixToTime(ts, time.UnixMicro))
 }
 
 func UnixMicroNow() UnixMicro {
@@ -39,7 +46,9 @@ func UN(time time.Time) UnixNano {
 }
 
 func UNInt(ts int64) UnixNano {
-	return UN(time.Unix(0, ts))
+	return UN(zeroSafeUnixToTime(ts, func(i int64) time.Time {
+		return time.Unix(0, i)
+	}))
 }
 
 func UnixNanoNow() UnixNano {
@@ -51,7 +60,9 @@ func U(time time.Time) Unix {
 }
 
 func UInt(ts int64) Unix {
-	return U(time.Unix(ts, 0))
+	return U(zeroSafeUnixToTime(ts, func(i int64) time.Time {
+		return time.Unix(i, 0)
+	}))
 }
 
 func UnixNow() Unix {

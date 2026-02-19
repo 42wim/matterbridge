@@ -77,9 +77,9 @@ func (d *defaultLogger) Error(caller, msg string) {
 // allows granular logging of different go files.
 //
 // Example:
-//   logger.Configure("RootKey.go,Curve.go")
-//   logger.Configure("all")
 //
+//	logger.Configure("RootKey.go,Curve.go")
+//	logger.Configure("all")
 func (d *defaultLogger) Configure(settings string) {
 	d.namespaces = strings.Split(settings, ",")
 }

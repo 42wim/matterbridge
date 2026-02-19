@@ -1,6 +1,7 @@
 package groups
 
 import (
+	"context"
 	"fmt"
 
 	"go.mau.fi/libsignal/cipher"
@@ -34,9 +35,12 @@ type GroupCipher struct {
 }
 
 // Encrypt will take the given message in bytes and return encrypted bytes.
-func (c *GroupCipher) Encrypt(plaintext []byte) (protocol.GroupCiphertextMessage, error) {
+func (c *GroupCipher) Encrypt(ctx context.Context, plaintext []byte) (protocol.GroupCiphertextMessage, error) {
 	// Load the sender key based on id from our store.
-	keyRecord := c.senderKeyStore.LoadSenderKey(c.senderKeyID)
+	keyRecord, err := c.senderKeyStore.LoadSenderKey(ctx, c.senderKeyID)
+	if err != nil {
+		return nil, err
+	}
 	senderKeyState, err := keyRecord.SenderKeyState()
 	if err != nil {
 		return nil, err
@@ -63,15 +67,20 @@ func (c *GroupCipher) Encrypt(plaintext []byte) (protocol.GroupCiphertextMessage
 	)
 
 	senderKeyState.SetSenderChainKey(senderKeyState.SenderChainKey().Next())
-	c.senderKeyStore.StoreSenderKey(c.senderKeyID, keyRecord)
+	if err := c.senderKeyStore.StoreSenderKey(ctx, c.senderKeyID, keyRecord); err != nil {
+		return nil, err
+	}
 
 	return senderKeyMessage, nil
 }
 
 // Decrypt decrypts the given message using an existing session that
 // is stored in the senderKey store.
-func (c *GroupCipher) Decrypt(senderKeyMessage *protocol.SenderKeyMessage) ([]byte, error) {
-	keyRecord := c.senderKeyStore.LoadSenderKey(c.senderKeyID)
+func (c *GroupCipher) Decrypt(ctx context.Context, senderKeyMessage *protocol.SenderKeyMessage) ([]byte, error) {
+	keyRecord, err := c.senderKeyStore.LoadSenderKey(ctx, c.senderKeyID)
+	if err != nil {
+		return nil, err
+	}
 
 	if keyRecord.IsEmpty() {
 		return nil, fmt.Errorf("%w for %s in %s", signalerror.ErrNoSenderKeyForUser, c.senderKeyID.Sender().String(), c.senderKeyID.GroupID())
@@ -101,7 +110,9 @@ func (c *GroupCipher) Decrypt(senderKeyMessage *protocol.SenderKeyMessage) ([]by
 	}
 
 	// Store the sender key by id.
-	c.senderKeyStore.StoreSenderKey(c.senderKeyID, keyRecord)
+	if err := c.senderKeyStore.StoreSenderKey(ctx, c.senderKeyID, keyRecord); err != nil {
+		return nil, err
+	}
 
 	return plaintext, nil
 }

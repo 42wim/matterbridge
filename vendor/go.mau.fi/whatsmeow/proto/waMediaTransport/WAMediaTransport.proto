@@ -56,6 +56,8 @@ message ImageTransport {
 		repeated uint32 scanLengths = 4;
 		optional bytes midQualityFileSHA256 = 5;
 		optional HdType hdType = 6;
+		repeated float memoriesConceptScores = 7 [packed=true];
+		repeated uint32 memoriesConceptIDs = 8 [packed=true];
 	}
 
 	message Integral {
@@ -81,6 +83,8 @@ message VideoTransport {
 		optional uint32 width = 5;
 		optional bytes sidecar = 6;
 		optional Attribution gifAttribution = 7;
+		optional string accessibilityLabel = 8;
+		optional bool isHd = 9;
 	}
 
 	message Integral {
@@ -118,6 +122,8 @@ message AudioTransport {
 
 		optional uint32 seconds = 1;
 		optional AvatarAudio avatarAudio = 2;
+		optional string waveformData = 3;
+		optional bytes waveform = 4;
 	}
 
 	message Integral {
@@ -157,6 +163,7 @@ message StickerTransport {
 		optional string mustacheText = 6;
 		optional bool isThirdParty = 7;
 		optional string receiverFetchID = 8;
+		optional string accessibilityLabel = 9;
 	}
 
 	message Integral {

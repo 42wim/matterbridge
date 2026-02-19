@@ -7,6 +7,7 @@
 package whatsmeow
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,12 +29,12 @@ var clientVersionRegex = regexp.MustCompile(`"client_revision":(\d+),`)
 //		return err
 //	}
 //	store.SetWAVersion(*latestVer)
-func GetLatestVersion(httpClient *http.Client) (*store.WAVersionContainer, error) {
-	req, err := http.NewRequest(http.MethodGet, socket.Origin, nil)
+func GetLatestVersion(ctx context.Context, httpClient *http.Client) (*store.WAVersionContainer, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, socket.Origin, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to prepare request: %w", err)
 	}
-	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36")
 	req.Header.Set("Sec-Fetch-Dest", "document")
 	req.Header.Set("Sec-Fetch-Mode", "navigate")
 	req.Header.Set("Sec-Fetch-Site", "none")

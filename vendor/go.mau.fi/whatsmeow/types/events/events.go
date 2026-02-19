@@ -13,12 +13,15 @@ import (
 	"time"
 
 	waBinary "go.mau.fi/whatsmeow/binary"
-	waProto "go.mau.fi/whatsmeow/binary/proto"
 	armadillo "go.mau.fi/whatsmeow/proto"
+	"go.mau.fi/whatsmeow/proto/instamadilloTransportPayload"
 	"go.mau.fi/whatsmeow/proto/waArmadilloApplication"
 	"go.mau.fi/whatsmeow/proto/waConsumerApplication"
+	"go.mau.fi/whatsmeow/proto/waE2E"
+	"go.mau.fi/whatsmeow/proto/waHistorySync"
 	"go.mau.fi/whatsmeow/proto/waMsgApplication"
 	"go.mau.fi/whatsmeow/proto/waMsgTransport"
+	"go.mau.fi/whatsmeow/proto/waWeb"
 	"go.mau.fi/whatsmeow/types"
 )
 
@@ -40,6 +43,7 @@ type QR struct {
 // wait for the Connected before trying to send anything.
 type PairSuccess struct {
 	ID           types.JID
+	LID          types.JID
 	BusinessName string
 	Platform     string
 }
@@ -47,6 +51,7 @@ type PairSuccess struct {
 // PairError is emitted when a pair-success event is received from the server, but finishing the pairing locally fails.
 type PairError struct {
 	ID           types.JID
+	LID          types.JID
 	BusinessName string
 	Platform     string
 	Error        error
@@ -87,6 +92,7 @@ func (*CATRefreshError) PermanentDisconnectDescription() string { return "CAT re
 func (tb *TemporaryBan) PermanentDisconnectDescription() string {
 	return fmt.Sprintf("temporarily banned: %s", tb.String())
 }
+
 func (cf *ConnectFailure) PermanentDisconnectDescription() string {
 	return fmt.Sprintf("connect failure: %s", cf.Reason.String())
 }
@@ -109,6 +115,9 @@ type LoggedOut struct {
 // This can happen if you accidentally start another process with the same session
 // or otherwise try to connect twice with the same session.
 type StreamReplaced struct{}
+
+// ManualLoginReconnect is emitted after login if DisableLoginAutoReconnect is set.
+type ManualLoginReconnect struct{}
 
 // TempBanReason is an error code included in temp ban error events.
 type TempBanReason int
@@ -167,6 +176,9 @@ const (
 	ConnectFailureCATExpired ConnectFailureReason = 413
 	ConnectFailureCATInvalid ConnectFailureReason = 414
 	ConnectFailureNotFound   ConnectFailureReason = 415
+
+	// Status code unknown (not in WA web)
+	ConnectFailureClientUnknown ConnectFailureReason = 418
 
 	ConnectFailureInternalServerError ConnectFailureReason = 500
 	ConnectFailureExperimental        ConnectFailureReason = 501
@@ -231,7 +243,7 @@ type Disconnected struct{}
 
 // HistorySync is emitted when the phone has sent a blob of historical messages.
 type HistorySync struct {
-	Data *waProto.HistorySync
+	Data *waHistorySync.HistorySync
 }
 
 type DecryptFailMode string
@@ -239,6 +251,13 @@ type DecryptFailMode string
 const (
 	DecryptFailShow DecryptFailMode = ""
 	DecryptFailHide DecryptFailMode = "hide"
+)
+
+type UnavailableType string
+
+const (
+	UnavailableTypeUnknown  UnavailableType = ""
+	UnavailableTypeViewOnce UnavailableType = "view_once"
 )
 
 // UndecryptableMessage is emitted when receiving a new message that failed to decrypt.
@@ -253,6 +272,8 @@ type UndecryptableMessage struct {
 	// IsUnavailable is true if the recipient device didn't send a ciphertext to this device at all
 	// (as opposed to sending a ciphertext, but the ciphertext not being decryptable).
 	IsUnavailable bool
+	// Some message types are intentionally unavailable. Such types usually have a type specified here.
+	UnavailableType UnavailableType
 
 	DecryptFailMode DecryptFailMode
 }
@@ -268,7 +289,7 @@ type NewsletterMessageMeta struct {
 // Message is emitted when receiving a new message.
 type Message struct {
 	Info    types.MessageInfo // Information about the message like the chat and sender IDs
-	Message *waProto.Message  // The actual message struct
+	Message *waE2E.Message    // The actual message struct
 
 	IsEphemeral           bool // True if the message was unwrapped from an EphemeralMessage
 	IsViewOnce            bool // True if the message was unwrapped from a ViewOnceMessage, ViewOnceMessageV2 or ViewOnceMessageV2Extension
@@ -276,10 +297,11 @@ type Message struct {
 	IsViewOnceV2Extension bool // True if the message was unwrapped from a ViewOnceMessageV2Extension
 	IsDocumentWithCaption bool // True if the message was unwrapped from a DocumentWithCaptionMessage
 	IsLottieSticker       bool // True if the message was unwrapped from a LottieStickerMessage
+	IsBotInvoke           bool // True if the message was unwrapped from a BotInvokeMessage
 	IsEdit                bool // True if the message was unwrapped from an EditedMessage
 
 	// If this event was parsed from a WebMessageInfo (i.e. from a history sync or unavailable message request), the source data is here.
-	SourceWebMsg *waProto.WebMessageInfo
+	SourceWebMsg *waWeb.WebMessageInfo
 	// If this event is a response to an unavailable message request, the request ID is here.
 	UnavailableRequestID types.MessageID
 	// If the message was re-requested from the sender, this is the number of retries it took.
@@ -289,7 +311,7 @@ type Message struct {
 
 	// The raw message struct. This is the raw unmodified data, which means the actual message might
 	// be wrapped in DeviceSentMessage, EphemeralMessage or ViewOnceMessage.
-	RawMessage *waProto.Message
+	RawMessage *waE2E.Message
 }
 
 type FBMessage struct {
@@ -299,8 +321,10 @@ type FBMessage struct {
 	// If the message was re-requested from the sender, this is the number of retries it took.
 	RetryCount int
 
-	Transport   *waMsgTransport.MessageTransport     // The first level of wrapping the message was in
-	Application *waMsgApplication.MessageApplication // The second level of wrapping the message was in
+	Transport *waMsgTransport.MessageTransport // The first level of wrapping the message was in
+
+	FBApplication *waMsgApplication.MessageApplication           // The second level of wrapping the message was in, for FB messages
+	IGTransport   *instamadilloTransportPayload.TransportPayload // The second level of wrapping the message was in, for IG messages
 }
 
 func (evt *FBMessage) GetConsumerApplication() *waConsumerApplication.ConsumerApplication {
@@ -326,6 +350,10 @@ func (evt *Message) UnwrapRaw() *Message {
 			Phash:          evt.Message.GetDeviceSentMessage().GetPhash(),
 		}
 		evt.Message = evt.Message.GetDeviceSentMessage().GetMessage()
+	}
+	if evt.Message.GetBotInvokeMessage().GetMessage() != nil {
+		evt.Message = evt.Message.GetBotInvokeMessage().GetMessage()
+		evt.IsBotInvoke = true
 	}
 	if evt.Message.GetEphemeralMessage().GetMessage() != nil {
 		evt.Message = evt.Message.GetEphemeralMessage().GetMessage()
@@ -358,6 +386,9 @@ func (evt *Message) UnwrapRaw() *Message {
 		evt.Message = evt.Message.GetEditedMessage().GetMessage()
 		evt.IsEdit = true
 	}
+	if evt.Message != nil && evt.RawMessage != nil && evt.Message.MessageContextInfo == nil && evt.RawMessage.MessageContextInfo != nil {
+		evt.Message.MessageContextInfo = evt.RawMessage.MessageContextInfo
+	}
 	return evt
 }
 
@@ -382,6 +413,10 @@ type Receipt struct {
 	MessageIDs []types.MessageID
 	Timestamp  time.Time
 	Type       types.ReceiptType
+
+	// When you read the message of another user in a group, this field contains the sender of the message.
+	// For receipts from other users, the message sender is always you.
+	MessageSender types.JID
 }
 
 // ChatPresence is emitted when a chat state update (also known as typing notification) is received.
@@ -414,6 +449,11 @@ type JoinedGroup struct {
 	Reason    string          // If the event was triggered by you using an invite link, this will be "invite".
 	Type      string          // "new" if it's a newly created group.
 	CreateKey types.MessageID // If you created the group, this is the same message ID you passed to CreateGroup.
+	// For type new, the user who created the group and added you to it
+	Sender   *types.JID
+	SenderPN *types.JID
+	Notify   string
+
 	types.GroupInfo
 }
 
@@ -422,6 +462,7 @@ type GroupInfo struct {
 	JID       types.JID  // The group ID in question
 	Notify    string     // Seems like a top-level type for the invite
 	Sender    *types.JID // The user who made the change. Doesn't seem to be present when notify=invite
+	SenderPN  *types.JID // The phone number of the user who made the change, if Sender is a LID.
 	Timestamp time.Time  // The time when the change occurred
 
 	Name      *types.GroupName      // Group name change
@@ -429,6 +470,8 @@ type GroupInfo struct {
 	Locked    *types.GroupLocked    // Group locked status change (can only admins edit group info?)
 	Announce  *types.GroupAnnounce  // Group announce status change (can only admins send messages?)
 	Ephemeral *types.GroupEphemeral // Disappearing messages change
+
+	MembershipApprovalMode *types.GroupMembershipApprovalMode // Membership approval mode change
 
 	Delete *types.GroupDelete
 
@@ -445,9 +488,10 @@ type GroupInfo struct {
 	Join  []types.JID // Users who joined or were added the group
 	Leave []types.JID // Users who left or were removed from the group
 
-	Promote []types.JID // Users who were promoted to admins
-	Demote  []types.JID // Users who were demoted to normal users
-
+	Promote        []types.JID // Users who were promoted to admins
+	Demote         []types.JID // Users who were demoted to normal users
+	Suspended      bool        // whether the group is suspended
+	Unsuspended    bool        // whether the group is unsuspended
 	UnknownChanges []*waBinary.Node
 }
 
@@ -460,6 +504,13 @@ type Picture struct {
 	Timestamp time.Time // The timestamp when the picture was changed.
 	Remove    bool      // True if the picture was removed.
 	PictureID string    // The new picture ID if it was not removed.
+}
+
+// UserAbout is emitted when a user's about status is changed.
+type UserAbout struct {
+	JID       types.JID // The user whose status was changed
+	Status    string    // The new status
+	Timestamp time.Time // The timestamp when the status was changed.
 }
 
 // IdentityChange is emitted when another user changes their primary device.
@@ -482,6 +533,9 @@ type PrivacySettings struct {
 	ReadReceiptsChanged bool
 	OnlineChanged       bool
 	CallAddChanged      bool
+	MessagesChanged     bool
+	DefenseChanged      bool
+	StickersChanged     bool
 }
 
 // OfflineSyncPreview is emitted right after connecting if the server is going to send events that the client missed during downtime.

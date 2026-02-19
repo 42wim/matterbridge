@@ -2,6 +2,7 @@
 package session
 
 import (
+	"context"
 	"fmt"
 
 	"go.mau.fi/libsignal/ecc"
@@ -56,9 +57,9 @@ func NewBuilderFromSignal(signalStore store.SignalProtocol,
 // used to encrypt/decrypt messages in that session.
 //
 // Sessions are built from one of three different vectors:
-//   * PreKeyBundle retrieved from a server.
-//   * PreKeySignalMessage received from a client.
-//   * KeyExchangeMessage sent to or received from a client.
+//   - PreKeyBundle retrieved from a server.
+//   - PreKeySignalMessage received from a client.
+//   - KeyExchangeMessage sent to or received from a client.
 //
 // Sessions are constructed per recipientId + deviceId tuple.
 // Remote logical users are identified by their recipientId,
@@ -75,22 +76,28 @@ type Builder struct {
 
 // Process builds a new session from a session record and pre
 // key signal message.
-func (b *Builder) Process(sessionRecord *record.Session, message *protocol.PreKeySignalMessage) (unsignedPreKeyID *optional.Uint32, err error) {
+func (b *Builder) Process(ctx context.Context, sessionRecord *record.Session, message *protocol.PreKeySignalMessage) (unsignedPreKeyID *optional.Uint32, err error) {
 
 	// Check to see if the keys are trusted.
 	theirIdentityKey := message.IdentityKey()
-	if !(b.identityKeyStore.IsTrustedIdentity(b.remoteAddress, theirIdentityKey)) {
+	trusted, err := b.identityKeyStore.IsTrustedIdentity(ctx, b.remoteAddress, theirIdentityKey)
+	if err != nil {
+		return nil, err
+	}
+	if !trusted {
 		return nil, signalerror.ErrUntrustedIdentity
 	}
 
 	// Use version 3 of the signal/axolotl protocol.
-	unsignedPreKeyID, err = b.processV3(sessionRecord, message)
+	unsignedPreKeyID, err = b.processV3(ctx, sessionRecord, message)
 	if err != nil {
 		return nil, err
 	}
 
 	// Save the identity key to our identity store.
-	b.identityKeyStore.SaveIdentity(b.remoteAddress, theirIdentityKey)
+	if err := b.identityKeyStore.SaveIdentity(ctx, b.remoteAddress, theirIdentityKey); err != nil {
+		return nil, err
+	}
 
 	// Return the unsignedPreKeyID
 	return unsignedPreKeyID, nil
@@ -99,7 +106,7 @@ func (b *Builder) Process(sessionRecord *record.Session, message *protocol.PreKe
 // ProcessV3 builds a new session from a session record and pre key
 // signal message. After a session is constructed in this way, the embedded
 // SignalMessage can be decrypted.
-func (b *Builder) processV3(sessionRecord *record.Session,
+func (b *Builder) processV3(ctx context.Context, sessionRecord *record.Session,
 	message *protocol.PreKeySignalMessage) (unsignedPreKeyID *optional.Uint32, err error) {
 
 	logger.Debug("Processing message with PreKeyID: ", message.PreKeyID())
@@ -114,7 +121,10 @@ func (b *Builder) processV3(sessionRecord *record.Session,
 	}
 
 	// Load our signed prekey from our signed prekey store.
-	ourSignedPreKeyRecord := b.signedPreKeyStore.LoadSignedPreKey(message.SignedPreKeyID())
+	ourSignedPreKeyRecord, err := b.signedPreKeyStore.LoadSignedPreKey(ctx, message.SignedPreKeyID())
+	if err != nil {
+		return nil, err
+	}
 	if ourSignedPreKeyRecord == nil {
 		return nil, fmt.Errorf("%w with ID %d", signalerror.ErrNoSignedPreKey, message.SignedPreKeyID())
 	}
@@ -131,7 +141,10 @@ func (b *Builder) processV3(sessionRecord *record.Session,
 	// Set our one time pre key with the one from our prekey store
 	// if the message contains a valid pre key id
 	if !message.PreKeyID().IsEmpty {
-		oneTimePreKey := b.preKeyStore.LoadPreKey(message.PreKeyID().Value)
+		oneTimePreKey, err := b.preKeyStore.LoadPreKey(ctx, message.PreKeyID().Value)
+		if err != nil {
+			return nil, err
+		}
 		if oneTimePreKey == nil {
 			return nil, fmt.Errorf("%w with ID %d", signalerror.ErrNoOneTimeKeyFound, message.PreKeyID().Value)
 		}
@@ -158,7 +171,7 @@ func (b *Builder) processV3(sessionRecord *record.Session,
 	sessionState.SetRootKey(derivedKeys.RootKey)
 
 	// Set the session's registration ids and base key
-	sessionState.SetLocalRegistrationID(b.identityKeyStore.GetLocalRegistrationId())
+	sessionState.SetLocalRegistrationID(b.identityKeyStore.GetLocalRegistrationID())
 	sessionState.SetRemoteRegistrationID(message.RegistrationID())
 	sessionState.SetSenderBaseKey(message.BaseKey().Serialize())
 
@@ -171,9 +184,13 @@ func (b *Builder) processV3(sessionRecord *record.Session,
 
 // ProcessBundle builds a new session from a PreKeyBundle retrieved
 // from a server.
-func (b *Builder) ProcessBundle(preKey *prekey.Bundle) error {
+func (b *Builder) ProcessBundle(ctx context.Context, preKey *prekey.Bundle) error {
 	// Check to see if the keys are trusted.
-	if !(b.identityKeyStore.IsTrustedIdentity(b.remoteAddress, preKey.IdentityKey())) {
+	trusted, err := b.identityKeyStore.IsTrustedIdentity(ctx, b.remoteAddress, preKey.IdentityKey())
+	if err != nil {
+		return err
+	}
+	if !trusted {
 		return signalerror.ErrUntrustedIdentity
 	}
 
@@ -191,7 +208,13 @@ func (b *Builder) ProcessBundle(preKey *prekey.Bundle) error {
 	}
 
 	// Load our session and generate keys.
-	sessionRecord := b.sessionStore.LoadSession(b.remoteAddress)
+	sessionRecord, err := b.sessionStore.LoadSession(ctx, b.remoteAddress)
+	if err != nil {
+		return err
+	}
+	if sessionRecord == nil {
+		return fmt.Errorf("LoadSession returned nil")
+	}
 	ourBaseKey, err := ecc.GenerateKeyPair()
 	if err != nil {
 		return err
@@ -251,7 +274,7 @@ func (b *Builder) ProcessBundle(preKey *prekey.Bundle) error {
 
 	// Set the local registration ID based on the registration id in our identity key store.
 	sessionState.SetLocalRegistrationID(
-		b.identityKeyStore.GetLocalRegistrationId(),
+		b.identityKeyStore.GetLocalRegistrationID(),
 	)
 
 	// Set the remote registration ID based on the given prekey bundle registrationID.
@@ -265,8 +288,12 @@ func (b *Builder) ProcessBundle(preKey *prekey.Bundle) error {
 	)
 
 	// Store the session in our session store and save the identity in our identity store.
-	b.sessionStore.StoreSession(b.remoteAddress, sessionRecord)
-	b.identityKeyStore.SaveIdentity(b.remoteAddress, preKey.IdentityKey())
+	if err := b.sessionStore.StoreSession(ctx, b.remoteAddress, sessionRecord); err != nil {
+		return err
+	}
+	if err := b.identityKeyStore.SaveIdentity(ctx, b.remoteAddress, preKey.IdentityKey()); err != nil {
+		return err
+	}
 
 	return nil
 }

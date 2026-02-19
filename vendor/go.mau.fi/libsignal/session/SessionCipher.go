@@ -1,6 +1,8 @@
 package session
 
 import (
+	"context"
+	"errors"
 	"fmt"
 
 	"go.mau.fi/libsignal/cipher"
@@ -65,8 +67,14 @@ type Cipher struct {
 
 // Encrypt will take the given message in bytes and return an object that follows
 // the CiphertextMessage interface.
-func (d *Cipher) Encrypt(plaintext []byte) (protocol.CiphertextMessage, error) {
-	sessionRecord := d.sessionStore.LoadSession(d.remoteAddress)
+func (d *Cipher) Encrypt(ctx context.Context, plaintext []byte) (protocol.CiphertextMessage, error) {
+	sessionRecord, err := d.sessionStore.LoadSession(ctx, d.remoteAddress)
+	if err != nil {
+		return nil, err
+	}
+	if sessionRecord == nil {
+		return nil, fmt.Errorf("LoadSession returned nil")
+	}
 	sessionState := sessionRecord.SessionState()
 	chainKey := sessionState.SenderChainKey()
 	messageKeys := chainKey.MessageKeys()
@@ -122,73 +130,109 @@ func (d *Cipher) Encrypt(plaintext []byte) (protocol.CiphertextMessage, error) {
 	}
 
 	sessionState.SetSenderChainKey(chainKey.NextKey())
-	if !d.identityKeyStore.IsTrustedIdentity(d.remoteAddress, sessionState.RemoteIdentityKey()) {
-		// return err
+	trusted, err := d.identityKeyStore.IsTrustedIdentity(ctx, d.remoteAddress, sessionState.RemoteIdentityKey())
+	if err != nil {
+		return nil, err
 	}
-	d.identityKeyStore.SaveIdentity(d.remoteAddress, sessionState.RemoteIdentityKey())
-	d.sessionStore.StoreSession(d.remoteAddress, sessionRecord)
+	if !trusted {
+		return nil, signalerror.ErrUntrustedIdentity
+	}
+	if err := d.identityKeyStore.SaveIdentity(ctx, d.remoteAddress, sessionState.RemoteIdentityKey()); err != nil {
+		return nil, err
+	}
+	if err := d.sessionStore.StoreSession(ctx, d.remoteAddress, sessionRecord); err != nil {
+		return nil, err
+	}
 	return ciphertextMessage, nil
 }
 
 // Decrypt decrypts the given message using an existing session that
 // is stored in the session store.
-func (d *Cipher) Decrypt(ciphertextMessage *protocol.SignalMessage) ([]byte, error) {
-	plaintext, _, err := d.DecryptAndGetKey(ciphertextMessage)
+func (d *Cipher) Decrypt(ctx context.Context, ciphertextMessage *protocol.SignalMessage) ([]byte, error) {
+	plaintext, _, err := d.DecryptAndGetKey(ctx, ciphertextMessage)
 
 	return plaintext, err
 }
 
 // DecryptAndGetKey decrypts the given message using an existing session that
 // is stored in the session store and returns the message keys used for encryption.
-func (d *Cipher) DecryptAndGetKey(ciphertextMessage *protocol.SignalMessage) ([]byte, *message.Keys, error) {
-	if !d.sessionStore.ContainsSession(d.remoteAddress) {
+func (d *Cipher) DecryptAndGetKey(ctx context.Context, ciphertextMessage *protocol.SignalMessage) ([]byte, *message.Keys, error) {
+	contains, err := d.sessionStore.ContainsSession(ctx, d.remoteAddress)
+	if err != nil {
+		return nil, nil, err
+	}
+	if !contains {
 		return nil, nil, fmt.Errorf("%w %s", signalerror.ErrNoSessionForUser, d.remoteAddress.String())
 	}
 
 	// Load the session record from our session store and decrypt the message.
-	sessionRecord := d.sessionStore.LoadSession(d.remoteAddress)
-	plaintext, messageKeys, err := d.DecryptWithRecord(sessionRecord, ciphertextMessage)
+	sessionRecord, err := d.sessionStore.LoadSession(ctx, d.remoteAddress)
+	if err != nil {
+		return nil, nil, err
+	}
+	if sessionRecord == nil {
+		return nil, nil, fmt.Errorf("LoadSession returned nil")
+	}
+	plaintext, messageKeys, err := d.DecryptWithRecord(ctx, sessionRecord, ciphertextMessage)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	if !d.identityKeyStore.IsTrustedIdentity(d.remoteAddress, sessionRecord.SessionState().RemoteIdentityKey()) {
-		// return err
+	trusted, err := d.identityKeyStore.IsTrustedIdentity(ctx, d.remoteAddress, sessionRecord.SessionState().RemoteIdentityKey())
+	if err != nil {
+		return nil, nil, err
 	}
-	d.identityKeyStore.SaveIdentity(d.remoteAddress, sessionRecord.SessionState().RemoteIdentityKey())
+	if !trusted {
+		return nil, nil, signalerror.ErrUntrustedIdentity
+	}
+	if err := d.identityKeyStore.SaveIdentity(ctx, d.remoteAddress, sessionRecord.SessionState().RemoteIdentityKey()); err != nil {
+		return nil, nil, err
+	}
 
 	// Store the session record in our session store.
-	d.sessionStore.StoreSession(d.remoteAddress, sessionRecord)
+	if err := d.sessionStore.StoreSession(ctx, d.remoteAddress, sessionRecord); err != nil {
+		return nil, nil, err
+	}
 	return plaintext, messageKeys, nil
 }
 
-func (d *Cipher) DecryptMessage(ciphertextMessage *protocol.PreKeySignalMessage) ([]byte, error) {
-	plaintext, _, err := d.DecryptMessageReturnKey(ciphertextMessage)
+func (d *Cipher) DecryptMessage(ctx context.Context, ciphertextMessage *protocol.PreKeySignalMessage) ([]byte, error) {
+	plaintext, _, err := d.DecryptMessageReturnKey(ctx, ciphertextMessage)
 	return plaintext, err
 }
 
-func (d *Cipher) DecryptMessageReturnKey(ciphertextMessage *protocol.PreKeySignalMessage) ([]byte, *message.Keys, error) {
+func (d *Cipher) DecryptMessageReturnKey(ctx context.Context, ciphertextMessage *protocol.PreKeySignalMessage) ([]byte, *message.Keys, error) {
 	// Load or create session record for this session.
-	sessionRecord := d.sessionStore.LoadSession(d.remoteAddress)
-	unsignedPreKeyID, err := d.builder.Process(sessionRecord, ciphertextMessage)
+	sessionRecord, err := d.sessionStore.LoadSession(ctx, d.remoteAddress)
 	if err != nil {
 		return nil, nil, err
 	}
-	plaintext, keys, err := d.DecryptWithRecord(sessionRecord, ciphertextMessage.WhisperMessage())
+	if sessionRecord == nil {
+		return nil, nil, fmt.Errorf("LoadSession returned nil")
+	}
+	unsignedPreKeyID, err := d.builder.Process(ctx, sessionRecord, ciphertextMessage)
+	if err != nil {
+		return nil, nil, err
+	}
+	plaintext, keys, err := d.DecryptWithRecord(ctx, sessionRecord, ciphertextMessage.WhisperMessage())
 	if err != nil {
 		return nil, nil, err
 	}
 	// Store the session record in our session store.
-	d.sessionStore.StoreSession(d.remoteAddress, sessionRecord)
+	if err := d.sessionStore.StoreSession(ctx, d.remoteAddress, sessionRecord); err != nil {
+		return nil, nil, err
+	}
 	if !unsignedPreKeyID.IsEmpty {
-		d.preKeyStore.RemovePreKey(unsignedPreKeyID.Value)
+		if err := d.preKeyStore.RemovePreKey(ctx, unsignedPreKeyID.Value); err != nil {
+			return nil, nil, err
+		}
 	}
 	return plaintext, keys, nil
 }
 
 // DecryptWithKey will decrypt the given message using the given symmetric key. This
 // can be used when decrypting messages at a later time if the message key was saved.
-func (d *Cipher) DecryptWithKey(ciphertextMessage *protocol.SignalMessage, key *message.Keys) ([]byte, error) {
+func (d *Cipher) DecryptWithKey(ctx context.Context, ciphertextMessage *protocol.SignalMessage, key *message.Keys) ([]byte, error) {
 	logger.Debug("Decrypting ciphertext body: ", ciphertextMessage.Body())
 	plaintext, err := decrypt(key, ciphertextMessage.Body())
 	if err != nil {
@@ -200,22 +244,26 @@ func (d *Cipher) DecryptWithKey(ciphertextMessage *protocol.SignalMessage, key *
 }
 
 // DecryptWithRecord decrypts the given message using the given session record.
-func (d *Cipher) DecryptWithRecord(sessionRecord *record.Session, ciphertext *protocol.SignalMessage) ([]byte, *message.Keys, error) {
+func (d *Cipher) DecryptWithRecord(ctx context.Context, sessionRecord *record.Session, ciphertext *protocol.SignalMessage) ([]byte, *message.Keys, error) {
 	logger.Debug("Decrypting ciphertext with record: ", sessionRecord)
 	previousStates := sessionRecord.PreviousSessionStates()
 	sessionState := sessionRecord.SessionState()
 
 	// Try and decrypt the message with the current session state.
-	plaintext, messageKeys, err := d.DecryptWithState(sessionState, ciphertext)
+	plaintext, messageKeys, err := d.DecryptWithState(ctx, sessionState, ciphertext)
 
 	// If we received an error using the current session state, loop
 	// through all previous states.
-	if err != nil {
+	if errors.Is(err, signalerror.ErrOldCounter) {
+		return nil, nil, err
+	} else if err != nil {
 		logger.Warning(err)
 		for i, state := range previousStates {
 			// Try decrypting the message with previous states
-			plaintext, messageKeys, err = d.DecryptWithState(state, ciphertext)
-			if err != nil {
+			plaintext, messageKeys, err = d.DecryptWithState(ctx, state, ciphertext)
+			if errors.Is(err, signalerror.ErrOldCounter) {
+				return nil, nil, err
+			} else if err != nil {
 				continue
 			}
 
@@ -236,7 +284,7 @@ func (d *Cipher) DecryptWithRecord(sessionRecord *record.Session, ciphertext *pr
 }
 
 // DecryptWithState decrypts the given message with the given session state.
-func (d *Cipher) DecryptWithState(sessionState *record.State, ciphertextMessage *protocol.SignalMessage) ([]byte, *message.Keys, error) {
+func (d *Cipher) DecryptWithState(ctx context.Context, sessionState *record.State, ciphertextMessage *protocol.SignalMessage) ([]byte, *message.Keys, error) {
 	logger.Debug("Decrypting ciphertext with session state: ", sessionState)
 	if !sessionState.HasSenderChain() {
 		logger.Error("Unable to decrypt message with state: ", signalerror.ErrUninitializedSession)
@@ -269,7 +317,7 @@ func (d *Cipher) DecryptWithState(sessionState *record.State, ciphertextMessage 
 		return nil, nil, fmt.Errorf("failed to verify ciphertext MAC: %w", err)
 	}
 
-	plaintext, err := d.DecryptWithKey(ciphertextMessage, messageKeys)
+	plaintext, err := d.DecryptWithKey(ctx, ciphertextMessage, messageKeys)
 	if err != nil {
 		return nil, nil, err
 	}

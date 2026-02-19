@@ -13,13 +13,15 @@ import (
 type GroupMemberAddMode string
 
 const (
-	GroupMemberAddModeAdmin GroupMemberAddMode = "admin_add"
+	GroupMemberAddModeAdmin     GroupMemberAddMode = "admin_add"
+	GroupMemberAddModeAllMember GroupMemberAddMode = "all_member_add"
 )
 
 // GroupInfo contains basic information about a group chat on WhatsApp.
 type GroupInfo struct {
 	JID      JID
 	OwnerJID JID
+	OwnerPN  JID
 
 	GroupName
 	GroupTopic
@@ -31,13 +33,24 @@ type GroupInfo struct {
 	GroupParent
 	GroupLinkedParent
 	GroupIsDefaultSub
+	GroupMembershipApprovalMode
 
-	GroupCreated time.Time
+	AddressingMode     AddressingMode
+	GroupCreated       time.Time
+	CreatorCountryCode string
 
 	ParticipantVersionID string
 	Participants         []GroupParticipant
+	ParticipantCount     int
 
 	MemberAddMode GroupMemberAddMode
+
+	// Suspended indicates whether the group is currently paused/suspended.
+	Suspended bool
+}
+
+type GroupMembershipApprovalMode struct {
+	IsJoinApprovalRequired bool
 }
 
 type GroupParent struct {
@@ -55,9 +68,10 @@ type GroupIsDefaultSub struct {
 
 // GroupName contains the name of a group along with metadata of who set it and when.
 type GroupName struct {
-	Name      string
-	NameSetAt time.Time
-	NameSetBy JID
+	Name        string
+	NameSetAt   time.Time
+	NameSetBy   JID
+	NameSetByPN JID
 }
 
 // GroupTopic contains the topic (description) of a group along with metadata of who set it and when.
@@ -66,6 +80,7 @@ type GroupTopic struct {
 	TopicID      string
 	TopicSetAt   time.Time
 	TopicSetBy   JID
+	TopicSetByPN JID
 	TopicDeleted bool
 }
 
@@ -86,8 +101,12 @@ type GroupIncognito struct {
 
 // GroupParticipant contains info about a participant of a WhatsApp group chat.
 type GroupParticipant struct {
-	JID          JID
-	LID          JID
+	// The primary JID that should be used to send messages to this participant.
+	// Always equals either the LID or phone number.
+	JID         JID
+	PhoneNumber JID
+	LID         JID
+
 	IsAdmin      bool
 	IsSuperAdmin bool
 
@@ -141,4 +160,9 @@ type GroupLinkChange struct {
 	Type         GroupLinkChangeType
 	UnlinkReason GroupUnlinkReason
 	Group        GroupLinkTarget
+}
+
+type GroupParticipantRequest struct {
+	JID         JID
+	RequestedAt time.Time
 }

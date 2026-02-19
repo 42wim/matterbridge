@@ -8,34 +8,40 @@ package whatsmeow
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"google.golang.org/protobuf/proto"
 
 	waBinary "go.mau.fi/whatsmeow/binary"
-	waProto "go.mau.fi/whatsmeow/binary/proto"
+	"go.mau.fi/whatsmeow/proto/waHistorySync"
+	"go.mau.fi/whatsmeow/proto/waVnameCert"
+	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
 )
 
-const BusinessMessageLinkPrefix = "https://wa.me/message/"
-const ContactQRLinkPrefix = "https://wa.me/qr/"
-const BusinessMessageLinkDirectPrefix = "https://api.whatsapp.com/message/"
-const ContactQRLinkDirectPrefix = "https://api.whatsapp.com/qr/"
-const NewsletterLinkPrefix = "https://whatsapp.com/channel/"
+const (
+	BusinessMessageLinkPrefix       = "https://wa.me/message/"
+	ContactQRLinkPrefix             = "https://wa.me/qr/"
+	BusinessMessageLinkDirectPrefix = "https://api.whatsapp.com/message/"
+	ContactQRLinkDirectPrefix       = "https://api.whatsapp.com/qr/"
+	NewsletterLinkPrefix            = "https://whatsapp.com/channel/"
+)
 
 // ResolveBusinessMessageLink resolves a business message short link and returns the target JID, business name and
 // text to prefill in the input field (if any).
 //
 // The links look like https://wa.me/message/<code> or https://api.whatsapp.com/message/<code>. You can either provide
 // the full link, or just the <code> part.
-func (cli *Client) ResolveBusinessMessageLink(code string) (*types.BusinessMessageLinkTarget, error) {
+func (cli *Client) ResolveBusinessMessageLink(ctx context.Context, code string) (*types.BusinessMessageLinkTarget, error) {
 	code = strings.TrimPrefix(code, BusinessMessageLinkPrefix)
 	code = strings.TrimPrefix(code, BusinessMessageLinkDirectPrefix)
 
-	resp, err := cli.sendIQ(infoQuery{
+	resp, err := cli.sendIQ(ctx, infoQuery{
 		Namespace: "w:qr",
 		Type:      iqGet,
 		// WhatsApp android doesn't seem to have a "to" field for this one at all, not sure why but it works
@@ -78,11 +84,11 @@ func (cli *Client) ResolveBusinessMessageLink(code string) (*types.BusinessMessa
 //
 // The links look like https://wa.me/qr/<code> or https://api.whatsapp.com/qr/<code>. You can either provide
 // the full link, or just the <code> part.
-func (cli *Client) ResolveContactQRLink(code string) (*types.ContactQRLinkTarget, error) {
+func (cli *Client) ResolveContactQRLink(ctx context.Context, code string) (*types.ContactQRLinkTarget, error) {
 	code = strings.TrimPrefix(code, ContactQRLinkPrefix)
 	code = strings.TrimPrefix(code, ContactQRLinkDirectPrefix)
 
-	resp, err := cli.sendIQ(infoQuery{
+	resp, err := cli.sendIQ(ctx, infoQuery{
 		Namespace: "w:qr",
 		Type:      iqGet,
 		Content: []waBinary.Node{{
@@ -113,12 +119,12 @@ func (cli *Client) ResolveContactQRLink(code string) (*types.ContactQRLinkTarget
 // (or scanned with the official apps when encoded as a QR code).
 //
 // If the revoke parameter is set to true, it will ask the server to revoke the previous link and generate a new one.
-func (cli *Client) GetContactQRLink(revoke bool) (string, error) {
+func (cli *Client) GetContactQRLink(ctx context.Context, revoke bool) (string, error) {
 	action := "get"
 	if revoke {
 		action = "revoke"
 	}
-	resp, err := cli.sendIQ(infoQuery{
+	resp, err := cli.sendIQ(ctx, infoQuery{
 		Namespace: "w:qr",
 		Type:      iqSet,
 		Content: []waBinary.Node{{
@@ -144,8 +150,8 @@ func (cli *Client) GetContactQRLink(revoke bool) (string, error) {
 //
 // This is different from the ephemeral status broadcast messages. Use SendMessage to types.StatusBroadcastJID to send
 // such messages.
-func (cli *Client) SetStatusMessage(msg string) error {
-	_, err := cli.sendIQ(infoQuery{
+func (cli *Client) SetStatusMessage(ctx context.Context, msg string) error {
+	_, err := cli.sendIQ(ctx, infoQuery{
 		Namespace: "status",
 		Type:      iqSet,
 		To:        types.ServerJID,
@@ -159,12 +165,12 @@ func (cli *Client) SetStatusMessage(msg string) error {
 
 // IsOnWhatsApp checks if the given phone numbers are registered on WhatsApp.
 // The phone numbers should be in international format, including the `+` prefix.
-func (cli *Client) IsOnWhatsApp(phones []string) ([]types.IsOnWhatsAppResponse, error) {
+func (cli *Client) IsOnWhatsApp(ctx context.Context, phones []string) ([]types.IsOnWhatsAppResponse, error) {
 	jids := make([]types.JID, len(phones))
 	for i := range jids {
 		jids[i] = types.NewJID(phones[i], types.LegacyUserServer)
 	}
-	list, err := cli.usync(context.TODO(), jids, "query", "interactive", []waBinary.Node{
+	list, err := cli.usync(ctx, jids, "query", "interactive", []waBinary.Node{
 		{Tag: "business", Content: []waBinary.Node{{Tag: "verified_name"}}},
 		{Tag: "contact"},
 	})
@@ -194,17 +200,19 @@ func (cli *Client) IsOnWhatsApp(phones []string) ([]types.IsOnWhatsAppResponse, 
 }
 
 // GetUserInfo gets basic user info (avatar, status, verified business name, device list).
-func (cli *Client) GetUserInfo(jids []types.JID) (map[types.JID]types.UserInfo, error) {
-	list, err := cli.usync(context.TODO(), jids, "full", "background", []waBinary.Node{
+func (cli *Client) GetUserInfo(ctx context.Context, jids []types.JID) (map[types.JID]types.UserInfo, error) {
+	list, err := cli.usync(ctx, jids, "full", "background", []waBinary.Node{
 		{Tag: "business", Content: []waBinary.Node{{Tag: "verified_name"}}},
 		{Tag: "status"},
 		{Tag: "picture"},
 		{Tag: "devices", Attrs: waBinary.Attrs{"version": "2"}},
+		{Tag: "lid"},
 	})
 	if err != nil {
 		return nil, err
 	}
 	respData := make(map[types.JID]types.UserInfo, len(jids))
+	mappings := make([]store.LIDMapping, 0, len(jids))
 	for _, child := range list.GetChildren() {
 		jid, jidOK := child.Attrs["jid"].(types.JID)
 		if child.Tag != "user" || !jidOK {
@@ -218,17 +226,32 @@ func (cli *Client) GetUserInfo(jids []types.JID) (map[types.JID]types.UserInfo, 
 		status, _ := child.GetChildByTag("status").Content.([]byte)
 		info.Status = string(status)
 		info.PictureID, _ = child.GetChildByTag("picture").Attrs["id"].(string)
-		info.Devices = parseDeviceList(jid.User, child.GetChildByTag("devices"))
+		info.Devices = parseDeviceList(jid, child.GetChildByTag("devices"))
+
+		lidTag := child.GetChildByTag("lid")
+		info.LID = lidTag.AttrGetter().OptionalJIDOrEmpty("val")
+
+		if !info.LID.IsEmpty() {
+			mappings = append(mappings, store.LIDMapping{PN: jid, LID: info.LID})
+		}
+
 		if verifiedName != nil {
-			cli.updateBusinessName(jid, nil, verifiedName.Details.GetVerifiedName())
+			cli.updateBusinessName(ctx, jid, info.LID, nil, verifiedName.Details.GetVerifiedName())
 		}
 		respData[jid] = info
 	}
+
+	err = cli.Store.LIDs.PutManyLIDMappings(ctx, mappings)
+	if err != nil {
+		// not worth returning on the error, instead just post a log
+		cli.Log.Errorf("Failed to place LID mappings from USync call")
+	}
+
 	return respData, nil
 }
 
-func (cli *Client) GetBotListV2() ([]types.BotListInfo, error) {
-	resp, err := cli.sendIQ(infoQuery{
+func (cli *Client) GetBotListV2(ctx context.Context) ([]types.BotListInfo, error) {
+	resp, err := cli.sendIQ(ctx, infoQuery{
 		To:        types.ServerJID,
 		Namespace: "bot",
 		Type:      iqGet,
@@ -261,13 +284,13 @@ func (cli *Client) GetBotListV2() ([]types.BotListInfo, error) {
 	return list, nil
 }
 
-func (cli *Client) GetBotProfiles(botInfo []types.BotListInfo) ([]types.BotProfileInfo, error) {
+func (cli *Client) GetBotProfiles(ctx context.Context, botInfo []types.BotListInfo) ([]types.BotProfileInfo, error) {
 	jids := make([]types.JID, len(botInfo))
 	for i, bot := range botInfo {
 		jids[i] = bot.BotJID
 	}
 
-	list, err := cli.usync(context.TODO(), jids, "query", "interactive", []waBinary.Node{
+	list, err := cli.usync(ctx, jids, "query", "interactive", []waBinary.Node{
 		{Tag: "bot", Content: []waBinary.Node{{Tag: "profile", Attrs: waBinary.Attrs{"v": "1"}}}},
 	}, UsyncQueryExtras{
 		BotListInfo: botInfo,
@@ -334,8 +357,8 @@ func (cli *Client) parseBusinessProfile(node *waBinary.Node) (*types.BusinessPro
 	if !ok {
 		return nil, errors.New("missing jid in business profile")
 	}
-	address := string(profileNode.GetChildByTag("address").Content.([]byte))
-	email := string(profileNode.GetChildByTag("email").Content.([]byte))
+	address, _ := profileNode.GetChildByTag("address").Content.([]byte)
+	email, _ := profileNode.GetChildByTag("email").Content.([]byte)
 	businessHour := profileNode.GetChildByTag("business_hours")
 	businessHourTimezone := businessHour.AttrGetter().String("timezone")
 	businessHoursConfigs := businessHour.GetChildren()
@@ -344,7 +367,7 @@ func (cli *Client) parseBusinessProfile(node *waBinary.Node) (*types.BusinessPro
 		if config.Tag != "business_hours_config" {
 			continue
 		}
-		dow := config.AttrGetter().String("dow")
+		dow := config.AttrGetter().String("day_of_week")
 		mode := config.AttrGetter().String("mode")
 		openTime := config.AttrGetter().String("open_time")
 		closeTime := config.AttrGetter().String("close_time")
@@ -362,21 +385,23 @@ func (cli *Client) parseBusinessProfile(node *waBinary.Node) (*types.BusinessPro
 			continue
 		}
 		id := category.AttrGetter().String("id")
-		name := string(category.Content.([]byte))
+		name, _ := category.Content.([]byte)
 		categories = append(categories, types.Category{
 			ID:   id,
-			Name: name,
+			Name: string(name),
 		})
 	}
 	profileOptionsNode := profileNode.GetChildByTag("profile_options")
 	profileOptions := make(map[string]string)
 	for _, option := range profileOptionsNode.GetChildren() {
-		profileOptions[option.Tag] = string(option.Content.([]byte))
+		optValueBytes, _ := option.Content.([]byte)
+		profileOptions[option.Tag] = string(optValueBytes)
+		// TODO parse bot_fields
 	}
 	return &types.BusinessProfile{
 		JID:                   jid,
-		Email:                 email,
-		Address:               address,
+		Email:                 string(email),
+		Address:               string(address),
 		Categories:            categories,
 		ProfileOptions:        profileOptions,
 		BusinessHoursTimeZone: businessHourTimezone,
@@ -385,8 +410,8 @@ func (cli *Client) parseBusinessProfile(node *waBinary.Node) (*types.BusinessPro
 }
 
 // GetBusinessProfile gets the profile info of a WhatsApp business account
-func (cli *Client) GetBusinessProfile(jid types.JID) (*types.BusinessProfile, error) {
-	resp, err := cli.sendIQ(infoQuery{
+func (cli *Client) GetBusinessProfile(ctx context.Context, jid types.JID) (*types.BusinessProfile, error) {
+	resp, err := cli.sendIQ(ctx, infoQuery{
 		Type:      iqGet,
 		To:        types.ServerJID,
 		Namespace: "w:biz",
@@ -413,14 +438,17 @@ func (cli *Client) GetBusinessProfile(jid types.JID) (*types.BusinessProfile, er
 	return cli.parseBusinessProfile(&node)
 }
 
+func (cli *Client) GetUserDevicesContext(ctx context.Context, jids []types.JID) ([]types.JID, error) {
+	return cli.GetUserDevices(ctx, jids)
+}
+
 // GetUserDevices gets the list of devices that the given user has. The input should be a list of
 // regular JIDs, and the output will be a list of AD JIDs. The local device will not be included in
 // the output even if the user's JID is included in the input. All other devices will be included.
-func (cli *Client) GetUserDevices(jids []types.JID) ([]types.JID, error) {
-	return cli.GetUserDevicesContext(context.Background(), jids)
-}
-
-func (cli *Client) GetUserDevicesContext(ctx context.Context, jids []types.JID) ([]types.JID, error) {
+func (cli *Client) GetUserDevices(ctx context.Context, jids []types.JID) ([]types.JID, error) {
+	if cli == nil {
+		return nil, ErrClientIsNil
+	}
 	cli.userDevicesCacheLock.Lock()
 	defer cli.userDevicesCacheLock.Unlock()
 
@@ -451,26 +479,18 @@ func (cli *Client) GetUserDevicesContext(ctx context.Context, jids []types.JID) 
 			if user.Tag != "user" || !jidOK {
 				continue
 			}
-			userDevices := parseDeviceList(jid.User, user.GetChildByTag("devices"))
+			userDevices := parseDeviceList(jid, user.GetChildByTag("devices"))
 			cli.userDevicesCache[jid] = deviceCache{devices: userDevices, dhash: participantListHashV2(userDevices)}
 			devices = append(devices, userDevices...)
 		}
 	}
 
 	if len(fbJIDsToSync) > 0 {
-		list, err := cli.getFBIDDevices(ctx, fbJIDsToSync)
+		userDevices, err := cli.getFBIDDevices(ctx, fbJIDsToSync)
 		if err != nil {
 			return nil, err
 		}
-		for _, user := range list.GetChildren() {
-			jid, jidOK := user.Attrs["jid"].(types.JID)
-			if user.Tag != "user" || !jidOK {
-				continue
-			}
-			userDevices := parseFBDeviceList(jid, user.GetChildByTag("devices"))
-			cli.userDevicesCache[jid] = userDevices
-			devices = append(devices, userDevices.devices...)
-		}
+		devices = append(devices, userDevices...)
 	}
 
 	return devices, nil
@@ -480,6 +500,12 @@ type GetProfilePictureParams struct {
 	Preview     bool
 	ExistingID  string
 	IsCommunity bool
+	// This is a common group ID that you share with the target
+	CommonGID types.JID
+	// use this to query the profile photo of a group you don't have joined, but you have an invite code for
+	InviteCode string
+	// Persona ID when getting profile of Meta AI bots
+	PersonaID string
 }
 
 // GetProfilePictureInfo gets the URL where you can download a WhatsApp user's profile picture or group's photo.
@@ -488,7 +514,10 @@ type GetProfilePictureParams struct {
 // If the profile picture hasn't changed, this will return nil with no error.
 //
 // To get a community photo, you should pass `IsCommunity: true`, as otherwise you may get a 401 error.
-func (cli *Client) GetProfilePictureInfo(jid types.JID, params *GetProfilePictureParams) (*types.ProfilePictureInfo, error) {
+func (cli *Client) GetProfilePictureInfo(ctx context.Context, jid types.JID, params *GetProfilePictureParams) (*types.ProfilePictureInfo, error) {
+	if cli == nil {
+		return nil, ErrClientIsNil
+	}
 	attrs := waBinary.Attrs{
 		"query": "url",
 	}
@@ -504,6 +533,10 @@ func (cli *Client) GetProfilePictureInfo(jid types.JID, params *GetProfilePictur
 	if params.ExistingID != "" {
 		attrs["id"] = params.ExistingID
 	}
+	if params.InviteCode != "" {
+		attrs["invite"] = params.InviteCode
+	}
+
 	var expectWrapped bool
 	var content []waBinary.Node
 	namespace := "w:profile:picture"
@@ -523,12 +556,30 @@ func (cli *Client) GetProfilePictureInfo(jid types.JID, params *GetProfilePictur
 	} else {
 		to = types.ServerJID
 		target = jid
+
+		if !params.CommonGID.IsEmpty() {
+			attrs["common_gid"] = params.CommonGID
+		}
+
+		if params.PersonaID != "" {
+			attrs["persona_id"] = params.PersonaID
+		}
+
+		var pictureContent []waBinary.Node
+		if token, _ := cli.Store.PrivacyTokens.GetPrivacyToken(ctx, jid); token != nil {
+			pictureContent = []waBinary.Node{{
+				Tag:     "tctoken",
+				Content: token.Token,
+			}}
+		}
+
 		content = []waBinary.Node{{
-			Tag:   "picture",
-			Attrs: attrs,
+			Tag:     "picture",
+			Attrs:   attrs,
+			Content: pictureContent,
 		}}
 	}
-	resp, err := cli.sendIQ(infoQuery{
+	resp, err := cli.sendIQ(ctx, infoQuery{
 		Namespace: namespace,
 		Type:      "get",
 		To:        to,
@@ -560,18 +611,21 @@ func (cli *Client) GetProfilePictureInfo(jid types.JID, params *GetProfilePictur
 	ag := picture.AttrGetter()
 	if ag.OptionalInt("status") == 304 {
 		return nil, nil
+	} else if ag.OptionalInt("status") == 204 {
+		return nil, ErrProfilePictureNotSet
 	}
 	info.ID = ag.String("id")
 	info.URL = ag.String("url")
 	info.Type = ag.String("type")
 	info.DirectPath = ag.String("direct_path")
+	info.Hash, _ = base64.StdEncoding.DecodeString(ag.OptionalString("hash"))
 	if !ag.OK() {
 		return &info, ag.Error()
 	}
 	return &info, nil
 }
 
-func (cli *Client) handleHistoricalPushNames(names []*waProto.Pushname) {
+func (cli *Client) handleHistoricalPushNames(ctx context.Context, names []*waHistorySync.Pushname) {
 	if cli.Store.Contacts == nil {
 		return
 	}
@@ -581,28 +635,39 @@ func (cli *Client) handleHistoricalPushNames(names []*waProto.Pushname) {
 			continue
 		}
 		var changed bool
-		if jid, err := types.ParseJID(user.GetId()); err != nil {
-			cli.Log.Warnf("Failed to parse user ID '%s' in push name history sync: %v", user.GetId(), err)
-		} else if changed, _, err = cli.Store.Contacts.PutPushName(jid, user.GetPushname()); err != nil {
-			cli.Log.Warnf("Failed to store push name of %s from history sync: %v", err)
+		if jid, err := types.ParseJID(user.GetID()); err != nil {
+			cli.Log.Warnf("Failed to parse user ID '%s' in push name history sync: %v", user.GetID(), err)
+		} else if changed, _, err = cli.Store.Contacts.PutPushName(ctx, jid, user.GetPushname()); err != nil {
+			cli.Log.Warnf("Failed to store push name of %s from history sync: %v", jid, err)
 		} else if changed {
 			cli.Log.Debugf("Got push name %s for %s in history sync", user.GetPushname(), jid)
 		}
 	}
 }
 
-func (cli *Client) updatePushName(user types.JID, messageInfo *types.MessageInfo, name string) {
+func (cli *Client) updatePushName(ctx context.Context, user, userAlt types.JID, messageInfo *types.MessageInfo, name string) {
 	if cli.Store.Contacts == nil {
 		return
 	}
 	user = user.ToNonAD()
-	changed, previousName, err := cli.Store.Contacts.PutPushName(user, name)
+	changed, previousName, err := cli.Store.Contacts.PutPushName(ctx, user, name)
 	if err != nil {
 		cli.Log.Errorf("Failed to save push name of %s in device store: %v", user, err)
 	} else if changed {
+		userAlt = userAlt.ToNonAD()
+		if userAlt.IsEmpty() {
+			userAlt, _ = cli.Store.GetAltJID(ctx, user)
+		}
+		if !userAlt.IsEmpty() {
+			_, _, err = cli.Store.Contacts.PutPushName(ctx, userAlt, name)
+			if err != nil {
+				cli.Log.Errorf("Failed to save push name of %s in device store: %v", userAlt, err)
+			}
+		}
 		cli.Log.Debugf("Push name of %s changed from %s to %s, dispatching event", user, previousName, name)
 		cli.dispatchEvent(&events.PushName{
 			JID:         user,
+			JIDAlt:      userAlt,
 			Message:     messageInfo,
 			OldPushName: previousName,
 			NewPushName: name,
@@ -610,14 +675,24 @@ func (cli *Client) updatePushName(user types.JID, messageInfo *types.MessageInfo
 	}
 }
 
-func (cli *Client) updateBusinessName(user types.JID, messageInfo *types.MessageInfo, name string) {
+func (cli *Client) updateBusinessName(ctx context.Context, user, userAlt types.JID, messageInfo *types.MessageInfo, name string) {
 	if cli.Store.Contacts == nil {
 		return
 	}
-	changed, previousName, err := cli.Store.Contacts.PutBusinessName(user, name)
+	changed, previousName, err := cli.Store.Contacts.PutBusinessName(ctx, user, name)
 	if err != nil {
 		cli.Log.Errorf("Failed to save business name of %s in device store: %v", user, err)
 	} else if changed {
+		userAlt = userAlt.ToNonAD()
+		if userAlt.IsEmpty() {
+			userAlt, _ = cli.Store.GetAltJID(ctx, user)
+		}
+		if !userAlt.IsEmpty() {
+			_, _, err = cli.Store.Contacts.PutBusinessName(ctx, userAlt, name)
+			if err != nil {
+				cli.Log.Errorf("Failed to save push name of %s in device store: %v", userAlt, err)
+			}
+		}
 		cli.Log.Debugf("Business name of %s changed from %s to %s, dispatching event", user, previousName, name)
 		cli.dispatchEvent(&events.BusinessName{
 			JID:             user,
@@ -645,12 +720,12 @@ func parseVerifiedNameContent(verifiedNameNode waBinary.Node) (*types.VerifiedNa
 		return nil, nil
 	}
 
-	var cert waProto.VerifiedNameCertificate
+	var cert waVnameCert.VerifiedNameCertificate
 	err := proto.Unmarshal(rawCert, &cert)
 	if err != nil {
 		return nil, err
 	}
-	var certDetails waProto.VerifiedNameCertificate_Details
+	var certDetails waVnameCert.VerifiedNameCertificate_Details
 	err = proto.Unmarshal(cert.GetDetails(), &certDetails)
 	if err != nil {
 		return nil, err
@@ -661,7 +736,7 @@ func parseVerifiedNameContent(verifiedNameNode waBinary.Node) (*types.VerifiedNa
 	}, nil
 }
 
-func parseDeviceList(user string, deviceNode waBinary.Node) []types.JID {
+func parseDeviceList(user types.JID, deviceNode waBinary.Node) []types.JID {
 	deviceList := deviceNode.GetChildByTag("device-list")
 	if deviceNode.Tag != "devices" || deviceList.Tag != "device-list" {
 		return nil
@@ -670,10 +745,22 @@ func parseDeviceList(user string, deviceNode waBinary.Node) []types.JID {
 	devices := make([]types.JID, 0, len(children))
 	for _, device := range children {
 		deviceID, ok := device.AttrGetter().GetInt64("id", true)
+		isHosted := device.AttrGetter().Bool("is_hosted")
 		if device.Tag != "device" || !ok {
 			continue
 		}
-		devices = append(devices, types.NewADJID(user, 0, byte(deviceID)))
+		user.Device = uint16(deviceID)
+		if isHosted {
+			hostedUser := user
+			if user.Server == types.HiddenUserServer {
+				hostedUser.Server = types.HostedLIDServer
+			} else {
+				hostedUser.Server = types.HostedServer
+			}
+			devices = append(devices, hostedUser)
+		} else {
+			devices = append(devices, user)
+		}
 	}
 	return devices
 }
@@ -697,15 +784,14 @@ func parseFBDeviceList(user types.JID, deviceList waBinary.Node) deviceCache {
 	}
 }
 
-func (cli *Client) getFBIDDevices(ctx context.Context, jids []types.JID) (*waBinary.Node, error) {
+func (cli *Client) getFBIDDevicesInternal(ctx context.Context, jids []types.JID) (*waBinary.Node, error) {
 	users := make([]waBinary.Node, len(jids))
 	for i, jid := range jids {
 		users[i].Tag = "user"
 		users[i].Attrs = waBinary.Attrs{"jid": jid}
 		// TODO include dhash for users
 	}
-	resp, err := cli.sendIQ(infoQuery{
-		Context:   ctx,
+	resp, err := cli.sendIQ(ctx, infoQuery{
 		Namespace: "fbid:devices",
 		Type:      iqGet,
 		To:        types.ServerJID,
@@ -723,11 +809,34 @@ func (cli *Client) getFBIDDevices(ctx context.Context, jids []types.JID) (*waBin
 	}
 }
 
+func (cli *Client) getFBIDDevices(ctx context.Context, jids []types.JID) ([]types.JID, error) {
+	var devices []types.JID
+	for chunk := range slices.Chunk(jids, 15) {
+		list, err := cli.getFBIDDevicesInternal(ctx, chunk)
+		if err != nil {
+			return nil, err
+		}
+		for _, user := range list.GetChildren() {
+			jid, jidOK := user.Attrs["jid"].(types.JID)
+			if user.Tag != "user" || !jidOK {
+				continue
+			}
+			userDevices := parseFBDeviceList(jid, user.GetChildByTag("devices"))
+			cli.userDevicesCache[jid] = userDevices
+			devices = append(devices, userDevices.devices...)
+		}
+	}
+	return devices, nil
+}
+
 type UsyncQueryExtras struct {
 	BotListInfo []types.BotListInfo
 }
 
 func (cli *Client) usync(ctx context.Context, jids []types.JID, mode, context string, query []waBinary.Node, extra ...UsyncQueryExtras) (*waBinary.Node, error) {
+	if cli == nil {
+		return nil, ErrClientIsNil
+	}
 	var extras UsyncQueryExtras
 	if len(extra) > 1 {
 		return nil, errors.New("only one extra parameter may be provided to usync()")
@@ -746,20 +855,22 @@ func (cli *Client) usync(ctx context.Context, jids []types.JID, mode, context st
 				Tag:     "contact",
 				Content: jid.String(),
 			}}
-		case types.DefaultUserServer:
+		case types.DefaultUserServer, types.HiddenUserServer:
+			// NOTE: You can pass in an LID with a JID (<lid jid=...> user node)
+			// Not sure if you can just put the LID in the jid tag here (works for <devices> queries mainly)
 			userList[i].Attrs = waBinary.Attrs{"jid": jid}
 			if jid.IsBot() {
-				var personaId string
+				var personaID string
 				for _, bot := range extras.BotListInfo {
 					if bot.BotJID.User == jid.User {
-						personaId = bot.PersonaID
+						personaID = bot.PersonaID
 					}
 				}
 				userList[i].Content = []waBinary.Node{{
 					Tag: "bot",
 					Content: []waBinary.Node{{
 						Tag:   "profile",
-						Attrs: waBinary.Attrs{"persona_id": personaId},
+						Attrs: waBinary.Attrs{"persona_id": personaID},
 					}},
 				}}
 			}
@@ -767,8 +878,7 @@ func (cli *Client) usync(ctx context.Context, jids []types.JID, mode, context st
 			return nil, fmt.Errorf("unknown user server '%s'", jid.Server)
 		}
 	}
-	resp, err := cli.sendIQ(infoQuery{
-		Context:   ctx,
+	resp, err := cli.sendIQ(ctx, infoQuery{
 		Namespace: "usync",
 		Type:      "get",
 		To:        types.ServerJID,
@@ -814,8 +924,8 @@ func (cli *Client) parseBlocklist(node *waBinary.Node) *types.Blocklist {
 }
 
 // GetBlocklist gets the list of users that this user has blocked.
-func (cli *Client) GetBlocklist() (*types.Blocklist, error) {
-	resp, err := cli.sendIQ(infoQuery{
+func (cli *Client) GetBlocklist(ctx context.Context) (*types.Blocklist, error) {
+	resp, err := cli.sendIQ(ctx, infoQuery{
 		Namespace: "blocklist",
 		Type:      iqGet,
 		To:        types.ServerJID,
@@ -831,8 +941,8 @@ func (cli *Client) GetBlocklist() (*types.Blocklist, error) {
 }
 
 // UpdateBlocklist updates the user's block list and returns the updated list.
-func (cli *Client) UpdateBlocklist(jid types.JID, action events.BlocklistChangeAction) (*types.Blocklist, error) {
-	resp, err := cli.sendIQ(infoQuery{
+func (cli *Client) UpdateBlocklist(ctx context.Context, jid types.JID, action events.BlocklistChangeAction) (*types.Blocklist, error) {
+	resp, err := cli.sendIQ(ctx, infoQuery{
 		Namespace: "blocklist",
 		Type:      iqSet,
 		To:        types.ServerJID,
@@ -844,6 +954,9 @@ func (cli *Client) UpdateBlocklist(jid types.JID, action events.BlocklistChangeA
 			},
 		}},
 	})
+	if err != nil {
+		return nil, err
+	}
 	list, ok := resp.GetOptionalChildByTag("list")
 	if !ok {
 		return nil, &ElementMissingError{Tag: "list", In: "response to blocklist update"}

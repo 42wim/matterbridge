@@ -1,6 +1,8 @@
 package store
 
 import (
+	"context"
+
 	"go.mau.fi/libsignal/keys/identity"
 	"go.mau.fi/libsignal/protocol"
 )
@@ -14,10 +16,10 @@ type IdentityKey interface {
 	//
 	// Clients should maintain a registration ID, a random number between 1 and 16380
 	// that's generated once at install time.
-	GetLocalRegistrationId() uint32
+	GetLocalRegistrationID() uint32
 
 	// Save a remote client's identity key in our identity store.
-	SaveIdentity(address *protocol.SignalAddress, identityKey *identity.Key)
+	SaveIdentity(ctx context.Context, address *protocol.SignalAddress, identityKey *identity.Key) error
 
 	// Verify a remote client's identity key.
 	//
@@ -25,5 +27,5 @@ type IdentityKey interface {
 	// 'trust on first use'. This means that an identity key is considered 'trusted'
 	// if there is no entry for the recipient in the local store, or if it matches the
 	// saved key for a recipient in the local store.
-	IsTrustedIdentity(address *protocol.SignalAddress, identityKey *identity.Key) bool
+	IsTrustedIdentity(ctx context.Context, address *protocol.SignalAddress, identityKey *identity.Key) (bool, error)
 }

@@ -15,15 +15,20 @@ import (
 	"hash"
 
 	"go.mau.fi/whatsmeow/appstate/lthash"
-	waProto "go.mau.fi/whatsmeow/binary/proto"
+	"go.mau.fi/whatsmeow/proto/waServerSync"
+	"go.mau.fi/whatsmeow/proto/waSyncAction"
 )
 
 type Mutation struct {
-	Operation waProto.SyncdMutation_SyncdOperation
-	Action    *waProto.SyncActionValue
+	KeyID     []byte
+	Operation waServerSync.SyncdMutation_SyncdOperation
+	Action    *waSyncAction.SyncActionValue
+	Version   int32
 	Index     []string
 	IndexMAC  []byte
 	ValueMAC  []byte
+
+	PatchVersion uint64
 }
 
 type HashState struct {
@@ -31,12 +36,12 @@ type HashState struct {
 	Hash    [128]byte
 }
 
-func (hs *HashState) updateHash(mutations []*waProto.SyncdMutation, getPrevSetValueMAC func(indexMAC []byte, maxIndex int) ([]byte, error)) ([]error, error) {
+func (hs *HashState) updateHash(mutations []*waServerSync.SyncdMutation, getPrevSetValueMAC func(indexMAC []byte, maxIndex int) ([]byte, error)) ([]error, error) {
 	var added, removed [][]byte
 	var warnings []error
 
 	for i, mutation := range mutations {
-		if mutation.GetOperation() == waProto.SyncdMutation_SET {
+		if mutation.GetOperation() == waServerSync.SyncdMutation_SET {
 			value := mutation.GetRecord().GetValue().GetBlob()
 			added = append(added, value[len(value)-32:])
 		}
@@ -46,7 +51,7 @@ func (hs *HashState) updateHash(mutations []*waProto.SyncdMutation, getPrevSetVa
 			return warnings, fmt.Errorf("failed to get value MAC of previous SET operation: %w", err)
 		} else if removal != nil {
 			removed = append(removed, removal)
-		} else if mutation.GetOperation() == waProto.SyncdMutation_REMOVE {
+		} else if mutation.GetOperation() == waServerSync.SyncdMutation_REMOVE {
 			// TODO figure out if there are certain cases that are safe to ignore and others that aren't
 			// At least removing contact access from WhatsApp seems to create a REMOVE op for your own JID
 			// that points to a non-existent index and is safe to ignore here. Other keys might not be safe to ignore.
@@ -77,9 +82,9 @@ func (hs *HashState) generateSnapshotMAC(name WAPatchName, key []byte) []byte {
 	return concatAndHMAC(sha256.New, key, hs.Hash[:], uint64ToBytes(hs.Version), []byte(name))
 }
 
-func generatePatchMAC(patch *waProto.SyncdPatch, name WAPatchName, key []byte, version uint64) []byte {
+func generatePatchMAC(patch *waServerSync.SyncdPatch, name WAPatchName, key []byte, version uint64) []byte {
 	dataToHash := make([][]byte, len(patch.GetMutations())+3)
-	dataToHash[0] = patch.GetSnapshotMac()
+	dataToHash[0] = patch.GetSnapshotMAC()
 	for i, mutation := range patch.Mutations {
 		val := mutation.GetRecord().GetValue().GetBlob()
 		dataToHash[i+1] = val[len(val)-32:]
@@ -89,7 +94,7 @@ func generatePatchMAC(patch *waProto.SyncdPatch, name WAPatchName, key []byte, v
 	return concatAndHMAC(sha256.New, key, dataToHash...)
 }
 
-func generateContentMAC(operation waProto.SyncdMutation_SyncdOperation, data, keyID, key []byte) []byte {
+func generateContentMAC(operation waServerSync.SyncdMutation_SyncdOperation, data, keyID, key []byte) []byte {
 	operationBytes := []byte{byte(operation) + 1}
 	keyDataLength := uint64ToBytes(uint64(len(keyID) + 1))
 	return concatAndHMAC(sha512.New, key, operationBytes, keyID, data, keyDataLength)[:32]

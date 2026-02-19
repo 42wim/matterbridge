@@ -4,6 +4,7 @@ package chain
 import (
 	"crypto/hmac"
 	"crypto/sha256"
+
 	"go.mau.fi/libsignal/kdf"
 	"go.mau.fi/libsignal/keys/message"
 )

@@ -50,6 +50,10 @@ message Armadillo {
 	}
 
 	message ApplicationData {
+		message MessageHistoryDocumentMessage {
+			optional WACommon.SubProtocol document = 1;
+		}
+
 		message AIBotResponseMessage {
 			optional string summonToken = 1;
 			optional string messageText = 2;
@@ -57,6 +61,29 @@ message Armadillo {
 		}
 
 		message MetadataSyncAction {
+			message SyncAttachmentInterventionAction {
+				enum InterventionType {
+					UNKNOWN = 0;
+					NUDE = 1;
+					NOT_NUDE = 2;
+				}
+
+				optional WACommon.MessageKey messageKey = 1;
+				optional InterventionType interventionType = 2;
+			}
+
+			message SyncSpectraAction {
+				enum SpectraActionType {
+					TAKEDOWN = 0;
+					RESTORE = 1;
+				}
+
+				optional WACommon.MessageKey key = 1;
+				optional SpectraActionType actionType = 2;
+				optional int64 takedownActionID = 3;
+				optional string config = 4;
+			}
+
 			message SyncMessageAction {
 				message ActionMessageDelete {
 				}
@@ -106,6 +133,8 @@ message Armadillo {
 			oneof actionType {
 				SyncChatAction chatAction = 101;
 				SyncMessageAction messageAction = 102;
+				SyncSpectraAction spectraAction = 103;
+				SyncAttachmentInterventionAction attachmentInterventionAction = 104;
 			}
 
 			optional int64 actionTimestamp = 1;
@@ -118,6 +147,7 @@ message Armadillo {
 		oneof applicationData {
 			MetadataSyncNotification metadataSync = 1;
 			AIBotResponseMessage aiBotResponse = 2;
+			MessageHistoryDocumentMessage messageHistoryDocumentMessage = 3;
 		}
 	}
 
@@ -152,6 +182,10 @@ message Armadillo {
 			optional string currency = 3;
 			optional PaymentStatus paymentStatus = 4;
 			optional WAArmadilloXMA.ExtendedContentMessage extendedContentMessage = 5;
+		}
+
+		message NetworkVerificationMessage {
+			optional string codeText = 1;
 		}
 
 		message NoteReplyMessage {
@@ -240,6 +274,7 @@ message Armadillo {
 			BumpExistingMessage bumpExistingMessage = 11;
 			NoteReplyMessage noteReplyMessage = 13;
 			RavenMessage ravenMessageMsgr = 14;
+			NetworkVerificationMessage networkVerificationMessage = 15;
 		}
 	}
 

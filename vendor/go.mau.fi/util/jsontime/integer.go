@@ -31,23 +31,37 @@ func parseTime(data []byte, unixConv func(int64) time.Time, into *time.Time) err
 	return nil
 }
 
-func anyIntegerToTime(src any, unixConv func(int64) time.Time, into *time.Time) error {
+func anyIntegerTo64(src any) (int64, error) {
 	switch v := src.(type) {
 	case int:
-		*into = unixConv(int64(v))
+		return int64(v), nil
 	case int8:
-		*into = unixConv(int64(v))
+		return int64(v), nil
 	case int16:
-		*into = unixConv(int64(v))
+		return int64(v), nil
 	case int32:
-		*into = unixConv(int64(v))
+		return int64(v), nil
 	case int64:
-		*into = unixConv(int64(v))
+		return v, nil
 	default:
-		return fmt.Errorf("%w: %T", ErrNotInteger, src)
+		return 0, fmt.Errorf("%w: %T", ErrNotInteger, src)
 	}
+}
 
+func anyIntegerToTime(src any, unixConv func(int64) time.Time, into *time.Time) error {
+	i64, err := anyIntegerTo64(src)
+	if err != nil {
+		return err
+	}
+	*into = unixConv(i64)
 	return nil
+}
+
+func zeroSafeUnix(t time.Time, method func(time.Time) int64) int64 {
+	if t.IsZero() {
+		return 0
+	}
+	return method(t)
 }
 
 var _ sql.Scanner = &UnixMilli{}
@@ -58,9 +72,6 @@ type UnixMilli struct {
 }
 
 func (um UnixMilli) MarshalJSON() ([]byte, error) {
-	if um.IsZero() {
-		return []byte{'0'}, nil
-	}
 	return json.Marshal(um.UnixMilli())
 }
 
@@ -76,6 +87,11 @@ func (um *UnixMilli) Scan(src any) error {
 	return anyIntegerToTime(src, time.UnixMilli, &um.Time)
 }
 
+func (um UnixMilli) Unix() int64      { return zeroSafeUnix(um.Time, time.Time.Unix) }
+func (um UnixMilli) UnixMilli() int64 { return zeroSafeUnix(um.Time, time.Time.UnixMilli) }
+func (um UnixMilli) UnixMicro() int64 { return zeroSafeUnix(um.Time, time.Time.UnixMicro) }
+func (um UnixMilli) UnixNano() int64  { return zeroSafeUnix(um.Time, time.Time.UnixNano) }
+
 var _ sql.Scanner = &UnixMicro{}
 var _ driver.Valuer = UnixMicro{}
 
@@ -84,9 +100,6 @@ type UnixMicro struct {
 }
 
 func (um UnixMicro) MarshalJSON() ([]byte, error) {
-	if um.IsZero() {
-		return []byte{'0'}, nil
-	}
 	return json.Marshal(um.UnixMicro())
 }
 
@@ -102,6 +115,11 @@ func (um *UnixMicro) Scan(src any) error {
 	return anyIntegerToTime(src, time.UnixMicro, &um.Time)
 }
 
+func (um UnixMicro) Unix() int64      { return zeroSafeUnix(um.Time, time.Time.Unix) }
+func (um UnixMicro) UnixMilli() int64 { return zeroSafeUnix(um.Time, time.Time.UnixMilli) }
+func (um UnixMicro) UnixMicro() int64 { return zeroSafeUnix(um.Time, time.Time.UnixMicro) }
+func (um UnixMicro) UnixNano() int64  { return zeroSafeUnix(um.Time, time.Time.UnixNano) }
+
 var _ sql.Scanner = &UnixNano{}
 var _ driver.Valuer = UnixNano{}
 
@@ -110,9 +128,6 @@ type UnixNano struct {
 }
 
 func (un UnixNano) MarshalJSON() ([]byte, error) {
-	if un.IsZero() {
-		return []byte{'0'}, nil
-	}
 	return json.Marshal(un.UnixNano())
 }
 
@@ -132,14 +147,16 @@ func (un *UnixNano) Scan(src any) error {
 	}, &un.Time)
 }
 
+func (un UnixNano) Unix() int64      { return zeroSafeUnix(un.Time, time.Time.Unix) }
+func (un UnixNano) UnixMilli() int64 { return zeroSafeUnix(un.Time, time.Time.UnixMilli) }
+func (un UnixNano) UnixMicro() int64 { return zeroSafeUnix(un.Time, time.Time.UnixMicro) }
+func (un UnixNano) UnixNano() int64  { return zeroSafeUnix(un.Time, time.Time.UnixNano) }
+
 type Unix struct {
 	time.Time
 }
 
 func (u Unix) MarshalJSON() ([]byte, error) {
-	if u.IsZero() {
-		return []byte{'0'}, nil
-	}
 	return json.Marshal(u.Unix())
 }
 
@@ -161,3 +178,8 @@ func (u *Unix) Scan(src any) error {
 		return time.Unix(i, 0)
 	}, &u.Time)
 }
+
+func (u Unix) Unix() int64      { return zeroSafeUnix(u.Time, time.Time.Unix) }
+func (u Unix) UnixMilli() int64 { return zeroSafeUnix(u.Time, time.Time.UnixMilli) }
+func (u Unix) UnixMicro() int64 { return zeroSafeUnix(u.Time, time.Time.UnixMicro) }
+func (u Unix) UnixNano() int64  { return zeroSafeUnix(u.Time, time.Time.UnixNano) }

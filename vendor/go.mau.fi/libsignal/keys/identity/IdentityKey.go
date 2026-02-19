@@ -4,6 +4,7 @@ package identity
 
 import (
 	"encoding/hex"
+
 	"go.mau.fi/libsignal/ecc"
 )
 

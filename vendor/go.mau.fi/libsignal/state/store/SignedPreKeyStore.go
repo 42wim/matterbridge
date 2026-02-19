@@ -1,6 +1,8 @@
 package store
 
 import (
+	"context"
+
 	"go.mau.fi/libsignal/state/record"
 )
 
@@ -8,17 +10,17 @@ import (
 // store signed PreKeys.
 type SignedPreKey interface {
 	// LoadSignedPreKey loads a local SignedPreKeyRecord
-	LoadSignedPreKey(signedPreKeyID uint32) *record.SignedPreKey
+	LoadSignedPreKey(ctx context.Context, signedPreKeyID uint32) (*record.SignedPreKey, error)
 
 	// LoadSignedPreKeys loads all local SignedPreKeyRecords
-	LoadSignedPreKeys() []*record.SignedPreKey
+	LoadSignedPreKeys(ctx context.Context) ([]*record.SignedPreKey, error)
 
 	// Store a local SignedPreKeyRecord
-	StoreSignedPreKey(signedPreKeyID uint32, record *record.SignedPreKey)
+	StoreSignedPreKey(ctx context.Context, signedPreKeyID uint32, record *record.SignedPreKey) error
 
 	// Check to see if store contains the given record
-	ContainsSignedPreKey(signedPreKeyID uint32) bool
+	ContainsSignedPreKey(ctx context.Context, signedPreKeyID uint32) (bool, error)
 
 	// Delete a SignedPreKeyRecord from local storage
-	RemoveSignedPreKey(signedPreKeyID uint32)
+	RemoveSignedPreKey(ctx context.Context, signedPreKeyID uint32) error
 }

@@ -29,6 +29,8 @@ const (
 	InteropServer     = "interop"
 	NewsletterServer  = "newsletter"
 	HostedServer      = "hosted"
+	HostedLIDServer   = "hosted.lid"
+	BotServer         = "bot"
 )
 
 // Some JIDs that are contacted often.
@@ -38,9 +40,18 @@ var (
 	ServerJID           = NewJID("", DefaultUserServer)
 	BroadcastServerJID  = NewJID("", BroadcastServer)
 	StatusBroadcastJID  = NewJID("status", BroadcastServer)
-	PSAJID              = NewJID("0", LegacyUserServer)
+	LegacyPSAJID        = NewJID("0", LegacyUserServer)
+	PSAJID              = NewJID("0", DefaultUserServer)
 	OfficialBusinessJID = NewJID("16505361212", LegacyUserServer)
 	MetaAIJID           = NewJID("13135550002", DefaultUserServer)
+	NewMetaAIJID        = NewJID("867051314767696", BotServer)
+)
+
+var (
+	WhatsAppDomain  = uint8(0)   // This is the main domain type that whatsapp uses
+	LIDDomain       = uint8(1)   // This is the domain for LID type JIDs
+	HostedDomain    = uint8(128) // This is the domain for Hosted type JIDs
+	HostedLIDDomain = uint8(129) // This is the domain for Hosted LID type JIDs
 )
 
 // MessageID is the internal ID of a WhatsApp message.
@@ -65,9 +76,13 @@ type JID struct {
 func (jid JID) ActualAgent() uint8 {
 	switch jid.Server {
 	case DefaultUserServer:
-		return 0
+		return WhatsAppDomain
 	case HiddenUserServer:
-		return 1
+		return LIDDomain
+	case HostedServer:
+		return HostedDomain
+	case HostedLIDServer:
+		return HostedLIDDomain
 	default:
 		return jid.RawAgent
 	}
@@ -90,18 +105,16 @@ func (jid JID) ToNonAD() JID {
 
 // SignalAddress returns the Signal protocol address for the user.
 func (jid JID) SignalAddress() *signalProtocol.SignalAddress {
+	return signalProtocol.NewSignalAddress(jid.SignalAddressUser(), uint32(jid.Device))
+}
+
+func (jid JID) SignalAddressUser() string {
 	user := jid.User
 	agent := jid.ActualAgent()
 	if agent != 0 {
 		user = fmt.Sprintf("%s_%d", jid.User, agent)
 	}
-	return signalProtocol.NewSignalAddress(user, uint32(jid.Device))
-	// TODO use @lid suffix instead of agent?
-	//suffix := ""
-	//if jid.Server == HiddenUserServer {
-	//	suffix = "@lid"
-	//}
-	//return signalProtocol.NewSignalAddress(user, uint32(jid.Device), suffix)
+	return user
 }
 
 // IsBroadcastList returns true if the JID is a broadcast list, but not the status broadcast.
@@ -112,23 +125,26 @@ func (jid JID) IsBroadcastList() bool {
 var botUserRegex = regexp.MustCompile(`^1313555\d{4}$|^131655500\d{2}$`)
 
 func (jid JID) IsBot() bool {
-	return jid.Server == DefaultUserServer && botUserRegex.MatchString(jid.User) && jid.Device == 0
+	return (jid.Server == DefaultUserServer && botUserRegex.MatchString(jid.User) && jid.Device == 0) || jid.Server == BotServer
 }
 
 // NewADJID creates a new AD JID.
 func NewADJID(user string, agent, device uint8) JID {
 	var server string
+	// agent terminology isn't 100% correct here, these are the domainType, but whatsapp usually places them in the same place (if the switch case below doesn't process it, then it is an agent instead)
 	switch agent {
-	case 0:
-		server = DefaultUserServer
-	case 1:
+	case LIDDomain:
 		server = HiddenUserServer
 		agent = 0
-	default:
-		if (agent&0x01) != 0 || (agent&0x80) == 0 { // agent % 2 == 0 || agent < 128?
-			// TODO invalid JID?
-		}
+	case HostedDomain:
 		server = HostedServer
+		agent = 0
+	case HostedLIDDomain:
+		server = HostedLIDServer
+		agent = 0
+	default:
+	case WhatsAppDomain:
+		server = DefaultUserServer // will just default to the normal server
 	}
 	return JID{
 		User:     user,

@@ -122,12 +122,13 @@ func (b *Bwhatsapp) Connect() error {
 
 	b.Log.Infoln("WhatsApp connection successful")
 
-	b.contacts, err = b.wc.Store.Contacts.GetAllContacts()
+	// Fix: Add context.Background() as first parameter
+	b.contacts, err = b.wc.Store.Contacts.GetAllContacts(context.Background())
 	if err != nil {
 		return errors.New("failed to get contacts: " + err.Error())
 	}
 
-	b.joinedGroups, err = b.wc.GetJoinedGroups()
+	b.joinedGroups, err = b.wc.GetJoinedGroups(context.Background())
 	if err != nil {
 		return errors.New("failed to get list of joined groups: " + err.Error())
 	}
@@ -171,10 +172,34 @@ func (b *Bwhatsapp) Disconnect() error {
 	return nil
 }
 
-// JoinChannel Join a WhatsApp group specified in gateway config as channel='number-id@g.us' or channel='Channel name'
+// JoinChannel Join a WhatsApp group specified in gateway config as
+// channel='number-id@g.us' or channel='Channel name' or channel='number@s.whatsapp.net' or channel='number@lid'
 // Required implementation of the Bridger interface
 // https://github.com/42wim/matterbridge/blob/2cfd880cdb0df29771bf8f31df8d990ab897889d/bridge/bridge.go#L11-L16
 func (b *Bwhatsapp) JoinChannel(channel config.ChannelInfo) error {
+	// Skip status@broadcast - it's a special WhatsApp broadcast list, not a joinable group
+	if channel.Name == "status@broadcast" {
+		b.Log.Debugf("Skipping status@broadcast channel - not a joinable group")
+		return nil
+	}
+
+	// Check if this is a private chat JID
+	if isPrivateJid(channel.Name) {
+		// For private chats, validate the JID format but don't require group membership
+		jid, err := types.ParseJID(channel.Name)
+		if err != nil {
+			return fmt.Errorf("invalid WhatsApp private chat JID format: %s", err)
+		}
+
+		// Optionally verify that the contact exists in the contacts list
+		if _, exists := b.contacts[jid]; !exists {
+			b.Log.Warnf("Private chat contact %s not found in contacts list, but will attempt to bridge anyway", channel.Name)
+		}
+
+		b.Log.Infof("Configured private chat channel: %s", channel.Name)
+		return nil
+	}
+
 	byJid := isGroupJid(channel.Name)
 
 	// verify if we are member of the given group
@@ -383,7 +408,7 @@ func (b *Bwhatsapp) Send(msg config.Message) (string, error) {
 			return "", nil
 		}
 
-		_, err := b.wc.RevokeMessage(groupJID, msg.ID)
+		_, err := b.wc.RevokeMessage(context.Background(), groupJID, msg.ID)
 
 		return "", err
 	}

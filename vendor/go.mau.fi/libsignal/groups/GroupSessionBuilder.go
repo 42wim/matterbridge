@@ -9,6 +9,8 @@
 package groups
 
 import (
+	"context"
+
 	"go.mau.fi/libsignal/groups/state/record"
 	"go.mau.fi/libsignal/groups/state/store"
 	"go.mau.fi/libsignal/protocol"
@@ -34,21 +36,27 @@ type SessionBuilder struct {
 
 // Process will process an incoming group message and set up the corresponding
 // session for it.
-func (b *SessionBuilder) Process(senderKeyName *protocol.SenderKeyName,
-	msg *protocol.SenderKeyDistributionMessage) {
+func (b *SessionBuilder) Process(ctx context.Context, senderKeyName *protocol.SenderKeyName,
+	msg *protocol.SenderKeyDistributionMessage) error {
 
-	senderKeyRecord := b.senderKeyStore.LoadSenderKey(senderKeyName)
+	senderKeyRecord, err := b.senderKeyStore.LoadSenderKey(ctx, senderKeyName)
+	if err != nil {
+		return err
+	}
 	if senderKeyRecord == nil {
 		senderKeyRecord = record.NewSenderKey(b.serializer.SenderKeyRecord, b.serializer.SenderKeyState)
 	}
 	senderKeyRecord.AddSenderKeyState(msg.ID(), msg.Iteration(), msg.ChainKey(), msg.SignatureKey())
-	b.senderKeyStore.StoreSenderKey(senderKeyName, senderKeyRecord)
+	return b.senderKeyStore.StoreSenderKey(ctx, senderKeyName, senderKeyRecord)
 }
 
 // Create will create a new group session for the given name.
-func (b *SessionBuilder) Create(senderKeyName *protocol.SenderKeyName) (*protocol.SenderKeyDistributionMessage, error) {
+func (b *SessionBuilder) Create(ctx context.Context, senderKeyName *protocol.SenderKeyName) (*protocol.SenderKeyDistributionMessage, error) {
 	// Load the senderkey by name
-	senderKeyRecord := b.senderKeyStore.LoadSenderKey(senderKeyName)
+	senderKeyRecord, err := b.senderKeyStore.LoadSenderKey(ctx, senderKeyName)
+	if err != nil {
+		return nil, err
+	}
 
 	// If the record is empty, generate new keys.
 	if senderKeyRecord == nil || senderKeyRecord.IsEmpty() {
@@ -62,7 +70,9 @@ func (b *SessionBuilder) Create(senderKeyName *protocol.SenderKeyName) (*protoco
 			keyhelper.GenerateSenderKey(),
 			signingKey,
 		)
-		b.senderKeyStore.StoreSenderKey(senderKeyName, senderKeyRecord)
+		if err := b.senderKeyStore.StoreSenderKey(ctx, senderKeyName, senderKeyRecord); err != nil {
+			return nil, err
+		}
 	}
 
 	// Get the senderkey state.

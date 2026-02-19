@@ -43,6 +43,7 @@ message MessageApplication {
 		optional uint32 groupIndex = 15;
 		optional string botResponseID = 16;
 		optional string collapsibleID = 17;
+		optional string secondaryOtid = 18;
 	}
 
 	message Payload {
@@ -77,8 +78,16 @@ message MessageApplication {
 	}
 
 	message EphemeralSetting {
+		enum EphemeralityType {
+			UNKNOWN = 0;
+			SEEN_ONCE = 1;
+			SEEN_BASED_WITH_TIMER = 2;
+			SEND_BASED_WITH_TIMER = 3;
+		}
+
 		optional uint32 ephemeralExpiration = 2;
 		optional int64 ephemeralSettingTimestamp = 3;
+		optional EphemeralityType ephemeralityType = 5;
 		optional bool isEphemeralSettingReset = 4;
 	}
 
