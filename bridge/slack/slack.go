@@ -352,12 +352,13 @@ func (b *Bslack) updateTopicOrPurpose(msg *config.Message, channelInfo *slack.Ch
 		b.Log.Errorf("Unhandled type received from extractTopicOrPurpose: %s", incomingChangeType)
 		return nil
 	}
+	var rateLimitHits int
 	for {
 		_, err := updateFunc(channelInfo.ID, text)
 		if err == nil {
 			return nil
 		}
-		if err = handleRateLimit(b.Log, err); err != nil {
+		if err = handleRateLimit(b.Log, err, &rateLimitHits); err != nil {
 			return err
 		}
 	}
@@ -392,13 +393,14 @@ func (b *Bslack) deleteMessage(msg *config.Message, channelInfo *slack.Channel) 
 		return true, nil
 	}
 
+	var rateLimitHits int
 	for {
 		_, _, err := b.rtm.DeleteMessage(channelInfo.ID, msg.ID)
 		if err == nil {
 			return true, nil
 		}
 
-		if err = handleRateLimit(b.Log, err); err != nil {
+		if err = handleRateLimit(b.Log, err, &rateLimitHits); err != nil {
 			b.Log.Errorf("Failed to delete user message from Slack: %#v", err)
 			return true, err
 		}
@@ -410,13 +412,14 @@ func (b *Bslack) editMessage(msg *config.Message, channelInfo *slack.Channel) (b
 		return false, nil
 	}
 	messageOptions := b.prepareMessageOptions(msg)
+	var rateLimitHits int
 	for {
 		_, _, _, err := b.rtm.UpdateMessage(channelInfo.ID, msg.ID, messageOptions...)
 		if err == nil {
 			return true, nil
 		}
 
-		if err = handleRateLimit(b.Log, err); err != nil {
+		if err = handleRateLimit(b.Log, err, &rateLimitHits); err != nil {
 			b.Log.Errorf("Failed to edit user message on Slack: %#v", err)
 			return true, err
 		}
@@ -429,13 +432,14 @@ func (b *Bslack) postMessage(msg *config.Message, channelInfo *slack.Channel) (s
 		return "", nil
 	}
 	messageOptions := b.prepareMessageOptions(msg)
+	var rateLimitHits int
 	for {
 		_, id, err := b.rtm.PostMessage(channelInfo.ID, messageOptions...)
 		if err == nil {
 			return id, nil
 		}
 
-		if err = handleRateLimit(b.Log, err); err != nil {
+		if err = handleRateLimit(b.Log, err, &rateLimitHits); err != nil {
 			b.Log.Errorf("Failed to sent user message to Slack: %#v", err)
 			return "", err
 		}
