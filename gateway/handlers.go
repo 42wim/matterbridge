@@ -223,7 +223,26 @@ func (gw *Gateway) handleMessage(rmsg *config.Message, dest *bridge.Bridge) []*B
 	channels := gw.getDestChannel(rmsg, *dest)
 	for idx := range channels {
 		channel := &channels[idx]
-		msgID, err := gw.SendMessage(rmsg, dest, channel, canonicalParentMsgID)
+
+		// REASON: Discord (and other APIs) occasionally return 503 Service Unavailable
+		// during transient outages. Without retry, the message is silently dropped.
+		// We retry up to 3 times with exponential backoff (1s, 2s, 4s) for 503 errors only.
+		var msgID string
+		var err error
+		const maxRetries = 3
+		for attempt := 0; attempt < maxRetries; attempt++ {
+			msgID, err = gw.SendMessage(rmsg, dest, channel, canonicalParentMsgID)
+			if err == nil {
+				break
+			}
+			if strings.Contains(err.Error(), "503") || strings.Contains(err.Error(), "Service Unavailable") {
+				backoff := time.Duration(1<<uint(attempt)) * time.Second
+				gw.logger.Warnf("SendMessage got 503, retrying in %v (attempt %d/%d): %s", backoff, attempt+1, maxRetries, err)
+				time.Sleep(backoff)
+				continue
+			}
+			break // non-retryable error, stop immediately
+		}
 		if err != nil {
 			gw.logger.Errorf("SendMessage failed: %s", err)
 			continue

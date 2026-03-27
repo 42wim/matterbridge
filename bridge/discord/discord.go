@@ -3,6 +3,7 @@ package bdiscord
 import (
 	"bytes"
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -13,6 +14,33 @@ import (
 	"github.com/bwmarrin/discordgo"
 	lru "github.com/hashicorp/golang-lru"
 )
+
+// REASON: Slack thread IDs (e.g., "slack 1772220754.010239") can leak through as
+// ParentID when the gateway message cache doesn't have a Discord-native mapping.
+// Discord requires a purely numeric snowflake for message_reference. If we pass a
+// non-snowflake string, Discord returns 400 "NUMBER_TYPE_COERCE".
+func isValidSnowflake(id string) bool {
+	if id == "" {
+		return false
+	}
+	_, err := strconv.ParseUint(id, 10, 64)
+	return err == nil
+}
+
+// REASON: When a Slack timestamp like "1772220754.010239" leaks through, we strip
+// non-digit characters to produce a numeric string (e.g., "1772220754010239").
+// This won't match a real Discord message, but it satisfies format validation so
+// Discord returns a cleaner "Unknown Message" error instead of a type coercion error,
+// which we then catch and retry without threading.
+func extractNumericID(id string) string {
+	var result strings.Builder
+	for _, c := range id {
+		if c >= '0' && c <= '9' {
+			result.WriteRune(c)
+		}
+	}
+	return result.String()
+}
 
 const (
 	MessageLength = 1950
@@ -357,16 +385,41 @@ func (b *Bdiscord) handleEventBotUser(msg *config.Message, channelID string) (st
 			AllowedMentions: b.getAllowedMentions(),
 		}
 
+		// REASON: The gateway may pass a non-snowflake ParentID (e.g., a Slack
+		// timestamp like "slack 1772220754.010239") when the message cache misses.
+		// We validate upfront, try a numeric-only extraction as fallback, and if
+		// the send still fails with a snowflake/form error, retry without threading
+		// entirely. Without this, thread replies from Slack silently get dropped.
 		if msg.ParentValid() {
-			m.Reference = &discordgo.MessageReference{
-				MessageID: msg.ParentID,
-				ChannelID: channelID,
-				GuildID:   b.guildID,
+			parentID := msg.ParentID
+			if isValidSnowflake(parentID) {
+				m.Reference = &discordgo.MessageReference{
+					MessageID: parentID,
+					ChannelID: channelID,
+					GuildID:   b.guildID,
+				}
+			} else {
+				numericID := extractNumericID(parentID)
+				if isValidSnowflake(numericID) {
+					b.Log.Debugf("ParentID %q is not a snowflake, trying numeric extraction: %s", parentID, numericID)
+					m.Reference = &discordgo.MessageReference{
+						MessageID: numericID,
+						ChannelID: channelID,
+						GuildID:   b.guildID,
+					}
+				} else {
+					b.Log.Warnf("Dropping thread reference: ParentID %q is not a valid Discord snowflake", parentID)
+				}
 			}
 		}
 
-		// Post normal message
+		// Post normal message, retry without thread reference if Discord rejects it
 		res, err := b.c.ChannelMessageSendComplex(channelID, &m)
+		if err != nil && m.Reference != nil && (strings.Contains(err.Error(), "snowflake") || strings.Contains(err.Error(), "NUMBER_TYPE_COERCE") || strings.Contains(err.Error(), "Unknown message")) {
+			b.Log.Warnf("Thread reference rejected by Discord (%s), retrying without threading", err)
+			m.Reference = nil
+			res, err = b.c.ChannelMessageSendComplex(channelID, &m)
+		}
 		if err != nil {
 			return "", err
 		}

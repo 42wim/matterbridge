@@ -138,6 +138,7 @@ func (b *users) populateUsers(wait bool) {
 	newUsers := map[string]*slack.User{}
 	pagination := b.sc.GetUsersPaginated(slack.GetUsersOptionLimit(200))
 	count := 0
+	var rateLimitHits int
 	for {
 		var err error
 		pagination, err = pagination.Next(context.Background())
@@ -147,12 +148,13 @@ func (b *users) populateUsers(wait bool) {
 				break
 			}
 
-			if err = handleRateLimit(b.log, err); err != nil {
+			if err = handleRateLimit(b.log, err, &rateLimitHits); err != nil {
 				b.log.Errorf("Could not retrieve users: %#v", err)
 				return
 			}
 			continue
 		}
+		rateLimitHits = 0
 
 		for i := range pagination.Users {
 			newUsers[pagination.Users[i].ID] = &pagination.Users[i]
@@ -293,15 +295,17 @@ func (b *channels) populateChannels(wait bool) {
 		Types:           []string{"public_channel,private_channel"},
 		Limit:           1000,
 	}
+	var rateLimitHits int
 	for {
 		channels, nextCursor, err := b.sc.GetConversations(queryParams)
 		if err != nil {
-			if err = handleRateLimit(b.log, err); err != nil {
+			if err = handleRateLimit(b.log, err, &rateLimitHits); err != nil {
 				b.log.Errorf("Could not retrieve channels: %#v", err)
 				return
 			}
 			continue
 		}
+		rateLimitHits = 0
 
 		for i := range channels {
 			newChannelsByID[channels[i].ID] = &channels[i]

@@ -100,6 +100,7 @@ func (b *Bslack) populateMessageWithBotInfo(ev *slack.MessageEvent, rmsg *config
 
 	var err error
 	var bot *slack.Bot
+	var rateLimitHits int
 	for {
 		bot, err = b.rtm.GetBotInfo(slack.GetBotInfoParameters{
 			Bot: ev.BotID,
@@ -108,7 +109,7 @@ func (b *Bslack) populateMessageWithBotInfo(ev *slack.MessageEvent, rmsg *config
 			break
 		}
 
-		if err = handleRateLimit(b.Log, err); err != nil {
+		if err = handleRateLimit(b.Log, err, &rateLimitHits); err != nil {
 			b.Log.Errorf("Could not retrieve bot information: %#v", err)
 			return err
 		}
@@ -223,6 +224,7 @@ func (b *Bslack) replaceCodeFence(text string) string {
 // getUsersInConversation returns an array of userIDs that are members of channelID
 func (b *Bslack) getUsersInConversation(channelID string) ([]string, error) {
 	channelMembers := []string{}
+	var rateLimitHits int
 	for {
 		queryParams := &slack.GetUsersInConversationParameters{
 			ChannelID: channelID,
@@ -230,11 +232,12 @@ func (b *Bslack) getUsersInConversation(channelID string) ([]string, error) {
 
 		members, nextCursor, err := b.sc.GetUsersInConversation(queryParams)
 		if err != nil {
-			if err = handleRateLimit(b.Log, err); err != nil {
+			if err = handleRateLimit(b.Log, err, &rateLimitHits); err != nil {
 				return channelMembers, fmt.Errorf("Could not retrieve users in channels: %#v", err)
 			}
 			continue
 		}
+		rateLimitHits = 0
 
 		channelMembers = append(channelMembers, members...)
 
@@ -246,12 +249,32 @@ func (b *Bslack) getUsersInConversation(channelID string) ([]string, error) {
 	return channelMembers, nil
 }
 
-func handleRateLimit(log *logrus.Entry, err error) error {
+// REASON: Slack rate limits can cascade during reconnection bursts when matterbridge
+// re-fetches channel/user info for many channels at once. Using just RetryAfter
+// causes tight retry loops that keep hitting the limit. Exponential backoff
+// (RetryAfter * 2^consecutiveHits) progressively backs off, and a max retry cap
+// prevents infinite loops. The consecutiveHits counter resets on success (non-rate-limit).
+func handleRateLimit(log *logrus.Entry, err error, consecutiveHits *int) error {
 	rateLimit, ok := err.(*slack.RateLimitedError)
 	if !ok {
+		*consecutiveHits = 0
 		return err
 	}
-	log.Infof("Rate-limited by Slack. Sleeping for %v", rateLimit.RetryAfter)
-	time.Sleep(rateLimit.RetryAfter)
+
+	const maxConsecutiveRateLimits = 10
+	if *consecutiveHits >= maxConsecutiveRateLimits {
+		return fmt.Errorf("giving up after %d consecutive rate limits: %w", *consecutiveHits, err)
+	}
+
+	// Exponential backoff: base wait from Slack's RetryAfter, doubled per consecutive hit
+	multiplier := 1 << uint(*consecutiveHits)
+	backoff := rateLimit.RetryAfter * time.Duration(multiplier)
+	// Cap at 5 minutes to avoid absurdly long waits
+	if backoff > 5*time.Minute {
+		backoff = 5 * time.Minute
+	}
+	log.Infof("Rate-limited by Slack (attempt %d). Sleeping for %v", *consecutiveHits+1, backoff)
+	time.Sleep(backoff)
+	*consecutiveHits++
 	return nil
 }
