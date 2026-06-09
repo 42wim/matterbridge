@@ -117,6 +117,13 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 	b.Log.Debugf("handle %#v", event)
 }
 
+func (b *Birc) handleISupport(client *girc.Client, event girc.Event) {
+	if result, ok := client.GetServerOption("BOT"); ok {
+		b.Log.Debugf("Server supports BOT: %s", result)
+		client.Send(&girc.Event{Command: girc.MODE, Params: []string{b.Nick, "+" + result}})
+	}
+}
+
 func (b *Birc) handleNewConnection(client *girc.Client, event girc.Event) {
 	b.Log.Debug("Registering callbacks")
 	i := b.i
@@ -132,6 +139,7 @@ func (b *Birc) handleNewConnection(client *girc.Client, event girc.Event) {
 	i.Handlers.Clear("QUIT")
 	i.Handlers.Clear("KICK")
 	i.Handlers.Clear("INVITE")
+	i.Handlers.Clear(girc.RPL_ISUPPORT)
 
 	i.Handlers.AddBg("PRIVMSG", b.handlePrivMsg)
 	i.Handlers.Add(girc.RPL_TOPICWHOTIME, b.handleTopicWhoTime)
@@ -141,6 +149,7 @@ func (b *Birc) handleNewConnection(client *girc.Client, event girc.Event) {
 	i.Handlers.AddBg("QUIT", b.handleJoinPart)
 	i.Handlers.AddBg("KICK", b.handleJoinPart)
 	i.Handlers.Add("INVITE", b.handleInvite)
+	i.Handlers.Add(girc.RPL_ISUPPORT, b.handleISupport)
 }
 
 func (b *Birc) handleNickServ() {
