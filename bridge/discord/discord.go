@@ -282,6 +282,12 @@ func (b *Bdiscord) Send(msg config.Message) (string, error) {
 		return b.handleEventWebhook(&msg, channelID)
 	}
 
+	// Webhooks can't reply, so threaded replies are sent by the bot. The username was
+	// formatted to be a webhook's display name, so set it apart from the text instead.
+	if useWebhooks && msg.ParentValid() && msg.Event != config.EventMsgDelete {
+		msg.Username = webhookReplyUsername(msg.Username)
+	}
+
 	return b.handleEventBotUser(&msg, channelID)
 }
 

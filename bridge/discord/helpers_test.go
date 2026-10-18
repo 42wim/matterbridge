@@ -44,3 +44,9 @@ func TestEnumerateUsernames(t *testing.T) {
 		assert.Equalf(t, testcase.expectedUsernames, foundUsernames, "Should have found the expected usernames for testcase %s", testname)
 	}
 }
+
+func TestWebhookReplyUsername(t *testing.T) {
+	assert.Equal(t, "**RustyCloud** ", webhookReplyUsername("RustyCloud"))
+	assert.Equal(t, "**RustyCloud** ", webhookReplyUsername(" RustyCloud "))
+	assert.Equal(t, "", webhookReplyUsername(""))
+}

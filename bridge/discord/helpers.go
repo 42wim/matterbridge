@@ -267,3 +267,13 @@ func enumerateUsernames(s string) []string {
 	}
 	return usernames
 }
+
+// webhookReplyUsername formats a username meant for a webhook's display name for use as a
+// prefix in a message sent by the bot.
+func webhookReplyUsername(username string) string {
+	username = strings.TrimSpace(username)
+	if username == "" {
+		return ""
+	}
+	return "**" + username + "** "
+}
