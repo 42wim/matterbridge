@@ -208,7 +208,7 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 		if msgID, ok := event.Tags.Get(tagMsgID); ok {
 			rmsg.ID = msgID
 		}
-		if parent, ok := event.Tags.Get(tagReply); ok && parent != "" {
+		if parent := replyParent(event); parent != "" {
 			rmsg.ParentID = b.threads.gatewayID(parent)
 		}
 	}

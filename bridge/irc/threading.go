@@ -28,6 +28,7 @@ const (
 	capMessageTags = "message-tags"
 	tagMsgID       = "msgid"
 	tagReply       = "+draft/reply"
+	tagReplyFinal  = "+reply" // name the tag will have once ratified, some clients send both
 	localIDPrefix  = "mbirc-"
 
 	threadCacheSize   = 5000
@@ -190,6 +191,16 @@ func (b *Birc) replyTags(parentID string) girc.Tags {
 		return nil
 	}
 	return tags
+}
+
+// replyParent returns the msgid an incoming message replies to, if any.
+func replyParent(event girc.Event) string {
+	for _, tag := range []string{tagReply, tagReplyFinal} {
+		if parent, ok := event.Tags.Get(tag); ok && parent != "" {
+			return parent
+		}
+	}
+	return ""
 }
 
 // handleEcho maps the server's echo of a message we sent to the local ID we returned for it.

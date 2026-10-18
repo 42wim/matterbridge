@@ -184,6 +184,8 @@ func TestThreadingWithFullSupport(t *testing.T) {
 		tb.receive(t)
 		tb.server.sendFromUser("RustyCloud", testChannel, "reply to first", map[string]string{tagReply: parentMsgID})
 		assert.Equal(t, parentMsgID, tb.receive(t).ParentID)
+		tb.server.sendFromUser("RustyCloud", testChannel, "reply with the final tag name", map[string]string{tagReplyFinal: parentMsgID})
+		assert.Equal(t, parentMsgID, tb.receive(t).ParentID)
 
 		// parent is a message we sent: the gateway knows it by the ID Send() returned
 		localID := tb.send(t, "from discord", "")
