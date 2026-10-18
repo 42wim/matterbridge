@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/42wim/matterbridge/bridge"
@@ -25,13 +26,15 @@ import (
 
 type Birc struct {
 	i                                         *girc.Client
-	Nick                                      string
+	Nick                                      string // use getNick/setNick once connected, handlers run concurrently
+	nickMu                                    sync.RWMutex
 	names                                     map[string][]string
 	connected                                 chan error
 	Local                                     chan config.Message // local queue for flood control
 	FirstConnection, authDone                 bool
 	MessageDelay, MessageQueue, MessageLength int
 	channels                                  map[string]bool
+	threads                                   *ircThreads
 
 	*bridge.Config
 }
@@ -43,6 +46,7 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	b.names = make(map[string][]string)
 	b.connected = make(chan error)
 	b.channels = make(map[string]bool)
+	b.threads = newIRCThreads()
 
 	if b.GetInt("MessageDelay") == 0 {
 		b.MessageDelay = 1300
@@ -108,6 +112,10 @@ func (b *Birc) Connect() error {
 	b.FirstConnection = false
 	if b.GetInt("DebugLevel") == 0 {
 		i.Handlers.Clear(girc.ALL_EVENTS)
+	}
+	if b.threadingEnabled() {
+		// echoes of our own messages are only delivered to ALL_EVENTS handlers
+		i.Handlers.AddBg(girc.ALL_EVENTS, b.handleEcho)
 	}
 	go b.doSend()
 	return nil
@@ -176,6 +184,14 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 	} else {
 		msgLines = helper.GetSubLines(msg.Text, 0, b.GetString("MessageClipped"))
 	}
+	// With PreserveThreading, hand the gateway an ID for this message that we can later
+	// map to the msgid the server assigns its first line. The msg.ID of the queued lines
+	// carries it to doSend.
+	var localID string
+	if b.canTrackEchoes() {
+		localID = newLocalID()
+	}
+
 	for i := range msgLines {
 		if len(b.Local) >= b.MessageQueue {
 			b.Log.Debugf("flooding, dropping message (queue at %d)", len(b.Local))
@@ -183,9 +199,13 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 		}
 
 		msg.Text = msgLines[i]
+		msg.ID = ""
+		if i == 0 {
+			msg.ID = localID
+		}
 		b.Local <- msg
 	}
-	return "", nil
+	return localID, nil
 }
 
 func (b *Birc) doConnect() {
@@ -205,7 +225,7 @@ func (b *Birc) doConnect() {
 		b.i.Handlers.Add(girc.RPL_WELCOME, func(client *girc.Client, event girc.Event) {
 			b.Remote <- config.Message{Username: "system", Text: "rejoin", Channel: "", Account: b.Account, Event: config.EventRejoinChannels}
 			// set our correct nick on reconnect if necessary
-			b.Nick = event.Source.Name
+			b.setNick(event.Source.Name)
 		})
 	}
 }
@@ -227,6 +247,10 @@ func (b *Birc) doSend() {
 	for msg := range b.Local {
 		<-throttle.C
 		username := msg.Username
+		var tags girc.Tags
+		if msg.ParentValid() {
+			tags = b.replyTags(msg.ParentID)
+		}
 		// Optional support for the proposed RELAYMSG extension, described at
 		// https://github.com/jlu5/ircv3-specifications/blob/master/extensions/relaymsg.md
 		// nolint:nestif
@@ -241,9 +265,13 @@ func (b *Birc) doSend() {
 			}
 
 			if msg.Event == config.EventUserAction {
-				b.i.Cmd.SendRawf("RELAYMSG %s %s :\x01ACTION %s\x01", msg.Channel, username, text) //nolint:errcheck
+				text = "\x01ACTION " + text + "\x01"
 			} else {
 				b.Log.Debugf("Sending RELAYMSG to channel %s: nick=%s", msg.Channel, username)
+			}
+			if tags != nil {
+				b.i.Send(&girc.Event{Command: "RELAYMSG", Params: []string{msg.Channel, username, text}, Tags: tags})
+			} else {
 				b.i.Cmd.SendRawf("RELAYMSG %s %s :%s", msg.Channel, username, text) //nolint:errcheck
 			}
 		} else {
@@ -252,16 +280,20 @@ func (b *Birc) doSend() {
 				colorCode := checksum%14 + 2 // quick fix - prevent white or black color codes
 				username = fmt.Sprintf("\x03%02d%s\x0F", colorCode, msg.Username)
 			}
+			command, text := girc.PRIVMSG, username+msg.Text
 			switch msg.Event {
 			case config.EventUserAction:
-				b.i.Cmd.Action(msg.Channel, username+msg.Text)
+				text = "\x01ACTION " + text + "\x01"
 			case config.EventNoticeIRC:
 				b.Log.Debugf("Sending notice to channel %s", msg.Channel)
-				b.i.Cmd.Notice(msg.Channel, username+msg.Text)
+				command = girc.NOTICE
 			default:
 				b.Log.Debugf("Sending to channel %s", msg.Channel)
-				b.i.Cmd.Message(msg.Channel, username+msg.Text)
 			}
+			if msg.ID != "" {
+				b.threads.expect(msg.Channel, text, msg.ID)
+			}
+			b.i.Send(&girc.Event{Command: command, Params: []string{msg.Channel, text}, Tags: tags})
 		}
 	}
 }
@@ -310,6 +342,11 @@ func (b *Birc) getClient() (*girc.Client, error) {
 		return nil, err
 	}
 
+	supportedCaps := map[string][]string{"overdrivenetworks.com/relaymsg": nil, "draft/relaymsg": nil}
+	if b.threadingEnabled() {
+		supportedCaps[capEchoMessage] = nil
+	}
+
 	i := girc.New(girc.Config{
 		Server:     server,
 		ServerPass: b.GetString("Password"),
@@ -324,7 +361,7 @@ func (b *Birc) getClient() (*girc.Client, error) {
 		// skip gIRC internal rate limiting, since we have our own throttling
 		AllowFlood:    true,
 		Debug:         debug,
-		SupportedCaps: map[string][]string{"overdrivenetworks.com/relaymsg": nil, "draft/relaymsg": nil},
+		SupportedCaps: supportedCaps,
 	})
 	return i, nil
 }
@@ -335,13 +372,13 @@ func (b *Birc) endNames(client *girc.Client, event girc.Event) {
 	maxNamesPerPost := (300 / b.nicksPerRow()) * b.nicksPerRow()
 	for len(b.names[channel]) > maxNamesPerPost {
 		b.Remote <- config.Message{
-			Username: b.Nick, Text: b.formatnicks(b.names[channel][0:maxNamesPerPost]),
+			Username: b.getNick(), Text: b.formatnicks(b.names[channel][0:maxNamesPerPost]),
 			Channel: channel, Account: b.Account,
 		}
 		b.names[channel] = b.names[channel][maxNamesPerPost:]
 	}
 	b.Remote <- config.Message{
-		Username: b.Nick, Text: b.formatnicks(b.names[channel]),
+		Username: b.getNick(), Text: b.formatnicks(b.names[channel]),
 		Channel: channel, Account: b.Account,
 	}
 	b.names[channel] = nil
@@ -351,32 +388,45 @@ func (b *Birc) endNames(client *girc.Client, event girc.Event) {
 
 func (b *Birc) skipPrivMsg(event girc.Event) bool {
 	// Our nick can be changed
-	b.Nick = b.i.GetNick()
+	b.setNick(b.i.GetNick())
+	nick := b.getNick()
 
 	// freenode doesn't send 001 as first reply
 	if event.Command == "NOTICE" && len(event.Params) != 2 {
 		return true
 	}
 	// don't forward queries to the bot
-	if event.Params[0] == b.Nick {
+	if event.Params[0] == nick {
 		return true
 	}
 	// don't forward message from ourself
 	if event.Source != nil {
-		if event.Source.Name == b.Nick {
+		if event.Source.Name == nick {
 			return true
 		}
 	}
 	// don't forward messages we sent via RELAYMSG
-	if relayedNick, ok := event.Tags.Get("draft/relaymsg"); ok && relayedNick == b.Nick {
+	if relayedNick, ok := event.Tags.Get("draft/relaymsg"); ok && relayedNick == nick {
 		return true
 	}
 	// This is the old name of the cap sent in spoofed messages; I've kept this in
 	// for compatibility reasons
-	if relayedNick, ok := event.Tags.Get("relaymsg"); ok && relayedNick == b.Nick {
+	if relayedNick, ok := event.Tags.Get("relaymsg"); ok && relayedNick == nick {
 		return true
 	}
 	return false
+}
+
+func (b *Birc) getNick() string {
+	b.nickMu.RLock()
+	defer b.nickMu.RUnlock()
+	return b.Nick
+}
+
+func (b *Birc) setNick(nick string) {
+	b.nickMu.Lock()
+	defer b.nickMu.Unlock()
+	b.Nick = nick
 }
 
 func (b *Birc) nicksPerRow() int {
