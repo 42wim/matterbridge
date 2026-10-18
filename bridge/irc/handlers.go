@@ -204,6 +204,15 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 
 	b.Log.Debugf("== Receiving PRIVMSG: %s %s %#v", event.Source.Name, event.Last(), event)
 
+	if b.threadingEnabled() {
+		if msgID, ok := event.Tags.Get(tagMsgID); ok {
+			rmsg.ID = msgID
+		}
+		if parent, ok := event.Tags.Get(tagReply); ok && parent != "" {
+			rmsg.ParentID = b.threads.gatewayID(parent)
+		}
+	}
+
 	// set action event
 	if ok, ctcp := event.IsCTCP(); ok {
 		if ctcp.Command != girc.CTCP_ACTION {

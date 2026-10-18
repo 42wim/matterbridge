@@ -34,6 +34,7 @@ type Birc struct {
 	FirstConnection, authDone                 bool
 	MessageDelay, MessageQueue, MessageLength int
 	channels                                  map[string]bool
+	threads                                   *ircThreads
 
 	*bridge.Config
 }
@@ -45,6 +46,7 @@ func New(cfg *bridge.Config) bridge.Bridger {
 	b.names = make(map[string][]string)
 	b.connected = make(chan error)
 	b.channels = make(map[string]bool)
+	b.threads = newIRCThreads()
 
 	if b.GetInt("MessageDelay") == 0 {
 		b.MessageDelay = 1300
@@ -110,6 +112,10 @@ func (b *Birc) Connect() error {
 	b.FirstConnection = false
 	if b.GetInt("DebugLevel") == 0 {
 		i.Handlers.Clear(girc.ALL_EVENTS)
+	}
+	if b.threadingEnabled() {
+		// echoes of our own messages are only delivered to ALL_EVENTS handlers
+		i.Handlers.AddBg(girc.ALL_EVENTS, b.handleEcho)
 	}
 	go b.doSend()
 	return nil
@@ -178,6 +184,14 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 	} else {
 		msgLines = helper.GetSubLines(msg.Text, 0, b.GetString("MessageClipped"))
 	}
+	// With PreserveThreading, hand the gateway an ID for this message that we can later
+	// map to the msgid the server assigns its first line. The msg.ID of the queued lines
+	// carries it to doSend.
+	var localID string
+	if b.canTrackEchoes() {
+		localID = newLocalID()
+	}
+
 	for i := range msgLines {
 		if len(b.Local) >= b.MessageQueue {
 			b.Log.Debugf("flooding, dropping message (queue at %d)", len(b.Local))
@@ -185,9 +199,13 @@ func (b *Birc) Send(msg config.Message) (string, error) {
 		}
 
 		msg.Text = msgLines[i]
+		msg.ID = ""
+		if i == 0 {
+			msg.ID = localID
+		}
 		b.Local <- msg
 	}
-	return "", nil
+	return localID, nil
 }
 
 func (b *Birc) doConnect() {
@@ -229,6 +247,10 @@ func (b *Birc) doSend() {
 	for msg := range b.Local {
 		<-throttle.C
 		username := msg.Username
+		var tags girc.Tags
+		if msg.ParentValid() {
+			tags = b.replyTags(msg.ParentID)
+		}
 		// Optional support for the proposed RELAYMSG extension, described at
 		// https://github.com/jlu5/ircv3-specifications/blob/master/extensions/relaymsg.md
 		// nolint:nestif
@@ -243,9 +265,13 @@ func (b *Birc) doSend() {
 			}
 
 			if msg.Event == config.EventUserAction {
-				b.i.Cmd.SendRawf("RELAYMSG %s %s :\x01ACTION %s\x01", msg.Channel, username, text) //nolint:errcheck
+				text = "\x01ACTION " + text + "\x01"
 			} else {
 				b.Log.Debugf("Sending RELAYMSG to channel %s: nick=%s", msg.Channel, username)
+			}
+			if tags != nil {
+				b.i.Send(&girc.Event{Command: "RELAYMSG", Params: []string{msg.Channel, username, text}, Tags: tags})
+			} else {
 				b.i.Cmd.SendRawf("RELAYMSG %s %s :%s", msg.Channel, username, text) //nolint:errcheck
 			}
 		} else {
@@ -254,16 +280,20 @@ func (b *Birc) doSend() {
 				colorCode := checksum%14 + 2 // quick fix - prevent white or black color codes
 				username = fmt.Sprintf("\x03%02d%s\x0F", colorCode, msg.Username)
 			}
+			command, text := girc.PRIVMSG, username+msg.Text
 			switch msg.Event {
 			case config.EventUserAction:
-				b.i.Cmd.Action(msg.Channel, username+msg.Text)
+				text = "\x01ACTION " + text + "\x01"
 			case config.EventNoticeIRC:
 				b.Log.Debugf("Sending notice to channel %s", msg.Channel)
-				b.i.Cmd.Notice(msg.Channel, username+msg.Text)
+				command = girc.NOTICE
 			default:
 				b.Log.Debugf("Sending to channel %s", msg.Channel)
-				b.i.Cmd.Message(msg.Channel, username+msg.Text)
 			}
+			if msg.ID != "" {
+				b.threads.expect(msg.Channel, text, msg.ID)
+			}
+			b.i.Send(&girc.Event{Command: command, Params: []string{msg.Channel, text}, Tags: tags})
 		}
 	}
 }
@@ -312,6 +342,11 @@ func (b *Birc) getClient() (*girc.Client, error) {
 		return nil, err
 	}
 
+	supportedCaps := map[string][]string{"overdrivenetworks.com/relaymsg": nil, "draft/relaymsg": nil}
+	if b.threadingEnabled() {
+		supportedCaps[capEchoMessage] = nil
+	}
+
 	i := girc.New(girc.Config{
 		Server:     server,
 		ServerPass: b.GetString("Password"),
@@ -326,7 +361,7 @@ func (b *Birc) getClient() (*girc.Client, error) {
 		// skip gIRC internal rate limiting, since we have our own throttling
 		AllowFlood:    true,
 		Debug:         debug,
-		SupportedCaps: map[string][]string{"overdrivenetworks.com/relaymsg": nil, "draft/relaymsg": nil},
+		SupportedCaps: supportedCaps,
 	})
 	return i, nil
 }

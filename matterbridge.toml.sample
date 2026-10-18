@@ -231,6 +231,15 @@ JoinDelay=0
 UseRelayMsg=false
 #RemoteNickFormat="{NICK}/{PROTOCOL}"
 
+#Opportunistically preserve threaded replies between bridges that support threading.
+#Needs a server with the IRCv3 message-tags capability. Replies from other bridges are
+#sent with the +draft/reply tag, which clients such as IRCCloud show as threads, and
+#IRC replies are passed on so bridges like discord (with PreserveThreading) can thread them.
+#Replying to messages sent from other bridges also needs the echo-message capability.
+#Without these capabilities messages are sent unthreaded, as before.
+#OPTIONAL (default false)
+PreserveThreading=false
+
 ###################################################################
 #XMPP section
 ###################################################################
