@@ -86,20 +86,20 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 		return
 	}
 	channel := strings.ToLower(event.Params[0])
-	if event.Command == "KICK" && event.Params[1] == b.Nick {
+	if event.Command == "KICK" && event.Params[1] == b.getNick() {
 		b.Log.Infof("Got kicked from %s by %s", channel, event.Source.Name)
 		time.Sleep(time.Duration(b.GetInt("RejoinDelay")) * time.Second)
 		b.Remote <- config.Message{Username: "system", Text: "rejoin", Channel: channel, Account: b.Account, Event: config.EventRejoinChannels}
 		return
 	}
 	if event.Command == "QUIT" {
-		if event.Source.Name == b.Nick && strings.Contains(event.Last(), "Ping timeout") {
+		if event.Source.Name == b.getNick() && strings.Contains(event.Last(), "Ping timeout") {
 			b.Log.Infof("%s reconnecting ..", b.Account)
 			b.Remote <- config.Message{Username: "system", Text: "reconnect", Channel: channel, Account: b.Account, Event: config.EventFailure}
 			return
 		}
 	}
-	if event.Source.Name != b.Nick {
+	if event.Source.Name != b.getNick() {
 		if b.GetBool("nosendjoinpart") {
 			return
 		}
@@ -120,7 +120,7 @@ func (b *Birc) handleJoinPart(client *girc.Client, event girc.Event) {
 func (b *Birc) handleNewConnection(client *girc.Client, event girc.Event) {
 	b.Log.Debug("Registering callbacks")
 	i := b.i
-	b.Nick = event.Params[0]
+	b.setNick(event.Params[0])
 
 	b.Log.Debug("Clearing handlers before adding in case of BNC reconnect")
 	i.Handlers.Clear("PRIVMSG")
@@ -257,7 +257,7 @@ func (b *Birc) handlePrivMsg(client *girc.Client, event girc.Event) {
 
 func (b *Birc) handleRunCommands() {
 	for _, cmd := range b.GetStringSlice("RunCommands") {
-		cmd = strings.ReplaceAll(cmd, "{BOTNICK}", b.Nick)
+		cmd = strings.ReplaceAll(cmd, "{BOTNICK}", b.getNick())
 		if err := b.i.Cmd.SendRaw(cmd); err != nil {
 			b.Log.Errorf("RunCommands %s failed: %s", cmd, err)
 		}
